@@ -49,7 +49,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     &lt;li&gt;&lt;a href='~/WorkflowEntry/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
 </pre>
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
-    [BooleanField( "Disable Impersonation", "Should the Impersonate custom action be disabled? Note: If left enabled, it is only visible to Rock Administrators.", true, "", 3 )]
+    [BooleanField( "Enable Impersonation", "Should the Impersonate custom action be enabled? Note: If enabled, it is only visible to users that are authorized to administrate the person.", false, "", 3 )]
     [LinkedPage( "Impersonation Start Page", "The page to navigate to after clicking the Impersonate action.", false, Rock.SystemGuid.Page.EXTERNAL_HOMEPAGE, "", 4)]
     [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 5 )]
     [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers.", false, "", 6 )]
@@ -75,6 +75,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( pnlContent );
 
             if ( Person != null )
             {
@@ -115,17 +119,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                 lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
-                // only show if the Impersonation button if the feature is enabled, it isn't the same person that is logged in, and the current user is authorized to Administrate the person
-                bool disableImpersonation = this.GetAttributeValue( "DisableImpersonation" ).AsBoolean();
+                // only show if the Impersonation button if the feature is enabled, and the current user is authorized to Administrate the person
+                bool enableImpersonation = this.GetAttributeValue( "EnableImpersonation" ).AsBoolean();
                 lbImpersonate.Visible = false;
-                if ( !disableImpersonation )
+                if ( enableImpersonation )
                 {
-                    if ( Person.Id != this.CurrentPersonId )
+                    if ( Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
                     {
-                        if ( Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
-                        {
-                            lbImpersonate.Visible = true;
-                        }
+                        lbImpersonate.Visible = true;
                     }
                 }
             }
@@ -290,6 +291,21 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
         }
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            // reload the page if block settings where changed
+            Response.Redirect( Request.RawUrl, false );
+            Context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Sets the name of the person.
+        /// </summary>
         private void SetPersonName()
         {
             // Check if this record represents a Business.
