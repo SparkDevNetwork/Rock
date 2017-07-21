@@ -3648,7 +3648,7 @@ namespace Rock.Lava
                             result.Add( liquidObject[selectKey] );
                         }
                     }
-                    else if ( value is IDictionary<string, object> )
+                    else if ( value is IDictionary<string, object> ) 
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
                         if ( dictionaryObject.ContainsKey( selectKey ) && dictionaryObject[selectKey].Equals( selectKey ) )

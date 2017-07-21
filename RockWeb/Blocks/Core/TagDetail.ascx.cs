@@ -200,12 +200,17 @@ namespace RockWeb.Blocks.Core
                 }
                 tag.Name = name;
                 tag.Description = tbDescription.Text;
-                tag.OwnerPersonAliasId = ownerPersonAliasId;
-                tag.EntityTypeId = entityTypeId;
-                tag.EntityTypeQualifierColumn = qualifierCol;
-                tag.EntityTypeQualifierValue = qualifierVal;
-                tag.CategoryId = cpCategory.SelectedValueAsInt();
                 tag.IsActive = cbIsActive.Checked;
+
+                if ( _canConfigure )
+                {
+                    tag.OwnerPersonAliasId = ownerPersonAliasId;
+                    tag.CategoryId = cpCategory.SelectedValueAsInt();
+                    tag.EntityTypeId = entityTypeId;
+                    tag.EntityTypeQualifierColumn = qualifierCol;
+                    tag.EntityTypeQualifierValue = qualifierVal;
+                }
+
                 rockContext.SaveChanges();
 
                 var qryParams = new Dictionary<string, string>();
@@ -306,40 +311,43 @@ namespace RockWeb.Blocks.Core
                 pdAuditDetails.Visible = false;
             }
 
-            pnlDetails.Visible = true;
-            hfId.Value = tag.Id.ToString();
-
-            bool readOnly = false;
-
-            if ( !_canConfigure && !tag.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            if ( _canConfigure || tag.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Tag.FriendlyTypeName );
-            }
+                pnlDetails.Visible = true;
+                hfId.Value = tag.Id.ToString();
 
-            if ( tag.IsSystem )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Group.FriendlyTypeName );
-            }
+                bool readOnly = false;
 
-            if ( readOnly )
-            {
-                btnEdit.Visible = false;
-                btnDelete.Visible = false;
-                ShowReadonlyDetails( tag );
-            }
-            else
-            {
-                btnEdit.Visible = true;
-                btnDelete.Visible = true;
-                if ( tag.Id > 0 )
+                if ( !_canConfigure && !tag.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Tag.FriendlyTypeName );
+                }
+
+                if ( tag.IsSystem )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Group.FriendlyTypeName );
+                }
+
+                if ( readOnly )
+                {
+                    btnEdit.Visible = false;
+                    btnDelete.Visible = false;
                     ShowReadonlyDetails( tag );
                 }
                 else
                 {
-                    ShowEditDetails( tag );
+                    btnEdit.Visible = true;
+                    btnDelete.Visible = true;
+                    if ( tag.Id > 0 )
+                    {
+                        ShowReadonlyDetails( tag );
+                    }
+                    else
+                    {
+                        ShowEditDetails( tag );
+                    }
                 }
             }
         }
@@ -350,7 +358,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="tag">The tag.</param>
         private void ShowEditDetails( Tag tag )
         {
-
             if ( tag.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( Tag.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -386,8 +393,7 @@ namespace RockWeb.Blocks.Core
             tbEntityTypeQualifierColumn.Text = tag.EntityTypeQualifierColumn;
             tbEntityTypeQualifierValue.Text = tag.EntityTypeQualifierValue;
 
-            rblScope.Visible = _canConfigure;
-            ppOwner.Visible = _canConfigure;
+            pnlAdvanced.Visible = _canConfigure;
         }
 
         /// <summary>

@@ -40,7 +40,7 @@
                                 </div>
                             </div>
                     
-                            <div class="row">
+                            <asp:Panel ID="pnlAdvanced" runat="server" CssClass="row">
                                 <div class="col-md-6">
                                     <Rock:RockRadioButtonList ID="rblScope" runat="server" Label="Scope" RepeatDirection="Horizontal"
                                         AutoPostBack="true" OnSelectedIndexChanged="rblScope_SelectedIndexChanged">
@@ -55,7 +55,7 @@
                                     <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
                                     <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
                                 </div>
-                            </div>
+                            </asp:Panel>
 
                             <Rock:NotificationBox ID="nbEditError" runat="server" NotificationBoxType="Danger" Visible="false"></Rock:NotificationBox>
 

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.Routing;
 using System.Web.UI;
@@ -66,13 +67,20 @@ namespace RockWeb.Blocks.Administration
             RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
             string script = string.Format( @"
     function updateClipboardText() {{
-        $('#btnSave').attr('data-clipboard-text', $('#{0}').val() + $('#{1}').val() );
+        var scLink = $('#{0}').val() + $('#{1}').val();
+        $('.js-copy-to-clipboard').attr('data-clipboard-text', scLink );
+        $('.js-copy-to-clipboard').html(scLink);
+        $('#btnSave').attr('data-clipboard-text', scLink );
     }}
 
     $('#{1}').on('input', function() {{ updateClipboardText(); }});
 
     new Clipboard('#btnSave');
+    new Clipboard('.js-copy-to-clipboard');
+    $('.js-copy-to-clipboard').tooltip();
+
     updateClipboardText();
+
 ", hfSiteUrl.ClientID, tbToken.ClientID );
             ScriptManager.RegisterStartupScript( tbToken, tbToken.GetType(), "save-short-link", script, true );
 
@@ -97,7 +105,7 @@ namespace RockWeb.Blocks.Administration
                     int? siteId = ddlSite.SelectedValueAsInt();
                     if ( siteId.HasValue )
                     {
-                        tbToken.Text = new SiteUrlMapService( rockContext ).GetUniqueToken( siteId.Value, _minTokenLength );
+                        tbToken.Text = new PageShortLinkService( rockContext ).GetUniqueToken( siteId.Value, _minTokenLength );
                     }
                 }
 
@@ -137,11 +145,11 @@ namespace RockWeb.Blocks.Administration
             Page.Validate( BlockValidationGroup );
             if ( Page.IsValid )
             {
-                SiteUrlMap link = null;
+                PageShortLink link = null;
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var service = new SiteUrlMapService( rockContext );
+                    var service = new PageShortLinkService( rockContext );
 
                     var errors = new List<string>();
 
@@ -175,7 +183,7 @@ namespace RockWeb.Blocks.Administration
                         return;
                     }
 
-                    link = new SiteUrlMap();
+                    link = new PageShortLink();
                     link.SiteId = siteId.Value;
                     link.Token = token;
                     link.Url = url;
@@ -206,7 +214,13 @@ namespace RockWeb.Blocks.Administration
         private void LoadSites( RockContext rockContext )
         {
             ddlSite.Items.Clear();
-            foreach ( SiteCache site in new SiteService( rockContext ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => SiteCache.Read( a ) ) )
+            foreach ( SiteCache site in new SiteService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( s => s.EnabledForShortening )
+                .OrderBy( s => s.Name )
+                .Select( a => a.Id )
+                .ToList()
+                .Select( a => SiteCache.Read( a ) ) )
             {
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }
@@ -219,15 +233,12 @@ namespace RockWeb.Blocks.Administration
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var siteUrl = new SiteService( rockContext ).GetDefaultDomainUri( siteId.Value ) ??
-                        new Uri( Request.Url.GetLeftPart( UriPartial.Authority ) );
-                    hfSiteUrl.Value = siteUrl.ToString();
+                    hfSiteUrl.Value = new SiteService( rockContext ).GetDefaultDomainUri( siteId.Value ).ToString();
                 }
             }
             else
             {
                 hfSiteUrl.Value = string.Empty;
-
             }
         }
 

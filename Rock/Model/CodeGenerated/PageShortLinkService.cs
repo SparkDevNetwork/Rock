@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// SiteUrlMap Service class
+    /// PageShortLink Service class
     /// </summary>
-    public partial class SiteUrlMapService : Service<SiteUrlMap>
+    public partial class PageShortLinkService : Service<PageShortLink>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SiteUrlMapService"/> class
+        /// Initializes a new instance of the <see cref="PageShortLinkService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public SiteUrlMapService(RockContext context) : base(context)
+        public PageShortLinkService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( SiteUrlMap item, out string errorMessage )
+        public bool CanDelete( PageShortLink item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,34 +58,34 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class SiteUrlMapExtensionMethods
+    public static partial class PageShortLinkExtensionMethods
     {
         /// <summary>
-        /// Clones this SiteUrlMap object to a new SiteUrlMap object
+        /// Clones this PageShortLink object to a new PageShortLink object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static SiteUrlMap Clone( this SiteUrlMap source, bool deepCopy )
+        public static PageShortLink Clone( this PageShortLink source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as SiteUrlMap;
+                return source.Clone() as PageShortLink;
             }
             else
             {
-                var target = new SiteUrlMap();
+                var target = new PageShortLink();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another SiteUrlMap object to this SiteUrlMap object
+        /// Copies the properties from another PageShortLink object to this PageShortLink object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this SiteUrlMap target, SiteUrlMap source )
+        public static void CopyPropertiesFrom( this PageShortLink target, PageShortLink source )
         {
             target.Id = source.Id;
             target.ForeignGuid = source.ForeignGuid;

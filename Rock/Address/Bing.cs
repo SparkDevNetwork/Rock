@@ -112,7 +112,9 @@ namespace Rock.Address
                         resultMsg = string.Format( "Confidence: {0}; MatchCodes: {1}",
                             bingLocation.Confidence, matchCodes.AsDelimited( "," ) );
 
-                        if ( bingLocation.Confidence == "High" && matchCodes.Contains( "Good" ) )
+                        if ( bingLocation.Confidence == "High" && 
+                            matchCodes.Contains( "Good" ) &&
+                            bingLocation.EntityType == "Address" )
                         {
                             if ( location.SetLocationPointFromLatLong( bingLocation.Point.Coordinates[0], bingLocation.Point.Coordinates[1] ) )
                             {

@@ -2501,7 +2501,9 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( attr.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
-                        ddlPersonAttributes.Items.Add( new ListItem( attr.Name, attr.Id.ToString() ) );
+                        var listItem = new ListItem( attr.Name, attr.Id.ToString() );
+                        listItem.Attributes.Add( "title", string.Format( "{0} - {1}", attr.Id.ToString(), attr.Key ) );
+                        ddlPersonAttributes.Items.Add( listItem );
                     }
                 }
 

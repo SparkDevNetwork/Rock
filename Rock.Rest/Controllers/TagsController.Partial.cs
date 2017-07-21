@@ -102,10 +102,7 @@ namespace Rock.Rest.Controllers
         public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
         {
             string tagName = WebUtility.UrlDecode( name );
-            var tag = ( ( TagService ) Service )
-                .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId ).FirstOrDefault( t => t.Name == tagName );
-
-            var person = GetPerson();
+            var tag = ( ( TagService ) Service ).Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
 
             if ( tag == null )
             {
@@ -113,14 +110,7 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            if ( tag.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
-            {
-                return tag;
-            }
-            else
-            {
-                throw new HttpResponseException( HttpStatusCode.Unauthorized );
-            }
+            return tag;
 
         }
 

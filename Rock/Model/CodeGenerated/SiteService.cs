@@ -103,10 +103,12 @@ namespace Rock.Model
             target.DefaultPageId = source.DefaultPageId;
             target.DefaultPageRouteId = source.DefaultPageRouteId;
             target.Description = source.Description;
+            target.EnabledForShortening = source.EnabledForShortening;
             target.EnableMobileRedirect = source.EnableMobileRedirect;
             target.EnablePageViews = source.EnablePageViews;
             target.ErrorPage = source.ErrorPage;
             target.ExternalUrl = source.ExternalUrl;
+            target.FavIconBinaryFileId = source.FavIconBinaryFileId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
