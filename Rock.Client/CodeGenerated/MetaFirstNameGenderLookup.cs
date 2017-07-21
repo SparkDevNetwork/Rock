@@ -27,15 +27,24 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for PersonToken that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for MetaFirstNameGenderLookup that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PersonTokenEntity
+    public partial class MetaFirstNameGenderLookupEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public DateTime? ExpireDateTime { get; set; }
+        public string Country { get; set; }
+
+        /// <summary />
+        public int? FemaleCount { get; set; }
+
+        /// <summary />
+        public decimal? FemalePercent { get; set; }
+
+        /// <summary />
+        public string FirstName { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -44,19 +53,16 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public DateTime? LastUsedDateTime { get; set; }
+        public string Language { get; set; }
 
         /// <summary />
-        public int? PageId { get; set; }
+        public int? MaleCount { get; set; }
 
         /// <summary />
-        public int PersonAliasId { get; set; }
+        public decimal? MalePercent { get; set; }
 
         /// <summary />
-        public int TimesUsed { get; set; }
-
-        /// <summary />
-        public int? UsageLimit { get; set; }
+        public int? TotalCount { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -65,20 +71,22 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source PersonToken object
+        /// Copies the base properties from a source MetaFirstNameGenderLookup object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PersonToken source )
+        public void CopyPropertiesFrom( MetaFirstNameGenderLookup source )
         {
             this.Id = source.Id;
-            this.ExpireDateTime = source.ExpireDateTime;
+            this.Country = source.Country;
+            this.FemaleCount = source.FemaleCount;
+            this.FemalePercent = source.FemalePercent;
+            this.FirstName = source.FirstName;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.LastUsedDateTime = source.LastUsedDateTime;
-            this.PageId = source.PageId;
-            this.PersonAliasId = source.PersonAliasId;
-            this.TimesUsed = source.TimesUsed;
-            this.UsageLimit = source.UsageLimit;
+            this.Language = source.Language;
+            this.MaleCount = source.MaleCount;
+            this.MalePercent = source.MalePercent;
+            this.TotalCount = source.TotalCount;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -86,9 +94,9 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for PersonToken that includes all the fields that are available for GETs. Use this for GETs (use PersonTokenEntity for POST/PUTs)
+    /// Client model for MetaFirstNameGenderLookup that includes all the fields that are available for GETs. Use this for GETs (use MetaFirstNameGenderLookupEntity for POST/PUTs)
     /// </summary>
-    public partial class PersonToken : PersonTokenEntity
+    public partial class MetaFirstNameGenderLookup : MetaFirstNameGenderLookupEntity
     {
     }
 }

@@ -130,7 +130,7 @@ namespace Rock.Model
         /// Creates and stores a new PersonToken for a person using the default ExpireDateTime and UsageLimit.
         /// Returns the encrypted URLEncoded Token which can be used as a rckipid.
         /// </summary>
-        /// <param name="person">The person.</param>
+        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
         public static string CreateNew( PersonAlias personAlias )
         {
@@ -141,10 +141,8 @@ namespace Rock.Model
         /// Creates and stores a new PersonToken for a person limited to a specific PageId
         /// Returns the encrypted URLEncoded Token which can be used as a rckipid
         /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="ExpireDateTime">The expire date time.</param>
-        /// <param name="UsageLimit">The usage limit.</param>
-        /// <param name="page">The page.</param>
+        /// <param name="personAlias">The person alias.</param>
+        /// <param name="pageId">The page identifier.</param>
         /// <returns></returns>
         public static string CreateNew( PersonAlias personAlias, int pageId )
         {
@@ -155,10 +153,10 @@ namespace Rock.Model
         /// Creates and stores a new PersonToken for a person using the specified ExpireDateTime, UsageLimit, and Page
         /// Returns the encrypted URLEncoded Token which can be used as a rckipid
         /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="ExpireDateTime">The expire date time.</param>
-        /// <param name="UsageLimit">The usage limit.</param>
-        /// <param name="page">The page.</param>
+        /// <param name="personAlias">The person alias.</param>
+        /// <param name="expireDateTime">The expire date time.</param>
+        /// <param name="usageLimit">The usage limit.</param>
+        /// <param name="pageId">The page identifier.</param>
         /// <returns></returns>
         public static string CreateNew( PersonAlias personAlias, DateTime? expireDateTime, int? usageLimit, int? pageId )
         {

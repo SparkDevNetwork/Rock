@@ -1299,8 +1299,7 @@ namespace Rock.Model
         /// Special override of Entity.GetByUrlEncodedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
         /// NOTE: You might want to use GetByImpersonationToken instead to prevent a token from being used that was limited to a specific page
         /// </summary>
-        /// <param name="impersonationToken">The impersonation token.</param>
-        /// <param name="pageId">The page identifier.</param>
+        /// <param name="encodedKey">The encoded key.</param>
         /// <returns></returns>
         public override Person GetByUrlEncodedKey( string encodedKey )
         {
@@ -1348,6 +1347,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="encryptedKey">A <see cref="System.String" /> containing an encrypted key value.</param>
         /// <param name="followMerges">if set to <c>true</c> [follow merges]. (only applies if using PersonTokenLegacyFallback)</param>
+        /// <param name="incrementUsage">if set to <c>true</c> [increment usage].</param>
         /// <param name="pageId">The page identifier.</param>
         /// <returns>
         /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.

@@ -27,15 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for PersonToken that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for MetaNickNameLookup that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class PersonTokenEntity
+    public partial class MetaNickNameLookupEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public DateTime? ExpireDateTime { get; set; }
+        public int? Count { get; set; }
+
+        /// <summary />
+        public string FirstName { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -44,19 +47,10 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public DateTime? LastUsedDateTime { get; set; }
+        public string Gender { get; set; }
 
         /// <summary />
-        public int? PageId { get; set; }
-
-        /// <summary />
-        public int PersonAliasId { get; set; }
-
-        /// <summary />
-        public int TimesUsed { get; set; }
-
-        /// <summary />
-        public int? UsageLimit { get; set; }
+        public string NickName { get; set; }
 
         /// <summary />
         public Guid Guid { get; set; }
@@ -65,20 +59,18 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source PersonToken object
+        /// Copies the base properties from a source MetaNickNameLookup object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( PersonToken source )
+        public void CopyPropertiesFrom( MetaNickNameLookup source )
         {
             this.Id = source.Id;
-            this.ExpireDateTime = source.ExpireDateTime;
+            this.Count = source.Count;
+            this.FirstName = source.FirstName;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.LastUsedDateTime = source.LastUsedDateTime;
-            this.PageId = source.PageId;
-            this.PersonAliasId = source.PersonAliasId;
-            this.TimesUsed = source.TimesUsed;
-            this.UsageLimit = source.UsageLimit;
+            this.Gender = source.Gender;
+            this.NickName = source.NickName;
             this.Guid = source.Guid;
             this.ForeignId = source.ForeignId;
 
@@ -86,9 +78,9 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for PersonToken that includes all the fields that are available for GETs. Use this for GETs (use PersonTokenEntity for POST/PUTs)
+    /// Client model for MetaNickNameLookup that includes all the fields that are available for GETs. Use this for GETs (use MetaNickNameLookupEntity for POST/PUTs)
     /// </summary>
-    public partial class PersonToken : PersonTokenEntity
+    public partial class MetaNickNameLookup : MetaNickNameLookupEntity
     {
     }
 }

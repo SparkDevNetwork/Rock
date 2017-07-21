@@ -1147,6 +1147,14 @@ namespace Rock.Data
         public DbSet<PersonViewed> PersonVieweds { get; set; }
 
         /// <summary>
+        /// Gets or sets the person tokens.
+        /// </summary>
+        /// <value>
+        /// The person tokens.
+        /// </value>
+        public DbSet<PersonToken> PersonTokens { get; set; }
+
+        /// <summary>
         /// Gets or sets the Phone Numbers.
         /// </summary>
         /// <value>
