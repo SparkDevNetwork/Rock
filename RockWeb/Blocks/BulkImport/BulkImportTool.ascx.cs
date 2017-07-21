@@ -15,20 +15,18 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR;
 
 using Rock;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.BulkImport
 {
@@ -36,11 +34,34 @@ namespace RockWeb.Blocks.BulkImport
     /// 
     /// </summary>
     [DisplayName( "Bulk Import" )]
-    [Category( "BulkImport" )]
+    [Category( "Bulk Import" )]
     [Description( "Block to import Slingshot files into Rock using BulkImport" )]
-    [EmailField( "Email" )]
-    public partial class BulkImportTool : Rock.Web.UI.RockBlock
+    public partial class BulkImportTool : RockBlock
     {
+
+        #region Fields
+
+        /// <summary>
+        /// This holds the reference to the RockMessageHub SignalR Hub context.
+        /// </summary>
+        private IHubContext _hubContext = GlobalHost.ConnectionManager.GetHubContext<RockMessageHub>();
+
+        /// <summary>
+        /// Gets the signal r notification key.
+        /// </summary>
+        /// <value>
+        /// The signal r notification key.
+        /// </value>
+        public string SignalRNotificationKey
+        {
+            get
+            {
+                return string.Format( "BulkImport_BlockId:{0}_SessionId:{1}", this.BlockId, Session.SessionID );
+            }
+        }
+
+        #endregion Fields
+
         #region Base Control Methods
 
         /// <summary>
@@ -50,10 +71,7 @@ namespace RockWeb.Blocks.BulkImport
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", fingerprint: false );
         }
 
         /// <summary>
@@ -63,28 +81,11 @@ namespace RockWeb.Blocks.BulkImport
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            if ( !Page.IsPostBack )
-            {
-                // added for your convenience
-            }
         }
 
         #endregion
 
         #region Events
-
-        // handlers called by the controls on your block
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-
-        }
 
         /// <summary>
         /// Handles the FileUploaded event of the fupSlingshotFile control.
@@ -93,7 +94,7 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
         protected void fupSlingshotFile_FileUploaded( object sender, FileUploaderEventArgs e )
         {
-            btnImport.Visible = false;
+            pnlActions.Visible = false;
             var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
             if ( File.Exists( physicalSlingshotFile ) )
             {
@@ -105,7 +106,7 @@ namespace RockWeb.Blocks.BulkImport
                         .Add( "Date/Time", fileInfo.CreationTime )
                         .Add( "Size (MB) ", Math.Round( ( ( decimal ) fileInfo.Length / 1024 / 1024 ), 2 ) )
                         .Html;
-                    btnImport.Visible = true;
+                    pnlActions.Visible = true;
                 }
                 else
                 {
@@ -126,21 +127,105 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
         protected void fupSlingshotFile_FileRemoved( object sender, FileUploaderEventArgs e )
         {
-            btnImport.Visible = false;
+            pnlActions.Visible = false;
             lSlingshotFileInfo.Text = "";
         }
 
+        /// <summary>
+        /// The importer
+        /// </summary>
         private Rock.Slingshot.Importer _importer;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        private enum ImportType
+        {
+            Import,
+            ImportPhotos
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnImport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnImport_Click( object sender, EventArgs e )
         {
-            var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
-            _importer = new Rock.Slingshot.Importer( physicalSlingshotFile );
-            _importer.OnProgress += _importer_OnProgress;
-            _importer.DoImport();
+            StartImport( ImportType.Import );
+        }
 
-            System.Diagnostics.Debug.WriteLine( string.Join( Environment.NewLine, _importer.Exceptions.Select( a => a.Message ).ToArray() ) );
-            System.Diagnostics.Debug.WriteLine( "Import Complete" );
+        /// <summary>
+        /// Handles the Click event of the btnImportPhotos control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnImportPhotos_Click( object sender, EventArgs e )
+        {
+            StartImport( ImportType.ImportPhotos );
+        }
+
+        /// <summary>
+        /// Starts the import.
+        /// </summary>
+        /// <param name="importType">Type of the import.</param>
+        private void StartImport( ImportType importType )
+        {
+            var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
+            double totalMilliseconds = 0;
+
+            var importTask = new Task( () =>
+            {
+                // wait a little so the browser can render and start listening to events
+                System.Threading.Thread.Sleep( 1000 );
+                _hubContext.Clients.All.showButtons( this.SignalRNotificationKey, false );
+
+                _hubContext.Clients.All.showLog();
+                Stopwatch stopwatch = Stopwatch.StartNew();
+                
+                _importer = new Rock.Slingshot.Importer( physicalSlingshotFile );
+                _importer.OnProgress += _importer_OnProgress;
+
+                if ( importType == ImportType.ImportPhotos )
+                {
+                    _importer.TEST_UseSampleLocalPhotos = true;
+                    _importer.DoImportPhotos();
+                }
+                else
+                {
+                    _importer.DoImport();
+                }
+
+                stopwatch.Stop();
+
+                if ( _importer.Exceptions.Any() )
+                {
+                    _importer.Results.Add( "ERRORS", string.Join( Environment.NewLine, _importer.Exceptions.Select( a => a.Message ).ToArray() ) );
+                }
+
+                totalMilliseconds = stopwatch.Elapsed.TotalMilliseconds;
+
+                _hubContext.Clients.All.showButtons( this.SignalRNotificationKey, true );
+            } );
+
+            importTask.ContinueWith( ( t ) =>
+            {
+                if ( t.IsFaulted )
+                {
+                    foreach ( var exception in t.Exception.InnerExceptions )
+                    {
+                        _importer.Exceptions.Add( exception.GetBaseException() );
+                    }
+
+                    _importer_OnProgress( null, "ERROR" );
+                }
+                else
+                {
+                    _importer_OnProgress( null, string.Format( "{0} Complete: [{1}]ms", importType.ConvertToString(), totalMilliseconds ) );
+                }
+            } );
+
+            importTask.Start();
         }
 
         /// <summary>
@@ -150,34 +235,38 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="e">The <see cref="ProgressChangedEventArgs"/> instance containing the event data.</param>
         private void _importer_OnProgress( object sender, object e )
         {
-            string resultText = string.Empty;
+            string progressMessage = string.Empty;
+            DescriptionList progressResults = new DescriptionList();
             if ( e is string )
             {
-                System.Diagnostics.Debug.WriteLine( e.ToString() );
+                progressMessage = e.ToString();
+            }
+
+            var exceptionsCopy = _importer.Exceptions.ToArray();
+            if ( exceptionsCopy.Any() )
+            {
+                progressResults.Add( "Exception", string.Join( Environment.NewLine, exceptionsCopy.Select( a => a.Message ).ToArray() ) );
             }
 
             var resultsCopy = _importer.Results.ToArray();
             foreach ( var result in resultsCopy )
             {
-                resultText += string.Format( "\n\n{0}\n\n{1}", result.Key, result.Value );
+                progressResults.Add( result.Key, result.Value );
             }
 
-            System.Diagnostics.Debug.WriteLine( resultText );
+            WriteProgressMessage( progressMessage, progressResults.Html );
         }
 
         /// <summary>
-        /// Handles the RunWorkerCompleted event of the BackgroundWorker control.
+        /// Writes the progress message.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
-        private void BackgroundWorker_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
+        /// <param name="message">The message.</param>
+        private void WriteProgressMessage( string message, string results )
         {
-            
+            System.Diagnostics.Debug.WriteLine( message );
+            System.Diagnostics.Debug.WriteLine( results );
+            _hubContext.Clients.All.receiveNotification( this.SignalRNotificationKey, message, results.ConvertCrLfToHtmlBr() );
         }
-
-        #endregion
-
-        #region Methods
 
         #endregion
     }
