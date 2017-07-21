@@ -42,6 +42,8 @@ namespace Rock.Lava.Shortcodes
         string _markup = string.Empty;
         string _tagName = string.Empty;
         LavaShortcodeCache _shortcode;
+        Dictionary<string,object> _internalMergeFields;
+        string _enabledSecurityCommands = "";
 
         StringBuilder _blockMarkup = new StringBuilder();
 
@@ -147,8 +149,11 @@ namespace Rock.Lava.Shortcodes
         /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
-            //RenderAll( NodeList, context, result );
-
+            // get enabled security commands
+            if ( context.Registers.ContainsKey( "EnabledCommands" ) )
+            {
+                _enabledSecurityCommands = context.Registers["EnabledCommands"].ToString();
+            }
 
             var shortcode = LavaShortcodeCache.Read( _tagName );
 
@@ -157,7 +162,7 @@ namespace Rock.Lava.Shortcodes
                 var parms = ParseMarkup( _markup, context );
 
                 var lavaTemplate = shortcode.Markup;
-                var blockMarkup = _blockMarkup.ToString();
+                var blockMarkup = _blockMarkup.ToString().ResolveMergeFields( _internalMergeFields, _enabledSecurityCommands );
 
                 // pull child paramters from block content
                 Dictionary<string, object> childParamters;
@@ -183,13 +188,7 @@ namespace Rock.Lava.Shortcodes
                 // next ensure they did not use any entity commands in the block that are not allowed
                 // this is needed as the shortcode it configured to allow entities for processing that
                 // might allow more entities than the source block, template, action, etc allows
-                var enabledCommands = "";
-                if ( context.Registers.ContainsKey( "EnabledCommands" ) )
-                {
-                    enabledCommands = context.Registers["EnabledCommands"].ToString();
-                }
-
-                var securityCheck = blockMarkup.ResolveMergeFields(new Dictionary<string, object>(), enabledCommands);
+                var securityCheck = blockMarkup.ResolveMergeFields(new Dictionary<string, object>(), _enabledSecurityCommands);
 
                 Regex securityPattern = new Regex( String.Format(RockLavaBlockBase.NotAuthorizedMessage, ".*" ) );
                 Match securityMatch = securityPattern.Match( securityCheck );
@@ -202,10 +201,10 @@ namespace Rock.Lava.Shortcodes
                 {
                     if ( shortcode.EnabledLavaCommands.IsNotNullOrWhitespace() )
                     {
-                        enabledCommands = shortcode.EnabledLavaCommands;
+                        _enabledSecurityCommands = shortcode.EnabledLavaCommands;
                     }
 
-                    var results = lavaTemplate.ResolveMergeFields( parms, enabledCommands );
+                    var results = lavaTemplate.ResolveMergeFields( parms, _enabledSecurityCommands );
                     result.Write( results.Trim() );
                     base.Render( context, result );
                 }
@@ -216,6 +215,12 @@ namespace Rock.Lava.Shortcodes
             }
         }
 
+        /// <summary>
+        /// Gets the child parameters.
+        /// </summary>
+        /// <param name="blockContent">Content of the block.</param>
+        /// <param name="childParameters">The child parameters.</param>
+        /// <returns></returns>
         private string GetChildParameters(string blockContent, out Dictionary<string, object> childParameters )
         {
             childParameters = new Dictionary<string, object>();
@@ -257,7 +262,7 @@ namespace Rock.Lava.Shortcodes
                             var parmContent = blockContent.Substring( startTagEndIndex, endTagStartIndex - startTagEndIndex ).Trim();
 
                             // create dynamic object from parms
-                            var dynamicParm = new ExpandoObject() as IDictionary<string, Object>;
+                            var dynamicParm = new Dictionary<string, Object>();
                             dynamicParm.Add( "content", parmContent );
 
                             var parmItems = Regex.Matches( tagParms, "(.*?:'[^']+')" )
@@ -330,6 +335,8 @@ namespace Rock.Lava.Shortcodes
         {
             var parms = new Dictionary<string, object>();
 
+            LoadBlockMergeFields( context, parms );
+
             // create all the parameters from the shortcode with their default values
             var shortcodeParms = _shortcode.Parameters.Split( '|' ).ToList();
             foreach ( var shortcodeParm in shortcodeParms )
@@ -342,28 +349,7 @@ namespace Rock.Lava.Shortcodes
             }
 
             // first run lava across the inputted markup
-            var internalMergeFields = new Dictionary<string, object>();
-
-            // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
-            {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                    //parms.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
-            {
-                foreach ( var item in context.Environments[0] )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                    parms.AddOrReplace( item.Key, item.Value );
-                }
-            }
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
+            var resolvedMarkup = markup.ResolveMergeFields( _internalMergeFields );
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()
@@ -379,6 +365,36 @@ namespace Rock.Lava.Shortcodes
                 }
             }
             return parms;
+        }
+
+        /// <summary>
+        /// Loads the block merge fields.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="parms">The parms.</param>
+        private void LoadBlockMergeFields( Context context, Dictionary<string, object> parms )
+        {
+            _internalMergeFields = new Dictionary<string, object>();
+
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    _internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    //parms.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    _internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    parms.AddOrReplace( item.Key, item.Value );
+                }
+            }
         }
     }
 }
