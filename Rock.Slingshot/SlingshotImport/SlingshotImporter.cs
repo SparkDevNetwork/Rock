@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data.Entity;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
 using CsvHelper;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+
+// Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
 using SlingshotCore = global::Slingshot.Core;
 
 namespace Rock.Slingshot
@@ -53,7 +54,15 @@ namespace Rock.Slingshot
         /// <value>
         ///   <c>true</c> if [use sample photos]; otherwise, <c>false</c>.
         /// </value>
-        public bool TEST_UseSamplePhotos { get; set; }
+        public bool TEST_UseSampleRemotePhotos { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [test use sample local photos].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [test use sample local photos]; otherwise, <c>false</c>.
+        /// </value>
+        public bool TEST_UseSampleLocalPhotos { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [cancel photo import].
@@ -66,7 +75,7 @@ namespace Rock.Slingshot
         /// <summary>
         /// The sample photo urls
         /// </summary>
-        private List<string> SamplePhotoUrls { get; set; } = new List<string>
+        private List<string> SamplePhotoRemoteUrls { get; set; } = new List<string>
         {
             { "http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg" },
             { "http://storage.rockrms.com/sampledata/person-images/decker_cindy.png" },
@@ -85,58 +94,23 @@ namespace Rock.Slingshot
             { "http://storage.rockrms.com/sampledata/person-images/miller_tom.jpg" },
             { "http://storage.rockrms.com/sampledata/person-images/foster_peter.jpg" },
             { "http://storage.rockrms.com/sampledata/person-images/foster_pamela.jpg" },
-            { "http://storage.rockrms.com/sampledata/person-images/michaels_jenny.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo0.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo1.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo2.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo3.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo4.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo5.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo6.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo7.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo8.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo9.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo0.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo1.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo2.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo3.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo4.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo5.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo6.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo7.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo8.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo9.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo0.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo1.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo2.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo3.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo4.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo5.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo6.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo7.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo8.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo9.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo0.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo1.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo2.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo3.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo4.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo5.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo6.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo7.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo8.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo9.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo0.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo1.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo2.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo3.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo4.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo5.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo6.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo7.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo8.jpg" },
-            { @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS\Photo9.jpg" }
+            { "http://storage.rockrms.com/sampledata/person-images/michaels_jenny.jpg" }
         };
+
+        private List<string> SamplePhotoLocalUrls
+        {
+            get
+            {
+                if ( _samplePhotoLocalUrls == null )
+                {
+                    _samplePhotoLocalUrls = Directory.GetFiles( @"C:\Users\admin\Downloads\slingshots\TESTPHOTOS", "*.jpg" ).ToList();
+                }
+
+                return _samplePhotoLocalUrls;
+            }
+        }
+
+        List<string> _samplePhotoLocalUrls = null;
 
         /* Person Related */
         private Dictionary<Guid, DefinedValueCache> PersonRecordTypeValues { get; set; }
@@ -216,14 +190,6 @@ namespace Rock.Slingshot
         public List<Exception> Exceptions { get; set; } = new List<Exception>();
 
         /// <summary>
-        /// Gets or sets the group type identifier family.
-        /// </summary>
-        /// <value>
-        /// The group type identifier family.
-        /// </value>
-        private int GroupTypeIdFamily { get; set; }
-
-        /// <summary>
         /// Gets or sets the photo batch size mb.
         /// </summary>
         /// <value>
@@ -242,7 +208,7 @@ namespace Rock.Slingshot
 
         public void ReportProgress( int progress, object progressData )
         {
-            if (OnProgress != null)
+            if ( OnProgress != null )
             {
                 OnProgress( this, progressData );
             }
@@ -255,8 +221,6 @@ namespace Rock.Slingshot
         /// </summary>
         public void DoImport()
         {
-            this.ReportProgress( 0, "Connecting to Rock REST Api..." );
-
             // Load Slingshot Models from .slingshot
             this.ReportProgress( 0, "Loading Slingshot Models..." );
             LoadSlingshotLists();
@@ -300,7 +264,7 @@ namespace Rock.Slingshot
         }
 
         private const string PREPARE_PHOTO_DATA = "Prepare Photo Data:";
-        private const string UPLOADING_PHOTO_DATA = "Uploading Photo Data:";
+        private const string IMPORTING_PHOTO_DATA = "Importing Photo Data:";
         private const string UPLOAD_PHOTO_STATS = "Stats:";
 
         /// <summary>
@@ -308,12 +272,10 @@ namespace Rock.Slingshot
         /// </summary>
         public void DoImportPhotos()
         {
-            this.ReportProgress( 0, "Connecting to Rock REST Api..." );
-
             this.Results.Clear();
 
             this.Results.Add( PREPARE_PHOTO_DATA, string.Empty );
-            this.Results.Add( UPLOADING_PHOTO_DATA, string.Empty );
+            this.Results.Add( IMPORTING_PHOTO_DATA, string.Empty );
             this.Results.Add( UPLOAD_PHOTO_STATS, string.Empty );
 
             // Load Slingshot Models from .slingshot
@@ -322,16 +284,27 @@ namespace Rock.Slingshot
 
             this.ReportProgress( 0, "Processing..." );
 
-            if ( this.TEST_UseSamplePhotos )
+            if ( this.TEST_UseSampleLocalPhotos || this.TEST_UseSampleRemotePhotos )
             {
                 var randomPhoto = new Random();
-                int samplePhotoCount = this.SamplePhotoUrls.Count();
+                var samplePhotoUrls = new List<string>();
+                if ( this.TEST_UseSampleLocalPhotos )
+                {
+                    samplePhotoUrls.AddRange( this.SamplePhotoLocalUrls );
+                }
+
+                if ( this.TEST_UseSampleRemotePhotos )
+                {
+                    samplePhotoUrls.AddRange( this.SamplePhotoRemoteUrls );
+                }
+
+                int samplePhotoCount = samplePhotoUrls.Count();
                 foreach ( var person in this.SlingshotPersonList )
                 {
                     int randomPhotoIndex = randomPhoto.Next( samplePhotoCount );
-                    person.PersonPhotoUrl = this.SamplePhotoUrls[randomPhotoIndex];
+                    person.PersonPhotoUrl = samplePhotoUrls[randomPhotoIndex];
                     randomPhotoIndex = randomPhoto.Next( samplePhotoCount );
-                    person.FamilyImageUrl = this.SamplePhotoUrls[randomPhotoIndex];
+                    person.FamilyImageUrl = samplePhotoUrls[randomPhotoIndex];
                 }
             }
 
@@ -342,95 +315,87 @@ namespace Rock.Slingshot
             HashSet<int> importedFamilyPhotos = new HashSet<int>();
 
             long photoLoadProgress = 0;
-            long photoUploadProgress = 0;
+            long photoImportProgress = 0;
             int totalCount = slingshotPersonsWithPhotoList.Where( a => !string.IsNullOrWhiteSpace( a.PersonPhotoUrl ) ).Count()
                 + slingshotPersonsWithPhotoList.Where( a => a.FamilyId.HasValue && !string.IsNullOrWhiteSpace( a.FamilyImageUrl ) ).Select( a => a.FamilyId ).Distinct().Count();
 
-            List<Task> photoDataTasks = new List<Task>();
             int totalPhotoDataBytes = 0;
             if ( !this.PhotoBatchSizeMB.HasValue || this.PhotoBatchSizeMB.Value < 1 )
             {
-                this.PhotoBatchSizeMB = 50;
+                this.PhotoBatchSizeMB = 250;
             }
 
-            int maxUploadSize = this.PhotoBatchSizeMB.Value * 1024 * 1024;
+            int maxPhotoBatchSize = this.PhotoBatchSizeMB.Value * 1024 * 1024;
             foreach ( var slingshotPerson in slingshotPersonsWithPhotoList )
             {
+                this.ReportProgress( 0, "Preparing Photos..." );
                 if ( this.CancelPhotoImport )
                 {
                     return;
                 }
 
-                var photoDataTask = new Task( () =>
+                if ( !string.IsNullOrEmpty( slingshotPerson.PersonPhotoUrl ) )
                 {
-                    if ( !string.IsNullOrEmpty( slingshotPerson.PersonPhotoUrl ) )
+                    var personPhotoImport = new Rock.Slingshot.Model.PhotoImport { PhotoType = Rock.Slingshot.Model.PhotoImport.PhotoImportType.Person };
+                    personPhotoImport.ForeignId = slingshotPerson.Id;
+                    if ( SetPhotoData( personPhotoImport, slingshotPerson.PersonPhotoUrl ) )
                     {
-                        var personPhotoImport = new Rock.Slingshot.Model.PhotoImport { PhotoType = Rock.Slingshot.Model.PhotoImport.PhotoImportType.Person };
-                        personPhotoImport.ForeignId = slingshotPerson.Id;
-                        if ( SetPhotoData( personPhotoImport, slingshotPerson.PersonPhotoUrl ) )
+                        photoImportList.Add( personPhotoImport );
+                    }
+
+                    Interlocked.Increment( ref photoLoadProgress );
+                }
+
+                if ( !string.IsNullOrEmpty( slingshotPerson.FamilyImageUrl ) && slingshotPerson.FamilyId.HasValue )
+                {
+                    // make sure to only upload one photo per family
+                    if ( !importedFamilyPhotos.Contains( slingshotPerson.FamilyId.Value ) )
+                    {
+                        importedFamilyPhotos.Add( slingshotPerson.FamilyId.Value );
+                        var familyPhotoImport = new Rock.Slingshot.Model.PhotoImport { PhotoType = Rock.Slingshot.Model.PhotoImport.PhotoImportType.Family };
+                        familyPhotoImport.ForeignId = slingshotPerson.FamilyId.Value;
+                        if ( SetPhotoData( familyPhotoImport, slingshotPerson.FamilyImageUrl ) )
                         {
-                            photoImportList.Add( personPhotoImport );
+                            photoImportList.Add( familyPhotoImport );
                         }
 
                         Interlocked.Increment( ref photoLoadProgress );
                     }
-
-                    if ( !string.IsNullOrEmpty( slingshotPerson.FamilyImageUrl ) && slingshotPerson.FamilyId.HasValue )
-                    {
-                        // make sure to only upload one photo per family
-                        if ( !importedFamilyPhotos.Contains( slingshotPerson.FamilyId.Value ) )
-                        {
-                            importedFamilyPhotos.Add( slingshotPerson.FamilyId.Value );
-                            var familyPhotoImport = new Rock.Slingshot.Model.PhotoImport { PhotoType = Rock.Slingshot.Model.PhotoImport.PhotoImportType.Family };
-                            familyPhotoImport.ForeignId = slingshotPerson.FamilyId.Value;
-                            if ( SetPhotoData( familyPhotoImport, slingshotPerson.FamilyImageUrl ) )
-                            {
-                                photoImportList.Add( familyPhotoImport );
-                            }
-
-                            Interlocked.Increment( ref photoLoadProgress );
-                        }
-                    }
-
-                    this.Results[PREPARE_PHOTO_DATA] = $"{Interlocked.Read( ref photoLoadProgress )} of {totalCount}";
-                    this.Results[UPLOADING_PHOTO_DATA] = $"{Interlocked.Read( ref photoUploadProgress )} of {totalCount}";
-
-                    this.ReportProgress( 0, Results );
-                } );
-
-                photoDataTask.RunSynchronously();
+                }
 
                 totalPhotoDataBytes = photoImportList.Sum( a => a.PhotoData.Length );
+
+                this.Results[PREPARE_PHOTO_DATA] = $"{Interlocked.Read( ref photoLoadProgress )} of {totalCount}";
+                this.Results[IMPORTING_PHOTO_DATA] = $"{Interlocked.Read( ref photoImportProgress )} of {totalCount}";
+
+                this.ReportProgress( 0, Results );
 
                 if ( this.CancelPhotoImport )
                 {
                     return;
                 }
 
-                if ( totalPhotoDataBytes > maxUploadSize )
+                if ( totalPhotoDataBytes > maxPhotoBatchSize )
                 {
+                    this.ReportProgress( 0, "Importing Photos..." );
                     var uploadList = photoImportList.ToList();
                     photoImportList = new ConcurrentBag<Rock.Slingshot.Model.PhotoImport>();
-                    photoUploadProgress += uploadList.Count();
+                    photoImportProgress += uploadList.Count();
                     UploadPhotoImports( uploadList );
                     this.Results[PREPARE_PHOTO_DATA] = $"{Interlocked.Read( ref photoLoadProgress )} of {totalCount}";
-                    this.Results[UPLOADING_PHOTO_DATA] = $"{Interlocked.Read( ref photoUploadProgress )} of {totalCount}";
+                    this.Results[IMPORTING_PHOTO_DATA] = $"{Interlocked.Read( ref photoImportProgress )} of {totalCount}";
                     this.ReportProgress( 0, Results );
 
                     GC.Collect();
                 }
-
-                photoDataTasks.Add( photoDataTask );
             }
 
-            Task.WaitAll( photoDataTasks.ToArray() );
-
-            photoUploadProgress += photoImportList.Count();
+            photoImportProgress += photoImportList.Count();
 
             UploadPhotoImports( photoImportList.ToList() );
 
             this.Results[PREPARE_PHOTO_DATA] = $"{Interlocked.Read( ref photoLoadProgress )} of {totalCount}";
-            this.Results[UPLOADING_PHOTO_DATA] = $"{Interlocked.Read( ref photoUploadProgress )} of {totalCount}";
+            this.Results[IMPORTING_PHOTO_DATA] = $"{Interlocked.Read( ref photoImportProgress )} of {totalCount}";
 
             this.ReportProgress( 0, Results );
         }
@@ -484,6 +449,10 @@ namespace Rock.Slingshot
                     photoImport.PhotoData = Convert.ToBase64String( File.ReadAllBytes( photoFile.FullName ) );
                     photoImport.FileName = photoFile.Name;
                 }
+                else
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -522,7 +491,7 @@ namespace Rock.Slingshot
                 financialAccountImportList.Add( financialAccountImport );
             }
 
-            this.ReportProgress( 0, "Sending FinancialAccount Import to Rock..." );
+            this.ReportProgress( 0, "Bulk Importing FinancialAccounts..." );
             var result = BulkImportHelper.BulkFinancialAccountImport( financialAccountImportList );
             Results.Add( "FinancialAccount Import", result );
         }
@@ -572,7 +541,7 @@ namespace Rock.Slingshot
                 financialBatchImportList.Add( financialBatchImport );
             }
 
-            this.ReportProgress( 0, "Sending FinancialBatch Import to Rock..." );
+            this.ReportProgress( 0, "Bulk Importing FinancialBatches..." );
             var result = BulkImportHelper.BulkFinancialBatchImport( financialBatchImportList );
             Results.Add( "FinancialBatch Import", result );
         }
@@ -611,7 +580,7 @@ namespace Rock.Slingshot
                         financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid()].Id;
                         break;
                     case SlingshotCore.Model.CurrencyType.Unknown:
-                        // TODO financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid()].Id;
+                        financialTransactionImport.CurrencyTypeValueId = this.CurrencyTypeValues[Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid()].Id;
                         break;
                     case SlingshotCore.Model.CurrencyType.Other:
                         // TODO: Do we need to support this?
@@ -621,7 +590,7 @@ namespace Rock.Slingshot
                 switch ( slingshotFinancialTransaction.TransactionSource )
                 {
                     case SlingshotCore.Model.TransactionSource.BankChecks:
-                        // TODO financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_BANK_CHECK.AsGuid()].Id;
+                        financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_BANK_CHECK.AsGuid()].Id;
                         break;
                     case SlingshotCore.Model.TransactionSource.Kiosk:
                         financialTransactionImport.TransactionSourceValueId = this.TransactionSourceTypeValues[Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK.AsGuid()].Id;
@@ -678,8 +647,14 @@ namespace Rock.Slingshot
             while ( financialTransactionImportList.Any() )
             {
                 var postChunk = financialTransactionImportList.Take( postChunkSize ).ToList();
-                this.ReportProgress( 0, "Sending FinancialTransaction Import to Rock..." );
+                this.ReportProgress( 0, "Bulk Importing FinancialTransactions..." );
                 var result = BulkImportHelper.BulkFinancialTransactionImport( postChunk );
+
+                foreach ( var tran in postChunk.ToList() )
+                {
+                    financialTransactionImportList.Remove( tran );
+                }
+
                 if ( Results.ContainsKey( "FinancialTransaction Import" ) )
                 {
                     Results["FinancialTransaction Import"] += "\n" + result;
@@ -723,7 +698,7 @@ namespace Rock.Slingshot
                 attendanceImportList.Add( attendanceImport );
             }
 
-            this.ReportProgress( 0, "Sending Attendance Import to Rock..." );
+            this.ReportProgress( 0, "Bulk Importing Attendance..." );
             var result = BulkImportHelper.BulkAttendanceImport( attendanceImportList );
 
             Results.Add( "Attendance Import", result );
@@ -744,7 +719,7 @@ namespace Rock.Slingshot
                 scheduleImportList.Add( scheduleImport );
             }
 
-            this.ReportProgress( 0, "Sending Schedule Import to Rock..." );
+            this.ReportProgress( 0, "Bulk Importing Schedules..." );
             var result = BulkImportHelper.BulkScheduleImport( scheduleImportList );
             Results.Add( "Schedule Import", result );
         }
@@ -777,7 +752,7 @@ namespace Rock.Slingshot
                 locationImportList.Add( locationImport );
             }
 
-            this.ReportProgress( 0, "Sending Location Import to Rock..." );
+            this.ReportProgress( 0, "Bulk Importing Locations..." );
             var result = BulkImportHelper.BulkLocationImport( locationImportList );
             Results.Add( "Location Import", result );
         }
@@ -825,7 +800,7 @@ namespace Rock.Slingshot
                 groupImportList.Add( groupImport );
             }
 
-            this.ReportProgress( 0, "Sending Group Import to Rock..." );
+            this.ReportProgress( 0, "Bulk Importing Groups..." );
             var result = BulkImportHelper.BulkGroupImport( groupImportList );
 
             Results.Add( "Group Import", result );
@@ -844,7 +819,7 @@ namespace Rock.Slingshot
             this.ReportProgress( 0, "Preparing PersonImport..." );
             List<Rock.Slingshot.Model.PersonImport> personImportList = GetPersonImportList();
 
-            this.ReportProgress( 0, "Sending Person Import to Rock..." );
+            this.ReportProgress( 0, "Bulk Importing Person..." );
             var result = BulkImportHelper.BulkPersonImport( personImportList );
 
             Results.Add( "Person Import", result );
@@ -966,7 +941,7 @@ namespace Rock.Slingshot
                         personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE.AsGuid()].Id;
                         break;
                     case SlingshotCore.Model.MaritalStatus.Divorced:
-                        // TODO personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_DIVORCED.AsGuid()].Id;
+                        personImport.MaritalStatusValueId = this.PersonMaritalStatusValues[Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_DIVORCED.AsGuid()].Id;
                         break;
                     case SlingshotCore.Model.MaritalStatus.Unknown:
                         personImport.MaritalStatusValueId = null;
@@ -1096,10 +1071,10 @@ namespace Rock.Slingshot
             {
                 var campusToAdd = new Rock.Model.Campus { ForeignId = importCampus.CampusId, Name = importCampus.CampusName, Guid = Guid.NewGuid() };
                 campusService.Add( campusToAdd );
-                CampusCache.Read( campusToAdd );
-            }
+                rockContext.SaveChanges();
 
-            rockContext.SaveChanges();
+                Rock.Web.Cache.CampusCache.Flush( campusToAdd.Id );
+            }
         }
 
         /// <summary>
@@ -1170,7 +1145,7 @@ namespace Rock.Slingshot
 
             var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
 
-            var attributeCategoryList = new CategoryService(rockContext).Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
+            var attributeCategoryList = new CategoryService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
 
             // Add any Person Attributes to Rock that aren't in Rock yet
             // NOTE: For now, just match by Attribute.Key. Don't try to do a customizable match
@@ -1217,6 +1192,7 @@ namespace Rock.Slingshot
             var attributeService = new AttributeService( rockContext );
             var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
             var attributeCategoryList = new CategoryService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
 
             // Add any Family Attributes to Rock that aren't in Rock yet
             // NOTE: For now, just match by Attribute.Key. Don't try to do a customizable match
@@ -1232,7 +1208,7 @@ namespace Rock.Slingshot
                     rockFamilyAttribute.Guid = Guid.NewGuid();
                     rockFamilyAttribute.EntityTypeId = entityTypeIdGroup;
                     rockFamilyAttribute.EntityTypeQualifierColumn = "GroupTypeId";
-                    rockFamilyAttribute.EntityTypeQualifierValue = this.GroupTypeIdFamily.ToString();
+                    rockFamilyAttribute.EntityTypeQualifierValue = groupTypeIdFamily.ToString();
                     rockFamilyAttribute.FieldTypeId = this.FieldTypeLookup[slingshotFamilyAttribute.FieldType].Id;
 
                     if ( !string.IsNullOrWhiteSpace( slingshotFamilyAttribute.Category ) )
@@ -1304,6 +1280,8 @@ namespace Rock.Slingshot
             }
 
             rockContext.SaveChanges();
+
+            DefinedTypeCache.Flush( definedTypeId );
         }
 
         /// <summary>
@@ -1597,7 +1575,6 @@ namespace Rock.Slingshot
                 } );
             }
 
-            /* TODO
             if ( !this.CurrencyTypeValues.ContainsKey( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid() ) )
             {
                 definedValuesToAdd.Add( new Rock.Model.DefinedValue
@@ -1607,9 +1584,8 @@ namespace Rock.Slingshot
                     Value = "Unknown",
                     Description = "The currency type is unknown. For example, it might have been imported from a system that doesn't indicate currency type."
                 } );
-            }*/
+            }
 
-            /* TODO
             if ( !this.TransactionSourceTypeValues.ContainsKey( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_BANK_CHECK.AsGuid() ) )
             {
                 definedValuesToAdd.Add( new Rock.Model.DefinedValue
@@ -1620,7 +1596,6 @@ namespace Rock.Slingshot
                     Description = "Transactions that originated from a bank's bill pay system"
                 } );
             }
-            */
 
             if ( !this.TransactionSourceTypeValues.ContainsKey( Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_KIOSK.AsGuid() ) )
             {
@@ -1659,6 +1634,11 @@ namespace Rock.Slingshot
             var definedValueService = new DefinedValueService( rockContext );
             definedValueService.AddRange( definedValuesToAdd );
             rockContext.SaveChanges();
+
+            foreach ( var definedTypeId in definedValuesToAdd.Select( a => a.DefinedTypeId ).Distinct().ToList() )
+            {
+                DefinedTypeCache.Flush( definedTypeId );
+            }
         }
 
         /// <summary>
@@ -1693,13 +1673,11 @@ namespace Rock.Slingshot
             var familyAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Read( a ) ).ToList();
             this.FamilyAttributeKeyLookup = familyAttributes.ToDictionary( k => k.Key, v => v );
 
-            
-
             // FieldTypes
             this.FieldTypeLookup = new FieldTypeService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Class, v => v );
 
             // GroupTypes
-            this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where(a => a.ForeignId.HasValue).AsNoTracking().ToList().ToDictionary( k => k.ForeignId.Value, v => v );
+            this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue ).AsNoTracking().ToList().ToDictionary( k => k.ForeignId.Value, v => v );
         }
 
         /// <summary>
