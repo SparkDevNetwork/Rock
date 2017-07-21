@@ -1223,10 +1223,10 @@ namespace Rock.Web.UI
                         if ( canAdministratePage && currentUserIsImpersonated && impersonatedByUser != null)
                         {
                              HtmlGenericControl impersonatedByUserDiv = new HtmlGenericControl( "span" );
-                            impersonatedByUserDiv.AddCssClass( "admin-actions button-bar pull-left" );
+                            impersonatedByUserDiv.AddCssClass( "label label-default margin-l-md" );
                             _btnRestoreImpersonatedByUser = new LinkButton();
                             _btnRestoreImpersonatedByUser.ID = "_btnRestoreImpersonatedByUser";
-                            _btnRestoreImpersonatedByUser.CssClass = "btn";
+                            //_btnRestoreImpersonatedByUser.CssClass = "btn";
                             _btnRestoreImpersonatedByUser.Visible = impersonatedByUser != null;
                             _btnRestoreImpersonatedByUser.Click += _btnRestoreImpersonatedByUser_Click;
                             _btnRestoreImpersonatedByUser.Text = $"<i class='fa-fw fa fa-unlock'></i> "+ $"Restore { impersonatedByUser?.Person?.ToString()}";
@@ -1613,7 +1613,7 @@ namespace Rock.Web.UI
                 }
 
                 phLoadStats.Controls.Add( new LiteralControl( string.Format(
-                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-lg js-view-state-stats'></span> <span class='margin-l-lg js-html-size-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
+                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-md'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-md js-view-state-stats'></span> <span class='margin-l-md js-html-size-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
 
                 if ( !ClientScript.IsStartupScriptRegistered( "rock-js-view-state-size" ) )
                 {
