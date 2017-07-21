@@ -19,15 +19,16 @@
 
 .modal-content.rock-modal,
 .rock-modal .modal-content {
-  border: 0;
-  background-color: @modal-body-bg;
   color: @modal-body-text-color;
+  background-color: @modal-body-bg;
+  border: 0;
 
   .modal-header {
-    background-color: @modal-header-bg;
-    color: @modal-header-text-color;
-    padding: 5px 15px;
     min-height: 34px;
+    padding: 5px 15px;
+    color: @modal-header-text-color;
+    background-color: @modal-header-bg;
+
     .clearfix();
 
     h3 {
@@ -36,8 +37,8 @@
     }
 
     .close {
-      margin: 0;
       padding: 6px;
+      margin: 0;
       color: @modal-header-text-color;
       text-shadow: none;
     }
@@ -47,8 +48,8 @@
     }
 
     small {
-      margin-top: 12px;
       display: block;
+      margin-top: 12px;
       color: darken(@modal-header-text-color, 10%);
     }
   }
@@ -73,8 +74,8 @@
   .modal-footer {
     padding: 8px;
     margin-top: 10px;
-    background-color: @modal-footer-bg;
     color: @modal-footer-text-color;
+    background-color: @modal-footer-bg;
     border-radius: 0 0 @border-radius-base @border-radius-base;
   }
 }
@@ -97,10 +98,10 @@
 }
 
 #modal-popup_iframe {
-  height: 100%;
-  width: 100%;
-  border: 0;
   display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 
@@ -111,17 +112,17 @@
 // hard code the opacity in their CSS we override it here.
 .modal-backdrop,
 .modal-backdrop.fade.in {
-  opacity: @modal-backdrop-opacity;
-  filter: alpha(opacity=70);
   background: @modal-backdrop-bg;
+  filter: alpha(opacity=70);
+  opacity: @modal-backdrop-opacity;
 }
 
 // Fixes some appearance issues from switching standard BS modal to
 // responsive bootstrap-modal.
 
 .modal-dialog {
-  margin: 0;
   width: auto;
+  margin: 0;
 }
 
 .modal-content {

@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Cms
                 rootPagesQry = rootPagesQry.Where( a => a.ParentPageId == null );
             }
 
-            var rootPageList = rootPagesQry.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).Select( a => a.Id ).ToList();
+            var rootPageList = rootPagesQry.OrderBy( a => a.Order ).Select( a => a.Id ).ToList();
 
             foreach ( var pageId in rootPageList )
             {
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Cms
             {
                 sb.AppendLine( "<ul>" );
 
-                foreach ( var childPage in childPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
+                foreach ( var childPage in childPages.OrderBy( a => a.Order ) )
                 {
                     sb.Append( PageNode( childPage, expandedPageIdList, rockContext ) );
                 }

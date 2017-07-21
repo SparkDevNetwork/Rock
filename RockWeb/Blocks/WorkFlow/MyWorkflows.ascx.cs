@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.WorkFlow
     [DisplayName( "My Workflows" )]
     [Category( "WorkFlow" )]
     [Description( "Block to display the workflow types that user is authorized to view, and the activities that are currently assigned to the user." )]
+    [CategoryField( "Categories", "Optional Categories to limit display to.", true, "Rock.Model.WorkflowType", "", "", false, "", "" )]
     [LinkedPage( "Entry Page", "Page used to enter form information for a workflow." )]
     [LinkedPage( "Detail Page", "Page used to view status of a workflow." )]
     public partial class MyWorkflows : Rock.Web.UI.RockBlock
@@ -90,6 +91,9 @@ namespace RockWeb.Blocks.WorkFlow
                 WorkflowType workflowType = new WorkflowTypeService( new RockContext() ).Get( SelectedWorkflowTypeId.Value );
                 AddAttributeColumns( workflowType );
             }
+
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -266,11 +270,18 @@ namespace RockWeb.Blocks.WorkFlow
 
             int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
 
-            // Get all of the workflow types
-            var allWorkflowTypes = new WorkflowTypeService( rockContext ).Queryable( "ActivityTypes" )
-                .OrderBy( w => w.Name )
-                .ToList();
+            var selectedCategories = new List<Guid>();
+            GetAttributeValue( "Categories" ).SplitDelimitedValues().ToList().ForEach( c => selectedCategories.Add( c.AsGuid() ) );
 
+            // Get all of the workflow types
+            var workTypesQry = new WorkflowTypeService( rockContext ).Queryable( "ActivityTypes" );
+
+            if ( selectedCategories.Count > 0 )
+            {
+                workTypesQry = workTypesQry.Where( a => a.CategoryId.HasValue && selectedCategories.Contains( a.Category.Guid ) );
+            }
+
+            var allWorkflowTypes = workTypesQry.OrderBy( w => w.Name ).ToList();
             // Get the authorized activities in all workflow types
             var authorizedActivityTypes = AuthorizedActivityTypes( allWorkflowTypes );
 

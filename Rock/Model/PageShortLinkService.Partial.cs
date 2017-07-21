@@ -25,9 +25,9 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// SiteUrlMap data access/service class. 
+    /// PageShortLink data access/service class. 
     /// </summary>
-    public partial class SiteUrlMapService
+    public partial class PageShortLinkService
     {
         /// <summary>
         /// Gets a url by token. If more than one url exists for token (multiple sites)
@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <param name="token">The token.</param>
         /// <param name="siteId">The site identifier.</param>
         /// <returns></returns>
-        public SiteUrlMap GetByToken( string token, int siteId )
+        public PageShortLink GetByToken( string token, int siteId )
         {
             var items = this.Queryable().Where( s => s.Token == token ).ToList();
             if ( items.Any() )
@@ -55,14 +55,14 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetUniqueToken( int siteId, int length )
         {
-            string token = SiteUrlMap.GetRandomToken( length );
+            string token = PageShortLink.GetRandomToken( length );
 
             while ( this.Queryable().AsNoTracking()
                 .Any( t => 
                     t.SiteId == siteId &&
                     t.Token == token ) )
             {
-                token = SiteUrlMap.GetRandomToken( length );
+                token = PageShortLink.GetRandomToken( length );
             }
 
             return token;

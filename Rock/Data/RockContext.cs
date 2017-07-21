@@ -1336,7 +1336,7 @@ namespace Rock.Data
         /// <value>
         /// The site URL maps.
         /// </value>
-        public DbSet<SiteUrlMap> SiteUrlMaps { get; set; }
+        public DbSet<PageShortLink> PageShortLinks { get; set; }
 
         /// <summary>
         /// Gets or sets the system emails.
