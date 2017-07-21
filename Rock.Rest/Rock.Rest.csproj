@@ -111,6 +111,7 @@
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
     <Compile Include="Swagger\RockSwaggerHelper.cs" />
     <Compile Include="Swagger\RockDocumentFilter.cs" />
     <Compile Include="Swagger\RockOperationFilter.cs" />

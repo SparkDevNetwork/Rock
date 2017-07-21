@@ -9,6 +9,7 @@
         <asp:HiddenField ID="hfTransactionGuid" runat="server" Value="" />
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
+        <Rock:NotificationBox ID="nbInvalidPersonWarning" runat="server" Visible="false"></Rock:NotificationBox>
 
         <asp:Panel ID="pnlSelection" CssClass="panel panel-block" runat="server">
 

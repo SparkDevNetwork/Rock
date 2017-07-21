@@ -82,7 +82,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the PersonAlias the by alias identifier.
+        /// Gets the PersonAlias the by AliasPersonId
         /// </summary>
         /// <param name="aliasPersonId">The alias person identifier.</param>
         /// <returns></returns>
