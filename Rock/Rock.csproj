@@ -744,6 +744,11 @@
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
     <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
     <Compile Include="Model\CodeGenerated\LavaShortcodeService.cs" />
+    <Compile Include="Model\CodeGenerated\MetaFirstNameGenderLookupService.cs" />
+    <Compile Include="Model\CodeGenerated\MetaLastNameLookupService.cs" />
+    <Compile Include="Model\CodeGenerated\MetaNickNameLookupService.cs" />
+    <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageClusterService.cs" />
+    <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageGroupService.cs" />
     <Compile Include="Model\CodeGenerated\PersonalDeviceService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
