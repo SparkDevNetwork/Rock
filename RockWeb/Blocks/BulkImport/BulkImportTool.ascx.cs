@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.BulkImport
         /// <summary>
         /// The importer
         /// </summary>
-        private Rock.Slingshot.Importer _importer;
+        private Rock.Slingshot.SlingshotImporter _importer;
 
         /// <summary>
         /// 
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.BulkImport
         private void StartImport( ImportType importType )
         {
             var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
-            double totalMilliseconds = 0;
+            long totalMilliseconds = 0;
 
             var importTask = new Task( () =>
             {
@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.BulkImport
                 _hubContext.Clients.All.showLog();
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 
-                _importer = new Rock.Slingshot.Importer( physicalSlingshotFile );
+                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile );
                 _importer.OnProgress += _importer_OnProgress;
 
                 if ( importType == ImportType.ImportPhotos )
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.BulkImport
                     _importer.Results.Add( "ERRORS", string.Join( Environment.NewLine, _importer.Exceptions.Select( a => a.Message ).ToArray() ) );
                 }
 
-                totalMilliseconds = stopwatch.Elapsed.TotalMilliseconds;
+                totalMilliseconds = stopwatch.ElapsedMilliseconds;
 
                 _hubContext.Clients.All.showButtons( this.SignalRNotificationKey, true );
             } );
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.BulkImport
                 }
                 else
                 {
-                    _importer_OnProgress( null, string.Format( "{0} Complete: [{1}]ms", importType.ConvertToString(), totalMilliseconds ) );
+                    _importer_OnProgress( null, string.Format( "{0} Complete: [{1}ms]", importType.ConvertToString(), totalMilliseconds ) );
                 }
             } );
 

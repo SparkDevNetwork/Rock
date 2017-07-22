@@ -55,10 +55,14 @@
                 <asp:Literal ID="lSlingshotFileInfo" runat="server" Text="" />
 
 
-                <asp:Panel ID="pnlProgress" runat="server" CssClass="alert alert-info js-messageContainer" Style="display:none">
+                <asp:Panel ID="pnlProgress" runat="server" CssClass="js-messageContainer" Style="display:none">
                     <strong>Progress</strong><br />
-                    <code><asp:Label ID="lProgressMessage" CssClass="js-progressMessage" runat="server" /></code>
-                    <pre><asp:Label ID="lProgressResults" CssClass="js-progressResults" runat="server" /></pre>
+                    <div class="alert alert-info"><asp:Label ID="lProgressMessage" CssClass="js-progressMessage" runat="server" /></div>
+
+                    <strong>Details</strong><br />
+                    <div class="alert alert-info">
+                        <pre><asp:Label ID="lProgressResults" CssClass="js-progressResults" runat="server" /></pre>
+                    </div>
                 </asp:Panel>
 
 
