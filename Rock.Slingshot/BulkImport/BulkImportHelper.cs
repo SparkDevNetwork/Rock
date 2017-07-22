@@ -4,14 +4,14 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Web;
 
-using Rock.Slingshot.Model;
 using Rock.Data;
 using Rock.Model;
+using Rock.Slingshot.Model;
 using Rock.Web.Cache;
-using System.Web;
-using System.Reflection;
 
 namespace Rock.Slingshot
 {
@@ -20,6 +20,34 @@ namespace Rock.Slingshot
     /// </summary>
     public static class BulkImportHelper
     {
+        #region util
+
+        /// <summary>
+        /// Gets the response message.
+        /// </summary>
+        /// <param name="recordsInserted">The records inserted.</param>
+        /// <param name="tableName">Name of the table.</param>
+        /// <param name="milliseconds">The milliseconds.</param>
+        /// <returns></returns>
+        private static string GetResponseMessage(int recordsInserted, string tableName, long milliseconds)
+        {
+            if ( recordsInserted == 0)
+            {
+                return $"No {tableName} records were imported [{milliseconds}ms]";
+            }
+            else
+            {
+                return $"Imported {recordsInserted} {tableName} records [{milliseconds}ms]";
+            }
+        }
+
+        /// <summary>
+        /// Occurs when [on progress].
+        /// </summary>
+        public static event EventHandler<string> OnProgress;
+
+        #endregion util
+
         #region AttendanceImport
 
         /// <summary>
@@ -49,10 +77,6 @@ namespace Rock.Slingshot
             // Get the primary alias id lookup for each person foreign id
             var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.PersonId == a.AliasPersonId )
                 .Select( a => new { PersonAliasId = a.Id, PersonForeignId = a.Person.ForeignId } ).ToDictionary( k => k.PersonForeignId.Value, v => v.PersonAliasId );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare Lookups for Attendance Insert" );
-            stopwatch.Restart();
 
             var attendancesToInsert = new List<Attendance>( attendanceImports.Count );
             foreach ( var attendanceImport in attendanceImports )
@@ -91,17 +115,13 @@ namespace Rock.Slingshot
                 attendancesToInsert.Add( attendance );
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare Attendance Insert List" );
-            stopwatch.Restart();
-
             var groupIds = attendancesToInsert.Select( a => a.GroupId ).Distinct().ToList();
             var allGroupIds = new GroupService( rockContext ).Queryable().Select( a => a.Id ).ToList();
             var missing = groupIds.Where( a => !a.HasValue || !allGroupIds.Contains( a.Value ) );
 
             rockContext.BulkInsert( attendancesToInsert );
 
-            sbStats.AppendLine( $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {attendanceImports.Count} Attendance records" );
+            sbStats.AppendLine( GetResponseMessage( attendanceImports.Count, "Attendance", stopwatchTotal.ElapsedMilliseconds ) ); 
             var responseText = sbStats.ToString();
 
             return responseText;
@@ -182,9 +202,8 @@ namespace Rock.Slingshot
             }
 
             stopwatchTotal.Stop();
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {financialAccountsToInsert.Count} Financial Accounts";
 
-            return responseText;
+            return GetResponseMessage( financialAccountsToInsert.Count, "Financial Accounts", stopwatchTotal.ElapsedMilliseconds );
         }
 
         #endregion FinancialAccountImport
@@ -264,9 +283,7 @@ namespace Rock.Slingshot
             rockContext.BulkInsert( financialBatchsToInsert );
 
             stopwatchTotal.Stop();
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {financialBatchsToInsert.Count} Financial Batches";
-
-            return responseText;
+            return GetResponseMessage( financialBatchsToInsert.Count, "Financial Batches", stopwatchTotal.ElapsedMilliseconds );
         }
 
         #endregion FinancialBatchImport
@@ -393,9 +410,7 @@ namespace Rock.Slingshot
             rockContext.BulkInsert( financialTransactionDetailsToInsert );
 
             stopwatchTotal.Stop();
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {financialTransactionsToInsert.Count} Financial Transactions";
-
-            return responseText;
+            return GetResponseMessage( financialTransactionsToInsert.Count, "Financial Transactions", stopwatchTotal.ElapsedMilliseconds );
         }
 
         #endregion FinancialTransactionImport
@@ -450,10 +465,6 @@ namespace Rock.Slingshot
             var updatedGroupTypes = groupTypeRolesToInsert.Select( a => a.GroupTypeId.Value ).Distinct().ToList();
             updatedGroupTypes.ForEach( id => GroupTypeCache.Flush( id ) );
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Updated {groupTypeRolesToInsert.Count} GroupType Roles" );
-            stopwatch.Restart();
-
             if ( groupTypeRolesToInsert.Any() )
             {
                 rockContext.BulkInsert( groupTypeRolesToInsert );
@@ -482,15 +493,7 @@ namespace Rock.Slingshot
                 groupsToInsert.Add( group );
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare {groupsToInsert.Count} Groups" );
-            stopwatch.Restart();
-
             rockContext.BulkInsert( groupsToInsert );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {groupsToInsert.Count} Groups" );
-            stopwatch.Restart();
 
             // Get lookups for Group and Person so that we can populate the ParentGroups and GroupMembers
             var qryGroupTypeGroupLookup = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue ).Select( a => new
@@ -504,10 +507,6 @@ namespace Rock.Slingshot
 
             var personIdLookup = new PersonService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue )
                 .Select( a => new { a.Id, ForeignId = a.ForeignId.Value } ).ToDictionary( k => k.ForeignId, v => v.Id );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare Lookups for Group Members " );
-            stopwatch.Restart();
 
             // populate GroupMembers from the new groups that we added
             List<GroupMember> groupMembersToInsert = new List<GroupMember>();
@@ -526,10 +525,6 @@ namespace Rock.Slingshot
             }
 
             rockContext.BulkInsert( groupMembersToInsert );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {groupMembersToInsert.Count} Group Members " );
-            stopwatch.Restart();
 
             var groupsUpdated = false;
             var groupImportsWithParentGroup = newGroupImports.Where( a => a.ParentGroupForeignId.HasValue ).ToList();
@@ -577,10 +572,6 @@ namespace Rock.Slingshot
                 rockContext.SaveChanges( true );
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Update {groupImportsWithParentGroup.Count} Group's Parent Group " );
-            stopwatch.Restart();
-
             // Update GroupTypes' Allowed Child GroupTypes based on groups that became child groups
             rockContext.Database.ExecuteSqlCommand( @"
 INSERT INTO GroupTypeAssociation (
@@ -609,7 +600,15 @@ WHERE gta.GroupTypeId IS NULL" );
 
             stopwatchTotal.Stop();
 
-            sbStats.AppendLine( $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {newGroupImports.Count} Groups and {groupMembersToInsert.Count} Group Members" );
+            if ( newGroupImports.Any() || groupMembersToInsert.Any() )
+            {
+                sbStats.AppendLine( $"Imported {newGroupImports.Count} Groups and {groupMembersToInsert.Count} Group Members [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+            }
+            else
+            {
+                sbStats.AppendLine( $"No People were imported [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+            }
+
             var responseText = sbStats.ToString();
 
             return responseText;
@@ -681,9 +680,7 @@ WHERE gta.GroupTypeId IS NULL" );
             }
 
             stopwatchTotal.Stop();
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {newLocationImports.Count} Locations";
-
-            return responseText;
+            return GetResponseMessage( newLocationImports.Count, "Locations", stopwatchTotal.ElapsedMilliseconds );
         }
 
         #endregion LocationImport
@@ -722,9 +719,6 @@ WHERE gta.GroupTypeId IS NULL" );
             Dictionary<int, Person> personLookup = qryAllPersons.Include( a => a.PhoneNumbers ).AsNoTracking().Where( a => a.ForeignId.HasValue )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v );
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Get {familiesLookup.Count} family and {personLookup.Count} person lookups" );
-            stopwatch.Restart();
             _defaultPhoneCountryCode = PhoneNumber.DefaultCountryCode();
 
             int nextNewFamilyForeignId = familiesLookup.Any() ? familiesLookup.Max( a => a.Key ) : 0;
@@ -750,7 +744,7 @@ WHERE gta.GroupTypeId IS NULL" );
                     v => v.Select( x => new AttributeValueCache { AttributeId = x.AttributeId, Value = x.Value } ).ToList() );
 
             int personUpdatesCount = 0;
-            double personUpdatesMS = 0.0;
+            long personUpdatesMS = 0;
             int progress = 0;
             int total = personImports.Count();
 
@@ -765,7 +759,7 @@ WHERE gta.GroupTypeId IS NULL" );
                         return "Client Disconnected";
                     }
 
-                    Debug.WriteLine( $"Progress {progress} of {total}. personUpdatesCount: {personUpdatesCount}, personUpdatesMS/progress={ personUpdatesMS / progress }" );
+                    OnProgress?.Invoke( null, $"Bulk Importing Person {progress} of {total}..." );
                 }
 
                 Group family = null;
@@ -815,7 +809,7 @@ WHERE gta.GroupTypeId IS NULL" );
                     Stopwatch stopwatchPersonUpdates = Stopwatch.StartNew();
                     bool wasChanged = UpdatePersonFromPersonImport( person, personImport, attributeValuesLookup, familiesLookup );
                     stopwatchPersonUpdates.Stop();
-                    personUpdatesMS += stopwatchPersonUpdates.Elapsed.TotalMilliseconds;
+                    personUpdatesMS += stopwatchPersonUpdates.ElapsedMilliseconds;
                     if ( wasChanged )
                     {
                         personUpdatesCount++;
@@ -826,18 +820,19 @@ WHERE gta.GroupTypeId IS NULL" );
             if ( personUpdatesMS > 0 || personUpdatesCount > 0 )
             {
                 stopwatch.Stop();
-                sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds - personUpdatesMS}ms] Build Import Lists" );
-                sbStats.AppendLine( $"[{personUpdatesMS}ms] Updated {personUpdatesCount} Person records" );
-                stopwatch.Restart();
-            }
-            else
-            {
-                stopwatch.Stop();
-                sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Build Import Lists" );
+                sbStats.AppendLine( $"Check for Person Updates [{stopwatch.ElapsedMilliseconds - personUpdatesMS}ms]" );
+                if ( personUpdatesCount > 0 )
+                {
+                    sbStats.AppendLine( $"Updated {personUpdatesCount} Person records [{personUpdatesMS}ms]" );
+                }
+                else
+                {
+                    sbStats.AppendLine( $"No Person records need to be updated [{personUpdatesMS}ms]" );
+                }
                 stopwatch.Restart();
             }
 
-            double buildImportListsMS = stopwatch.Elapsed.TotalMilliseconds;
+            double buildImportListsMS = stopwatch.ElapsedMilliseconds;
             stopwatch.Restart();
             bool useSqlBulkCopy = true;
             List<int> insertedPersonForeignIds = new List<int>();
@@ -850,10 +845,6 @@ WHERE gta.GroupTypeId IS NULL" );
             var personsToInsert = personLookup.Where( a => a.Value.Id == 0 ).Select( a => a.Value ).ToList();
 
             rockContext.BulkInsert( familiesToInsert, useSqlBulkCopy );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {familiesToInsert.Count} Families" );
-            stopwatch.Restart();
 
             // lookup GroupId from Group.ForeignId
             var familyIdLookup = groupService.Queryable().AsNoTracking().Where( a => a.GroupTypeId == familyGroupTypeId && a.ForeignId.HasValue )
@@ -905,10 +896,6 @@ WHERE gta.GroupTypeId IS NULL" );
 
             insertedPersonForeignIds = personsToInsert.Select( a => a.ForeignId.Value ).ToList();
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {personsToInsert.Count} Person records" );
-            stopwatch.Restart();
-
             // Make sure everybody has a PersonAlias
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
             var personAliasServiceQry = personAliasService.Queryable();
@@ -918,9 +905,6 @@ WHERE gta.GroupTypeId IS NULL" );
                 .Select( person => new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid, PersonId = person.Id } ).ToList();
 
             rockContext.BulkInsert( personAliasesToInsert, useSqlBulkCopy );
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {personAliasesToInsert.Count} Person Aliases" );
-            stopwatch.Restart();
 
             // get the person Ids along with the PersonImport and GroupMember record
             var personsIdsForPersonImport = from p in qryAllPersons.AsNoTracking().Where( a => a.ForeignId.HasValue ).Select( a => new { a.Id, a.ForeignId } ).ToList()
@@ -951,21 +935,14 @@ WHERE gta.GroupTypeId IS NULL" );
                                                 };
 
             var groupMemberRecordsToInsertList = groupMemberRecordsToInsertQry.ToList();
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare {groupMemberRecordsToInsertList.Count()} Family Members for insert" );
-            stopwatch.Restart();
 
             rockContext.BulkInsert( groupMemberRecordsToInsertList, useSqlBulkCopy );
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {groupMemberRecordsToInsertList.Count()} Family Members" );
-            stopwatch.Restart();
 
             List<Location> locationsToInsert = new List<Location>();
             List<GroupLocation> groupLocationsToInsert = new List<GroupLocation>();
 
             var locationCreatedDateTimeStart = RockDateTime.Now;
 
-            // NOTE: TODO To test the "Foriegn Key Issue" , don't narrow it down to just person records that we inserted
             foreach ( var familyRecord in personsIdsForPersonImport.GroupBy( a => a.FamilyId ) )
             {
                 // get the distinct addresses for each family in our import
@@ -1003,14 +980,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 }
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare {locationsToInsert.Count} Location and Group Location records" );
-            stopwatch.Restart();
             rockContext.BulkInsert( locationsToInsert );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {locationsToInsert.Count} Location records" );
-            stopwatch.Restart();
 
             var locationIdLookup = locationService.Queryable().Select( a => new { a.Id, a.Guid } ).ToList().ToDictionary( k => k.Guid, v => v.Id );
             foreach ( var groupLocation in groupLocationsToInsert )
@@ -1019,10 +989,6 @@ WHERE gta.GroupTypeId IS NULL" );
             }
 
             rockContext.BulkInsert( groupLocationsToInsert );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {groupLocationsToInsert.Count} Group Location records" );
-            stopwatch.Restart();
 
             // PhoneNumbers
             List<PhoneNumber> phoneNumbersToInsert = new List<PhoneNumber>();
@@ -1039,15 +1005,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 }
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare {phoneNumbersToInsert.Count} Phone records" );
-            stopwatch.Restart();
-
             rockContext.BulkInsert( phoneNumbersToInsert );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {phoneNumbersToInsert.Count} Phone records" );
-            stopwatch.Restart();
 
             // Attribute Values
             var attributeValuesToInsert = new List<AttributeValue>();
@@ -1065,20 +1023,18 @@ WHERE gta.GroupTypeId IS NULL" );
                 }
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare {attributeValuesToInsert.Count} Attribute Values" );
-            stopwatch.Restart();
-
             rockContext.BulkInsert( attributeValuesToInsert );
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {attributeValuesToInsert.Count} Attribute Values" );
-            stopwatch.Restart();
-
             stopwatchTotal.Stop();
-            sbStats.AppendLine( $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Total Person" );
+            if ( personsToInsert.Count > 0 )
+            {
+                sbStats.AppendLine( $"Imported {personsToInsert.Count} People and {familiesToInsert.Count} Families [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+            }
+            else
+            {
+                sbStats.AppendLine( $"No People were imported [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+            }
 
-            // TODO: Rebuild all indexes on the effected tables to fix bogus "Foreign Key violation" issue
             var responseText = sbStats.ToString();
 
             return responseText;
@@ -1439,11 +1395,8 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
             }
 
             stopwatchTotal.Stop();
-            string importType = useBulkInsertForPhotos ? "Bulk" : string.Empty;
 
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] {importType} Insert {binaryFilesToInsert.Count} Binary File records";
-
-            return responseText;
+            return GetResponseMessage( binaryFilesToInsert.Count, "Photo", stopwatchTotal.ElapsedMilliseconds );
         }
 
         #endregion PhotoImport
@@ -1505,9 +1458,7 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
             rockContext.BulkInsert( schedulesToInsert );
 
             stopwatchTotal.Stop();
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Bulk Insert {schedulesToInsert.Count} Schedules";
-
-            return responseText;
+            return GetResponseMessage( schedulesToInsert.Count, "Schedules", stopwatchTotal.ElapsedMilliseconds );
         }
 
         #endregion ScheduleImport
@@ -1572,9 +1523,8 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
             rockContext.BulkInsert( financialPledgesToInsert );
 
             stopwatchTotal.Stop();
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Bulk Insert {financialPledgesToInsert.Count} Financial Pledges";
 
-            return responseText;
+            return GetResponseMessage( financialPledgesToInsert.Count, "Financial Pledges", stopwatchTotal.ElapsedMilliseconds );
         }
 
         #endregion FinancialPledgeImport
@@ -1647,12 +1597,12 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
 
             stopwatchTotal.Stop();
             string responseText = string.Empty;
-            if (noteImportErrors > 0 )
+            if ( noteImportErrors > 0 )
             {
                 responseText += $"WARNING: Unable to import {noteImportErrors} notes due to invalid NoteType or NoteType EntityType mismatch.\n";
             }
 
-            responseText += $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Bulk Insert {notesToInsert.Count} {entityTypeCache.FriendlyName} notes.";
+            responseText += GetResponseMessage( notesToInsert.Count, $"{entityTypeCache.FriendlyName} Notes", stopwatchTotal.ElapsedMilliseconds );
 
             return responseText;
         }
