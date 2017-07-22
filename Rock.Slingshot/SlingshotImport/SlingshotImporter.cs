@@ -20,15 +20,15 @@ using SlingshotCore = global::Slingshot.Core;
 namespace Rock.Slingshot
 {
     /// <summary>
-    /// 
+    /// Prepares slingshot files for import into Rock's BulkImport system
     /// </summary>
-    public class Importer
+    public class SlingshotImporter
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Importer"/> class.
         /// </summary>
         /// <param name="slingshotFileName">Name of the slingshot file.</param>
-        public Importer( string slingshotFileName )
+        public SlingshotImporter( string slingshotFileName )
         {
             SlingshotFileName = slingshotFileName;
             SlingshotDirectoryName = Path.Combine( Path.GetDirectoryName( this.SlingshotFileName ), "slingshots", Path.GetFileNameWithoutExtension( this.SlingshotFileName ) );
@@ -142,10 +142,10 @@ namespace Rock.Slingshot
         private List<SlingshotCore.Model.Person> SlingshotPersonList { get; set; }
 
         /* Core  */
-        private Dictionary<string, Rock.Model.FieldType> FieldTypeLookup { get; set; }
+        private Dictionary<string, FieldTypeCache> FieldTypeLookup { get; set; }
 
         // GroupType Lookup by ForeignId
-        private Dictionary<int, Rock.Model.GroupType> GroupTypeLookupByForeignId { get; set; }
+        private Dictionary<int, GroupTypeCache> GroupTypeLookupByForeignId { get; set; }
 
         /* Attendance */
         private List<SlingshotCore.Model.Attendance> SlingshotAttendanceList { get; set; }
@@ -170,6 +170,14 @@ namespace Rock.Slingshot
         private Dictionary<Guid, DefinedValueCache> TransactionTypeValues { get; set; }
 
         private Dictionary<Guid, DefinedValueCache> CurrencyTypeValues { get; set; }
+
+        /* Financial Pledges */
+        public List<SlingshotCore.Model.FinancialPledge> SlingshotFinancialPledgeList { get; private set; }
+
+        /* Notes */
+        public List<SlingshotCore.Model.FamilyNote> SlingshotFamilyNoteList { get; private set; }
+
+        public List<SlingshotCore.Model.PersonNote> SlingshotPersonNoteList { get; private set; }
 
         /* */
         private string SlingshotFileName { get; set; }
@@ -261,11 +269,20 @@ namespace Rock.Slingshot
             SubmitFinancialAccountImport();
             SubmitFinancialBatchImport();
             SubmitFinancialTransactionImport();
+
+            // Financial Pledges
+            SubmitFinancialPledgeImport();
+
+            // Person Notes
+            SubmitEntityNotesImport<Rock.Model.Person>( this.SlingshotPersonNoteList );
+
+            // Family Notes
+            SubmitEntityNotesImport<Rock.Model.Group>( this.SlingshotFamilyNoteList, "Family" );
         }
 
         private const string PREPARE_PHOTO_DATA = "Prepare Photo Data:";
         private const string IMPORTING_PHOTO_DATA = "Importing Photo Data:";
-        private const string UPLOAD_PHOTO_STATS = "Stats:";
+        private const string UPLOAD_PHOTO_STATS = "Log:";
 
         /// <summary>
         /// Does the import photos.
@@ -322,7 +339,7 @@ namespace Rock.Slingshot
             int totalPhotoDataBytes = 0;
             if ( !this.PhotoBatchSizeMB.HasValue || this.PhotoBatchSizeMB.Value < 1 )
             {
-                this.PhotoBatchSizeMB = 250;
+                this.PhotoBatchSizeMB = 100;
             }
 
             int maxPhotoBatchSize = this.PhotoBatchSizeMB.Value * 1024 * 1024;
@@ -408,7 +425,7 @@ namespace Rock.Slingshot
         private void UploadPhotoImports( List<Rock.Slingshot.Model.PhotoImport> photoImportList )
         {
             var result = BulkImportHelper.BulkPhotoImport( photoImportList );
-            this.Results[UPLOAD_PHOTO_STATS] = result;
+            this.Results[UPLOAD_PHOTO_STATS] = result + "<br />";
         }
 
         /// <summary>
@@ -457,6 +474,142 @@ namespace Rock.Slingshot
 
             return true;
         }
+
+
+        #region Person and Family Notes
+
+        /// <summary>
+        /// Submits the entity notes import.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="slingshotEntityNoteList">The slingshot entity note list.</param>
+        /// <param name="entityFriendlyName">Name of the entity friendly.</param>
+        /// <exception cref="System.Exception">Unexpected Note EntityType</exception>
+        private void SubmitEntityNotesImport<T>( IEnumerable<SlingshotCore.Data.EntityNote> slingshotEntityNoteList, string entityFriendlyName = null ) where T : Rock.Data.IEntity
+        {
+            var entityType = EntityTypeCache.Read<T>();
+                
+            this.ReportProgress( 0, $"Preparing {entityFriendlyName ?? entityType.FriendlyName} Notes Import..." );
+
+            var noteImportList = new List<Rock.Slingshot.Model.NoteImport>();
+            var rockContext = new RockContext();
+            var noteTypeService = new Rock.Model.NoteTypeService( rockContext );
+
+            var noteTypeLookup = noteTypeService.Queryable().Where( a => a.EntityTypeId == entityType.Id ).Select( a => new
+            {
+                a.Id,
+                a.Name
+            } ).ToList().DistinctBy( a => a.Name ).ToDictionary( k => k.Name, v => v.Id );
+
+            var slingshotNoteTypeNames = slingshotEntityNoteList.Select( a => a.NoteType ).Distinct().ToList();
+            foreach ( var noteTypeName in slingshotNoteTypeNames )
+            {
+                if ( !noteTypeLookup.ContainsKey( noteTypeName ) )
+                {
+                    var noteType = new NoteType();
+                    noteType.IsSystem = false;
+                    noteType.EntityTypeId = entityType.Id;
+                    noteType.EntityTypeQualifierColumn = string.Empty;
+                    noteType.EntityTypeQualifierValue = string.Empty;
+                    noteType.Name = noteTypeName;
+                    noteType.UserSelectable = true;
+                    noteType.IconCssClass = string.Empty;
+                    noteType.CssClass = string.Empty;
+                    noteTypeService.Add( noteType );
+                    rockContext.SaveChanges();
+
+                    noteTypeLookup.Add( noteType.Name, noteType.Id );
+                }
+            }
+
+            foreach ( var slingshotEntityNote in slingshotEntityNoteList )
+            {
+                var noteImport = new Rock.Slingshot.Model.NoteImport();
+                noteImport.NoteForeignId = slingshotEntityNote.Id;
+                noteImport.NoteTypeId = noteTypeLookup[slingshotEntityNote.NoteType];
+                if ( slingshotEntityNote is SlingshotCore.Model.PersonNote )
+                {
+                    noteImport.EntityForeignId = ( slingshotEntityNote as SlingshotCore.Model.PersonNote ).PersonId;
+                }
+                else if ( slingshotEntityNote is SlingshotCore.Model.FamilyNote )
+                {
+                    noteImport.EntityForeignId = ( slingshotEntityNote as SlingshotCore.Model.FamilyNote ).FamilyId;
+                }
+                else
+                {
+                    throw new Exception( "Unexpected Note EntityType" );
+                }
+
+                noteImport.Caption = slingshotEntityNote.Caption;
+                noteImport.IsAlert = slingshotEntityNote.IsAlert;
+                noteImport.IsPrivateNote = slingshotEntityNote.IsPrivateNote;
+                noteImport.Text = slingshotEntityNote.Text;
+                noteImportList.Add( noteImport );
+            }
+
+            this.ReportProgress( 0, $"Bulk Importing {entityFriendlyName ?? entityType.FriendlyName} Notes..." );
+            var result = BulkImportHelper.BulkNoteImport( noteImportList, entityType.Id );
+            Results.Add( $"{entityFriendlyName ?? entityType.FriendlyName} Note Import", result );
+        }
+
+        #endregion Person and Family Notes
+
+        #region Financial Pledges
+
+        /// <summary>
+        /// Submits the financial pledge import.
+        /// </summary>
+        private void SubmitFinancialPledgeImport()
+        {
+            this.ReportProgress( 0, "Preparing FinancialPledgeImport..." );
+            var financialPledgeImportList = new List<Rock.Slingshot.Model.FinancialPledgeImport>();
+            foreach ( var slingshotFinancialPledge in this.SlingshotFinancialPledgeList )
+            {
+                var financialPledgeImport = new Rock.Slingshot.Model.FinancialPledgeImport();
+                financialPledgeImport.FinancialPledgeForeignId = slingshotFinancialPledge.Id;
+                financialPledgeImport.PersonForeignId = slingshotFinancialPledge.PersonId;
+                financialPledgeImport.FinancialAccountForeignId = slingshotFinancialPledge.AccountId;
+                financialPledgeImport.GroupForeignId = null;
+                financialPledgeImport.TotalAmount = slingshotFinancialPledge.TotalAmount;
+                switch ( slingshotFinancialPledge.PledgeFrequency )
+                {
+                    case SlingshotCore.Model.PledgeFrequency.OneTime:
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME )?.Id;
+                        break;
+                    case SlingshotCore.Model.PledgeFrequency.Weekly:
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY )?.Id;
+                        break;
+                    case SlingshotCore.Model.PledgeFrequency.BiWeekly:
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY )?.Id;
+                        break;
+                    case SlingshotCore.Model.PledgeFrequency.TwiceAMonth:
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY )?.Id;
+                        break;
+                    case SlingshotCore.Model.PledgeFrequency.Monthly:
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY )?.Id;
+                        break;
+                    case SlingshotCore.Model.PledgeFrequency.Quarterly:
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY )?.Id;
+                        break;
+                    case SlingshotCore.Model.PledgeFrequency.TwiceAYear:
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY )?.Id;
+                        break;
+                    case SlingshotCore.Model.PledgeFrequency.Yearly:
+                        financialPledgeImport.PledgeFrequencyValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY )?.Id;
+                        break;
+                }
+
+                financialPledgeImport.StartDate = slingshotFinancialPledge.StartDate ?? DateTime.MinValue;
+                financialPledgeImport.EndDate = slingshotFinancialPledge.EndDate ?? DateTime.MaxValue;
+                financialPledgeImportList.Add( financialPledgeImport );
+            }
+
+            this.ReportProgress( 0, "Bulk Importing FinancialPledges..." );
+            var result = BulkImportHelper.BulkFinancialPledgeImport( financialPledgeImportList );
+            Results.Add( "FinancialPledge Import", result );
+        }
+
+        #endregion Financial Pledges
 
         #region Financial Transaction Related
 
@@ -820,9 +973,20 @@ namespace Rock.Slingshot
             List<Rock.Slingshot.Model.PersonImport> personImportList = GetPersonImportList();
 
             this.ReportProgress( 0, "Bulk Importing Person..." );
+            BulkImportHelper.OnProgress += BulkImportHelper_OnProgress;
             var result = BulkImportHelper.BulkPersonImport( personImportList );
 
             Results.Add( "Person Import", result );
+        }
+
+        /// <summary>
+        /// Bulks the import helper on progress.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        private void BulkImportHelper_OnProgress( object sender, string e )
+        {
+            ReportProgress( 0, e );
         }
 
         /// <summary>
@@ -1292,212 +1456,92 @@ namespace Rock.Slingshot
         {
             LoadPersonSlingshotLists();
 
-            var familyAttributesFileName = Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.FamilyAttribute().GetFileName() );
-            if ( File.Exists( familyAttributesFileName ) )
-            {
-                using ( var slingshotFileStream = File.OpenText( familyAttributesFileName ) )
-                {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-                    this.SlingshotFamilyAttributes = csvReader.GetRecords<SlingshotCore.Model.FamilyAttribute>().ToList();
-                }
-            }
-            else
-            {
-                this.SlingshotFamilyAttributes = new List<SlingshotCore.Model.FamilyAttribute>();
-            }
+            // Family Attributes
+            this.SlingshotFamilyAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.FamilyAttribute>();
+
 
             /* Attendance */
-            var attendanceFileName = Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.Attendance().GetFileName() );
-            if ( File.Exists( attendanceFileName ) )
+            this.SlingshotAttendanceList = LoadSlingshotListFromFile<SlingshotCore.Model.Attendance>();
+
+            /* Groups (non-family) (note: there might be duplicates, so just get the distinct ones */
+            this.SlingshotGroupList = LoadSlingshotListFromFile<SlingshotCore.Model.Group>().DistinctBy( a => a.Id ).ToList();
+
+            /* Group Members*/
+            var groupMemberList = LoadSlingshotListFromFile<SlingshotCore.Model.GroupMember>().GroupBy( a => a.GroupId ).ToDictionary( k => k.Key, v => v.ToList() );
+            var groupLookup = this.SlingshotGroupList.ToDictionary( k => k.Id, v => v );
+            foreach ( var groupIdMembers in groupMemberList )
             {
-                using ( var slingshotFileStream = File.OpenText( attendanceFileName ) )
+                groupLookup[groupIdMembers.Key].GroupMembers = groupIdMembers.Value;
+            }
+
+            /* Group Type*/
+            this.SlingshotGroupTypeList = LoadSlingshotListFromFile<SlingshotCore.Model.GroupType>();
+
+            /* Locations (note: there might be duplicates, so just get the distinct ones */
+            this.SlingshotLocationList = LoadSlingshotListFromFile<SlingshotCore.Model.Location>().DistinctBy( a => a.Id ).ToList();
+
+            /* Schedules (note: there might be duplicates, so just get the distinct ones */
+            this.SlingshotScheduleList = LoadSlingshotListFromFile<SlingshotCore.Model.Schedule>().DistinctBy( a => a.Id ).ToList();
+
+            /* Financial Accounts */
+            this.SlingshotFinancialAccountList = LoadSlingshotListFromFile<SlingshotCore.Model.FinancialAccount>();
+
+            /* Financial Transactions and FinancialTransactionDetail*/
+            this.SlingshotFinancialTransactionList = LoadSlingshotListFromFile<SlingshotCore.Model.FinancialTransaction>();
+            var slingshotFinancialTransactionDetailList = LoadSlingshotListFromFile<SlingshotCore.Model.FinancialTransactionDetail>();
+            var slingshotFinancialTransactionLookup = this.SlingshotFinancialTransactionList.ToDictionary( k => k.Id, v => v );
+            foreach ( var slingshotFinancialTransactionDetail in slingshotFinancialTransactionDetailList )
+            {
+                slingshotFinancialTransactionLookup[slingshotFinancialTransactionDetail.TransactionId].FinancialTransactionDetails.Add( slingshotFinancialTransactionDetail );
+            }
+
+            /* Financial Batches */
+            this.SlingshotFinancialBatchList = LoadSlingshotListFromFile<SlingshotCore.Model.FinancialBatch>();
+            var transactionsByBatch = this.SlingshotFinancialTransactionList.GroupBy( a => a.BatchId ).ToDictionary( k => k.Key, v => v.ToList() );
+            foreach ( var slingshotFinancialBatch in this.SlingshotFinancialBatchList )
+            {
+                if ( transactionsByBatch.ContainsKey( slingshotFinancialBatch.Id ) )
                 {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-                    this.SlingshotAttendanceList = csvReader.GetRecords<SlingshotCore.Model.Attendance>().ToList();
+                    slingshotFinancialBatch.FinancialTransactions = transactionsByBatch[slingshotFinancialBatch.Id];
                 }
             }
-            else
-            {
-                this.SlingshotAttendanceList = new List<SlingshotCore.Model.Attendance>();
-            }
 
-            var groupFileName = Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.Group().GetFileName() );
-            if ( File.Exists( groupFileName ) )
+            /* Financial Pledges */
+            this.SlingshotFinancialPledgeList = LoadSlingshotListFromFile<SlingshotCore.Model.FinancialPledge>();
+
+            /* Person Notes */
+            this.SlingshotPersonNoteList = LoadSlingshotListFromFile<SlingshotCore.Model.PersonNote>();
+
+            /* Family Notes */
+            this.SlingshotFamilyNoteList = LoadSlingshotListFromFile<SlingshotCore.Model.FamilyNote>();
+        }
+
+        /// <summary>
+        /// Loads the slingshot list from file.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="willThrowOnMissingField">The will throw on missing field.</param>
+        /// <returns></returns>
+        private List<T> LoadSlingshotListFromFile<T>( bool? willThrowOnMissingField = null ) where T : SlingshotCore.Model.IImportModel, new()
+        {
+            var fileName = Path.Combine( this.SlingshotDirectoryName, new T().GetFileName() );
+            if ( File.Exists( fileName ) )
             {
-                using ( var slingshotFileStream = File.OpenText( groupFileName ) )
+                using ( var slingshotFileStream = File.OpenText( fileName ) )
                 {
                     CsvReader csvReader = new CsvReader( slingshotFileStream );
                     csvReader.Configuration.HasHeaderRecord = true;
-                    var uniqueGroups = new Dictionary<int, SlingshotCore.Model.Group>();
-
-                    foreach ( var group in csvReader.GetRecords<SlingshotCore.Model.Group>().ToList() )
+                    if ( willThrowOnMissingField.HasValue )
                     {
-                        if ( !uniqueGroups.ContainsKey( group.Id ) )
-                        {
-                            uniqueGroups.Add( group.Id, group );
-                        }
+                        csvReader.Configuration.WillThrowOnMissingField = willThrowOnMissingField.Value;
                     }
 
-                    this.SlingshotGroupList = uniqueGroups.Select( a => a.Value ).ToList();
+                    return csvReader.GetRecords<T>().ToList();
                 }
             }
             else
             {
-                this.SlingshotGroupList = new List<SlingshotCore.Model.Group>();
-            }
-
-            var groupMemberFileName = Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.GroupMember().GetFileName() );
-            if ( File.Exists( groupMemberFileName ) )
-            {
-                var groupLookup = this.SlingshotGroupList.ToDictionary( k => k.Id, v => v );
-                using ( var slingshotFileStream = File.OpenText( groupMemberFileName ) )
-                {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-
-                    var groupMemberList = csvReader.GetRecords<SlingshotCore.Model.GroupMember>().ToList().GroupBy( a => a.GroupId ).ToDictionary( k => k.Key, v => v.ToList() );
-                    foreach ( var groupIdMembers in groupMemberList )
-                    {
-                        groupLookup[groupIdMembers.Key].GroupMembers = groupIdMembers.Value;
-                    }
-                }
-            }
-
-            var groupTypeFileName = Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.GroupType().GetFileName() );
-            if ( File.Exists( groupTypeFileName ) )
-            {
-                using ( var slingshotFileStream = File.OpenText( groupTypeFileName ) )
-                {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-                    this.SlingshotGroupTypeList = csvReader.GetRecords<SlingshotCore.Model.GroupType>().ToList();
-                }
-            }
-            else
-            {
-                this.SlingshotGroupTypeList = new List<SlingshotCore.Model.GroupType>();
-            }
-
-            var locationFileName = Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.Location().GetFileName() );
-            if ( File.Exists( locationFileName ) )
-            {
-                using ( var slingshotFileStream = File.OpenText( locationFileName ) )
-                {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-                    var uniqueLocations = new Dictionary<int, SlingshotCore.Model.Location>();
-                    foreach ( var location in csvReader.GetRecords<SlingshotCore.Model.Location>().ToList() )
-                    {
-                        if ( !uniqueLocations.ContainsKey( location.Id ) )
-                        {
-                            uniqueLocations.Add( location.Id, location );
-                        }
-                    }
-
-                    this.SlingshotLocationList = uniqueLocations.Select( a => a.Value ).ToList();
-                }
-            }
-            else
-            {
-                this.SlingshotLocationList = new List<SlingshotCore.Model.Location>();
-            }
-
-            var scheduleFileName = Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.Schedule().GetFileName() );
-            if ( File.Exists( scheduleFileName ) )
-            {
-                using ( var slingshotFileStream = File.OpenText( scheduleFileName ) )
-                {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-
-                    var uniqueSchedules = new Dictionary<int, SlingshotCore.Model.Schedule>();
-                    foreach ( var schedule in csvReader.GetRecords<SlingshotCore.Model.Schedule>().ToList() )
-                    {
-                        if ( !uniqueSchedules.ContainsKey( schedule.Id ) )
-                        {
-                            uniqueSchedules.Add( schedule.Id, schedule );
-                        }
-                    }
-
-                    this.SlingshotScheduleList = uniqueSchedules.Select( a => a.Value ).ToList();
-                }
-            }
-            else
-            {
-                this.SlingshotScheduleList = new List<SlingshotCore.Model.Schedule>();
-            }
-
-
-            /* Financial Transactions */
-            var financialAccountFileName = Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.FinancialAccount().GetFileName() );
-            if ( File.Exists( financialAccountFileName ) )
-            {
-                using ( var slingshotFileStream = File.OpenText( financialAccountFileName ) )
-                {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-                    this.SlingshotFinancialAccountList = csvReader.GetRecords<SlingshotCore.Model.FinancialAccount>().ToList();
-                }
-            }
-            else
-            {
-                this.SlingshotFinancialAccountList = new List<SlingshotCore.Model.FinancialAccount>();
-            }
-
-            var financialTransactionFileName = Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.FinancialTransaction().GetFileName() );
-            if ( File.Exists( financialTransactionFileName ) )
-            {
-                using ( var slingshotFileStream = File.OpenText( financialTransactionFileName ) )
-                {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-                    this.SlingshotFinancialTransactionList = csvReader.GetRecords<SlingshotCore.Model.FinancialTransaction>().ToList();
-                }
-            }
-            else
-            {
-                this.SlingshotFinancialTransactionList = new List<SlingshotCore.Model.FinancialTransaction>();
-            }
-
-            var financialTransactionDetailFileName = Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.FinancialTransactionDetail().GetFileName() );
-            if ( File.Exists( financialTransactionDetailFileName ) )
-            {
-                using ( var slingshotFileStream = File.OpenText( financialTransactionDetailFileName ) )
-                {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-                    var slingshotFinancialTransactionDetailList = csvReader.GetRecords<SlingshotCore.Model.FinancialTransactionDetail>().ToList();
-                    var slingshotFinancialTransactionLookup = this.SlingshotFinancialTransactionList.ToDictionary( k => k.Id, v => v );
-                    foreach ( var slingshotFinancialTransactionDetail in slingshotFinancialTransactionDetailList )
-                    {
-                        slingshotFinancialTransactionLookup[slingshotFinancialTransactionDetail.TransactionId].FinancialTransactionDetails.Add( slingshotFinancialTransactionDetail );
-                    }
-                }
-            }
-
-            var financialBatchFileName = Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.FinancialBatch().GetFileName() );
-            if ( File.Exists( financialBatchFileName ) )
-            {
-                using ( var slingshotFileStream = File.OpenText( financialBatchFileName ) )
-                {
-                    CsvReader csvReader = new CsvReader( slingshotFileStream );
-                    csvReader.Configuration.HasHeaderRecord = true;
-                    this.SlingshotFinancialBatchList = csvReader.GetRecords<SlingshotCore.Model.FinancialBatch>().ToList();
-                    var transactionsByBatch = this.SlingshotFinancialTransactionList.GroupBy( a => a.BatchId ).ToDictionary( k => k.Key, v => v.ToList() );
-                    foreach ( var slingshotFinancialBatch in this.SlingshotFinancialBatchList )
-                    {
-                        if ( transactionsByBatch.ContainsKey( slingshotFinancialBatch.Id ) )
-                        {
-                            slingshotFinancialBatch.FinancialTransactions = transactionsByBatch[slingshotFinancialBatch.Id];
-                        }
-                    }
-                }
-            }
-            else
-            {
-                this.SlingshotFinancialBatchList = new List<SlingshotCore.Model.FinancialBatch>();
+                return new List<T>();
             }
         }
 
@@ -1506,38 +1550,11 @@ namespace Rock.Slingshot
         /// </summary>
         private void LoadPersonSlingshotLists()
         {
-            Dictionary<int, List<SlingshotCore.Model.PersonAddress>> slingshotPersonAddressListLookup;
-            Dictionary<int, List<SlingshotCore.Model.PersonAttributeValue>> slingshotPersonAttributeValueListLookup;
-            Dictionary<int, List<SlingshotCore.Model.PersonPhone>> slingshotPersonPhoneListLookup;
+            this.SlingshotPersonList = LoadSlingshotListFromFile<SlingshotCore.Model.Person>( false );
 
-            using ( var slingshotFileStream = File.OpenText( Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.Person().GetFileName() ) ) )
-            {
-                CsvReader csvReader = new CsvReader( slingshotFileStream );
-                csvReader.Configuration.HasHeaderRecord = true;
-                csvReader.Configuration.WillThrowOnMissingField = false;
-                this.SlingshotPersonList = csvReader.GetRecords<SlingshotCore.Model.Person>().ToList();
-            }
-
-            using ( var slingshotFileStream = File.OpenText( Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.PersonAddress().GetFileName() ) ) )
-            {
-                CsvReader csvReader = new CsvReader( slingshotFileStream );
-                csvReader.Configuration.HasHeaderRecord = true;
-                slingshotPersonAddressListLookup = csvReader.GetRecords<SlingshotCore.Model.PersonAddress>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
-            }
-
-            using ( var slingshotFileStream = File.OpenText( Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.PersonAttributeValue().GetFileName() ) ) )
-            {
-                CsvReader csvReader = new CsvReader( slingshotFileStream );
-                csvReader.Configuration.HasHeaderRecord = true;
-                slingshotPersonAttributeValueListLookup = csvReader.GetRecords<SlingshotCore.Model.PersonAttributeValue>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
-            }
-
-            using ( var slingshotFileStream = File.OpenText( Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.PersonPhone().GetFileName() ) ) )
-            {
-                CsvReader csvReader = new CsvReader( slingshotFileStream );
-                csvReader.Configuration.HasHeaderRecord = true;
-                slingshotPersonPhoneListLookup = csvReader.GetRecords<SlingshotCore.Model.PersonPhone>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
-            }
+            Dictionary<int, List<SlingshotCore.Model.PersonAddress>> slingshotPersonAddressListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAddress>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
+            Dictionary<int, List<SlingshotCore.Model.PersonAttributeValue>> slingshotPersonAttributeValueListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAttributeValue>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
+            Dictionary<int, List<SlingshotCore.Model.PersonPhone>> slingshotPersonPhoneListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonPhone>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
 
             foreach ( var slingshotPerson in this.SlingshotPersonList )
             {
@@ -1546,12 +1563,7 @@ namespace Rock.Slingshot
                 slingshotPerson.PhoneNumbers = slingshotPersonPhoneListLookup.ContainsKey( slingshotPerson.Id ) ? slingshotPersonPhoneListLookup[slingshotPerson.Id].ToList() : new List<SlingshotCore.Model.PersonPhone>();
             }
 
-            using ( var slingshotFileStream = File.OpenText( Path.Combine( this.SlingshotDirectoryName, new SlingshotCore.Model.PersonAttribute().GetFileName() ) ) )
-            {
-                CsvReader csvReader = new CsvReader( slingshotFileStream );
-                csvReader.Configuration.HasHeaderRecord = true;
-                this.SlingshotPersonAttributes = csvReader.GetRecords<SlingshotCore.Model.PersonAttribute>().ToList();
-            }
+            this.SlingshotPersonAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAttribute>().ToList();
         }
 
         /// <summary>
@@ -1674,10 +1686,10 @@ namespace Rock.Slingshot
             this.FamilyAttributeKeyLookup = familyAttributes.ToDictionary( k => k.Key, v => v );
 
             // FieldTypes
-            this.FieldTypeLookup = new FieldTypeService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Class, v => v );
+            this.FieldTypeLookup = new FieldTypeService( rockContext ).Queryable().Select( a => a.Id ).ToList().Select( a => FieldTypeCache.Read( a ) ).ToDictionary( k => k.Class, v => v );
 
             // GroupTypes
-            this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue ).AsNoTracking().ToList().ToDictionary( k => k.ForeignId.Value, v => v );
+            this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue ).ToList().Select( a => GroupTypeCache.Read( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
         }
 
         /// <summary>
