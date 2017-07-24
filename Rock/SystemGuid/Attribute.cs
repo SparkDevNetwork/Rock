@@ -139,5 +139,14 @@ namespace Rock.SystemGuid
         public const string GROUP_BIRTHDATE_RANGE = "F1A43EAB-D682-403F-A05E-CCFFBF879F32";
 
         #endregion
+
+        #region Fundraising Attributes
+
+        /// <summary>
+        /// The defined value attribute for storing a fundraising opporunity type's donation button text.
+        /// </summary>
+        public const string DEFINED_VALUE_FUNDRAISING_DONATE_BUTTON_TEXT = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E";
+
+        #endregion
     }
 }
