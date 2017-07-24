@@ -696,6 +696,8 @@ namespace Rock.Tests.Rock.Lava
 
         #endregion
 
+        #region DatesFromICal
+
         /// <summary>
         /// For use in Lava -- should return next occurrence for Rock's standard Saturday 4:30PM service datetime.
         /// </summary>
@@ -763,5 +765,140 @@ namespace Rock.Tests.Rock.Lava
             var output = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 13, "enddatetime" ).LastOrDefault();
             Assert.Equal( expected, output );
         }
+
+        #endregion
+
+        #region Url
+
+        private string _urlValidHttps = "https://www.rockrms.com/WorkflowEntry/35?PersonId=2";
+        private string _urlValidHttpsPort = "https://www.rockrms.com:443/WorkflowEntry/35?PersonId=2";
+        private string _urlValidHttpNonStdPort = "http://www.rockrms.com:8000/WorkflowEntry/35?PersonId=2";
+        private string _urlInvalid = "thequickbrownfoxjumpsoverthelazydog";
+
+        /// <summary>
+        /// Should extract the host name from the URL.
+        /// </summary>
+        [Fact]
+        public void Url_Host()
+        {
+            var output = RockFilters.Url( _urlValidHttps, "host" );
+            Assert.Equal( output, "www.rockrms.com" );
+        }
+
+        /// <summary>
+        /// Should extract the port number as an integer from the URL.
+        /// </summary>
+        [Fact]
+        public void Url_Port()
+        {
+            var output = RockFilters.Url( _urlValidHttps, "port" );
+            Assert.Equal( output, 443 );
+        }
+
+        /// <summary>
+        /// Should extract all the segments from the URL.
+        /// </summary>
+        [Fact]
+        public void Url_Segments()
+        {
+            var output = RockFilters.Url( _urlValidHttps, "segments" ) as string[];
+            Assert.NotNull( output );
+            Assert.Equal( output.Length, 3 );
+            Assert.Equal( output[0], "/" );
+            Assert.Equal( output[1], "WorkflowEntry/" );
+            Assert.Equal( output[2], "35" );
+        }
+
+        /// <summary>
+        /// Should extract the protocol/scheme from the URL.
+        /// </summary>
+        [Fact]
+        public void Url_Scheme()
+        {
+            var output = RockFilters.Url( _urlValidHttps, "scheme" );
+            Assert.Equal( output, "https" );
+        }
+
+        /// <summary>
+        /// Should extract the protocol/scheme from the URL.
+        /// </summary>
+        [Fact]
+        public void Url_Protocol()
+        {
+            var output = RockFilters.Url( _urlValidHttps, "protocol" );
+            Assert.Equal( output, "https" );
+        }
+
+        /// <summary>
+        /// Should extract the request path from the URL.
+        /// </summary>
+        [Fact]
+        public void Url_LocalPath()
+        {
+            var output = RockFilters.Url( _urlValidHttps, "localpath" );
+            Assert.Equal( output, "/WorkflowEntry/35" );
+        }
+
+        /// <summary>
+        /// Should extract the request path and the query string from the URL.
+        /// </summary>
+        [Fact]
+        public void Url_PathAndQuery()
+        {
+            var output = RockFilters.Url( _urlValidHttps, "pathandquery" );
+            Assert.Equal( output, "/WorkflowEntry/35?PersonId=2" );
+        }
+
+        /// <summary>
+        /// Should extract a single query parameter from the URL.
+        /// </summary>
+        [Fact]
+        public void Url_QueryParameter()
+        {
+            var output = RockFilters.Url( _urlValidHttps, "queryparameter", "PersonId" );
+            Assert.Equal( output, "2" );
+        }
+
+        /// <summary>
+        /// Should extract the full URL from the URL.
+        /// </summary>
+        [Fact]
+        public void Url_Url()
+        {
+            var output = RockFilters.Url( _urlValidHttps, "url" );
+            Assert.Equal( output, _urlValidHttps );
+        }
+
+        /// <summary>
+        /// Should extract the full URL, trimming standard port numbers, from the URL.
+        /// </summary>
+        [Fact]
+        public void Url_UrlStdPort()
+        {
+            var output = RockFilters.Url( _urlValidHttpsPort, "url" );
+            Assert.Equal( output, _urlValidHttpsPort.Replace( ":443", string.Empty ) );
+        }
+
+        /// <summary>
+        /// Should extract the full URL, including the non-standard port number, from the URL.
+        /// </summary>
+        [Fact]
+        public void Url_UrlNonStdPort()
+        {
+            var output = RockFilters.Url( _urlValidHttpNonStdPort, "url" );
+            Assert.Equal( output, _urlValidHttpNonStdPort );
+        }
+
+        /// <summary>
+        /// Should fail to extract the host from an invalid URL.
+        /// </summary>
+        [Fact]
+        public void Url_InvalidUrl()
+        {
+            var output = RockFilters.Url( _urlInvalid, "host" );
+            Assert.Equal( output, string.Empty );
+        }
+
+        #endregion
     }
 }
