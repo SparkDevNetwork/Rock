@@ -725,9 +725,9 @@ namespace Rock.Lava
             }
 
             Uri uri;
-            if ( !Uri.TryCreate( input, UriKind.RelativeOrAbsolute, out uri ) )
+            if ( !Uri.TryCreate( input, UriKind.Absolute, out uri ) )
             {
-                return input;
+                return string.Empty;
             }
 
             switch ( part.ToUpper() )
