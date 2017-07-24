@@ -861,24 +861,15 @@ namespace Rock.Web.UI
                     favIcon180Sq.Attributes.Add( "href", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}&maxwidth={1}&maxheight={1}", Site.FavIconBinaryFileId.ToString(), "180" ) ) );
                     favIcon192Sq.Attributes.Add( "href", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}&maxwidth={1}&maxheight={1}", Site.FavIconBinaryFileId.ToString(), "192" ) ) );
                     favIcon.Attributes.Add( "href", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}&maxwidth={1}&maxheight={1}", Site.FavIconBinaryFileId.ToString(), "192" ) ) );
-                }
-                else
-                {
-                    favIcon16Sq.Attributes.Add( "href", ResolveRockUrl( "~/Assets/Icons/touch-icon-iphone.png", true ) );
-                    favIcon32Sq.Attributes.Add( "href", ResolveRockUrl( "~/Assets/Icons/touch-icon-iphone.png", true ) );
-                    favIcon144Sq.Attributes.Add( "href", ResolveRockUrl( "~/Assets/Icons/touch-icon-ipad-retina.png", true ) );
-                    favIcon180Sq.Attributes.Add( "href", ResolveRockUrl( "~/Assets/Icons/favicon.ico", true ) );
-                    favIcon192Sq.Attributes.Add( "href", ResolveRockUrl( "~/Assets/Icons/favicon.ico", true ) );
-                    favIcon.Attributes.Add( "href", ResolveRockUrl( "~/Assets/Icons/favicon.ico", true ) );
-                }
 
-                AddHtmlLink( favIcon );
-                AddHtmlLink( favIcon16Sq );
-                AddHtmlLink( favIcon32Sq );
-                AddHtmlLink( favIcon144Sq );
-                AddHtmlLink( favIcon180Sq );
-                AddHtmlLink( favIcon192Sq );
-
+                    AddHtmlLink( favIcon );
+                    AddHtmlLink( favIcon16Sq );
+                    AddHtmlLink( favIcon32Sq );
+                    AddHtmlLink( favIcon144Sq );
+                    AddHtmlLink( favIcon180Sq );
+                    AddHtmlLink( favIcon192Sq );
+                }
+            
                 #endregion
 
                 // check if page should have been loaded via ssl
