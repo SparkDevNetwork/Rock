@@ -28,9 +28,10 @@ namespace Rock.Slingshot
         /// Initializes a new instance of the <see cref="Importer"/> class.
         /// </summary>
         /// <param name="slingshotFileName">Name of the slingshot file.</param>
-        public SlingshotImporter( string slingshotFileName )
+        public SlingshotImporter( string slingshotFileName, string foreignSystemKey )
         {
             SlingshotFileName = slingshotFileName;
+            ForeignSystemKey = foreignSystemKey;
             SlingshotDirectoryName = Path.Combine( Path.GetDirectoryName( this.SlingshotFileName ), "slingshots", Path.GetFileNameWithoutExtension( this.SlingshotFileName ) );
 
             var slingshotFilesDirectory = new DirectoryInfo( this.SlingshotDirectoryName );
@@ -144,8 +145,11 @@ namespace Rock.Slingshot
         /* Core  */
         private Dictionary<string, FieldTypeCache> FieldTypeLookup { get; set; }
 
-        // GroupType Lookup by ForeignId
+        // GroupType Lookup by ForeignKey for the ForeignSystemKey
         private Dictionary<int, GroupTypeCache> GroupTypeLookupByForeignId { get; set; }
+
+        // GroupType Lookup by ForeignId for the ForeignSystemKey
+        private Dictionary<int, CampusCache> CampusLookupByForeignId { get; set; }
 
         /* Attendance */
         private List<SlingshotCore.Model.Attendance> SlingshotAttendanceList { get; set; }
@@ -182,6 +186,20 @@ namespace Rock.Slingshot
         /* */
         private string SlingshotFileName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the foreign system key.
+        /// </summary>
+        /// <value>
+        /// The foreign system key.
+        /// </value>
+        private string ForeignSystemKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the slingshot directory.
+        /// </summary>
+        /// <value>
+        /// The name of the slingshot directory.
+        /// </value>
         private string SlingshotDirectoryName { get; set; }
 
         /// <summary>
@@ -214,6 +232,11 @@ namespace Rock.Slingshot
         /// </value>
         public int? FinancialTransactionChunkSize { get; set; }
 
+        /// <summary>
+        /// Reports the progress.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="progressData">The progress data.</param>
         public void ReportProgress( int progress, object progressData )
         {
             if ( OnProgress != null )
@@ -227,6 +250,7 @@ namespace Rock.Slingshot
         /// <summary>
         /// Does the import.
         /// </summary>
+        /// <param name="foreignSystemKey">The foreign system key.</param>
         public void DoImport()
         {
             // Load Slingshot Models from .slingshot
@@ -274,10 +298,10 @@ namespace Rock.Slingshot
             SubmitFinancialPledgeImport();
 
             // Person Notes
-            SubmitEntityNotesImport<Rock.Model.Person>( this.SlingshotPersonNoteList );
+            SubmitEntityNotesImport<Rock.Model.Person>( this.SlingshotPersonNoteList, null );
 
             // Family Notes
-            SubmitEntityNotesImport<Rock.Model.Group>( this.SlingshotFamilyNoteList, "Family" );
+            SubmitEntityNotesImport<Rock.Model.Group>( this.SlingshotFamilyNoteList, true );
         }
 
         private const string PREPARE_PHOTO_DATA = "Prepare Photo Data:";
@@ -424,7 +448,7 @@ namespace Rock.Slingshot
         /// <exception cref="SlingshotPOSTFailedException"></exception>
         private void UploadPhotoImports( List<Rock.Slingshot.Model.PhotoImport> photoImportList )
         {
-            var result = BulkImportHelper.BulkPhotoImport( photoImportList );
+            var result = BulkImportHelper.BulkPhotoImport( photoImportList, this.ForeignSystemKey );
             this.Results[UPLOAD_PHOTO_STATS] = result + "<br />";
         }
 
@@ -483,13 +507,23 @@ namespace Rock.Slingshot
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="slingshotEntityNoteList">The slingshot entity note list.</param>
-        /// <param name="entityFriendlyName">Name of the entity friendly.</param>
+        /// <param name="groupEntityIsFamily">If this is a GroupEntity, is it a Family GroupType?</param>
         /// <exception cref="System.Exception">Unexpected Note EntityType</exception>
-        private void SubmitEntityNotesImport<T>( IEnumerable<SlingshotCore.Data.EntityNote> slingshotEntityNoteList, string entityFriendlyName = null ) where T : Rock.Data.IEntity
+        private void SubmitEntityNotesImport<T>( IEnumerable<SlingshotCore.Data.EntityNote> slingshotEntityNoteList, bool? groupEntityIsFamily ) where T : Rock.Data.IEntity
         {
             var entityType = EntityTypeCache.Read<T>();
-                
-            this.ReportProgress( 0, $"Preparing {entityFriendlyName ?? entityType.FriendlyName} Notes Import..." );
+
+            string entityFriendlyName = entityType.FriendlyName;
+            if ( entityType.Id == EntityTypeCache.GetId<Rock.Model.Group>().Value )
+            {
+                if (groupEntityIsFamily.Value)
+                {
+                    entityFriendlyName = "Family";
+                }
+            }
+
+
+            this.ReportProgress( 0, $"Preparing {entityFriendlyName} Notes Import..." );
 
             var noteImportList = new List<Rock.Slingshot.Model.NoteImport>();
             var rockContext = new RockContext();
@@ -547,8 +581,8 @@ namespace Rock.Slingshot
                 noteImportList.Add( noteImport );
             }
 
-            this.ReportProgress( 0, $"Bulk Importing {entityFriendlyName ?? entityType.FriendlyName} Notes..." );
-            var result = BulkImportHelper.BulkNoteImport( noteImportList, entityType.Id );
+            this.ReportProgress( 0, $"Bulk Importing {entityFriendlyName} Notes..." );
+            var result = BulkImportHelper.BulkNoteImport( noteImportList, entityType.Id, this.ForeignSystemKey, groupEntityIsFamily );
             Results.Add( $"{entityFriendlyName ?? entityType.FriendlyName} Note Import", result );
         }
 
@@ -605,7 +639,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing FinancialPledges..." );
-            var result = BulkImportHelper.BulkFinancialPledgeImport( financialPledgeImportList );
+            var result = BulkImportHelper.BulkFinancialPledgeImport( financialPledgeImportList, this.ForeignSystemKey );
             Results.Add( "FinancialPledge Import", result );
         }
 
@@ -645,7 +679,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing FinancialAccounts..." );
-            var result = BulkImportHelper.BulkFinancialAccountImport( financialAccountImportList );
+            var result = BulkImportHelper.BulkFinancialAccountImport( financialAccountImportList, this.ForeignSystemKey );
             Results.Add( "FinancialAccount Import", result );
         }
 
@@ -695,7 +729,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing FinancialBatches..." );
-            var result = BulkImportHelper.BulkFinancialBatchImport( financialBatchImportList );
+            var result = BulkImportHelper.BulkFinancialBatchImport( financialBatchImportList, this.ForeignSystemKey );
             Results.Add( "FinancialBatch Import", result );
         }
 
@@ -801,11 +835,18 @@ namespace Rock.Slingshot
             {
                 var postChunk = financialTransactionImportList.Take( postChunkSize ).ToList();
                 this.ReportProgress( 0, "Bulk Importing FinancialTransactions..." );
-                var result = BulkImportHelper.BulkFinancialTransactionImport( postChunk );
+                var result = BulkImportHelper.BulkFinancialTransactionImport( postChunk, this.ForeignSystemKey );
 
-                foreach ( var tran in postChunk.ToList() )
+                if ( this.FinancialTransactionChunkSize.HasValue )
                 {
-                    financialTransactionImportList.Remove( tran );
+                    foreach ( var tran in postChunk.ToList() )
+                    {
+                        financialTransactionImportList.Remove( tran );
+                    }
+                }
+                else
+                {
+                    financialTransactionImportList.Clear();
                 }
 
                 if ( Results.ContainsKey( "FinancialTransaction Import" ) )
@@ -852,7 +893,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing Attendance..." );
-            var result = BulkImportHelper.BulkAttendanceImport( attendanceImportList );
+            var result = BulkImportHelper.BulkAttendanceImport( attendanceImportList, this.ForeignSystemKey );
 
             Results.Add( "Attendance Import", result );
         }
@@ -873,7 +914,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing Schedules..." );
-            var result = BulkImportHelper.BulkScheduleImport( scheduleImportList );
+            var result = BulkImportHelper.BulkScheduleImport( scheduleImportList, this.ForeignSystemKey );
             Results.Add( "Schedule Import", result );
         }
 
@@ -906,7 +947,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing Locations..." );
-            var result = BulkImportHelper.BulkLocationImport( locationImportList );
+            var result = BulkImportHelper.BulkLocationImport( locationImportList, this.ForeignSystemKey );
             Results.Add( "Location Import", result );
         }
 
@@ -954,7 +995,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing Groups..." );
-            var result = BulkImportHelper.BulkGroupImport( groupImportList );
+            var result = BulkImportHelper.BulkGroupImport( groupImportList, this.ForeignSystemKey );
 
             Results.Add( "Group Import", result );
         }
@@ -974,7 +1015,7 @@ namespace Rock.Slingshot
 
             this.ReportProgress( 0, "Bulk Importing Person..." );
             BulkImportHelper.OnProgress += BulkImportHelper_OnProgress;
-            var result = BulkImportHelper.BulkPersonImport( personImportList );
+            var result = BulkImportHelper.BulkPersonImport( personImportList, this.ForeignSystemKey );
 
             Results.Add( "Person Import", result );
         }
@@ -1233,7 +1274,11 @@ namespace Rock.Slingshot
 
             foreach ( var importCampus in importCampuses.Where( a => !CampusCache.All().Any( c => c.Name.Equals( a.Value.CampusName, StringComparison.OrdinalIgnoreCase ) ) ).Select( a => a.Value ) )
             {
-                var campusToAdd = new Rock.Model.Campus { ForeignId = importCampus.CampusId, Name = importCampus.CampusName, Guid = Guid.NewGuid() };
+                var campusToAdd = new Rock.Model.Campus();
+                campusToAdd.ForeignId = importCampus.CampusId;
+                campusToAdd.ForeignKey = this.ForeignSystemKey;
+                campusToAdd.Name = importCampus.CampusName;
+                campusToAdd.Guid = Guid.NewGuid();
                 campusService.Add( campusToAdd );
                 rockContext.SaveChanges();
 
@@ -1251,7 +1296,11 @@ namespace Rock.Slingshot
 
             foreach ( var importGroupType in this.SlingshotGroupTypeList.Where( a => !this.GroupTypeLookupByForeignId.ContainsKey( a.Id ) ) )
             {
-                var groupTypeToAdd = new Rock.Model.GroupType { ForeignId = importGroupType.Id, Name = importGroupType.Name, Guid = Guid.NewGuid() };
+                var groupTypeToAdd = new Rock.Model.GroupType();
+                groupTypeToAdd.ForeignId = importGroupType.Id;
+                groupTypeToAdd.ForeignKey = this.ForeignSystemKey;
+                groupTypeToAdd.Name = importGroupType.Name;
+                groupTypeToAdd.Guid = Guid.NewGuid();
                 groupTypeToAdd.ShowInGroupList = true;
                 groupTypeToAdd.ShowInNavigation = true;
                 groupTypeToAdd.GroupTerm = "Group";
@@ -1689,7 +1738,10 @@ namespace Rock.Slingshot
             this.FieldTypeLookup = new FieldTypeService( rockContext ).Queryable().Select( a => a.Id ).ToList().Select( a => FieldTypeCache.Read( a ) ).ToDictionary( k => k.Class, v => v );
 
             // GroupTypes
-            this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue ).ToList().Select( a => GroupTypeCache.Read( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
+            this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().Select( a => GroupTypeCache.Read( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
+
+            // Campuses
+            this.CampusLookupByForeignId = CampusCache.All().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().ToDictionary( k => k.ForeignId.Value, v => v );
         }
 
         /// <summary>
