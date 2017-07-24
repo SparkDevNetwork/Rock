@@ -215,11 +215,12 @@ namespace RockWeb.Blocks.BulkImport
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
                 _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text );
+                _importer.FinancialTransactionChunkSize = 100000;
                 _importer.OnProgress += _importer_OnProgress;
 
                 if ( importType == ImportType.ImportPhotos )
                 {
-                    _importer.TEST_UseSampleLocalPhotos = true;
+                    _importer.TEST_UseSampleLocalPhotos = false;
                     _importer.DoImportPhotos();
                 }
                 else

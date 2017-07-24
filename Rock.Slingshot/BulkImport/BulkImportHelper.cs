@@ -402,6 +402,8 @@ namespace Rock.Slingshot
                 financialPaymentDetailToInsert.Add( financialPaymentDetail );
             }
 
+            OnProgress?.Invoke( null, $"Bulk Importing FinancialTransactions ( Payment Details )... " );
+            
             rockContext.BulkInsert( financialPaymentDetailToInsert );
 
             var financialPaymentDetailLookup = new FinancialPaymentDetailService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
@@ -444,6 +446,7 @@ namespace Rock.Slingshot
                 financialTransactionsToInsert.Add( financialTransaction );
             }
 
+            OnProgress?.Invoke( null, $"Bulk Importing FinancialTransactions... " );
             rockContext.BulkInsert( financialTransactionsToInsert );
 
             var financialTransactionIdLookup = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
@@ -484,6 +487,7 @@ namespace Rock.Slingshot
                 }
             }
 
+            OnProgress?.Invoke( null, $"Bulk Importing FinancialTransactions ( Transaction Details )... " );
             rockContext.BulkInsert( financialTransactionDetailsToInsert );
 
             stopwatchTotal.Stop();
@@ -684,7 +688,7 @@ WHERE gta.GroupTypeId IS NULL" );
             }
             else
             {
-                sbStats.AppendLine( $"No People were imported [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+                sbStats.AppendLine( $"No Groups were imported [{stopwatchTotal.ElapsedMilliseconds}ms]" );
             }
 
             var responseText = sbStats.ToString();
@@ -1105,6 +1109,37 @@ WHERE gta.GroupTypeId IS NULL" );
 
             rockContext.BulkInsert( attributeValuesToInsert );
 
+            if (attributeValuesToInsert.Any())
+            {
+                // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
+             var rowsUpdated = rockContext.Database.ExecuteSqlCommand( @"
+UPDATE [AttributeValue] SET ValueAsDateTime = 
+		CASE WHEN 
+			LEN(value) < 50 and 
+			ISNULL(value,'') != '' and 
+			ISNUMERIC([value]) = 0 THEN
+				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
+					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
+				ELSE
+					TRY_CAST( [value] as datetime )
+				END
+		END
+        where (CASE WHEN 
+			LEN(value) < 50 and 
+			ISNULL(value,'') != '' and 
+			ISNUMERIC([value]) = 0 THEN
+				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
+					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
+				ELSE
+					TRY_CAST( [value] as datetime )
+				END
+		END) is not null
+        and ValueAsDateTime is null
+" );
+
+                Debug.WriteLine( "ValueAsDateTime RowsUpdated: " + rowsUpdated.ToString() );
+            }
+
             stopwatchTotal.Stop();
             if ( personsToInsert.Count > 0 )
             {
@@ -1149,6 +1184,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 person.FirstName = person.NickName;
             }
 
+            person.MiddleName = personImport.MiddleName.FixCase();
             person.LastName = personImport.LastName.FixCase();
             person.SuffixValueId = personImport.SuffixValueId;
             person.BirthDay = personImport.BirthDay;
