@@ -73,6 +73,7 @@ namespace Rock.Tests.Rock.Model
                 BlockType = new
                 {
                     IsSystem = false,
+                    IsCommon = false,
                     Path = "Test Path",
                     Name = "Test Name",
                     Description = "Test desc"
