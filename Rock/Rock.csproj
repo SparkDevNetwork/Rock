@@ -1235,6 +1235,7 @@
     <Compile Include="Plugin\HotFixes\024_PrayerRequestAttributes.cs" />
     <Compile Include="Plugin\HotFixes\030_MyConnectionOpportunitiesLava.cs" />
     <Compile Include="Plugin\HotFixes\031_AttendanceAnalyticsGivingId.cs" />
+    <Compile Include="Plugin\HotFixes\032_MigrationRollupsForV6_9.cs" />
     <Compile Include="Plugin\HotFixes\029_BatchDetailReopenBatchSecurity.cs" />
     <Compile Include="Plugin\HotFixes\025_PersonGivingEnvelopeAttribute.cs" />
     <Compile Include="Plugin\HotFixes\026_PersonEditConnectionRecordStatus.cs" />
