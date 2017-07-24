@@ -253,6 +253,8 @@ namespace Rock.Slingshot
         /// <param name="foreignSystemKey">The foreign system key.</param>
         public void DoImport()
         {
+            BulkImportHelper.OnProgress += BulkImportHelper_OnProgress;
+
             // Load Slingshot Models from .slingshot
             this.ReportProgress( 0, "Loading Slingshot Models..." );
             LoadSlingshotLists();
@@ -313,6 +315,8 @@ namespace Rock.Slingshot
         /// </summary>
         public void DoImportPhotos()
         {
+            BulkImportHelper.OnProgress += BulkImportHelper_OnProgress;
+
             this.Results.Clear();
 
             this.Results.Add( PREPARE_PHOTO_DATA, string.Empty );
@@ -839,9 +843,13 @@ namespace Rock.Slingshot
 
                 if ( this.FinancialTransactionChunkSize.HasValue )
                 {
-                    foreach ( var tran in postChunk.ToList() )
+                    if ( financialTransactionImportList.Count < postChunkSize )
                     {
-                        financialTransactionImportList.Remove( tran );
+                        financialTransactionImportList.Clear();
+                    }
+                    else
+                    {
+                        financialTransactionImportList.RemoveRange( 0, postChunkSize );
                     }
                 }
                 else
@@ -1014,7 +1022,7 @@ namespace Rock.Slingshot
             List<Rock.Slingshot.Model.PersonImport> personImportList = GetPersonImportList();
 
             this.ReportProgress( 0, "Bulk Importing Person..." );
-            BulkImportHelper.OnProgress += BulkImportHelper_OnProgress;
+            
             var result = BulkImportHelper.BulkPersonImport( personImportList, this.ForeignSystemKey );
 
             Results.Add( "Person Import", result );
