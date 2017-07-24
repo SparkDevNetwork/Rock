@@ -22,8 +22,6 @@
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
-    <!-- Icons -->
-
 </head>
 <body runat="server" id="body">
     <form id="form1" runat="server">
