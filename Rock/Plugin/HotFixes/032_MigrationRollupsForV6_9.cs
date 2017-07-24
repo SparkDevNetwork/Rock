@@ -40,7 +40,8 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.UpdateDefinedValue( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Divorced", "Used when the individual is divorced.", "3B689240-24C2-434B-A7B9-A4A6CBA7928C" );
 
             // JE - Typo Fix
-            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.BinaryFile", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "BinaryFileTypeId", "1", "Print For Each", "When a family checks in, should this label be printed once per family, person, or location. Note: this only applies if check-in is configured to use Family check-in vs Individual check-in.", 1, "1", "733944B7-A0D5-41B4-94D4-DE007F72B6F0", "core_LabelType" );
+            // Added to core: 201707241828445_PersonAliasNullableId
+            // RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.BinaryFile", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "BinaryFileTypeId", "1", "Print For Each", "When a family checks in, should this label be printed once per family, person, or location. Note: this only applies if check-in is configured to use Family check-in vs Individual check-in.", 1, "1", "733944B7-A0D5-41B4-94D4-DE007F72B6F0", "core_LabelType" );
         }
 
         /// <summary>

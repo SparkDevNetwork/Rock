@@ -111,12 +111,13 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.AliasPersonId.HasValue )
+                if ( this.AliasPersonId.HasValue && this.AliasPersonGuid.HasValue )
                 {
-                    return null;
+                    string identifier = this.AliasPersonId.ToString() + ">" + this.AliasPersonGuid.ToString();
+                    return Rock.Security.Encryption.EncryptString( identifier );
                 }
-                string identifier = this.AliasPersonId.ToString() + ">" + this.AliasPersonGuid.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier );
+
+                return null;
             }
         }
 
