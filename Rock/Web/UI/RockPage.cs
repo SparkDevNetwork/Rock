@@ -1781,7 +1781,7 @@ Sys.Application.add_load(function () {
             HtmlLink favIcon = new HtmlLink();
             favIcon.Attributes.Add( "rel", rel );
             favIcon.Attributes.Add( "sizes", $"{size}x{size}" );
-            favIcon.Attributes.Add( "href", ResolveRockUrl( $"~/GetImage.ashx?id={binaryFileId}&width={size}&height={size}&mode=crop" ) );
+            favIcon.Attributes.Add( "href", ResolveRockUrl( $"~/GetImage.ashx?id={binaryFileId}&width={size}&height={size}&mode=crop&format=png" ) );
             AddHtmlLink( favIcon );
         }
 
