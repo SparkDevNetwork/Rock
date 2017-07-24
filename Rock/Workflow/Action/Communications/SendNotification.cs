@@ -219,37 +219,12 @@ namespace Rock.Workflow.Action
 
             if ( recipients.Any() && !string.IsNullOrWhiteSpace(message) )
             {
-                var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid(), rockContext );
-                if ( mediumEntity != null )
-                {
-                    var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                    if ( medium != null && medium.IsActive )
-                    {
-                        var transport = medium.Transport;
-                        if ( transport != null && transport.IsActive )
-                        {
-                            var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-
-                            foreach ( var recipient in recipients )
-                            {
-                                var recipientMergeFields = new Dictionary<string, object>( mergeFields );
-                                foreach ( var mergeField in recipient.MergeFields )
-                                {
-                                    recipientMergeFields.Add( mergeField.Key, mergeField.Value );
-                                }
-                                var mediumData = new Dictionary<string, string>();
-                                mediumData.Add( "Message", message.ResolveMergeFields( recipientMergeFields ) );
-                                mediumData.Add("Title", title);
-                                mediumData.Add("Sound", sound);
-
-                                char[] splitPoint = { ',' };
-                                List<string> devices = recipient.To.Split(splitPoint).ToList();
-
-                                transport.Send( mediumData, devices, appRoot, string.Empty );
-                            }
-                        }
-                    }
-                }
+                var pushMessage = new RockPushMessage();
+                pushMessage.SetRecipients( recipients );
+                pushMessage.Title = title;
+                pushMessage.Message = message;
+                pushMessage.Sound = sound;
+                pushMessage.Send();
             }
 
             return true;

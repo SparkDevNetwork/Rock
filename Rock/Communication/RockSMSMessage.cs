@@ -1,29 +1,57 @@
-﻿using System.Collections.Generic;
-using Rock.Communication.Transport;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using Rock.Web.Cache;
 
 namespace Rock.Communication
 {
-    class RockSMSMessage : RockMessage
+    /// <summary>
+    /// Rock SMS Message
+    /// </summary>
+    /// <seealso cref="Rock.Communication.RockMessage" />
+    public class RockSMSMessage : RockMessage
     {
-        public DefinedValueCache FromNumber { get; set; }
-
-        public string Message { get; set; }
-
-        public override bool Send( out List<string> errorMessages )
+        /// <summary>
+        /// Gets the medium entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The medium entity type identifier.
+        /// </value>
+        public override int MediumEntityTypeId
         {
-            errorMessages = new List<string>();
-
-            string errorMessage = string.Empty;
-            var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS, out errorMessage );
-            if ( transport == null )
+            get
             {
-                errorMessages.Add( errorMessage );
-                return false;
+                return EntityTypeCache.Read( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id;
             }
-
-            return transport.Send( this, out errorMessages );
         }
 
+        /// <summary>
+        /// Gets or sets from number.
+        /// </summary>
+        /// <value>
+        /// From number.
+        /// </value>
+        public DefinedValueCache FromNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        public string Message { get; set; }
     }
 }

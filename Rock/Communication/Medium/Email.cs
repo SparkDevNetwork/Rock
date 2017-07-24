@@ -15,15 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Web.UI.Controls.Communication;
@@ -59,6 +54,8 @@ You can view an online version of this email here:
             return new Rock.Web.UI.Controls.Communication.Email( useSimpleMode );
         }
 
+        #region Obsolete 
+
         /// <summary>
         /// Gets the HTML preview.
         /// </summary>
@@ -82,89 +79,6 @@ You can view an online version of this email here:
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Validates the recipient for medium.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="recipient">The recipient.</param>
-        public override void ValidateRecipientForMedium( Person person, CommunicationRecipient recipient )
-        {
-            if ( !person.IsEmailActive )
-            {
-                recipient.Status = CommunicationRecipientStatus.Failed;
-                recipient.StatusNote = "Email is not active";
-            }
-        }
-
-        /// <summary>
-        /// Processes the HTML body.
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        /// <param name="globalAttributes">The global attributes.</param>
-        /// <param name="mergeObjects">The merge objects.</param>
-        /// <param name="currentPersonOverride">The current person override.</param>
-        /// <returns></returns>
-        public static string ProcessHtmlBody( Rock.Model.Communication communication,
-            Rock.Web.Cache.GlobalAttributesCache globalAttributes,
-            Dictionary<string, object> mergeObjects,
-            Person currentPersonOverride = null )
-        {
-            string htmlBody = communication.Message;
-            if ( htmlBody.IsNotNullOrWhitespace() )
-            {
-                // Get the unsubscribe content and add a merge field for it
-                string unsubscribeHtml = communication.GetMediumDataValue( "UnsubscribeHTML" ).ResolveMergeFields( mergeObjects, currentPersonOverride );
-                if (mergeObjects.ContainsKey( "UnsubscribeOption"))
-                {
-                    mergeObjects.Add( "UnsubscribeOption", unsubscribeHtml );
-                }
-                else
-                {
-                    mergeObjects["UnsubscribeOption"] = unsubscribeHtml;
-                }
-                
-                // Resolve merge fields
-                htmlBody = htmlBody.ResolveMergeFields( mergeObjects, currentPersonOverride, communication.EnabledLavaCommands );
-
-                // Resolve special syntax needed if option was included in global attribute
-                if ( Regex.IsMatch( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]" ) )
-                {
-                    htmlBody = Regex.Replace( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]", unsubscribeHtml );
-                }
-
-                // Add the unsubscribe option at end if it wasn't included in content
-                if ( !htmlBody.Contains( unsubscribeHtml ) )
-                {
-                    htmlBody += unsubscribeHtml;
-                }
-
-                // Resolve any relative paths
-                string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
-                htmlBody = htmlBody.Replace( @" src=""/", @" src=""" + publicAppRoot );
-                htmlBody = htmlBody.Replace( @" href=""/", @" href=""" + publicAppRoot );
-            }
-
-            return htmlBody;
-
-        }
-
-        /// <summary>
-        /// Processes the text body.
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        /// <param name="globalAttributes">The global attributes.</param>
-        /// <param name="mergeObjects">The merge objects.</param>
-        /// <param name="currentPersonOverride">The current person override.</param>
-        /// <returns></returns>
-        public static string ProcessTextBody ( Rock.Model.Communication communication,
-            Rock.Web.Cache.GlobalAttributesCache globalAttributes,
-            Dictionary<string, object> mergeObjects,
-            Person currentPersonOverride = null )
-        {
-
-            string defaultPlainText = communication.GetMediumDataValue( "DefaultPlainText" );
-            return defaultPlainText.ResolveMergeFields( mergeObjects, currentPersonOverride, communication.EnabledLavaCommands );
-        }
 
         /// <summary>
         /// Gets a value indicating whether [supports bulk communication].
@@ -172,7 +86,7 @@ You can view an online version of this email here:
         /// <value>
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "All meduims now support bulk communications" )]
+        [Obsolete( "All mediums now support bulk communications" )]
         public override bool SupportsBulkCommunication
         {
             get
@@ -180,5 +94,8 @@ You can view an online version of this email here:
                 return true;
             }
         }
+
+        #endregion
+
     }
 }

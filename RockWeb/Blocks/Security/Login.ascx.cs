@@ -392,7 +392,12 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             var recipients = new List<RecipientData>();
             recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
 
-            Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
+            var message = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
+            message.SetRecipients( recipients );
+            message.AppRoot = ResolveRockUrl( "~/" );
+            message.ThemeRoot = ResolveRockUrl( "~~/" );
+            message.CreateCommunicationRecord = false;
+            message.Send();
         }
 
         #endregion

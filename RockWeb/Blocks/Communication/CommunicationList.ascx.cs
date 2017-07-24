@@ -350,7 +350,10 @@ namespace RockWeb.Blocks.Communication
             string content = tbContent.Text;
             if ( !string.IsNullOrWhiteSpace( content ) )
             {
-                communications = communications.Where( c => c.MediumDataJson.Contains( content ) );
+                communications = communications.Where( c =>
+                    c.Message.Contains( content ) ||
+                    c.SMSMessage.Contains( content ) ||
+                    c.PushMessage.Contains( content ) );
             }
 
             var recipients = new CommunicationRecipientService( rockContext ).Queryable();

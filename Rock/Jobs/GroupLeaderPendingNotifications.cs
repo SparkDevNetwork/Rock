@@ -164,8 +164,9 @@ namespace Rock.Jobs
 
                         if ( pendingIndividuals.Count() > 0 )
                         {
-                            Email.Send( systemEmail.Guid, recipients, appRoot );
-                            pendingMembersCount += pendingIndividuals.Count();
+                            var emailMessage = new RockEmailMessage( systemEmail.Guid );
+                            emailMessage.SetRecipients( recipients );
+                            emailMessage.Send();
                             notificationsSent += recipients.Count();
                         }
 

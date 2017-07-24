@@ -86,8 +86,6 @@ namespace Rock.Jobs
                 && ( t.EndDate == null || t.EndDate > DateTime.Now ) )
                 .AsNoTracking();
 
-            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-
             // Get the current month and year 
             DateTime now = DateTime.Now;
             int month = now.Month;
@@ -128,7 +126,9 @@ namespace Rock.Jobs
                     mergeFields.Add( "Expiring", expirationDate );
                     recipients.Add( new RecipientData( person.Email, mergeFields ) );
 
-                    Email.Send( systemEmail.Guid, recipients, appRoot );
+                    var emailMessage = new RockEmailMessage( systemEmail.Guid );
+                    emailMessage.SetRecipients( recipients );
+                    emailMessage.Send();
 
                     // Start workflow for this person
                     if ( workflowType != null )

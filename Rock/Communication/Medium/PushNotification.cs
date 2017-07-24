@@ -17,11 +17,8 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using Rock.Data;
+
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls.Communication;
 
 namespace Rock.Communication.Medium
@@ -43,8 +40,10 @@ namespace Rock.Communication.Medium
         /// <returns></returns>
         public override MediumControl GetControl( bool useSimpleMode )
         {
-            return new Rock.Web.UI.Controls.Communication.PushNotification();
+            return new Web.UI.Controls.Communication.PushNotification();
         }
+
+        #region Obsolete 
 
         /// <summary>
         /// Gets the HTML preview.
@@ -75,7 +74,7 @@ namespace Rock.Communication.Medium
         /// <value>
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
-        [Obsolete( "All meduims now support bulk communications" )]
+        [Obsolete( "All mediums now support bulk communications" )]
         public override bool SupportsBulkCommunication
         {
             get
@@ -83,5 +82,8 @@ namespace Rock.Communication.Medium
                 return true;
             }
         }
+
+        #endregion
+
     }
 }

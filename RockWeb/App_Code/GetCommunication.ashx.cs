@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 
 using Rock;
@@ -133,8 +134,9 @@ namespace RockWeb
 
             if ( communication.CommunicationType == CommunicationType.Email || communication.CommunicationType == CommunicationType.UserPreference )
             {
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-                sb.Append( Rock.Communication.Medium.Email.ProcessHtmlBody( communication, globalAttributes, mergeFields ) );
+                string body = communication.Message.ResolveMergeFields( mergeFields, communication.EnabledLavaCommands );
+                body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                sb.Append( body );
             }
             else if ( communication.CommunicationType == CommunicationType.SMS )
             {

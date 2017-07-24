@@ -72,18 +72,15 @@ namespace Rock.Jobs
 
                 if ( communications.Any() )
                 {
-                    var recipients = new List<RecipientData>();
-
                     var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
                     mergeFields.Add( "Communications", communications );
 
+                    var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
                     foreach ( var email in recipientEmails )
                     {
-                        recipients.Add( new RecipientData( email, mergeFields ) );
+                        emailMessage.AddRecipient( new RecipientData( email, mergeFields ) );
                     }
-
-                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-                    Email.Send( systemEmailGuid.Value, recipients, appRoot );
+                    emailMessage.Send();
                 }
             }
         }

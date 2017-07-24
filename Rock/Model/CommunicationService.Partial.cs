@@ -43,17 +43,46 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
+        [Obsolete( "Use method without textMessage argument")]
         public Communication CreateEmailCommunication
-        ( 
-            List<string> recipientEmails, 
+        (
+            List<string> recipientEmails,
             string fromName,
             string fromAddress,
             string replyTo,
             string subject,
             string htmlMessage,
             string textMessage,
-            bool bulkCommunication, 
-            CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered, 
+            bool bulkCommunication,
+            CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
+            int? senderPersonAliasId = null )
+        {
+            return CreateEmailCommunication( recipientEmails, fromName, fromAddress, replyTo, subject, htmlMessage, bulkCommunication, recipientStatus, senderPersonAliasId )
+        }
+
+        /// <summary>
+        /// Creates the email communication.
+        /// </summary>
+        /// <param name="recipientEmails">The recipient emails.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="fromAddress">From address.</param>
+        /// <param name="replyTo">The reply to.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="bulkCommunication">if set to <c>true</c> [bulk communication].</param>
+        /// <param name="recipientStatus">The recipient status.</param>
+        /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
+        /// <returns></returns>
+        public Communication CreateEmailCommunication
+        (
+            List<string> recipientEmails,
+            string fromName,
+            string fromAddress,
+            string replyTo,
+            string subject,
+            string message,
+            bool bulkCommunication,
+            CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
             int? senderPersonAliasId = null )
         {
             var recipients = new PersonService( (RockContext)this.Context )
@@ -64,11 +93,15 @@ namespace Rock.Model
             if ( recipients.Any() )
             {
                 Rock.Model.Communication communication = new Rock.Model.Communication();
-                communication.Status = CommunicationStatus.Approved;
-                communication.SenderPersonAliasId = senderPersonAliasId;
-                communication.Subject = subject?.Left(100) ?? string.Empty;
                 Add( communication );
 
+                communication.Status = CommunicationStatus.Approved;
+                communication.SenderPersonAliasId = senderPersonAliasId;
+                communication.FromName = fromName;
+                communication.FromEmail = fromAddress;
+                communication.ReplyToEmail = replyTo;
+                communication.Subject = subject;
+                communication.Message = message;
                 communication.IsBulkCommunication = bulkCommunication;
                 communication.MediumEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Medium.Email" ).Id;
                 communication.FutureSendDateTime = null;
@@ -85,15 +118,6 @@ namespace Rock.Model
                         communication.Recipients.Add( communicationRecipient );
                     }
                 }
-
-                // add the MediumData to the communication
-                communication.MediumData.Clear();
-                communication.MediumData.Add( "FromName", fromName );
-                communication.MediumData.Add( "FromAddress", fromAddress );
-                communication.MediumData.Add( "ReplyTo", replyTo );
-                communication.MediumData.Add( "Subject", subject );
-                communication.MediumData.Add( "HtmlMessage", htmlMessage );
-                communication.MediumData.Add( "TextMessage", textMessage );
 
                 return communication;
             }
