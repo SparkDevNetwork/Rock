@@ -148,7 +148,7 @@ namespace Rock.Slingshot
         // GroupType Lookup by ForeignKey for the ForeignSystemKey
         private Dictionary<int, GroupTypeCache> GroupTypeLookupByForeignId { get; set; }
 
-        // GroupType Lookup by ForeignId for the ForeignSystemKey
+        // Lookup for Campus by UpperCase of Slingshot File's CampusId
         private Dictionary<int, CampusCache> CampusLookupByForeignId { get; set; }
 
         /* Attendance */
@@ -658,7 +658,6 @@ namespace Rock.Slingshot
         {
             this.ReportProgress( 0, "Preparing FinancialAccountImport..." );
             var financialAccountImportList = new List<Rock.Slingshot.Model.FinancialAccountImport>();
-            var campusLookup = CampusCache.All().Where( a => a.ForeignId.HasValue ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
             foreach ( var slingshotFinancialAccount in this.SlingshotFinancialAccountList )
             {
                 var financialAccountImport = new Rock.Slingshot.Model.FinancialAccountImport();
@@ -674,7 +673,7 @@ namespace Rock.Slingshot
 
                 if ( slingshotFinancialAccount.CampusId.HasValue )
                 {
-                    financialAccountImport.CampusId = campusLookup[slingshotFinancialAccount.CampusId.Value];
+                    financialAccountImport.CampusId = this.CampusLookupByForeignId[slingshotFinancialAccount.CampusId.Value]?.Id;
                 }
 
                 financialAccountImport.ParentFinancialAccountForeignId = slingshotFinancialAccount.ParentAccountId == 0 ? ( int? ) null : slingshotFinancialAccount.ParentAccountId;
@@ -694,7 +693,6 @@ namespace Rock.Slingshot
         {
             this.ReportProgress( 0, "Preparing FinancialBatchImport..." );
             var financialBatchImportList = new List<Rock.Slingshot.Model.FinancialBatchImport>();
-            var campusLookup = CampusCache.All().Where( a => a.ForeignId.HasValue ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
             foreach ( var slingshotFinancialBatch in this.SlingshotFinancialBatchList )
             {
                 var financialBatchImport = new Rock.Slingshot.Model.FinancialBatchImport();
@@ -727,7 +725,7 @@ namespace Rock.Slingshot
                         break;
                 }
 
-                financialBatchImport.CampusId = slingshotFinancialBatch.CampusId.HasValue ? campusLookup[slingshotFinancialBatch.CampusId.Value] : ( int? ) null;
+                financialBatchImport.CampusId = slingshotFinancialBatch.CampusId.HasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : ( int? ) null;
 
                 financialBatchImportList.Add( financialBatchImport );
             }
@@ -744,7 +742,6 @@ namespace Rock.Slingshot
         {
             this.ReportProgress( 0, "Preparing FinancialTransactionImport..." );
             var financialTransactionImportList = new List<Rock.Slingshot.Model.FinancialTransactionImport>();
-            var campusLookup = CampusCache.All().Where( a => a.ForeignId.HasValue ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
             foreach ( var slingshotFinancialTransaction in this.SlingshotFinancialTransactionList )
             {
                 var financialTransactionImport = new Rock.Slingshot.Model.FinancialTransactionImport();
@@ -878,7 +875,6 @@ namespace Rock.Slingshot
         private void SubmitAttendanceImport()
         {
             this.ReportProgress( 0, "Preparing AttendanceImport..." );
-            var campusLookup = CampusCache.All().Where( a => a.ForeignId.HasValue ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
             var attendanceImportList = new List<Rock.Slingshot.Model.AttendanceImport>();
             foreach ( var slingshotAttendance in this.SlingshotAttendanceList )
             {
@@ -894,7 +890,7 @@ namespace Rock.Slingshot
                 attendanceImport.Note = slingshotAttendance.Note;
                 if ( slingshotAttendance.CampusId.HasValue )
                 {
-                    attendanceImport.CampusId = campusLookup[slingshotAttendance.CampusId.Value];
+                    attendanceImport.CampusId = this.CampusLookupByForeignId[slingshotAttendance.CampusId.Value]?.Id;
                 }
 
                 attendanceImportList.Add( attendanceImport );
@@ -966,7 +962,6 @@ namespace Rock.Slingshot
         {
             this.ReportProgress( 0, "Preparing GroupImport..." );
             var groupImportList = new List<Rock.Slingshot.Model.GroupImport>();
-            var campusLookup = CampusCache.All().Where( a => a.ForeignId.HasValue ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
             foreach ( var slingshotGroup in this.SlingshotGroupList )
             {
                 var groupImport = new Rock.Slingshot.Model.GroupImport();
@@ -982,7 +977,7 @@ namespace Rock.Slingshot
                 groupImport.Order = slingshotGroup.Order;
                 if ( slingshotGroup.CampusId.HasValue )
                 {
-                    groupImport.CampusId = campusLookup[slingshotGroup.CampusId.Value];
+                    groupImport.CampusId = this.CampusLookupByForeignId[slingshotGroup.CampusId.Value]?.Id;
                 }
 
                 groupImport.ParentGroupForeignId = slingshotGroup.ParentGroupId == 0 ? ( int? ) null : slingshotGroup.ParentGroupId;
@@ -1052,6 +1047,8 @@ namespace Rock.Slingshot
 
             var familyRolesLookup = GroupTypeCache.GetFamilyGroupType().Roles.ToDictionary( k => k.Guid );
 
+            var lookupCampusIdByUpperCaseName = this.CampusLookupByForeignId.Select( a => a.Value ).ToDictionary( k => k.Name.ToUpper(), v => v.Id );
+
 
             foreach ( var slingshotPerson in this.SlingshotPersonList )
             {
@@ -1084,8 +1081,7 @@ namespace Rock.Slingshot
 
                 if ( !string.IsNullOrEmpty( slingshotPerson.Campus?.CampusName ) )
                 {
-                    var lookupCampus = CampusCache.All().Where( a => a.Name.Equals( slingshotPerson.Campus.CampusName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
-                    personImport.CampusId = lookupCampus?.Id;
+                    personImport.CampusId = lookupCampusIdByUpperCaseName[slingshotPerson.Campus.CampusName.ToUpper()];
                 }
 
                 switch ( slingshotPerson.RecordStatus )
@@ -1280,7 +1276,7 @@ namespace Rock.Slingshot
             var rockContext = new RockContext();
             var campusService = new CampusService( rockContext );
 
-            foreach ( var importCampus in importCampuses.Where( a => !CampusCache.All().Any( c => c.Name.Equals( a.Value.CampusName, StringComparison.OrdinalIgnoreCase ) ) ).Select( a => a.Value ) )
+            foreach ( var importCampus in importCampuses.Where( a => !CampusCache.All().Any( c => c.Name.Equals( a.Value.CampusName, StringComparison.OrdinalIgnoreCase ) && c.ForeignKey == this.ForeignSystemKey ) ).Select( a => a.Value ) )
             {
                 var campusToAdd = new Rock.Model.Campus();
                 campusToAdd.ForeignId = importCampus.CampusId;
