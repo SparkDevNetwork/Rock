@@ -38,8 +38,6 @@
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
-    <!-- Icons -->
-    
 </head>
 <body runat="server" id="body">
 

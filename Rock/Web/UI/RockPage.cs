@@ -820,46 +820,16 @@ namespace Rock.Web.UI
                     }
                 }
 
-                //Add Favicon to the header
-                #region favicon
-                HtmlLink favIcon16Sq = new HtmlLink();
-                HtmlLink favIcon32Sq = new HtmlLink();
-                HtmlLink favIcon144Sq = new HtmlLink();
-                HtmlLink favIcon180Sq = new HtmlLink();
-                HtmlLink favIcon192Sq = new HtmlLink();
-                HtmlLink favIcon = new HtmlLink();
-
-                favIcon16Sq.Attributes.Add( "rel", "apple-touch-icon-precomposed" );
-                favIcon16Sq.Attributes.Add( "sizes", "16x16" );
-                favIcon32Sq.Attributes.Add( "rel", "apple-touch-icon-precomposed" );
-                favIcon32Sq.Attributes.Add( "sizes", "32x32" );
-                favIcon144Sq.Attributes.Add( "rel", "apple-touch-icon-precomposed" );
-                favIcon144Sq.Attributes.Add( "sizes", "144x144" );
-                favIcon180Sq.Attributes.Add( "rel", "apple-touch-icon-precomposed" );
-                favIcon180Sq.Attributes.Add( "sizes", "180x180" );
-                favIcon192Sq.Attributes.Add( "rel", "apple-touch-icon-precomposed" );
-                favIcon192Sq.Attributes.Add( "sizes", "192*192" );
-                favIcon.Attributes.Add( "rel", "shortcut icon" );
-
-
+                // Add Favicons
                 if ( Site.FavIconBinaryFileId.HasValue )
                 {
-                    favIcon16Sq.Attributes.Add( "href", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}&maxwidth={1}&maxheight={1}", Site.FavIconBinaryFileId.ToString(), "16" ) ) );
-                    favIcon32Sq.Attributes.Add( "href", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}&maxwidth={1}&maxheight={1}", Site.FavIconBinaryFileId.ToString(), "32" ) ) );
-                    favIcon144Sq.Attributes.Add( "href", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}&maxwidth={1}&maxheight={1}", Site.FavIconBinaryFileId.ToString(), "144" ) ) );
-                    favIcon180Sq.Attributes.Add( "href", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}&maxwidth={1}&maxheight={1}", Site.FavIconBinaryFileId.ToString(), "180" ) ) );
-                    favIcon192Sq.Attributes.Add( "href", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}&maxwidth={1}&maxheight={1}", Site.FavIconBinaryFileId.ToString(), "192" ) ) );
-                    favIcon.Attributes.Add( "href", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}&maxwidth={1}&maxheight={1}", Site.FavIconBinaryFileId.ToString(), "192" ) ) );
-
-                    AddHtmlLink( favIcon );
-                    AddHtmlLink( favIcon16Sq );
-                    AddHtmlLink( favIcon32Sq );
-                    AddHtmlLink( favIcon144Sq );
-                    AddHtmlLink( favIcon180Sq );
-                    AddHtmlLink( favIcon192Sq );
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 192, "shortcut icon" );
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 16 );
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 32 );
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 144 );
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 180 );
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 192 );
                 }
-            
-                #endregion
 
                 // check if page should have been loaded via ssl
                 Page.Trace.Warn( "Checking for SSL request" );
@@ -1798,6 +1768,23 @@ Sys.Application.add_load(function () {
                 LogException( ex );
             }
         }
+
+        /// <summary>
+        /// Adds an icon icon (favicon) link using a binary file id.
+        /// </summary>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="rel">The relative.</param>
+        /// <returns></returns>
+        public void AddIconLink( int binaryFileId, int size, string rel = "apple-touch-icon-precomposed" )
+        {
+            HtmlLink favIcon = new HtmlLink();
+            favIcon.Attributes.Add( "rel", rel );
+            favIcon.Attributes.Add( "sizes", $"{size}x{size}" );
+            favIcon.Attributes.Add( "href", ResolveRockUrl( $"~/GetImage.ashx?id={binaryFileId}&width={size}&height={size}&mode=crop" ) );
+            AddHtmlLink( favIcon );
+        }
+
 
         #endregion
 
@@ -2939,7 +2926,6 @@ Sys.Application.add_load(function () {
         public event PageNavigateEventHandler PageNavigate;
 
         #endregion
-
     }
 
     #region Event Argument Classes
