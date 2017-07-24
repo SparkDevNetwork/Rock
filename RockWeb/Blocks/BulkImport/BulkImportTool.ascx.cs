@@ -81,6 +81,14 @@ namespace RockWeb.Blocks.BulkImport
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            if (this.IsPostBack)
+            {
+                if ( !string.IsNullOrEmpty( tbForeignSystemKey.Text ) )
+                {
+                    btnCheckForeignSystemKey_Click( null, null );
+                }
+            }
         }
 
         #endregion
@@ -166,6 +174,29 @@ namespace RockWeb.Blocks.BulkImport
         }
 
         /// <summary>
+        /// Handles the Click event of the btnCheckForeignSystemKey control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCheckForeignSystemKey_Click( object sender, EventArgs e )
+        {
+            var tableList = Rock.Slingshot.BulkImportHelper.TablesThatHaveForeignSystemKey( tbForeignSystemKey.Text );
+            if ( !tableList.Any())
+            {
+                nbCheckForeignSystemKey.Text = "OK. Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has not be used to import data.";
+                nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Success;
+            }
+            else
+            {
+                nbCheckForeignSystemKey.Text = "Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has already been used. Attendance Data that does not have an Id might be duplicated. Besides that, is it OK to import it again to insert any new records that are detected. It will also update any person records that have changed.";
+                nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Info;
+            }
+
+            nbCheckForeignSystemKey.Details = tableList.AsDelimited("<br />");
+            nbCheckForeignSystemKey.Visible = true;
+        }
+
+        /// <summary>
         /// Starts the import.
         /// </summary>
         /// <param name="importType">Type of the import.</param>
@@ -182,8 +213,8 @@ namespace RockWeb.Blocks.BulkImport
 
                 _hubContext.Clients.All.showLog();
                 Stopwatch stopwatch = Stopwatch.StartNew();
-                
-                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile );
+
+                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text );
                 _importer.OnProgress += _importer_OnProgress;
 
                 if ( importType == ImportType.ImportPhotos )
@@ -223,6 +254,7 @@ namespace RockWeb.Blocks.BulkImport
                 {
                     _importer_OnProgress( null, string.Format( "{0} Complete: [{1}ms]", importType.ConvertToString(), totalMilliseconds ) );
                 }
+
             } );
 
             importTask.Start();
@@ -269,5 +301,7 @@ namespace RockWeb.Blocks.BulkImport
         }
 
         #endregion
+
+
     }
 }

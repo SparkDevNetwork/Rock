@@ -51,6 +51,10 @@
                 <h1 class="panel-title"><i class="fa fa-star"></i>&nbsp;Bulk Import Tool</h1>
             </div>
             <div class="panel-body">
+                <Rock:RockTextBox ID="tbForeignSystemKey" runat="server" Required="true" Label="Foreign System Key" Help="The Key used to uniquely identify the source system" />
+                <asp:LinkButton ID="btnCheckForeignSystemKey" runat="server" CssClass="btn btn-xs btn-action margin-b-md" Text="Check Foreign System Key" OnClick="btnCheckForeignSystemKey_Click" />
+                <Rock:NotificationBox ID="nbCheckForeignSystemKey" runat="server" CssClass="margin-b-md" NotificationBoxType="Warning" Visible = "false" Dismissable="true" />
+
                 <Rock:FileUploader ID="fupSlingshotFile" runat="server" Label="Select Slingshot File" IsBinaryFile="false" RootFolder="~/App_Data/SlingshotFiles" DisplayMode="DropZone" OnFileUploaded="fupSlingshotFile_FileUploaded" OnFileRemoved="fupSlingshotFile_FileRemoved" />
                 <asp:Literal ID="lSlingshotFileInfo" runat="server" Text="" />
 
