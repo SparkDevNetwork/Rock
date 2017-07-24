@@ -1,25 +1,40 @@
-DEL Rock\Bin\*.* /Q
-DEL Rock\Obj\*.* /Q
+RMDIR "DotLiquid\Bin" /S /Q
+RMDIR "DotLiquid\Obj" /S /Q
 
-DEL Rock.Mailgun\Bin\*.* /Q
-DEL Rock.Mailgun\Obj\*.* /Q
+RMDIR "Rock\Bin" /S /Q
+RMDIR "Rock\Obj" /S /Q
 
-DEL Rock.Mandrill\Bin\*.* /Q
-DEL Rock.Mandrill\Obj\*.* /Q
+RMDIR "Rock.Mailgun\Bin" /S /Q
+RMDIR "Rock.Mailgun\Obj" /S /Q
 
-DEL Rock.Migrations\Bin\*.* /Q
-DEL Rock.Migrations\Obj\*.* /Q
+RMDIR "Rock.Mandrill\Bin" /S /Q
+RMDIR "Rock.Mandrill\Obj" /S /Q
 
-DEL Rock.NMI\Bin\*.* /Q
-DEL Rock.NMI\Obj\*.* /Q
+RMDIR "Rock.Migrations\Bin" /S /Q
+RMDIR "Rock.Migrations\Obj" /S /Q
 
-DEL Rock.PayFlowPro\Bin\*.* /Q
-DEL Rock.PayFlowPro\Obj\*.* /Q
+RMDIR "Rock.NMI\Bin" /S /Q
+RMDIR "Rock.NMI\Obj" /S /Q
 
-DEL Rock.Rest\Bin\*.* /Q
-DEL Rock.Rest\Obj\*.* /Q
+RMDIR "Rock.PayFlowPro\Bin" /S /Q
+RMDIR "Rock.PayFlowPro\Obj" /S /Q
 
-DEL Rock.SignNow\Bin\*.* /Q
-DEL Rock.SignNow\Obj\*.* /Q
+RMDIR "Rock.Rest\Bin" /S /Q
+RMDIR "Rock.Rest\Obj" /S /Q
+
+RMDIR "Rock.SignNow\Bin" /S /Q
+RMDIR "Rock.SignNow\Obj" /S /Q
+
+RMDIR "Rock.Slingshot\Bin" /S /Q
+RMDIR "Rock.Slingshot\Obj" /S /Q
+
+RMDIR "Rock.Slingshot.Model\Bin" /S /Q
+RMDIR "Rock.Slingshot.Model\Obj" /S /Q
+
+RMDIR "Rock.Version\Bin" /S /Q
+RMDIR "Rock.Version\Obj" /S /Q
+
+RMDIR "SignNowSDK\Bin" /S /Q
+RMDIR "SignNowSDK\Obj" /S /Q
 
 FOR /D %%f in (packages\*) DO RMDIR %%f /S /Q
