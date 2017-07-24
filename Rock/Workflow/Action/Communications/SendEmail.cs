@@ -236,35 +236,17 @@ namespace Rock.Workflow.Action
 
         private void Send( string recipients, string from, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext, bool createCommunicationRecord )
         {
-            var recipientList = recipients.SplitDelimitedValues().ToList();
-
-            var mediumData = new Dictionary<string, string>();
-            mediumData.Add( "From", from.ResolveMergeFields( mergeFields ) );
-            mediumData.Add( "Subject", subject.ResolveMergeFields( mergeFields ) );
-            mediumData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body.ResolveMergeFields( mergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
-
-            var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), rockContext );
-            if ( mediumEntity != null )
+            var emailMessage = new RockEmailMessage();
+            foreach( string recipient in recipients.SplitDelimitedValues().ToList() )
             {
-                var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                if ( medium != null && medium.IsActive )
-                {
-                    var transport = medium.Transport;
-                    if ( transport != null && transport.IsActive )
-                    {
-                        var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-
-                        if ( transport is Rock.Communication.Transport.SMTPComponent )
-                        {
-                            ( (Rock.Communication.Transport.SMTPComponent)transport ).Send( mediumData, recipientList, appRoot, string.Empty, createCommunicationRecord );
-                        }
-                        else
-                        {
-                            transport.Send( mediumData, recipientList, appRoot, string.Empty );
-                        }
-                    }
-                }
+                emailMessage.AddRecipient( new RecipientData( recipient, mergeFields ) );
             }
+            emailMessage.FromEmail = from;
+            emailMessage.Subject = subject;
+            emailMessage.Message = body;
+            emailMessage.CreateCommunicationRecord = createCommunicationRecord;
+
+            emailMessage.Send();
         }
     }
 }

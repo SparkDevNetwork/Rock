@@ -168,6 +168,8 @@ namespace Rock.Model
         /// <value>
         /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
         /// </value>
+        [DataMember]
+        [Obsolete("MediumDataJson is no longer used.")]
         public string MediumDataJson
         {
             get
@@ -194,6 +196,7 @@ namespace Rock.Model
         /// <value>
         /// A Json formatted <see cref="System.String"/> that contains any additional merge fields for the Communication.
         /// </value>
+        [DataMember]
         public string AdditionalMergeFieldsJson
         {
             get
@@ -451,6 +454,7 @@ namespace Rock.Model
         /// A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of key value pairs that contain medium specific data.
         /// </value>
         [DataMember]
+        [Obsolete("MediumData is no longer used. Communication now has specific properties for medium data.")]
         public virtual Dictionary<string, string> MediumData
         {
             get { return _mediumData; }
@@ -486,6 +490,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
         /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
+        [Obsolete("MediumData is no longer used")]
         public string GetMediumDataValue( string key )
         {
             if ( MediumData.ContainsKey( key ) )
@@ -503,6 +508,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the key.</param>
         /// <param name="value">A <see cref="System.String"/> representing the value.</param>
+        [Obsolete( "MediumData is no longer used" )]
         public void SetMediumDataValue( string key, string value )
         {
             if ( MediumData.ContainsKey( key ) )
@@ -569,11 +575,61 @@ namespace Rock.Model
         private static object _obj = new object();
 
         /// <summary>
+        /// Sends the specified communication.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        public static void Send( Rock.Model.Communication communication )
+        {
+            var medium = MediumContainer.GetComponent( communication?.MediumEntityType?.Name );
+            if ( medium != null && medium.IsActive )
+            {
+                medium.Send( communication );
+            }
+        }
+
+        /// <summary>
+        /// Gets the next pending.
+        /// </summary>
+        /// <param name="communicationId">The communication identifier.</param>
+        /// <param name="mediumEntityId">The medium entity identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static Rock.Model.CommunicationRecipient GetNextPending( int communicationId, int mediumEntityId, Rock.Data.RockContext rockContext )
+        {
+            CommunicationRecipient recipient = null;
+
+            var delayTime = RockDateTime.Now.AddMinutes( -10 );
+
+            lock ( _obj )
+            {
+                recipient = new CommunicationRecipientService( rockContext ).Queryable( "Communication,PersonAlias.Person" )
+                    .Where( r =>
+                        r.CommunicationId == communicationId &&
+                        r.PersonAlias.Person.IsDeceased == false &&
+                        ( r.Status == CommunicationRecipientStatus.Pending || 
+                            ( r.Status == CommunicationRecipientStatus.Sending && r.ModifiedDateTime < delayTime ) 
+                        ) &&
+                        r.MediumEntityTypeId.HasValue &&
+                        r.MediumEntityTypeId.Value == mediumEntityId )
+                    .FirstOrDefault();
+
+                if ( recipient != null )
+                {
+                    recipient.Status = CommunicationRecipientStatus.Sending;
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return recipient;
+        }
+
+        /// <summary>
         /// Gets the next pending.
         /// </summary>
         /// <param name="communicationId">The communication identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [Obsolete( "Use GetNextPending( int communicationId, int mediumEntityId, Rock.Data.RockContext rockContext ) instead." )]
         public static Rock.Model.CommunicationRecipient GetNextPending( int communicationId, Rock.Data.RockContext rockContext )
         {
             CommunicationRecipient recipient = null;
@@ -598,83 +654,6 @@ namespace Rock.Model
             }
 
             return recipient;
-        }
-
-        public static bool Send( Rock.Model.Communication communication, out List<string> errorMsgs )
-        {
-            bool error = false;
-            errorMsgs = new List<string>();
-
-            var rockContext = new RockContext();
-
-            // Requery the communication
-            var communicationService = new CommunicationService( rockContext );
-            communication = communicationService.Queryable().FirstOrDefault( t => t.Id == communication.Id );
-
-            bool hasPendingRecipients;
-            if ( communication != null &&
-                communication.Status == CommunicationStatus.Approved &&
-                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
-            {
-                var qryRecipients = new CommunicationRecipientService( rockContext ).Queryable();
-                hasPendingRecipients = qryRecipients
-                    .Where( r => 
-                        r.CommunicationId == communication.Id &&
-                        r.Status == Model.CommunicationRecipientStatus.Pending )
-                    .Any();
-            }
-            else
-            {
-                hasPendingRecipients = false;
-            }
-
-            if ( hasPendingRecipients )
-            {
-                if ( communication.CommunicationType == CommunicationType.Email || communication.CommunicationType == CommunicationType.UserPreference )
-                {
-                    string errorMsg = string.Empty;
-                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL, out errorMsg );
-                    if ( transport != null )
-                    {
-                        transport.Send( communication );
-                    }
-                    else
-                    {
-                        errorMsgs.Add( errorMsg );
-                    }
-
-                }
-
-                if ( communication.CommunicationType == CommunicationType.SMS || communication.CommunicationType == CommunicationType.UserPreference )
-                {
-                    string errorMsg = string.Empty;
-                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS, out errorMsg );
-                    if ( transport != null )
-                    {
-                        transport.Send( communication );
-                    }
-                    else
-                    {
-                        errorMsgs.Add( errorMsg );
-                    }
-                }
-
-                if ( communication.CommunicationType == CommunicationType.PushNotification || communication.CommunicationType == CommunicationType.UserPreference )
-                {
-                    string errorMsg = string.Empty;
-                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION, out errorMsg );
-                    if ( transport != null )
-                    {
-                        transport.Send( communication );
-                    }
-                    else
-                    {
-                        errorMsgs.Add( errorMsg );
-                    }
-                }
-            }
-
-            return !error && !errorMsgs.Any();
         }
 
         #endregion

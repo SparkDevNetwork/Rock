@@ -1,17 +1,47 @@
-﻿using System.Collections.Generic;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Communication
 {
+    /// <summary>
+    /// Rock Message base class
+    /// </summary>
     public abstract class RockMessage
     {
         /// <summary>
         /// The recipients
         /// </summary>
         private List<RecipientData> _recipients = new List<RecipientData>();
+
+        /// <summary>
+        /// Gets the medium entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The medium entity type identifier.
+        /// </value>
+        public abstract int MediumEntityTypeId { get; }
 
         /// <summary>
         /// Gets or sets the application root.
@@ -83,7 +113,27 @@ namespace Rock.Communication
             }
         }
 
+        public RockMessage()
+        {
+            CreateCommunicationRecord = true;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [create communication record].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [create communication record]; otherwise, <c>false</c>.
+        /// </value>
         public bool CreateCommunicationRecord { get; set; }
+
+        /// <summary>
+        /// Adds the recipient.
+        /// </summary>
+        /// <param name="recipient">The recipient.</param>
+        public void AddRecipient( RecipientData recipient )
+        {
+            _recipients.Add( recipient );
+        }
 
         /// <summary>
         /// Sets the recipients.
@@ -164,11 +214,47 @@ namespace Rock.Communication
         }
 
         /// <summary>
+        /// Sends this instance.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool Send()
+        {
+            var errorMessages = new List<string>();
+            return Send( out errorMessages );
+        }
+
+        /// <summary>
         /// Sends the specified error message.
         /// </summary>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public abstract bool Send( out List<string> errorMessages );
+        public virtual bool Send( out List<string> errorMessages )
+        {
+            errorMessages = new List<string>();
+
+            try
+            {
+                var mediumEntity = EntityTypeCache.Read( MediumEntityTypeId );
+                if ( mediumEntity != null )
+                {
+                    var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                    if ( medium != null )
+                    {
+                        medium.Send( this, out errorMessages );
+                        return errorMessages.Any();
+                    }
+                }
+
+                errorMessages.Add( "Could not find valid Medium" );
+                return false;
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, HttpContext.Current );
+                errorMessages.Add( ex.Message );
+                return false;
+            }
+        }
 
     }
 }

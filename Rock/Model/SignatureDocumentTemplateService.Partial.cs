@@ -243,18 +243,16 @@ namespace Rock.Model
                 string inviteLink = component.GetInviteLink( document, person, out errors );
                 if ( !errors.Any() )
                 {
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
-                    mergeFields.Add( "SignatureDocument", document );
-                    mergeFields.Add( "InviteLink", inviteLink );
-
-                    var recipients = new List<RecipientData>();
-                    recipients.Add( new RecipientData( person.Email, mergeFields ) );
-
                     var systemEmail = new SystemEmailService( rockContext ).Get( document.SignatureDocumentTemplate.InviteSystemEmailId.Value );
                     if ( systemEmail != null )
                     {
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-                        Email.Send( systemEmail.Guid, recipients, appRoot, string.Empty, false );
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
+                        mergeFields.Add( "SignatureDocument", document );
+                        mergeFields.Add( "InviteLink", inviteLink );
+
+                        var emailMessage = new RockEmailMessage( systemEmail );
+                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                        emailMessage.Send();
                     }
                 }
                 else

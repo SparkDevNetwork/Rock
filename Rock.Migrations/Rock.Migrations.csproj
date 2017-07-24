@@ -257,10 +257,6 @@
     <Compile Include="Migrations\201707101648235_CommonBlockTypes.Designer.cs">
       <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707110030586_Communications2.cs" />
-    <Compile Include="Migrations\201707110030586_Communications2.Designer.cs">
-      <DependentUpon>201707110030586_Communications2.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201706302335586_communicationV2.cs" />
     <Compile Include="Migrations\201706302335586_communicationV2.Designer.cs">
       <DependentUpon>201706302335586_communicationV2.cs</DependentUpon>
@@ -2606,9 +2602,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707101648235_CommonBlockTypes.resx">
       <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707110030586_Communications2.resx">
-      <DependentUpon>201707110030586_Communications2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201706302335586_communicationV2.resx">
       <DependentUpon>201706302335586_communicationV2.cs</DependentUpon>

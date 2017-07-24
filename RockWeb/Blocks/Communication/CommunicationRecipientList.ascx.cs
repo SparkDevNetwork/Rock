@@ -321,7 +321,10 @@ namespace RockWeb.Blocks.Communication
             string content = tbContent.Text;
             if ( !string.IsNullOrWhiteSpace( content ) )
             {
-                qryCommunications = qryCommunications.Where( c => c.MediumDataJson.Contains( content ) );
+                qryCommunications = qryCommunications.Where( c =>
+                    c.Message.Contains( content ) ||
+                    c.SMSMessage.Contains( content ) ||
+                    c.PushMessage.Contains( content ) );
             }
 
             var sortProperty = gCommunication.SortProperty;
