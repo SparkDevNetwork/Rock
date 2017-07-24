@@ -1169,6 +1169,12 @@ namespace RockWeb.Blocks.Groups
                         connectionStatusField.Visible = _group.GroupType.ShowConnectionStatus;
                     }
 
+                    var martialStatusField = gGroupMembers.ColumnsOfType<DefinedValueField>().FirstOrDefault( a => a.DataField == "MaritalStatusValueId" );
+                    if ( martialStatusField != null )
+                    {
+                        martialStatusField.Visible = _group.GroupType.ShowMaritalStatus;
+                    }
+
                     string photoFormat = "<div class=\"photo-icon photo-round photo-round-xs pull-left margin-r-sm js-person-popover\" personid=\"{0}\" data-original=\"{1}&w=50\" style=\"background-image: url( '{2}' ); background-size: cover; background-repeat: no-repeat;\"></div>";
 
                     var attendanceFirstLast = new Dictionary<int, DateRange>();

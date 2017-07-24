@@ -107,7 +107,7 @@ namespace Rock.Workflow.Action
                                         {
                                             TaggedItem taggedPerson = new TaggedItem();
                                             taggedPerson.Tag = orgTag;
-                                            taggedPerson.EntityGuid = person.PrimaryAlias.AliasPersonGuid;
+                                            taggedPerson.EntityGuid = person.PrimaryAlias.AliasPersonGuid.Value;
                                             orgTag.TaggedItems.Add( taggedPerson );
                                             rockContext.SaveChanges();
                                         }

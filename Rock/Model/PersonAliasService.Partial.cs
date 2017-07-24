@@ -183,7 +183,7 @@ namespace Rock.Model
 
                     PersonAlias personAlias = GetByAliasId( id );
 
-                    if ( personAlias != null && personAlias.AliasPersonGuid.CompareTo( guid ) == 0 )
+                    if ( personAlias != null && personAlias.AliasPersonGuid.HasValue && personAlias.AliasPersonGuid.Value.CompareTo( guid ) == 0 )
                     {
                         return personAlias;
                     }
