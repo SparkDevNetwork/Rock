@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Fundraising
 
     [LinkedPage( "Transaction Entry Page", "The Transaction Entry page to navigate to after prompting for the Fundraising Specific inputs", required: true, order: 1 )]
     [BooleanField( "Show First Name Only", "Only show the First Name of each participant instead of Full Name", defaultValue: false, order: 2 )]
+    [BooleanField( "Allow Automatic Selection", "If enabled and there is only one participant and registrations are not enabled then that participant will automatically be selected and this page will get bypassed.", defaultValue: false, order: 3 )]
     public partial class FundraisingDonationEntry : RockBlock
     {
         #region Base Control Methods
@@ -108,6 +109,25 @@ namespace RockWeb.Blocks.Fundraising
 
                 ddlFundraisingOpportunity.SetValue( group.Id );
                 ddlFundraisingOpportunity_SelectedIndexChanged( null, null );
+
+                //
+                // If they did not specify a group member in the query string AND there is only one
+                // participant AND that participant is Active AND a registration instance has not
+                // been configured. This allows for single-member projects that do not need the user
+                // to select a specific person before donating.
+                //
+                if ( GetAttributeValue( "AllowAutomaticSelection" ).AsBoolean( false ) && groupMember == null )
+                {
+                    var members = group.Members.Where( m => m.GroupRole.Guid == "F82DF077-9664-4DA8-A3D9-7379B690124D".AsGuid() ).ToList();
+                    if ( members.Count == 1 && members[0].GroupMemberStatus == GroupMemberStatus.Active )
+                    {
+                        group.LoadAttributes( rockContext );
+                        if ( string.IsNullOrWhiteSpace( group.GetAttributeValue( "RegistrationInstance" ) ) )
+                        {
+                            groupMember = group.Members.First();
+                        }
+                    }
+                }
             }
 
             if ( groupMember != null )
