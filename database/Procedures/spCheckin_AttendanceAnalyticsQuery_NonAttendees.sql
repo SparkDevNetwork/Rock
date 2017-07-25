@@ -82,6 +82,7 @@ BEGIN
 		    P.[NickName],
 		    P.[LastName],
 		    P.[Email],
+            P.[GivingId],
 		    P.[BirthDate],
             P.[ConnectionStatusValueId]
 		FROM @PersonIdTbl M
@@ -103,12 +104,14 @@ BEGIN
 		        C.[NickName],
 		        C.[LastName],
 		        C.[Email],
+                C.[GivingId],
 		        C.[BirthDate],
                 C.[ConnectionStatusValueId],
 		        A.[Id] AS [ParentId],
 		        A.[NickName] AS [ParentNickName],
 		        A.[LastName] AS [ParentLastName],
 		        A.[Email] AS [ParentEmail],
+                A.[GivingId] as [ParentGivingId],
 		        A.[BirthDate] AS [ParentBirthDate]
 			FROM @PersonIdTbl M
 	        INNER JOIN [Person] C 
@@ -133,12 +136,14 @@ BEGIN
 		        A.[NickName],
 		        A.[LastName],
 		        A.[Email],
+                A.[GivingId] as [GivingId],
 		        A.[BirthDate],
                 A.[ConnectionStatusValueId],
 		        C.[Id] AS [ChildId],
 		        C.[NickName] AS [ChildNickName],
 		        C.[LastName] AS [ChildLastName],
 		        C.[Email] AS [ChildEmail],
+                C.[GivingId] as [ChildGivingId],
 		        C.[BirthDate] AS [ChildBirthDate]
 			FROM @PersonIdTbl M
 	        INNER JOIN [Person] A 

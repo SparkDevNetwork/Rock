@@ -347,7 +347,7 @@ namespace Rock.Web.UI.Controls
 
             StringBuilder valueHtml = new StringBuilder();
             valueHtml.Append( @"<div class=""controls controls-row form-control-group"">");
-            if ( definedValues != null )
+            if ( definedValues != null && definedValues.Any() )
             {
                 valueHtml.Append( @"<select class=""form-control input-width-lg js-value-list-input""><option value=""""></option>" );
                 foreach ( var definedValue in definedValues )
@@ -379,7 +379,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.WriteLine();
 
-                if ( definedValues != null )
+                if ( definedValues != null && definedValues.Any() )
                 {
                     DropDownList ddl = new DropDownList();
                     ddl.AddCssClass( "form-control input-width-lg js-value-list-input" );

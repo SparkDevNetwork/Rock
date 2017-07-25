@@ -231,7 +231,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="values">The values.</param>
         private void WriteValueControls( HtmlTextWriter writer, string[] nameAndValue, Dictionary<string, string> values )
         {
-            if ( values != null )
+            if ( values != null && values.Any() )
             {
                 DropDownList ddl = new DropDownList();
                 ddl.AddCssClass( "key-value-value form-control input-width-md js-key-value-input" );
@@ -287,7 +287,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="values">The values.</param>
         private void WriteValueHtml( StringBuilder html, Dictionary<string,string> values )
         {
-            if ( values != null )
+            if ( values != null && values.Any() )
             {
                 html.Append( @"<select class=""key-value-value form-control input-width-md js-key-value-input"">" );
                 foreach ( var value in values )

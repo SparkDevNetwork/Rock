@@ -270,12 +270,12 @@ namespace RockWeb.Blocks.Cms
                             guestVisitorsStr = "Current Guests:";
                             if ( numRecentGuests > 0 )
                             {
-                                guestVisitorsStr += string.Format( " <span class=\"badge badge-success\">{0}</span>", numRecentGuests );
+                                guestVisitorsStr += string.Format( " <span class=\"badge badge-success\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Users active in the past 5 minutes.\">{0}</span>", numRecentGuests );
                             }
 
                             if ( numInactiveGuests > 0 )
                             {
-                                guestVisitorsStr += string.Format( " <span class=\"badge badge-warning\">{0}</span>", numInactiveGuests );
+                                guestVisitorsStr += string.Format( " <span class=\"badge badge-warning\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Users active in the past 15 minutes.\">{0}</span>", numInactiveGuests );
                             }
                         }
                     }
@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Cms
                 if ( sbUsers.Length > 0 )
                 {
                     lUsers.Text = string.Format( @"<ul class='activeusers fa-ul'>{0}</ul>", sbUsers.ToString() );
-                    lUsers.Text += string.Format( @"<p class='margin-l-sm'>{0}</p>", guestVisitorsStr );
+                    lUsers.Text += string.Format( @"<p class='margin-l-sm js-current-guests'>{0}</p>", guestVisitorsStr );
                 }
                 else
                 {

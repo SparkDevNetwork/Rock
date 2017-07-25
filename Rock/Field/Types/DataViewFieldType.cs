@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
+using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -37,6 +41,83 @@ namespace Rock.Field.Types
         /// Entity Type Name Key
         /// </summary>
         protected const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( ENTITY_TYPE_NAME_KEY );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = new List<Control>();
+
+            var etp = new EntityTypePicker();
+            controls.Add( etp );
+            etp.EntityTypes = new EntityTypeService( new RockContext() )
+                .GetEntities()
+                .OrderBy( t => t.FriendlyName )
+                .ToList();
+            etp.AutoPostBack = true;
+            etp.SelectedIndexChanged += OnQualifierUpdated;
+            etp.Label = "Entity Type";
+            etp.Help = "The type of entity to display dataviews for.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ENTITY_TYPE_NAME_KEY, new ConfigurationValue( "Entity Type", "The type of entity to display dataviews for", "" ) );
+
+            if ( controls != null && controls.Count == 1 )
+            {
+                if ( controls[0] != null && controls[0] is EntityTypePicker )
+                {
+                    int? entityTypeId = ( (EntityTypePicker)controls[0] ).SelectedValueAsInt();
+                    if ( entityTypeId.HasValue )
+                    {
+                        var entityType = EntityTypeCache.Read( entityTypeId.Value );
+                        configurationValues[ENTITY_TYPE_NAME_KEY].Value = entityType != null ? entityType.Name : string.Empty;
+                    }
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is EntityTypePicker && configurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+                {
+                    var entityType = EntityTypeCache.Read( configurationValues[ENTITY_TYPE_NAME_KEY].Value );
+                    ( (EntityTypePicker)controls[0] ).SetValue( entityType != null ? entityType.Id : (int?)null );
+                }
+            }
+        }
+
         #endregion
 
         #region Formatting

@@ -35,7 +35,7 @@ namespace Rock.Transactions
         /// <value>
         /// Page Id.
         /// </value>
-        public int? SiteUrlMapId { get; set; }
+        public int? PageShortLinkId { get; set; }
 
         /// <summary>
         /// Gets or sets the token.
@@ -140,7 +140,7 @@ namespace Rock.Transactions
                     // lookup interactionSession, and create it if it doesn't exist
                     InteractionSession interactionSession = interactionService.GetInteractionSession( this.SessionId.AsGuidOrNull(), this.IPAddress, interactionDeviceType.Id );
 
-                    int componentEntityTypeId = EntityTypeCache.Read<Rock.Model.SiteUrlMap>().Id;
+                    int componentEntityTypeId = EntityTypeCache.Read<Rock.Model.PageShortLink>().Id;
                     
                     // lookup the interaction channel, and create it if it doesn't exist
                     int channelMediumTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER.AsGuid() ).Id;
@@ -163,14 +163,14 @@ namespace Rock.Transactions
                     // check that the page exists as a component
                     var interactionComponent = interactionComponentService.Queryable()
                         .Where( a => 
-                            a.EntityId == SiteUrlMapId && 
+                            a.EntityId == PageShortLinkId && 
                             a.ChannelId == interactionChannel.Id )
                         .FirstOrDefault();
                     if ( interactionComponent == null )
                     {
                         interactionComponent = new InteractionComponent();
                         interactionComponent.Name = Token;
-                        interactionComponent.EntityId = SiteUrlMapId;
+                        interactionComponent.EntityId = PageShortLinkId;
                         interactionComponent.ChannelId = interactionChannel.Id;
                         interactionComponentService.Add( interactionComponent );
                         rockContext.SaveChanges();
@@ -181,8 +181,7 @@ namespace Rock.Transactions
                     interactionService.Add( interaction );
 
                     // obfuscate rock magic token
-                    Regex rgx = new Regex( @"rckipid=([^&]*)" );
-                    string cleanUrl = rgx.Replace( this.Url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+                    string cleanUrl = PersonToken.ObfuscateRockMagicToken( this.Url );
 
                     interaction.InteractionData = cleanUrl;
                     interaction.Operation = "View";

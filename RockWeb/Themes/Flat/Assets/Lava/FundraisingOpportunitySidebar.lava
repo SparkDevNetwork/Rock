@@ -41,10 +41,10 @@
       <div class='label label-default text-center' style='display: block; padding: 8px; margin-bottom: 12px;'>Registration Closed</div>
     {% endif %}
 
-    {% if (RegistrationInstance.ContactPersonAlias.Person.Fullname | Trim != '') or RegistrationInstance.ContactEmail != '' or RegistrationInstance.ContactPhone != '' %}
+    {% if RegistrationInstance.ContactPersonAliasId != null or RegistrationInstance.ContactEmail != '' or RegistrationInstance.ContactPhone != '' %}
     <p>
         <strong>Contact</strong><br />
-        {% if RegistrationInstance.ContactPersonAlias.Person.FullName | Trim != '' %}
+        {% if RegistrationInstance.ContactPersonAliasId != null %}
         {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} <br />
         {% endif %}
 
