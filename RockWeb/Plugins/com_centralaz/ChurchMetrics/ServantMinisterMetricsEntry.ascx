@@ -1,6 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ServantMinisterMetricsEntry.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.ChurchMetrics.ServantMinisterMetricsEntry" %>
-
-
+<meta name="viewport" content="width=device-width, initial-scale=0.75, user-scalable=no" />
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -22,10 +21,11 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlMetrics" runat="server" Visible="false">
-
+                    <h3>
+                        <asp:Literal ID="lWeekend" runat="server" /></h3>
                     <div class="btn-group btn-group-justified margin-b-lg panel-settings-group">
                         <Rock:ButtonDropDownList ID="bddlCampus" runat="server" OnSelectionChanged="bddlCampus_SelectionChanged" />
-                        <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
+                        <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" OnSelectionChanged="bddl_SelectionChanged" Visible="false" />
                         <Rock:ButtonDropDownList ID="bddlService" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
                     </div>
                     <br />
@@ -39,10 +39,10 @@
                                 <asp:HiddenField ID="hfMetricId" runat="server" Value='<%# Eval("Id") %>' />
                                 <div class="row">
                                     <div class="col-xs-3" style="text-align: right">
-                                        <asp:Label ID="lMetricTitle" runat="server" Text='<%# Eval( "Name") %>' Font-Size="XX-Large" />
+                                        <asp:Label ID="lMetricTitle" runat="server" Text='<%# Eval( "Name") %>' />
                                     </div>
                                     <div class="col-xs-9">
-                                        <Rock:NumberBox ID="nbMetricValue" runat="server" NumberType="Integer" Text='<%# Eval( "Value") %>' Height="42pt" />
+                                        <Rock:NumberBox ID="nbMetricValue" runat="server" NumberType="Integer" Text='<%# Eval( "Value") %>' />
                                     </div>
                                 </div>
                                 <br />
@@ -50,7 +50,7 @@
                         </asp:Repeater>
                     </div>
 
-                    <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="2" />
+                    <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save" AccessKey="s" CssClass="btn btn-primary" Font-Size="XX-Large" OnClick="btnSave_Click" />

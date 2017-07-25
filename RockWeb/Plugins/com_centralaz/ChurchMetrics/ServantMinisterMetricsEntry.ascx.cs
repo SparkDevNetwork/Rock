@@ -278,14 +278,23 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
             bddlService.Items.Clear();
 
             // Load service times
-            foreach ( var service in GetServices() )
+            var serviceList = GetServices();
+            if ( serviceList.Any() )
             {
-                bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
-            }
+                foreach ( var service in serviceList )
+                {
+                    bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
+                }
 
-            if ( _selectedServiceId.HasValue )
+                if ( _selectedServiceId.HasValue )
+                {
+                    bddlService.SetValue( _selectedServiceId.Value );
+                }
+            }
+            else
             {
-                bddlService.SetValue( _selectedServiceId.Value );
+                bddlService.Items.Add( new ListItem( "N/A" ) );
+                bddlService.SetValue( "N/A" );
             }
 
             BindMetrics();
@@ -383,16 +392,26 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
             var date = RockDateTime.Today.SundayDate();
             bddlWeekend.Items.Add( new ListItem( "Sunday " + date.ToShortDateString(), date.ToString( "o" ) ) );
             bddlWeekend.SetValue( date.ToString( "o" ) );
+            lWeekend.Text = bddlWeekend.SelectedItem.Text;
 
+            var serviceList = GetServices();
             // Load service times
-            foreach ( var service in GetServices() )
+            if ( serviceList.Any() )
             {
-                bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
-            }
+                foreach ( var service in serviceList )
+                {
+                    bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
+                }
 
-            if ( _selectedServiceId.HasValue )
+                if ( _selectedServiceId.HasValue )
+                {
+                    bddlService.SetValue( _selectedServiceId.Value );
+                }
+            }
+            else
             {
-                bddlService.SetValue( _selectedServiceId.Value );
+                bddlService.Items.Add( new ListItem( "N/A" ) );
+                bddlService.SetValue( "N/A" );
             }
         }
 
