@@ -41,12 +41,28 @@ namespace RockWeb.Plugins.com_centralaz.Cms
     public partial class PageConfigurationReport : RockBlock
     {
         FieldTypeCache pageReferencefieldType = FieldTypeCache.Read( Rock.SystemGuid.FieldType.PAGE_REFERENCE.AsGuid() );
-        StringBuilder pageConnections = new StringBuilder();
-        StringBuilder pageConnections2 = new StringBuilder();
+        StringBuilder nodeData = new StringBuilder();
+        StringBuilder edgeData = new StringBuilder();
+        bool _isDiagramEnabled = false;
 
         Dictionary<string, bool> _pageGuids = new Dictionary<string, bool>();
         Dictionary<string, string> _pageGuidsToName = new Dictionary<string, string>();
         Dictionary<string, bool> _referencedPages = new Dictionary<string, bool>();
+
+        protected string NodeData()
+        {
+            return nodeData.ToString();
+        }
+
+        public string EdgeData()
+        {
+            return edgeData.ToString();
+        }
+
+        public string IsDiagramEnabled()
+        {
+            return _isDiagramEnabled.ToString().ToLower();
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -55,7 +71,8 @@ namespace RockWeb.Plugins.com_centralaz.Cms
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Plugins/com_centralaz/Utility/PageDiagram.css" ) );
+            //RockPage.AddCSSLink( ResolveRockUrl( "~/Plugins/com_centralaz/Utility/PageDiagram.css" ) );
+            RockPage.AddScriptLink( "~/Plugins/com_centralaz/Cms/Scripts/cytoscape.min.js" );
 
             //PersonService personService = new PersonService( new RockContext() );
             //Guid guid = new Guid( "955BF3E9-D38A-4DCB-A6F2-EDF5EC2571C5" );
@@ -74,10 +91,10 @@ namespace RockWeb.Plugins.com_centralaz.Cms
         {
             base.OnLoad( e );
 
-            if (! Page.IsPostBack )
-            {
+            //if (! Page.IsPostBack )
+            //{
                 BindPages();
-            }
+            //}
         }
 
         #region Events
@@ -115,7 +132,6 @@ namespace RockWeb.Plugins.com_centralaz.Cms
             {
                 return;
             }
-
 
             var descendantPages = new List<PageCache>();
             if ( rootPage != null )
@@ -163,6 +179,7 @@ namespace RockWeb.Plugins.com_centralaz.Cms
 
             foreach ( var page in descendantPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
             {
+                nodeData.Append( AddNodeData( page ) );
                 sb.Append( AddPage( page, rockContext, interactionService ) );
             }
 
@@ -171,9 +188,102 @@ namespace RockWeb.Plugins.com_centralaz.Cms
         }
         #endregion
 
+        protected string AddNodeData( PageCache page )
+        {
+            if ( page == null )
+            {
+                return string.Empty;
+            }
+
+            // A page:
+            //  { data: { id: '123', name: 'Admin' } },
+
+            // A block:
+            //  { data: { id: '456', name: 'Admin (CentralAZ)', parent: '123' }, classes: 'block' },
+
+            // block settings:
+            /*
+                 { data: {
+                        id: 'abc-987-654', name: 'Workflow Type : 090189-KHKH187-099898-09029-6737\n \
+	Workflow Activity : none\n \
+	Allow Manual Setup : True\n \
+	Enable Location Sharing : False\n \
+	Time to Cache Geo : 20\n \
+	Enable Reverse Lookup : True\n \
+	', parent: '456'
+                    }, classes: 'setting'
+                },
+           */
+
+            // Edge data
+            // { data: { id: 'a1', source: 'adminblock', target: 'Welcome', label: 'Next Page' }, classes: 'autorotate' },
+
+            var sb = new StringBuilder();
+
+            // add the page node
+            sb.AppendFormat( @"{{ data: {{ id: '{0}', name: '{1}' }} }},{2}", page.Guid, page.InternalName.Replace( "'", "''" ), Environment.NewLine );
+
+            // add each block node
+            foreach ( var block in page.Blocks )
+            {
+                sb.AppendFormat( @"{{ data: {{ id: '{0}', name: '{1}', parent: '{2}' }}, classes: 'block' }},{3}", block.Guid, block.Name.Replace( "'", "''" ), page.Guid, Environment.NewLine );
+
+                // Page reference block attributes...
+                foreach ( var attribute in block.Attributes.Values.Where( a => a.FieldType == pageReferencefieldType ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                {
+                    var pageGuid = block.GetAttributeValue( attribute.Key ).ToStringSafe().ToLower();
+                    if ( pageGuid.Contains( "," ) )
+                    {
+                        pageGuid = pageGuid.SplitDelimitedValues()[0];
+                    }
+                    edgeData.AppendFormat( "{{ data: {{ id: '{0}', source: '{1}', target: '{2}', label: '{3}' }}, classes: 'autorotate {4}' }},{5}", attribute.Guid, block.Guid, pageGuid, attribute.Key.SplitCase(), EdgeClass(attribute.Key), Environment.NewLine );
+                }
+
+                // Other block attributes
+                var attributes = block.Attributes.Values.Where( a => a.FieldType != pageReferencefieldType ).OrderBy( a => a.Order ).ThenBy( a => a.Name );
+                if ( attributes != null && attributes.Count() > 0 )
+                {
+                    sb.AppendFormat( @"{{ data: {{ id: '{0}', name: '", block.Id );
+
+                    foreach ( var attribute in block.Attributes.Values.Where( a => a.FieldType != pageReferencefieldType ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                    {
+                        if ( attribute != null && attribute.Key != null )
+                        {
+                            var value = block.GetAttributeValue( attribute.Key );
+                            if ( value != null )
+                            {
+                                sb.AppendFormat( @"    {0} : {1} \n\{2} ", attribute.Key.SplitCase(), value.Replace( "'", "''" ), Environment.NewLine );
+                            }
+                        }
+                    }
+                    sb.AppendFormat( @"', parent: '{0}' }}, classes: 'setting' }},
+", block.Guid );
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        protected string EdgeClass( string key )
+        {
+            if ( key.Contains( "Home" ) )
+            {
+                return "homePage";
+            }
+            else if ( key.Contains( "Next" ) )
+            {
+                return "nextPage";
+            }
+            else if ( key.Contains( "Previous" ) )
+            {
+                return "prevPage";
+            }
+
+            return "";
+        }
+
         protected string AddPage( PageCache page, RockContext rockContext, InteractionService interactionService )
         {
-
             var sb = new StringBuilder();
             try
             {
@@ -228,88 +338,7 @@ namespace RockWeb.Plugins.com_centralaz.Cms
 
             return sb.ToString();
         }
-
-        /// <summary>
-        /// Adds the page nodes.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="expandedPageIdList">The expanded page identifier list.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        protected string PageNode( PageCache page, List<int> expandedPageIdList, RockContext rockContext )
-        {
-            var sb = new StringBuilder();
-
-            string pageSearch = this.PageParameter( "pageSearch" );
-            bool isSelected = false;
-            if ( !string.IsNullOrWhiteSpace( pageSearch ) )
-            {
-                isSelected = page.InternalName.IndexOf( pageSearch, StringComparison.OrdinalIgnoreCase ) >= 0;
-            }
-
-            bool isExpanded = expandedPageIdList.Contains( page.Id );
-
-            var authRoles = Authorization.AuthRules( EntityTypeCache.Read<Rock.Model.Page>().Id, page.Id, Authorization.VIEW );
-            string authHtml = string.Empty;
-            if (authRoles.Any())
-            {
-                authHtml += string.Format(
-                    "&nbsp<i class=\"fa fa-lock\">&nbsp;</i>{0}",
-                    authRoles.Select( a => "<span class=\"badge badge-" + (a.AllowOrDeny == 'A' ? "success" : "danger")  + "\">" + a.DisplayName + "</span>"  ).ToList().AsDelimited( " " ) );
-            }
-
-            int pageEntityTypeId = EntityTypeCache.Read( "Rock.Model.Page" ).Id;
-
-            sb.AppendFormat(
-                "<li data-expanded='{4}' data-model='Page' data-id='p{0}'><span><span class='rollover-container'><i class=\"fa fa-file-o\">&nbsp;</i><a href='{1}'>{2}</a> {6} {7}<span class='js-auth-roles hidden'>{5}</span></span></span>{3}", 
-                page.Id, // 0
-                new PageReference( page.Id ).BuildUrl(), // 1
-                isSelected ? "<strong>" + page.InternalName + "</strong>" : page.InternalName, // 2
-                Environment.NewLine, // 3
-                isExpanded.ToString().ToLower(), // 4
-                authHtml, // 5
-                CreatePageConfigIcon(page), // 6
-                CreateSecurityIcon( pageEntityTypeId, page.Id, page.InternalName) // 7
-            ); 
-
-            var childPages = page.GetPages( rockContext );
-            if ( childPages.Any() || page.Blocks.Any() )
-            {
-                sb.AppendLine( "<ul>" );
-
-                foreach ( var childPage in childPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
-                {
-                    sb.Append( PageNode( childPage, expandedPageIdList, rockContext ) );
-                }
-
-                foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )
-                {
-                    string blockName = block.Name;
-                    string blockCacheName = BlockTypeCache.Read( block.BlockTypeId, rockContext ).Name;
-                    if (blockName != blockCacheName)
-                    {
-                        blockName = blockName + " (" + blockCacheName + ")";
-                    }
-
-                    int blockEntityTypeId = EntityTypeCache.Read( "Rock.Model.Block" ).Id;
-
-                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='b{0}'><span><span class='rollover-container'> <i class='fa fa-th-large'>&nbsp;</i> {2} {1} {4}</span></span></li>{3}", 
-                        block.Id, // 0
-                        CreateConfigIcon( block ), // 1
-                        blockName,  // 2
-                        Environment.NewLine, //3
-                        CreateSecurityIcon( blockEntityTypeId, block.Id, block.Name ) // 4
-                    );
-                }
-
-                sb.AppendLine( "</ul>" );
-            }
-
-            sb.AppendLine( "</li>" );
-
-            return sb.ToString();
-        }
-
+        
         /// <summary>
         /// Creates the block config icon.
         /// </summary>
@@ -343,7 +372,25 @@ namespace RockWeb.Plugins.com_centralaz.Cms
                 "&nbsp;<span class='rollover-item' onclick=\"javascript: Rock.controls.modal.show($(this), '{0}'); event.stopImmediatePropagation();\" title=\"Page Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</span>",
                 pagePropertyUrl );
         }
+
+        protected void lbToggleDiagram_Click( object sender, EventArgs e )
+        {
+            if ( _isDiagramEnabled )
+            {
+                _isDiagramEnabled = false;
+                pnlReport.Visible = true;
+                pnlDiagram.Visible = false;
+            }
+            else
+            {
+                //RockPage.AddScriptLink( "~/Plugins/com_centralaz/Cms/Scripts/cytoscape.min.js" );
+                _isDiagramEnabled = true;
+                pnlReport.Visible = false;
+                pnlDiagram.Visible = true;
+            }
+        }
     }
 }
+ 
  
  
