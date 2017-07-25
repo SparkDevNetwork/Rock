@@ -74,6 +74,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             rFilter.SaveUserPreference( "Campus", "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             rFilter.SaveUserPreference( "STARS Applicant", ddlStarsApp.SelectedValue );
+            rFilter.SaveUserPreference( "Person Name", tbPersonName.Text );
 
             BindFilter( );
             BindGrid( );
@@ -107,6 +108,12 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 case "STARS Applicant":
                 {
                     e.Value = rFilter.GetUserPreference( "STARS Applicant" );
+                    break;
+                }
+
+                case "Person Name":
+                {
+                    e.Value = rFilter.GetUserPreference( "Person Name" );
                     break;
                 }
 
@@ -153,6 +160,9 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             ddlStarsApp.Items.Add( "Yes" );
             ddlStarsApp.Items.Add( "No" );
             ddlStarsApp.SetValue( rFilter.GetUserPreference( "STARS Applicant" ) );
+
+            // setup the Person Name
+            tbPersonName.Text = rFilter.GetUserPreference( "Person Name" );
         }
         #endregion
 
@@ -191,24 +201,56 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         {
             using ( RockContext rockContext = new RockContext( ) )
             {
-                // get all volunteer screening instances
+                List<CampusCache> campusCache = CampusCache.All( );
+
+                // get all volunteer screening instances. This is complicated, so I'll explain:
+
+                // Each instance is stored in the VolunteerScreening table, with Ids (pointers) to a person and workflow.
+                // Additionally, the workflows store the Campus Attribute, which is important for organizing these per-campus.
+                // So, we have to join FIVE tables to get everything.
+
+                // First, we simply join the 3 "core" tables--volunteer screening, personAlias, and workflow.
                 var vsQuery = new Service<VolunteerScreening>( rockContext ).Queryable( ).AsNoTracking( );
                 var paQuery = new Service<PersonAlias>( rockContext ).Queryable( ).AsNoTracking( );
                 var wfQuery = new Service<Workflow>( rockContext ).Queryable( ).AsNoTracking( );
-            
-                var instanceQuery = vsQuery.Join( paQuery, vs => vs.PersonAliasId, pa => pa.Id, ( vs, pa ) => new { VolunteerScreening = vs, PersonName = pa.Person.FirstName + " " + pa.Person.LastName } )
-                                           .Join( wfQuery, vs => vs.VolunteerScreening.Application_WorkflowId, wf => wf.Id, ( vs, wf ) => new { VolunteerScreeningWithPerson = vs, Workflow = wf } )
-                                           .Select( a => new { Id = a.VolunteerScreeningWithPerson.VolunteerScreening.Id,
-                                                               SentDate = a.VolunteerScreeningWithPerson.VolunteerScreening.CreatedDateTime.Value,
-                                                               CompletedDate = a.VolunteerScreeningWithPerson.VolunteerScreening.ModifiedDateTime.Value,
-                                                               PersonName = a.VolunteerScreeningWithPerson.PersonName,
-                                                               Workflow = a.Workflow } ).ToList( );
+                var coreQuery = vsQuery.Join( paQuery, vs => vs.PersonAliasId, pa => pa.Id, ( vs, pa ) => new { VolunteerScreening = vs, PersonName = pa.Person.FirstName + " " + pa.Person.LastName } )
+                                       .Join( wfQuery, vs => vs.VolunteerScreening.Application_WorkflowId, wf => wf.Id, ( vs, wf ) => new { VolunteerScreeningWithPerson = vs, Workflow = wf } );
 
-                // load all attributes for the workflows, since we need them for the grid
-                foreach( var queryObj in instanceQuery )
-                {
-                    queryObj.Workflow.LoadAttributes( );
-                }
+
+                // Now, since the Campus Attribute Value depends on the Attribute table, we need to join those two tables, and then join that to the query we built above.
+                var attribQuery = new AttributeService( rockContext ).Queryable( ).AsNoTracking( );
+                var avQuery = new AttributeValueService( rockContext ).Queryable( ).AsNoTracking( );
+                var attribWithValue = attribQuery.Join( avQuery, a => a.Id, av => av.AttributeId, ( a, av ) => new { Attribute = a, AttribValue = av } )
+                                                 .Where( a => a.Attribute.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) );
+
+                // join the attributeValues so we can add in the campus
+                var instanceQuery = coreQuery.Join( attribWithValue, vs => vs.Workflow.Id, av => av.AttribValue.EntityId, ( vs, av ) => new { VS = vs, AV = av } )
+                                             .Where( a => a.AV.Attribute.Key == "Campus" )
+                                             .Select( a => new { Id = a.VS.VolunteerScreeningWithPerson.VolunteerScreening.Id,
+                                                                 SentDate = a.VS.VolunteerScreeningWithPerson.VolunteerScreening.CreatedDateTime.Value,
+                                                                 CompletedDate = a.VS.VolunteerScreeningWithPerson.VolunteerScreening.ModifiedDateTime.Value,
+                                                                 PersonName = a.VS.VolunteerScreeningWithPerson.PersonName,
+                                                                 Workflow = a.VS.Workflow,
+                                                                 CampusGuid = a.AV.AttribValue.Value } )
+                                             .ToList( );
+
+                // In the end, we've joined the following tables:
+                // VolunteerScreening, Workflow, PersonAlias, Attribute, AttributeValue
+                // and we're selecting the properties needed to filter and display each Application.
+                // We now have an object with: 
+                // The Volunteer Screening Id (Taken from the VS table)
+                // Its SentDate, CompletedDate (Taken from the WF table)
+                // Its Person (Taken from the PersonAlias table)
+                // Its Campus (Taken from the AttributeValue table)
+
+                // JHM 7-10-17
+                // HORRIBLE HACK - If the application was sent before we ended testing, we need to support old states and attributes.
+                // We need to do this because we have 100+ applications that were sent out (and not yet completed) during our testing phase. I was hoping for like, 10.
+                // We can get rid of this when all workflows of type 202 are marked as 'completed'
+                var starsQueryResult = attribWithValue.Where( a => a.Attribute.Key == "ApplyingForStars" )
+                                                      .Select( a => new ApplyingForStars{  EntityId = a.AttribValue.EntityId,
+                                                                                           Applying = a.AttribValue.Value } )
+                                                      .ToList( );
 
                 // ---- Apply Filters ----
                 var filteredQuery = instanceQuery;
@@ -217,10 +259,10 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 List<int> campusIds = cblCampus.SelectedValuesAsInt;
                 if( campusIds.Count > 0 )
                 {
-                    // the workflows store the campus by name, so convert the selected Ids to names
-                    List<string> selectedCampusNames = CampusCache.All( ).Where( cc => campusIds.Contains( cc.Id ) ).Select( cc => cc.Name ).ToList( );
+                    // the workflows store the campus by guid, so convert the selected Ids to guids
+                    List<Guid> selectedCampusNames = campusCache.Where( cc => campusIds.Contains( cc.Id ) ).Select( cc => cc.Guid ).ToList( );
 
-                    filteredQuery = filteredQuery.Where( vs => ContainsCampus( selectedCampusNames, vs.Workflow ) ).ToList( );
+                    filteredQuery = filteredQuery.Where( vs => selectedCampusNames.Contains( vs.CampusGuid.AsGuid( ) ) ).ToList( );
                 }
 
                 // Status
@@ -234,9 +276,15 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 string starsApp = rFilter.GetUserPreference( "STARS Applicant" );
                 if ( string.IsNullOrWhiteSpace( starsApp ) == false )
                 {
-                    filteredQuery = filteredQuery.Where( vs => IsStars( vs.Workflow ) == starsApp ).ToList( );
+                    filteredQuery = filteredQuery.Where( vs => IsStars( vs.Workflow, starsQueryResult ) == starsApp ).ToList( );
                 }
 
+                // Name
+                string personName = rFilter.GetUserPreference( "Person Name" );
+                if ( string.IsNullOrWhiteSpace( personName ) == false )
+                {
+                    filteredQuery = filteredQuery.Where( vs => vs.PersonName.ToLower( ).Contains( personName.ToLower( ).Trim( ) ) ).ToList( );
+                }
                 // ---- End Filters ----
             
                 if ( filteredQuery.Count( ) > 0 )
@@ -248,8 +296,8 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                                 SentDate = vs.SentDate.ToShortDateString( ),
                                 CompletedDate = ParseCompletedDate( vs.SentDate, vs.CompletedDate ),
                                 State = VolunteerScreening.GetState( vs.SentDate, vs.CompletedDate, vs.Workflow.Status ),
-                                Campus = GetCampus( vs.Workflow ),
-                                IsStars = IsStars( vs.Workflow )
+                                Campus = campusCache.Where( c => c.Guid == vs.CampusGuid.AsGuid( ) ).SingleOrDefault( ).Name,
+                                IsStars = IsStars( vs.Workflow, starsQueryResult )
                             } ).ToList( );
                 }
 
@@ -259,46 +307,27 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         #endregion
 
         #region Helper Methods
-        bool ContainsCampus( List<string> selectedCampusNames, Workflow  workflow )
+        public class ApplyingForStars
         {
-            if( workflow.AttributeValues.ContainsKey( "Campus" ) )
-            {
-                // check for the campus in the selected list. if somehow campus is null, we'll go ahead and display 
-                // the entry
-                string workflowCampus = workflow.AttributeValues [ "Campus" ].ToString( );
-                if( string.IsNullOrEmpty( workflowCampus ) == false )
-                {
-                    return selectedCampusNames.Contains( workflowCampus );
-                }
-            }
-
-            return true;
+            public int? EntityId { get; set; }
+            public string Applying { get; set; }
         }
 
-        string GetCampus( Workflow workflow )
-        {
-            if( workflow.AttributeValues.ContainsKey( "Campus" ) )
-            {
-                return workflow.AttributeValues [ "Campus" ].ToString( );
-            }
-
-            return string.Empty;
-        }
-
-        string IsStars( Workflow workflow )
+        string IsStars( Workflow workflow, List<ApplyingForStars> starsQueryResult )
         {
             // JHM 7-10-17
             // HORRIBLE HACK - If the application was sent before we ended testing, we need to support old states and attributes.
             // We need to do this because we have 100+ applications that were sent out (and not yet completed) during our testing phase. I was hoping for like, 10.
             // We can get rid of this when all workflows of type 202 are marked as 'completed'
-            if( workflow.AttributeValues.ContainsKey( "ApplyingForStars" ) )
+            ApplyingForStars applyingForStars = starsQueryResult.Where( av => av.EntityId == workflow.Id ).SingleOrDefault( );
+            if ( applyingForStars != null )
             {
-                return workflow.AttributeValues [ "ApplyingForStars" ].ToString( );
+                return applyingForStars.Applying == "True" ? "Yes" : "No";
             }
             else
             {
                 // The newer applications will simply have 'STARS' in their name
-                if( workflow.Name.Contains( "STARS" ) )
+                if ( workflow.Name.Contains( "STARS" ) )
                 {
                     return "Yes";
                 }
