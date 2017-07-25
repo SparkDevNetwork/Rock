@@ -22,6 +22,7 @@
                         restUrl: this.options.restUrl,
                         restParams: this.options.restParams,
                         expandedIds: this.options.expandedIds,
+                        showSelectChildren: this.options.showSelectChildren,
                         id: this.options.startingId
                     },
                     $hfItemIds = $control.find('.js-item-id-value'),
@@ -120,6 +121,7 @@
                     $control.find('.picker-select-none').show();
 
                     $spanNames.text(selectedNames.join(', '));
+                    $spanNames.attr('title', $spanNames.text());
 
                     $(this).closest('.picker-menu').slideUp(function () {
                         self.updateScrollbar();
@@ -148,6 +150,65 @@
                     $control.siblings('.js-hide-on-select-none').hide();
 
                     $spanNames.text(self.options.defaultText);
+                    $spanNames.attr('title', $spanNames.text());
+                });
+
+                // clicking on the 'select all' btn
+                $control.on('click', '.js-select-all', function (e)
+                {
+                  var rockTree = $control.find('.treeview').data('rockTree');
+
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  var $itemNameNodes = rockTree.$el.find('.rocktree-name');
+
+                  var allItemNodesAlreadySelected = true;
+                  $itemNameNodes.each(function (a)
+                  {
+                    if (!$(this).hasClass('selected')) {
+                      allItemNodesAlreadySelected = false;
+                    }
+                  });
+
+                  if (!allItemNodesAlreadySelected) {
+                    // mark them all as unselected (just in case some are selected already), then click them to select them 
+                    $itemNameNodes.removeClass('selected');
+                    $itemNameNodes.click();
+                  } else {
+                    // if all were already selected, toggle them to unselected
+                    rockTree.setSelected([]);
+                    $itemNameNodes.removeClass('selected');
+                  }
+                });
+
+                // clicking on the 'select all' btn
+                $control.on('click', '.js-select-all', function (e)
+                {
+                  var rockTree = $control.find('.treeview').data('rockTree');
+
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  var $itemNameNodes = rockTree.$el.find('.rocktree-name');
+
+                  var allItemNodesAlreadySelected = true;
+                  $itemNameNodes.each(function (a)
+                  {
+                    if (!$(this).hasClass('selected')) {
+                      allItemNodesAlreadySelected = false;
+                    }
+                  });
+
+                  if (!allItemNodesAlreadySelected) {
+                    // mark them all as unselected (just in case some are selected already), then click them to select them 
+                    $itemNameNodes.removeClass('selected');
+                    $itemNameNodes.click();
+                  } else {
+                    // if all were already selected, toggle them to unselected
+                    rockTree.setSelected([]);
+                    $itemNameNodes.removeClass('selected');
+                  }
                 });
             },
             updateScrollbar: function (sPosition) {
@@ -201,7 +262,8 @@
                 allowMultiSelect: false,
                 defaultText: '',
                 selectedIds: null,
-                expandedIds: null
+                expandedIds: null,
+                showSelectChildren: false
             },
             controls: {},
             initialize: function (options) {

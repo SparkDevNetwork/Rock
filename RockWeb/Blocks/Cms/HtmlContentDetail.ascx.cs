@@ -50,12 +50,11 @@ namespace RockWeb.Blocks.Cms
     [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 2 )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 3 )]
     [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 4 )]
-    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", 5 )]
+    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 5 )]
     [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 6 )]
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 7 )]
     [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 8, "SupportVersions" )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 9 )]
-    [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 10 )]
     [CustomDropdownListField( "Quick Edit", "Allow quick editing of HTML contents.", "AIREDIT^In Place Editing,DBLCLICK^Double-Click For Edit Dialog", false, "", "", 11, "QuickEdit")]
 
     [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false, "", 12 )]
@@ -480,7 +479,7 @@ namespace RockWeb.Blocks.Cms
 
                 string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
 
-                htmlEditor.OnChangeScript = onchangeScript;
+                htmlEditor.CallbackOnKeyupScript = onchangeScript;
             }
 
             htmlEditor.MergeFields.Clear();
@@ -642,7 +641,14 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             string html = string.Empty;
 
-            string cachedContent = HtmlContentService.GetCachedContent( this.BlockId, entityValue );
+            int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
+            string cachedContent = null;
+
+            // only load from the cache if a cacheDuration was specified
+            if ( cacheDuration > 0 )
+            {
+                cachedContent = HtmlContentService.GetCachedContent( this.BlockId, entityValue );
+            }
 
             // if content not cached load it from DB
             if ( cachedContent == null )
@@ -654,9 +660,7 @@ namespace RockWeb.Blocks.Cms
 
                     if ( content != null )
                     {
-                        bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-
-                        if ( content.Content.HasMergeFields() || enableDebug )
+                        if ( content.Content.HasMergeFields() )
                         {
                             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                             mergeFields.Add( "CurrentPage", this.PageCache );
@@ -672,15 +676,7 @@ namespace RockWeb.Blocks.Cms
                             mergeFields.Add( "CurrentPersonCanAdministrate", IsUserAuthorized( Authorization.ADMINISTRATE ) );
 
                             html = content.Content.ResolveMergeFields( mergeFields, GetAttributeValue("EnabledLavaCommands") );
-
-                            // show merge fields if enable debug true
-                            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-                            {
-                                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                                mergeFields.Remove( "Person" );
-                                html += mergeFields.lavaDebugInfo();
-                            }
-                        }
+                         }
                         else
                         {
                             html = content.Content;
@@ -698,7 +694,6 @@ namespace RockWeb.Blocks.Cms
                 html = html.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
                 // cache content
-                int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
                 if ( cacheDuration > 0 )
                 {
                     HtmlContentService.AddCachedContent( this.BlockId, entityValue, html, cacheDuration );

@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the Metaphone characters for a given name
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "Metaphone" )]
     [DataContract]

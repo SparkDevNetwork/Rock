@@ -84,12 +84,12 @@ namespace Rock.Workflow.Action.CheckIn
                 // log a warning if the attribute is missing or invalid
                 if ( string.IsNullOrWhiteSpace( personSpecialNeedsKey ) )
                 {
-                    action.AddLogEntry( string.Format( "The Person Special Needs attribute is not selected or invalid for '{0}'.", action.ActionType.Name ) );
+                    action.AddLogEntry( string.Format( "The Person Special Needs attribute is not selected or invalid for '{0}'.", action.ActionTypeCache.Name ) );
                 }
 
                 if ( string.IsNullOrWhiteSpace( groupSpecialNeedsKey ) )
                 {
-                    action.AddLogEntry( string.Format( "The Group Special Needs attribute is not selected or invalid for '{0}'.", action.ActionType.Name ) );
+                    action.AddLogEntry( string.Format( "The Group Special Needs attribute is not selected or invalid for '{0}'.", action.ActionTypeCache.Name ) );
                 }
 
                 foreach ( var person in family.People )

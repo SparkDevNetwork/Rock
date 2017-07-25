@@ -31,6 +31,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection opportunity
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionOpportunity" )]
     [DataContract]
     public partial class ConnectionOpportunity : Model<ConnectionOpportunity>, IHasActiveFlag
@@ -131,6 +132,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionType ConnectionType { get; set; }
 
         /// <summary>
@@ -156,6 +158,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.BinaryFile"/> that contains the Opportunity's photo.
         /// </value>
+        [LavaInclude]
         public virtual BinaryFile Photo { get; set; }
 
         /// <summary>

@@ -49,16 +49,16 @@
                                 <div class="col-md-6">
                                     <Rock:NumberBox ID="nbCount" runat="server" CssClass="input-width-sm" Label="Items Per Page"
                                         Help="The maximum number of items to display per page (0 means unlimited)." />
-                                    <Rock:NumberBox ID="nbCacheDuration" runat="server" CssClass="input-width-sm" Label="Cache Duration"
-                                        Help="The number of seconds to cache the content for (use '0' for no caching)." />
-                                    <Rock:RockCheckBox ID="cbSetPageTitle" runat="server" Label="Set Page Title" Text="Yes"
-                                        Help="When enabled will update the page title with the channel's name unless there is a item id in the query string then it will display the item's title." />
+                                    <Rock:NumberBox ID="nbItemCacheDuration" runat="server" CssClass="input-width-sm" Label="Item Cache Duration"
+                                        Help="Number of seconds to cache the content items returned by the selected filter (use '0' for no caching)." />
+                                    <Rock:NumberBox ID="nbOutputCacheDuration" runat="server" CssClass="input-width-sm" Label="Output Cache Duration"
+                                        Help="Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value. (use '0' for no caching)." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbDebug" runat="server" Label="Enable Debug" Text="Yes"
-                                        Help="Enabling debug will display the fields of the first 5 items to help show you whats available for your template." />
+                                    <Rock:RockCheckBox ID="cbSetPageTitle" runat="server" Label="Set Page Title" Text="Yes"
+                                        Help="When enabled will update the page title with the channel's name unless there is a item id in the query string then it will display the item's title." />
                                     <Rock:RockCheckBox ID="cbMergeContent" runat="server" Label="Merge Content" Text="Yes"
-                                        Help="Enabling will result in the content data and attribute values to be merged using the liquid template engine." />
+                                        Help="Enabling this option will result in the content data and attribute values to be merged using the liquid template engine." />
                                     <Rock:PagePicker ID="ppDetailPage" runat="server" Label="Detail Page" />
                                 </div>
                             </div>

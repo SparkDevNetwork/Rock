@@ -68,6 +68,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField( "Phone Number", "Require a phone number", "Don't require", "Should a phone number be required for at least one person?", false, "", 18 )]
     [CustomDropdownListField( "SMS", "Should SMS be enabled for cell phone numbers by default?", "True^SMS is enabled by default,False^SMS is not enabled by default,None^SMS option is hidden", false, "", "", 19 )]
     [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 20 )]
+    [BooleanField( "Show Nick Name", "Show an edit box for Nick Name.", false, order: 21 )]
+    [LinkedPage( "Person Detail Page", "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.", false, order: 22 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -482,31 +484,57 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 var rockContext = new RockContext();
 
                                 Guid? parentGroupGuid = GetAttributeValue( "ParentGroup" ).AsGuidOrNull();
+                            	int? groupId = null;
 
-                                rockContext.WrapTransaction( () =>
-                                {
-                                    Group group = null;
-                                    if ( _isFamilyGroupType )
-                                    {
-                                        group = GroupService.SaveNewFamily( rockContext, GroupMembers, cpCampus.SelectedValueAsInt(), true );
-                                    }
-                                    else
-                                    {
-                                        group = GroupService.SaveNewGroup( rockContext, _groupType.Id, parentGroupGuid, tbGroupName.Text, GroupMembers, null, true );
-                                    }
+	                            try
+	                            {
+	                                rockContext.WrapTransaction( () =>
+	                                {
+	                                    Group group = null;
+	                                    if ( _isFamilyGroupType )
+	                                    {
+	                                        group = GroupService.SaveNewFamily( rockContext, GroupMembers, cpCampus.SelectedValueAsInt(), true );
+	                                    }
+	                                    else
+	                                    {
+	                                        group = GroupService.SaveNewGroup( rockContext, _groupType.Id, parentGroupGuid, tbGroupName.Text, GroupMembers, null, true );
+	                                    }
+	
+	                                    if ( group != null )
+	                                    {
+                                	        groupId = group.Id;
+	                                        string locationKey = GetLocationKey();
+	                                        if ( !string.IsNullOrEmpty( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
+	                                        {
+	                                            GroupService.AddNewGroupAddress( rockContext, group, _locationType.Guid.ToString(), _verifiedLocations[locationKey] );
+	                                        }
+	                                    }
+	                                } );
 
-                                    if ( group != null )
-                                    {
-                                        string locationKey = GetLocationKey();
-                                        if ( !string.IsNullOrEmpty( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
-                                        {
-                                            GroupService.AddNewGroupAddress( rockContext, group, _locationType.Guid.ToString(), _verifiedLocations[locationKey] );
-                                        }
-                                    }
-                                } );
-
-                                Response.Redirect( string.Format( "~/Person/{0}", GroupMembers[0].Person.Id ), false );
-                            }
+	                                // If a custom PersonDetailPage is specified, navigate to that. Otherwise, just go to ~/Person/{PersonId}
+	                                var queryParams = new Dictionary<string, string>();
+	                                queryParams.Add( "PersonId", GroupMembers[0].Person.Id.ToString() );
+	                                if ( groupId.HasValue )
+	                                {
+	                                    queryParams.Add( "GroupId", groupId.ToString() );
+	                                }
+	
+	                                var personDetailUrl = LinkedPageUrl( "PersonDetailPage", queryParams );
+	                                if ( !string.IsNullOrWhiteSpace( personDetailUrl ) )
+	                                {
+	                                    NavigateToLinkedPage( "PersonDetailPage", queryParams );
+	                                }
+	                                else
+	                                {
+		                                Response.Redirect( string.Format( "~/Person/{0}", GroupMembers[0].Person.Id ), false );
+	                                }
+	                            }
+	                            catch (GroupMemberValidationException vex)
+	                            {
+	                                cvGroupMember.IsValid = false;
+	                                cvGroupMember.ErrorMessage = vex.Message;
+	                            }
+	                        }
                         }
                     }
                 }
@@ -588,10 +616,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMemberRow.RequireGrade = nfmMembers.RequireGrade;
                 groupMemberRow.RoleId = groupMember.GroupRoleId;
                 groupMemberRow.ShowTitle = showTitle;
-                groupMemberRow.ShowMiddleName = showGrade;
+                groupMemberRow.ShowMiddleName = showMiddleName;
                 groupMemberRow.ShowSuffix = showSuffix;
                 groupMemberRow.ShowGradeColumn = _isFamilyGroupType && showGrade;
                 groupMemberRow.ShowGradePicker = groupMember.GroupRoleId == _childRoleId;
+                groupMemberRow.ShowNickName = this.GetAttributeValue( "ShowNickName" ).AsBoolean();
                 groupMemberRow.ValidationGroup = BlockValidationGroup;
 
                 var contactInfoRow = new NewGroupContactInfoRow();
@@ -642,6 +671,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         groupMemberRow.TitleValueId = groupMember.Person.TitleValueId;
                         groupMemberRow.FirstName = groupMember.Person.FirstName;
                         groupMemberRow.MiddleName = groupMember.Person.MiddleName;
+                        groupMemberRow.NickName = groupMember.Person.NickName;
                         groupMemberRow.LastName = groupMember.Person.LastName;
                         groupMemberRow.SuffixValueId = groupMember.Person.SuffixValueId;
                         groupMemberRow.Gender = groupMember.Person.Gender;
@@ -908,7 +938,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 groupMember.Person.TitleValueId = row.TitleValueId;
                 groupMember.Person.FirstName = row.FirstName.Humanize( LetterCasing.Title );
-                groupMember.Person.NickName = groupMember.Person.FirstName;
+                if ( this.GetAttributeValue( "ShowNickName" ).AsBoolean() && !string.IsNullOrEmpty( row.NickName ) )
+                {
+                    groupMember.Person.NickName = row.NickName;
+                }
+                else
+                {
+                    groupMember.Person.NickName = groupMember.Person.FirstName;
+                }
                 groupMember.Person.MiddleName = row.MiddleName.Humanize( LetterCasing.Title );
                 groupMember.Person.LastName = row.LastName.Humanize( LetterCasing.Title );
                 groupMember.Person.SuffixValueId = row.SuffixValueId;

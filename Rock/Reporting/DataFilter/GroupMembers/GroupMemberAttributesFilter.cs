@@ -301,12 +301,12 @@ namespace Rock.Reporting.DataFilter.GroupMember
 
             foreach ( var entityField in GetGroupMemberAttributes() )
             {
-                string controlId = pnlGroupAttributeFilterControls.GetChildControlInstanceName( entityField.Name );
+                string controlId = pnlGroupAttributeFilterControls.GetChildControlInstanceName( entityField.UniqueName );
                 var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
                 if ( control != null )
                 {
                     // Add the field to the dropdown of available fields
-                    ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                    ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.UniqueName ) );
                     pnlGroupAttributeFilterControls.Controls.Add( control );
                 }
             }
@@ -366,13 +366,13 @@ namespace Rock.Reporting.DataFilter.GroupMember
             settings.AttributeKey = ddlProperty.SelectedValue;
 
             var entityFields = GetGroupMemberAttributes();
-            var entityField = entityFields.FirstOrDefault( f => f.Name == ddlProperty.SelectedValue );
+            var entityField = entityFields.FirstOrDefault( f => f.UniqueName == ddlProperty.SelectedValue );
             if ( entityField != null )
             {
                 var panelControls = new List<Control>();
                 panelControls.AddRange( pnlGroupAttributeFilterControls.Controls.OfType<Control>() );
 
-                var control = panelControls.FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.Name ) );
+                var control = panelControls.FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.UniqueName ) );
 
                 if ( control != null )
                 {

@@ -39,9 +39,9 @@ namespace Rock.UniversalSearch.IndexComponents
     /// Elastic Search Index Provider
     /// </summary>
     /// <seealso cref="Rock.UniversalSearch.IndexComponent" />
-    [Description( "Elasticsearch Universal Search Index" )]
+    [Description( "Elasticsearch Universal Search Index (v2.x)" )]
     [Export( typeof( IndexComponent ) )]
-    [ExportMetadata( "ComponentName", "Elasticsearch" )]
+    [ExportMetadata( "ComponentName", "Elasticsearch 2.x" )]
 
     [TextField( "Node URL", "The URL of the ElasticSearch node (http://myserver:9200)", true, key: "NodeUrl" )]
     public class Elasticsearch : IndexComponent
@@ -128,10 +128,14 @@ namespace Rock.UniversalSearch.IndexComponents
         {
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "NodeUrl" ) ) )
             {
-                var node = new Uri( GetAttributeValue( "NodeUrl" ) );
-                var config = new ConnectionSettings( node );
-                config.DisableDirectStreaming();
-                _client = new ElasticClient( config );
+                try
+                {
+                    var node = new Uri( GetAttributeValue( "NodeUrl" ) );
+                    var config = new ConnectionSettings( node );
+                    config.DisableDirectStreaming();
+                    _client = new ElasticClient( config );
+                }
+                catch {}
             }
         }
 
@@ -393,7 +397,7 @@ namespace Rock.UniversalSearch.IndexComponents
                         }
                         else
                         {
-                            matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value, Boost = match.Boost };
+                            matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value };
                         }
                     }
                 }
@@ -416,8 +420,11 @@ namespace Rock.UniversalSearch.IndexComponents
                             // special logic to support phone search
                             if ( query.IsDigitsOnly() )
                             {
-                                queryContainer |= new QueryStringQuery { Query = "phoneNumbers:*" + query + "*", AnalyzeWildcard = true };
+                                queryContainer |= new QueryStringQuery { Query = "phone:*" + query + "*", AnalyzeWildcard = true };
                             }
+
+                            // add a search for all the words as one single search term
+                            queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
 
                             if ( matchQuery != null )
                             {
@@ -452,6 +459,8 @@ namespace Rock.UniversalSearch.IndexComponents
                         }
                     case SearchType.Wildcard:
                         {
+                            bool enablePhraseSearch = true;
+
                             if ( !string.IsNullOrWhiteSpace( query ) )
                             {
                                 QueryContainer wildcardQuery = null;
@@ -459,27 +468,45 @@ namespace Rock.UniversalSearch.IndexComponents
                                 // break each search term into a separate query and add the * to the end of each
                                 var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
 
-                                foreach ( var queryTerm in queryTerms )
-                                {
-                                    if ( !string.IsNullOrWhiteSpace( queryTerm ) )
-                                    {
-                                        wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace", Rewrite = RewriteMultiTerm.ScoringBoolean }; // without the rewrite all results come back with the score of 1; analyzer of whitespaces says don't fancy parse things like check-in to 'check' and 'in'
-                                    }
-                                }
-
                                 // special logic to support emails
                                 if ( queryTerms.Count == 1 && query.Contains( "@" ) )
                                 {
                                     wildcardQuery |= new QueryStringQuery { Query = "email:*" + query + "*", Analyzer = "whitespace" };
+                                    enablePhraseSearch = false;
                                 }
-
-                                // special logic to support phone search
-                                if ( query.IsDigitsOnly() )
+                                else
                                 {
-                                    wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
+                                    foreach ( var queryTerm in queryTerms )
+                                    {
+                                        if ( !string.IsNullOrWhiteSpace( queryTerm ) )
+                                        {
+                                            wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace", Rewrite = RewriteMultiTerm.ScoringBoolean }; // without the rewrite all results come back with the score of 1; analyzer of whitespaces says don't fancy parse things like check-in to 'check' and 'in'
+                                        }
+                                    }
+
+                                    // add special logic to help boost last names
+                                    if (queryTerms.Count > 1 )
+                                    {
+                                        QueryContainer nameQuery = null;
+                                        nameQuery &= new QueryStringQuery { Query = "lastName:" + queryTerms.Last() + "*", Analyzer = "whitespace", Boost = 30 };
+                                        nameQuery &= new QueryStringQuery { Query = "firstName:" + queryTerms.First() + "*", Analyzer = "whitespace" };
+                                        wildcardQuery |= nameQuery;
+                                    }
+
+                                    // special logic to support phone search
+                                    if ( query.IsDigitsOnly() )
+                                    {
+                                        wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
+                                    }
                                 }
 
                                 queryContainer &= wildcardQuery;
+                            }
+
+                            // add a search for all the words as one single search term
+                            if ( enablePhraseSearch )
+                            {
+                                queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
                             }
 
                             if ( matchQuery != null )
@@ -498,6 +525,24 @@ namespace Rock.UniversalSearch.IndexComponents
                             }
 
                             searchDescriptor.Query( q => queryContainer );
+
+                            var indexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
+
+                            if ( indexBoost.IsNotNullOrWhitespace() )
+                            {
+                                var boostItems = indexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                                foreach (var boostItem in boostItems )
+                                {
+                                    var boostParms = boostItem.Split( new char[] { '^' } );
+
+                                    if ( boostParms.Length == 2 )
+                                    {
+                                        int boost = 1;
+                                        Int32.TryParse( boostParms[1], out boost );
+                                        searchDescriptor.IndicesBoost( b => b.Add( boostParms[0], boost ) );
+                                    }
+                                }
+                            }
 
                             results = _client.Search<dynamic>( searchDescriptor );
                             break;

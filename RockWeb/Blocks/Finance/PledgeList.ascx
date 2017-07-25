@@ -18,7 +18,7 @@
                             <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
                             <Rock:DateRangePicker ID="drpLastModifiedDates" runat="server" Label="Last Modified" />
                         </Rock:GridFilter>
-                        <Rock:Grid ID="gPledges" runat="server" AutoGenerateColumns="False" AllowSorting="True" AllowPaging="True" OnRowSelected="gPledges_Edit">
+                        <Rock:Grid ID="gPledges" runat="server" AutoGenerateColumns="False" ExportSource="ColumnOutput" AllowSorting="True" AllowPaging="True" OnRowSelected="gPledges_Edit">
                             <Columns>
                                 <Rock:RockBoundField DataField="PersonAlias.Person" HeaderText="Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
                                 <Rock:RockBoundField DataField="Group.Name" HeaderText="For" SortExpression="Group.Name" />
@@ -28,7 +28,6 @@
                                 <Rock:DateField DataField="StartDate" HeaderText="Starts" SortExpression="StartDate" />
                                 <Rock:DateField DataField="EndDate" HeaderText="Ends" SortExpression="EndDate" />
                                 <Rock:DateField DataField="ModifiedDateTime" HeaderText="Last Modified" SortExpression="ModifiedDateTime" />
-                                <Rock:DeleteField OnClick="gPledges_Delete" />
                             </Columns>
                         </Rock:Grid>
                     </div>

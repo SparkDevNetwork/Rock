@@ -22,7 +22,7 @@ namespace Rock.Tests.Workflow.Action
             Assert.True( BackgroundAction.GetType().GetMethod( "Execute" ) != null );
         }
 
-        [Fact]
+        [Fact (Skip = "new way of mocking RockContext")]
         public void ReturnsFalse()
         {
             var BackgroundAction = new BackgroundCheckRequest();
@@ -47,7 +47,7 @@ namespace Rock.Tests.Workflow.Action
 
         }
 
-        [Fact]
+        [Fact( Skip = "new way of mocking RockContext" )]
         public void InvalidProviderGuidError()
         {
             var BackgroundAction = new BackgroundCheckRequest();

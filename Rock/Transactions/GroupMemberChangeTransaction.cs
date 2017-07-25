@@ -286,9 +286,8 @@ namespace Rock.Transactions
                 groupMember = new GroupMemberService( rockContext ).Get( GroupMemberGuid.Value );
             }
 
-            var workflowTypeService = new WorkflowTypeService( rockContext );
-            var workflowType = workflowTypeService.Get( workflowTypeId );
-            if ( workflowType != null )
+            var workflowType = Web.Cache.WorkflowTypeCache.Read( workflowTypeId );
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var workflow = Rock.Model.Workflow.Activate( workflowType, name );
 

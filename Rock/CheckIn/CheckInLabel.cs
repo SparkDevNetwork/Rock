@@ -30,6 +30,15 @@ namespace Rock.CheckIn
     public class CheckInLabel 
     {
         /// <summary>
+        /// Gets or sets the type of the label.
+        /// </summary>
+        /// <value>
+        /// The type of the label.
+        /// </value>
+        [DataMember]
+        public KioskLabelType LabelType { get; set; }
+
+        /// <summary>
         /// Gets or sets the order.
         /// </summary>
         /// <value>
@@ -37,6 +46,15 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        [DataMember]
+        public int? PersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the printer device id.
@@ -122,11 +140,24 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="kioskLabel">The label.</param>
         /// <param name="mergeObjects">The merge objects.</param>
-        public CheckInLabel( KioskLabel kioskLabel, Dictionary<string, object> mergeObjects )
+        public CheckInLabel( KioskLabel kioskLabel, Dictionary<string, object> mergeObjects ) : 
+            this( kioskLabel, mergeObjects, null )
+        { 
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CheckInLabel" /> class.
+        /// </summary>
+        /// <param name="kioskLabel">The label.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <param name="personId">The person identifier.</param>
+        public CheckInLabel( KioskLabel kioskLabel, Dictionary<string, object> mergeObjects, int? personId )
         {
             LabelKey = kioskLabel.Guid.ToString();
             LabelFile = kioskLabel.Url;
+            LabelType = kioskLabel.LabelType;
             Order = kioskLabel.Order;
+            PersonId = personId;
 
             MergeFields = new Dictionary<string, string>();
             foreach ( var item in kioskLabel.MergeFields )

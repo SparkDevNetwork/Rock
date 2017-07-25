@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ConnectionTypesController : Rock.Rest.ApiController<Rock.Model.ConnectionType>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionTypesController"/> class.
+        /// </summary>
         public ConnectionTypesController() : base( new Rock.Model.ConnectionTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

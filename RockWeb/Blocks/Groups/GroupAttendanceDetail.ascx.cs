@@ -310,13 +310,11 @@ namespace RockWeb.Blocks.Groups
 
                 rockContext.SaveChanges();
 
-                WorkflowType workflowType = null;
                 Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
                 if ( workflowTypeGuid.HasValue )
                 {
-                    var workflowTypeService = new WorkflowTypeService( rockContext );
-                    workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
-                    if ( workflowType != null )
+                    var workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         try
                         {

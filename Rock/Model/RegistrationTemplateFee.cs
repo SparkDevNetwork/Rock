@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "RegistrationTemplateFee" )]
     [DataContract]
     public partial class RegistrationTemplateFee : Model<RegistrationTemplateFee>, IOrdered
@@ -115,6 +116,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template.
         /// </value>
+        [LavaInclude]
         public virtual RegistrationTemplate RegistrationTemplate { get; set; }
 
         #endregion

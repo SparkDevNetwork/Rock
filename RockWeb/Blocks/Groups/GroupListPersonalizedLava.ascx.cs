@@ -44,7 +44,6 @@ namespace RockWeb.Blocks.Groups
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 4 )]
     [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 5 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupListSidebar.lava' %}", "", 6 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 7 )]
     public partial class GroupListPersonalizedLava : RockBlock
     {
 
@@ -158,14 +157,6 @@ namespace RockWeb.Blocks.Groups
             mergeFields.Add( "LinkedPages", linkedPages );
 
             string template = GetAttributeValue( "LavaTemplate" );
-
-            // show debug info
-            bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
 
             lContent.Text = template.ResolveMergeFields( mergeFields );
         }

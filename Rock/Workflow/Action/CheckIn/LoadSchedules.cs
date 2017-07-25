@@ -55,7 +55,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                 foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
                 {
-                    foreach ( var person in family.GetPeople( true ) )
+                    foreach ( var person in family.GetPeople( !loadAll ) )
                     {
                         foreach ( var groupType in person.GetGroupTypes( !loadAll ) )
                         {
@@ -67,13 +67,13 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 foreach ( var group in groupType.GetGroups( !loadAll ) )
                                 {
-                                    foreach ( var location in group.GetLocations( !loadAll ) )
-                                    {
-                                        var kioskGroup = kioskGroupType.KioskGroups
-                                            .Where( g => g.Group.Id == group.Group.Id && g.IsCheckInActive )
-                                            .FirstOrDefault();
+                                    var kioskGroup = kioskGroupType.KioskGroups
+                                        .Where( g => g.Group.Id == group.Group.Id && g.IsCheckInActive )
+                                        .FirstOrDefault();
 
-                                        if ( kioskGroup != null )
+                                    if ( kioskGroup != null )
+                                    {
+                                        foreach ( var location in group.GetLocations( !loadAll ) )
                                         {
                                             var kioskLocation = kioskGroup.KioskLocations
                                                 .Where( l => l.Location.Id == location.Location.Id && l.IsCheckInActive )

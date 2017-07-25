@@ -20,6 +20,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -33,6 +34,7 @@ namespace Rock.Communication.Medium
     [Description( "An SMS communication" )]
     [Export( typeof( MediumComponent ) )]
     [ExportMetadata( "ComponentName", "SMS" )]
+    [IntegerField( "Character Limit", "Set this to show a character limit countdown for SMS communications. Set to 0 to disable", false, 160 )]
     public class Sms : MediumComponent
     {
         const int TOKEN_REUSE_DURATION = 30; // number of days between token reuse
@@ -44,7 +46,9 @@ namespace Rock.Communication.Medium
         /// <returns></returns>
         public override MediumControl GetControl( bool useSimpleMode )
         {
-            return new Rock.Web.UI.Controls.Communication.Sms();
+            var smsControl = new Rock.Web.UI.Controls.Communication.Sms();
+            smsControl.CharacterLimit = this.GetAttributeValue( "CharacterLimit" ).AsIntegerOrNull() ?? 160;
+            return smsControl;
         }
 
         /// <summary>

@@ -45,23 +45,23 @@ namespace RockWeb.Blocks.Event
     [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "1", order: 0 )]
     [CustomDropdownListField( "Default View Option", "Determines the default view option", "Day,Week,Month", true, "Week", order: 1 )]
     [LinkedPage( "Details Page", "Detail page for events", order: 2 )]
+    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 3 )]
 
-    [CustomRadioListField( "Campus Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 3 )]
-    [CustomRadioListField( "Audience Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", key: "CategoryFilterDisplayMode", order: 4 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Filter Audiences", "Determines which audiences should be displayed in the filter.", false, true, key: "FilterCategories", order: 5 )]
-    [BooleanField( "Show Date Range Filter", "Determines whether the date range filters are shown", false, order: 6 )]
+    [CustomRadioListField( "Campus Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 4 )]
+    [CustomRadioListField( "Audience Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", key: "CategoryFilterDisplayMode", order: 5 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Filter Audiences", "Determines which audiences should be displayed in the filter.", false, true, key: "FilterCategories", order: 6 )]
+    [BooleanField( "Show Date Range Filter", "Determines whether the date range filters are shown", false, order: 7 )]
 
-    [BooleanField( "Show Small Calendar", "Determines whether the calendar widget is shown", true, order: 7 )]
-    [BooleanField( "Show Day View", "Determines whether the day view option is shown", false, order: 8 )]
-    [BooleanField( "Show Week View", "Determines whether the week view option is shown", true, order: 9 )]
-    [BooleanField( "Show Month View", "Determines whether the month view option is shown", true, order: 10 )]
+    [BooleanField( "Show Small Calendar", "Determines whether the calendar widget is shown", true, order: 8 )]
+    [BooleanField( "Show Day View", "Determines whether the day view option is shown", false, order: 9 )]
+    [BooleanField( "Show Week View", "Determines whether the week view option is shown", true, order: 10 )]
+    [BooleanField( "Show Month View", "Determines whether the month view option is shown", true, order: 11 )]
 
-    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", order: 11 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/Calendar.lava' %}", "", 12 )]
+    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", order: 12 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/Calendar.lava' %}", "", 13 )]
 
-    [DayOfWeekField( "Start of Week Day", "Determines what day is the start of a week.", true, DayOfWeek.Sunday, order: 13 )]
+    [DayOfWeekField( "Start of Week Day", "Determines what day is the start of a week.", true, DayOfWeek.Sunday, order: 14 )]
 
-    [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 14 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 15 )]
 
     public partial class CalendarLava : Rock.Web.UI.RockBlock
@@ -417,19 +417,7 @@ namespace RockWeb.Blocks.Event
             mergeFields.Add( "EventItemOccurrences", eventOccurrenceSummaries );
             mergeFields.Add( "CurrentPerson", CurrentPerson );
 
-            lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
-            else
-            {
-                lDebug.Visible = false;
-                lDebug.Text = string.Empty;
-            }
+            lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
 
         }
 

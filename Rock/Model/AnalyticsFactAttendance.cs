@@ -24,6 +24,7 @@ namespace Rock.Model
     /// <summary>
     /// AnalyticsFactAttendance is SQL View based on AnalyticsSourceAttendance
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsFactAttendance" )]
     [DataContract]
     public class AnalyticsFactAttendance : AnalyticsBaseAttendance<AnalyticsFactAttendance>

@@ -27,26 +27,31 @@
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
 
                 <div class="panel-body">
-
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="photo">
-                                        <asp:Literal ID="lPortrait" runat="server" />
-                                    </div>
-                                </div>
-                                <div class="col-md-8">
-                                    <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
-                                    <Rock:RockLiteral ID="lConnector" runat="server" Label="Connector" />
-                                </div>
+                        <div class="col-md-2">
+                            <div class="photo">
+                                <asp:Literal ID="lPortrait" runat="server" />
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
-                            <Rock:RockLiteral ID="lPlacementGroup" runat="server" Label="Placement Group" />
-                            <asp:PlaceHolder ID="phGroupMemberAttributesView" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        <div class="col-md-8">
+                            <asp:Panel runat="server" CssClass="margin-b-sm" ID="pnlBadges">
+                                <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
+                            </asp:Panel>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                     <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
+                                    <Rock:RockLiteral ID="lConnector" runat="server" Label="Connector" />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
+                                    <Rock:RockLiteral ID="lPlacementGroup" runat="server" Label="Placement Group" />
+                                    <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
+                                </div>
+                            </div>
+       
                         </div>
+
                         <div class="col-md-2 text-right">
                             <asp:LinkButton ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:LinkButton>
                         </div>
@@ -135,13 +140,13 @@
                     </div>
 
                     <asp:HiddenField ID="hfGroupMemberAttributeValues" runat="server" />
-                    <asp:PlaceHolder ID="phGroupMemberAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    <Rock:DynamicPlaceHolder ID="phGroupMemberAttributes" runat="server" />
 
                     <Rock:NotificationBox ID="nbRequirementsWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
                     </div>
 
                 </div>
@@ -174,8 +179,8 @@
                     <Rock:RockTextBox ID="tbTransferNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnTransferSave" runat="server" AccessKey="s" Text="Transfer" CssClass="btn btn-primary" OnClick="btnTransferSave_Click"></asp:LinkButton>
-                        <asp:LinkButton ID="btnTransferCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                        <asp:LinkButton ID="btnTransferSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Transfer" CssClass="btn btn-primary" OnClick="btnTransferSave_Click"></asp:LinkButton>
+                        <asp:LinkButton ID="btnTransferCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
                     </div>
 
                 </div>
@@ -236,7 +241,7 @@
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbSearchName" runat="server" Label="Name" />
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
-                        <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
+                        <Rock:DynamicPlaceHolder ID="phAttributeFilters" runat="server" />
                     </div>
                     <div class="col-md-6">
                         <asp:Repeater ID="rptSearchResult" runat="server">

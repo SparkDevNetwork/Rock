@@ -72,8 +72,7 @@ namespace Rock.Jobs
 
             if ( expirationAge.HasValue )
             {
-                var expirationDate = RockDateTime.Now.AddMinutes( expirationAge.Value );
-
+                var expirationDate = RockDateTime.Now.AddMinutes( 0 - expirationAge.Value );
                 qry = qry.Where(w => w.CreatedDateTime <= expirationDate );
             }
 

@@ -72,7 +72,7 @@ namespace Rock.Lava.Blocks
             // first ensure that search commands are allowed in the context
             if ( !this.IsAuthorized( context ) )
             {
-                result.Write( string.Format( "The Lava command '{0}' is not configured for this template.", this.Name ) );
+                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
                 base.Render( context, result );
                 return;
             }
@@ -81,7 +81,7 @@ namespace Rock.Lava.Blocks
 
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
 
-            SearchType searchType = SearchType.Wildcard;
+            SearchType searchType = SearchType.ExactMatch;
 
             List<int> entityIds = new List<int>();
             string query = string.Empty;
@@ -207,7 +207,7 @@ namespace Rock.Lava.Blocks
 
             var parms = new Dictionary<string, string>();
             parms.Add( "iterator", "results" );
-            parms.Add( "searchtype", "exactmatch" );
+            parms.Add( "searchtype", "wildcard" );
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()

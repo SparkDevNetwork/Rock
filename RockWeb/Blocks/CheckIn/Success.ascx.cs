@@ -39,6 +39,10 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Displays the details of a successful checkin." )]
 
     [LinkedPage( "Person Select Page", "", false, "", "", 5 )]
+    [TextField( "Title", "", false, "Checked-in", "Text", 6 )]
+    [TextField( "Detail Message", "The message to display indicating person has been checked in. Use {0} for person, {1} for group, {2} for schedule, and {3} for the security code", false,
+        "{0} was checked into {1} in {2} at {3}", "Text", 7 )]
+
     public partial class Success : CheckInBlock
     {
         /// <summary>
@@ -80,6 +84,9 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     try
                     {
+                        lTitle.Text = GetAttributeValue( "Title" );
+                        string detailMsg = GetAttributeValue( "DetailMessage" );
+
                         var printFromClient = new List<CheckInLabel>();
                         var printFromServer = new List<CheckInLabel>();
 
@@ -101,8 +108,7 @@ namespace RockWeb.Blocks.CheckIn
                                             foreach ( var schedule in location.GetSchedules( true ) )
                                             {
                                                 var li = new HtmlGenericControl( "li" );
-                                                li.InnerText = string.Format( "{0} was checked into {1} in {2} at {3}",
-                                                    person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
+                                                li.InnerText = string.Format( detailMsg, person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
 
                                                 phResults.Controls.Add( li );
                                             }
@@ -121,7 +127,11 @@ namespace RockWeb.Blocks.CheckIn
                         if ( printFromClient.Any() )
                         {
                             var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
-                            printFromClient.OrderBy( l => l.Order ).ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
+                            printFromClient
+                                .OrderBy( l => l.PersonId )
+                                .ThenBy( l => l.Order )
+                                .ToList()
+                                .ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
                             AddLabelScript( printFromClient.ToJson() );
                         }
 
@@ -130,7 +140,9 @@ namespace RockWeb.Blocks.CheckIn
                             Socket socket = null;
                             string currentIp = string.Empty;
 
-                            foreach ( var label in printFromServer.OrderBy( l => l.Order ) )
+                            foreach ( var label in printFromServer
+                                .OrderBy( l => l.PersonId )
+                                .ThenBy( l => l.Order ) )
                             {
                                 var labelCache = KioskLabel.Read( label.FileGuid );
                                 if ( labelCache != null )
@@ -146,10 +158,22 @@ namespace RockWeb.Blocks.CheckIn
                                             }
 
                                             currentIp = label.PrinterAddress;
-                                            var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+                                            int printerPort = 9100;
+                                            var printerIp = currentIp;
+
+                                            // If the user specified in 0.0.0.0:1234 syntax then pull our the IP and port numbers.
+                                            if ( printerIp.Contains( ":" ) )
+                                            {
+                                                var segments = printerIp.Split( ':' );
+
+                                                printerIp = segments[0];
+                                                printerPort = segments[1].AsInteger();
+                                            }
+
+                                            var printerEndpoint = new IPEndPoint( IPAddress.Parse( currentIp ), printerPort );
 
                                             socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-                                            IAsyncResult result = socket.BeginConnect( printerIp, null, null );
+                                            IAsyncResult result = socket.BeginConnect( printerEndpoint, null, null );
                                             bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
                                         }
 

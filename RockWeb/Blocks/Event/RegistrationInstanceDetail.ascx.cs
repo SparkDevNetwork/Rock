@@ -132,6 +132,11 @@ namespace RockWeb.Blocks.Event
         {
             base.OnInit( e );
 
+            // NOTE: The 3 Grid Filters had a bug where all were sing the same "Date Range" key in a prior version and they didn't really work quite right, so wipe them out
+            fRegistrations.SaveUserPreference( "Date Range", null );
+            fRegistrants.SaveUserPreference( "Date Range", null );
+            fPayments.SaveUserPreference( "Date Range", null );
+
             fRegistrations.ApplyFilterClick += fRegistrations_ApplyFilterClick;
             gRegistrations.DataKeyNames = new string[] { "Id" };
             gRegistrations.Actions.ShowAdd = true;
@@ -199,7 +204,7 @@ namespace RockWeb.Blocks.Event
         Rock.dialogs.confirm('Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!', function (result) {
             if (result) {
                 if ( $('input.js-instance-has-payments').val() == 'True' ) {
-                    Rock.dialogs.confirm('This registration instance also has registrations with payments. Are you really sure that you want to delete the instance?<br/><small>(Payments will not be deleted, but they will no longer be associated with a registration.)</small>', function (result) {
+                    Rock.dialogs.confirm('This registration instance also has registrations with payments. Are you sure that you want to delete the instance?<br/><small>(Payments will not be deleted, but they will no longer be associated with a registration.)</small>', function (result) {
                         if (result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
@@ -217,7 +222,7 @@ namespace RockWeb.Blocks.Event
         Rock.dialogs.confirm('Are you sure you want to delete this registration? All of the registrants will also be deleted!', function (result) {
             if (result) {
                 if ( $hfHasPayments.val() == 'True' ) {
-                    Rock.dialogs.confirm('This registration also has payments. Are you really sure that you want to delete the registration?<br/><small>(Payments will not be deleted, but they will no longer be associated with a registration.)</small>', function (result) {
+                    Rock.dialogs.confirm('This registration also has payments. Are you sure that you want to delete the registration?<br/><small>(Payments will not be deleted, but they will no longer be associated with a registration.)</small>', function (result) {
                         if (result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
@@ -546,7 +551,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fRegistrations_ApplyFilterClick( object sender, EventArgs e )
         {
-            fRegistrations.SaveUserPreference( "Date Range", drpRegistrationDateRange.DelimitedValues );
+            fRegistrations.SaveUserPreference( "Registrations Date Range", "Registration Date Range", sdrpRegistrationDateRange.DelimitedValues );
             fRegistrations.SaveUserPreference( "Payment Status", ddlRegistrationPaymentStatus.SelectedValue );
             fRegistrations.SaveUserPreference( "RegisteredBy First Name", tbRegistrationRegisteredByFirstName.Text );
             fRegistrations.SaveUserPreference( "RegisteredBy Last Name", tbRegistrationRegisteredByLastName.Text );
@@ -565,9 +570,9 @@ namespace RockWeb.Blocks.Event
         {
             switch ( e.Key )
             {
-                case "Date Range":
+                case "Registrations Date Range":
                     {
-                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
                         break;
                     }
                 case "Payment Status":
@@ -784,7 +789,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fRegistrants_ApplyFilterClick( object sender, EventArgs e )
         {
-            fRegistrants.SaveUserPreference( "Date Range", drpRegistrantDateRange.DelimitedValues );
+            fRegistrants.SaveUserPreference( "Registrants Date Range", "Registration Date Range",  sdrpRegistrantDateRange.DelimitedValues );
             fRegistrants.SaveUserPreference( "First Name", tbRegistrantFirstName.Text );
             fRegistrants.SaveUserPreference( "Last Name", tbRegistrantLastName.Text );
             fRegistrants.SaveUserPreference( "In Group", ddlInGroup.SelectedValue );
@@ -926,7 +931,11 @@ namespace RockWeb.Blocks.Event
 
             switch ( e.Key )
             {
-                case "Date Range":
+                case "Registrants Date Range":
+                    {
+                        e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
+                        break;
+                    }
                 case "Birthdate Range":
                     {
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
@@ -1180,7 +1189,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fPayments_ApplyFilterClick( object sender, EventArgs e )
         {
-            fPayments.SaveUserPreference( "Date Range", drpPaymentDateRange.DelimitedValues );
+            fPayments.SaveUserPreference( "Payments Date Range", "Transaction Date Range", sdrpPaymentDateRange.DelimitedValues );
 
             BindPaymentsGrid();
         }
@@ -1194,9 +1203,9 @@ namespace RockWeb.Blocks.Event
         {
             switch ( e.Key )
             {
-                case "Date Range":
+                case "Payments Date Range":
                     {
-                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
                         break;
                     }
                 default:
@@ -2287,7 +2296,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindRegistrationsFilter()
         {
-            drpRegistrationDateRange.DelimitedValues = fRegistrations.GetUserPreference( "Date Range" );
+            sdrpRegistrationDateRange.DelimitedValues = fRegistrations.GetUserPreference( "Registrations Date Range" );
             ddlRegistrationPaymentStatus.SetValue( fRegistrations.GetUserPreference( "Payment Status" ) );
             tbRegistrationRegisteredByFirstName.Text = fRegistrations.GetUserPreference( "Registered By First Name" );
             tbRegistrationRegisteredByLastName.Text = fRegistrations.GetUserPreference( "Registered By Last Name" );
@@ -2322,17 +2331,20 @@ namespace RockWeb.Blocks.Event
                             r.RegistrationInstanceId == instanceId.Value &&
                             !r.IsTemporary );
 
-                    if ( drpRegistrationDateRange.LowerValue.HasValue )
+                    var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpRegistrationDateRange.DelimitedValues );
+
+                    if ( dateRange.Start.HasValue )
                     {
                         qry = qry.Where( r =>
                             r.CreatedDateTime.HasValue &&
-                            r.CreatedDateTime.Value >= drpRegistrationDateRange.LowerValue.Value );
+                            r.CreatedDateTime.Value >= dateRange.Start.Value );
                     }
-                    if ( drpRegistrationDateRange.UpperValue.HasValue )
+
+                    if ( dateRange.End.HasValue )
                     {
                         qry = qry.Where( r =>
                             r.CreatedDateTime.HasValue &&
-                            r.CreatedDateTime.Value <= drpRegistrationDateRange.UpperValue.Value );
+                            r.CreatedDateTime.Value < dateRange.End.Value );
                     }
 
                     if ( !string.IsNullOrWhiteSpace( tbRegistrationRegisteredByFirstName.Text ) )
@@ -2513,7 +2525,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindRegistrantsFilter( RegistrationInstance instance )
         {
-            drpRegistrantDateRange.DelimitedValues = fRegistrants.GetUserPreference( "Date Range" );
+            sdrpRegistrantDateRange.DelimitedValues = fRegistrants.GetUserPreference( "Registrants Date Range" );
             tbRegistrantFirstName.Text = fRegistrants.GetUserPreference( "First Name" );
             tbRegistrantLastName.Text = fRegistrants.GetUserPreference( "Last Name" );
             ddlInGroup.SetValue( fRegistrants.GetUserPreference( "In Group" ) );
@@ -2560,17 +2572,18 @@ namespace RockWeb.Blocks.Event
                         r.OnWaitList == false );
 
                     // Filter by daterange
-                    if ( drpRegistrantDateRange.LowerValue.HasValue )
+                    var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpRegistrantDateRange.DelimitedValues );
+                    if ( dateRange.Start.HasValue )
                     {
                         qry = qry.Where( r =>
                             r.CreatedDateTime.HasValue &&
-                            r.CreatedDateTime.Value >= drpRegistrantDateRange.LowerValue.Value );
+                            r.CreatedDateTime.Value >= dateRange.Start.Value );
                     }
-                    if ( drpRegistrantDateRange.UpperValue.HasValue )
+                    if ( dateRange.End.HasValue )
                     {
                         qry = qry.Where( r =>
                             r.CreatedDateTime.HasValue &&
-                            r.CreatedDateTime.Value <= drpRegistrantDateRange.UpperValue.Value );
+                            r.CreatedDateTime.Value < dateRange.End.Value );
                     }
 
                     // Filter by first name
@@ -3549,7 +3562,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindPaymentsFilter()
         {
-            drpPaymentDateRange.DelimitedValues = fPayments.GetUserPreference( "Date Range" );
+            sdrpPaymentDateRange.DelimitedValues = fPayments.GetUserPreference( "Payments Date Range" );
         }
 
         /// <summary>
@@ -3592,17 +3605,18 @@ namespace RockWeb.Blocks.Event
                                 registrationIds.Contains( d.EntityId.Value ) ) );
 
                     // Date Range
-                    var drp = new DateRangePicker();
-                    drp.DelimitedValues = fPayments.GetUserPreference( "Date Range" );
-                    if ( drp.LowerValue.HasValue )
+                    var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpPaymentDateRange.DelimitedValues );
+
+                    if ( dateRange.Start.HasValue )
                     {
-                        qry = qry.Where( t => t.TransactionDateTime >= drp.LowerValue.Value );
+                        qry = qry.Where( r =>
+                            r.TransactionDateTime >= dateRange.Start.Value );
                     }
 
-                    if ( drp.UpperValue.HasValue )
+                    if ( dateRange.End.HasValue )
                     {
-                        DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                        qry = qry.Where( t => t.TransactionDateTime < upperDate );
+                        qry = qry.Where( r =>
+                            r.TransactionDateTime < dateRange.End.Value );
                     }
 
                     SortProperty sortProperty = gPayments.SortProperty;

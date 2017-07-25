@@ -90,6 +90,11 @@ iframe {
   }
 }
 
+// get dropdowns to display above the admin bar
+.dropdown-menu {
+    z-index: 1050;
+}
+
 .navigation-tip {
   padding: 2px 4px;
   // used to show the user directions to a page (e.g. 'Administration > General Settings')
@@ -387,6 +392,11 @@ th[align=center] {
       width: 100%;
     }
   }
+}
+
+.no-border {
+  // removes borders from a panel
+  border-color: transparent;
 }
 
 .panel-widget {

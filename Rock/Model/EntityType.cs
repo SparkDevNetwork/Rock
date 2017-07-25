@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "EntityType" )]
     [DataContract]
@@ -262,6 +263,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
+        [LavaInclude]
         public virtual bool IsSystem
         {
             get { return IsSecured || IsEntity; }

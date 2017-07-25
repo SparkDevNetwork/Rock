@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -43,6 +44,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using UAParser;
 
 namespace Rock.Lava
 {
@@ -64,6 +66,16 @@ namespace Rock.Lava
         public static string ToString( object input )
         {
             return input.ToString();
+        }
+
+        /// <summary>
+        /// Uniques the identifier.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string UniqueIdentifier( object input )
+        {
+            return Guid.NewGuid().ToString();
         }
 
         /// <summary>
@@ -570,6 +582,11 @@ namespace Rock.Lava
                 return string.Empty;
             }
 
+            if (@string == null )
+            {
+                return input.ToString();
+            }
+
             string inputAsString = input.ToString();
 
             return inputAsString == null
@@ -712,10 +729,10 @@ namespace Rock.Lava
 
             if ( input.ToString() == "Now" )
             {
-                input = RockDateTime.Now.ToString();
+                input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
             }
 
-            if ( string.IsNullOrWhiteSpace( format ) )
+            if ( string.IsNullOrWhiteSpace( format ) ) 
             {
                 return input.ToString();
             }
@@ -769,12 +786,24 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Dateses from i cal.
+        /// Returns the occurrence Dates from an iCal string or list.
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="option">The option.</param>
-        /// <returns></returns>
+        /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
+        /// <param name="option">The quantity option (either an integer or "all").</param>
+        /// <returns>a list of datetimes</returns>
         public static List<DateTime> DatesFromICal( object input, object option = null )
+        {
+            return DatesFromICal( input, option, endDateTimeOption: null );
+        }
+
+        /// <summary>
+        /// Returns the occurrence Dates from an iCal string or list.
+        /// </summary>
+        /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
+        /// <param name="option">The quantity option (either an integer or "all").</param>
+        /// <param name="endDateTimeOption">The 'enddatetime' option if supplied will return the ending datetime of the occurrence; otherwise the start datetime is returned.</param>
+        /// <returns>a list of datetimes</returns>
+        public static List<DateTime> DatesFromICal( object input, object option = null, object endDateTimeOption = null )
         {
             // if no option was specified, default to returning just 1 (to preserve previous behavior)
             option = option ?? 1;
@@ -782,22 +811,24 @@ namespace Rock.Lava
             int returnCount = 1;
             if ( option.GetType() == typeof( int ) )
             {
-                returnCount = (int)option;
+                returnCount = ( int )option;
             }
             else if ( option.GetType() == typeof( string ) )
             {
                 // if a string of "all" is specified for the option, return all of the dates
-                if ( string.Equals( (string)option, "all", StringComparison.OrdinalIgnoreCase ) )
+                if ( string.Equals( ( string )option, "all", StringComparison.OrdinalIgnoreCase ) )
                 {
                     returnCount = int.MaxValue;
                 }
             }
 
+            bool useEndDateTime = ( endDateTimeOption is string && ( string ) endDateTimeOption == "enddatetime" );
+
             List<DateTime> nextOccurrences = new List<DateTime>();
 
             if ( input is string )
             {
-                nextOccurrences = GetOccurrenceDates( (string)input, returnCount );
+                nextOccurrences = GetOccurrenceDates( ( string )input, returnCount, useEndDateTime );
             }
             else if ( input is IList )
             {
@@ -805,7 +836,7 @@ namespace Rock.Lava
                 {
                     if ( item is string )
                     {
-                        nextOccurrences.AddRange( GetOccurrenceDates( (string)item, returnCount ) );
+                        nextOccurrences.AddRange( GetOccurrenceDates( ( string )item, returnCount, useEndDateTime ) );
                     }
                 }
             }
@@ -820,16 +851,22 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="iCalString">The i cal string.</param>
         /// <param name="returnCount">The return count.</param>
-        /// <returns></returns>
-        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount )
+        /// <param name="useEndDateTime">if set to <c>true</c> uses the EndTime in the returned dates; otherwise it uses the StartTime.</param>
+        /// <returns>a list of datetimes</returns>
+        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
         {
             iCalendar calendar = iCalendar.LoadFromStream( new StringReader( iCalString ) ).First() as iCalendar;
             DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
 
-            if ( calendarEvent.DTStart != null )
+            if ( ! useEndDateTime && calendarEvent.DTStart != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
                 return dates.Select( d => d.Period.StartTime.Value ).ToList();
+            }
+            else if ( useEndDateTime && calendarEvent.DTEnd != null )
+            {
+                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
+                return dates.Select( d => d.Period.EndTime.Value ).ToList();
             }
             else
             {
@@ -1289,10 +1326,17 @@ namespace Rock.Lava
                 return input;
             }
 
+            int intInput = -1;
+            int intOperand = -1;
             decimal iInput = -1;
             decimal iOperand = -1;
 
-            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput + intOperand;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput + iOperand;
             }
@@ -1315,10 +1359,17 @@ namespace Rock.Lava
                 return input;
             }
 
+            int intInput = -1;
+            int intOperand = -1;
             decimal iInput = -1;
             decimal iOperand = -1;
 
-            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput - intOperand;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput - iOperand;
             }
@@ -1329,7 +1380,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Times - Overriding this to change the logic. This one does the math if the input can be parsed as a int
+        /// Times - Overriding this to change the logic. This one does the math if the input can be parsed as a int or decimal.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="operand"></param>
@@ -1341,10 +1392,17 @@ namespace Rock.Lava
                 return input;
             }
 
+            int intInput = -1;
+            int intOperand = -1;
             decimal iInput = -1;
             decimal iOperand = -1;
 
-            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput * intOperand;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput * iOperand;
             }
@@ -1461,6 +1519,7 @@ namespace Rock.Lava
 
             AttributeCache attribute = null;
             string rawValue = string.Empty;
+            int? entityId = null;
 
             // If Input is "Global" then look for a global attribute with key
             if ( input.ToString().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
@@ -1475,7 +1534,15 @@ namespace Rock.Lava
                     if ( theValue.HasMergeFields() )
                     {
                         // Global attributes may reference other global attributes, so try to resolve this value again
-                        rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
+                        var mergeFields = new Dictionary<string, object>();
+                        if ( context.Environments.Count > 0 )
+                        {
+                            foreach( var keyVal in context.Environments[0] )
+                            {
+                                mergeFields.Add( keyVal.Key, keyVal.Value );
+                            }
+                        }
+                        rawValue = theValue.ResolveMergeFields( mergeFields );
                     }
                     else
                     {
@@ -1507,6 +1574,7 @@ namespace Rock.Lava
                     {
                         attribute = item.Attributes[attributeKey];
                         rawValue = item.AttributeValues[attributeKey].Value;
+                        entityId = item.Id;
                     }
                 }
             }
@@ -1557,7 +1625,7 @@ namespace Rock.Lava
                     }
 
                     // Otherwise return the formatted value
-                    return field.FormatValue( null, rawValue, attribute.QualifierValues, false );
+                    return field.FormatValue( null, attribute.EntityTypeId, entityId, rawValue, attribute.QualifierValues, false );
                 }
             }
 
@@ -1823,7 +1891,7 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
                 Location location = null;
 
@@ -1835,7 +1903,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.IsMailingLocation == true )
@@ -1848,7 +1917,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.IsMappedLocation == true )
@@ -1861,7 +1931,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.GroupLocationTypeValue.Value == addressType )
@@ -2103,12 +2174,48 @@ namespace Rock.Lava
         /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
         /// </summary>
         /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        public static string ZebraPhoto( DotLiquid.Context context, object input )
+        {
+            return ZebraPhoto( context, input, "395" );
+        }
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
         /// <param name="input">The input, which is the person.</param>
         /// <param name="size">The size.</param>
-        /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
         public static string ZebraPhoto( DotLiquid.Context context, object input, string size )
         {
             return ZebraPhoto( context, input, size, 1.0, 1.0 );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness.</param>
+        /// <param name="contrast">The contrast.</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        public static string ZebraPhoto( DotLiquid.Context context, object input, string size, double brightness, double contrast )
+        {
+            return ZebraPhoto( context, input, size, brightness, contrast, "LOGO" );
         }
 
         /// <summary>
@@ -2122,8 +2229,11 @@ namespace Rock.Lava
         /// <param name="size">The size.</param>
         /// <param name="brightness">The brightness adjustment (-1.0 to 1.0).</param>
         /// <param name="contrast">The contrast adjustment (-1.0 to 1.0).</param>
-        /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
-        public static string ZebraPhoto( DotLiquid.Context context, object input, string size, double brightness = 1.0, double contrast = 1.0 )
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        public static string ZebraPhoto( DotLiquid.Context context, object input, string size, double brightness, double contrast, string fileName )
         {
             var person = GetPerson( input );
             try
@@ -2271,7 +2381,7 @@ namespace Rock.Lava
                     convertedStream.Dispose();
                     initialPhotoStream.Dispose();
 
-                    return string.Format( "^FS ~DYR:LOGO,P,P,{0},,{1} ^FD", content.Length, zplImageData.ToString() );
+                    return string.Format( "^FS ~DYR:{0},P,P,{1},,{2} ^FD", fileName, content.Length, zplImageData.ToString() );
                 }
             }
             catch
@@ -2583,9 +2693,115 @@ namespace Rock.Lava
             return null;
         }
 
+        /// <summary>
+        /// Gets the Notes of the entity
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="documentTemplateId">The Id number of the signed document type to query for.</param>
+        /// <param name="trueValue">The value to be returned if the person has signed the document.</param>
+        /// <param name="falseValue">The value to be returned if the person has not signed the document.</param>
+        /// <returns></returns>
+        public static object HasSignedDocument( DotLiquid.Context context, object input, object documentTemplateId, object trueValue = null, object falseValue = null )
+        {
+            int personId;
+            int templateId;
+
+            trueValue = trueValue ?? true;
+            falseValue = falseValue ?? false;
+
+            if ( input == null || documentTemplateId == null )
+            {
+                return falseValue;
+            }
+
+            templateId = documentTemplateId.ToString().AsInteger();
+
+            if ( input is Person )
+            {
+                personId = ( input as Person ).Id;
+            }
+            else
+            {
+                personId = input.ToString().AsInteger();
+            }
+
+            bool found = new SignatureDocumentService( new RockContext() )
+                .Queryable().AsNoTracking()
+                .Where( d =>
+                    d.SignatureDocumentTemplateId == templateId &&
+                    d.Status == SignatureDocumentStatus.Signed &&
+                    d.BinaryFileId.HasValue &&
+                    d.AppliesToPersonAlias.PersonId == personId )
+                .Any();
+
+            return found ? trueValue : falseValue;
+        }
+
         #endregion
 
         #region Misc Filters
+
+        /// <summary>
+        /// Shows details about which Merge Fields are available
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">If a merge field is specified, only Debug info on that MergeField will be shown</param>
+        /// <param name="option1">either userName or outputFormat</param>
+        /// <param name="option2">either userName or outputFormat</param>
+        /// <returns></returns>
+        public static string Debug( DotLiquid.Context context, object input, string option1 = null, string option2 = null )
+        {
+            string[] outputFormats = new string[] { "Ascii", "Html" };
+            string userName = null;
+            string outputFormat = null;
+
+            // detect if option1 or option2 is the outputFormat or userName parameter
+            if ( outputFormats.Any( f => f.Equals( option1, StringComparison.OrdinalIgnoreCase ) ) )
+            {
+                outputFormat = option1;
+                userName = option2;
+            }
+            else if ( outputFormats.Any( f => f.Equals( option2, StringComparison.OrdinalIgnoreCase ) ) )
+            {
+                outputFormat = option2;
+                userName = option1;
+            }
+            else
+            {
+                userName = option1 ?? option2;
+            }
+
+            if ( userName.IsNotNullOrWhitespace() )
+            {
+                // if userName was specified, don't return anything if the currentPerson doesn't have a matching userName
+                var currentPerson = GetCurrentPerson( context );
+                if ( currentPerson != null )
+                {
+                    if ( !currentPerson.Users.Any( a => a.UserName.Equals( userName, StringComparison.OrdinalIgnoreCase ) ) )
+                    {
+                        // currentUser doesn't have the specified userName, so return nothing
+                        return null;
+                    }
+                }
+                else
+                {
+                    // CurrentPerson is null so return nothing
+                    return null;
+                }
+            }
+
+            var mergeFields = context.Environments.SelectMany( a => a ).ToDictionary( k => k.Key, v => v.Value );
+
+            // if a specific MergeField was specified as the Input, limit the help to just that MergeField
+            if ( input != null && mergeFields.Any( a => a.Value == input ) )
+            {
+                mergeFields = mergeFields.Where( a => a.Value == input ).ToDictionary( k => k.Key, v => v.Value );
+            }
+
+            // TODO: implement the outputFormat option to support ASCII
+            return mergeFields.lavaDebugInfo();
+        }
 
         /// <summary>
         /// Redirects the specified input.
@@ -2622,12 +2838,16 @@ namespace Rock.Lava
             if ( input.StartsWith( "~~" ) )
             {
                 string theme = "Rock";
-                if ( page.Theme != null )
+                if ( page.Theme.IsNotNullOrWhitespace() )
                 {
                     theme = page.Theme;
                 }
+                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhitespace() )
+                {
+                    theme = page.Site.Theme;
+                }
 
-                input = "~/Themes/" + page.Theme + (input.Length > 2 ? input.Substring( 2 ) : string.Empty);
+                input = "~/Themes/" + theme + (input.Length > 2 ? input.Substring( 2 ) : string.Empty);
             }
 
             return page.ResolveUrl( input );
@@ -2645,7 +2865,7 @@ namespace Rock.Lava
             Guid? inputAsGuid = null;
 
             // ensure they provided a cache type
-            if ( cacheType.IsNullOrWhiteSpace() )
+            if ( input == null || cacheType.IsNullOrWhiteSpace() )
             {
                 return null;
             }
@@ -2781,6 +3001,17 @@ namespace Rock.Lava
                             else
                             {
                                 return NoteTypeCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "ContentChannel":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return ContentChannelCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return ContentChannelCache.Read( inputAsGuid.Value );
                             }
                         }
                     default:
@@ -2935,6 +3166,94 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Adds the script link.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
+        /// <returns></returns>
+        public static string AddScriptLink( string input, bool fingerprintLink = false )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage.AddScriptLink( page, ResolveRockUrl( input ), fingerprintLink );
+
+            return String.Empty;
+        }
+
+        /// <summary>
+        /// Adds the CSS link.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
+        /// <returns></returns>
+        public static string AddCssLink( string input, bool fingerprintLink = false )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage.AddCSSLink( page, ResolveRockUrl( input ), fingerprintLink );
+
+            return String.Empty;
+        }
+
+        /// <summary>
+        /// Clients the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The parm.</param>
+        /// <returns></returns>
+        public static object Client( string input, string parm )
+        {
+            parm = parm.ToUpper();
+
+            switch ( parm )
+            {
+                case "IP":
+                    {
+                        string address = string.Empty;
+                        
+                        // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
+                        string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+                        if ( !string.IsNullOrEmpty( ipAddress ) )
+                        {
+                            string[] addresses = ipAddress.Split( ',' );
+                            if ( addresses.Length != 0 )
+                            {
+                                address = addresses[0];
+                            }
+                        }
+
+                        address =  HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+
+                        // nicely format localhost
+                        if (address == "::1" )
+                        {
+                            address = "localhost";
+                        }
+
+                        return address;
+                    }
+                case "LOGIN": {
+                        return HttpContext.Current.Request.ServerVariables["AUTH_USER"];
+                    }
+                case "BROWSER":
+                    {
+                        Parser uaParser = Parser.GetDefault();
+                        ClientInfo client = uaParser.Parse( HttpContext.Current.Request.UserAgent );
+
+                        return client;
+                    }
+                case "PARMLIST":
+                    {
+                        return string.Join( ", ", HttpContext.Current.Request.ServerVariables.AllKeys );
+                    }
+                default:
+                    {
+                        return HttpContext.Current.Request.ServerVariables[parm];
+                    }
+            }
+
+        }
+
+        /// <summary>
         /// Pages the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -3063,6 +3382,96 @@ namespace Rock.Lava
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Casts the input as a boolean value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into boolean form.</param>
+        /// <returns>A boolean value or null if the cast could not be performed.</returns>
+        public static bool? AsBoolean( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsBooleanOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as an integer value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into integer form.</param>
+        /// <returns>An integer value or null if the cast could not be performed.</returns>
+        public static int? AsInteger( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsIntegerOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as a decimal value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into decimal form.</param>
+        /// <returns>A decimal value or null if the cast could not be performed.</returns>
+        public static decimal? AsDecimal( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsDecimalOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as a double value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into double form.</param>
+        /// <returns>A double value or null if the cast could not be performed.</returns>
+        public static double? AsDouble( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsDoubleOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as a string value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into string form.</param>
+        /// <returns>A string value or null if the cast could not be performed.</returns>
+        public static string AsString( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString();
+        }
+
+        /// <summary>
+        /// Casts the input as a DateTime value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into DateTime form.</param>
+        /// <returns>A DateTime value or null if the cast could not be performed.</returns>
+        public static DateTime? AsDateTime( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsDateTime();
         }
 
         #endregion
@@ -3236,6 +3645,34 @@ namespace Rock.Lava
             {
                 return input;
             }
+        }
+
+        /// <summary>
+        /// Extracts a single item from an array.
+        /// </summary>
+        /// <param name="input">The input object to extract one element from.</param>
+        /// <param name="index">The index number of the object to extract.</param>
+        /// <returns>The single object from the array or null if not found.</returns>
+        public static object Index( object input, object index )
+        {
+            if ( input == null || index == null )
+            {
+                return input;
+            }
+
+            if ( !( input is IList ) )
+            {
+                return input;
+            }
+
+            var inputList = input as IList;
+            var indexInt = index.ToString().AsIntegerOrNull();
+            if ( !indexInt.HasValue || indexInt.Value < 0 || indexInt.Value >= inputList.Count )
+            {
+                return null;
+            }
+
+            return inputList[indexInt.Value];
         }
 
         #endregion

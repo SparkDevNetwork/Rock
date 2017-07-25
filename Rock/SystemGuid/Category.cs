@@ -24,6 +24,13 @@ namespace Rock.SystemGuid
     public class Category
     {
 
+        #region Defined Type Categories
+        /// <summary>
+        /// History changes for an event registration
+        /// </summary>
+        public const string DEFINEDTYPE_CMS = "6B1B3106-B7F5-BBA2-4F81-8300F21F6661";
+        #endregion    
+
         #region History Categories
 
         /// <summary>
@@ -108,7 +115,12 @@ namespace Rock.SystemGuid
         /// The person attribute for ERA
         /// </summary>
         public const string PERSON_ATTRIBUTES_ERA = "266A1EA8-425C-7BB0-4191-C2E234D60086";
-        
+
+        /// <summary>
+        /// The person attribute for Finance Internal
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_FINANCE_INTERNAL = "3030B3E2-91EE-4833-BACE-47F775FA98A0";
+
         #endregion
 
         #region System Email Categories

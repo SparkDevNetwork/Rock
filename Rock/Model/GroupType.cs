@@ -33,6 +33,7 @@ namespace Rock.Model
     /// Represents a type or category of <see cref="Rock.Model.Group">Groups</see> in Rock.  A GroupType is also used to configure how Groups that belong to a GroupType will operate
     /// and how they will interact with other components of Rock.
     /// </summary>
+    [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
     public partial class GroupType : Model<GroupType>, IOrdered
@@ -354,6 +355,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
@@ -469,6 +471,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the number of <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
+        [LavaInclude]
         public virtual int GroupCount
         {
             get
@@ -498,7 +501,22 @@ namespace Rock.Model
         /// This is similar to a parent or a template GroupType.
         /// </summary>
         /// <value>The <see cref="Rock.Model.GroupType"/> that this GroupType is inheriting settings and properties from.</value>
+        [LavaInclude]
         public virtual GroupType InheritedGroupType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group requirements for groups of this Group Type (NOTE: Groups also can have additional GroupRequirements )
+        /// </summary>
+        /// <value>
+        /// The group requirements.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupRequirement> GroupRequirements
+        {
+            get { return _groupsRequirements ?? ( _groupsRequirements = new Collection<GroupRequirement>() ); }
+            set { _groupsRequirements = value; }
+        }
+        private ICollection<GroupRequirement> _groupsRequirements;
 
         #endregion
 
@@ -514,6 +532,14 @@ namespace Rock.Model
             if (state == System.Data.Entity.EntityState.Deleted)
             {
                 ChildGroupTypes.Clear();
+
+                // manually delete any grouprequirements of this grouptype since it can't be cascade deleted
+                var groupRequirementService = new GroupRequirementService( dbContext as RockContext );
+                var groupRequirements = groupRequirementService.Queryable().Where( a => a.GroupTypeId.HasValue && a.GroupTypeId == this.Id ).ToList();
+                if ( groupRequirements.Any() )
+                {
+                    groupRequirementService.DeleteRange( groupRequirements );
+                }
             }
 
             // clean up the index

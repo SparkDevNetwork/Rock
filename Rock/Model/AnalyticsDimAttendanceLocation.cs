@@ -25,6 +25,7 @@ namespace Rock.Model
     /// <summary>
     /// AnalyticsDimAttendanceLocation is a SQL View off of the Location table
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimAttendanceLocation" )]
     [DataContract]
     [HideFromReporting]

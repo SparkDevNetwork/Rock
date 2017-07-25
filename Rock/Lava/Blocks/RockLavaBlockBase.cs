@@ -33,25 +33,33 @@ namespace Rock.Lava.Blocks
     public class RockLavaBlockBase : DotLiquid.Block, IRockStartup
     {
         /// <summary>
+        /// Gets the not authorized message.
+        /// </summary>
+        /// <value>
+        /// The not authorized message.
+        /// </value>
+        public static string NotAuthorizedMessage
+        {
+            get
+            {
+                return "The Lava command '{0}' is not configured for this template.";
+            }
+        }
+        
+        /// <summary>
         /// Determines whether the specified command is authorized.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
         protected bool IsAuthorized( Context context )
         {
-            if ( context.Scopes != null )
+            if ( context.Registers.ContainsKey( "EnabledCommands" ) )
             {
-                foreach ( var scopeHash in context.Scopes )
-                {
-                    if ( scopeHash.ContainsKey( "EnabledCommands" ) )
-                    {
-                        var enabledCommands = scopeHash["EnabledCommands"].ToString().Split( ',' ).ToList();
+                var enabledCommands = context.Registers["EnabledCommands"].ToString().Split( ',' ).ToList();
 
-                        if ( enabledCommands.Contains( "All" ) || enabledCommands.Contains( this.GetType().Name ) )
-                        {
-                            return true;
-                        }
-                    }
+                if ( enabledCommands.Contains( "All" ) || enabledCommands.Contains( this.GetType().Name ) )
+                {
+                    return true;
                 }
             }
 

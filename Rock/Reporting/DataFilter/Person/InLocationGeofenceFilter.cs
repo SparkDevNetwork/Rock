@@ -24,7 +24,9 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using System.Web.UI.WebControls;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -122,6 +124,8 @@ function() {
         /// </summary>
         private LocationPicker lp = null;
 
+        private RockDropDownList ddlLocationType = null;
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -133,9 +137,24 @@ function() {
             lp.Label = "Location";
             lp.AllowedPickerModes = LocationPickerMode.Named | LocationPickerMode.Polygon;
             lp.CurrentPickerMode = lp.GetBestPickerModeForLocation( null );
+            lp.CssClass = "col-lg-4";
             filterControl.Controls.Add( lp );
 
-            return new Control[1] { lp };
+            Panel panel = new Panel();
+            panel.CssClass = "col-lg-8";
+            filterControl.Controls.Add( panel );
+
+            ddlLocationType = new RockDropDownList();
+            ddlLocationType.ID = filterControl.ID + "_ddlLocationType";
+            ddlLocationType.Label = "Location Type";
+            ddlLocationType.DataValueField = "Id";
+            ddlLocationType.DataTextField = "Value";
+            DefinedTypeCache locationDefinedType = DefinedTypeCache.Read( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
+            ddlLocationType.BindToDefinedType( locationDefinedType );
+            ddlLocationType.Items.Insert( 0, new ListItem( "(All Location Types)", "" ) );
+            panel.Controls.Add( ddlLocationType );
+
+            return new Control[3] { lp, ddlLocationType, panel };
         }
 
         /// <summary>
@@ -147,28 +166,30 @@ function() {
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            if ( controls.Count() >= 1 )
+            if ( controls.Count() >= 3 )
             {
-                LocationPicker locationPicker = controls[0] as LocationPicker;
-                locationPicker.RenderControl( writer );
+                ( controls[0] as LocationPicker ).RenderControl( writer );
+                ( controls[2] as Panel ).RenderControl( writer );
             }
         }
 
         /// <summary>
         /// Gets the selection.
+        /// Implement this version of GetSelection if your DataFilterComponent works the same in all FilterModes
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
+        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
+        /// <param name="controls">The collection of controls used to set the filter values.</param>
+        /// <returns>
+        /// A formatted string.
+        /// </returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
             var location = ( controls[0] as LocationPicker ).Location;
+            var locationTypeId = ( controls[1] as RockDropDownList ).SelectedValue;
 
-            if ( location != null )
-            {
-                return location.Guid.ToString();
-            }
-            return string.Empty;
+            var locationGuid = location != null ? location.Guid : Guid.Empty;
+
+            return string.Format( "{0}|{1}", locationGuid, locationTypeId );
         }
 
         /// <summary>
@@ -179,13 +200,20 @@ function() {
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            Guid locationGuid = selection.AsGuid();
+            var selections = selection.SplitDelimitedValues();
+            Guid locationGuid = selections[0].AsGuid();
+
             var location = new LocationService( new RockContext() ).Get( locationGuid );
             if ( location != null )
             {
                 LocationPicker locationPicker = controls[0] as LocationPicker;
-                locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( location );
+                locationPicker.GetBestPickerModeForLocation( location );
                 locationPicker.Location = location;
+            }
+
+            if ( selections.Length >= 2 )
+            {
+                ( controls[1] as RockDropDownList ).SetValue( selections[1] );
             }
         }
 
@@ -199,7 +227,8 @@ function() {
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            Guid locationGuid = selection.AsGuid();
+            var selections = selection.SplitDelimitedValues();
+            Guid locationGuid = selections[0].AsGuid();
 
             RockContext rockContext = ( RockContext ) serviceInstance.Context;
 
@@ -209,13 +238,20 @@ function() {
             Guid familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
             int familyGroupTypeId = new GroupTypeService( rockContext ).Get( familyGroupTypeGuid ).Id;
 
-            var geoQry = new GroupLocationService( rockContext )
+            var groupLocationQry = new GroupLocationService( rockContext )
                 .GetMappedLocationsByGeofences( new List<DbGeography> { geoFence } )
-                .Where( gl => gl.Group.GroupType.Id == familyGroupTypeId )
-                .SelectMany( g => g.Group.Members );
+                .Where( gl => gl.Group.GroupType.Id == familyGroupTypeId );
+
+            if ( selections.Length >= 2 )
+            {
+                var locationTypeId = selections[1].AsInteger();
+                groupLocationQry = groupLocationQry.Where( gl => gl.GroupLocationTypeValueId == locationTypeId );
+            }
+
+            var groupMemberQry = groupLocationQry.SelectMany( g => g.Group.Members );
 
             var qry = new PersonService( rockContext ).Queryable()
-                .Where( p => geoQry.Any( xx => xx.PersonId == p.Id ) );
+                .Where( p => groupMemberQry.Any( xx => xx.PersonId == p.Id ) );
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
 

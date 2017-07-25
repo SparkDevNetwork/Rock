@@ -666,18 +666,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the families.
+        /// Gets the families sorted by the person's GroupOrder (GroupMember.GroupOrder)
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         public IQueryable<Group> GetFamilies( int personId )
         {
-            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             return new GroupMemberService( ( RockContext ) this.Context ).Queryable( true )
-                .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
-                .Select( m => m.Group )
-                .Distinct();
+                .Where( m => m.PersonId == personId && m.Group.GroupTypeId == familyGroupTypeId )
+                .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                .Select( m => m.Group );
         }
 
         /// <summary>
@@ -836,12 +836,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
+        /// Returns a collection of <see cref="Rock.Model.GroupMember" /> entities containing the family members of the provided person sorted by the Person's GroupOrder (GroupMember.GroupOrder)
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
         /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
+        /// An enumerable collection of <see cref="Rock.Model.GroupMember" /> entities containing the family members of the provided person.
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf = false )
         {
@@ -850,7 +850,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the group members.
+        /// Gets the group members 
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <param name="personId">The person identifier.</param>
@@ -860,27 +860,35 @@ namespace Rock.Model
         {
             var groupMemberService = new GroupMemberService( ( RockContext ) this.Context );
 
-            var familyGroupIds = groupMemberService.Queryable( true )
+            // construct the linq in a way that will return the group members sorted by the GroupOrder setting of the person
+            var groupMembers = groupMemberService.Queryable( true )
                 .Where( m =>
                     m.PersonId == personId &&
                     m.Group.GroupTypeId == groupTypeId )
-                .Select( m => m.GroupId )
-                .Distinct();
+                .Select( m => new
+                {
+                    SortedMembers = m.Group.Members.Select( x => new
+                    {
+                        GroupMember = x,
+                        PersonGroupOrder = m.GroupOrder 
+                    } )
+                } )
+                .SelectMany( x => x.SortedMembers )
+                .OrderBy( a => a.PersonGroupOrder ?? int.MaxValue )
+                .Select( a => a.GroupMember )
+                .Where( m => includeSelf || ( m.PersonId != personId && !m.Person.IsDeceased ) );
 
-            return groupMemberService.Queryable( "Person,GroupRole", true )
-                .Where( m =>
-                    familyGroupIds.Contains( m.GroupId ) &&
-                    ( includeSelf || ( m.PersonId != personId && !m.Person.IsDeceased ) ) );
+            return groupMembers.Include( a => a.Person ).Include( a => a.GroupRole );
         }
 
         /// <summary>
-        /// Returns a collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
+        /// Returns a collection of <see cref="Rock.Model.GroupMember" /> entities containing the family members of the provided person.
         /// </summary>
         /// <param name="family">The family.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
         /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Person" /> entities containing the family members of the provided person.
+        /// An enumerable collection of <see cref="Rock.Model.GroupMember" /> entities containing the family members of the provided person.
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf = false )
         {
@@ -1200,11 +1208,13 @@ namespace Rock.Model
         /// <returns></returns>
         public GroupLocation GetFirstLocation( int personId, int locationTypeValueId )
         {
-            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+
             return new GroupMemberService( ( RockContext ) this.Context ).Queryable( "GroupLocations.Location", true )
                 .Where( m =>
                     m.PersonId == personId &&
-                    m.Group.GroupType.Guid == familyGuid )
+                    m.Group.GroupTypeId == groupTypeFamilyId )
+                .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                 .SelectMany( m => m.Group.GroupLocations )
                 .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
                 .FirstOrDefault();
@@ -1329,13 +1339,14 @@ namespace Rock.Model
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public GroupTypeRole GetFamilyRole(Person person, RockContext rockContext = null )
+        public GroupTypeRole GetFamilyRole( Person person, RockContext rockContext = null )
         {
             int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             return new GroupMemberService( rockContext == null ? new RockContext() : rockContext ).Queryable()
                                     .Where( gm => gm.PersonId == person.Id && gm.Group.GroupTypeId == groupTypeFamilyId )
-                                    .OrderBy( gm => gm.GroupRole.Order )
+                                    .OrderBy( gm => gm.GroupOrder ?? int.MaxValue )
+                                    .ThenBy( gm => gm.GroupRole.Order )
                                     .Select( gm => gm.GroupRole )
                                     .FirstOrDefault();
         }
@@ -1375,12 +1386,15 @@ namespace Rock.Model
                 return default( TResult );
             }
 
+            var groupOrderQuery = new GroupMemberService( this.Context as RockContext ).Queryable();
+
             return GetFamilyMembers( person.Id )
                 .Where( m => m.GroupRoleId == adultRoleId )
                 // In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic: 
                 .Where( m => m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
-                .OrderBy( m => DbFunctions.DiffDays(m.Person.BirthDate ?? new DateTime(1, 1, 1), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
+                .OrderBy( m => groupOrderQuery.FirstOrDefault(x => x.GroupId == m.GroupId && x.PersonId == person.Id).GroupOrder ?? int.MaxValue )
+                .ThenBy( m => DbFunctions.DiffDays(m.Person.BirthDate ?? new DateTime(1, 1, 1), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
                 .ThenBy( m => m.PersonId )
                 .Select( selector )
                 .FirstOrDefault();
@@ -1398,7 +1412,7 @@ namespace Rock.Model
             {
                 return null;
             }
-            return GetFamilyMembers( family, person.Id, true)
+            return GetFamilyMembers( family, person.Id, true )
                 .OrderBy( m => m.GroupRole.Order )
                 .ThenBy( m => m.Person.Gender )
                 .Select( a => a.Person )
@@ -1419,14 +1433,15 @@ namespace Rock.Model
             var rockContext = ( RockContext ) this.Context;
             var groupMemberService = new GroupMemberService( rockContext );
 
-            Guid familyTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             // get the geopoints for the family locations for the selected person
             return groupMemberService
                 .Queryable( true ).AsNoTracking()
                 .Where( m =>
                     m.PersonId == personId &&
-                    m.Group.GroupType.Guid.Equals( familyTypeGuid ) )
+                    m.Group.GroupTypeId == groupTypeFamilyId )
+                .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                 .SelectMany( m => m.Group.GroupLocations )
                 .Where( l =>
                     l.IsMappedLocation &&
@@ -1593,6 +1608,7 @@ namespace Rock.Model
                 person.LastName = person.LastName.FixCase();
 
                 // new person that hasn't be saved to database yet
+                demographicChanges.Add( "Created" );
                 History.EvaluateChange( demographicChanges, "Title", string.Empty, DefinedValueCache.GetName( person.TitleValueId ) );
                 History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
                 History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
@@ -1638,6 +1654,11 @@ namespace Rock.Model
                 throw new Exception( string.Format( "Specified groupRoleId ({0}) is not a {1} role ", groupRoleId, group.GroupType.Name ) );
             }
 
+            if ( !groupMember.IsValidGroupMember( rockContext ) )
+            {
+                throw new GroupMemberValidationException( groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" ) );
+            }
+
             groupMemberService.Add( groupMember );
 
             rockContext.SaveChanges();
@@ -1646,7 +1667,7 @@ namespace Rock.Model
                 rockContext,
                 typeof( Person ),
                 Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                groupMember.Id,
+                groupMember.Person.Id,
                 demographicChanges );
 
             if ( isFamilyGroup )
@@ -1655,7 +1676,7 @@ namespace Rock.Model
                     rockContext,
                     typeof( Person ),
                     Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                    groupMember.Id,
+                    groupMember.Person.Id,
                     memberChanges,
                     group.Name,
                     typeof( Group ),

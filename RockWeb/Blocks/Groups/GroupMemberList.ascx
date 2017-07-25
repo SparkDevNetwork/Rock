@@ -25,7 +25,7 @@
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
                         <div class="grid grid-panel">
-                            <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+                            <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue" OnClearFilterClick="rFilter_ClearFilterClick">
                                 <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
                                 <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                                 <Rock:RockCheckBoxList ID="cblRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
@@ -48,6 +48,7 @@
                                 <Columns>
                                     <Rock:SelectField></Rock:SelectField>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" HtmlEncode="false" />
+                                    <Rock:DefinedValueField DataField="MaritalStatusValueId" HeaderText="Marital Status" SortExpression="Person.MaritalStatusValue.Value"/>
                                     <Rock:DefinedValueField DataField="ConnectionStatusValueId" HeaderText="Connection Status" SortExpression="Person.ConnectionStatusValue.Value"/>
                                     <Rock:RockTemplateFieldUnselected HeaderText="Registration">
                                         <ItemTemplate>

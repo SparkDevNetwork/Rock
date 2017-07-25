@@ -239,7 +239,7 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// Gets or sets the height (minimum/default of 200)
+        /// Gets or sets the height (default of 200, minimum of 50)
         /// </summary>
         /// <value>
         /// The height of the control.
@@ -256,11 +256,16 @@ namespace Rock.Web.UI.Controls
             {
                 var height = ViewState["EditorHeight"] as string;
                 var heightPixels = ( height ?? string.Empty ).AsIntegerOrNull() ?? 0;
-
-                // ensure a minimum height of 200 pixels
-                if ( heightPixels < 200 )
+                
+                if ( heightPixels <= 0)
                 {
+                    // if height is not specified or is zero or less, default it to 200
                     height = "200";
+                }
+                else if ( heightPixels < 50 )
+                {
+                    // ensure a minimum height of 50 pixels
+                    height = "50";
                 }
 
                 return height;

@@ -58,7 +58,8 @@ namespace RockWeb.Blocks.Cms
         {        
             base.OnInit( e );
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
-
+            ddlTitle.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
+            ddlSuffix.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
             RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
@@ -287,7 +288,7 @@ namespace RockWeb.Blocks.Cms
             .Select( a => new
             {
                 Name = a.Value.Name,
-                Value = a.Value.FieldType.Field.FormatValue( null, person.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, person.Id, person.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
             } )
             .OrderBy( av => av.Name )
             .ToList()
@@ -357,7 +358,7 @@ namespace RockWeb.Blocks.Cms
                             if ( headOfHousehold != null )
                             {
                                 DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( headOfHousehold.ConnectionStatusValueId ?? 0 );
-                                DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( headOfHousehold.ConnectionStatusValueId ?? 0 );
+                                DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( headOfHousehold.RecordStatusValueId ?? 0 );
                                 if ( dvcConnectionStatus != null )
                                 {
                                     groupMember.Person.ConnectionStatusValueId = dvcConnectionStatus.Id;
@@ -571,6 +572,8 @@ namespace RockWeb.Blocks.Cms
                                             Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                                             person.Id,
                                             changes );
+
+                                        changes.Clear();
                                     }
 
                                     if ( orphanedPhotoId.HasValue )
@@ -831,7 +834,7 @@ namespace RockWeb.Blocks.Cms
                     .Select( a => new
                     {
                         Name = a.Value.Name,
-                        Value = a.Value.FieldType.Field.FormatValue( null, CurrentPerson.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                        Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, CurrentPerson.Id, CurrentPerson.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
                     } )
                     .OrderBy( av => av.Name )
                     .ToList()
@@ -884,7 +887,7 @@ namespace RockWeb.Blocks.Cms
                                 .Select( a => new
                                 {
                                     Name = a.Value.Name,
-                                    Value = a.Value.FieldType.Field.FormatValue( null, group.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                                    Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, group.Id, group.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
                                 } )
                                 .OrderBy( av => av.Name )
                                 .ToList()
@@ -952,7 +955,7 @@ namespace RockWeb.Blocks.Cms
                         if ( person != null )
                         {
                             imgPhoto.BinaryFileId = person.PhotoId;
-                            imgPhoto.NoPictureUrl = Person.GetPersonPhotoUrl( person, 200, 200 );
+                            imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
                             ddlTitle.SelectedValue = person.TitleValueId.HasValue ? person.TitleValueId.Value.ToString() : string.Empty;
                             tbFirstName.Text = person.FirstName;
                             tbNickName.Text = person.NickName;

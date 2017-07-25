@@ -37,7 +37,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The first name.
         /// </value>
-        [RockIndexField( Boost = 4 )]
+        [RockIndexField( Boost = 2 )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -46,16 +46,16 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name of the nick.
         /// </value>
-        [RockIndexField( Boost = 4 )]
+        [RockIndexField( Boost = 2 )]
         public string NickName { get; set; }
 
         /// <summary>
-        /// Gets or sets the last name.
+        /// Gets or sets the last name.  
         /// </summary>
         /// <value>
         /// The last name.
         /// </value>
-        [RockIndexField( Boost = 5 )]
+        [RockIndexField( Boost = 2.5 )] // gives slight nudge to last name over first name
         public string LastName { get; set; }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The spouse.
         /// </value>
-        [RockIndexField( Index = IndexType.NotIndexed )]
+        [RockIndexField]
         public string Spouse { get; set; }
 
         /// <summary>

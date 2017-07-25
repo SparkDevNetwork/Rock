@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "ContentChannelItem")]
     [DataContract]
     public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable
@@ -181,6 +182,7 @@ namespace Rock.Model
         /// <value>
         /// The approved by person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary>

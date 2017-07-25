@@ -35,6 +35,7 @@ namespace Rock.Model
     /// is also stackable/hierarchical. For example for a church's campus <seealso cref="Campus"/> can have multiple buildings or facilities, 
     /// each building can be multi story and a story can have multiple rooms.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Location" )]
     [DataContract]
     public partial class Location : Model<Location>, IHasActiveFlag
@@ -347,6 +348,7 @@ namespace Rock.Model
         /// <value>
         /// A Location object representing the parent location of the current location. If this Location does not have a parent Location, this value will be null.
         /// </value>
+        [LavaInclude]
         public virtual Location ParentLocation { get; set; }
 
         /// <summary>
@@ -395,6 +397,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupLocation"/> entities that reference this Location.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<GroupLocation> GroupLocations
         {
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }

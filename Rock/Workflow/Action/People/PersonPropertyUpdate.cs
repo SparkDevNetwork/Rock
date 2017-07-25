@@ -92,6 +92,12 @@ namespace Rock.Workflow.Action
                 }
             }
 
+            if ( person == null )
+            {
+                errorMessages.Add( "The attribute used to provide the person was invalid, or not of type 'Person'." );
+                return false;
+            }
+
             // get value
             string updateValue = GetAttributeValue( action, "Value" );
             Guid? valueGuid = updateValue.AsGuidOrNull();

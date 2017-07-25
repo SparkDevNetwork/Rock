@@ -32,12 +32,7 @@
                                     ItemStyle-Wrap="false"
                                     ItemStyle-HorizontalAlign="Right"
                                     HeaderStyle-HorizontalAlign="Right" />
-                                <Rock:RockTemplateField ItemStyle-Wrap="false">
-                                    <HeaderTemplate>Qualifier</HeaderTemplate>
-                                    <ItemTemplate>
-                                        <asp:Literal ID="lEntityQualifier" runat="server"></asp:Literal>
-                                    </ItemTemplate>
-                                </Rock:RockTemplateField>
+                                <Rock:RockLiteralField ItemStyle-Wrap="false" HeaderText="Qualifier" ID="lEntityQualifier" SortExpression="Qualifier"/>
                                 <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                                 <Rock:RockTemplateField>
                                     <HeaderTemplate>Categories</HeaderTemplate>
@@ -95,7 +90,7 @@
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AttributeValue" />
-                <asp:PlaceHolder ID="phEditControls" runat="server" EnableViewState="false" />
+                <Rock:DynamicPlaceholder ID="phEditControls" runat="server" />
             </Content>
         </Rock:ModalDialog>
 

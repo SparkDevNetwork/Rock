@@ -31,17 +31,27 @@ div.tagsinput {
     }
 
     span {
+      cursor: default;
       display: block;
       float: left;
       max-width: 120px;
       overflow: hidden;
       text-overflow: ellipsis;
+      transition: all 2s;
       white-space: nowrap;
     }
 
     a {
+      font-size: 11px;
+      font-weight: bold;
+      color: @tag-text-color;
+      text-decoration: none;
+      opacity: 0;
       display: block;
       float: left;
+      max-width: 0px;
+      transition-duration: .5s;
+      transition-delay: 1s;
     }
 
     small {
@@ -75,6 +85,19 @@ div.tagsinput {
       border-radius: 2px;
       box-shadow: -1px -1px 2px @tag-bg;
     }
+
+    &:hover {
+      span {
+        max-width: 1000px;
+      }
+
+      a {
+        opacity: 1;
+        padding: 0px 2px;
+        max-width: 100px;
+        transition-delay: 0s;
+      }
+    }
   }
 }
 
@@ -91,20 +114,6 @@ div.tagsinput {
     &:before {
       border-color: transparent @tag-bg-alt transparent transparent;
     }
-  }
-
-  span.tag a {
-    font-size: 11px;
-    font-weight: bold;
-    color: @tag-text-color;
-    text-decoration: none;
-    opacity: 0;
-    -webkit-transition: opacity .3s ease 0s, color .3s ease 0s, background .3s ease 0s;
-       -moz-transition: opacity .3s ease 0s, color .3s ease 0s, background .3s ease 0s;
-  }
-
-  span.tag:hover a {
-    opacity: 1;
   }
 
   input {

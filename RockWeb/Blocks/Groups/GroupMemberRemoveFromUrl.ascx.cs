@@ -47,7 +47,6 @@ namespace RockWeb.Blocks.Groups
 </div>", order: 2 )]
     [BooleanField("Warn When Not In Group", "Determines if the 'Not In Group Message'should be shown if the person is not in the group. Otherwise the success message will be shown", true, order: 3)]
     [BooleanField("Inactivate Instead of Remove", "Inactivates the person in the group instead of removing them.", false, key:"Inactivate", order: 4)]
-    [BooleanField("Enable Debug", "Shows the Lava variables availabled for this block", order: 5)]
     public partial class GroupMemberRemoveFromUrl : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -150,14 +149,6 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "Group", group );
                 mergeFields.Add( "Person", person );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-                // show debug info?
-                bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-                if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
-                }
 
                 var groupMemberService = new GroupMemberService(rockContext);
 

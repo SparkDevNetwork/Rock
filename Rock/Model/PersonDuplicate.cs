@@ -26,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "CRM" )]
     [Table( "PersonDuplicate" )]
     [DataContract]
     public partial class PersonDuplicate : Model<PersonDuplicate>
@@ -132,6 +133,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -140,6 +142,7 @@ namespace Rock.Model
         /// <value>
         /// The duplicate person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias DuplicatePersonAlias { get; set; }
 
         #endregion

@@ -150,7 +150,8 @@ namespace Rock.Workflow.Action
 
             rockContext.SaveChanges();
 
-            action.Activity.Workflow.SetAttributeValue( "BenevolenceRequest", request.Guid );
+            SetWorkflowAttributeValue( action, "BenevolenceRequest", request.Guid );
+
             action.AddLogEntry( $"Set 'Benevolence Request' attribute to '{request.Guid}'." );
             return true;
         }

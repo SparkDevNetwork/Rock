@@ -14,11 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Dynamic;
-using System.Linq.Expressions;
 using System.Runtime.Serialization;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -26,6 +24,7 @@ namespace Rock.Model
     /// AnalyticsDimFamilyCurrent is SQL View off of AnalyticsDimFamilyHistorical
     /// and represents the CurrentRow record from AnalyticsDimFamilyHistorical
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimFamilyCurrent" )]
     [DataContract]
     public class AnalyticsDimFamilyCurrent : AnalyticsDimFamilyBase<AnalyticsDimFamilyCurrent>

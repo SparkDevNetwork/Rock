@@ -52,41 +52,18 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            Guid guid = GetAttributeValue( action, "Attribute" ).AsGuid();
-            if (!guid.IsEmpty())
+            var attribute = AttributeCache.Read( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
+            if ( attribute != null )
             {
-                var attribute = AttributeCache.Read( guid, rockContext );
-                if ( attribute != null )
+                string value = value = GetAttributeValue( action, "Value", true ).ResolveMergeFields( GetMergeFields( action ) );
+                if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid(), rockContext ).Id )
                 {
-                    string value = GetAttributeValue( action, "Value" );
-                    guid = value.AsGuid();
-                    if ( guid.IsEmpty() )
-                    {
-                        value = value.ResolveMergeFields( GetMergeFields( action ) );
-                    }
-                    else
-                    {
-                        var attributeValue = action.GetWorklowAttributeValue( guid );
-
-                        if ( attributeValue != null )
-                        {
-                            value = attributeValue;
-                        }
-                    }
-
-                    if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
-                    {
-                        action.Activity.Workflow.SetAttributeValue( attribute.Key, value );
-                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
-                    }
-                    else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
-                    {
-                        action.Activity.SetAttributeValue( attribute.Key, value );
-                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
-                    }
+                    value = Security.Encryption.EncryptString( value );
                 }
-            }
 
+                SetWorkflowAttributeValue( action, attribute.Guid, value );
+                action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
+            }
 
             return true;
         }

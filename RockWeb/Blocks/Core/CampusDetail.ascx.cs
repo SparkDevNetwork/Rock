@@ -96,14 +96,19 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var campusService = new CampusService( rockContext );
             var locationService = new LocationService( rockContext );
-            var locationCampusValue = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid());
+            var locationCampusValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid() );
 
             int campusId = int.Parse( hfCampusId.Value );
 
             if ( campusId == 0 )
             {
                 campus = new Campus();
-                campusService.Add( campus);
+                campusService.Add( campus );
+                var orders = campusService.Queryable()
+                    .Select( t => t.Order )
+                    .ToList();
+
+                campus.Order = orders.Any() ? orders.Max( t => t ) + 1 : 0;
             }
             else
             {
@@ -123,7 +128,7 @@ namespace RockWeb.Blocks.Core
                         l.Name.Equals( campus.Name, StringComparison.OrdinalIgnoreCase ) &&
                         l.LocationTypeValueId == locationCampusValue.Id )
                     .FirstOrDefault();
-                if (location == null)
+                if ( location == null )
                 {
                     location = new Location();
                     locationService.Add( location );
@@ -150,7 +155,7 @@ namespace RockWeb.Blocks.Core
             campus.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributes, campus );
 
-            if ( !campus.IsValid && campus.Location.IsValid)
+            if ( !campus.IsValid && campus.Location.IsValid )
             {
                 // Controls will render the error messages
                 return;
@@ -161,9 +166,9 @@ namespace RockWeb.Blocks.Core
                 rockContext.SaveChanges();
                 campus.SaveAttributeValues( rockContext );
 
-                if (preValue != postValue && !string.IsNullOrWhiteSpace(campus.Location.Street1))
+                if ( preValue != postValue && !string.IsNullOrWhiteSpace( campus.Location.Street1 ) )
                 {
-                    locationService.Verify(campus.Location, true);
+                    locationService.Verify( campus.Location, true );
                 }
 
             } );
@@ -187,7 +192,7 @@ namespace RockWeb.Blocks.Core
             if ( !campusId.Equals( 0 ) )
             {
                 campus = new CampusService( new RockContext() ).Get( campusId );
-                lActionTitle.Text = ActionTitle.Edit(Campus.FriendlyTypeName).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Edit( Campus.FriendlyTypeName ).FormatAsHtmlTitle();
                 pdAuditDetails.SetEntity( campus, ResolveRockUrl( "~" ) );
             }
 
@@ -213,7 +218,8 @@ namespace RockWeb.Blocks.Core
 
             campus.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( campus, phAttributes, true, BlockValidationGroup );
+            var excludeForEdit = campus.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+            Rock.Attribute.Helper.AddEditControls( campus, phAttributes, true, BlockValidationGroup, excludeForEdit );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

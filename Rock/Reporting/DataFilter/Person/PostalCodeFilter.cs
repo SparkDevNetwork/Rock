@@ -23,7 +23,9 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using System.Web.UI.WebControls;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -115,6 +117,17 @@ function() {
             var values = selection.Split( '|' );
             if ( values.Length >= 2 )
             {
+                string locationType = "";
+                if ( values.Length >= 3 && values[0].AsInteger() != 0 )
+                {
+                    var groupLocationType = DefinedTypeCache.Read( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                        .DefinedValues.FirstOrDefault( dv => dv.Id == values[2].AsInteger() );
+                    if ( groupLocationType != null )
+                    {
+                        locationType = groupLocationType.Value;
+                    }
+                }
+
                 ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                 switch ( comparisonType )
                 {
@@ -124,10 +137,10 @@ function() {
                     case ComparisonType.Contains:
                     case ComparisonType.DoesNotContain:
                     case ComparisonType.EndsWith:
-                        return string.Format( "Postal Code {0} {1}", comparisonType.ConvertToString(), values[1] );
+                        return string.Format( "{0} Postal Code {1} {2}", locationType, comparisonType.ConvertToString(), values[1] );
                     case ComparisonType.IsBlank:
                     case ComparisonType.IsNotBlank:
-                        return string.Format( "Postal Code {0}", comparisonType.ConvertToString() );
+                        return string.Format( "{0} Postal Code {1}", locationType, comparisonType.ConvertToString() );
                     default:
                         break;
                 }
@@ -140,6 +153,7 @@ function() {
         /// </summary>
         private RockTextBox tbPostalCode = null;
         private RockDropDownList ddlStringFilterComparison = null;
+        private RockDropDownList ddlLocationType = null;
 
         /// <summary>
         /// Creates the child controls.
@@ -155,12 +169,22 @@ function() {
             filterControl.Controls.Add( ddlStringFilterComparison );
             controls.Add( ddlStringFilterComparison );
 
-
             tbPostalCode = new RockTextBox();
             tbPostalCode.ID = filterControl.ID + "_tbPostalCode";
             tbPostalCode.AddCssClass( "js-filter-control" );
             filterControl.Controls.Add( tbPostalCode );
             controls.Add( tbPostalCode );
+
+            ddlLocationType = new RockDropDownList();
+            ddlLocationType.ID = filterControl.ID + "_ddlLocationType";
+            ddlLocationType.Label = "Location Type";
+            ddlLocationType.DataValueField = "Id";
+            ddlLocationType.DataTextField = "Value";
+            DefinedTypeCache locationDefinedType = DefinedTypeCache.Read( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
+            ddlLocationType.BindToDefinedType( locationDefinedType );
+            ddlLocationType.Items.Insert( 0, new ListItem( "(All Location Types)", "" ) );
+            filterControl.Controls.Add( ddlLocationType );
+            controls.Add( ddlLocationType );
 
             return controls.ToArray();
         }
@@ -174,7 +198,7 @@ function() {
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            if ( controls.Count() >= 2 )
+            if ( controls.Count() >= 3 )
             {
                 RockDropDownList ddlCompare = controls[0] as RockDropDownList;
                 RockTextBox tbPostalCode = controls[1] as RockTextBox;
@@ -193,6 +217,8 @@ function() {
 
                 writer.RenderEndTag();  // row
                 RegisterFilterCompareChangeScript( filterControl );
+
+                ( controls[2] as RockDropDownList ).RenderControl( writer );
             }
         }
 
@@ -206,7 +232,9 @@ function() {
         {
             RockDropDownList ddlCompare = controls[0] as RockDropDownList;
             RockTextBox nbPostalBox = controls[1] as RockTextBox;
-            return string.Format( "{0}|{1}", ddlCompare.SelectedValue, nbPostalBox.Text );
+            var locationTypeId = ( controls[2] as RockDropDownList ).SelectedValue;
+
+            return string.Format( "{0}|{1}|{2}", ddlCompare.SelectedValue, nbPostalBox.Text, locationTypeId );
         }
 
         /// <summary>
@@ -222,6 +250,10 @@ function() {
             {
                 ( controls[0] as RockDropDownList ).SelectedValue = values[0];
                 ( controls[1] as RockTextBox ).Text = values[1];
+            }
+            if ( values.Length >= 3 )
+            {
+                ( controls[2] as RockDropDownList ).SelectedValue = values[2];
             }
         }
 
@@ -278,16 +310,41 @@ function() {
 
             IQueryable<Rock.Model.Person> qry;
 
+            //Limit by location type if applicable
+            if ( values.Length >= 3 && values[2].AsInteger() != 0 )
+            {
+                int locationTypeId = values[2].AsInteger();
+                groupLocationQry = groupLocationQry.Where( gl => gl.GroupLocationTypeValueId == locationTypeId );
+            }
+
             var groupMemberQry = groupLocationQry.Select( gl => gl.Group )
                 .Where( g => g.GroupType.Guid == familyGroupTypeGuid )
                 .SelectMany( g => g.Members );
 
+
             // Families which do not have locations need to be added separately
-            if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.DoesNotContain || comparisonType == ComparisonType.NotEqualTo )
+            if ( comparisonType == ComparisonType.IsBlank
+                || comparisonType == ComparisonType.DoesNotContain
+                || comparisonType == ComparisonType.NotEqualTo )
             {
-                var noLocationGroupMembersQry = new GroupService( ( RockContext ) serviceInstance.Context ).Queryable()
-                .Where( g => g.GroupType.Guid == familyGroupTypeGuid && !g.GroupLocations.Any() )
-                .SelectMany( g => g.Members );
+                IQueryable<Model.GroupMember> noLocationGroupMembersQry;
+
+                if ( values.Length >= 3 && values[2].AsInteger() != 0 )
+                {
+                    int locationTypeId = values[2].AsInteger();
+                    noLocationGroupMembersQry = new GroupService( ( RockContext ) serviceInstance.Context ).Queryable()
+                        .Where( g =>
+                            g.GroupType.Guid == familyGroupTypeGuid
+                            && !g.GroupLocations.Any( gl => gl.GroupLocationTypeValueId == locationTypeId ) )
+                        .SelectMany( g => g.Members );
+                }
+                else
+                {
+                    noLocationGroupMembersQry = new GroupService( ( RockContext ) serviceInstance.Context ).Queryable()
+                        .Where( g => g.GroupType.Guid == familyGroupTypeGuid && !g.GroupLocations.Any() )
+                        .SelectMany( g => g.Members );
+                }
+
 
                 qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( p => groupMemberQry.Any( xx => xx.PersonId == p.Id ) || noLocationGroupMembersQry.Any( xx => xx.PersonId == p.Id ) );

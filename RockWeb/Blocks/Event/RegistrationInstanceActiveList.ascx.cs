@@ -49,6 +49,12 @@ namespace RockWeb.Blocks.Event
 
             gRegInstances.DataKeyNames = new string[] { "Id" };
             gRegInstances.GridRebind += gRegInstances_GridRebind;
+
+            // hide this block if it determines it's on the event detail page
+            if ( RockPage.PageParameter( "RegistrationTemplateId" ).IsNotNullOrWhitespace() || RockPage.PageParameter( "CategoryId" ).IsNotNullOrWhitespace() )
+            {
+                this.Visible = false;
+            }
         }
 
         /// <summary>

@@ -172,5 +172,19 @@ namespace Rock.SystemGuid
         public const string GROUPROLE_ORGANIZATION_UNIT_STAFF = "17E516FC-76A4-4BF4-9B6F-0F859B13F563";
 
         #endregion
+
+        #region GROUPTYPE_FUNDRAISINGOPPORTUNITY
+
+        /// <summary>
+        /// The Leader group member roles for Fundraising Opportunity
+        /// </summary>
+        public const string GROUPROLE_FUNDRAISINGOPPORTUNITY_LEADER = "253973A5-18F2-49B6-B2F1-F8F84294AAB2";
+
+        /// <summary>
+        /// The Participant group member roles for Fundraising Opportunity
+        /// </summary>
+        public const string GROUPROLE_FUNDRAISINGOPPORTUNITY_PARTICIPANT = "F82DF077-9664-4DA8-A3D9-7379B690124D";
+
+        #endregion
     }
 }

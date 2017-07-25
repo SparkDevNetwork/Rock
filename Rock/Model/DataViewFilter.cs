@@ -33,6 +33,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a filter on a <see cref="Rock.Model.DataView"/> in Rock.
     /// </summary>
+    [RockDomain( "Reporting" )]
     [NotAudited]
     [Table( "DataViewFilter" )]
     [DataContract]
@@ -88,6 +89,7 @@ namespace Rock.Model
         /// <value>
         /// The parent DataViewFilter.
         /// </value>
+        [LavaInclude]
         public virtual DataViewFilter Parent { get; set; }
 
         /// <summary>

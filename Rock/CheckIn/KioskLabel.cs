@@ -198,6 +198,11 @@ namespace Rock.CheckIn
         /// <summary>
         /// The location
         /// </summary>
-        Location = 2
+        Location = 2,
+
+        /// <summary>
+        /// Print for each person being checked out
+        /// </summary>
+        Checkout = 3,
     }
 }

@@ -551,10 +551,10 @@ namespace Rock.SignNow
             }
 
             int i = 1;
-            string fileName = document.Name;
+            string fileName = document.Name.MakeValidFileName();
             while ( File.Exists( Path.Combine( folder.FullName, fileName ) + ".pdf" ) )
             {
-                fileName = string.Format( "{0}_{1}", document.Name, i++ );
+                fileName = string.Format( "{0}_{1}", document.Name.MakeValidFileName(), i++ );
             }
 
             string filePath = Path.Combine( folder.FullName, fileName );

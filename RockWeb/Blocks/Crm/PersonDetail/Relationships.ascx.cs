@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [GroupRoleField( "", "Group Type/Role Filter", "The Group Type and role to display other members from.", false, "" )]
     [BooleanField( "Show Role", "Should the member's role be displayed with their name" )]
     [BooleanField( "Create Group", "Should group be created if a group/role cannot be found for the current person.", true )]
+    [IntegerField( "Max Relationships To Display", "", false, 50 )]
     public partial class Relationships : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -65,12 +66,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected Guid ownerRoleGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is known relationships.
+        /// Gets or sets a value indicating whether this instance is inverse relationships owner.
         /// </summary>
         /// <value>
-        /// <c>true</c> if this instance is known relationships; otherwise, <c>false</c>.
+        /// <c>true</c> if this instance is inverse relationships owner; otherwise, <c>false</c>.
         /// </value>
-        protected bool IsKnownRelationships { get; set; }
+        protected bool IsInverseRelationshipsOwner { get; set; }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -81,9 +82,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             base.OnInit( e );
 
             ownerRoleGuid = GetAttributeValue( "GroupType/RoleFilter" ).AsGuidOrNull() ?? Guid.Empty;
-            IsKnownRelationships = ownerRoleGuid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
 
-            lbAdd.Visible = IsKnownRelationships;
+            // The 'owner' of the group is determined by built-in KnownRelationshipsOwner role or the role that is marked as IsLeader for the group
+            var ownerRole = new GroupTypeRoleService( new RockContext() ).Get( ownerRoleGuid );
+            if ( ownerRole != null )
+            {
+                ownerRole.LoadAttributes();
+                IsInverseRelationshipsOwner = ownerRole.Attributes.ContainsKey( "InverseRelationship" ) 
+                    && ( ownerRole.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) || ownerRole.IsLeader );
+            }
+            else
+            {
+                IsInverseRelationshipsOwner = false;
+            }
 
             rGroupMembers.ItemDataBound += rGroupMembers_ItemDataBound;
             rGroupMembers.ItemCommand += rGroupMembers_ItemCommand;
@@ -92,7 +103,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             modalAddPerson.OnCancelScript = string.Format( "$('#{0}').val('');", hfRoleId.ClientID );
 
             CanEdit = IsUserAuthorized( Authorization.EDIT );
-            lbAdd.Visible = CanEdit;
+            lbAdd.Visible = CanEdit && IsInverseRelationshipsOwner;
 
             string script = @"
     $('a.remove-relationship').click(function(){
@@ -184,7 +195,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                         else if ( e.CommandName == "RemoveRole" )
                         {
-                            if ( IsKnownRelationships )
+                            if ( IsInverseRelationshipsOwner )
                             {
                                 var inverseGroupMember = service.GetInverseRelationship( groupMember, false );
                                 if ( inverseGroupMember != null )
@@ -247,7 +258,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
 
                             GroupMember formerInverseGroupMember = null;
-                            if ( IsKnownRelationships )
+                            if ( IsInverseRelationshipsOwner )
                             {
                                 formerInverseGroupMember = memberService.GetInverseRelationship( groupMember, false );
                             }
@@ -257,7 +268,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             rockContext.SaveChanges();
 
-                            if ( IsKnownRelationships )
+                            if ( IsInverseRelationshipsOwner )
                             {
                                 var inverseGroupMember = memberService.GetInverseRelationship( groupMember, GetAttributeValue( "CreateGroup" ).AsBoolean() );
                                 if ( inverseGroupMember != null )
@@ -325,32 +336,35 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( group != null )
                         {
                             lGroupName.Text = group.Name.Pluralize();
+                            lGroupTypeIcon.Text = string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass );
+                            lGroupTypeIcon.Visible = group.GroupType.IconCssClass.IsNotNullOrWhitespace();
                             phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                             if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             {
-                                phGroupTypeIcon.Controls.Clear();
-                                if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
-                                {
-                                    phGroupTypeIcon.Controls.Add(
-                                        new LiteralControl(
-                                            string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass ) ) );
-                                }
+                                int? maxRelationshipsToDisplay = this.GetAttributeValue( "MaxRelationshipsToDisplay" ).AsIntegerOrNull();
 
-                                // TODO: How many implied relationships should be displayed
-
-                                rGroupMembers.DataSource = new GroupMemberService( rockContext ).GetByGroupId( group.Id, true )
+                                IQueryable<GroupMember> qryGroupMembers = new GroupMemberService( rockContext ).GetByGroupId( group.Id, true )
                                     .Where( m => m.PersonId != Person.Id )
                                     .OrderBy( m => m.Person.LastName )
-                                    .ThenBy( m => m.Person.FirstName )
-                                    .Take( 50 )
-                                    .ToList();
+                                    .ThenBy( m => m.Person.FirstName );
+
+                                if ( maxRelationshipsToDisplay.HasValue )
+                                {
+                                    qryGroupMembers = qryGroupMembers.Take( maxRelationshipsToDisplay.Value );
+                                }
+
+                                rGroupMembers.DataSource = qryGroupMembers.ToList();
                                 rGroupMembers.DataBind();
+                            }
+                            else
+                            {
+                                lAccessWarning.Text = string.Format( "<div class='alert alert-info'>You do not have security rights to view {0}.", group.Name.Pluralize() );
                             }
                         }
                         else
                         {
-                            lAccessWarning.Text = string.Format( "<div class='alert alert-info'>You do not have security rights to view {0}.", group.Name.Pluralize() );
+                            lGroupName.Text = this.BlockCache.Name;
                         }
                     }
                 }

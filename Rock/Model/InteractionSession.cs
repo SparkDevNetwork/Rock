@@ -28,6 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents Session for <see cref="Rock.Model.Interaction">Interaction</see>
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "InteractionSession" )]
     [DataContract]
@@ -84,6 +85,7 @@ namespace Rock.Model
         /// <value>
         /// The Device type.
         /// </value>
+        [LavaInclude]
         public virtual InteractionDeviceType DeviceType { get; set; }
 
         /// <summary>

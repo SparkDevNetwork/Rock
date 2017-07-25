@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Contains a list of previous LastNames that this person has had
     /// </summary>
+    [RockDomain( "CRM" )]
     [Table( "PersonPreviousName" )]
     [DataContract]
     public class PersonPreviousName : Model<PersonPreviousName>
@@ -68,6 +69,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>

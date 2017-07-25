@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a notification
     /// </summary>
+    [RockDomain( "Communication" )]
     [Table( "Notification" )]
     [DataContract]
     public partial class Notification : Model<Notification>

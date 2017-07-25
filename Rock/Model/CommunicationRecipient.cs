@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// Communication Recipient POCO Entity.
     /// </summary>
+    [RockDomain( "Communication" )]
     [Table( "CommunicationRecipient" )]
     [DataContract]
     public partial class CommunicationRecipient : Model<CommunicationRecipient>
@@ -178,6 +179,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Communication"/>
         /// </value>
+        [LavaInclude]
         public virtual Communication Communication { get; set; }
 
 

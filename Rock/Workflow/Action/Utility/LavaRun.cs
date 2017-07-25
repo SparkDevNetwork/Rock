@@ -50,27 +50,12 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            Guid guid = GetAttributeValue( action, "Attribute" ).AsGuid();
-            if ( !guid.IsEmpty() )
+            var attribute = AttributeCache.Read( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
+            if ( attribute != null )
             {
-                var attribute = AttributeCache.Read( guid, rockContext );
-                if ( attribute != null )
-                {
-                    string value = GetAttributeValue( action, "Value" );
-
-                    value = value.ResolveMergeFields( GetMergeFields( action ) );
-
-                    if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
-                    {
-                        action.Activity.Workflow.SetAttributeValue( attribute.Key, value );
-                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
-                    }
-                    else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
-                    {
-                        action.Activity.SetAttributeValue( attribute.Key, value );
-                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
-                    }
-                }
+                string value = GetAttributeValue( action, "Value" ).ResolveMergeFields( GetMergeFields( action ) );
+                SetWorkflowAttributeValue( action, attribute.Guid, value );
+                action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
             }
 
             return true;

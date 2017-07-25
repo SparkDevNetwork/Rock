@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
+using System.Reflection;
 using Rock;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -163,6 +163,34 @@ namespace Rock.Model
             }
 
             return items;
+        }
+
+        /// <summary>
+        /// Gets the by type and entity identifier.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( int entityTypeId, int entityId )
+        {
+            EntityTypeCache itemEntityType = EntityTypeCache.Read( entityTypeId );
+            if ( itemEntityType != null )
+            {
+                Type entityType = itemEntityType.GetEntityType();
+                if ( entityType != null )
+                {
+                    Type[] modelType = { entityType };
+                    Type genericServiceType = typeof( Rock.Data.Service<> );
+                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                    Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { (RockContext)this.Context } ) as IService;
+
+                    MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
+                    var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
+                    return entityQry.Where( i => i.Id == entityId ).FirstOrDefault();
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

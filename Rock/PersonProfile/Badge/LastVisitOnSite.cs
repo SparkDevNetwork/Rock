@@ -30,15 +30,12 @@ using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
-    // TODO: Update to return actual data
-
     /// <summary>
-    /// FamilyAttendance Badge
+    /// Last Visit on Site Badge
     /// </summary>
     [Description( "Badge showing the number of days since the person last visited a specified site." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Last Visit on Site" )]
-    
     
     [SiteField("Site", "Site to filter for.", true, "3", "", 1)]
     [LinkedPage("Page View Details", "Page to show the details of the page views. If blank no link is created.", false, "", "", 2)]

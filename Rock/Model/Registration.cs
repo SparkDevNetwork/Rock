@@ -35,6 +35,7 @@ namespace Rock.Model
     /// <summary>
     /// The person doing the registration. For example, Dad signing his kids up for camp. Dad is the Registration person and the kids would be Registrants
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "Registration" )]
     [DataContract]
     public partial class Registration : Model<Registration>

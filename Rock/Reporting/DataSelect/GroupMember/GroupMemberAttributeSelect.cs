@@ -268,7 +268,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
             foreach ( var entityField in GetGroupMemberAttributes() )
             {
                 // Add the field to the dropdown of available fields
-                ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.UniqueName ) );
             }
 
             return new Control[] { pnlGroupAttributeFilterControls };

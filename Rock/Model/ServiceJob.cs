@@ -28,6 +28,7 @@ namespace Rock.Model
     /// Represents a scheduled job/routine in Rock. A job class can have multiple ServiceJob instances associated with it in the event that it has different attributes or 
     /// has multiple schedules.  For more information on how to create a job see https://github.com/SparkDevNetwork/Rock/wiki/Rock-Jobs
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "ServiceJob" )]
     [DataContract]
     public partial class ServiceJob : Model<ServiceJob>

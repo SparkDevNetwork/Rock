@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for viewing list of financial accounts." )]
     [LinkedPage( "Detail Page" )]
-    public partial class AccountList : RockBlock
+    public partial class AccountList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -67,6 +67,12 @@ namespace RockWeb.Blocks.Finance
             rGridAccount.GridReorder += rGridAccount_GridReorder;
             rGridAccount.GridRebind += rGridAccounts_GridRebind;
             rGridAccount.IsDeleteEnabled = canEdit;
+
+            AddAttributeColumns();
+
+            var deleteField = new DeleteField();
+            rGridAccount.Columns.Add( deleteField );
+            deleteField.Click += rGridAccount_Delete;
         }
 
         /// <summary>
@@ -153,7 +159,11 @@ namespace RockWeb.Blocks.Finance
                 rockContext.SaveChanges();
             }
 
-            BindGrid();
+            var qryParams = new Dictionary<string, string>();
+            qryParams["AccountId"] = PageParameter( "AccountId" );
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -217,9 +227,25 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private IQueryable<FinancialAccount> GetAccounts( RockContext rockContext )
         {
+            int? parentAccountId = PageParameter( "AccountId" ).AsIntegerOrNull();
+
+            if ( parentAccountId.HasValue )
+            {
+                lActionTitle.Text = "Child Accounts".FormatAsHtmlTitle();
+            }
+            else
+            {
+                lActionTitle.Text = "List Accounts".FormatAsHtmlTitle();
+            }
+
             var accountService = new FinancialAccountService( rockContext );
             SortProperty sortProperty = rGridAccount.SortProperty;
             var accountQuery = accountService.Queryable();
+
+            if ( parentAccountId.HasValue )
+            {
+                accountQuery = accountQuery.Where( account => account.ParentAccountId == parentAccountId.Value );
+            }
 
             string accountNameFilter = rAccountFilter.GetUserPreference( "Account Name" );
             if ( !string.IsNullOrEmpty( accountNameFilter ) )
@@ -251,7 +277,7 @@ namespace RockWeb.Blocks.Finance
                 accountQuery = accountQuery.Where( account => account.IsTaxDeductible == ( taxDeductibleFilter == "Yes" ) );
             }
 
-            accountQuery = accountQuery.OrderBy( a => a.Order );
+            accountQuery = accountQuery.OrderBy( a => a.Order ).ThenBy( f => f.Name );
 
             return accountQuery;
         }
@@ -282,6 +308,51 @@ namespace RockWeb.Blocks.Finance
             ddlIsActive.SelectedValue = rAccountFilter.GetUserPreference( "Active" );
             ddlIsPublic.SelectedValue = rAccountFilter.GetUserPreference( "Public" );
             ddlIsTaxDeductible.SelectedValue = rAccountFilter.GetUserPreference( "Tax Deductible" );
+        }
+
+        /// <summary>
+        /// Adds columns for any Account attributes marked as Show In Grid
+        /// </summary>
+        protected void AddAttributeColumns()
+        {
+            // Remove attribute columns
+            foreach ( var column in rGridAccount.Columns.OfType<AttributeField>().ToList() )
+            {
+                rGridAccount.Columns.Remove( column );
+            }
+
+            int entityTypeId = new FinancialAccount().TypeId;
+            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn
+                   )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
+            {
+                string dataFieldExpression = attribute.Key;
+                bool columnExists = rGridAccount.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                if ( !columnExists )
+                {
+                    AttributeField boundField = new AttributeField();
+                    boundField.DataField = dataFieldExpression;
+                    boundField.AttributeId = attribute.Id;
+                    boundField.HeaderText = attribute.Name;
+
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    if ( attributeCache != null )
+                    {
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                    }
+
+                    rGridAccount.Columns.Add( boundField );
+                }
+            }
+        }
+
+        public void SetVisible( bool visible )
+        {
+            divDetails.Visible = visible;
         }
 
         #endregion

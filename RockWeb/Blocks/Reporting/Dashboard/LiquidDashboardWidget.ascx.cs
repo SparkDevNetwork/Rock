@@ -55,7 +55,6 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 {% endfor %}
 " )]
 
-    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 7 )]
     public partial class LiquidDashboardWidget : DashboardWidget
     {
         /// <summary>

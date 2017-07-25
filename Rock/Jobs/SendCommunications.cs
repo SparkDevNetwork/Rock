@@ -52,22 +52,13 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var beginWindow = RockDateTime.Now.AddDays( 0 - dataMap.GetInt( "ExpirationPeriod" ) );
-            var endWindow = RockDateTime.Now.AddMinutes( 0 - dataMap.GetInt( "DelayPeriod" ) );
-            var nowDate = RockDateTime.Now;
+            int expirationDays = dataMap.GetInt( "ExpirationPeriod" );
+            int delayMinutes = dataMap.GetInt( "DelayPeriod" );
 
             var rockContext = new RockContext();
-            var qryPendingRecipients = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.Status == CommunicationRecipientStatus.Pending );
-
-            var qry = new CommunicationService( rockContext ).Queryable()
-                .Where( c =>
-                    c.Status == CommunicationStatus.Approved &&
-                    qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Any() &&
-                    (
-                        ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) >= 0 && c.CreatedDateTime.Value.CompareTo( endWindow ) <= 0 ) ||
-                        ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && c.FutureSendDateTime.Value.CompareTo( nowDate ) <= 0 )
-                    ) )
-                    .OrderBy( c => c.Id);
+            var qry = new CommunicationService( rockContext )
+                .GetQueued( expirationDays, delayMinutes, false, false )
+                .OrderBy( c => c.Id );
 
             var exceptionMsgs = new List<string>();
             int communicationsSent = 0;
@@ -106,10 +97,11 @@ namespace Rock.Jobs
             }
 
             // check for communications that have not been sent but are past the expire date. Mark them as failed and set a warning.
+            var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
             var qryExpired = new CommunicationService( rockContext ).Queryable()
                 .Where( c =>
                     c.Status == CommunicationStatus.Approved &&
-                    qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Any() &&
+                    c.Recipients.Any( r => r.Status == CommunicationRecipientStatus.Pending ) &&
                     (
                         (!c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) < 0 ) ||
                         (c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) < 0 )

@@ -55,20 +55,37 @@ namespace Rock.Web.Cache
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the page id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Page"/> that this Block is implemented on. This property will only be populated
+        /// if the Block is implemented on a <see cref="Rock.Model.Page"/>.
+        /// Blocks that have a specific PageId will only be shown in the specified Page
         /// </summary>
         /// <value>
-        /// The page id.
+        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Page"/> that this Block is implemented on.  This value will be null if this Block is implemented 
+        /// as part of a <see cref="Rock.Model.Layout"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
         public int? PageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the layout id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Layout"/> that this Block is implemented on. This property will only be populated
+        /// if the Block is implemented on a <see cref="Rock.Model.Layout"/>.
+        /// Blocks that have a specific LayoutId will be shown on all pages on a site that have the specified LayoutId
         /// </summary>
         /// <value>
-        /// The layout id.
+        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Layout"/> that this Block is implemented on.  This value will be null if this Block is implemented 
+        /// as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
         public int? LayoutId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this Block is implemented on. This property will only be populated
+        /// if the Block is implemented on a <see cref="Rock.Model.Site"/>.
+        /// Blocks that have a specific SiteId will be shown on all pages on a site
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this Block is implemented on.  This value will be null if this Block is implemented 
+        /// as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Layout"/> .
+        /// </value>
+        public int? SiteId { get; set; }
 
         /// <summary>
         /// Gets or sets the block type id.
@@ -135,8 +152,13 @@ namespace Rock.Web.Cache
         public int OutputCacheDuration { get; set; }
 
         /// <summary>
-        /// Gets the page.
+        /// Gets or sets the Page that this Block is implemented on. This 
+        /// property will be null if this Block is being implemented on as part of a Layout or Site
         /// </summary>
+        /// <value>
+        /// The Page that this Block is being implemented on. This value will 
+        /// be null if the Block is implemented as part of a Layout or Site
+        /// </value>
         public PageCache Page
         {
             get
@@ -151,8 +173,13 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the <see cref="Layout"/> object for the block.
+        /// Gets or sets the Layout that this Block is implemented on. This 
+        /// property will be null if this Block is being implemented on as part of a Page or Site
         /// </summary>
+        /// <value>
+        /// The Layout that this Block is being implemented on. This value will 
+        /// be null if the Block is implemented as part of a Page or Site
+        /// </value>
         public LayoutCache Layout
         {
             get
@@ -160,6 +187,27 @@ namespace Rock.Web.Cache
                 if ( LayoutId != null && LayoutId.Value != 0 )
                 {
                     return LayoutCache.Read( LayoutId.Value );
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Site that this Block is implemented on. This 
+        /// property will be null if this Block is being implemented on as part of a Page or Layout
+        /// </summary>
+        /// <value>
+        /// The Site that this Block is being implemented on. This value will 
+        /// be null if the Block is implemented as part of a Page or Layout
+        /// </value>
+        public SiteCache Site
+        {
+            get
+            {
+                if ( SiteId != null && SiteId.Value != 0 )
+                {
+                    return SiteCache.Read( SiteId.Value );
                 }
 
                 return null;
@@ -187,13 +235,16 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( this.BlockLocation == Model.BlockLocation.Page )
+                switch ( this.BlockLocation )
                 {
-                    return this.Page;
-                }
-                else
-                {
-                    return this.Layout;
+                    case BlockLocation.Page:
+                        return this.Page != null ? this.Page : base.ParentAuthority;
+                    case BlockLocation.Layout:
+                        return this.Layout != null ? this.Layout : base.ParentAuthority;
+                    case BlockLocation.Site:
+                        return this.Site != null ? this.Site : base.ParentAuthority;
+                    default:
+                        return base.ParentAuthority;
                 }
             }
         }
@@ -206,7 +257,25 @@ namespace Rock.Web.Cache
         /// </value>
         public virtual BlockLocation BlockLocation
         {
-            get { return this.PageId.HasValue ? BlockLocation.Page : BlockLocation.Layout; }
+            get
+            {
+                if ( this.PageId.HasValue )
+                {
+                    return BlockLocation.Page;
+                }
+                else if ( this.LayoutId.HasValue )
+                {
+                    return BlockLocation.Layout;
+                }
+                else if ( this.SiteId.HasValue )
+                {
+                    return BlockLocation.Site;
+                }
+                else
+                {
+                    return BlockLocation.None;
+                }
+            }
         }
 
         #endregion
@@ -227,6 +296,7 @@ namespace Rock.Web.Cache
                 this.IsSystem = block.IsSystem;
                 this.PageId = block.PageId;
                 this.LayoutId = block.LayoutId;
+                this.SiteId = block.SiteId;
                 this.BlockTypeId = block.BlockTypeId;
                 this.Zone = block.Zone;
                 this.Order = block.Order;

@@ -30,6 +30,7 @@ namespace Rock.Model
     /// Represents the security code that is issued for an individual when they check in to an group occurrence/event. An AttendanceCode can cover
     /// multiple <see cref="Rock.Model.Attendance"/> incidents for an individual.
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "AttendanceCode" )]
     [DataContract]
     public partial class AttendanceCode : Entity<AttendanceCode>

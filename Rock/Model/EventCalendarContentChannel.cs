@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an event calendar item.
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "EventCalendarContentChannel" )]
     [DataContract]
     public partial class EventCalendarContentChannel : Model<EventCalendarContentChannel>, ISecured

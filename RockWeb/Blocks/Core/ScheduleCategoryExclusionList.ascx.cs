@@ -40,6 +40,8 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Schedule Category Exclusion List" )]
     [Category( "Core" )]
     [Description( "List of dates that schedules are not active for an entire category." )]
+
+    [CategoryField("Category", "Optional Category to use (if not specified, query will be determined by query string).", false, "Rock.Model.Schedule", "", "", false, "", "", 0)]
     public partial class ScheduleCategoryExclusionList : RockBlock, ISecondaryBlock
     {
         #region Fields
@@ -59,7 +61,21 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            _categoryId = PageParameter( "CategoryId" ).AsIntegerOrNull();
+            var categoryGuid = GetAttributeValue( "Category" ).AsGuidOrNull();
+            if ( categoryGuid.HasValue )
+            {
+                var category = CategoryCache.Read( categoryGuid.Value );
+                if ( category != null )
+                {
+                    _categoryId = category.Id;
+                }
+            }
+
+            if ( !_categoryId.HasValue )
+            {
+                _categoryId = PageParameter( "CategoryId" ).AsIntegerOrNull();
+            }
+
             if ( _categoryId.HasValue )
             {
                 _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );

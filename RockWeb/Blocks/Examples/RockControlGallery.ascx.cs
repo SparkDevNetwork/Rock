@@ -189,6 +189,7 @@ namespace RockWeb.Blocks.Examples
                 rblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
                 rblExampleHorizontal.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
+                campExample.Campuses = Rock.Web.Cache.CampusCache.All();
                 campsExample.Campuses = Rock.Web.Cache.CampusCache.All();
                 
                 var rockContext = new RockContext();
@@ -406,5 +407,10 @@ namespace RockWeb.Blocks.Examples
             var val1 = rsSlider.SelectedValue;
             var val2 = rsSlider2.SelectedValue;
         }
-}
+
+        protected void dppExample_SelectedDatePartsChanged( object sender, EventArgs e )
+        {
+
+        }
+    }
 }

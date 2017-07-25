@@ -171,10 +171,9 @@ namespace RockWeb.Blocks.Finance
 
 <p class=""text-center"">
     <em>Unless otherwise noted, the only goods and services provided are intangible religious benefits.</em>
-</p>", order: 2)]
-    [BooleanField("Enable Debug", "Shows the merge fields available for the Lava", order:3)]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Excluded Currency Types", "Select the currency types you would like to excluded.", false, true, order: 4)]
-    [BooleanField("Allow Person Querystring", "Determines if a person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 5)]
+</p>", order: 2 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Excluded Currency Types", "Select the currency types you would like to excluded.", false, true, order: 4 )]
+    [BooleanField( "Allow Person Querystring", "Determines if a person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 5 )]
     public partial class ContributionStatementLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -273,7 +272,7 @@ namespace RockWeb.Blocks.Finance
             // get the transactions for the person or all the members in the person's giving group (Family)
             var qry = financialTransactionDetailService.Queryable().AsNoTracking()
                         .Where( t => t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value ) );
-            
+
             qry = qry.Where( t => t.Transaction.TransactionDateTime.Value.Year == statementYear );
 
             if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
@@ -321,14 +320,6 @@ namespace RockWeb.Blocks.Finance
                                     .OrderBy( p => p.FamilyRoleOrder ).ThenBy( p => p.Gender )
                                     .ToList();
 
-            // make a list of person ids in the giving group
-            List<int> givingGroupIdsOnly = new List<int>();
-            foreach (var x in givingGroup)
-            {
-                givingGroupIdsOnly.Add(x.PersonId);
-            }
-
-
             string salutation = string.Empty;
 
             if ( givingGroup.GroupBy( g => g.LastName ).Count() == 1 )
@@ -371,26 +362,26 @@ namespace RockWeb.Blocks.Finance
 
             mergeFields.Add( "TransactionDetails", qry.ToList() );
 
-            mergeFields.Add("AccountSummary", qry.GroupBy(t => new { t.Account.Name, t.Account.PublicName, t.Account.Description })
-                                                .Select(s => new AccountSummary
+            mergeFields.Add( "AccountSummary", qry.GroupBy( t => new { t.Account.Name, t.Account.PublicName, t.Account.Description } )
+                                                .Select( s => new AccountSummary
                                                 {
                                                     AccountName = s.Key.Name,
                                                     PublicName = s.Key.PublicName,
                                                     Description = s.Key.Description,
-                                                    Total = s.Sum(a => a.Amount),
-                                                    Order = s.Max(a => a.Account.Order)
-                                                })
-                                                .OrderBy(s => s.Order));
+                                                    Total = s.Sum( a => a.Amount ),
+                                                    Order = s.Max( a => a.Account.Order )
+                                                } )
+                                                .OrderBy( s => s.Order ) );
             // pledge information
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p =>
-                                     p.PersonAlias.Person.GivingId == targetPerson.GivingId
-                                    && (p.StartDate.Year == statementYear || p.EndDate.Year == statementYear) )
+                                .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains(p.PersonAliasId.Value)
+                                    && ( p.StartDate.Year == statementYear || p.EndDate.Year == statementYear ) )
                                 .GroupBy( p => p.Account )
                                 .Select( g => new PledgeSummary
                                 {
                                     AccountId = g.Key.Id,
                                     AccountName = g.Key.Name,
+                                    PublicName = g.Key.PublicName,
                                     AmountPledged = g.Sum( p => p.TotalAmount ),
                                     PledgeStartDate = g.Min( p => p.StartDate ),
                                     PledgeEndDate = g.Max( p => p.EndDate )
@@ -400,21 +391,21 @@ namespace RockWeb.Blocks.Finance
             // add detailed pledge information
             foreach ( var pledge in pledges )
             {
-                var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
+                var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddDays( 1 );
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
                                             .Where( t =>
                                                  t.AccountId == pledge.AccountId
-                                                 && givingGroupIdsOnly.Contains(t.Transaction.AuthorizedPersonAlias.PersonId)
+                                                 && t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value )
                                                  && t.Transaction.TransactionDateTime >= pledge.PledgeStartDate
-                                                 && t.Transaction.TransactionDateTime <= adjustedPedgeEndDate )
-                                            .Sum( t => t.Amount );
+                                                 && t.Transaction.TransactionDateTime < adjustedPedgeEndDate )
+                                            .Sum( t => ( decimal? ) t.Amount ) ?? 0;
 
-                pledge.AmountRemaining = (pledge.AmountGiven > pledge.AmountPledged) ? 0 : (pledge.AmountPledged - pledge.AmountGiven);
+                pledge.AmountRemaining = ( pledge.AmountGiven > pledge.AmountPledged ) ? 0 : ( pledge.AmountPledged - pledge.AmountGiven );
 
                 if ( pledge.AmountPledged > 0 )
                 {
-                    var test = (double)pledge.AmountGiven / (double)pledge.AmountPledged;
-                    pledge.PercentComplete = (int)((pledge.AmountGiven * 100) / pledge.AmountPledged);
+                    var test = ( double ) pledge.AmountGiven / ( double ) pledge.AmountPledged;
+                    pledge.PercentComplete = ( int ) ( ( pledge.AmountGiven * 100 ) / pledge.AmountPledged );
                 }
             }
 
@@ -424,12 +415,6 @@ namespace RockWeb.Blocks.Finance
 
             lResults.Text = template.ResolveMergeFields( mergeFields );
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
         }
 
         #endregion
@@ -456,6 +441,14 @@ namespace RockWeb.Blocks.Finance
             /// The pledge account.
             /// </value>
             public string AccountName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Public Name of the pledge account.
+            /// </summary>
+            /// <value>
+            /// The Public Name of the pledge account.
+            /// </value>
+            public string PublicName { get; set; }
 
             /// <summary>
             /// Gets or sets the pledge start date.

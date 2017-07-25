@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Reporting" )]
     [NotAudited]
     [Table( "ReportField" )]
     [DataContract]
@@ -133,6 +134,7 @@ namespace Rock.Model
         /// <value>
         /// The report.
         /// </value>
+        [LavaInclude]
         public virtual Report Report { get; set; }
 
         /// <summary>

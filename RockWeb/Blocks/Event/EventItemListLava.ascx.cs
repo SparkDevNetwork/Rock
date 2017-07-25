@@ -40,14 +40,13 @@ namespace RockWeb.Blocks.Event
     [Description( "Renders calendar items using Lava." )]
 
     [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "1", order: 0 )]
-    [CampusesField( "Campuses", "List of which campuses to show occurrences for. This setting will be ignored in the 'Use Campus Context' is enabled.", required: false, order: 1, includeInactive:true )]
+    [CampusesField( "Campuses", "List of which campuses to show occurrences for. This setting will be ignored if 'Use Campus Context' is enabled.", required: false, order: 1, includeInactive:true )]
     [BooleanField( "Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2 )]
     [LinkedPage( "Details Page", "Detail page for events", order: 3 )]
     [SlidingDateRangeField( "Date Range", "Optional date range to filter the items on. (defaults to next 1000 days)", false, order: 4 )]
     [IntegerField( "Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5 )]
 
     [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemList.lava' %}", order: 6 )]
-    [BooleanField( "Enable Debug", "Show the lava merge fields.", order: 7 )]
     public partial class EventItemListLava : RockBlock
     {
         #region Properties
@@ -222,17 +221,6 @@ namespace RockWeb.Blocks.Event
 
             lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
-            else
-            {
-                lDebug.Visible = false;
-                lDebug.Text = string.Empty;
-            }
         }
 
         #endregion

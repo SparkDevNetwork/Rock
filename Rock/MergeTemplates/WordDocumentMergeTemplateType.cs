@@ -309,6 +309,15 @@ namespace Rock.MergeTemplates
                                         if ( lastParagraph != null )
                                         {
                                             lastParagraph.AddAfterSelf( pageBreak );
+
+                                            // Add page formatting for the page before the page break.
+                                            var lastSectPr = recordContainerNode.Nodes().OfType<XElement>().Where( a => a.Name.LocalName == "sectPr" ).LastOrDefault();
+                                            if ( lastSectPr != null )
+                                            {
+                                                var paragraphPropertiesXml = new Paragraph( new ParagraphProperties( new SectionProperties( lastSectPr.ToString() ) ) ).OuterXml;
+                                                var paragraphProperties = XElement.Parse( paragraphPropertiesXml, LoadOptions.None );
+                                                pageBreak.AddAfterSelf( paragraphProperties );
+                                            }
                                         }
                                     }
                                 }

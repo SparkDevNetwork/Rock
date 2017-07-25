@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Phone Number POCO Entity.
     /// </summary>
+    [RockDomain( "CRM" )]
     [Table( "PhoneNumber" )]
     [DataContract]
     public partial class PhoneNumber : Model<PhoneNumber>
@@ -162,6 +163,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> that the phone number belongs to.
         /// </value>
+        [LavaInclude]
         public virtual Person Person { get; set; }
 
         /// <summary>

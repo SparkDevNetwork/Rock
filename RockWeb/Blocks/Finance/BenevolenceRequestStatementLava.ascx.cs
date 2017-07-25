@@ -157,7 +157,6 @@ namespace RockWeb.Blocks.Finance
         </div>
     </div>
 {% endif %}", order: 2)]
-    [BooleanField("Enable Debug", "Shows the merge fields available for the Lava", order:3)]
     public partial class BenevolenceRequestStatementLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -230,12 +229,6 @@ namespace RockWeb.Blocks.Finance
 
                 lResults.Text = template.ResolveMergeFields(mergeFields);
 
-                // show debug info
-                if (GetAttributeValue("EnableDebug").AsBoolean() && IsUserAuthorized(Authorization.EDIT))
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
-                }
             }
         }
 

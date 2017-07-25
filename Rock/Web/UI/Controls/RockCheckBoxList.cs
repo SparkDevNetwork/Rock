@@ -176,12 +176,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                if ( this.Required )
-                {
-                    return this.SelectedIndex != -1;
-                }
-
-                return true;
+                return !Required || CustomValidator == null || CustomValidator.IsValid;
             }
         }
 

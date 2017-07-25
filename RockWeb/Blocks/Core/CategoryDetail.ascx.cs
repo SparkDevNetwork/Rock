@@ -136,18 +136,10 @@ namespace RockWeb.Blocks.Core
             if ( hfCategoryId.Value.Equals( "0" ) )
             {
                 int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
-                if ( parentCategoryId.HasValue )
-                {
-                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams["CategoryId"] = parentCategoryId.ToString();
-                    NavigateToPage( RockPage.Guid, qryParams );
-                }
-                else
-                {
-                    // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
-                }
+                // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
+                var qryParams = new Dictionary<string, string>();
+                qryParams["CategoryId"] = parentCategoryId.ToString();
+                NavigateToPage( RockPage.Guid, qryParams );
             }
             else
             {
@@ -253,6 +245,7 @@ namespace RockWeb.Blocks.Core
             }
 
             category.Name = tbName.Text;
+            category.Description = tbDescription.Text;
             category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
             category.IconCssClass = tbIconCssClass.Text;
             category.HighlightColor = tbHighlightColor.Text;
@@ -427,16 +420,7 @@ namespace RockWeb.Blocks.Core
             SetEditMode( true );
 
             tbName.Text = category.Name;
-
-            if ( category.EntityTypeId != 0 )
-            {
-                var entityType = EntityTypeCache.Read( category.EntityTypeId );
-                lblEntityTypeName.Text = entityType.Name;
-            }
-            else
-            {
-                lblEntityTypeName.Text = string.Empty;
-            }
+            tbDescription.Text = category.Description;
 
             var excludeCategoriesGuids = this.GetAttributeValue( "ExcludeCategories" ).SplitDelimitedValues().AsGuidList();
             List<int> excludedCategoriesIds = new List<int>();
@@ -461,10 +445,6 @@ namespace RockWeb.Blocks.Core
             cpParentCategory.RootCategoryId = rootCategory != null ? rootCategory.Id : (int?)null;
             cpParentCategory.SetValue( category.ParentCategoryId );
 
-            lblEntityTypeQualifierColumn.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierColumn );
-            lblEntityTypeQualifierColumn.Text = category.EntityTypeQualifierColumn;
-            lblEntityTypeQualifierValue.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierValue );
-            lblEntityTypeQualifierValue.Text = category.EntityTypeQualifierValue;
             tbIconCssClass.Text = category.IconCssClass;
             tbHighlightColor.Text = category.HighlightColor;
         }
@@ -492,7 +472,7 @@ namespace RockWeb.Blocks.Core
             }
 
             lblMainDetails.Text = new DescriptionList()
-                .Add( "Entity Type", category.EntityType.Name )
+                .Add( "Description", category.Description )
                 .Html;
 
         }

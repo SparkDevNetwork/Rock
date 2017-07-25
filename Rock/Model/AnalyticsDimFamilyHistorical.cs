@@ -26,6 +26,7 @@ namespace Rock.Model
     /// AnalyticsDimFamilyHistorical is SQL View based on AnalyticsSourceFamilyHistorical
     /// and represents the historic and current records from AnalyticsSourceFamilyHistorical
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimFamilyHistorical" )]
     [DataContract]
     public class AnalyticsDimFamilyHistorical : AnalyticsDimFamilyBase<AnalyticsDimFamilyHistorical>
@@ -38,6 +39,7 @@ namespace Rock.Model
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="Rock.Model.AnalyticsSourceFamilyBase{T}" />
+    [RockDomain( "Reporting" )]
     public abstract class AnalyticsDimFamilyBase<T> : AnalyticsSourceFamilyBase<T>
         where T : AnalyticsDimFamilyBase<T>, new()
     {

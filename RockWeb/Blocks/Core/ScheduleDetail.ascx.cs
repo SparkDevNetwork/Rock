@@ -102,6 +102,7 @@ namespace RockWeb.Blocks.Core
             }
 
             schedule.Name = tbScheduleName.Text;
+            schedule.IsActive = cbIsActive.Checked;
             schedule.Description = tbScheduleDescription.Text;
             schedule.iCalendarContent = sbSchedule.iCalendarContent;
 
@@ -237,7 +238,7 @@ namespace RockWeb.Blocks.Core
         {
             var fakeSchedule = new Rock.Model.Schedule();
             fakeSchedule.iCalendarContent = sbSchedule.iCalendarContent;
-            sbSchedule.ToolTip = fakeSchedule.ToFriendlyScheduleText();
+            sbSchedule.ToolTip = fakeSchedule.ToFriendlyScheduleText( true );
 
             hbSchedulePreview.Text = @"<strong>iCalendar Content</strong>
 <div style='white-space: pre' Font-Names='Consolas' Font-Size='9'><br />" + sbSchedule.iCalendarContent + "</div>";
@@ -346,6 +347,10 @@ namespace RockWeb.Blocks.Core
                 btnEdit.Visible = true;
                 string errorMessage = string.Empty;
                 btnDelete.Visible = scheduleService.CanDelete( schedule, out errorMessage );
+
+                var hasAttendances = schedule.Id > 0 && new AttendanceService( new RockContext() ).Queryable().Where( a => a.ScheduleId.HasValue && a.ScheduleId == schedule.Id ).Any();
+                hfHasAttendanceHistory.Value = hasAttendances.Bit().ToString();
+
                 if ( schedule.Id > 0 )
                 {
                     ShowReadonlyDetails( schedule );
@@ -376,6 +381,7 @@ namespace RockWeb.Blocks.Core
             SetEditMode( true );
 
             tbScheduleName.Text = schedule.Name;
+            cbIsActive.Checked = schedule.IsActive;
             tbScheduleDescription.Text = schedule.Description;
 
             sbSchedule.iCalendarContent = schedule.iCalendarContent;
@@ -396,6 +402,7 @@ namespace RockWeb.Blocks.Core
             SetEditMode( false );
             hfScheduleId.SetValue( schedule.Id );
             lReadOnlyTitle.Text = schedule.Name.FormatAsHtmlTitle();
+            hlInactive.Visible = schedule.IsActive == false;
 
             string occurrenceText = string.Empty;
             var occurrences = schedule.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
@@ -439,7 +446,7 @@ namespace RockWeb.Blocks.Core
             DescriptionList descriptionList = new DescriptionList()
                 .Add( "Description", schedule.Description ?? string.Empty )
                 .Add( "Schedule", friendlyText )
-                .Add( "Next Occurrence", occurrenceText )
+                .Add( "Next Occurrence", schedule.NextStartDateTime )
                 .Add( "Category", schedule.Category != null ? schedule.Category.Name : string.Empty );
 
             if ( schedule.CheckInStartOffsetMinutes.HasValue )

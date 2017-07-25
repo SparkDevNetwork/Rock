@@ -1331,6 +1331,14 @@ namespace Rock.Data
         public DbSet<SiteDomain> SiteDomains { get; set; }
 
         /// <summary>
+        /// Gets or sets the site URL maps.
+        /// </summary>
+        /// <value>
+        /// The site URL maps.
+        /// </value>
+        public DbSet<SiteUrlMap> SiteUrlMaps { get; set; }
+
+        /// <summary>
         /// Gets or sets the system emails.
         /// </summary>
         /// <value>
@@ -1445,6 +1453,30 @@ namespace Rock.Data
         #endregion
 
         /// <summary>
+        /// Use SqlBulkInsert to quickly insert a large number records.
+        /// WARNING: This will bypass the Rock and a bunch of the EF Framework, so be careful!
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="records">The records.</param>
+        /// <param name="useSqlBulkCopy">if set to <c>true</c> [use SQL bulk copy].</param>
+        public void BulkInsert<T>( IEnumerable<T> records, bool useSqlBulkCopy = true ) where T : class, IEntity
+        {
+            if ( useSqlBulkCopy )
+            {
+                // set timeout to 5 minutes, just in case (the default is 30 seconds)
+                EntityFramework.Utilities.Configuration.BulkCopyTimeout = 300;
+                EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;
+                EntityFramework.Utilities.EFBatchOperation.For( this, this.Set<T>() ).InsertAll( records );
+            }
+            else
+            {
+                this.Configuration.ValidateOnSaveEnabled = false;
+                this.Set<T>().AddRange( records );
+                this.SaveChanges( true );
+            }
+        }
+
+        /// <summary>
         /// This method is called when the context has been initialized, but
         /// before the model has been locked down and used to initialize the context. 
         /// </summary>
@@ -1455,6 +1487,7 @@ namespace Rock.Data
 
             modelBuilder.Conventions.Add( new GetAddressStoreFunctionInjectionConvention() );
             modelBuilder.Conventions.Add( new GetGeofencingGroupNamesStoreFunctionInjectionConvention() );
+            modelBuilder.Conventions.Add( new GetSpousePersonIdFromPersonIdStoreFunctionInjectionConvention() );
 
             try
             {

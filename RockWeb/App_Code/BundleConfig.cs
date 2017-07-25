@@ -46,16 +46,19 @@ public class BundleConfig
             "~/Scripts/bootstrap.min.js",
             "~/Scripts/bootstrap-timepicker.js",
             "~/Scripts/bootstrap-datepicker.js",
+            "~/Scripts/bootstrap-limit.js",
             "~/Scripts/bootstrap-modalmanager.js",
             "~/Scripts/bootstrap-modal.js",
             "~/Scripts/bootbox.min.js",
+            "~/Scripts/chosen.jquery.min.js",
             "~/Scripts/typeahead.min.js",
             "~/Scripts/jquery.fileupload.js",
             "~/Scripts/jquery.tinyscrollbar.js",
             "~/Scripts/jcrop.min.js",
             "~/Scripts/ResizeSensor.js",       
             "~/Scripts/ion.rangeSlider/js/ion-rangeSlider/ion.rangeSlider.min.js",
-            "~/Scripts/Rock/Extensions/*.js" ) );
+            "~/Scripts/Rock/Extensions/*.js",
+            "~/Scripts/React/shim.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockUi" ).Include(
             "~/Scripts/Rock/dialogs.js",

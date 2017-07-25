@@ -10,6 +10,9 @@ _What will this pull request achieve and how will this fix the problem?_
 # Strategy
 _How have you implemented your solution?_
 
+# Tests
+_If your code is a new method or function (that doesn't need a mock database or SqlServerTypes library) and can be Xunit tested [see example](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/Rock/Lava/RockFiltersTests.cs) be sure your pull request includes the corresponding unit tests in the Rock.Tests project. In all cases *you* MUST test your code before submitting a pull request._
+
 # Possible Implications
 _What could this change potentially impact? Are there any security considerations? Where could this potentially affect backwards compatibility?_
 

@@ -17,12 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -44,6 +46,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to edit a person." )]
     [SecurityAction( "EditFinancials", "The roles and/or users that can edit financial information for the selected person." )]
+    [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected person." )]
+    [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
+    [BooleanField("Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0)]
+    [BooleanField("Hide Anniversary Date", "Should the Anniversary Date field be hidden?", false, "", 1)]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -60,8 +66,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+
             pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( "EditFinancials" );
 
+            bool canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
+            ddlConnectionStatus.Visible = canEditConnectionStatus;
+            lConnectionStatusReadOnly.Visible = !canEditConnectionStatus;
+
+            bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
+            ddlRecordStatus.Visible = canEditRecordStatus;
+            lRecordStatusReadOnly.Visible = !canEditRecordStatus;
+            
             ddlGivingGroup.Items.Clear();
             ddlGivingGroup.Items.Add( new ListItem( None.Text, None.IdValue ) );
             if ( Person != null )
@@ -89,6 +104,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             grdPreviousNames.Actions.ShowAdd = true;
             grdPreviousNames.Actions.AddClick += grdPreviousNames_AddClick;
+
+            pnlGradeGraduation.Visible = !GetAttributeValue( "HideGrade" ).AsBoolean();
+            dpAnniversaryDate.Visible = !GetAttributeValue( "HideAnniversaryDate" ).AsBoolean();
         }
 
         /// <summary>
@@ -190,8 +208,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             bool showInactiveReason = ( ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
 
-            ddlReason.Visible = showInactiveReason;
-            tbInactiveReasonNote.Visible = showInactiveReason;
+            bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
+            ddlReason.Visible = showInactiveReason && canEditRecordStatus;
+            lReasonReadOnly.Visible = showInactiveReason && !canEditRecordStatus;
+            tbInactiveReasonNote.Visible = showInactiveReason && canEditRecordStatus;
+            lReasonNoteReadOnly.Visible = showInactiveReason && !canEditRecordStatus;
         }
 
         /// <summary>
@@ -407,6 +428,66 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
                     }
 
+                    // Save the Envelope Number attribute if it exists and has changed
+                    var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+                    if ( GlobalAttributesCache.Read().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null )
+                    {
+                        if ( person.Attributes == null )
+                        {
+                            person.LoadAttributes( rockContext );
+                        }
+
+                        var newEnvelopeNumber = tbGivingEnvelopeNumber.Text;
+                        var oldEnvelopeNumber = person.GetAttributeValue( personGivingEnvelopeAttribute.Key );
+                        if ( newEnvelopeNumber != oldEnvelopeNumber )
+                        {
+                            // If they haven't already comfirmed about duplicate, see if the envelope number if assigned to somebody else
+                            if ( !string.IsNullOrWhiteSpace( newEnvelopeNumber ) && hfGivingEnvelopeNumberConfirmed.Value != newEnvelopeNumber )
+                            {
+                                var otherPersonIdsWithEnvelopeNumber = new AttributeValueService( rockContext ).Queryable()
+                                    .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id && a.Value == newEnvelopeNumber && a.EntityId != person.Id )
+                                    .Select( a => a.EntityId );
+                                if ( otherPersonIdsWithEnvelopeNumber.Any() )
+                                {
+                                    var personList = new PersonService( rockContext ).Queryable().Where( a => otherPersonIdsWithEnvelopeNumber.Contains( a.Id ) ).AsNoTracking().ToList();
+                                    string personListMessage = personList.Select( a => a.FullName ).ToList().AsDelimited( ", ", " and " );
+                                    int maxCount = 5;
+                                    if ( personList.Count > maxCount )
+                                    {
+                                        var otherCount = personList.Count() - maxCount;
+                                        personListMessage = personList.Select( a => a.FullName ).Take( 10 ).ToList().AsDelimited( ", " ) + " and " + otherCount.ToString() + " other " + "person".PluralizeIf( otherCount > 1 );
+                                    }
+
+                                    string givingEnvelopeWarningText = string.Format(
+                                        "The envelope #{0} is already assigned to {1}. Do you want to also assign this number to {2}?",
+                                        newEnvelopeNumber,
+                                        personListMessage,
+                                        person.FullName );
+
+                                    string givingEnvelopeWarningScriptFormat = @"
+                                        Rock.dialogs.confirm('{0}', function (result) {{
+                                            if ( result )
+                                                {{
+                                                   $('#{1}').val('{2}');
+                                                }}
+                                        }})";
+
+                                    string givingEnvelopeWarningScript = string.Format(
+                                        givingEnvelopeWarningScriptFormat,
+                                        givingEnvelopeWarningText,
+                                        hfGivingEnvelopeNumberConfirmed.ClientID,
+                                        newEnvelopeNumber );
+
+                                    ScriptManager.RegisterStartupScript( hfGivingEnvelopeNumberConfirmed, hfGivingEnvelopeNumberConfirmed.GetType(), "confirm-envelope-number", givingEnvelopeWarningScript, true );
+                                    return;
+                                }
+                            }
+
+                            History.EvaluateChange( changes, "Giving Envelope Number", oldEnvelopeNumber, newEnvelopeNumber );
+                            person.SetAttributeValue( personGivingEnvelopeAttribute.Key, newEnvelopeNumber );
+                        }
+                    }
+
                     person.GivingGroupId = newGivingGroupId;
 
                     bool recordStatusChangedToOrFromInactive = false;
@@ -465,7 +546,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     if ( person.IsValid )
                     {
-                        if ( rockContext.SaveChanges() > 0 )
+                        var saveChangeResult = rockContext.SaveChanges();
+
+                        // if AttributeValues where loaded and set (for example Giving Envelope Number), Save Attribute Values
+                        if ( person.AttributeValues != null )
+                        {
+                            person.SaveAttributeValues( rockContext );
+                        }
+
+                        if ( saveChangeResult > 0 )
                         {
                             if ( changes.Any() )
                             {
@@ -557,7 +646,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lTitle.Text = string.Format( "Edit: {0}", Person.FullName ).FormatAsHtmlTitle();
 
             imgPhoto.BinaryFileId = Person.PhotoId;
-            imgPhoto.NoPictureUrl = Person.GetPersonPhotoUrl( Person, 400, 400 );
+            imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( this.Person, 400, 400 );
 
             ddlTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
             tbFirstName.Text = Person.FirstName;
@@ -596,22 +685,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString( false );
-            ddlMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
-            ddlConnectionStatus.SelectedValue = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValueId.Value.ToString() : string.Empty;
+            ddlMaritalStatus.SetValue( Person.MaritalStatusValueId );
+            ddlConnectionStatus.SetValue( Person.ConnectionStatusValueId );
+            lConnectionStatusReadOnly.Text = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValue.Value : string.Empty;
+            
             tbEmail.Text = Person.Email;
             cbIsEmailActive.Checked = Person.IsEmailActive;
             rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString( false );
 
-            ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;
-            ddlReason.SelectedValue = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValueId.Value.ToString() : string.Empty;
+            ddlRecordStatus.SetValue( Person.RecordStatusValueId );
+            lRecordStatusReadOnly.Text = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValue.Value : string.Empty;
+            ddlReason.SetValue( Person.RecordStatusReasonValueId );
+            lReasonReadOnly.Text = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValue.Value : string.Empty;
 
             tbInactiveReasonNote.Text = Person.InactiveReasonNote;
+            lReasonNoteReadOnly.Text = Person.InactiveReasonNote;
 
-            bool showInactiveReason = ( Person.RecordStatusValueId.HasValue
-                                        && Person.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
-
-            ddlReason.Visible = showInactiveReason;
-            tbInactiveReasonNote.Visible = showInactiveReason;
+            ddlRecordStatus_SelectedIndexChanged( null, null );
 
             var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 
@@ -645,6 +735,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             ddlGivingGroup.SetValue( Person.GivingGroupId );
+            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null;
+            if ( personGivingEnvelopeAttribute != null )
+            {
+                tbGivingEnvelopeNumber.Text = Person.GetAttributeValue( personGivingEnvelopeAttribute.Key );
+            }
 
             this.PersonPreviousNamesState = Person.GetPreviousNames().ToList();
 
@@ -694,6 +790,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             BindPersonPreviousNamesGrid();
 
             mdPreviousName.Hide();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnGenerateEnvelopeNumber control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnGenerateEnvelopeNumber_Click( object sender, EventArgs e )
+        {
+            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var maxEnvelopeNumber = new AttributeValueService( new RockContext() ).Queryable()
+                                    .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id && a.ValueAsNumeric.HasValue )
+                                    .Max( a => (int?)a.ValueAsNumeric );
+            tbGivingEnvelopeNumber.Text = ( (maxEnvelopeNumber ?? 0) + 1 ).ToString();
         }
     }
 }

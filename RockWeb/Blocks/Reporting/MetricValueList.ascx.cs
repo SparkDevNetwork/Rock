@@ -94,6 +94,7 @@ namespace RockWeb.Blocks.Reporting
 
             CreateDynamicControls( hfMetricId.Value.AsIntegerOrNull() );
             CreateEntityValueLookups( hfMetricId.Value.AsIntegerOrNull() );
+            SetGridSecurity();
 
             if ( !Page.IsPostBack )
             {
@@ -566,13 +567,20 @@ namespace RockWeb.Blocks.Reporting
 
             hfMetricId.Value = metricId.ToString();
             hfMetricCategoryId.Value = metricCategoryId.ToString();
+        }
 
+        /// <summary>
+        /// Set the appropriate security access to the gMetricValues grid buttons.
+        /// </summary>
+        private void SetGridSecurity()
+        {
+            int metricId = hfMetricId.ValueAsInt();
             gMetricValues.Actions.ShowAdd = false;
             gMetricValues.IsDeleteEnabled = false;
 
-            if ( metricId.HasValue && metricId.Value > 0 )
+            if ( metricId > 0 )
             {
-                var metric = new MetricService( new RockContext() ).Get( metricId.Value );
+                var metric = new MetricService( new RockContext() ).Get( metricId );
                 if ( UserCanEdit || ( metric != null && metric.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
                 {
                     // Block Security and special attributes (RockPage takes care of View)

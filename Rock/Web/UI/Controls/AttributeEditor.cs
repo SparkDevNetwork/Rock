@@ -306,6 +306,28 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the excluded field types.
+        /// </summary>
+        /// <value>
+        /// The excluded field types.
+        /// </value>
+        public FieldTypeCache[] ExcludedFieldTypes
+        {
+            get
+            {
+                int[] excludedFieldTypeIds = this.ViewState["ExcludedFieldTypeIds"] as int[];
+                return excludedFieldTypeIds?.Select( a => FieldTypeCache.Read( a ) ).ToArray() ?? new FieldTypeCache[0];
+            }
+            set
+            {
+                this.ViewState["ExcludedFieldTypeIds"] = value.Select( a => a.Id ).ToArray();
+
+                EnsureChildControls();
+                LoadFieldTypes();
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show in grid].
         /// </summary>
         /// <value>
@@ -571,11 +593,18 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             EnsureChildControls();
-
-            _ddlFieldType.DataSource = FieldTypeCache.All();
-            _ddlFieldType.DataBind();
+            LoadFieldTypes();
 
             base.OnInit( e );
+        }
+
+        /// <summary>
+        /// Loads the field types.
+        /// </summary>
+        private void LoadFieldTypes()
+        {
+            _ddlFieldType.DataSource = FieldTypeCache.All().Where( a => !this.ExcludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
+            _ddlFieldType.DataBind();
         }
 
         /// <summary>
@@ -1129,23 +1158,26 @@ namespace Rock.Web.UI.Controls
 
                 // default control id needs to be unique to field type because some field types will transform
                 // field (i.e. htmleditor) and switching field types will not reset that
-                var defaultControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}", fieldTypeId.Value ) );
-                if ( defaultControl != null )
+                if ( field.HasDefaultControl )
                 {
-                    _phDefaultValue.Controls.Add( defaultControl );
-
-                    if ( recreate)
+                    var defaultControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}", fieldTypeId.Value ) );
+                    if ( defaultControl != null )
                     {
-                        field.SetEditValue( defaultControl, Qualifiers, DefaultValue );
-                    }
+                        _phDefaultValue.Controls.Add( defaultControl );
 
-                    if ( defaultControl is IRockControl )
-                    {
-                        var rockControl = defaultControl as IRockControl;
-                        rockControl.Required = false;
-                        rockControl.Label = "Default Value";
-                    }
+                        if ( recreate )
+                        {
+                            field.SetEditValue( defaultControl, Qualifiers, DefaultValue );
+                        }
 
+                        if ( defaultControl is IRockControl )
+                        {
+                            var rockControl = defaultControl as IRockControl;
+                            rockControl.Required = false;
+                            rockControl.Label = "Default Value";
+                        }
+
+                    }
                 }
             }
         }

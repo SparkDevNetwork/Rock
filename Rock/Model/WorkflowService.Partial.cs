@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.Compilation;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -70,22 +71,20 @@ namespace Rock.Model
             }
             else
             {
-                if ( workflow.IsPersisted || workflow.WorkflowType.IsPersisted )
+                if ( workflow.IsPersisted || WorkflowTypeCache.Read( workflow.WorkflowTypeId ).IsPersisted )
                 {
                     if ( workflow.Id == 0 )
                     {
                         Add( workflow );
                     }
 
-                    rockContext.WrapTransaction( () =>
+                    rockContext.SaveChanges();
+
+                    workflow.SaveAttributeValues( rockContext );
+                    foreach ( var activity in workflow.Activities )
                     {
-                        rockContext.SaveChanges();
-                        workflow.SaveAttributeValues( rockContext );
-                        foreach ( var activity in workflow.Activities )
-                        {
-                            activity.SaveAttributeValues( rockContext );
-                        }
-                    } );
+                        activity.SaveAttributeValues( rockContext );
+                    }
 
                     workflow.IsProcessing = false;
                     rockContext.SaveChanges();

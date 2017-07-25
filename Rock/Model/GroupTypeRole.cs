@@ -29,6 +29,7 @@ namespace Rock.Model
     /// or more <see cref="Rock.Model.GroupTypeRole">GroupRoles</see> assigned to them (for instance the leader of a group can have both a leader and member role). Examples
     /// of roles include leader, member, team leader, coach, host, etc.
     /// </summary>
+    [RockDomain( "Group" )]
     [Table( "GroupTypeRole" )]
     [DataContract]
     public partial class GroupTypeRole : Model<GroupTypeRole>, IOrdered
@@ -153,6 +154,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.GroupType"/> that this GroupRole belongs to.
         /// </value>
+        [LavaInclude]
         public virtual GroupType GroupType { get; set; }
 
         #endregion

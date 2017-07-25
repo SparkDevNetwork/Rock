@@ -41,7 +41,6 @@ namespace RockWeb.Blocks.Store
     [Category( "Store" )]
     [Description( "Displays details for a specific package." )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/Store/PackageDetail.lava' %}", "", 2 )]
-    [BooleanField("Enable Debug", "Display a list of merge fields available for lava.", false, "", 3)]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the package name.", false )]
     public partial class PackageDetailLava : Rock.Web.UI.RockBlock
     {
@@ -135,12 +134,6 @@ namespace RockWeb.Blocks.Store
                 RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
             }
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
         }
 
         #endregion

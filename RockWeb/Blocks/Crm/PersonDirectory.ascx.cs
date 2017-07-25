@@ -44,19 +44,19 @@ namespace RockWeb.Blocks.Crm
         "The data view to use as the source for the directory. Only those people returned by the data view filter will be displayed on this directory.", 
         true, "cb4bb264-a1f4-4edb-908f-2ccf3a534bc7", "Rock.Model.Person", "", 0)]
     [GroupField("Opt-out Group", "A group that contains people that should be excluded from this list.", false, "", "", 1, "OptOut")]
-    [CustomRadioListField("Show By", "People can be displayed indivually, or grouped by family", "Individual,Family", true, "Individual", "", 2)]
+    [CustomRadioListField("Show By", "People can be displayed individually, or grouped by family", "Individual,Family", true, "Individual", "", 2)]
     [BooleanField( "Show All People", "Display all people by default? If false, a search is required first, and only those matching search criteria will be displayed.", false, "", 3)]
     [LinkedPage("Person Profile Page", "Page to navigate to when clicking a person's name (leave blank if link should not be enabled).", false, "", "", 4)]
     [IntegerField( "First Name Characters Required", "The number of characters that need to be entered before allowing a search.", false, 1, "", 5)]
     [IntegerField( "Last Name Characters Required", "The number of characters that need to be entered before allowing a search.", false, 3, "", 6 )]
     [BooleanField( "Show Email", "Should email address be included in the directory?", true, "", 7)]
     [BooleanField( "Show Address", "Should email address be included in the directory?", true, "", 8 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Show Phones", "The phone numbers to be included in the directory",
-        false, true, "407e7e45-7b2e-4fcd-9605-ecb1339f2453,aa8732fb-2cea-4c76-8d6d-6aaa2c6a4303,2cc66d5a-f61c-4b74-9af9-590a9847c13c", "", 9 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Show Phones", "The phone numbers to be included in the directory", false, true, "", "", 9 )]
     [BooleanField( "Show Birthday", "Should email address be included in the directory?", true, "", 10 )]
     [BooleanField( "Show Gender", "Should email address be included in the directory?", true, "", 11 )]
     [BooleanField( "Show Grade", "Should grade be included in the directory?", false, "", 12 )]
-    [IntegerField( "Max Results", "The maximum number of results to show on the page.", true, 1500, "", 13)]
+    [BooleanField( "Show Envelope Number", "Should envelope # be included in the directory?", false, "", 13 )]
+    [IntegerField( "Max Results", "The maximum number of results to show on the page.", true, 1500, "", 14)]
     public partial class PersonDirectory : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -73,11 +73,13 @@ namespace RockWeb.Blocks.Crm
         private bool _showBirthday = true;
         private bool _showGender = true;
         private bool _showGrade = false;
+        private bool _showEnvelopeNumber = false;
         private Dictionary<int, string> _phoneNumberCaptions = new Dictionary<int, string>();
 
         private List<PhoneNumber> _phoneNumbers = null;
         private Dictionary<int, List<Location>> _addresses = null;
         private Dictionary<int, List<PersonDirectoryItem>> _familyMembers = null;
+        private Dictionary<int, string> _envelopeNumbers = null;
 
         protected string _peopleCol1Class = "col-md-5";
         protected string _peopleCol2Class = "col-md-3";
@@ -123,6 +125,7 @@ namespace RockWeb.Blocks.Crm
             _showBirthday = GetAttributeValue( "ShowBirthday" ).AsBoolean();
             _showGender = GetAttributeValue( "ShowGender" ).AsBoolean();
             _showGrade = GetAttributeValue( "ShowGrade" ).AsBoolean();
+            _showEnvelopeNumber = GetAttributeValue( "ShowEnvelopeNumber" ).AsBoolean();
             _personProfileUrl = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "999" } } ).Replace( "999", "{0}" );
 
             foreach ( var guid in GetAttributeValue( "ShowPhones" ).SplitDelimitedValues().AsGuidList() )
@@ -227,7 +230,7 @@ namespace RockWeb.Blocks.Crm
                 var lPerson = e.Item.FindControl( "lPerson" ) as Literal;
                 var lAddress = e.Item.FindControl( "lAddress" ) as Literal;
                 var lPhones = e.Item.FindControl( "lPhones" ) as Literal;
-                var lBirthdateGender = e.Item.FindControl( "lBirthdateGender" ) as Literal;
+                var lEverythingElse = e.Item.FindControl( "lEverythingElse" ) as Literal;
 
                 if ( lPerson != null )
                 {
@@ -274,7 +277,7 @@ namespace RockWeb.Blocks.Crm
                         _showFamily ? _familyCol2Class : _peopleCol3Class, phones.AsDelimited( "<br/>" ) );
                 }
 
-                if ( ( _showBirthday || _showGender || _showGrade ) && lBirthdateGender != null )
+                if ( ( _showBirthday || _showGender || _showGrade || _showEnvelopeNumber ) && lEverythingElse != null )
                 {
                     var sb = new StringBuilder();
                     if ( _showBirthday )
@@ -309,7 +312,21 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
 
-                    lBirthdateGender.Text = string.Format( "<div class='{0} clearfix'>{1}</div>",
+                    if ( _showEnvelopeNumber && _envelopeNumbers != null )
+                    {
+                        var envelopeNumber = _envelopeNumbers.ContainsKey(personItem.Id) ? _envelopeNumbers[personItem.Id] : null;
+                        if ( !string.IsNullOrWhiteSpace( envelopeNumber ) )
+                        {
+                            if ( sb.Length > 0 )
+                            {
+                                sb.Append( "<br/>" );
+                            }
+
+                            sb.AppendFormat( "Envelope #: {0}", envelopeNumber );
+                        }
+                    }
+
+                    lEverythingElse.Text = string.Format( "<div class='{0} clearfix'>{1}</div>",
                         _showFamily ? _familyCol3Class : _peopleCol4Class, sb.ToString() );
                 }
             }
@@ -559,11 +576,34 @@ namespace RockWeb.Blocks.Crm
                 LoadPhoneNumbers( rockContext, personIds );
             }
 
+            if ( _showEnvelopeNumber && GlobalAttributesCache.Read().EnableGivingEnvelopeNumber )
+            {
+                LoadEnvelopeNumbers( rockContext, people.Select( p => p.Id ).ToList() );
+            }
+
             rptPeople.DataSource = people;
             rptPeople.DataBind();
             rptPeople.Visible = true;
 
             rptFamilies.Visible = false;
+        }
+
+        /// <summary>
+        /// Loads the envelope numbers.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personIds">The person ids.</param>
+        private void LoadEnvelopeNumbers( RockContext rockContext, List<int> personIds )
+        {
+            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            _envelopeNumbers = new AttributeValueService( rockContext ).Queryable()
+                                    .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id )
+                                    .Where( a => personIds.Contains( a.EntityId.Value ) )
+                                    .Select( a => new
+                                    {
+                                        PersonId = a.EntityId.Value,
+                                        Value = a.Value
+                                    } ).ToList().ToDictionary( k => k.PersonId, v => v.Value );
         }
 
         private void BindFamilies( RockContext rockContext, IQueryable<Person> personQry, IQueryable<int> dataviewPersonIdQry )
@@ -631,14 +671,20 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            if ( _phoneNumberCaptions.Any() )
-            {
-                var familyPersonIds = _familyMembers
+            var familyPersonIds = _familyMembers
                     .SelectMany( m => m.Value )
                     .Select( p => p.Id )
                     .Distinct()
                     .ToList();
+
+            if ( _phoneNumberCaptions.Any() )
+            {
                 LoadPhoneNumbers( rockContext, familyPersonIds );
+            }
+
+            if ( _showEnvelopeNumber && GlobalAttributesCache.Read().EnableGivingEnvelopeNumber )
+            {
+                LoadEnvelopeNumbers( rockContext, familyPersonIds );
             }
 
             var families = groupMemberQry.Select( m => new FamilyDirectoryItem

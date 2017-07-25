@@ -80,7 +80,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="IconCssClass" />
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
+                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                             <Rock:RockCheckBox ID="cbEnableRss" runat="server" Label="Enable RSS" Text="Yes" CssClass="js-content-channel-enable-rss" />
                             <div id="divRss" runat="server" class="js-content-channel-rss"> 
                                 <Rock:DataTextBox ID="tbChannelUrl" runat="server" Label="Channel Url" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ChannelUrl" />

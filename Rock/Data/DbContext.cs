@@ -325,8 +325,7 @@ namespace Rock.Data
                 }
             }
 
-            var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
-
+            List<ITransaction> indexTransactions = new List<ITransaction>();
             foreach ( var item in updatedItems )
             {
                 if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
@@ -339,8 +338,14 @@ namespace Rock.Data
                     TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
                 }
 
+                if ( item.Entity is IModel )
+                {
+                    var model = item.Entity as IModel;
+                    model.PostSaveChanges( this );
+                }
+
                 // check if this entity should be passed on for indexing
-                if ( indexingEnabled && item.Entity is IRockIndexable )
+                if ( item.Entity is IRockIndexable )
                 {
                     if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
                     {
@@ -348,7 +353,7 @@ namespace Rock.Data
                         transaction.EntityTypeId = item.Entity.TypeId;
                         transaction.EntityId = item.Entity.Id;
 
-                        RockQueue.TransactionQueue.Enqueue( transaction );
+                        indexTransactions.Add( transaction );
                     }
                     else
                     {
@@ -356,9 +361,22 @@ namespace Rock.Data
                         transaction.EntityTypeId = item.Entity.TypeId;
                         transaction.EntityId = item.Entity.Id;
 
-                        RockQueue.TransactionQueue.Enqueue( transaction );
+                        indexTransactions.Add( transaction );
                     }
                 }
+            }
+
+            // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
+            if ( indexTransactions.Any() )
+            {
+                System.Threading.Tasks.Task.Run( () =>
+                {
+                    var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
+                    if ( indexingEnabled )
+                    {
+                        indexTransactions.ForEach( t => RockQueue.TransactionQueue.Enqueue( t ) );
+                    }
+                } );
             }
         }
 
@@ -376,7 +394,6 @@ namespace Rock.Data
 
             using ( var rockContext = new RockContext() )
             {
-                var workflowTypeService = new WorkflowTypeService( rockContext );
                 var workflowService = new WorkflowService( rockContext );
 
                 // Look at each trigger for this entity and for the given trigger type
@@ -410,9 +427,8 @@ namespace Rock.Data
                         // If it's one of the pre or immediate triggers, fire it immediately; otherwise queue it.
                         if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
                         {
-                            var workflowType = workflowTypeService.Get( trigger.WorkflowTypeId );
-
-                            if ( workflowType != null )
+                            var workflowType = Web.Cache.WorkflowTypeCache.Read( trigger.WorkflowTypeId );
+                            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                             {
                                 var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 

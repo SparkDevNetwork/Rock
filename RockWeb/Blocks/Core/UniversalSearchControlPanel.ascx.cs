@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Core
 
             tbSmartSearchFieldCrieria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
 
-            var searchType = ((int)SearchType.Wildcard).ToString();
+            var searchType = ((int)SearchType.ExactMatch).ToString();
 
             if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ) )
             {
@@ -199,6 +199,12 @@ namespace RockWeb.Blocks.Core
                 if ( cbEnabledIndexing.Checked )
                 {
                     IndexContainer.CreateIndex( entityType.IndexModelType );
+
+                    // call for bulk indexing
+                    BulkIndexEntityTypeTransaction bulkIndexTransaction = new BulkIndexEntityTypeTransaction();
+                    bulkIndexTransaction.EntityTypeId = entityType.Id;
+
+                    RockQueue.TransactionQueue.Enqueue( bulkIndexTransaction );
                 }
                 else
                 {
@@ -243,7 +249,7 @@ namespace RockWeb.Blocks.Core
                 {
                     e.Row.Cells[2].Controls[0].Visible = false;
                     e.Row.Cells[3].Controls[0].Visible = false;
-                    e.Row.Cells[4].Controls[0].Visible = false;
+                    //e.Row.Cells[4].Controls[0].Visible = false;
                 }
             }
         }
@@ -356,7 +362,7 @@ namespace RockWeb.Blocks.Core
             }
             lSmartSearchFilterCriteria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
 
-            var searchType = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ).ConvertToEnumOrNull<SearchType>() ?? SearchType.Wildcard;
+            var searchType = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ).ConvertToEnumOrNull<SearchType>() ?? SearchType.ExactMatch;
             lSearchType.Text = searchType.ToString();
         }
 
@@ -381,6 +387,16 @@ namespace RockWeb.Blocks.Core
                         hlblEnabled.LabelType = LabelType.Warning;
                         nbMessages.NotificationBoxType = NotificationBoxType.Warning;
                         nbMessages.Text = string.Format( "Could not connect to the {0} server at {1}.", component.EntityType.FriendlyName, component.IndexLocation );
+
+                        // add friendly check to see if the url provided is valid
+                        Uri uriTest;
+                        bool isValidUrl = Uri.TryCreate( component.IndexLocation, UriKind.Absolute, out uriTest )
+                            && (uriTest.Scheme == Uri.UriSchemeHttp || uriTest.Scheme == Uri.UriSchemeHttps);
+
+                        if ( !isValidUrl )
+                        {
+                            nbMessages.Text += " Note that the URL provided is not valid. The pattern should be http(s)://server:port.";
+                        }
                     }
 
                     lIndexLocation.Text = component.IndexLocation;

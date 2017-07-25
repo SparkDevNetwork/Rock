@@ -183,11 +183,12 @@ namespace RockWeb.Blocks.Cms
             if ( compileSuccess )
             {
                 mdThemeCompile.Show( "Theme was successfully compiled.", ModalAlertType.Information );
+                nbMessages.Text = string.Empty;
             }
             else
             {
                 nbMessages.NotificationBoxType = NotificationBoxType.Danger;
-                nbMessages.Text = string.Format( "An error occurred while compiling the {0} them. Message: {1}", theme.Name, messages );
+                nbMessages.Text = string.Format( "An error occurred while compiling the {0} theme. Message: {1}", theme.Name, messages );
             }
         }
 

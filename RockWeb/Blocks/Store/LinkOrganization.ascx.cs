@@ -180,13 +180,13 @@ namespace RockWeb.Blocks.Store
             {
                 lMessages.Text = @"<div class='alert alert-warning margin-t-md'>It appears that no organizations have been configured for this account. You can 
                                 set up an organization on the Rock RMS website. Simply login and then select 'My Account' from the dropdown in the top right
-                                corner.</div>";
+                                corner or see the <a href='https://www.rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.</div>";
             }
             else
             {
                 lMessages.Text = @"<div class='alert alert-warning margin-t-md'>The username/password provided did not match a user on the Rock RMS website. Be sure
                     you provide a valid account from this site. If you would like to create an account or retrieve your password please <a href='https://www.rockrms.com/Rock/Login'>
-                    vistit the Rock RMS website</a>.</div>";
+                    visit the Rock RMS website</a> or see the <a href='https://www.rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.</div>";
             }
 
         }

@@ -18,9 +18,22 @@
                 </div>
             </div>
             <div class="panel-body">
+                <legend>Blocks From Site</legend>
+                <div class="site-blocks-sort-container">
+                    <asp:Repeater ID="rptSiteBlocks" runat="server" OnItemDataBound="rptBlocks_ItemDataBound">
+                        <ItemTemplate>
+                            
+                            <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
+                                <asp:HiddenField ID="hfSiteBlockId" runat="server" Value='<%# Eval("Id") %>' />
+                            </asp:Panel>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </div>
+
+                <hr />
                 <legend>Blocks From Layout</legend>
                 <div class="layout-blocks-sort-container">
-                    <asp:Repeater ID="rptLayoutBlocks" runat="server" OnItemDataBound="rptPageOrLayoutBlocks_ItemDataBound">
+                    <asp:Repeater ID="rptLayoutBlocks" runat="server" OnItemDataBound="rptBlocks_ItemDataBound">
                         <ItemTemplate>
                             
                             <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
@@ -34,7 +47,7 @@
 
                 <legend>Blocks From Page</legend>
                 <div class="page-blocks-sort-container">
-                    <asp:Repeater ID="rptPageBlocks" runat="server" OnItemDataBound="rptPageOrLayoutBlocks_ItemDataBound">
+                    <asp:Repeater ID="rptPageBlocks" runat="server" OnItemDataBound="rptBlocks_ItemDataBound">
                         <ItemTemplate>
                             
                             <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
@@ -73,13 +86,22 @@
             <Content>
                 <asp:ValidationSummary ID="vsAddBlock" runat="server" ValidationGroup="vgAddBlock" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <Rock:RockTextBox ID="tbNewBlockName" runat="server" Label="Name" Required="true" ValidationGroup="vgAddBlock" />
-                <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" />
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" />
+                    </div>
+                    <div class="col-md-6 padding-t-md">
+                        <label>Common Block Types</label><br />
+                        <asp:Repeater ID="rptCommonBlockTypes" runat="server" OnItemDataBound="rptCommonBlockTypes_ItemDataBound">
+                            <ItemTemplate>
+                                <asp:LinkButton ID="btnNewBlockQuickSetting" runat="server" Text="Todo" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
+                </div>
 
-                <asp:LinkButton ID="btnHtmlContentQuickSetting" runat="server" Text="HTML Content" CssClass="btn btn-default" OnClick="btnNewBlockQuickSetting_Click" />
-                <asp:LinkButton ID="btnContentChannelQuickSetting" runat="server" Text="Content Channel" CssClass="btn btn-default" OnClick="btnNewBlockQuickSetting_Click" />
-                <asp:LinkButton ID="btnPageMenuQuickSetting" runat="server" Text="Page Menu" CssClass="btn btn-default" OnClick="btnNewBlockQuickSetting_Click" />
-
-                <Rock:RockRadioButtonList ID="cblAddBlockPageOrLayout" runat="server" Label="Add To" RepeatDirection="Horizontal" FormGroupCssClass="margin-t-md" />
+                <Rock:RockRadioButtonList ID="rblAddBlockLocation" runat="server" Label="Add To" RepeatDirection="Horizontal" FormGroupCssClass="margin-t-md" />
 
             </Content>
         </Rock:ModalDialog>
@@ -95,7 +117,7 @@
                 };
 
                 // javascript to make the Reorder buttons work on the panel-widget controls
-                $('.layout-blocks-sort-container, .page-blocks-sort-container').sortable({
+                $('.site-blocks-sort-container, .layout-blocks-sort-container, .page-blocks-sort-container').sortable({
                     helper: fixHelper,
                     handle: '.panel-widget-reorder',
                     containment: 'parent',

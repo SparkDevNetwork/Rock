@@ -62,7 +62,7 @@
                                 Help="Should any notices that would normally be sent on a weekend be sent of preceding Friday instead?" />
                         </div>
                         <div class="col-md-6">
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
+                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                         </div>
                     </div>
 
@@ -74,8 +74,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>

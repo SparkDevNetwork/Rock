@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.WorkFlow
             if ( _workflowType != null )
             {
                 _canEdit = UserCanEdit || _workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                _canView = _canEdit || _workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson );
+                _canView = _canEdit || ( _workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) && _workflowType.IsAuthorized( "ViewList", CurrentPerson ) );
 
                 gfWorkflows.ApplyFilterClick += gfWorkflows_ApplyFilterClick;
                 gfWorkflows.DisplayFilterValue += gfWorkflows_DisplayFilterValue;

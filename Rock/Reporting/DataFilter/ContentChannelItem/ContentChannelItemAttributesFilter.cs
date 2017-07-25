@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ContentChannelItem
@@ -108,7 +109,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                 if ( contentChannelType != null )
                 {
                     var entityFields = GetContentChannelItemAttributes( contentChannelType.Id );
-                    var entityField = entityFields.FirstOrDefault( f => f.Name == values[1] );
+                    var entityField = entityFields.FindFromFilterSelection( values[1] );
                     if ( entityField != null )
                     {
                         result = entityField.FormattedFilterDescription( values.Skip( 2 ).ToList() );
@@ -183,12 +184,20 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             this.entityFields = GetContentChannelItemAttributes( contentChannelTypePicker.SelectedValue.AsIntegerOrNull() );
             foreach ( var entityField in this.entityFields )
             {
-                string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.Name );
+                string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
                 var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
                 if ( control != null )
                 {
                     // Add the field to the dropdown of available fields
-                    ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.Name ) );
+                    if ( AttributeCache.Read( entityField.AttributeGuid.Value )?.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                    {
+                        ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.UniqueName ) );
+                    }
+                    else
+                    {
+                        ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.UniqueName ) );
+                    }
+
                     containerControl.Controls.Add( control );
                 }
             }
@@ -217,10 +226,10 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             var containerControl = ddlEntityField.FirstParentControlOfType<DynamicControlsPanel>();
             FilterField filterControl = ddlEntityField.FirstParentControlOfType<FilterField>();
 
-            var entityField = this.entityFields.FirstOrDefault( a => a.Name == ddlEntityField.SelectedValue );
+            var entityField = this.entityFields.FirstOrDefault( a => a.UniqueName == ddlEntityField.SelectedValue );
             if ( entityField != null )
             {
-                string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.Name );
+                string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
                 if ( !containerControl.Controls.OfType<Control>().Any( a => a.ID == controlId ) )
                 {
                     var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
@@ -295,13 +304,13 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                             DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
 
                             var entityFields = GetContentChannelItemAttributes( contentChannelType.Id );
-                            var entityField = entityFields.FirstOrDefault( f => f.Name == ddlProperty.SelectedValue );
+                            var entityField = entityFields.FirstOrDefault( f => f.UniqueName == ddlProperty.SelectedValue );
                             if ( entityField != null )
                             {
                                 var panelControls = new List<Control>();
                                 panelControls.AddRange( containerControl.Controls.OfType<Control>() );
 
-                                var control = panelControls.FirstOrDefault( c => c.ID.EndsWith( entityField.Name ) );
+                                var control = panelControls.FirstOrDefault( c => c.ID.EndsWith( entityField.UniqueName ) );
                                 if ( control != null )
                                 {
                                     values.Add( contentChannelType.Guid.ToString() );
@@ -377,7 +386,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                         string selectedProperty = values[1];
 
                         var entityFields = GetContentChannelItemAttributes( contentChannelType.Id );
-                        var entityField = entityFields.FirstOrDefault( f => f.Name == selectedProperty );
+                        var entityField = entityFields.FindFromFilterSelection( selectedProperty );
                         if ( entityField != null )
                         {
                             return GetAttributeExpression( serviceInstance, parameterExpression, entityField, values.Skip( 2 ).ToList() );
@@ -401,14 +410,29 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
         private List<EntityField> GetContentChannelItemAttributes( int? contentChannelTypeId )
         {
             List<EntityField> entityAttributeFields = new List<EntityField>();
-
             if ( contentChannelTypeId.HasValue )
             {
-                var fakeContentChannelItem = new Rock.Model.ContentChannelItem { ContentChannelTypeId = contentChannelTypeId.Value };
-                Rock.Attribute.Helper.LoadAttributes( fakeContentChannelItem );
-                foreach ( var attribute in fakeContentChannelItem.Attributes.Select( a => a.Value ) )
+                using ( var rockContext = new RockContext() )
                 {
-                    EntityHelper.AddEntityFieldForAttribute( entityAttributeFields, attribute, true );
+                    var contentChannelService = new ContentChannelService( rockContext );
+                    var allEntityAttributeFields = EntityHelper.GetEntityFields( typeof( Rock.Model.ContentChannelItem ) ).Where( a => a.FieldKind == FieldKind.Attribute );
+                    foreach ( var entityAttributeField in allEntityAttributeFields )
+                    {
+                        var attributeCache = AttributeCache.Read( entityAttributeField.AttributeGuid.Value );
+                        if ( attributeCache.EntityTypeQualifierColumn == "ContentChannelTypeId" && attributeCache.EntityTypeQualifierValue == contentChannelTypeId.ToString() )
+                        {
+                            entityAttributeFields.Add( entityAttributeField );
+                        }
+                        else if ( attributeCache.EntityTypeQualifierColumn == "ContentChannelId" )
+                        {
+                            int contentChannelId = attributeCache.EntityTypeQualifierValue.AsInteger();
+                            var contentChannel = contentChannelService.Queryable().Where( a => a.Id == contentChannelId ).FirstOrDefault();
+                            if ( contentChannel?.ContentChannelTypeId == contentChannelTypeId.Value )
+                            {
+                                entityAttributeFields.Add( entityAttributeField );
+                            }
+                        }
+                    }
                 }
             }
 

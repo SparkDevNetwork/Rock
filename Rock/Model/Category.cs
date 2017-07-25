@@ -29,6 +29,7 @@ namespace Rock.Model
     /// Represents a category or group of entity objects in Rock. A category can be used to group entity instances of <see cref="Rock.Model.EntityType">EntityTypes</see>. 
     /// For an EntityType to be categorizable the EntityType will need to implement the <see cref="Rock.Data.ICategorized"/> interface.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Category" )]
     [DataContract]
     public partial class Category : Model<Category>, IOrdered
@@ -146,6 +147,7 @@ namespace Rock.Model
         /// <value>
         /// The parent category
         /// </value>
+        [LavaInclude]
         public virtual Category ParentCategory { get; set; }
 
         /// <summary>

@@ -32,24 +32,25 @@ namespace RockWeb.Blocks.Core
     /// <summary>
     /// Context aware block for adding notes to an entity.
     /// </summary>
-    [DisplayName( "Notes" )]
-    [Category( "Core" )]
-    [Description( "Context aware block for adding notes to an entity." )]
+    [DisplayName("Notes")]
+    [Category("Core")]
+    [Description("Context aware block for adding notes to an entity.")]
 
     [ContextAware]
-    [TextField( "Heading", "The text to display as the heading.  If left blank, the Note Type name will be used.", false, "", "", 1 )]
-    [TextField( "Heading Icon CSS Class", "The css class name to use for the heading icon. ", false, "fa fa-sticky-note-o", "", 2, "HeadingIcon" )]
-    [TextField( "Note Term", "The term to use for note (i.e. 'Note', 'Comment').", false, "Note", "", 3 )]
-    [CustomDropdownListField( "Display Type", "The format to use for displaying notes.", "Full,Light", true, "Full", "", 4 )]
-    [BooleanField( "Use Person Icon", "", false, "", 5 )]
-    [BooleanField( "Show Alert Checkbox", "", true, "", 6 )]
-    [BooleanField( "Show Private Checkbox", "", true, "", 7 )]
-    [BooleanField( "Show Security Button", "", true, "", 8 )]
-    [BooleanField( "Allow Anonymous", "", false, "", 9 )]
-    [BooleanField( "Add Always Visible", "Should the add entry screen always be visible (vs. having to click Add button to display the entry screen).", false, "", 10 )]
-    [CustomDropdownListField( "Display Order", "Descending will render with entry field at top and most recent note at top.  Ascending will render with entry field at bottom and most recent note at the end.  Ascending will also disable the more option", "Ascending,Descending", true, "Descending", "", 11 )]
+    [TextField("Heading", "The text to display as the heading.  If left blank, the Note Type name will be used.", false, "", "", 1)]
+    [TextField("Heading Icon CSS Class", "The css class name to use for the heading icon. ", false, "fa fa-sticky-note-o", "", 2, "HeadingIcon")]
+    [TextField("Note Term", "The term to use for note (i.e. 'Note', 'Comment').", false, "Note", "", 3)]
+    [CustomDropdownListField("Display Type", "The format to use for displaying notes.", "Full,Light", true, "Full", "", 4)]
+    [BooleanField("Use Person Icon", "", false, "", 5)]
+    [BooleanField("Show Alert Checkbox", "", true, "", 6)]
+    [BooleanField("Show Private Checkbox", "", true, "", 7)]
+    [BooleanField("Show Security Button", "", true, "", 8)]
+    [BooleanField("Allow Anonymous", "", false, "", 9)]
+    [BooleanField("Add Always Visible", "Should the add entry screen always be visible (vs. having to click Add button to display the entry screen).", false, "", 10)]
+    [CustomDropdownListField("Display Order", "Descending will render with entry field at top and most recent note at top.  Ascending will render with entry field at bottom and most recent note at the end.  Ascending will also disable the more option", "Ascending,Descending", true, "Descending", "", 11)]
     [BooleanField("Allow Backdated Notes", "", false, "", 12)]
     [NoteTypeField("Note Types", "Optional list of note types to limit display to", true, "", "", "", false, "", "", 12)]
+    [BooleanField( "Display Note Type Heading", "Should each note's Note Type be displayed as a heading above each note?", false, "", 13 )]
     public partial class Notes : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
@@ -58,20 +59,20 @@ namespace RockWeb.Blocks.Core
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
+        protected override void OnInit(EventArgs e)
         {
-            base.OnInit( e );
+            base.OnInit(e);
 
             var contextEntity = this.ContextEntity();
-            if ( contextEntity != null )
+            if (contextEntity != null)
             {
                 upNotes.Visible = true;
 
-                string noteTypeName = GetAttributeValue( "NoteType" );
+                string noteTypeName = GetAttributeValue("NoteType");
 
-                using ( var rockContext = new RockContext() )
+                using (var rockContext = new RockContext())
                 {
-                    var noteTypes = NoteTypeCache.GetByEntity( contextEntity.TypeId, string.Empty, string.Empty, true );
+                    var noteTypes = NoteTypeCache.GetByEntity(contextEntity.TypeId, string.Empty, string.Empty, true);
 
                     // If block is configured to only allow certain note types, limit notes to those types.
                     var configuredNoteTypes = GetAttributeValue( "NoteTypes" ).SplitDelimitedValues().AsGuidList();
@@ -82,17 +83,18 @@ namespace RockWeb.Blocks.Core
 
                     notesTimeline.EntityId = contextEntity.Id;
                     notesTimeline.NoteTypes = noteTypes;
-                    notesTimeline.Title = GetAttributeValue( "Heading" );
-                    notesTimeline.TitleIconCssClass = GetAttributeValue( "HeadingIcon" );
-                    notesTimeline.Term = GetAttributeValue( "NoteTerm" );
-                    notesTimeline.DisplayType = GetAttributeValue( "DisplayType" ) == "Light" ? NoteDisplayType.Light : NoteDisplayType.Full;
-                    notesTimeline.UsePersonIcon = GetAttributeValue( "UsePersonIcon" ).AsBoolean();
-                    notesTimeline.ShowAlertCheckBox = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean();
-                    notesTimeline.ShowPrivateCheckBox = GetAttributeValue( "ShowPrivateCheckbox" ).AsBoolean();
-                    notesTimeline.ShowSecurityButton = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
-                    notesTimeline.AllowAnonymousEntry = GetAttributeValue( "Allow Anonymous" ).AsBoolean();
-                    notesTimeline.AddAlwaysVisible = GetAttributeValue( "AddAlwaysVisible" ).AsBoolean();
-                    notesTimeline.SortDirection = GetAttributeValue( "DisplayOrder" ) == "Ascending" ? ListSortDirection.Ascending : ListSortDirection.Descending;
+                    notesTimeline.Title = GetAttributeValue("Heading");
+                    notesTimeline.TitleIconCssClass = GetAttributeValue("HeadingIcon");
+                    notesTimeline.Term = GetAttributeValue("NoteTerm");
+                    notesTimeline.DisplayNoteTypeHeading = GetAttributeValue( "DisplayNoteTypeHeading" ).AsBoolean();
+                    notesTimeline.DisplayType = GetAttributeValue("DisplayType") == "Light" ? NoteDisplayType.Light : NoteDisplayType.Full;
+                    notesTimeline.UsePersonIcon = GetAttributeValue("UsePersonIcon").AsBoolean();
+                    notesTimeline.ShowAlertCheckBox = GetAttributeValue("ShowAlertCheckbox").AsBoolean();
+                    notesTimeline.ShowPrivateCheckBox = GetAttributeValue("ShowPrivateCheckbox").AsBoolean();
+                    notesTimeline.ShowSecurityButton = GetAttributeValue("ShowSecurityButton").AsBoolean();
+                    notesTimeline.AllowAnonymousEntry = GetAttributeValue("Allow Anonymous").AsBoolean();
+                    notesTimeline.AddAlwaysVisible = GetAttributeValue("AddAlwaysVisible").AsBoolean();
+                    notesTimeline.SortDirection = GetAttributeValue("DisplayOrder") == "Ascending" ? ListSortDirection.Ascending : ListSortDirection.Descending;
                     notesTimeline.ShowCreateDateInput = GetAttributeValue("AllowBackdatedNotes").AsBoolean();
                 }
             }
@@ -106,7 +108,7 @@ namespace RockWeb.Blocks.Core
 
         #region Methods
 
-        public void SetVisible( bool visible )
+        public void SetVisible(bool visible)
         {
             notesTimeline.Visible = visible;
         }

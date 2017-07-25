@@ -48,8 +48,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-default btn-sm pull-right" CausesValidation="false" OnClick="btnSend_Click" Visible="false" />
                     </div>
 
@@ -69,7 +69,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnCancelView" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnCancelView" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </fieldset>

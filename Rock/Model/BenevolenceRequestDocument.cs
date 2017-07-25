@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a benevolence request document.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "BenevolenceRequestDocument" )]
     [DataContract]
     public partial class BenevolenceRequestDocument : Model<BenevolenceRequestDocument>
@@ -74,6 +75,7 @@ namespace Rock.Model
         /// <value>
         /// The package.
         /// </value>
+        [LavaInclude]
         public virtual BenevolenceRequest BenevolenceRequest { get; set; }
 
         /// <summary>

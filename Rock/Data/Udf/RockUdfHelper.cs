@@ -132,5 +132,18 @@ namespace Rock.Data
             // this in-memory implementation will not be invoked when working on LINQ to Entities
             return null;
         }
+
+        /// <summary>
+        /// when used in a Linq Query, calls database function ufnCrm_GetSpousePersonIdFromPersonId 
+        /// Example: qry.Select( a =&gt; RockUdfHelper.ufnCrm_GetSpousePersonIdFromPersonId(a.PersonId))
+        /// </summary>
+        /// <param name="PersonId">The person identifier.</param>
+        /// <returns></returns>
+        [DbFunction( "CodeFirstDatabaseSchema", "ufnCrm_GetSpousePersonIdFromPersonId" )]
+        public static int? ufnCrm_GetSpousePersonIdFromPersonId( int? PersonId )
+        {
+            // this in-memory implementation will not be invoked when working on LINQ to Entities
+            return null;
+        }
     }
 }

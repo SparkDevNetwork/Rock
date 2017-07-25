@@ -28,6 +28,7 @@ namespace Rock.Model
     /// Represents a collection or group of entity objects that share one or more common characteristics . A tag can either be private (owned by an individual <see cref="Rock.Model.Person"/>)
     /// or public.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Tag" )]
     [DataContract]
     public partial class Tag : Model<Tag>, IOrdered
@@ -128,6 +129,7 @@ namespace Rock.Model
         /// <value>
         /// The owner person alias.
         /// </value>
+        [LavaInclude]
         public virtual Model.PersonAlias OwnerPersonAlias { get; set; }
 
         /// <summary>
@@ -145,6 +147,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing of <see cref="Rock.Model.TaggedItem">TaggedItems</see> representing the entities that use this tag.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<TaggedItem> TaggedItems { get; set; }
         
         #endregion

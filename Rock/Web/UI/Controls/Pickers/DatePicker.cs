@@ -276,7 +276,10 @@ namespace Rock.Web.UI.Controls
                     }
                     else
                     {
-                        ShowErrorMessage( Rock.Constants.WarningMessage.DateTimeFormatInvalid( this.PropertyName ) );
+                        if ( !(this.DisplayCurrentOption && this.IsCurrentDateOffset) )
+                        {
+                            ShowErrorMessage( Rock.Constants.WarningMessage.DateTimeFormatInvalid( this.PropertyName ) );
+                        }
                     }
                 }
 
@@ -335,6 +338,9 @@ namespace Rock.Web.UI.Controls
                 {
                     // set this.Attributes["disabled"] instead of this.Enabled so that our child controls don't get disabled
                     this.Attributes["disabled"] = "true";
+
+                    // set textbox val to something instead of empty string so that validation doesn't complain
+                    this.Text = "current";
                     _nbDayOffset.Style[HtmlTextWriterStyle.Display] = "";
                 }
                 else

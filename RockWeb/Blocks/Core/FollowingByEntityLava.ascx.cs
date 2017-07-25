@@ -66,7 +66,6 @@ namespace RockWeb.Blocks.Core
         
     </div>
 </div>", "", 2, "LavaTemplate" )]
-    [BooleanField("Enable Debug", "Show merge data to help you see what's available to you.", order: 3)]
     [IntegerField("Max Results", "The maximum number of results to display.", true, 100, order: 4)]
     public partial class FollowingByEntityLava : Rock.Web.UI.RockBlock
     {
@@ -151,12 +150,6 @@ namespace RockWeb.Blocks.Core
                 string template = GetAttributeValue( "LavaTemplate" );
                 lContent.Text = template.ResolveMergeFields( mergeFields );
 
-                // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
-                }
             }
             else
             {

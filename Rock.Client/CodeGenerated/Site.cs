@@ -218,6 +218,9 @@ namespace Rock.Client
     public partial class Site : SiteEntity
     {
         /// <summary />
+        public ICollection<Block> Blocks { get; set; }
+
+        /// <summary />
         public PageRoute ChangePasswordPageRoute { get; set; }
 
         /// <summary />

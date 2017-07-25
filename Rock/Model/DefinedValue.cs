@@ -27,6 +27,7 @@ namespace Rock.Model
     /// Represents a DefinedValue instance in Rock. These values are sortable and can be secured (based on their <see cref="ParentAuthority"/>). 
     /// An example of a DefinedValue for a "State List" <see cref="Rock.Model.DefinedType"/> is Arizona.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "DefinedValue" )]
     [DataContract]
     public partial class DefinedValue : Model<DefinedValue>, IOrdered
@@ -94,6 +95,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.DefinedType"/> that this DefinedValue belongs to.
         /// </value>
+        [LavaInclude]
         public virtual DefinedType DefinedType { get; set; }
 
         #endregion

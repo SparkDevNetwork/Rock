@@ -30,6 +30,7 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -108,109 +109,113 @@ namespace RockWeb.Blocks.Finance
         protected void lbSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            rockContext.WrapTransaction( () =>
+
+            var personService = new PersonService( rockContext );
+            var changes = new List<string>();
+            Person business = null;
+
+            if ( int.Parse( hfBusinessId.Value ) != 0 )
             {
-                var personService = new PersonService( rockContext );
-                var changes = new List<string>();
-                Person business = null;
+                business = personService.Get( int.Parse( hfBusinessId.Value ) );
+            }
 
-                if ( int.Parse( hfBusinessId.Value ) != 0 )
+            if ( business == null )
+            {
+                business = new Person();
+                personService.Add( business );
+                tbBusinessName.Text = tbBusinessName.Text.FixCase();
+            }
+
+            // Business Name
+            History.EvaluateChange( changes, "Last Name", business.LastName, tbBusinessName.Text );
+            business.LastName = tbBusinessName.Text;
+
+            // Phone Number
+            var businessPhoneTypeId = new DefinedValueService( rockContext ).GetByGuid( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
+
+            string oldPhoneNumber = string.Empty;
+            string newPhoneNumber = string.Empty;
+
+            var phoneNumber = business.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == businessPhoneTypeId );
+            if ( phoneNumber != null )
+            {
+                oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
+            {
+                if ( phoneNumber == null )
                 {
-                    business = personService.Get( int.Parse( hfBusinessId.Value ) );
+                    phoneNumber = new PhoneNumber { NumberTypeValueId = businessPhoneTypeId };
+                    business.PhoneNumbers.Add( phoneNumber );
                 }
+                phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
+                phoneNumber.IsMessagingEnabled = cbSms.Checked;
+                phoneNumber.IsUnlisted = cbUnlisted.Checked;
 
-                if ( business == null )
-                {
-                    business = new Person();
-                    personService.Add( business );
-                    tbBusinessName.Text = tbBusinessName.Text.FixCase();
-                }
-
-                // Business Name
-                History.EvaluateChange( changes, "Last Name", business.LastName, tbBusinessName.Text );
-                business.LastName = tbBusinessName.Text;
-
-                // Phone Number
-                var businessPhoneTypeId = new DefinedValueService( rockContext ).GetByGuid( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
-
-                string oldPhoneNumber = string.Empty;
-                string newPhoneNumber = string.Empty;
-
-                var phoneNumber = business.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == businessPhoneTypeId );
+                newPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
+            }
+            else
+            {
                 if ( phoneNumber != null )
                 {
-                    oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
+                    business.PhoneNumbers.Remove( phoneNumber );
+                    new PhoneNumberService( rockContext ).Delete( phoneNumber );
                 }
+            }
 
-                if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
+            History.EvaluateChange(
+                changes,
+                string.Format( "{0} Phone", DefinedValueCache.GetName( businessPhoneTypeId ) ),
+                oldPhoneNumber,
+                newPhoneNumber );
+
+            // Record Type - this is always "business". it will never change.
+            business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+
+            // Record Status
+            int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
+            History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( business.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
+            business.RecordStatusValueId = newRecordStatusId;
+
+            // Record Status Reason
+            int? newRecordStatusReasonId = null;
+            if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
+            {
+                newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
+            }
+
+            History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( business.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
+            business.RecordStatusReasonValueId = newRecordStatusReasonId;
+
+            // Email
+            business.IsEmailActive = true;
+            History.EvaluateChange( changes, "Email", business.Email, tbEmail.Text );
+            business.Email = tbEmail.Text.Trim();
+
+            var newEmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
+            History.EvaluateChange( changes, "EmailPreference", business.EmailPreference, newEmailPreference );
+            business.EmailPreference = newEmailPreference;
+
+            if ( !business.IsValid )
+            {
+                // Controls will render the error messages
+                return;
+            }
+
+            rockContext.WrapTransaction( () =>
+            {
+                if ( rockContext.SaveChanges() > 0 )
                 {
-                    if ( phoneNumber == null )
+                    if ( changes.Any() )
                     {
-                        phoneNumber = new PhoneNumber { NumberTypeValueId = businessPhoneTypeId };
-                        business.PhoneNumbers.Add( phoneNumber );
-                    }
-                    phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
-                    phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
-                    phoneNumber.IsMessagingEnabled = cbSms.Checked;
-                    phoneNumber.IsUnlisted = cbUnlisted.Checked;
-
-                    newPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
-                }
-                else
-                {
-                    if ( phoneNumber != null )
-                    {
-                        business.PhoneNumbers.Remove( phoneNumber );
-                        new PhoneNumberService( rockContext ).Delete( phoneNumber );
-                    }
-                }
-
-                History.EvaluateChange(
-                    changes,
-                    string.Format( "{0} Phone", DefinedValueCache.GetName( businessPhoneTypeId ) ),
-                    oldPhoneNumber,
-                    newPhoneNumber );
-
-                // Record Type - this is always "business". it will never change.
-                business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-
-                // Record Status
-                int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
-                History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( business.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
-                business.RecordStatusValueId = newRecordStatusId;
-
-                // Record Status Reason
-                int? newRecordStatusReasonId = null;
-                if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
-                {
-                    newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
-                }
-
-                History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( business.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
-                business.RecordStatusReasonValueId = newRecordStatusReasonId;
-
-                // Email
-                business.IsEmailActive = true;
-                History.EvaluateChange( changes, "Email", business.Email, tbEmail.Text );
-                business.Email = tbEmail.Text.Trim();
-
-                var newEmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
-                History.EvaluateChange( changes, "EmailPreference", business.EmailPreference, newEmailPreference );
-                business.EmailPreference = newEmailPreference;
-
-                if ( business.IsValid )
-                {
-                    if ( rockContext.SaveChanges() > 0 )
-                    {
-                        if ( changes.Any() )
-                        {
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                business.Id,
-                                changes );
-                        }
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof( Person ),
+                            Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                            business.Id,
+                            changes );
                     }
                 }
 
@@ -436,7 +441,7 @@ namespace RockWeb.Blocks.Finance
                             g.PersonId == contactId.Value )
                         .Select( g => g.Group )
                         .FirstOrDefault();
-                    if (contactKnownRelationshipGroup == null)
+                    if ( contactKnownRelationshipGroup == null )
                     {
                         // In some cases person may not yet have a know relationship group type
                         contactKnownRelationshipGroup = new Group();
@@ -582,17 +587,13 @@ namespace RockWeb.Blocks.Finance
             var business = new PersonService( new RockContext() ).Get( businessId );
             if ( business != null )
             {
+                SetHeadingStatusInfo( business );
                 var detailsLeft = new DescriptionList();
                 detailsLeft.Add( "Business Name", business.LastName );
 
                 if ( business.GivingGroup != null )
                 {
                     detailsLeft.Add( "Campus", business.GivingGroup.Campus );
-                }
-
-                if ( business.RecordStatusValue != null )
-                {
-                    detailsLeft.Add( "Record Status", business.RecordStatusValue );
                 }
 
                 if ( business.RecordStatusReasonValue != null )
@@ -634,6 +635,30 @@ namespace RockWeb.Blocks.Finance
                 lDetailsRight.Text = detailsRight
                     .Add( "Email Address", business.Email )
                     .Html;
+            }
+        }
+
+        /// <summary>
+        /// Sets the heading Status information.
+        /// </summary>
+        /// <param name="business">The business.</param>
+        private void SetHeadingStatusInfo( Person business )
+        {
+            if ( business.RecordStatusValue != null )
+            {
+                hlStatus.Text = business.RecordStatusValue.Value;
+                if ( business.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() )
+                {
+                    hlStatus.LabelType = LabelType.Warning;
+                }
+                else if ( business.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() )
+                {
+                    hlStatus.LabelType = LabelType.Danger;
+                }
+                else
+                {
+                    hlStatus.LabelType = LabelType.Success;
+                }
             }
         }
 

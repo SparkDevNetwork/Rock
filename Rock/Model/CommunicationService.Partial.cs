@@ -64,7 +64,7 @@ namespace Rock.Model
                 Rock.Model.Communication communication = new Rock.Model.Communication();
                 communication.Status = CommunicationStatus.Approved;
                 communication.SenderPersonAliasId = senderPersonAliasId;
-                communication.Subject = subject;
+                communication.Subject = subject?.Left(100) ?? string.Empty;
                 Add( communication );
 
                 communication.IsBulkCommunication = bulkCommunication;
@@ -99,5 +99,33 @@ namespace Rock.Model
             return null;
         }
 
+
+        /// <summary>
+        /// Gets the queued communications
+        /// </summary>
+        /// <param name="expirationDays">The expiration days.</param>
+        /// <param name="delayMinutes">The delay minutes.</param>
+        /// <param name="includeFuture">if set to <c>true</c> [include future].</param>
+        /// <param name="includePending">if set to <c>true</c> [include pending].</param>
+        /// <returns></returns>
+        public IQueryable<Communication> GetQueued( int expirationDays, int delayMinutes, bool includeFuture, bool includePending )
+        {
+            var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
+            var endWindow = RockDateTime.Now.AddMinutes( 0 - delayMinutes );
+            var nowDate = RockDateTime.Now;
+
+            var qryPendingRecipients = new CommunicationRecipientService( (RockContext)Context )
+                .Queryable()
+                .Where( a => a.Status == CommunicationRecipientStatus.Pending );
+
+            return Queryable()
+                .Where( c =>
+                    ( c.Status == CommunicationStatus.Approved || ( includePending && c.Status == CommunicationStatus.PendingApproval ) ) &&
+                    qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Any() &&
+                    (
+                        ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) >= 0 && c.CreatedDateTime.Value.CompareTo( endWindow ) <= 0 ) ||
+                        ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && ( includeFuture || c.FutureSendDateTime.Value.CompareTo( nowDate ) <= 0 ) )
+                    ) );
+        }
     }
 }

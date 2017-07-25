@@ -151,7 +151,6 @@ namespace Rock.Model
             target.IsPublic = source.IsPublic;
             target.IsSecurityRole = source.IsSecurityRole;
             target.IsSystem = source.IsSystem;
-            target.MustMeetRequirementsToAddMember = source.MustMeetRequirementsToAddMember;
             target.Name = source.Name;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;

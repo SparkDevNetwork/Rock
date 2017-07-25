@@ -209,7 +209,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             return "Children's Names";
         }
-
+        
         /// <summary>
         /// Gets the expression.
         /// </summary>
@@ -231,7 +231,8 @@ namespace Rock.Reporting.DataSelect.Person
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == adultGuid )
                     .SelectMany( m => m.Group.Members )
                     .Where( m => m.GroupRole.Guid == childGuid )
-                    .OrderBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay )
+                    .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
+                    .ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay )
                     .Select( m => new KidInfo 
                     {
                         NickName = m.Person.NickName,

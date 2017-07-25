@@ -51,6 +51,8 @@ namespace Rock.Web.UI
 
         private string _clientType = null;
 
+
+        private PageStatePersister _PageStatePersister = null;
         #endregion
 
         #region Protected Variables
@@ -431,6 +433,65 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Gets the size of the view state.
+        /// </summary>
+        /// <value>
+        /// The size of the view state.
+        /// </value>
+        public int ViewStateSize { get; private set; }
+
+
+        /// <summary>
+        /// Gets the view state size compressed.
+        /// </summary>
+        /// <value>
+        /// The view state size compressed.
+        /// </value>
+        public int ViewStateSizeCompressed { get; private set; }
+
+        /// <summary>
+        /// Gets the view state value.
+        /// </summary>
+        /// <value>
+        /// The view state value.
+        /// </value>
+        public string ViewStateValue { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether [view state is compressed].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [view state is compressed]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ViewStateIsCompressed { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable view state inspection].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable view state inspection]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableViewStateInspection { get; set; }
+
+    #endregion
+
+        #region Overridden Properties
+
+        /// <summary>
+        /// Gets the PageStatePersister object associated with the page.
+        /// </summary>
+        protected override PageStatePersister PageStatePersister
+        {
+            get {
+                if ( _PageStatePersister == null )
+                {
+                    _PageStatePersister = new RockHiddenFieldPageStatePersister( this, RockHiddenFieldPageStatePersister.ViewStateCompressionThreshold );
+                }
+                return _PageStatePersister;
+            }   
+        }
+
         #endregion
 
         #region Protected Methods
@@ -465,19 +526,73 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="zoneName">A <see cref="System.String"/> representing the name of the zone.</param>
         /// <returns>The <see cref="System.Web.UI.Control"/> for the zone, if the zone is not found, the form control is returned.</returns>
+        [Obsolete("Use the other FindZone()")]
         protected virtual Control FindZone( string zoneName )
+        {
+            // Find the zone, or use the Form if not found
+            return FindZone( zoneName, this.Form );
+        }
+
+        /// <summary>
+        /// Find the <see cref="Rock.Web.UI.Controls.Zone" /> for the specified zone name.  Looks in the
+        /// <see cref="Zones" /> property to see if it has been defined.  If an existing zone
+        /// <see cref="Rock.Web.UI.Controls.Zone" /> cannot be found, the defaultZone will be returned
+        /// </summary>
+        /// <param name="zoneName">A <see cref="System.String" /> representing the name of the zone.</param>
+        /// <param name="defaultZone">The default zone.</param>
+        /// <returns>
+        /// The <see cref="System.Web.UI.Control" /> for the zone, if the zone is not found, the defaultZone is returned.
+        /// </returns>
+        protected virtual Control FindZone( string zoneName, Control defaultZone )
         {
             // First look in the Zones dictionary
             if ( Zones.ContainsKey( zoneName ) )
                 return Zones[zoneName].Value;
 
-            // If no match, just add module to the form
-            return this.Form;
+            // If no match, return the defaultZone
+            return defaultZone;
+        }
+
+        #endregion
+
+        #region Custom Events
+        /// <summary>
+        /// Occurs when view state persisted.
+        /// </summary>
+        public event EventHandler ViewStatePersisted;
+
+        /// <summary>
+        /// Called when [view state persisted].
+        /// </summary>
+        protected void OnViewStatePersisted()
+        {
+            if ( this.ViewStatePersisted != null )
+            {
+                ViewStatePersisted( this, EventArgs.Empty );
+            }
         }
 
         #endregion
 
         #region Overridden Methods
+
+        /// <summary>
+        /// Saves any view-state and control-state information for the page.
+        /// </summary>
+        /// <param name="state">An <see cref="T:System.Object" /> in which to store the view-state information.</param>
+        protected override void SavePageStateToPersistenceMedium( object state )
+        {
+            base.SavePageStateToPersistenceMedium( state );
+ 
+            var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
+ 
+            if (customPersister != null )
+            {
+                this.ViewStateValue = customPersister.ViewStateValue;
+            }
+
+            OnViewStatePersisted();
+        }
 
         /// <summary>
         /// Initializes the page's culture to use the culture specified by the browser ("auto")
@@ -704,7 +819,15 @@ namespace Rock.Web.UI
                     var body = (HtmlGenericControl)this.Master.FindControl( "body" );
                     if ( body != null )
                     {
-                        body.Attributes.Add( "class", this.BodyCssClass );
+                        // determine if we need to append or add the class
+                        if ( body.Attributes["class"] != null )
+                        {
+                            body.Attributes["class"] += " " + this.BodyCssClass;
+                        }
+                        else
+                        {
+                            body.Attributes.Add( "class", "layout-class" );
+                        }
                     }
                 }
 
@@ -911,6 +1034,7 @@ namespace Rock.Web.UI
                     // Load the blocks and insert them into page zones
                     Page.Trace.Warn( "Loading Blocks" );
                     var pageBlocks = _pageCache.Blocks;
+                    
                     foreach ( Rock.Web.Cache.BlockCache block in pageBlocks )
                     {
                         var stopwatchBlockInit= Stopwatch.StartNew();
@@ -922,10 +1046,13 @@ namespace Rock.Web.UI
                         bool canEdit = block.IsAuthorized( Authorization.EDIT, CurrentPerson );
                         bool canView = block.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
-                        // Make sure user has access to view block instance
-                        if ( canAdministrate || canEdit || canView )
-                        {
+                        // if this is a Site-wide block, only render it if its Zone exists on this page
+                        // In other cases, Rock will add the block to the Form (at the very bottom of the page)
+                        Control zone = FindZone( block.Zone, block.BlockLocation == BlockLocation.Site ? null : this.Form );
 
+                        // Make sure there is a Zone for the block, and make sure user has access to view block instance
+                        if ( zone != null && (canAdministrate || canEdit || canView) )
+                        {
                             // Load the control and add to the control tree
                             Page.Trace.Warn( "\tLoading control" );
                             Control control = null;
@@ -953,6 +1080,15 @@ namespace Rock.Web.UI
                                 }
                                 catch ( Exception ex )
                                 {
+                                    try
+                                    {
+                                        LogException( ex );
+                                    }
+                                    catch
+                                    {
+                                        //
+                                    }
+
                                     NotificationBox nbBlockLoad = new NotificationBox();
                                     nbBlockLoad.ID = string.Format( "nbBlockLoad_{0}", block.Id );
                                     nbBlockLoad.CssClass = "system-error";
@@ -1017,7 +1153,7 @@ namespace Rock.Web.UI
 
                             }
 
-                            FindZone( block.Zone ).Controls.Add( control );
+                            zone.Controls.Add( control );
                             if ( control is RockBlockWrapper )
                             {
                                 ( (RockBlockWrapper)control ).EnsureBlockControls();
@@ -1073,6 +1209,24 @@ namespace Rock.Web.UI
                         HtmlGenericControl buttonBar = new HtmlGenericControl( "div" );
                         adminFooter.Controls.Add( buttonBar );
                         buttonBar.Attributes.Add( "class", "button-bar" );
+
+                        if ( canAdministratePage )
+                        {
+                            // ShorLink Properties
+                            HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aShortLink );
+                            aShortLink.ID = "aShortLink";
+                            aShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aShortLink.Attributes.Add( "class", "btn properties" );
+                            aShortLink.Attributes.Add( "height", "500px" );
+                            aShortLink.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + 
+                                ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.Url.AbsoluteUri.ToString() ) ) ) 
+                                + "')" );
+                            aShortLink.Attributes.Add( "Title", "Add Short Link" );
+                            HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
+                            aShortLink.Controls.Add( iAttributes );
+                            iAttributes.Attributes.Add( "class", "fa fa-link" );
+                        }
 
                         // RockBlock Config
                         HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
@@ -1336,6 +1490,15 @@ namespace Rock.Web.UI
                     }
                 }
 
+                var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
+
+                if ( customPersister != null )
+                {
+                    this.ViewStateSize = customPersister.ViewStateSize;
+                    this.ViewStateSizeCompressed = customPersister.ViewStateSizeCompressed;
+                    this.ViewStateIsCompressed = customPersister.ViewStateIsCompressed;
+                }
+
                 phLoadStats.Controls.Add( new LiteralControl( string.Format(
                     "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-lg js-view-state-stats'></span> <span class='margin-l-lg js-html-size-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
 
@@ -1343,7 +1506,11 @@ namespace Rock.Web.UI
                 {
                     string script = @"
 Sys.Application.add_load(function () {
-    $('.js-view-state-stats').html('ViewState Size: ' + ($('#__VIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
+    if ($('#__CVIEWSTATESIZE').length > 0 && $('#__CVIEWSTATESIZE').val() != '0') {
+        $('.js-view-state-stats').html('ViewState Size: ' + ($('#__CVIEWSTATESIZE').val() / 1024).toFixed(0) + ' KB (' + ($('#__CVIEWSTATE').val().length / 1024).toFixed(0) + ' KB Compressed)');
+    } else {
+        $('.js-view-state-stats').html('ViewState Size: ' + ($('#__CVIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
+    }
     $('.js-html-size-stats').html('Html Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
 });
 ";
@@ -1930,8 +2097,9 @@ Sys.Application.add_load(function () {
             rblLocation.ClientIDMode = ClientIDMode.Static;
             rblLocation.ID = "block-move-Location";
             rblLocation.CssClass = "inputs-list";
-            rblLocation.Items.Add( new ListItem( "Current Page" ) );
-            rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", _pageCache.Layout.Name ) ) );
+            rblLocation.Items.Add( new ListItem( string.Format( "Page ({0})", _pageCache.InternalName), "Page" ) );
+            rblLocation.Items.Add( new ListItem( string.Format( "Layout ({0})", _pageCache.Layout.Name ), "Layout" ) );
+            rblLocation.Items.Add( new ListItem( string.Format( "Site ({0})", _pageCache.Layout.Site.Name ), "Site" ) );
             rblLocation.Label = "Parent";
             fsZoneSelect.Controls.Add( rblLocation );
         }
@@ -2105,9 +2273,18 @@ Sys.Application.add_load(function () {
         {
             HtmlLink htmlLink = new HtmlLink();
 
+            if ( fingerprint )
+            {
+                htmlLink.Attributes.Add( "href", Fingerprint.Tag( page.ResolveUrl( href ) ) );
+            }
+            else
+            {
+                htmlLink.Attributes.Add( "href", page.ResolveUrl( href ) );
+            }
+
             htmlLink.Attributes.Add( "type", "text/css" );
             htmlLink.Attributes.Add( "rel", "stylesheet" );
-            htmlLink.Attributes.Add( "href", page.ResolveUrl( href ) );
+            
             if ( mediaType != string.Empty )
             {
                 htmlLink.Attributes.Add( "media", mediaType );
@@ -2345,16 +2522,26 @@ Sys.Application.add_load(function () {
         /// <returns></returns>
         public static string GetClientIpAddress()
         {
-            string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+            return GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current.Request ) );
+        }
+
+        /// <summary>
+        /// Gets the client ip address.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        public static string GetClientIpAddress( HttpRequestBase request )
+        { 
+            string ipAddress = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
             if ( String.IsNullOrWhiteSpace( ipAddress ) )
             {
-                ipAddress = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+                ipAddress = request.ServerVariables["REMOTE_ADDR"];
             }
 
             if ( string.IsNullOrWhiteSpace( ipAddress ) )
             {
-                ipAddress = HttpContext.Current.Request.UserHostAddress;
+                ipAddress = request.UserHostAddress;
             }
 
             if ( string.IsNullOrWhiteSpace( ipAddress ) || ipAddress.Trim() == "::1" )

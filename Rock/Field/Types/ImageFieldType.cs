@@ -38,6 +38,16 @@ namespace Rock.Field.Types
         protected const string FORMAT_AS_LINK = "formatAsLink";
 
         /// <summary>
+        /// The img tag template
+        /// </summary>
+        protected const string IMG_TAG_TEMPLATE = "img_tag_template";
+
+        /// <summary>
+        /// The default image tag template
+        /// </summary>
+        protected const string DefaultImageTagTemplate = "<img src='{{ ImageUrl }}' class='img-responsive' />";
+
+        /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
         /// <returns></returns>
@@ -45,6 +55,7 @@ namespace Rock.Field.Types
         {
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( FORMAT_AS_LINK );
+            configKeys.Add( IMG_TAG_TEMPLATE );
             return configKeys;
         }
 
@@ -62,6 +73,14 @@ namespace Rock.Field.Types
             cbFormatAsLink.Text = "Yes";
             controls.Add( cbFormatAsLink );
 
+            var codeEditorImageTabTemplate = new CodeEditor();
+            codeEditorImageTabTemplate.Label = "Image Tag Template";
+            codeEditorImageTabTemplate.Help = "The Lava template to use when rendering as an html img tag.";
+            codeEditorImageTabTemplate.EditorHeight = "100";
+            codeEditorImageTabTemplate.EditorMode = CodeEditorMode.Lava;
+            codeEditorImageTabTemplate.EditorTheme = CodeEditorTheme.Rock;
+            controls.Add( codeEditorImageTabTemplate );
+
             return controls;
         }
 
@@ -74,13 +93,20 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
             configurationValues.Add( FORMAT_AS_LINK, new ConfigurationValue( "Format Image as Link", "Enable this to navigate to a full size image when the image is clicked", string.Empty ) );
+            configurationValues.Add( IMG_TAG_TEMPLATE, new ConfigurationValue( "Image Tag Template", "The Lava template to use when rendering as an html img tag", DefaultImageTagTemplate ) );
 
-            if ( controls != null && controls.Count > 1 )
+            if ( controls != null && controls.Count > 2 )
             {
                 var cbFormatAsLink = controls[1] as RockCheckBox;
                 if ( cbFormatAsLink != null )
                 {
                     configurationValues[FORMAT_AS_LINK].Value = cbFormatAsLink.Checked.ToTrueFalse();
+                }
+
+                var codeEditorImageTabTemplate = controls[2] as CodeEditor;
+                if ( codeEditorImageTabTemplate != null )
+                {
+                    configurationValues[IMG_TAG_TEMPLATE].Value = codeEditorImageTabTemplate.Text;
                 }
             }
 
@@ -96,12 +122,22 @@ namespace Rock.Field.Types
         {
             base.SetConfigurationValues( controls, configurationValues );
 
-            if ( controls != null && controls.Count > 1 && configurationValues != null )
+            if ( controls != null && controls.Count > 2 && configurationValues != null )
             {
                 var cbFormatAsLink = controls[1] as RockCheckBox;
-                if ( cbFormatAsLink != null && configurationValues.ContainsKey( FORMAT_AS_LINK ) )
+                if ( cbFormatAsLink != null )
                 {
                     cbFormatAsLink.Checked = configurationValues[FORMAT_AS_LINK].Value.AsBooleanOrNull() ?? false;
+                }
+
+                var codeEditorImageTabTemplate = controls[2] as CodeEditor;
+                if ( codeEditorImageTabTemplate != null && configurationValues.ContainsKey( IMG_TAG_TEMPLATE ) )
+                {
+                    codeEditorImageTabTemplate.Text = configurationValues[IMG_TAG_TEMPLATE].Value;
+                    if ( codeEditorImageTabTemplate.Text.IsNullOrWhiteSpace() )
+                    {
+                        codeEditorImageTabTemplate.Text = DefaultImageTagTemplate;
+                    }
                 }
             }
         }
@@ -154,7 +190,25 @@ namespace Rock.Field.Types
                 if ( imageGuid.HasValue )
                 {
                     string imageUrl = string.Format( "{0}?guid={1}", imagePath, imageGuid );
-                    var imageTag = string.Format( "<img src='{0}{1}' class='img-responsive' />", imageUrl, queryParms );
+                    string imageTagTemplate = DefaultImageTagTemplate;
+
+                    if ( configurationValues != null && configurationValues.ContainsKey( IMG_TAG_TEMPLATE ) )
+                    {
+                        imageTagTemplate = configurationValues[IMG_TAG_TEMPLATE].Value;
+                    }
+
+                    Dictionary<string, object> mergeFields = new Dictionary<string, object>()
+                    {
+                        { "ImageUrl", imageUrl + queryParms },
+                        { "ImageGuid", imageGuid }
+                    };
+
+                    if ( imageTagTemplate.IsNullOrWhiteSpace() )
+                    {
+                        imageTagTemplate = DefaultImageTagTemplate;
+                    }
+
+                    var imageTag = imageTagTemplate.ResolveMergeFields( mergeFields );
 
                     if ( configurationValues != null &&
                         configurationValues.ContainsKey( FORMAT_AS_LINK ) &&

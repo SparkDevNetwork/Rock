@@ -23,7 +23,7 @@
             <div class="scroller">
 
                 <div class="control-group checkin-body-container">
-                    <label class="control-label">Select Group</label>
+                    <label class="control-label"><asp:Literal ID="lCaption" runat="server" /></label>
                     <div class="controls">
                         <asp:Panel ID="pnlNoOptions" runat="server" Visible="false">
                             <h4>Sorry, there are currently not any available groups that <asp:Literal ID="lNoOptionName" runat="server" /> can check into at <asp:Literal ID="lNoOptionSchedule" runat="server" />.</h4>

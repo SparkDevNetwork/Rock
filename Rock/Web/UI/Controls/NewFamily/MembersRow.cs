@@ -36,6 +36,7 @@ namespace Rock.Web.UI.Controls
         private RockRadioButtonList _rblRole;
         private DropDownList _ddlTitle;
         private RockTextBox _tbFirstName;
+        private RockTextBox _tbNickName;
         private RockTextBox _tbMiddleName;
         private RockTextBox _tbLastName;
         private DropDownList _ddlSuffix;
@@ -139,6 +140,26 @@ namespace Rock.Web.UI.Controls
             get { return _tbFirstName.Text; }
             set { _tbFirstName.Text = value; }
         }
+
+        /// <summary>
+        /// Gets or sets the name of the nick.
+        /// </summary>
+        /// <value>
+        /// The name of the nick.
+        /// </value>
+        public string NickName
+        {
+            get { return _tbNickName.Text; }
+            set { _tbNickName.Text = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show nick name].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show nick name]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowNickName { get; set; }
 
         /// <summary>
         /// Gets or sets the middle name
@@ -363,6 +384,7 @@ namespace Rock.Web.UI.Controls
                 _rblRole.ValidationGroup = value;
                 _ddlTitle.ValidationGroup = value;
                 _tbFirstName.ValidationGroup = value;
+                _tbNickName.ValidationGroup = value;
                 _tbMiddleName.ValidationGroup = value;
                 _tbLastName.ValidationGroup = value;
                 _ddlSuffix.ValidationGroup = value;
@@ -382,6 +404,7 @@ namespace Rock.Web.UI.Controls
             _rblRole = new RockRadioButtonList();
             _ddlTitle = new DropDownList();
             _tbFirstName = new RockTextBox();
+            _tbNickName = new RockTextBox();
             _tbMiddleName = new RockTextBox();
             _tbLastName = new RockTextBox();
             _ddlSuffix = new DropDownList();
@@ -404,6 +427,7 @@ namespace Rock.Web.UI.Controls
             _rblRole.ID = "_rblRole";
             _ddlTitle.ID = "_ddlTitle";
             _tbFirstName.ID = "_tbFirstName";
+            _tbNickName.ID = "_tbNickName";
             _tbMiddleName.ID = "_tbMiddleName";
             _tbLastName.ID = "_tbLastName";
             _ddlSuffix.ID = "_ddlSuffix";
@@ -416,6 +440,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _rblRole );
             Controls.Add( _ddlTitle );
             Controls.Add( _tbFirstName );
+            Controls.Add( _tbNickName );
             Controls.Add( _tbMiddleName );
             Controls.Add( _tbLastName );
             Controls.Add( _ddlSuffix );
@@ -442,6 +467,9 @@ namespace Rock.Web.UI.Controls
             _tbFirstName.Placeholder = "First Name";
             _tbFirstName.Required = true;
             _tbFirstName.RequiredErrorMessage = "First Name is required for all group members";
+
+            _tbNickName.CssClass = "form-control";
+            _tbNickName.Placeholder = "Nick Name";
 
             _tbMiddleName.CssClass = "form-control";
             _tbMiddleName.Placeholder = "Middle Name";
@@ -474,7 +502,7 @@ namespace Rock.Web.UI.Controls
             _lbDelete.Controls.Add( iDelete );
             iDelete.AddCssClass( "fa fa-times" );
 
-            _lbDelete.CssClass = "btn btn-sm btn-danger";
+            _lbDelete.CssClass = "btn btn-sm btn-danger pull-right";
             _lbDelete.Click += lbDelete_Click;
             _lbDelete.CausesValidation = false;
         }
@@ -510,6 +538,14 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbFirstName.RenderControl( writer );
                 writer.RenderEndTag();
+
+                if ( this.ShowNickName )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _tbNickName.IsValid ? "" : " has-error" ) );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _tbNickName.RenderControl( writer );
+                    writer.RenderEndTag();
+                }
 
                 if ( this.ShowMiddleName )
                 {

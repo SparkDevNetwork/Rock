@@ -342,8 +342,8 @@
 		<col def="S0">ISDotNetInstallerArgsRollback</col>
 		<row><td>CheckinClient.Primary_output</td><td>{1B06C1F8-B287-44E9-8085-3B35A7AF7173}</td><td>INSTALLDIR</td><td>2</td><td/><td>checkinclient.primary_output</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>CheckinClient.Primary_output1</td><td>{6CD4C90A-A5AE-461D-8EE4-0626DDB7AD48}</td><td>INSTALLDIR</td><td>2</td><td/><td>checkinclient.primary_output</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>EO.WebBrowser.Wpf.dll</td><td>{674FCC7E-3C78-4F29-8394-93D8C3FFB306}</td><td>INSTALLDIR</td><td>2</td><td/><td>eo.webbrowser.wpf.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>EO.WebBrowser.dll</td><td>{93B37390-60EB-4A76-9185-64C135A3EE31}</td><td>INSTALLDIR</td><td>2</td><td/><td>eo.webbrowser.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>EO.WebBrowser.Wpf.dll</td><td>{CE9D61F6-5A6F-4F5C-A4BB-255820A38DA2}</td><td>INSTALLDIR</td><td>2</td><td/><td>eo.webbrowser.wpf.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>EO.WebBrowser.dll</td><td>{65075F64-8DE0-4E4A-B4AF-D2AB56115995}</td><td>INSTALLDIR</td><td>2</td><td/><td>eo.webbrowser.dll</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>ISX_DEFAULTCOMPONENT1</td><td>{63D3226F-83BF-4024-AE88-F45A3411417A}</td><td>INSTALLDIR</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
 
@@ -1053,6 +1053,8 @@
 	<table name="CreateFolder">
 		<col key="yes" def="s72">Directory_</col>
 		<col key="yes" def="s72">Component_</col>
+		<row><td>INSTALLDIR</td><td>EO.WebBrowser.Wpf.dll</td></row>
+		<row><td>INSTALLDIR</td><td>EO.WebBrowser.dll</td></row>
 		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT1</td></row>
 	</table>
 
@@ -1888,8 +1890,8 @@
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
 		<row><td>checkinclient.primary_output</td><td>CheckinClient.Primary_output1</td><td>CheckinClient.Primary output</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;CheckinClient1&gt;|Built</td><td>3</td><td/></row>
-		<row><td>eo.webbrowser.dll</td><td>EO.WebBrowser.dll</td><td>EOWEBB~1.DLL|EO.WebBrowser.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock-WindowsCheckin\libs\EO.WebBrowser\EO.WebBrowser.dll</td><td>1</td><td/></row>
-		<row><td>eo.webbrowser.wpf.dll</td><td>EO.WebBrowser.Wpf.dll</td><td>EOWEBB~1.DLL|EO.WebBrowser.Wpf.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock-WindowsCheckin\libs\EO.WebBrowser\EO.WebBrowser.Wpf.dll</td><td>1</td><td/></row>
+		<row><td>eo.webbrowser.dll</td><td>EO.WebBrowser.dll</td><td>EOWEBB~1.DLL|EO.WebBrowser.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Github\SparkDevNetwork\Rock-WindowsCheckin\libs\EO.WebBrowser\EO.WebBrowser.dll</td><td>1</td><td/></row>
+		<row><td>eo.webbrowser.wpf.dll</td><td>EO.WebBrowser.Wpf.dll</td><td>EOWEBB~1.DLL|EO.WebBrowser.Wpf.dll</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Github\SparkDevNetwork\Rock-WindowsCheckin\libs\EO.WebBrowser\EO.WebBrowser.Wpf.dll</td><td>1</td><td/></row>
 	</table>
 
 	<table name="FileSFPCatalog">
@@ -2035,8 +2037,8 @@
 		<col def="S0">Miscellaneous</col>
 		<row><td>CheckinClient.Primary_output</td><td/><td/><td>_2FBB17E1_4956_41A6_888A_E23E54FCDAAB_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>CheckinClient.Primary_output1</td><td/><td/><td>_AD52BAF5_4CA7_4274_B563_AF872BA43EFA_FILTER</td><td/><td/><td/><td/></row>
-		<row><td>EO.WebBrowser.Wpf.dll</td><td/><td/><td>_9C2A0300_D71C_4C8A_B4A8_812DFA3A81EA_FILTER</td><td/><td/><td/><td/></row>
-		<row><td>EO.WebBrowser.dll</td><td/><td/><td>_93F087E3_35BF_4F2C_A55D_F61C68659D9D_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>EO.WebBrowser.Wpf.dll</td><td/><td/><td>_4B4F67C1_6723_4583_B02E_B773036E74B1_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>EO.WebBrowser.dll</td><td/><td/><td>_C0C6EC2A_568D_4DCA_925C_3F261D67F8B4_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>ISX_DEFAULTCOMPONENT1</td><td/><td/><td>_16CDAFC1_0B19_4EE1_9F18_6E21F8772791_FILTER</td><td/><td/><td/><td/></row>
 	</table>
 
@@ -2348,12 +2350,6 @@
 		<row><td>ProgramFilesFolder</td><td/><td/><td>1</td></row>
 		<row><td>SystemFolder</td><td/><td/><td>1</td></row>
 		<row><td>WindowsFolder</td><td/><td/><td>1</td></row>
-	</table>
-
-	<table name="ISPowerShellWrap">
-		<col key="yes" def="s72">Action_</col>
-		<col key="yes" def="s72">Name</col>
-		<col def="S0">Value</col>
 	</table>
 
 	<table name="ISProductConfiguration">
@@ -3828,6 +3824,12 @@
 		<col def="s255">Value</col>
 	</table>
 
+	<table name="ISWSEWrap">
+		<col key="yes" def="s72">Action_</col>
+		<col key="yes" def="s72">Name</col>
+		<col def="S0">Value</col>
+	</table>
+
 	<table name="ISXmlElement">
 		<col key="yes" def="s72">ISXmlElement</col>
 		<col def="s72">ISXmlFile_</col>
@@ -3868,9 +3870,9 @@
 		<col def="V0">Data</col>
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I2">ISIconIndex</col>
-		<row><td>ARPPRODUCTICON.exe</td><td/><td>C:\Projects\Rock-WindowsCheckin\app.ico</td><td>0</td></row>
-		<row><td>_Built1_23CFFCD7DCC94F18ABB06A2C9599C939.exe</td><td/><td>C:\Projects\Rock-WindowsCheckin\app.ico</td><td>0</td></row>
-		<row><td>_Built_FB67052ED16B4C0095E5DDA133D94FA6.exe</td><td/><td>C:\Projects\Rock-WindowsCheckin\app.ico</td><td>0</td></row>
+		<row><td>ARPPRODUCTICON.exe</td><td/><td>C:\Github\SparkDevNetwork\Rock-WindowsCheckin\app.ico</td><td>0</td></row>
+		<row><td>_Built1_EB60FD59166C4B74BD279B0F968C915F.exe</td><td/><td>C:\Github\SparkDevNetwork\Rock-WindowsCheckin\app.ico</td><td>0</td></row>
+		<row><td>_Built_8DF6ABA6D6FF43149FE9006B27138136.exe</td><td/><td>C:\Github\SparkDevNetwork\Rock-WindowsCheckin\app.ico</td><td>0</td></row>
 	</table>
 
 	<table name="IniFile">
@@ -4003,7 +4005,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISTheme</td><td>InstallShield Blue.theme</td></row>
 		<row><td>ISUSLock</td><td>{38802604-0846-4DEC-823A-7581098448C4}</td></row>
 		<row><td>ISUSSignature</td><td>{6631B87A-232F-4DAC-AB92-0D246326C957}</td></row>
-		<row><td>ISVisitedViews</td><td>viewAssistant,viewISToday,viewAppV,viewProject,viewRelease,viewAppFiles,viewSupportFiles,viewCustomActions,viewSystemSearch,viewInstallScriptStd,viewShortcuts,viewRegistry,viewIniFiles,viewTextFiles,viewXMLConfig,viewFileExtensions,viewEnvironmentVariables,viewVRoots,viewSQLServer,viewTextMessages,viewDesignPatches,viewFeatureFiles,viewObjects,viewDependencies</td></row>
+		<row><td>ISVisitedViews</td><td>viewAssistant,viewISToday,viewAppV,viewProject,viewRelease,viewAppFiles,viewSupportFiles,viewCustomActions,viewSystemSearch,viewInstallScriptStd,viewShortcuts,viewRegistry,viewIniFiles,viewTextFiles,viewXMLConfig,viewFileExtensions,viewEnvironmentVariables,viewVRoots,viewSQLServer,viewTextMessages,viewDesignPatches,viewFeatureFiles,viewObjects,viewDependencies,viewLearnMore,viewServices,viewUI</td></row>
 		<row><td>Limited</td><td>1</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
@@ -4015,7 +4017,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>SaveAsSchema</td><td/></row>
 		<row><td>SccEnabled</td><td>0</td></row>
 		<row><td>SccPath</td><td/></row>
-		<row><td>SchemaVersion</td><td>774</td></row>
+		<row><td>SchemaVersion</td><td>776</td></row>
 		<row><td>Type</td><td>MSIE</td></row>
 	</table>
 
@@ -4543,8 +4545,8 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="S255">ISComments</col>
 		<col def="S255">ISShortcutName</col>
 		<col def="I4">ISAttributes</col>
-		<row><td>_Built</td><td>rockrm_1_rockrms__check_in_client</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>CheckinClient.Primary_output</td><td>AlwaysInstall</td><td/><td/><td/><td>_Built_FB67052ED16B4C0095E5DDA133D94FA6.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
-		<row><td>_Built1</td><td>DesktopFolder</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>CheckinClient.Primary_output</td><td>AlwaysInstall</td><td/><td/><td/><td>_Built1_23CFFCD7DCC94F18ABB06A2C9599C939.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>_Built</td><td>rockrm_1_rockrms__check_in_client</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>CheckinClient.Primary_output</td><td>AlwaysInstall</td><td/><td/><td/><td>_Built_8DF6ABA6D6FF43149FE9006B27138136.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>_Built1</td><td>DesktopFolder</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>CheckinClient.Primary_output</td><td>AlwaysInstall</td><td/><td/><td/><td>_Built1_EB60FD59166C4B74BD279B0F968C915F.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="Signature">
@@ -5150,9 +5152,6 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISPathVariable</td><td>TestValue</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>The test value of the path variable.</td></row>
 		<row><td>ISPathVariable</td><td>Type</td><td>N</td><td/><td/><td/><td/><td/><td>1;2;4;8</td><td>The type of the path variable.</td></row>
 		<row><td>ISPathVariable</td><td>Value</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>The value of the path variable.</td></row>
-		<row><td>ISPowerShellWrap</td><td>Action_</td><td>N</td><td/><td/><td>CustomAction</td><td>1</td><td>Identifier</td><td/><td>Foreign key into CustomAction table</td></row>
-		<row><td>ISPowerShellWrap</td><td>Name</td><td>N</td><td/><td/><td/><td/><td>Text</td><td/><td>Property associated with this Action</td></row>
-		<row><td>ISPowerShellWrap</td><td>Value</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>Value associated with this Property</td></row>
 		<row><td>ISProductConfiguration</td><td>GeneratePackageCode</td><td>Y</td><td/><td/><td/><td/><td>Number</td><td>0;1</td><td>Indicates whether or not to generate a package code.</td></row>
 		<row><td>ISProductConfiguration</td><td>ISProductConfiguration</td><td>N</td><td/><td/><td/><td/><td>Text</td><td/><td>The name of the product configuration.</td></row>
 		<row><td>ISProductConfiguration</td><td>ProductConfigurationFlags</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>Product configuration (release) flags.</td></row>
@@ -5390,6 +5389,9 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISVirtualShortcut</td><td>Name</td><td>N</td><td/><td/><td/><td/><td>Identifier</td><td/><td>Property name</td></row>
 		<row><td>ISVirtualShortcut</td><td>Shortcut_</td><td>N</td><td/><td/><td>Shortcut</td><td>1</td><td>Identifier</td><td/><td>Foreign key into Shortcut table.</td></row>
 		<row><td>ISVirtualShortcut</td><td>Value</td><td>N</td><td/><td/><td/><td/><td/><td/><td>Property value</td></row>
+		<row><td>ISWSEWrap</td><td>Action_</td><td>N</td><td/><td/><td>CustomAction</td><td>1</td><td>Identifier</td><td/><td>Foreign key into CustomAction table</td></row>
+		<row><td>ISWSEWrap</td><td>Name</td><td>N</td><td/><td/><td/><td/><td>Text</td><td/><td>Property associated with this Action</td></row>
+		<row><td>ISWSEWrap</td><td>Value</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>Value associated with this Property</td></row>
 		<row><td>ISXmlElement</td><td>Content</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>Element contents</td></row>
 		<row><td>ISXmlElement</td><td>ISAttributes</td><td>Y</td><td/><td/><td/><td/><td>Number</td><td/><td>Internal XML element attributes</td></row>
 		<row><td>ISXmlElement</td><td>ISXmlElement</td><td>N</td><td/><td/><td/><td/><td>Identifier</td><td/><td>Primary key, non-localized, internal token for Xml element</td></row>

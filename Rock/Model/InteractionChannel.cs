@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Interation Channel.
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "InteractionChannel" )]
     [DataContract]

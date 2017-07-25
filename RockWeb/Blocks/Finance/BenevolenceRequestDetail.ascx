@@ -22,7 +22,8 @@
                             <Rock:DatePicker ID="dpRequestDate" runat="server" Label="Request Date" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestDateTime" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:RockDropDownList ID="ddlCaseWorker" runat="server" Label="Case Worker" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="CaseWorkerPersonAlias" />
+                            <Rock:PersonPicker ID="ppCaseWorker" runat="server" Label="Case Worker" Visible="false" />
+                            <Rock:RockDropDownList ID="ddlCaseWorker" runat="server" Label="Case Worker" />
                         </div>
                         <div class="col-md-3">
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
@@ -80,7 +81,7 @@
                 <Rock:PanelWidget ID="pwRequest" runat="server" Title="Request Details" Expanded="true">
                     <Rock:DataTextBox ID="dtbRequestText" runat="server" Label="Description of Request" TextMode="MultiLine" Rows="4" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestText" />
                 
-                    <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
 
                     <Rock:RockControlWrapper ID="rcwDocuments" runat="server" Label="Related Documents">
                         <asp:DataList ID="dlDocuments" runat="server" CellPadding="4" RepeatDirection="Horizontal" RepeatColumns="4" >

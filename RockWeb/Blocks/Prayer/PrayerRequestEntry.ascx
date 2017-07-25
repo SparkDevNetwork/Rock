@@ -16,12 +16,18 @@
                         <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                         <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="false" />
                         <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email"  Required="false" />
+
+                        <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                     </asp:Panel>
                     
                     <Rock:ButtonDropDownList ID="bddlCategory" runat="server" Label="Category"></Rock:ButtonDropDownList>
 
                     <em ID="lblCount" runat="server" class="pull-right badge"></em>
                     <Rock:DataTextBox ID="dtbRequest" runat="server" Label="Request" TextMode="MultiLine" Rows="3" MaxLength="10" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" placeholder="Please pray that..."></Rock:DataTextBox>
+
+                    <div class="attributes">
+                        <asp:PlaceHolder ID="phAttributes" runat="server" />
+                    </div>
 
                     <% if ( EnableUrgentFlag ) { %>
                         <Rock:RockCheckBox ID="cbIsUrgent" runat="server" Checked="false" Label="Urgent?" Text="Yes" Help="If 'yes' is checked the request will be flagged as urgent in need of attention quickly." />
@@ -36,7 +42,7 @@
                     <% } %>
                 </fieldset>
 
-                <Rock:BootstrapButton ID="lbSave" runat="server" AccessKey="s" Text="Save Request" DataLoadingText="Saving..." OnClick="btnSave_Click" CssClass="btn btn-primary" CausesValidation="True"/>
+                <Rock:BootstrapButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save Request" DataLoadingText="Saving..." OnClick="btnSave_Click" CssClass="btn btn-primary" CausesValidation="True"/>
 
             </div>
 

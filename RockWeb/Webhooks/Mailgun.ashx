@@ -88,6 +88,7 @@ public class Mailgun : IHttpHandler
                     case "clicked": status = SendEmailWithEvents.CLICKED_STATUS; break;
                     case "opened": status = SendEmailWithEvents.OPENED_STATUS; break;
                     case "dropped":
+                    case "suppress-bounce":
                     case "bounced":
                         status = SendEmailWithEvents.FAILED_STATUS;
                         int secs = request.Form["timestamp"].AsInteger();

@@ -328,6 +328,13 @@ namespace Rock.Web.UI.Controls
     }});
 ", this.ClientID );
                 }
+                
+                script.AppendFormat( @"
+    $( '#{0}').on('chosen:showing_dropdown chosen:hiding_dropdown', function( evt, params ) {{
+        // update the outer modal  
+        Rock.dialogs.updateModalScrollBar('{0}');
+    }});
+", this.ClientID );
 
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script.ToString(), true );
             }
@@ -384,16 +391,6 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-            RockPage.AddScriptLink( this.Page, "~/Scripts/chosen.jquery.min.js" );
         }
 
         /// <summary>

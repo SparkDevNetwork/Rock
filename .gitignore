@@ -24,14 +24,14 @@ StyleCop.Cache
 [Oo]bj/
 RockWeb/Cache/*
 RockWeb/App_Data/PackageStaging
-com.centralaz.*/bin/Debug/*.*
-com.centralaz.*/bin/Debug/*/*.*
-com.centralaz.*/bin/Debug/*/*/*.*
-com.centralaz.*/bin/Release/*.*
-com.centralaz.*/bin/Release/*/*.*
 /scaffolding.config
 *.sln.GhostDoc.xml
 
 Packages/*
 
+# javascript deps
+node_modules
+*.map
+
+# CentralAZ specific stuff
 appveyor.yml

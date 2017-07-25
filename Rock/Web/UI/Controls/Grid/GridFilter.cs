@@ -234,7 +234,7 @@ namespace Rock.Web.UI.Controls
 
                         if ( !string.IsNullOrWhiteSpace( args.Value ) )
                         {
-                            filterDisplay.AddOrIgnore( args.Name, args.Value );
+                            filterDisplay.AddOrReplace( args.Name, args.Value );
                         }
                     }
                 }

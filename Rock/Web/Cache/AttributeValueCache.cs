@@ -60,6 +60,7 @@ namespace Rock.Web.Cache
         {
             AttributeId = model.AttributeId;
             Value = model.Value;
+            EntityId = model.EntityId;
         }
 
         #endregion
@@ -74,6 +75,15 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public int AttributeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity identifier.
+        /// </summary>
+        /// <value>
+        /// The entity identifier.
+        /// </value>
+        [DataMember]
+        public int? EntityId { get; set; }
 
         /// <summary>
         /// Gets or sets the value.
@@ -137,7 +147,7 @@ namespace Rock.Web.Cache
                 var attribute = AttributeCache.Read( this.AttributeId );
                 if ( attribute != null )
                 {
-                    return attribute.FieldType.Field.FormatValue( null, Value, attribute.QualifierValues, false );
+                    return attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, EntityId, Value, attribute.QualifierValues, false );
                 }
                 return Value;
             }

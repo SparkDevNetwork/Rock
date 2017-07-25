@@ -413,11 +413,11 @@ namespace RockWeb.Blocks.Core
                         var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId );
                         if ( attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) )
                         {
-                            lValue.Text = fieldType.Field.FormatValueAsHtml( lValue, attributeValue.Value, attribute.QualifierValues, true );
+                            lValue.Text = fieldType.Field.FormatValue( lValue, attribute.EntityTypeId, _entityId, attributeValue.Value, attribute.QualifierValues, true ).EncodeHtml();
                         }
                         else
                         {
-                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", fieldType.Field.FormatValueAsHtml( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
+                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.EntityTypeId, _entityId, attribute.DefaultValue, attribute.QualifierValues, true ).EncodeHtml() );
                         }
                     }
                 }
@@ -426,7 +426,7 @@ namespace RockWeb.Blocks.Core
                     Literal lDefaultValue = e.Row.FindControl( "lDefaultValue" ) as Literal;
                     if ( lDefaultValue != null )
                     {
-                        lDefaultValue.Text = fieldType.Field.FormatValueAsHtml( lDefaultValue, attribute.DefaultValue, attribute.QualifierValues, true );
+                        lDefaultValue.Text = fieldType.Field.FormatValueAsHtml( lDefaultValue, attribute.EntityTypeId, _entityId, attribute.DefaultValue, attribute.QualifierValues, true );
                     }
                 }
             }
@@ -666,7 +666,21 @@ namespace RockWeb.Blocks.Core
                 SortProperty sortProperty = rGrid.SortProperty;
                 if ( sortProperty != null )
                 {
-                    query = query.Sort( sortProperty );
+                    if ( sortProperty.Property == "Qualifier" )
+                    {
+                        if ( sortProperty.Direction == SortDirection.Ascending )
+                        {
+                            query = query.OrderBy( a => a.EntityType.Name ).ThenBy( a => a.EntityTypeQualifierColumn ).ThenBy( a => a.EntityTypeQualifierValue );
+                        }
+                        else
+                        {
+                            query = query.OrderByDescending( a => a.EntityType.Name ).ThenByDescending( a => a.EntityTypeQualifierColumn ).ThenByDescending( a => a.EntityTypeQualifierValue );
+                        }
+                    }
+                    else
+                    {
+                        query = query.Sort( sortProperty );
+                    }
                 }
                 else
                 {

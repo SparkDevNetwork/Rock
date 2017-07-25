@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -32,7 +31,6 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -984,6 +982,8 @@ namespace RockWeb.Blocks.Event
                 {
                     using ( var rockContext = new RockContext() )
                     {
+                        var personService = new PersonService(rockContext);
+                        var signatureDocumentTemplateService = new SignatureDocumentTemplateService(rockContext);
                         var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantId.Value );
                         if ( registrant != null && 
                             registrant.PersonAlias != null &&
@@ -992,7 +992,9 @@ namespace RockWeb.Blocks.Event
                             Registration.RegistrationInstance != null &&
                             Registration.RegistrationInstance.RegistrationTemplate != null )
                         {
-                            var assignedTo = registrant.PersonAlias.Person;
+                            // Make sure to load these person records using the current rockContext
+                            var assignedTo = personService.Get(registrant.PersonAlias.PersonId);
+                            var appliesTo = personService.Get(registrant.PersonAlias.PersonId);
                             string email = Registration.ConfirmationEmail;
                             if ( string.IsNullOrWhiteSpace( email ) && Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
                             {
@@ -1007,7 +1009,7 @@ namespace RockWeb.Blocks.Event
                                     m.GroupRole.Guid.Equals( adultRole.Value ) );
                             if ( !registrantIsAdult && Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
                             {
-                                assignedTo = Registration.PersonAlias.Person;
+                                assignedTo = personService.Get(Registration.PersonAlias.PersonId);
                             }
                             else
                             {
@@ -1019,8 +1021,8 @@ namespace RockWeb.Blocks.Event
 
                             var sendErrorMessages = new List<string>();
                             if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
-                                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate,
-                                registrant.PersonAlias.Person, 
+                                signatureDocumentTemplateService.Get(Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value),
+                                appliesTo, 
                                 assignedTo,
                                 Registration.RegistrationInstance.Name,
                                 email,
@@ -1502,7 +1504,7 @@ namespace RockWeb.Blocks.Event
         Rock.dialogs.confirm('Are you sure you want to delete this Registration? All of the registrants will also be deleted!', function (result) {
             if (result) {
                 if ( $('input.js-has-payments').val() == 'True' ) {
-                    Rock.dialogs.confirm('This registration also has payments. Are you really sure that you want to delete the registration?<br/><small>(Payments will not be deleted, but they will no longer be associated with a registration.)</small>', function (result) {
+                    Rock.dialogs.confirm('This registration also has payments. Are you sure that you want to delete the registration?<br/><small>(Payments will not be deleted, but they will no longer be associated with a registration.)</small>', function (result) {
                         if (result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
@@ -1534,9 +1536,6 @@ namespace RockWeb.Blocks.Event
         private bool ProcessPayment( bool submitToGateway, RockContext rockContext, Registration registration, int? personAliasId, decimal amount, out string errorMessage )
         {
             FinancialTransaction transaction = null;
-
-            var txnChanges = new List<string>();
-            txnChanges.Add( "Created Transaction" );
 
             var registrationChanges = new List<string>();
 
@@ -1590,7 +1589,7 @@ namespace RockWeb.Blocks.Event
                     {
                         transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
                     }
-                    transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext, txnChanges );
+                    transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
 
                     dvCurrencyType = paymentInfo.CurrencyTypeValue;
                     dvCredCardType = paymentInfo.CreditCardTypeValue;
@@ -1613,22 +1612,11 @@ namespace RockWeb.Blocks.Event
             if ( transaction != null )
             {
                 transaction.Summary = tbSummary.Text;
-                
-                History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
-
                 transaction.AuthorizedPersonAliasId = personAliasId;
-
                 transaction.TransactionDateTime = RockDateTime.Now;
-                History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
-
-                if ( transaction.FinancialGatewayId.HasValue )
-                {
-                    History.EvaluateChange( txnChanges, "Gateway", string.Empty, RegistrationTemplateState.FinancialGateway.Name );
-                }
 
                 var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
                 transaction.TransactionTypeValueId = txnType.Id;
-                History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
 
                 Guid sourceGuid = Guid.Empty;
                 if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
@@ -1637,7 +1625,6 @@ namespace RockWeb.Blocks.Event
                     if ( source != null )
                     {
                         transaction.SourceTypeValueId = source.Id;
-                        History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
                     }
                 }
 
@@ -1647,8 +1634,6 @@ namespace RockWeb.Blocks.Event
                 transactionDetail.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
                 transactionDetail.EntityId = registration.Id;
                 transaction.TransactionDetails.Add( transactionDetail );
-
-                History.EvaluateChange( txnChanges, registration.RegistrationInstance.Account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
 
                 var batchService = new FinancialBatchService( rockContext );
 
@@ -1697,17 +1682,6 @@ namespace RockWeb.Blocks.Event
                     Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
                     batch.Id,
                     batchChanges
-                );
-
-                HistoryService.SaveChanges(
-                    rockContext,
-                    typeof( FinancialBatch ),
-                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                    batch.Id,
-                    txnChanges,
-                    CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
-                    typeof( FinancialTransaction ),
-                    transaction.Id
                 );
 
                 HistoryService.SaveChanges(
@@ -2421,7 +2395,7 @@ namespace RockWeb.Blocks.Event
                         }
 
                         rlField.Label = attribute.Name;
-                        rlField.Text = attribute.FieldType.Field.FormatValueAsHtml( null, fieldValue.ToString(), attribute.QualifierValues );
+                        rlField.Text = attribute.FieldType.Field.FormatValueAsHtml( null, attribute.EntityTypeId, registrant.Id, fieldValue.ToString(), attribute.QualifierValues );
                     }
                 }
 

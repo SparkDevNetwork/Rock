@@ -4,6 +4,8 @@ CREATING INSTALLER ZIP FILE
 <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
 
+Date: ____________________________        Initials: ___________________________
+
 ___ 1. Download the source from the GitHub release tag
 
 ___ 2. Build solution in Visual Studio (IMPORTANT: build in Release mode) After downloading you may
@@ -127,5 +129,9 @@ ___ 13. Overwrite with snapshot zip file to Azure Blog storage
         (rockrms/install/<version>/Data)
 
 ___ 14. Test a brand new install on various web hosting providers.
+ 
+       ___ 1. 3Essentials 
+       ___ 2. Azure
+       ___ 3. Winhost
 
 ___ 15. Commit the additions made to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ into the develop branch.

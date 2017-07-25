@@ -36,8 +36,6 @@
                     <Rock:NotificationBox ID="nbClosedWarning" CssClass="alert-grid" runat="server" NotificationBoxType="Info" Title="Note"
                         Text="This batch has been closed and transactions cannot be edited." Visible="false" Dismissable="false" />
 
-                    
-
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="gfTransactions" runat="server">
                             <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
@@ -48,7 +46,8 @@
                             <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" />
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" />
-                            <Rock:CampusPicker ID="campCampus" runat="server" Label="Campus (of Batch)" />
+                            <Rock:CampusPicker ID="campCampusBatch" runat="server" Label="Campus (of Batch)" />
+                            <Rock:CampusPicker ID="campCampusAccount" runat="server" Label="Campus (of Account)" />
                             <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
                         </Rock:GridFilter>
 
@@ -73,6 +72,9 @@
                                     <ItemTemplate><%# GetAccounts( Container.DataItem ) %></ItemTemplate>
                                 </Rock:RockTemplateField>
                                 <Rock:RockBoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" ColumnPriority="DesktopLarge" />                
+                                <Rock:RockBoundField DataField="Status" HeaderText="Status" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                <Rock:DateTimeField DataField="SettledDate" HeaderText="Settled Date/Time" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                <Rock:RockBoundField DataField="SettledGroupId" HeaderText="Processor Batch Id" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                 <Rock:RockLiteralField ID="lTransactionImage" HeaderText="Image" />
                                 <Rock:DeleteField OnClick="gTransactions_Delete" Visible="false"/>
                             </Columns>
@@ -122,7 +124,19 @@
             SaveButtonText="Reassign" OnSaveClick="dlgReassign_SaveClick" OnCancelScript="clearActiveDialog();" >
             <Content>
 
-                <Rock:PersonPicker ID="ppReassign" runat="server" Label="Reassign Selected Transactions To" Required="true" ValidationGroup="Reassign" IncludeBusinesses="true" />
+                <div class="row">
+                    <div class="col-sm-6">
+                        <Rock:PersonPicker ID="ppReassign" runat="server" Label="Reassign Selected Transactions To" Required="true" ValidationGroup="Reassign" IncludeBusinesses="true" />
+                    </div>
+                    <div class="col-sm-6">
+                        <Rock:RockRadioButtonList ID="rblReassingBankAccounts" runat="server" Label="Reassign Bank Accounts" Required="true" ValidationGroup="Reassign"
+                            Help="In addition to the selected transactions, how should all of the saved bank accounts for this person be reassigned?">
+                            <asp:ListItem Text="Move bank accounts to selected individual" Value="MOVE" Selected="True" />
+                            <asp:ListItem Text="Copy bank accounts to selected individual" Value="COPY" />
+                            <asp:ListItem Text="Do not adjsut bank accounts" Value="NONE" />
+                        </Rock:RockRadioButtonList>
+                    </div>
+                </div>
 
             </Content>
         </Rock:ModalDialog>

@@ -149,12 +149,10 @@ namespace RockWeb
                 // Get a db context
                 using ( var rockContext = new RockContext() )
                 {
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && !fileInfo.Exists )
                     {
                         try
                         {
-                            // default Initializer is CreateDatabaseIfNotExists, so set it to NULL so that nothing happens if there isn't a database yet
-                            Database.SetInitializer<Rock.Data.RockContext>( null );
                             new AttributeService( rockContext ).Get( 0 );
                             System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase {2}/{1} - {0} ms", stopwatch.Elapsed.TotalMilliseconds, rockContext.Database.Connection.Database, rockContext.Database.Connection.DataSource ) );
                         }
@@ -299,8 +297,15 @@ namespace RockWeb
             }
             catch (Exception ex)
             {
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "##Startup Exception##: {0}\n{1}", ex.Message, ex.StackTrace ) );
+                }
+
                 SetError66();
-                throw ( new Exception( "Error occurred during application startup", ex ) );
+                var startupException = new Exception( "Error occurred during application startup", ex );
+                LogError( startupException, null );
+                throw startupException;
             }
 
             // Update attributes for new workflow actions
@@ -522,9 +527,6 @@ namespace RockWeb
         public bool MigrateDatabase( RockContext rockContext )
         {
             bool result = false;
-
-            // default Initializer is CreateDatabaseIfNotExists, so set it to NULL so it doesn't try to do anything special
-            Database.SetInitializer<Rock.Data.RockContext>( null );
 
             var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
             if ( fileInfo.Exists )
@@ -765,6 +767,9 @@ namespace RockWeb
 
             // Add a default route for when no parameters are passed
             routes.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
+
+            // Add a default route for shortlinks
+            routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
         }
 
         /// <summary>

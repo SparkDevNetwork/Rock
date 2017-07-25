@@ -53,44 +53,34 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            string attributeValue = GetAttributeValue( action, "Attribute" );
-            Guid guid = attributeValue.AsGuid();
-            if (!guid.IsEmpty())
+            var attribute = AttributeCache.Read( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
+            if ( attribute != null )
             {
-                var attribute = AttributeCache.Read( guid, rockContext );
-                if ( attribute != null )
+                Guid? personAliasGuid = GetAttributeValue( action, "Person" ).AsGuidOrNull();
+                if ( personAliasGuid.HasValue )
                 {
-                    string value = GetAttributeValue( action, "Person" );
-                    guid = value.AsGuid();
-                    if ( !guid.IsEmpty() )
+                    var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid.Value );
+                    if ( personAlias != null && personAlias.Person != null )
                     {
-                        var personAlias = new PersonAliasService( rockContext ).Get( guid );
-                        if ( personAlias != null && personAlias.Person != null )
-                        {
-                            action.Activity.Workflow.SetAttributeValue( attribute.Key, value );
-                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, personAlias.Person.FullName ) );
-                            return true;
-                        }
-                        else
-                        {
-                            errorMessages.Add( string.Format( "Person could not be found for selected value ('{0}')!", guid.ToString() ) );
-                        }
+                        SetWorkflowAttributeValue( action, attribute.Guid, personAliasGuid.ToString() );
+                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, personAlias.Person.FullName ) );
+                        return true;
                     }
                     else
                     {
-                        action.Activity.Workflow.SetAttributeValue( attribute.Key, string.Empty );
-                        action.AddLogEntry( string.Format( "Set '{0}' attribute to nobody.", attribute.Name ) );
-                        return true;
+                        errorMessages.Add( string.Format( "Person could not be found for selected value ('{0}')!", personAliasGuid.Value.ToString() ) );
                     }
                 }
                 else
                 {
-                    errorMessages.Add( string.Format( "Attribute could not be found for selected attribute value ('{0}')!", guid.ToString() ) );
+                    SetWorkflowAttributeValue( action, attribute.Guid, string.Empty );
+                    action.AddLogEntry( string.Format( "Set '{0}' attribute to nobody.", attribute.Name ) );
+                    return true;
                 }
             }
             else
             {
-                errorMessages.Add( string.Format( "Selected attribute value ('{0}') was not a valid Guid!", attributeValue ) );
+                errorMessages.Add( "Attribute could not be found for selected Attribute!" );
             }
 
             errorMessages.ForEach( m => action.AddLogEntry( m, true ) );

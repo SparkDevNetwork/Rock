@@ -26,9 +26,10 @@ namespace Rock.Model
     /// <summary>
     /// Represents a physical or virtual Campus/Site for an organization.  
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Campus" )]
     [DataContract]
-    public partial class Campus : Model<Campus>
+    public partial class Campus : Model<Campus>, IOrdered
     {
         #region Entity Properties
 
@@ -129,6 +130,15 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 500 )]
         public string ServiceTimes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
 
         #endregion
 

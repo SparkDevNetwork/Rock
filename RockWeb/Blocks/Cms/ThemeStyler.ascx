@@ -14,7 +14,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <asp:PlaceHolder ID="phThemeControls" runat="server" EnableViewState="true" />
+                        <asp:PlaceHolder ID="phThemeControls" runat="server" />
                     </div>
 
                     <div class="col-md-6">

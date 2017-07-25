@@ -33,4 +33,4 @@ Do you want to ask a question? Are you looking for support? The Ask Rock is the 
 ### Versions
 
 * **Rock Version:** [Enter Rock version here]  
-* **Client Culture Setting** [Enter Client Culture here]  
+* **Client Culture Setting:** [Enter Client Culture here]  

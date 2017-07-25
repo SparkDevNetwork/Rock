@@ -27,8 +27,16 @@ using Rock.Model;
 
 namespace Rock.Rest.Filters
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Web.Http.Filters.AuthorizationFilterAttribute" />
     public class AuthenticateAttribute : AuthorizationFilterAttribute
     {
+        /// <summary>
+        /// Calls when a process requests authorization.
+        /// </summary>
+        /// <param name="actionContext">The action context, which encapsulates information for using <see cref="T:System.Web.Http.Filters.AuthorizationFilterAttribute" />.</param>
         public override void OnAuthorization( HttpActionContext actionContext )
         {
             // See if user is logged in

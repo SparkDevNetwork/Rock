@@ -59,6 +59,49 @@ namespace RockWeb.Blocks.CheckIn
             gGroupLocationSchedule.Actions.ShowAdd = false;
             gGroupLocationSchedule.IsDeleteEnabled = false;
             gGroupLocationSchedule.GridRebind += gGroupLocationSchedule_GridRebind;
+
+            //
+            // First section of the script sets the default state of the header checkbox based
+            // on if all item row checkboxes are checked. Second section handles toggling all
+            // check boxes when the user clicks the header checkbox.
+            //
+            string script = string.Format( @"
+    Sys.Application.add_load(function () {{
+        var $table = $('#{0}');
+        function updateHeaderCheckboxes()
+        {{
+            $table.find('thead > tr > th').each(function (columnIndex) {{
+                if ($(this).find('a.fa').length > 0) {{
+                    columnIndex += 1;
+                    var $cbs = $table.find('tbody > tr > td:nth-child(' + columnIndex + ') input');
+                    if ($cbs.length == $cbs.filter(':checked').length) {{
+                        $(this).find('a.fa').addClass('fa-check-square-o').removeClass('fa-square-o');
+                    }}
+                    else {{
+                        $(this).find('a.fa').addClass('fa-square-o').removeClass('fa-check-square-o');
+                    }}
+                }}
+            }});
+        }}
+        updateHeaderCheckboxes();
+        $table.find('tbody > tr > td input[type=""checkbox""]').click(function () {{ updateHeaderCheckboxes(); }});
+        $('.js-sched-select-all').click(function (e) {{
+            e.preventDefault();
+            var $th = $(this).closest('th');
+            var $table = $(this).closest('table');
+            var columnIndex = $th.parent().children().index($th) + 1;
+            var $cbs = $table.find('tbody > tr > td:nth-child(' + columnIndex + ') input');
+            if ($(this).hasClass('fa-square-o')) {{
+                $(this).addClass('fa-check-square-o').removeClass('fa-square-o');
+                $cbs.prop('checked', true);
+            }} else {{
+                $(this).addClass('fa-square-o').removeClass('fa-check-square-o');
+                $cbs.prop('checked', false);
+            }}
+        }});
+    }});
+", gGroupLocationSchedule.ClientID );
+            ScriptManager.RegisterStartupScript( gGroupLocationSchedule, gGroupLocationSchedule.GetType(), "grid-sched-select-all", script, true );
         }
 
         /// <summary>
@@ -82,8 +125,8 @@ namespace RockWeb.Blocks.CheckIn
         {
             ScheduleService scheduleService = new ScheduleService( new RockContext() );
 
-            // limit Schedules to ones that have a CheckInStartOffsetMinutes
-            var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null );
+            // limit Schedules to ones that are Active and have a CheckInStartOffsetMinutes
+            var scheduleQry = scheduleService.Queryable().Where( a => a.IsActive && a.CheckInStartOffsetMinutes != null );
 
             // limit Schedules to the Category from the Filter
             int scheduleCategoryId = pCategory.SelectedValueAsInt() ?? Rock.Constants.All.Id;
@@ -110,7 +153,8 @@ namespace RockWeb.Blocks.CheckIn
             {
                 string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
 
-                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name, DataField = dataFieldName };
+                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name + "<br /><a href='#' style='display: inline' class='fa fa-square-o js-sched-select-all'></a>", DataField = dataFieldName };
+                field.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
                 gGroupLocationSchedule.Columns.Add( field );
             }
 
@@ -278,7 +322,7 @@ namespace RockWeb.Blocks.CheckIn
             var groupService = new GroupService( rockContext );
 
             var groupPaths = new List<GroupTypePath>();
-            var groupLocationQry = groupLocationService.Queryable();
+            var groupLocationQry = groupLocationService.Queryable().Where(gl => gl.Group.IsActive);
             int groupTypeId;
 
             // if this page has a PageParam for groupTypeId use that to limit which groupTypeId to see. Otherwise, use the groupTypeId specified in the filter

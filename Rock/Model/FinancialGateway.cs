@@ -31,6 +31,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a payment gateway
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialGateway" )]
     [DataContract]
     public partial class FinancialGateway : Model<FinancialGateway>, IHasActiveFlag

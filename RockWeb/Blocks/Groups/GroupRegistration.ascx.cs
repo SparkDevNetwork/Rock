@@ -48,7 +48,6 @@ namespace RockWeb.Blocks.Groups
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 3 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 4 )]
     [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 5 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 6 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
 ", "", 7 )]
     [LinkedPage("Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 8)]
@@ -194,6 +193,7 @@ namespace RockWeb.Blocks.Groups
                 Person spouse = null;
                 Group family = null;
                 GroupLocation homeLocation = null;
+                bool isMatch = false;
 
                 var changes = new List<string>();
                 var spouseChanges = new List<string>();
@@ -217,6 +217,7 @@ namespace RockWeb.Blocks.Groups
                     if ( matches.Count() == 1 )
                     {
                         person = matches.First();
+                        isMatch = true;
                     }
                 }
 
@@ -274,40 +275,49 @@ namespace RockWeb.Blocks.Groups
                 // If using a 'Full' view, save the phone numbers and address
                 if ( !IsSimple )
                 {
-                    SetPhoneNumber( rockContext, person, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), changes );
-                    SetPhoneNumber( rockContext, person, pnCell, cbSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), changes );
-
-                    string oldLocation = homeLocation != null ? homeLocation.Location.ToString() : string.Empty;
-                    string newLocation = string.Empty;
-
-                    var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
-                    if ( location != null )
+                    if ( !isMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
                     {
-                        if ( homeLocation == null )
+                        SetPhoneNumber( rockContext, person, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), changes );
+                    }
+                    if ( !isMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
+                    {
+                        SetPhoneNumber( rockContext, person, pnCell, cbSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), changes );
+                    }
+
+                    if ( !isMatch || !string.IsNullOrWhiteSpace( acAddress.Street1 ) )
+                    {
+                        string oldLocation = homeLocation != null ? homeLocation.Location.ToString() : string.Empty;
+                        string newLocation = string.Empty;
+
+                        var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
+                        if ( location != null )
                         {
-                            homeLocation = new GroupLocation();
-                            homeLocation.GroupLocationTypeValueId = _homeAddressType.Id;
-                            family.GroupLocations.Add( homeLocation );
+                            if ( homeLocation == null )
+                            {
+                                homeLocation = new GroupLocation();
+                                homeLocation.GroupLocationTypeValueId = _homeAddressType.Id;
+                                family.GroupLocations.Add( homeLocation );
+                            }
+                            else
+                            {
+                                oldLocation = homeLocation.Location.ToString();
+                            }
+
+                            homeLocation.Location = location;
+                            newLocation = location.ToString();
                         }
                         else
                         {
-                            oldLocation = homeLocation.Location.ToString();
+                            if ( homeLocation != null )
+                            {
+                                homeLocation.Location = null;
+                                family.GroupLocations.Remove( homeLocation );
+                                new GroupLocationService( rockContext ).Delete( homeLocation );
+                            }
                         }
 
-                        homeLocation.Location = location;
-                        newLocation = location.ToString();
+                        History.EvaluateChange( familyChanges, "Home Location", oldLocation, newLocation );
                     }
-                    else
-                    {
-                        if ( homeLocation != null )
-                        {
-                            homeLocation.Location = null;
-                            family.GroupLocations.Remove( homeLocation );
-                            new GroupLocationService( rockContext ).Delete( homeLocation );
-                        }
-                    }
-
-                    History.EvaluateChange( familyChanges, "Home Location", oldLocation, newLocation );
 
                     // Check for the spouse
                     if ( IsFullWithSpouse && !string.IsNullOrWhiteSpace(tbSpouseFirstName.Text) && !string.IsNullOrWhiteSpace(tbSpouseLastName.Text) )
@@ -366,12 +376,11 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // Check to see if a workflow should be launched for each person
-                WorkflowType workflowType = null;
+                WorkflowTypeCache workflowType = null;
                 Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
                 if ( workflowTypeGuid.HasValue )
                 {
-                    var workflowTypeService = new WorkflowTypeService( rockContext );
-                    workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                    workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
                 }
 
                 // Save the registrations ( and launch workflows )
@@ -387,13 +396,6 @@ namespace RockWeb.Blocks.Groups
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", _group );
                 mergeFields.Add( "GroupMembers", newGroupMembers );
-
-                bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();
-                lResultDebug.Visible = showDebug;
-                if ( showDebug )
-                {
-                    lResultDebug.Text = mergeFields.lavaDebugInfo( _rockContext );
-                }
 
                 string template = GetAttributeValue( "ResultLavaTemplate" );
                 lResult.Text = template.ResolveMergeFields( mergeFields );
@@ -419,13 +421,6 @@ namespace RockWeb.Blocks.Groups
                 // Show lava content
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", _group );
-
-                bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();
-                lLavaOutputDebug.Visible = showDebug;
-                if ( showDebug )
-                {
-                    lLavaOutputDebug.Text = mergeFields.lavaDebugInfo( _rockContext );
-                }
 
                 string template = GetAttributeValue( "LavaTemplate" );
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
@@ -554,7 +549,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="person">The person.</param>
         /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="groupMembers">The group members.</param>
-        private void AddPersonToGroup( RockContext rockContext, Person person, WorkflowType workflowType, List<GroupMember> groupMembers )
+        private void AddPersonToGroup( RockContext rockContext, Person person, WorkflowTypeCache workflowType, List<GroupMember> groupMembers )
         {
             if (person != null )
             {
@@ -591,7 +586,7 @@ namespace RockWeb.Blocks.Groups
 
                 }
 
-                if ( groupMember != null && workflowType != null )
+                if ( groupMember != null && workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     try
                     {

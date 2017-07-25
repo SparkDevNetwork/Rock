@@ -379,7 +379,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return null;
+            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
         }
 
         #endregion

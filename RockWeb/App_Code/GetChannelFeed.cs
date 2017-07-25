@@ -80,34 +80,15 @@ namespace RockWeb
 
                 rssTemplate = dvRssTemplate.GetAttributeValue( "Template" );
 
-
-                if ( request.QueryString["EnableDebug"] != null )
+                if ( string.IsNullOrWhiteSpace( dvRssTemplate.GetAttributeValue( "MimeType" ) ) )
                 {
-                    // when in debug mode we need to export as html and linkin styles so that the debug info will be displayed
-                    string appPath = HttpContext.Current.Request.ApplicationPath;
-                    
-                    response.Write( "<html>" );
-                    response.Write( "<head>" );
-                    response.Write( string.Format( "<link rel='stylesheet' type='text/css' href='{0}Themes/Rock/Styles/bootstrap.css'>", appPath ) );
-                    response.Write( string.Format( "<link rel='stylesheet' type='text/css' href='{0}Themes/Rock/Styles/theme.css'>", appPath ) );
-                    response.Write( string.Format( "<script src='{0}Scripts/jquery-1.12.4.min.js'></script>", appPath ) );
-                    response.Write( string.Format( "<script src='{0}Scripts/bootstrap.min.js'></script>", appPath ) );
-                    response.Write( "</head>" );
-                    response.Write( "<body style='padding: 24px;'>" );
+                    response.ContentType = "application/rss+xml";
                 }
                 else
                 {
-                    if ( string.IsNullOrWhiteSpace( dvRssTemplate.GetAttributeValue( "MimeType" ) ) )
-                    {
-                        response.ContentType = "application/rss+xml";
-                    }
-                    else
-                    {
-                        response.ContentType = dvRssTemplate.GetAttributeValue( "MimeType" );
-                    }
+                    response.ContentType = dvRssTemplate.GetAttributeValue( "MimeType" );
                 }
-                
-                
+                 
                 ContentChannelService channelService = new ContentChannelService( rockContext );
 
                 var channel = channelService.Queryable( "ContentChannelType" ).Where( c => c.Id == channelId ).FirstOrDefault();
@@ -194,19 +175,7 @@ namespace RockWeb
                         mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
                         // show debug info
-                        if ( request.QueryString["EnableDebug"] != null )
-                        {
-                            response.Write( mergeFields.lavaDebugInfo() );
-                            response.Write( "<pre>" );
-                            response.Write( WebUtility.HtmlEncode(rssTemplate.ResolveMergeFields( mergeFields )) );
-                            response.Write( "</pre>" );
-                            response.Write( "</body>" );
-                            response.Write( "</html" );
-                        }
-                        else
-                        {
-                            response.Write( rssTemplate.ResolveMergeFields( mergeFields ) );
-                        }
+                        response.Write( rssTemplate.ResolveMergeFields( mergeFields ) );
                     }
                     else
                     {

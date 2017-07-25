@@ -183,6 +183,11 @@ namespace Rock.Security.BackgroundCheck
                     subjectElement.Add( new XElement( "DLNumber", dlNumber ) );
                 }
 
+                if ( !string.IsNullOrWhiteSpace( person.Email ) )
+                {
+                    subjectElement.Add( new XElement( "EmailAddress", person.Email ) );
+                }
+
                 var homelocation = person.GetHomeLocation();
                 if ( homelocation != null)
                 {
@@ -764,6 +769,7 @@ Response XML ({0}):
                         binaryFile.BinaryFileTypeId = binaryFileType.Id;
                         binaryFile.MimeType = "application/pdf";
                         binaryFile.FileName = fileName;
+                        binaryFile.FileSize = data.Length;
                         binaryFile.ContentStream = new MemoryStream( data );
 
                         var binaryFileService = new BinaryFileService( rockContext );

@@ -8,6 +8,8 @@
         <asp:HiddenField ID="hfGroupTypesExclude" runat="server" />
         <asp:HiddenField ID="hfIncludeInactiveGroups" runat="server" />
         <asp:HiddenField ID="hfCountsType" runat="server" />
+        <asp:HiddenField ID="hfCampusFilter" runat="server" />
+        <asp:HiddenField ID="hfIncludeNoCampus" runat="server" />
         <asp:HiddenField ID="hfInitialGroupParentIds" runat="server" />
         <asp:HiddenField ID="hfLimitToSecurityRoleGroups" runat="server" />
         <asp:HiddenField ID="hfSelectedGroupId" runat="server" />
@@ -19,7 +21,7 @@
 
                 <div class="btn-group pull-left margin-r-sm">
                     <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-plus-circle"></i>Add Group <span class="fa fa-caret-down"></span>
+                        <i class="fa fa-plus-circle"></i>&nbsp;Add Group <span class="fa fa-caret-down"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
                         <li>
@@ -37,6 +39,17 @@
             <div class="js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
                 <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" Label="Show" />
                 <Rock:RockDropDownList ID="ddlCountsType" runat="server" Label="Show Count For" OnSelectedIndexChanged="ddlCountsType_SelectedIndexChanged" CssClass="input-sm" AutoPostBack="true" />
+                <Rock:CampusPicker ID="ddlCampuses" runat="server" Label="Filter by Campus" OnSelectedIndexChanged="ddlCampuses_SelectedIndexChanged" CssClass="input-sm" AutoPostBack="true" />
+                <Rock:Toggle ID="tglIncludeNoCampus" runat="server" OnText="Yes" OffText="No" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglIncludeNoCampus_CheckedChanged" Label="Include groups with no campus" />
+                <div class="form-group">
+                    <asp:Label runat="server" AssociatedControlID="tbSearch" Text="Search" CssClass="control-label" />
+                    <asp:Panel ID="pnlSearch" runat="server" DefaultButton="btnSearch" CssClass="input-group">
+                        <asp:TextBox ID="tbSearch" runat="server" CssClass="form-control input-sm" />
+                        <span class="input-group-btn">
+                            <asp:Button ID="btnSearch" runat="server" Text="Go!" CssClass="btn btn-default btn-sm" OnClick="btnSearch_OnClick" />
+                        </span>
+                    </asp:Panel>
+                </div>
             </div>
 
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
@@ -121,7 +134,9 @@
                             + '&includedGroupTypeIds=' + ($('#<%=hfGroupTypesInclude.ClientID%>').val() || '0')
                             + '&excludedGroupTypeIds=' + ($('#<%=hfGroupTypesExclude.ClientID%>').val() || '0')
                             + '&includeInactiveGroups=' + ($('#<%=hfIncludeInactiveGroups.ClientID%>').val() || false)
-                            + '&countsType=' + ($('#<%=hfCountsType.ClientID%>').val() || false),
+                            + '&countsType=' + ($('#<%=hfCountsType.ClientID%>').val() || false)
+                            + '&includeNoCampus=' + ($('#<%=hfIncludeNoCampus.ClientID%>').val() || false)
+                            + '&campusId=' + ($('#<%=hfCampusFilter.ClientID%>').val() || 0),
                         multiSelect: false,
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null

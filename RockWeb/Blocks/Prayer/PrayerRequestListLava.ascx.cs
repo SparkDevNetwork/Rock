@@ -64,7 +64,6 @@ namespace RockWeb.Blocks.Prayer
     [CustomDropdownListField("Approval Status", "Which statuses to display.", "1^Approved,2^Unapproved,3^All", true, "1", order: 5)]
     [BooleanField( "Show Expired", "Includes expired prayer requests.", false, order: 6)]
     [SlidingDateRangeField( "Date Range", "Date range to limit by.", false, "", enabledSlidingDateRangeTypes: "Last,Previous,Current", order: 7 )]
-    [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 8 )]
     public partial class PrayerRequestListLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -206,12 +205,6 @@ namespace RockWeb.Blocks.Prayer
             string template = GetAttributeValue( "LavaTemplate" );
             lContent.Text = template.ResolveMergeFields( mergeFields );
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
         }
 
         #endregion

@@ -33,6 +33,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "RegistrationRegistrant" )]
     [DataContract]
     public partial class RegistrationRegistrant : Model<RegistrationRegistrant>
@@ -110,6 +111,7 @@ namespace Rock.Model
         /// <value>
         /// The registration instance.
         /// </value>
+        [LavaInclude]
         public virtual Registration Registration { get; set; }
 
         /// <summary>

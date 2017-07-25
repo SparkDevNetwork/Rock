@@ -26,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the source record for an Analytic Fact Attendance record in Rock.
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsSourceAttendance" )]
     [DataContract]
     [HideFromReporting]
@@ -39,6 +40,7 @@ namespace Rock.Model
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="Rock.Data.Entity{T}" />
+    [RockDomain( "Reporting" )]
     public abstract class AnalyticsBaseAttendance<T> : Entity<T>
         where T : AnalyticsBaseAttendance<T>, new()
     {
@@ -262,7 +264,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsDimDate AttendanceDate { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the location.
         /// </summary>

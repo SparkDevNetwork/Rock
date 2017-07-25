@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
@@ -29,14 +30,41 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class SchedulePicker : ItemPicker
     {
+        #region Controls
+
+        /// <summary>
+        /// The checkbox to show inactive groups
+        /// </summary>
+        private RockCheckBox _cbShowInactiveSchedules;
+
+        #endregion
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+
+            _cbShowInactiveSchedules = new RockCheckBox();
+            _cbShowInactiveSchedules.ContainerCssClass = "pull-right";
+            _cbShowInactiveSchedules.SelectedIconCssClass = "fa fa-check-square-o";
+            _cbShowInactiveSchedules.UnSelectedIconCssClass = "fa fa-square-o";
+            _cbShowInactiveSchedules.ID = this.ID + "_cbShowInactiveSchedules";
+            _cbShowInactiveSchedules.Text = "Show Inactive";
+            _cbShowInactiveSchedules.AutoPostBack = true;
+            _cbShowInactiveSchedules.CheckedChanged += _cbShowInactiveSchedules_CheckedChanged;
+            this.Controls.Add( _cbShowInactiveSchedules );
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=false&showCategoriesThatHaveNoChildren=false";
-            ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Read( Rock.SystemGuid.EntityType.SCHEDULE.AsGuid() ).Id;
+            SetExtraRestParams();
+            
             this.IconCssClass = "fa fa-calendar";
             base.OnInit( e );
         }
@@ -137,6 +165,38 @@ namespace Rock.Web.UI.Controls
         public override string ItemRestUrl
         {
             get { return "~/api/Categories/GetChildren/"; }
+        }
+
+        /// <summary>
+        /// Render any additional picker actions
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderCustomPickerActions( HtmlTextWriter writer )
+        {
+            base.RenderCustomPickerActions( writer );
+
+            _cbShowInactiveSchedules.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Sets the extra rest parameters.
+        /// </summary>
+        private void SetExtraRestParams( bool includeInactiveSchedules = false )
+        {
+            ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=false&showCategoriesThatHaveNoChildren=false";
+            ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Read( Rock.SystemGuid.EntityType.SCHEDULE.AsGuid() ).Id;
+            ItemRestUrlExtraParams += "&includeInactiveItems=" + includeInactiveSchedules.ToTrueFalse();
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the _cbShowInactiveSchedules control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void _cbShowInactiveSchedules_CheckedChanged( object sender, EventArgs e )
+        {
+            ShowDropDown = true;
+            SetExtraRestParams( _cbShowInactiveSchedules.Checked );
         }
     }
 }

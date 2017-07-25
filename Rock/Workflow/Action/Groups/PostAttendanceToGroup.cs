@@ -213,6 +213,18 @@ namespace Rock.Workflow.Action
                         }
                     }
 
+                    if ( scheduleGuid != Guid.Empty )
+                    {
+                        var schedule = new ScheduleService( rockContext ).Queryable().AsNoTracking()
+                                            .Where( l => l.Guid == scheduleGuid )
+                                            .FirstOrDefault();
+
+                        if ( schedule != null )
+                        {
+                            attendance.ScheduleId = schedule.Id;
+                        }
+                    }
+
                     attendanceService.Add(attendance);
                     rockContext.SaveChanges();
 

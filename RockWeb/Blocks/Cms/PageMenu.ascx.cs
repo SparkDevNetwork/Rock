@@ -45,7 +45,6 @@ namespace RockWeb.Blocks.Cms
     [TextField( "CSS File", "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the stylesheet in the current theme's styles folder.", false, "" )]
     [BooleanField( "Include Current Parameters", "Flag indicating if current page's parameters should be used when building url for child pages", false )]
     [BooleanField( "Include Current QueryString", "Flag indicating if current page's QueryString should be used when building url for child pages", false )]
-    [BooleanField( "Enable Debug", "Flag indicating that the control should output the page data that will be passed to Liquid for parsing.", false )]
     [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false )]
     [KeyValueListField( "Include Page List", "List of pages to include in the Lava. Any ~/ will be resolved by Rock. Enable debug for assistance. Example 'Give Now' with '~/page/186' or 'Me' with '~/MyAccount'.", false, "", "Title", "Link" )]
 
@@ -161,21 +160,6 @@ namespace RockWeb.Blocks.Cms
                 phContent.Controls.Clear();
                 phContent.Controls.Add( new LiteralControl( content ) );
 
-                // add debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    StringBuilder tipInfo = new StringBuilder();
-                    tipInfo.Append( "<p /><div class='alert alert-success' style='clear: both;'><h4>Page Menu Tips</h4>" );
-
-                    tipInfo.Append( "<p><em>Note:</em> If a page or group of pages is not in the data above check the following: <ul>" );
-                    tipInfo.Append( "<li>The parent page has 'Show Child Pages' enabled in the 'Page Properties' > 'Display Settings'</li>" );
-                    tipInfo.Append( "<li>Check the 'Display Settings' on the child pages</li>" );
-                    tipInfo.Append( "<li>Check the security of the child pages</li>" );
-                    tipInfo.Append( "</ul><br /></p>" );
-                    tipInfo.Append( "</div>" );
-
-                    phContent.Controls.Add( new LiteralControl( tipInfo.ToString() + pageProperties.lavaDebugInfo() ) );
-                }
             }
             catch ( Exception ex )
             {

@@ -56,6 +56,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 6, "CustomContent" )]
     [BooleanField( "Allow Following", "Should people be able to follow a person by selecting the star on the person's photo?", true, "", 7)]
     [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 8 )]
+    [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed", true, "", 9 )]
+    [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 10 )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -171,18 +173,20 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     lGender.Text = Person.Gender.ToString();
 
-                    if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
+                    if ( GetAttributeValue( "DisplayGraduation" ).AsBoolean() )
                     {
-                        lGraduation.Text = string.Format(
-                            "<small>({0} {1})</small>",
-                            Person.HasGraduated.Value ? "Graduated " : "Graduates ",
-                            Person.GraduationYear.Value );
+                        if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
+                        {
+                            lGraduation.Text = string.Format(
+                                "<small>({0} {1})</small>",
+                                Person.HasGraduated.Value ? "Graduated " : "Graduates ",
+                                Person.GraduationYear.Value );
+                        }
+                        lGrade.Text = Person.GradeFormatted;
                     }
 
-                    lGrade.Text = Person.GradeFormatted;
-
                     lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
-                    if ( Person.AnniversaryDate.HasValue )
+                    if ( Person.AnniversaryDate.HasValue && GetAttributeValue("DisplayAnniversaryDate").AsBoolean() )
                     {
                         lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
                     }
@@ -299,7 +303,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     nameText = string.Format( "<span class='first-word'>{0}</span> <span class='lastname'>{1}</span>", Person.NickName, Person.LastName );
                 }
-                
+
+                // Prefix with Title if they have a Title with IsFormal=True
+                if ( Person.TitleValueId.HasValue )
+                {
+                    var personTitleValue = DefinedValueCache.Read( Person.TitleValueId.Value );
+                    if ( personTitleValue != null && personTitleValue.GetAttributeValue( "IsFormal" ).AsBoolean() )
+                    {
+                        nameText = string.Format( "<span class='title'>{0}</span> ", personTitleValue.Value ) + nameText;
+                    }
+                }
 
                 // Add First Name if different from NickName.
                 if ( Person.NickName != Person.FirstName )

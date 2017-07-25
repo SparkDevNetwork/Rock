@@ -218,11 +218,11 @@ namespace RockWeb.Blocks.Checkin
                 _addedGroupIds = new List<int>();
                 int? campusId = bddlCampus.SelectedValueAsInt();
 
-                lContent.Text = BuildHeirarchy( groupTypeIds, campusId );
+                lContent.Text = BuildHierarchy( groupTypeIds, campusId );
             } 
         }
 
-        private string BuildHeirarchy( List<int> groupTypeIds, int? campusId )
+        private string BuildHierarchy( List<int> groupTypeIds, int? campusId )
         {
             GroupTypeService groupTypeService = new GroupTypeService( _rockContext );
 
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Checkin
 
                         if ( groupType.ChildGroupTypes.Count > 0 )
                         {
-                            groupTypeContent = BuildHeirarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId );
+                            groupTypeContent = BuildHierarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId );
                         }
 
                         var groupContent = new StringBuilder();
@@ -259,6 +259,8 @@ namespace RockWeb.Blocks.Checkin
                             {
                                 _addedGroupIds.Add( group.Id );
 
+                                var groupName = group.IsActive ? group.Name : group.Name + " (Inactive)";
+
                                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "GroupDetailPage" ) ) )
                                 {
                                     var groupPageParams = new Dictionary<string, string>();
@@ -267,11 +269,11 @@ namespace RockWeb.Blocks.Checkin
                                         groupPageParams.Add( "GroupTypeIds", Request["GroupTypeIds"] );
                                     }
                                     groupPageParams.Add( "GroupId", group.Id.ToString() );
-                                    groupContent.Append( string.Format( "<li><a href='{0}'>{1}</a></li>", LinkedPageUrl( "GroupDetailPage", groupPageParams ), group.Name ) );
+                                    groupContent.Append( string.Format( "<li><a href='{0}'>{1}</a></li>", LinkedPageUrl( "GroupDetailPage", groupPageParams ), groupName ) );
                                 }
                                 else
                                 {
-                                    groupContent.Append( string.Format( "<li>{0}</li>", group.Name ) );
+                                    groupContent.Append( string.Format( "<li>{0}</li>", groupName ) );
                                 }
                             }
                         }
@@ -296,7 +298,7 @@ namespace RockWeb.Blocks.Checkin
                     {
                         if ( groupType.ChildGroupTypes.Count > 0 )
                         {
-                            BuildHeirarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId );
+                            content.Append( BuildHierarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId ) );
                         }
                     }
                 }

@@ -31,6 +31,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection opportunity group configuration
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionOpportunityGroupConfig" )]
     [DataContract]
     public partial class ConnectionOpportunityGroupConfig : Model<ConnectionOpportunityGroupConfig>
@@ -96,6 +97,7 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
@@ -104,6 +106,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group.
         /// </value>
+        [LavaInclude]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -112,6 +115,7 @@ namespace Rock.Model
         /// <value>
         /// The group member role.
         /// </value>
+        [LavaInclude]
         public virtual GroupTypeRole GroupMemberRole { get; set; }
 
         #endregion

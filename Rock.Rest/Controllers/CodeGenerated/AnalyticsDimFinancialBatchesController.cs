@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AnalyticsDimFinancialBatchesController : Rock.Rest.ApiController<Rock.Model.AnalyticsDimFinancialBatch>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsDimFinancialBatchesController"/> class.
+        /// </summary>
         public AnalyticsDimFinancialBatchesController() : base( new Rock.Model.AnalyticsDimFinancialBatchService( new Rock.Data.RockContext() ) ) { } 
     }
 }

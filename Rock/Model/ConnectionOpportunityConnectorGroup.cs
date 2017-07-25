@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection opportunity connector groups
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionOpportunityConnectorGroup" )]
     [DataContract]
     public partial class ConnectionOpportunityConnectorGroup : Model<ConnectionOpportunityConnectorGroup>
@@ -75,6 +76,7 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>

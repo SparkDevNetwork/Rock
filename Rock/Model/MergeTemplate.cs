@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "MergeTemplate" )]
     [DataContract]
     public partial class MergeTemplate : Model<MergeTemplate>, ICategorized
@@ -101,6 +102,7 @@ namespace Rock.Model
         /// <value>
         /// The template binary file.
         /// </value>
+        [LavaInclude]
         public virtual BinaryFile TemplateBinaryFile { get; set; }
 
         /// <summary>
@@ -109,6 +111,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the merge template type entity.
         /// </value>
+        [LavaInclude]
         public virtual EntityType MergeTemplateTypeEntityType { get; set; }
 
         /// <summary>

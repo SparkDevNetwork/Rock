@@ -211,6 +211,13 @@ namespace RockWeb
                 }
             }
 
+            char[] illegalCharacters = new char[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
+
+            if ( uploadedFile.FileName.IndexOfAny( illegalCharacters ) >= 0 )
+            {
+                throw new Rock.Web.FileUploadException( "Invalid Filename.  Please remove any special characters (" + string.Join(" ", illegalCharacters) + ").", System.Net.HttpStatusCode.UnsupportedMediaType );
+            }
+
             // always create a new BinaryFile record of IsTemporary when a file is uploaded
             var binaryFileService = new BinaryFileService( rockContext );
             var binaryFile = new BinaryFile();
@@ -220,6 +227,7 @@ namespace RockWeb
             binaryFile.IsTemporary = context.Request.QueryString["IsTemporary"].AsBooleanOrNull() ?? true;
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
             binaryFile.MimeType = uploadedFile.ContentType;
+            binaryFile.FileSize = uploadedFile.ContentLength;
             binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
             binaryFile.ContentStream = GetFileContentStream( context, uploadedFile );
             rockContext.SaveChanges();

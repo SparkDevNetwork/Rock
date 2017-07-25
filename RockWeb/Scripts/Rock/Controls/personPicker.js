@@ -70,7 +70,39 @@
                 });
             });
 
-            $('#' + controlId + ' .picker-select').on('click', '.picker-select-item :input', function (e) {
+            // debouncing function from John Hann
+            // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
+            var debouncePersonPicker = function (func, threshold, execAsap)
+            {
+              var timeout;
+
+              return function debounced()
+              {
+                var obj = this, args = arguments;
+                function delayed()
+                {
+                  if (!execAsap)
+                    func.apply(obj, args);
+                  timeout = null;
+                };
+
+                if (timeout) {
+                  clearTimeout(timeout);
+                }
+                else if (execAsap)
+                  func.apply(obj, args);
+
+                timeout = setTimeout(delayed, threshold || 250);
+              };
+            }
+
+            $('#' + controlId + ' .picker-select').on('click mouseenter', '.picker-select-item', debouncePersonPicker(function (e)
+            {
+                if (e.type == 'click' && $(e.target).is(':input') == false) {
+                  // only process the click event if it has bubbled up to the input tag
+                  return;
+                }
+
                 e.stopPropagation();
 
                 var $selectedItem = $(this).closest('.picker-select-item');
@@ -80,7 +112,7 @@
 
                 if ($itemDetails.is(':visible')) {
                     
-                    if (selectedPersonId == lastSelectedPersonId ) {
+                    if (selectedPersonId == lastSelectedPersonId && e.type == 'click' ) {
                         // if they are clicking the same person twice in a row, assume that's the one they want to pick
                         $('#' + controlId + '_btnSelect').get(0).click();
                     } else {
@@ -112,7 +144,7 @@
                         exports.personPickers[controlId].updateScrollbar();
                     });
                 }
-            });
+            }));
 
             $('#' + controlId).hover(
                 function () {
@@ -204,7 +236,7 @@
                         var inactiveWarning = "";
 
                         if (!item.IsActive) {
-                            inactiveWarning = " <small>(Inactive)</small>";
+                            inactiveWarning = " <small>(" + item.RecordStatus + ")</small>";
                         }
 
                         var $div = $('<div/>').attr('class', 'radio'),

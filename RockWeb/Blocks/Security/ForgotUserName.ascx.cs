@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Security
                     if ( user.EntityType != null )
                     {
                         var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
-                        if ( !component.RequiresRemoteAuthentication )
+                        if ( component != null && !component.RequiresRemoteAuthentication )
                         {
                             users.Add( user );
                             hasAccountWithPasswordResetAbility = true;

@@ -47,6 +47,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool IsCommon { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -97,6 +100,7 @@ namespace Rock.Client
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsCommon = source.IsCommon;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;

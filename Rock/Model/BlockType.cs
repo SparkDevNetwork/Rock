@@ -29,6 +29,7 @@ namespace Rock.Model
     /// Represents a a configurable and functional component or module that extends the base functionality of the Rock system/framework. A
     /// BlockType can be implemented one or more <see cref="Page">Pages</see> or <see cref="Layout">Layouts</see>.
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "BlockType" )]
     [DataContract]
     public partial class BlockType : Model<BlockType>
@@ -47,6 +48,16 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this blocktype is commonly used
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is common; otherwise, <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool IsCommon { get; set; }
 
         /// <summary>
         /// Gets or sets relative path to the .Net ASCX UserControl that provides the HTML Markup and code for the BlockType. This property is required.

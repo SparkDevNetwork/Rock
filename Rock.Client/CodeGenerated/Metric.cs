@@ -79,6 +79,9 @@ namespace Rock.Client
         public int? ScheduleId { get; set; }
 
         /// <summary />
+        public string SourceLava { get; set; }
+
+        /// <summary />
         public string SourceSql { get; set; }
 
         /// <summary />
@@ -143,6 +146,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NumericDataType = source.NumericDataType;
             this.ScheduleId = source.ScheduleId;
+            this.SourceLava = source.SourceLava;
             this.SourceSql = source.SourceSql;
             this.SourceValueTypeId = source.SourceValueTypeId;
             this.Subtitle = source.Subtitle;

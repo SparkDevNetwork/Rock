@@ -24,6 +24,7 @@ namespace Rock.Model
     /// <summary>
     /// AnalyticsDimFinancialTransactionType is a SQL View off of the DefinedValue table
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimFinancialTransactionType" )]
     [DataContract]
     [HideFromReporting]

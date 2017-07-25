@@ -215,6 +215,9 @@ namespace Rock.Client
         public GroupTypeRole DefaultGroupRole { get; set; }
 
         /// <summary />
+        public ICollection<GroupRequirement> GroupRequirements { get; set; }
+
+        /// <summary />
         public DefinedValue GroupTypePurposeValue { get; set; }
 
         /// <summary />

@@ -342,6 +342,7 @@ namespace Rock.Web.UI.Controls
 
             // _subtitle controls for public this.Subtitle
             _subtitleSmall = new HtmlGenericControl( "small" );
+            _subtitleSmall.AddCssClass( "js-subtitle" );
             _headerPanel.Controls.Add( _subtitleSmall );
             _subtitle = new Literal();
             _subtitle.Text = string.Empty;

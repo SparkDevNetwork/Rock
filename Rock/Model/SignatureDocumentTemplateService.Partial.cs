@@ -82,8 +82,8 @@ namespace Rock.Model
                 }
                 if ( document.AssignedToPersonAlias != null && document.AssignedToPersonAlias.Person != null )
                 {
-                    assignedToPerson = assignedToPerson ?? document.AppliesToPersonAlias.Person;
-                    alternateEmail = !string.IsNullOrWhiteSpace( alternateEmail ) ? alternateEmail : document.AppliesToPersonAlias.Person.Email;
+                    assignedToPerson = assignedToPerson ?? document.AssignedToPersonAlias.Person;
+                    alternateEmail = !string.IsNullOrWhiteSpace( alternateEmail ) ? alternateEmail : document.AssignedToPersonAlias.Person.Email;
                 }
 
                 documentName = !string.IsNullOrWhiteSpace( documentName ) ? documentName : document.Name;
@@ -311,7 +311,9 @@ namespace Rock.Model
                                     binaryFile.IsTemporary = false;
                                     binaryFile.BinaryFileTypeId = signatureDocument.SignatureDocumentTemplate.BinaryFileTypeId;
                                     binaryFile.MimeType = "application/pdf";
-                                    binaryFile.FileName = new FileInfo( documentPath ).Name;
+                                    var fi = new FileInfo( documentPath );
+                                    binaryFile.FileName = fi.Name;
+                                    binaryFile.FileSize = fi.Length;
                                     binaryFile.ContentStream = new FileStream( documentPath, FileMode.Open );
                                     binaryFileService.Add( binaryFile );
                                     rockContext.SaveChanges();

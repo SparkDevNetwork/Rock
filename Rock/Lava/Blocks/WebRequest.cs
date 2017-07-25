@@ -75,7 +75,7 @@ namespace Rock.Lava.Blocks
             // first ensure that entity commands are allowed in the context
             if ( !this.IsAuthorized( context ) )
             {
-                result.Write( string.Format( "The Lava command '{0}' is not configured for this template.", this.Name ) );
+                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
                 base.Render( context, result );
                 return;
             }
@@ -165,9 +165,9 @@ namespace Rock.Lava.Blocks
                     }
 
                     context.Scopes.Last()[parms["return"]] = responseData;
-                } catch(Exception ex )
+                } catch
                 {
-                    result.Write( string.Format("An error occurred: {0}", ex.Message ) );
+                    throw;
                 }
 
                 context.Scopes.Last()[parms["return"]] = responseData;

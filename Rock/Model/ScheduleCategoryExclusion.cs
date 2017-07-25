@@ -26,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "ScheduleCategoryExclusion" )]
     [DataContract]
     public partial class ScheduleCategoryExclusion : Model<ScheduleCategoryExclusion>
@@ -83,6 +84,7 @@ namespace Rock.Model
         /// <value>
         /// The report.
         /// </value>
+        [LavaInclude]
         public virtual Category Category { get; set; }
 
         #endregion

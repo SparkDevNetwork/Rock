@@ -40,7 +40,6 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block that shows a list of scheduled transactions for the currently logged in user with the ability to modify the formatting using liquid." )]
     [CodeEditorField( "Template", "Liquid template for the display of the scheduled transactions.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/ScheduledTransactionListLiquid.lava'  %}", "", 1 )]
-    [BooleanField("Enable Debug", "Displays a list of available merge fields using the current person's scheduled transactions.", false, "", 2)]
     [LinkedPage("Scheduled Transaction Edit Page", "Link to be used for managing an individual's scheduled transactions.", false, "", "", 3)]
     [LinkedPage( "Scheduled Transaction Entry Page", "Link to use when adding new transactions.", false, "", "", 4 )]
     [TextField( "Transaction Label", "The label to use to describe the transaction (e.g. 'Gift', 'Donation', etc.)", true, "Gift", "", 5 )]
@@ -89,14 +88,9 @@ namespace RockWeb.Blocks.Finance
             lbAddScheduledTransaction.Text = string.Format( "Create New {0}", GetAttributeValue("TransactionLabel") );
             _transferToGatewayGuid = GetAttributeValue( "TransferToGateway" ).AsGuidOrNull();
 
-            // set initial debug info
+            // set initial info
             if ( !IsPostBack )
             {
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Text = "<pre>At least one scheduled transaction needs to exist for the current user in order to display debug information.</pre>";
-                }
-
                 ShowContent();
             }
         }
@@ -197,11 +191,6 @@ namespace RockWeb.Blocks.Finance
                 Literal lLiquidContent = (Literal)e.Item.FindControl( "lLiquidContent" );
                 lLiquidContent.Text = GetAttributeValue( "Template" ).ResolveMergeFields( schedule );
 
-                // set debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Text = schedule.lavaDebugInfo();
-                }
             }
         }
 

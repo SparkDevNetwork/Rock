@@ -64,6 +64,9 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public string PhoneNumber { get; set; }
 
         /// <summary />
@@ -117,6 +120,7 @@ namespace Rock.Client
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.Order = source.Order;
             this.PhoneNumber = source.PhoneNumber;
             this.ServiceTimes = source.ServiceTimes;
             this.ShortCode = source.ShortCode;

@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "RegistrationRegistrantFee" )]
     [DataContract]
     public partial class RegistrationRegistrantFee : Model<RegistrationRegistrantFee>
@@ -94,6 +95,7 @@ namespace Rock.Model
         /// <value>
         /// The registration registrant.
         /// </value>
+        [LavaInclude]
         public virtual RegistrationRegistrant RegistrationRegistrant { get; set; }
 
         /// <summary>

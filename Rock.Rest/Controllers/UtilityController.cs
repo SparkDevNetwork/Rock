@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.VersionInfo;
 
 namespace Rock.Rest.Controllers
 {
@@ -103,6 +104,17 @@ namespace Rock.Rest.Controllers
             }
 
             return 0;
+        }
+
+        /// <summary>
+        /// Gets the rock semantic version number.
+        /// </summary>
+        /// <returns></returns>
+        [System.Web.Http.Route( "api/Utility/GetRockSemanticVersionNumber" )]
+        [HttpGet]
+        public string GetRockSemanticVersionNumber()
+        {
+            return VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
         }
     }
 }

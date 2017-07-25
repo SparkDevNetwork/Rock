@@ -36,6 +36,7 @@ namespace Rock.Model
     /// for long running workflows, or non persisted (see <see cref="Rock.Model.Workflow"/>for real-time processes (i.e. a wizard or triggered job).  A workflow can be triggered by a user/process
     /// performing an action or an entity being updated (through <see cref="Rock.Model.WorkflowTrigger">WorkflowTriggers</see>).
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "WorkflowType" )]
     [DataContract]
     public partial class WorkflowType : Model<WorkflowType>, IOrdered, ICategorized
