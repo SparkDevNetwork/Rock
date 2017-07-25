@@ -12,6 +12,8 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -143,13 +145,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-  	<!-- There may be a better way of building this reference, but I don't see it -->
+    <!-- There may be a better way of building this reference, but I don't see it -->
     <MSBuildCommunityTasksPath>$(SolutionDir)\packages\MSBuildTasks.1.5.0.235\tools</MSBuildCommunityTasksPath>
-	</PropertyGroup>
-	
-	<Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
+  </PropertyGroup>
+  <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
   <!-- <Import Project="..\Build\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" /> -->
-  
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -160,10 +160,8 @@
   <PropertyGroup>
     <BuildDir>builds</BuildDir>
   </PropertyGroup>
-  
   <Target Name="AfterBuild" DependsOnTargets="BuildPackageZip">
   </Target>
-
   <!-- Clean old stuff -->
   <Target Name="DeleteFiles">
     <ItemGroup>
@@ -171,7 +169,6 @@
     </ItemGroup>
     <Delete Files="@(OldFiles)" />
   </Target>
-  
   <!-- Prepare the files to be zipped -->
   <Target Name="CopyFiles" DependsOnTargets="DeleteFiles">
     <ItemGroup>
@@ -179,22 +176,18 @@
       <BlockCode Include="..\RockWeb\Plugins\com_centralaz\RoomManagement\**\*.*" />
       <VersionFile Include="builds\.version" />
     </ItemGroup>
-    
     <MakeDir Directories="$(BuildDir)\tmp" Condition="!Exists('$(BuildDir)\tmp')" />
     <MakeDir Directories="$(BuildDir)\tmp\content" Condition="!Exists('$(BuildDir)\tmp\content')" />
     <MakeDir Directories="$(BuildDir)\tmp\content\bin" Condition="!Exists('$(BuildDir)\tmp\content\bin')" />
     <MakeDir Directories="$(BuildDir)\tmp\content\Plugins" Condition="!Exists('$(BuildDir)\tmp\content\Plugins')" />
     <MakeDir Directories="$(BuildDir)\tmp\install" Condition="!Exists('$(BuildDir)\tmp\install')" />
     <MakeDir Directories="$(BuildDir)\tmp\uninstall" Condition="!Exists('$(BuildDir)\tmp\uninstall')" />
-    
     <Copy SourceFiles="@(CopyFiles)" DestinationFolder="$(BuildDir)\tmp\content\bin\" />
     <Copy SourceFiles="@(BlockCode)" DestinationFiles="@(BlockCode->'$(BuildDir)\tmp\content\Plugins\com_centralaz\RoomManagement\%(RecursiveDir)%(Filename)%(Extension)')" />
-    
     <!-- Just put the .version file into the install and uninstall folder so that those folders are created in the zip -->
     <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\install" />
     <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\uninstall" />
   </Target>
-  
   <!-- Create the package zip file -->
   <Target Name="BuildPackageZip" DependsOnTargets="CopyFiles" Condition="'$(Configuration)' == 'Release'">
     <ItemGroup>
@@ -205,21 +198,24 @@
     	(and Major and Minor if needed) in the .version file to be the correct version.
     	The revision number will always be automatic.
     -->
-    <Version VersionFile="builds\.version" BuildType="None" RevisionType="Increment" >
+    <Version VersionFile="builds\.version" BuildType="None" RevisionType="Increment">
       <Output TaskParameter="Major" PropertyName="Major" />
       <Output TaskParameter="Minor" PropertyName="Minor" />
       <Output TaskParameter="Build" PropertyName="Build" />
       <Output TaskParameter="Revision" PropertyName="Revision" />
     </Version>
-
-	  <PropertyGroup>
-	    <PackageOut>$(BuildDir)\$(Major).$(Minor).$(Build)</PackageOut>
-	  </PropertyGroup>
-	  
+    <PropertyGroup>
+      <PackageOut>$(BuildDir)\$(Major).$(Minor).$(Build)</PackageOut>
+    </PropertyGroup>
     <MakeDir Directories="$(PackageOut)" Condition="!Exists('$(PackageOut)')" />
-
     <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)" />
     <Zip Files="@(ZipFiles)" WorkingDirectory="$(BuildDir)\tmp\" ZipFileName="$(PackageOut)\ResourceReservation-v$(Major).$(Minor).$(Build).$(Revision).plugin" ZipLevel="9" />
   </Target>
-  
+  <Import Project="..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
+  </Target>
 </Project>
