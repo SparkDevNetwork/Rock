@@ -800,20 +800,20 @@ span.field-value {
       left: -9999px;
     }
 
-    > thead > tr >th,
-    > tbody > tr >th,
-    > tfoot > tr >th,
-    > thead > tr >td,
-    > tbody > tr >td,
+    > thead > tr > th,
+    > tbody > tr > th,
+    > tfoot > tr > th,
+    > thead > tr > td,
+    > tbody > tr > td,
     > tfoot > tr > td {
-      border: none;
+      border: 0;
     }
 
     > tbody > tr > td {
       position: relative;
       padding-left: 35%;
       /* Behave  like a "row" */
-      border: none;
+      border: 0;
       border-bottom: 1px solid @gray-lighter;
     }
 
@@ -840,9 +840,9 @@ span.field-value {
         font-size: @grid-column-header-font-size;
         font-weight: @grid-column-header-font-weight;
         color: @grid-column-header-text-color;
+        content: "Person #" counter(rowNumber);
         background-color: @grid-column-header-bg;
         border-bottom: 2px solid @grid-column-header-border-color;
-        content: "Person #" counter(rowNumber);
       }
     }
 
@@ -880,20 +880,21 @@ span.field-value {
       }
     }
 
-    > tfoot, > tfoot > tr > td {
+    > tfoot,  > tfoot > tr > td {
       display: block;
       width: 100%;
       padding: 0;
     }
 
-    > tfoot > tr > td > .btn-action {
-      .button-size(@padding-base-vertical; @padding-base-horizontal; @font-size-base; @line-height-base; @btn-border-radius-base);
+     > tfoot > tr > td > .btn-action {
       display: block;
       width: 100%;
       margin: 8px 0 16px;
+
+      .button-size(@padding-base-vertical; @padding-base-horizontal; @font-size-base; @line-height-base; @btn-border-radius-base);
     }
 
-    > tbody > tr > td>.form-group{
+    > tbody > tr > td > .form-group {
       &:last-of-type {
         margin-bottom: 0;
       }
@@ -901,7 +902,6 @@ span.field-value {
         margin-bottom: 0;
       }
     }
-
   }
 }
 

@@ -146,7 +146,11 @@ namespace RockWeb.Blocks.Fundraising
                     individualFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
                 }
 
-                var percentageAchieved = individualFundraisingGoal == 0 ? 0 : contributionTotal / ( 0.01M * individualFundraisingGoal.Value );
+                decimal percentageAchieved = 0;
+                if ( individualFundraisingGoal != null )
+                {
+                    percentageAchieved = individualFundraisingGoal == 0 ? 0 : contributionTotal / ( 0.01M * individualFundraisingGoal.Value );
+                }
 
                 var progressBarWidth = percentageAchieved;
 

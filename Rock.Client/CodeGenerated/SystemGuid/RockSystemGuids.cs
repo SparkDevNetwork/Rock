@@ -167,6 +167,7 @@ namespace Rock.Client.SystemGuid
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
+        public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
     }
 
@@ -535,6 +536,7 @@ namespace Rock.Client.SystemGuid
         public const string COMMUNICATIONS_ROCK_SETTINGS = "199DC522-F4D6-4D82-AF44-3C16EE9D2CDA";
         public const string CONFIGURATION = "4AB679AF-C8CC-427C-A615-0BF9F52E8E3E";
         public const string CONFIRM = "D73F83B4-E20E-4F95-9A2C-511FB669F44C";
+        public const string CONNECTION_REQUEST_DETAIL = "50f04e77-8d3b-4268-80ab-bc15dd6cb262";
         public const string CONNECTIONS = "530860ED-BC73-4A43-8E7C-69533EF2B6AD";
         public const string CONTACT_US = "B1E63FE3-779C-4388-AFE4-FD6DFC034932";
         public const string CONTENT = "117B547B-9D71-4EE9-8047-176676F5DC8C";

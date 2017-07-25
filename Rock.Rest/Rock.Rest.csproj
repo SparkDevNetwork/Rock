@@ -111,6 +111,12 @@
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetaFirstNameGenderLookupsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetaLastNameLookupsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetaNickNameLookupsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetaPersonicxLifestageClustersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetaPersonicxLifestageGroupsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
     <Compile Include="Swagger\RockSwaggerHelper.cs" />
     <Compile Include="Swagger\RockDocumentFilter.cs" />
     <Compile Include="Swagger\RockOperationFilter.cs" />

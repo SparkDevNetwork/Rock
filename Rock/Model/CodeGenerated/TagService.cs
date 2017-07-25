@@ -88,12 +88,14 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Tag target, Tag source )
         {
             target.Id = source.Id;
+            target.CategoryId = source.CategoryId;
             target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
             target.Order = source.Order;

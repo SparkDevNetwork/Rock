@@ -29,7 +29,6 @@
                             <Rock:EnumField DataField="PrintToOverride" HeaderText="Print To" SortExpression="PrintToOverride" />
                             <Rock:EnumField DataField="PrintFrom" HeaderText="Print From" SortExpression="PrintFrom" />
                             <Rock:RockBoundField DataField="PrinterDeviceName" HeaderText="Printer" SortExpression="PrinterDeviceName" />
-                            <Rock:DeleteField OnClick="gDevice_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>

@@ -62,6 +62,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnabledForShortening { get; set; }
+
+        /// <summary />
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
@@ -77,6 +80,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ExternalUrl { get; set; }
+
+        /// <summary />
+        public int? FavIconBinaryFileId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -179,10 +185,12 @@ namespace Rock.Client
             this.DefaultPageId = source.DefaultPageId;
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
+            this.EnabledForShortening = source.EnabledForShortening;
             this.EnableMobileRedirect = source.EnableMobileRedirect;
             this.EnablePageViews = source.EnablePageViews;
             this.ErrorPage = source.ErrorPage;
             this.ExternalUrl = source.ExternalUrl;
+            this.FavIconBinaryFileId = source.FavIconBinaryFileId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;

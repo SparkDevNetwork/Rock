@@ -387,6 +387,16 @@ namespace RockWeb.Blocks.Core
                         hlblEnabled.LabelType = LabelType.Warning;
                         nbMessages.NotificationBoxType = NotificationBoxType.Warning;
                         nbMessages.Text = string.Format( "Could not connect to the {0} server at {1}.", component.EntityType.FriendlyName, component.IndexLocation );
+
+                        // add friendly check to see if the url provided is valid
+                        Uri uriTest;
+                        bool isValidUrl = Uri.TryCreate( component.IndexLocation, UriKind.Absolute, out uriTest )
+                            && (uriTest.Scheme == Uri.UriSchemeHttp || uriTest.Scheme == Uri.UriSchemeHttps);
+
+                        if ( !isValidUrl )
+                        {
+                            nbMessages.Text += " Note that the URL provided is not valid. The pattern should be http(s)://server:port.";
+                        }
                     }
 
                     lIndexLocation.Text = component.IndexLocation;

@@ -34,10 +34,10 @@
       <h4> {{ EventItemOccurrence.Campus.Name }} Campus</h4>
       {% endif %}
 
-      {% if (EventItemOccurrence.ContactPersonAlias.Person.Fullname | Trim != '') or EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
+      {% if EventItemOccurrence.ContactPersonAliasId != null or EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
       <p>
         <strong>Contact</strong><br />
-        {% if EventItemOccurrence.ContactPersonAlias.Person.Fullname | Trim != '' %}
+        {% if EventItemOccurrence.ContactPersonAliasId != null %}
         {{ EventItemOccurrence.ContactPersonAlias.Person.FullName }} <br />
         {% endif %}
 

@@ -344,9 +344,12 @@ namespace RockWeb.Blocks.WorkFlow
 
                     // Loop through all the query string parameters and try to set any workflow
                     // attributes that might have the same key
-                    foreach ( string key in Request.QueryString.AllKeys )
+                    foreach ( var param in RockPage.PageParameters() )
                     {
-                        _workflow.SetAttributeValue( key, Request.QueryString[key] );
+                        if ( param.Value != null && param.Value.ToString().IsNotNullOrWhitespace() )
+                        {
+                            _workflow.SetAttributeValue( param.Key, param.Value.ToString() );
+                        }
                     }
 
                     List<string> errorMessages;
@@ -394,9 +397,11 @@ namespace RockWeb.Blocks.WorkFlow
 
                 // Find first active action form
                 int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
+                int? actionId = PageParameter( "ActionId" ).AsIntegerOrNull();
                 foreach ( var activity in _workflow.Activities
                     .Where( a =>
                         a.IsActive &&
+                        ( !actionId.HasValue || a.Actions.Any( ac => ac.Id == actionId.Value ) ) &&
                         (
                             ( canEdit ) ||
                             ( !a.AssignedGroupId.HasValue && !a.AssignedPersonAliasId.HasValue ) ||
@@ -409,7 +414,8 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     if ( canEdit || ( activity.ActivityTypeCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
                     {
-                        foreach ( var action in activity.ActiveActions )
+                        foreach ( var action in activity.ActiveActions
+                            .Where( a => ( !actionId.HasValue || a.Id == actionId.Value ) ) )
                         {
                             if ( action.ActionTypeCache.WorkflowForm != null && action.IsCriteriaValid )
                             {

@@ -595,7 +595,7 @@ namespace RockWeb.Blocks.Administration
                         pageRoute.Route = route.TrimStart( new char[] { '/' } );
                         pageRoute.Guid = Guid.NewGuid();
                         page.PageRoutes.Add( pageRoute );
-                        addedRoutes.Add( route );
+                        addedRoutes.Add( pageRoute.Route );
                     }
                 }
 

@@ -61,7 +61,7 @@ namespace Rock.Rest
                 if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
                 {
                     var personService = new Model.PersonService( new RockContext() );
-                    var impersonatedPerson = personService.GetByEncryptedKey( principal.Identity.Name.Substring( 8 ) );
+                    Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( principal.Identity.Name.Substring( 8 ), false, null );
                     if ( impersonatedPerson != null )
                     {
                         return impersonatedPerson;

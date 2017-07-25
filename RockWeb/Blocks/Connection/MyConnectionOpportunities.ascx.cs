@@ -167,7 +167,8 @@ namespace RockWeb.Blocks.Connection
                 // Reset the state filter on every initial request to be Active and Past Due future follow up
                 rFilter.SaveUserPreference( "State", "State", "0;-2" );
 
-                cpCampusFilterForPage.Campuses = CampusCache.All();
+                // NOTE: Don't include Inactive Campuses for the "Campus Filter for Page"
+                cpCampusFilterForPage.Campuses = CampusCache.All( false );
                 cpCampusFilterForPage.Items[0].Text = "All";
 
                 cpCampusFilterForPage.SelectedCampusId = GetUserPreference( CAMPUS_SETTING ).AsIntegerOrNull();

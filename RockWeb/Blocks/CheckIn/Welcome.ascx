@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Welcome.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Welcome" %>
 <style>
     .js-search-value {
-        position:absolute;
+        position: absolute;
         top: 200px;
     }
 </style>
@@ -235,8 +235,8 @@
                             <ItemTemplate>
                                 <div class="controls kioskmanager-location">
                                     <div class="btn-group kioskmanager-location-toggle">
-                                        <asp:LinkButton runat="server" ID="lbOpen" CssClass="btn btn-default btn-lg btn-success" Text="Open" CommandName="Open" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>'/>
-                                        <asp:LinkButton runat="server" ID="lbClose" CssClass="btn btn-default btn-lg" Text="Close" CommandName="Close" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>'/>
+                                        <asp:LinkButton runat="server" ID="lbOpen" CssClass="btn btn-default btn-lg btn-success" Text="Open" CommandName="Open" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>' />
+                                        <asp:LinkButton runat="server" ID="lbClose" CssClass="btn btn-default btn-lg" Text="Close" CommandName="Close" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>' />
 
                                     </div>
                                     <div class="kioskmanager-location-label">
@@ -277,7 +277,7 @@
                     <div class="scroller">
                         <div class="row">
                             <div class="col-md-6">
-                                 <div class="checkin-search-body">
+                                <div class="checkin-search-body">
                                     <Rock:RockTextBox ID="tbPIN" CssClass="checkin-phone-entry" TextMode="Password" runat="server" Label="PIN" />
 
                                     <div class="tenkey checkin-phone-keypad">
@@ -316,8 +316,8 @@
                             </div>
                         </div>
                     </div>
-                    
-                       
+
+
 
                 </div>
             </div>
