@@ -99,8 +99,8 @@ namespace RockWeb.Blocks.BulkImport
         /// Handles the FileUploaded event of the fupSlingshotFile control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
-        protected void fupSlingshotFile_FileUploaded( object sender, FileUploaderEventArgs e )
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void fupSlingshotFile_FileUploaded( object sender, EventArgs e )
         {
             pnlActions.Visible = false;
             var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
