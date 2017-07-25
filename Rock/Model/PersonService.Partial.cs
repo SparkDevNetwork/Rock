@@ -1493,7 +1493,9 @@ namespace Rock.Model
             int adultRoleId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
             int marriedDefinedValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
-            if ( person.MaritalStatusValueId != marriedDefinedValueId || GetFamilyRole( person ).Id != adultRoleId )
+            // Businesses don't have a family role, so check for null before trying to get the Id.
+            var familyRole = GetFamilyRole( person );
+            if ( person.MaritalStatusValueId != marriedDefinedValueId || familyRole == null || familyRole.Id != adultRoleId )
             {
                 return default( TResult );
             }
