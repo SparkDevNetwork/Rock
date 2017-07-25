@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.BulkImport
         {
             base.OnLoad( e );
 
-            if (this.IsPostBack)
+            if ( this.IsPostBack )
             {
                 if ( !string.IsNullOrEmpty( tbForeignSystemKey.Text ) )
                 {
@@ -140,11 +140,6 @@ namespace RockWeb.Blocks.BulkImport
         }
 
         /// <summary>
-        /// The importer
-        /// </summary>
-        private Rock.Slingshot.SlingshotImporter _importer;
-
-        /// <summary>
         /// 
         /// </summary>
         private enum ImportType
@@ -181,7 +176,7 @@ namespace RockWeb.Blocks.BulkImport
         protected void btnCheckForeignSystemKey_Click( object sender, EventArgs e )
         {
             var tableList = Rock.Slingshot.BulkImportHelper.TablesThatHaveForeignSystemKey( tbForeignSystemKey.Text );
-            if ( !tableList.Any())
+            if ( !tableList.Any() )
             {
                 nbCheckForeignSystemKey.Text = "OK. Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has not be used to import data.";
                 nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Success;
@@ -192,7 +187,7 @@ namespace RockWeb.Blocks.BulkImport
                 nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Info;
             }
 
-            nbCheckForeignSystemKey.Details = tableList.AsDelimited("<br />");
+            nbCheckForeignSystemKey.Details = tableList.AsDelimited( "<br />" );
             nbCheckForeignSystemKey.Visible = true;
         }
 
@@ -205,13 +200,14 @@ namespace RockWeb.Blocks.BulkImport
             var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
             long totalMilliseconds = 0;
 
+            Rock.Slingshot.SlingshotImporter _importer = null;
+
             var importTask = new Task( () =>
             {
                 // wait a little so the browser can render and start listening to events
                 System.Threading.Thread.Sleep( 1000 );
                 _hubContext.Clients.All.showButtons( this.SignalRNotificationKey, false );
 
-                _hubContext.Clients.All.showLog();
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
                 _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text );
@@ -249,11 +245,11 @@ namespace RockWeb.Blocks.BulkImport
                         _importer.Exceptions.Add( exception.GetBaseException() );
                     }
 
-                    _importer_OnProgress( null, "ERROR" );
+                    _importer_OnProgress( _importer, "ERROR" );
                 }
                 else
                 {
-                    _importer_OnProgress( null, string.Format( "{0} Complete: [{1}ms]", importType.ConvertToString(), totalMilliseconds ) );
+                    _importer_OnProgress( _importer, string.Format( "{0} Complete: [{1}ms]", importType.ConvertToString(), totalMilliseconds ) );
                 }
 
             } );
@@ -268,6 +264,8 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="e">The <see cref="ProgressChangedEventArgs"/> instance containing the event data.</param>
         private void _importer_OnProgress( object sender, object e )
         {
+            Rock.Slingshot.SlingshotImporter _importer = sender as Rock.Slingshot.SlingshotImporter;
+
             string progressMessage = string.Empty;
             DescriptionList progressResults = new DescriptionList();
             if ( e is string )
