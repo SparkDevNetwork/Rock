@@ -1147,6 +1147,14 @@ namespace Rock.Data
         public DbSet<PersonViewed> PersonVieweds { get; set; }
 
         /// <summary>
+        /// Gets or sets the person tokens.
+        /// </summary>
+        /// <value>
+        /// The person tokens.
+        /// </value>
+        public DbSet<PersonToken> PersonTokens { get; set; }
+
+        /// <summary>
         /// Gets or sets the Phone Numbers.
         /// </summary>
         /// <value>
@@ -1331,6 +1339,14 @@ namespace Rock.Data
         public DbSet<SiteDomain> SiteDomains { get; set; }
 
         /// <summary>
+        /// Gets or sets the site URL maps.
+        /// </summary>
+        /// <value>
+        /// The site URL maps.
+        /// </value>
+        public DbSet<PageShortLink> PageShortLinks { get; set; }
+
+        /// <summary>
         /// Gets or sets the system emails.
         /// </summary>
         /// <value>
@@ -1455,6 +1471,8 @@ namespace Rock.Data
         {
             if ( useSqlBulkCopy )
             {
+                // set timeout to 5 minutes, just in case (the default is 30 seconds)
+                EntityFramework.Utilities.Configuration.BulkCopyTimeout = 300;
                 EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;
                 EntityFramework.Utilities.EFBatchOperation.For( this, this.Set<T>() ).InsertAll( records );
             }

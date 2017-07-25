@@ -57,9 +57,7 @@
                                     <Columns>
                                         <Rock:SelectField />
                                         <Rock:RockTemplateField HeaderText="Person" SortExpression="LastName,NickName">
-                                            <ItemTemplate>
-                                                <%# FormatName( Eval("LastName"), Eval("NickName") ) %>
-                                            </ItemTemplate>
+                                            <ItemTemplate><%# FormatName( Eval("LastName"), Eval("NickName") ) %></ItemTemplate>
                                         </Rock:RockTemplateField>
                                         <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:CurrencyField DataField="PledgeAmount" HeaderText="Pledge Total" SortExpression="PledgeAmount" />

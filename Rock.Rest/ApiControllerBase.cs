@@ -38,9 +38,9 @@ namespace Rock.Rest
 
     /// <summary>
     /// Base ApiController for Rock REST endpoints
-    /// Supports ODataV3 Queries and ODataRouting 
+    /// Supports ODataV3 Queries and ODataRouting
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <seealso cref="System.Web.Http.ApiController" />
     [ODataRouting]
     public class ApiControllerBase : ApiController
     {
@@ -61,7 +61,7 @@ namespace Rock.Rest
                 if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
                 {
                     var personService = new Model.PersonService( new RockContext() );
-                    var impersonatedPerson = personService.GetByEncryptedKey( principal.Identity.Name.Substring( 8 ) );
+                    Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( principal.Identity.Name.Substring( 8 ), false, null );
                     if ( impersonatedPerson != null )
                     {
                         return impersonatedPerson;
@@ -98,6 +98,5 @@ namespace Rock.Rest
 
             return null;
         }
-
     }
 }

@@ -21,10 +21,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
-using Rock.Data;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -38,7 +37,7 @@ namespace RockWeb.Blocks.Checkin
     [DisplayName( "Attendance History" )]
     [Category( "Checkin" )]
     [Description( "Block for displaying the attendance history of a person or a group." )]
-    [BooleanField( "Filter Attendance By Default", "Sets the default display of Attended to Did Attend instead of [All]", false)]
+    [BooleanField( "Filter Attendance By Default", "Sets the default display of Attended to Did Attend instead of [All]", false )]
     [ContextAware]
     public partial class AttendanceHistoryList : RockBlock
     {
@@ -265,7 +264,7 @@ namespace RockWeb.Blocks.Checkin
                             .Where( g => groupIdsAttended.Contains( g.Id ) )
                             .OrderBy( g => g.Name )
                             .Select( g => new { g.Name, g.Id } ).ToList() )
-                        { 
+                        {
                             ddlAttendanceGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
                         }
 
@@ -299,7 +298,6 @@ namespace RockWeb.Blocks.Checkin
                 filterValue = "1";
                 rFilter.SaveUserPreference( "Attended", filterValue );
             }
-
 
             ddlDidAttend.SetValue( filterValue );
         }
@@ -395,8 +393,8 @@ namespace RockWeb.Blocks.Checkin
                     CampusName = a.Campus.Name,
                     ScheduleName = a.Schedule.Name,
                     Person = a.PersonAlias.Person,
-                    GroupName = a.Group.Name,
-                    GroupTypeId = a.Group.GroupTypeId,
+                    GroupName = a.Group != null ? a.Group.Name : string.Empty,
+                    GroupTypeId = a.Group != null ? a.Group.GroupTypeId : (int?)null,
                     StartDateTime = a.StartDateTime,
                     EndDateTime = a.EndDateTime,
                     DidAttend = a.DidAttend
@@ -418,11 +416,11 @@ namespace RockWeb.Blocks.Checkin
             // build a lookup for _locationpaths for OnRowDatabound
             _locationPaths = new Dictionary<int, string>();
             var qryLocations = new LocationService( rockContext ).Queryable().Where( a => qry.Any( b => b.LocationId == a.Id ) );
-            foreach (var location in qryLocations)
+            foreach ( var location in qryLocations )
             {
                 var parentLocation = location.ParentLocation;
                 var locationNames = new List<string>();
-                while (parentLocation != null)
+                while ( parentLocation != null )
                 {
                     locationNames.Add( parentLocation.Name );
                     parentLocation = parentLocation.ParentLocation;
@@ -486,8 +484,6 @@ namespace RockWeb.Blocks.Checkin
                     lLocationName.Text = string.Format( "{0}<br /><small>{1}</small>", dataItem.GetPropertyValue( "LocationName" ), locationPath );
                 }
             }
-
-
         }
 
         #endregion

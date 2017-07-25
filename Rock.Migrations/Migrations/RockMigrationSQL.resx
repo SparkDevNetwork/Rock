@@ -478,4 +478,19 @@
   <data name="_201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201706141234225_communicationqueuealertjob_ufncrm_getgradeoffset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201707101648235_CommonBlockTypes_spCore_BinaryFileGet" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707101648235_commonblocktypes_spcore_binaryfileget.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201707171725146_UniversalSearchPages_spDbaRebuildIndexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707171725146_UniversalSearchPages_spDbaRebuildIndexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201707182207536_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707182207536_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201707182207536_AttendanceAnalyticsScheduleFilter_Attendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707182207536_attendanceanalyticsschedulefilter_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

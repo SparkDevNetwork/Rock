@@ -38,8 +38,6 @@
                 <div class="row row-eq-height-md">
                     <div class="col-md-3 filter-options">
 
-                        <asp:HiddenField ID="hfFilterUrl" runat="server" />
-
                         <Rock:GroupTypePicker ID="ddlAttendanceType" runat="server" Label="Attendance Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
 
@@ -244,14 +242,17 @@
                                         <asp:HyperLinkField DataNavigateUrlFields="ParentId" DataTextField="Parent" HeaderText="Parent" SortExpression="Parent.LastName, Parent.NickName"/>
                                         <Rock:RockBoundField DataField="Parent" HeaderText="Parent" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Parent.Email" HeaderText="Parent Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:RockBoundField DataField="Parent.GivingId" HeaderText="Parent GivingId" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <asp:HyperLinkField DataNavigateUrlFields="ChildId" DataTextField="Child" HeaderText="Child" SortExpression="Child.LastName, Child.NickName"/>
                                         <Rock:RockBoundField DataField="Child" HeaderText="Child" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Child.Email" HeaderText="Child Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Child.Age" HeaderText="Child Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:RockBoundField DataField="Child.GivingId" HeaderText="Child GivingId" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <asp:HyperLinkField DataNavigateUrlFields="PersonId" DataTextField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName"/>
                                         <Rock:RockBoundField DataField="Person" HeaderText="Person" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:RockBoundField DataField="Person.GivingId" HeaderText="GivingId" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Birthdate" HeaderText="Birthdate" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:DefinedValueField DataField="Person.ConnectionStatusValueId" HeaderText="Connection Status" SortExpression="Person.ConnectionStatusValueId" />
                                         <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>

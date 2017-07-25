@@ -1636,7 +1636,8 @@ namespace Rock.Web.UI.Controls
                 foreach ( PropertyInfo prop in allprops )
                 {
                     // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
-                    if ( prop.GetGetMethod().IsVirtual && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
+                    var getMethod = prop.GetGetMethod();
+                    if ( getMethod.IsVirtual && !getMethod.IsFinal && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
                     {
                         continue;
                     }
@@ -2075,7 +2076,7 @@ namespace Rock.Web.UI.Controls
             {
                 // limit to non-virtual methods to prevent lazy loading issues
                 var getMethod = property.GetGetMethod();
-                if ( !getMethod.IsVirtual || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
+                if ( !getMethod.IsVirtual || getMethod.IsFinal || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
                 {
                     if ( property.Name != "Id" )
                     {

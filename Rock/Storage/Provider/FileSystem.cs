@@ -41,6 +41,19 @@ namespace Rock.Storage.Provider
         /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
         public override void SaveContent( BinaryFile binaryFile )
         {
+            long? fileSize = null;
+            SaveContent( binaryFile, out fileSize );
+        }
+
+        /// <summary>
+        /// Saves the binary file contents to the external storage medium associated with the provider.
+        /// </summary>
+        /// <param name="binaryFile">The binary file.</param>
+        /// <param name="fileSize">Size of the file.</param>
+        /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
+        public override void SaveContent( BinaryFile binaryFile, out long? fileSize )
+        {
+            fileSize = null;
             var filePath = GetFilePath( binaryFile );
 
             // Create the directory if it doesn't exist
@@ -55,6 +68,7 @@ namespace Rock.Storage.Provider
             {
                 if ( inputStream != null )
                 {
+                    fileSize = inputStream.Length;
                     using ( var outputStream = File.OpenWrite( filePath ) )
                     {
                         inputStream.CopyTo( outputStream );
@@ -62,6 +76,7 @@ namespace Rock.Storage.Provider
                 }
             }
         }
+
 
         /// <summary>
         /// Deletes the content from the external storage medium associated with the provider.

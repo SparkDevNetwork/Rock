@@ -47,6 +47,8 @@ namespace RockWeb.Blocks.Core
         // used for private variables
         protected string personalTagsCss = string.Empty;
         protected string publicTagsCss = string.Empty;
+        private string _tagCloudTab = string.Empty;
+        private bool _showInActive = false;
 
         #endregion
 
@@ -57,7 +59,7 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Base Control Methods
-        
+
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         protected override void OnInit( EventArgs e )
@@ -71,17 +73,23 @@ namespace RockWeb.Blocks.Core
 
         protected override void OnLoad( EventArgs e )
         {
-            string tagCloudTab = Session["TagCloudTab"] as string;
-            if (!string.IsNullOrWhiteSpace(tagCloudTab) && tagCloudTab == "organization")
+            _tagCloudTab = Session["TagCloudTab"] as string;
+            if ( !Page.IsPostBack )
             {
-                DisplayTags(null, 15);
-                publicTagsCss = "active";
+                if ( !string.IsNullOrWhiteSpace( _tagCloudTab ) && _tagCloudTab == "organization" )
+                {
+                    DisplayTags( null, 15 );
+                    publicTagsCss = "active";
+                }
+                else
+                {
+                    DisplayTags( CurrentPerson.Id, 15 );
+                    personalTagsCss = "active";
+                }
             }
-            else
-            {
-                DisplayTags(CurrentPerson.Id, 15);
-                personalTagsCss = "active";
-            }
+
+           
+            _showInActive = tglStatus.Checked;
 
             base.OnLoad( e );
         }
@@ -99,7 +107,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated(object sender, EventArgs e)
         {
-            
+
         }
 
         protected void lbPersonalTags_Click(object sender, EventArgs e)
@@ -109,7 +117,7 @@ namespace RockWeb.Blocks.Core
             publicTagsCss = string.Empty;
 
             Session["TagCloudTab"] = "personal";
-            
+
         }
         protected void lbPublicTags_Click(object sender, EventArgs e)
         {
@@ -118,6 +126,25 @@ namespace RockWeb.Blocks.Core
             publicTagsCss = "active";
 
             Session["TagCloudTab"] = "organization";
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tgl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tgl_CheckedChanged( object sender, EventArgs e )
+        {
+            if ( !string.IsNullOrWhiteSpace( _tagCloudTab ) && _tagCloudTab == "organization" )
+            {
+                DisplayTags( null, 15 );
+                publicTagsCss = "active";
+            }
+            else
+            {
+                DisplayTags( CurrentPerson.Id, 15 );
+                personalTagsCss = "active";
+            }
         }
 
         #endregion
@@ -129,19 +156,19 @@ namespace RockWeb.Blocks.Core
             // get tags
             var qry = new TagService( new RockContext() )
                 .Queryable()
-                .Where(t => 
-                    t.EntityTypeId == entityId &&
-                    (
-                        ( t.OwnerPersonAlias == null && !ownerId.HasValue ) ||
-                        ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value )
-                    ) )
+                .Where(t =>
+                     t.EntityTypeId == entityId &&
+                     (
+                         ( t.OwnerPersonAlias == null && !ownerId.HasValue ) ||
+                         ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value )
+                     ) &&
+                     ( t.IsActive || _showInActive ) )
                 .Select(t => new
                 {
-                    Id = t.Id,
-                    Name = t.Name,
+                    Tag = t,
                     Count = t.TaggedItems.Count()
                 })
-                .OrderBy(t => t.Name);
+                .OrderBy(t => t.Tag.Name);
 
             // create dictionary to group by first letter of name
             Dictionary<char, List<TagSummary>> tagAlphabit = new Dictionary<char, List<TagSummary>>();
@@ -158,24 +185,29 @@ namespace RockWeb.Blocks.Core
             // load tags
             var tags = qry.ToList();
 
-            foreach ( var tag in tags )
+            foreach ( var tagInfo in tags )
             {
-                var tagSummary = new TagSummary { Id = tag.Id, Name = tag.Name, Count = tag.Count };
-                char key = (char)tag.Name.Substring( 0, 1 ).ToUpper()[0];
+                bool canView = ownerId.HasValue && tagInfo.Tag.OwnerPersonAlias.PersonId == ownerId.Value;
+                canView = canView || tagInfo.Tag.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson );
+                if ( canView )
+                {
+                    var tagSummary = new TagSummary { Id = tagInfo.Tag.Id, Name = tagInfo.Tag.Name, Count = tagInfo.Count };
+                    char key = (char)tagSummary.Name.Substring( 0, 1 ).ToUpper()[0];
 
-                if ( Char.IsNumber( key ) )
-                {
-                    key = '#';
-                }
-                else
-                {
-                    if ( !Char.IsLetter( key ) )
+                    if ( Char.IsNumber( key ) )
                     {
-                        key = '*';
+                        key = '#';
                     }
-                }
+                    else
+                    {
+                        if ( !Char.IsLetter( key ) )
+                        {
+                            key = '*';
+                        }
+                    }
 
-                tagAlphabit[key].Add(tagSummary);
+                    tagAlphabit[key].Add( tagSummary );
+                }
             }
 
             // display tags
@@ -208,8 +240,8 @@ namespace RockWeb.Blocks.Core
                 {
                     letterOutput.Append(String.Format("<li>{0}</li>", letterItem.Key.ToString()));
                 }
-                
-                
+
+
             }
 
             tagOutput.Append("</ul>");
@@ -227,7 +259,7 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-}
+    }
 
     class TagSummary
     {

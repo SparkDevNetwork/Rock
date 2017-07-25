@@ -43,13 +43,38 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
-            if ( string.IsNullOrWhiteSpace( value ) )
+            return HtmlFormat( FormatValue( parentControl, value, configurationValues, condensed ) );
+        }
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return HtmlFormat( FormatValue( parentControl, entityTypeId, entityId, value, configurationValues, condensed ) );
+        }
+
+        /// <summary>
+        /// HTMLs the format.
+        /// </summary>
+        /// <param name="formattedValue">The formatted value.</param>
+        /// <returns></returns>
+        private string HtmlFormat( string formattedValue )
+        {
+            if ( string.IsNullOrWhiteSpace( formattedValue ) )
             {
                 return string.Empty;
             }
             else
             {
-                return string.Format( "<a href='mailto:{0}'>{0}</a>", value );
+                return string.Format( "<a href='mailto:{0}'>{0}</a>", formattedValue );
             }
         }
 

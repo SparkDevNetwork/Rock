@@ -1166,19 +1166,19 @@ namespace Rock.Model
         {
             get
             {
-                DateTime bday;
-                if ( DateTime.TryParse( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + BirthYear, out bday ) )
+                DateTime? bday = this.BirthDate;
+                if ( this.BirthYear.HasValue && bday.HasValue )
                 {
                     // Calculate years
                     DateTime today = RockDateTime.Today;
-                    int years = today.Year - bday.Year;
+                    int years = today.Year - bday.Value.Year;
                     if ( bday > today.AddYears( -years ) )
                     {
                         years--;
                     }
 
                     // Calculate days between last and next bday (differs on leap years).
-                    DateTime lastBday = bday.AddYears( years );
+                    DateTime lastBday = bday.Value.AddYears( years );
                     DateTime nextBday = lastBday.AddYears( 1 );
                     double daysInYear = nextBday.Subtract( lastBday ).TotalDays;
 
@@ -1291,7 +1291,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the impersonation parameter.
+        /// Creates and stores a new PersonToken for a person using the default ExpireDateTime and UsageLimit.
+        /// Returns the encrypted URLEncoded Token along with the ImpersonationParameter key in the form of "rckipid={ImpersonationParameter}"
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the impersonation parameter.
@@ -1302,8 +1303,44 @@ namespace Rock.Model
         {
             get
             {
-                var encryptedKey = this.EncryptedKey;
-                return "rckipid=" + HttpUtility.UrlEncode( encryptedKey );
+                return "rckipid=" + this.GetImpersonationToken();
+            }
+        }
+
+        /// <summary>
+        /// Creates and stores a new PersonToken for a person using the default ExpireDateTime and UsageLimit.
+        /// Returns the encrypted URLEncoded Token which can be used as a rckipid.
+        /// NOTE: Use the GetImpersonationParameter(...) methods to specify an expiration date, usage limit or pageid
+        /// </summary>
+        /// <value>
+        /// A <see cref="T:System.String" /> that represents a URL friendly version of the entity's unique key.
+        /// </value>
+        [NotMapped]
+        public override string EncryptedKey
+        {
+            get
+            {
+                // in the case of Person, use an encrypted PersonToken instead of the base.UrlEncodedKey
+                return this.GetImpersonationToken();
+            }
+        }
+
+        /// <summary>
+        /// Creates and stores a new PersonToken for a person using the default ExpireDateTime and UsageLimit.
+        /// Returns the encrypted URLEncoded Token which can be used as a rckipid.
+        /// NOTE: Use the GetImpersonationParameter(...) methods to specify an expiration date, usage limit or pageid
+        /// </summary>
+        /// <value>
+        /// A <see cref="T:System.String" /> that represents a URL friendly version of the entity's unique key.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public override string UrlEncodedKey
+        {
+            get
+            {
+                // in the case of Person, use an encrypted PersonToken instead of the base.UrlEncodedKey
+                return this.GetImpersonationToken();
             }
         }
 
@@ -1339,6 +1376,26 @@ namespace Rock.Model
             user.PersonId = this.Id;
             user.Person = this;
             return user;
+        }
+
+        /// <summary>
+        /// Creates and stores a new PersonToken for a person using the default ExpireDateTime and UsageLimit.
+        /// Returns the encrypted URLEncoded Token which can be used as a rckipid.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetImpersonationToken()
+        {
+            return GetImpersonationToken( null, null, null );
+        }
+
+        /// <summary>
+        /// Creates and stores a new PersonToken for a person using the specified ExpireDateTime, UsageLimit, and Page
+        /// Returns the encrypted URLEncoded Token which can be used as a rckipid.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetImpersonationToken( DateTime? expireDateTime, int? usageLimit, int? pageId )
+        {
+            return PersonToken.CreateNew( this.PrimaryAlias, expireDateTime, usageLimit, pageId );
         }
 
         /// <summary>

@@ -36,10 +36,10 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			SET @TransitionDate = CAST(CAST(@year AS varchar) + '-' + CAST(DATEPART(month,@TransitionDate) AS varchar) + '-' + CAST(DATEPART(month,@TransitionDate) AS varchar) AS DATETIME)
+			SET @TransitionDate = CAST(CAST(@year AS varchar) + '-' + CAST(DATEPART(month,@TransitionDate) AS varchar) + '-' + CAST(DATEPART(day,@TransitionDate) AS varchar) AS DATETIME)
 		END
 
-		IF @today > @TransitionDate
+		IF @today >= @TransitionDate
 		BEGIN
 			SET @year = @year + 1
 		END

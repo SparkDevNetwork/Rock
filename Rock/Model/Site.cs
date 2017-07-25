@@ -344,6 +344,25 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool RequiresEncryption { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this site should be available to be used for shortlinks (the shortlink can still reference url of other sites).
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enabled for shortening]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnabledForShortening { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the favicon binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The favicon binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? FavIconBinaryFileId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -491,6 +510,44 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Page MobilePage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the favicon binary file.
+        /// </summary>
+        /// <value>
+        /// The fav icon binary file.
+        /// </value>
+        [LavaInclude]
+        public virtual BinaryFile FavIconBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets the default domain URI.
+        /// </summary>
+        /// <value>
+        /// The default domain URI.
+        /// </value>
+        [LavaInclude]
+        public virtual Uri DefaultDomainUri 
+        {
+            get 
+            {
+                try
+                {
+                    string protocol = this.RequiresEncryption ? "https://" : "http://";
+                    string host = this.SiteDomains.OrderBy( d => d.Order ).Select( d => d.Domain ).FirstOrDefault();
+                    if ( host != null )
+                    {
+                        host = host.ToLower().StartsWith( "http://" ) ? host.Substring( 7 ) : host;
+                        host = host.ToLower().StartsWith( "https://" ) ? host.Substring( 8 ) : host;
+
+                        return new Uri( protocol + host );
+                    }
+                }
+                catch { }
+
+                return new Uri( Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ) );
+            }
+        }
 
         #endregion
 
@@ -642,6 +699,7 @@ namespace Rock.Model
             this.HasOptional( p => p.CommunicationPage ).WithMany().HasForeignKey( p => p.CommunicationPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.CommunicationPageRoute ).WithMany().HasForeignKey( p => p.CommunicationPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.MobilePage ).WithMany().HasForeignKey( p => p.MobilePageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.FavIconBinaryFile ).WithMany().HasForeignKey( p => p.FavIconBinaryFileId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -431,7 +431,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
-        public List<string> HistoryChanges { get; set; }
+        public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
         /// Gets or sets the batch history changes.
@@ -440,7 +440,7 @@ namespace Rock.Model
         /// The batch history changes.
         /// </value>
         [NotMapped]
-        private Dictionary<int, List<string>> BatchHistoryChanges { get; set; }
+        public virtual Dictionary<int, List<string>> BatchHistoryChanges { get; set; }
 
         #endregion Virtual Properties
 

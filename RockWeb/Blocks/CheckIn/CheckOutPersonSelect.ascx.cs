@@ -15,14 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 
@@ -31,6 +30,9 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName("Check Out Person Select")]
     [Category("Check-in")]
     [Description("Lists people who match the selected family and provides option of selecting multiple people to check-out.")]
+
+    [TextField( "Title", "Title to display. Use {0} for family name", false, "{0} Check Out", "Text", 5 )]
+    [TextField( "Caption", "", false, "Select People", "Text", 6 )]
     public partial class CheckOutPersonSelect : CheckInBlock
     {
         bool _hidePhotos = false;
@@ -97,7 +99,8 @@ namespace RockWeb.Blocks.CheckIn
                         GoBack();
                     }
 
-                    lFamilyName.Text = family.ToString();
+                    lTitle.Text = string.Format( GetAttributeValue( "Title" ), family.ToString() );
+                    lCaption.Text = GetAttributeValue( "Caption" );
 
                     _hidePhotos = CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Individual || CurrentCheckInState.CheckInType.HidePhotos;
 

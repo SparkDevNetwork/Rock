@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Finance
                         b.Status == BatchStatus.Open &&
                         b.BatchStartDateTime.HasValue &&
                         b.Id != currentBatchId )
-                    .OrderBy( b => b.Name )
+                    .OrderBy( b => b.Id )
                     .Select( b => new
                     {
                         b.Id,
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Finance
                     .Select( b => new
                     {
                         b.Id,
-                        Name = string.Format( "{0} ({1})", b.Name, b.BatchStartDateTime.Value.ToString( "d" ) )
+                        Name = string.Format( "#{0} {1} ({2})", b.Id, b.Name, b.BatchStartDateTime.Value.ToString( "d" ) )
                     } )
                     .ToList();
                 _ddlMove.DataBind();

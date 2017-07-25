@@ -94,7 +94,6 @@ namespace Rock.Model
             target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.HistoryChanges = source.HistoryChanges;
             target.Summary = source.Summary;
             target.TransactionId = source.TransactionId;
             target.CreatedDateTime = source.CreatedDateTime;

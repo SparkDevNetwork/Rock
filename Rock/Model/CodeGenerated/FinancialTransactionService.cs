@@ -103,7 +103,6 @@ namespace Rock.Model
             target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.HistoryChanges = source.HistoryChanges;
             target.IsReconciled = source.IsReconciled;
             target.IsSettled = source.IsSettled;
             target.MICRStatus = source.MICRStatus;

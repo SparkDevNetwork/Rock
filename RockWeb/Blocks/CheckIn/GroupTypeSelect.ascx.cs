@@ -34,6 +34,14 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Displays a list of group types the person is configured to checkin to." )]
 
     [BooleanField( "Select All and Skip", "Select this option if end-user should never see screen to select group types, all group types will automatically be selected and all the groups in all types will be available.", false, "", 8, "SelectAll" )]
+
+    [TextField( "Title", "Title to display. Use {0} for person/schedule.", false, "{0}", "Text", 9 )]
+    [TextField( "Caption", "", false, "Select Area", "Text", 10 )]
+    [TextField( "No Option Message", "Message to display when there are not any options available. Use {0} for person's name, and {1} for schedule name.", false,
+        "Sorry, there are currently not any available areas that {0} can check into at {1}.", "Text", 11 )]
+    [TextField( "No Option After Select Message", "Message to display when there are not any options available after group type is selected. Use {0} for person's name", false,
+        "Sorry, based on your selection, there are currently not any available times that {0} can check into.", "Text", 12 )]
+
     public partial class GroupTypeSelect : CheckInBlockMultiPerson
     {
         /// <summary>
@@ -156,8 +164,10 @@ namespace RockWeb.Blocks.CheckIn
                         GoBack();
                     }
 
+                    lTitle.Text = string.Format( GetAttributeValue( "Title" ), GetPersonScheduleSubTitle() );
+                    lCaption.Text = GetAttributeValue( "Caption" );
+
                     var schedule = person.CurrentSchedule;
-                    lPersonName.Text = GetPersonScheduleSubTitle();
 
                     var availGroupTypes = person.GetAvailableGroupTypes( schedule );
                     if ( availGroupTypes.Any() )
@@ -218,8 +228,9 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             pnlNoOptions.Visible = true;
                             rSelection.Visible = false;
-                            lNoOptionName.Text = person.Person.NickName;
-                            lNoOptionSchedule.Text = person.CurrentSchedule != null ? person.CurrentSchedule.ToString() : "this time";
+                            lNoOptions.Text = string.Format( GetAttributeValue( "NoOptionMessage" ),
+                                person.Person.NickName,
+                                person.CurrentSchedule != null ? person.CurrentSchedule.ToString() : "this time" );
                         }
                     }
                 }
@@ -317,12 +328,13 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( person != null )
             {
+                string msg = string.Format( GetAttributeValue( "NoOptionAfterSelectMessage" ), person.Person.NickName );
                 if ( !ProcessSelection(
                     maWarning,
                     () => person.SelectedGroupTypes( schedule )
                         .SelectMany( t => t.Groups.Where( g => !g.ExcludedByFilter ) )
                         .Count() <= 0,
-                    string.Format( "<p>Sorry, based on your selection, there are currently not any available locations that {0} can check into.</p>", person.Person.NickName ),
+                    string.Format( "<p>{0}</p>", msg ),
                     true ) )
                 {
                     ClearSelection();

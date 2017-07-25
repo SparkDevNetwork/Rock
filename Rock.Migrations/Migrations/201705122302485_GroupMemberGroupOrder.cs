@@ -35,6 +35,8 @@ namespace Rock.Migrations
             AddColumn("dbo.GroupMember", "GroupOrder", c => c.Int());
             AddColumn("dbo.Metric", "SourceLava", c => c.String());
 
+            RockMigrationHelper.UpdateDefinedValue( "D6F323FF-6EF2-4DA7-A82C-61399AC1D798", "Lava", "The Metric Values are populated from custom Lava", "2868A3E8-4632-4966-84CD-EDB8B775D66C" );
+
             //// Migration Rollups
 
             // MP: CurrencyType Unknown

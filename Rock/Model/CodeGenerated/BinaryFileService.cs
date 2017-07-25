@@ -111,6 +111,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, SignatureDocument.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<Site>( Context ).Queryable().Any( a => a.FavIconBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -152,6 +158,7 @@ namespace Rock.Model
             target.ContentLastModified = source.ContentLastModified;
             target.Description = source.Description;
             target.FileName = source.FileName;
+            target.FileSize = source.FileSize;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;

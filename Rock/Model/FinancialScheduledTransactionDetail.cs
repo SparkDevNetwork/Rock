@@ -14,9 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -122,6 +124,15 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the history changes.
+        /// </summary>
+        /// <value>
+        /// The history changes.
+        /// </value>
+        [NotMapped]
+        public virtual List<string> HistoryChanges { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -136,6 +147,66 @@ namespace Rock.Model
         {
             return this.Amount.ToStringSafe();
         }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        {
+            var rockContext = (RockContext)dbContext;
+            HistoryChanges = new List<string>();
+
+            switch ( entry.State )
+            {
+                case System.Data.Entity.EntityState.Added:
+                    {
+                        string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
+                        HistoryChanges.Add( string.Format( "Added <span class='field-name'>{0}</span> account for <span class='field-value'>{1}</span>.", acct, Amount.FormatAsCurrency() ) );
+                        break;
+                    }
+
+                case System.Data.Entity.EntityState.Modified:
+                    {
+                        string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
+
+                        int? accountId = this.Account != null ? this.Account.Id : this.AccountId;
+                        int? origAccountId = entry.OriginalValues["AccountId"].ToStringSafe().AsIntegerOrNull();
+                        if ( !accountId.Equals( origAccountId ) )
+                        {
+                            History.EvaluateChange( HistoryChanges, "Account", History.GetValue<FinancialAccount>( null, origAccountId, rockContext ), acct );
+                        }
+
+                        History.EvaluateChange( HistoryChanges, acct, entry.OriginalValues["Amount"].ToStringSafe().AsDecimal().FormatAsCurrency(), Amount.FormatAsCurrency() );
+
+                        break;
+                    }
+                case System.Data.Entity.EntityState.Deleted:
+                    {
+                        string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
+                        HistoryChanges.Add( string.Format( "Removed <span class='field-name'>{0}</span> account for <span class='field-value'>{1}</span>.", acct, Amount.FormatAsCurrency() ) );
+                        break;
+                    }
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( DbContext dbContext )
+        {
+            if ( HistoryChanges.Any() )
+            {
+                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialScheduledTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.ScheduledTransactionId, HistoryChanges, true, this.ModifiedByPersonAliasId );
+            }
+
+            base.PostSaveChanges( dbContext );
+        }
+
 
         #endregion
 

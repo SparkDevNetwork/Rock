@@ -14,7 +14,7 @@
         <Rock:ModalAlert ID="maWarning" runat="server" />
 
         <div class="checkin-header">
-            <h1><asp:Literal ID="lPersonName" runat="server" /></h1>
+            <h1><asp:Literal ID="lTitle" runat="server" /></h1>
         </div>
 
         <div class="checkin-body">
@@ -23,10 +23,10 @@
                 <div class="scroller">
 
                     <div class="control-group checkin-body-container">
-                        <label class="control-label">Select Area</label>
+                        <label class="control-label"><asp:Literal ID="lCaption" runat="server" /></label>
                         <div class="controls">
                             <asp:Panel ID="pnlNoOptions" runat="server" Visible="false">
-                                <h4>Sorry, there are currently not any available areas that <asp:Literal ID="lNoOptionName" runat="server" /> can check into at <asp:Literal ID="lNoOptionSchedule" runat="server" />.</h4>
+                                <h4><asp:Literal ID="lNoOptions" runat="server" /></h4>
                                 <div class="actions">
                                     <asp:LinkButton CssClass="btn btn-primary btn-checkin" ID="btnNoOptionOk" runat="server" OnClick="btnNoOptionOk_Click" Text="Ok" />
                                 </div>

@@ -231,10 +231,10 @@ dl:not(.dl-horizontal) {
 
 // change margins in panel headings
 .panel-heading {
-    .input-group {
-        margin-top: -6px;
-        margin-bottom: -6px;
-    }
+  .input-group {
+    margin-top: -6px;
+    margin-bottom: -6px;
+  }
 }
 
 // 4. Control Specific Styling
@@ -254,17 +254,16 @@ dl:not(.dl-horizontal) {
   }
 }
 
-.form-control.ssn-part.ssn-area
-{
-  width: 50px;
-}
-.form-control.ssn-part.ssn-group
-{
-  width: 45px;
-}
-.form-control.ssn-part.ssn-serial
-{
-  width: 60px;
+.form-control.ssn-part {
+  &.ssn-area {
+    width: 50px;
+  }
+  &.ssn-group {
+    width: 45px;
+  }
+  &.ssn-serial {
+    width: 60px;
+  }
 }
 
 // 5. validation

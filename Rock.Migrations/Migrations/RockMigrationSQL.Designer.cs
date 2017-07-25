@@ -2864,5 +2864,134 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF object_id(&apos;[dbo].[ufnCrm_GetGradeOffset]&apos;) IS NOT NULL
+        ///BEGIN
+        ///  DROP FUNCTION [dbo].[ufnCrm_GetGradeOffset]
+        ///END
+        ///GO
+        ///
+        ///SET ANSI_NULLS ON
+        ///GO
+        ///
+        ///SET QUOTED_IDENTIFIER ON
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the grade offset given a graduation date. The offset can then be used with defined value to find grade
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		The grade offset based on graduation date
+        ///	&lt;/returns&gt;
+        ///	&lt;remarks&gt;
+        ///		
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		SELECT [dbo].[ufnCrm_GetGradeOffset]( 2018, null )
+        ///	&lt; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset {
+            get {
+                return ResourceManager.GetString("_201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- create stored proc that retrieves a binaryfile record
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the BinaryFile for a given Id or Guid, depending on which is specified
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* BinaryFile record
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;Id&apos; datatype=&apos;int&apos;&gt;The binary id to use&lt;/param&gt;
+        ///	&lt;param name=&apos;Guid&apos; datatype=&apos;uniqueidentifier&apos;&gt;The binaryfile guid to use&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		EXEC [dbo].[spCore_BinaryFileGet] 14, null -- car-promo.jpg
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTE [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201707101648235_CommonBlockTypes_spCore_BinaryFileGet {
+            get {
+                return ResourceManager.GetString("_201707101648235_CommonBlockTypes_spCore_BinaryFileGet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function rebuilds the database indexes.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;PageCountLimit&apos; datatype=&apos;int&apos;&gt;The number of page counts the index must have in order to be considered for re-indexing (default 100).&lt;/param&gt;
+        ///	&lt;param name=&apos;MinFragmentation&apos; datatype=&apos;int&apos;&gt;The minimum amount of fragmentation a index must have to be considered for re-indexing (default 10).&lt;/param&gt;
+        ///	&lt;param name=&apos;MinFragmentationRebuild&apos; datatype=&apos;int&apos;&gt;The minimum amount of fragmentat [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201707171725146_UniversalSearchPages_spDbaRebuildIndexes {
+            get {
+                return ResourceManager.GetString("_201707171725146_UniversalSearchPages_spDbaRebuildIndexes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_NonAttendees]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId 
+        ///		* SundayDate - Last time attended
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeIds&apos; data [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201707182207536_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_201707182207536_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the people that attended based on selected filter criteria
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* Id 
+        ///		* NickName
+        ///		* LastName
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this a [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201707182207536_AttendanceAnalyticsScheduleFilter_Attendees {
+            get {
+                return ResourceManager.GetString("_201707182207536_AttendanceAnalyticsScheduleFilter_Attendees", resourceCulture);
+            }
+        }
     }
 }

@@ -114,8 +114,9 @@ namespace Rock.UniversalSearch.IndexModels
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="displayOptions">The display options.</param>
+        /// <param name="mergeFields">The merge fields.</param>
         /// <returns></returns>
-        public virtual FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
+        public virtual FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null, Dictionary<string, object> mergeFields = null )
         {
             string result = string.Empty;
 
@@ -127,9 +128,13 @@ namespace Rock.UniversalSearch.IndexModels
 
                 if ( template.IsNotNullOrWhitespace() )
                 {
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
-                    mergeFields.Add( "IndexDocument", this );
-                    mergeFields.Add( "DisplayOptions", displayOptions );
+                    if ( mergeFields == null)
+                    {
+                        mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
+                    }
+
+                    mergeFields.AddOrReplace( "IndexDocument", this );
+                    mergeFields.AddOrReplace( "DisplayOptions", displayOptions );
 
                     return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = template.ResolveMergeFields( mergeFields ) };
                 }

@@ -22,6 +22,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 
@@ -30,6 +31,10 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName("Person Select")]
     [Category("Check-in")]
     [Description("Lists people who match the selected family to pick to check-in or check-out.")]
+
+    [TextField( "Title", "Title to display. Use {0} for family name.", false, "{0}", "Text", 8 )]
+    [TextField( "Caption", "", false, "Select Person", "Text", 9 )]
+    [TextField( "No Option Message", "The option to display when there are not any people that match. Use {0} for the current action ('into' or 'out of').", false, "Sorry, there are currently not any available areas that the selected person can check {0}.", "Text", 10 )]
     public partial class PersonSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -62,7 +67,8 @@ namespace RockWeb.Blocks.CheckIn
                         GoBack();
                     }
 
-                    lFamilyName.Text = family.ToString();
+                    lTitle.Text = string.Format( GetAttributeValue( "Title" ), family.ToString() );
+                    lCaption.Text = GetAttributeValue( "Caption" );
 
                     if ( family.People.Count == 1 )
                     {
@@ -146,8 +152,8 @@ namespace RockWeb.Blocks.CheckIn
 
         protected void ProcessSelection()
         {
-            string msg = string.Format( "<p>Sorry, there are currently not any available areas that the selected person can check {0}.</p>",
-                CurrentCheckInState.CheckIn.CurrentFamily.Action == CheckinAction.CheckIn ? "into" : "out of" );
+            string noOption = string.Format( GetAttributeValue( "NoOptionMessage" ), CurrentCheckInState.CheckIn.CurrentFamily.Action == CheckinAction.CheckIn ? "into" : "out of" );
+            string msg = string.Format( "<p>{0}</p>", noOption );
             ProcessSelection( 
                 maWarning, 
                 () => CurrentCheckInState.CheckIn.CurrentFamily.GetPeople( true )

@@ -1537,15 +1537,15 @@ namespace RockWeb.Blocks.Event
                     string ccNum = rgx.Replace( txtCreditCard.Text, "" );
                     if ( string.IsNullOrWhiteSpace( ccNum ) )
                     {
-                        validationErrors.Add( "Credit Card # is required" );
+                        validationErrors.Add( "Card Number is required" );
                     }
                     if ( !mypExpiration.SelectedDate.HasValue )
                     {
-                        validationErrors.Add( "Credit Card Expiration Date is required" );
+                        validationErrors.Add( "Card Expiration Date is required" );
                     }
                     if ( string.IsNullOrWhiteSpace( txtCVV.Text ) )
                     {
-                        validationErrors.Add( "Credit Card Security Code is required" );
+                        validationErrors.Add( "Card Security Code is required" );
                     }
                     if ( acBillingAddress.Visible && (
                         string.IsNullOrWhiteSpace( acBillingAddress.Street1 ) ||
@@ -1685,14 +1685,16 @@ namespace RockWeb.Blocks.Event
                 string appRoot = ResolveRockUrl( "~/" );
                 string themeRoot = ResolveRockUrl( "~~/" );
 
-                if ( isNewRegistration )
-                {
-                    var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
-                    confirmation.RegistrationId = registration.Id;
-                    confirmation.AppRoot = appRoot;
-                    confirmation.ThemeRoot = themeRoot;
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+                // Send/Resend a confirmation
+                var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
+                confirmation.RegistrationId = registration.Id;
+                confirmation.AppRoot = appRoot;
+                confirmation.ThemeRoot = themeRoot;
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
 
+                 if ( isNewRegistration )
+                {
+                    // Send notice of a new registration
                     var notification = new Rock.Transactions.SendRegistrationNotificationTransaction();
                     notification.RegistrationId = registration.Id;
                     notification.AppRoot = appRoot;

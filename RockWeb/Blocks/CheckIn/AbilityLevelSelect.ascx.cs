@@ -36,6 +36,13 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Check-in Ability Level Select block" )]
 
     [LinkedPage( "Previous Page (Family Check-in)", "The page to navigate back to if none of the people and schedules have been processed.", false, "", "", 8, "FamilyPreviousPage" )]
+
+    [TextField( "Title", "Title to display. Use {0} for person's name.", false, "{0}", "Text", 9 )]
+    [TextField( "Caption", "", false, "Select Ability Level", "Text", 10 )]
+    [TextField( "No Option Title", "", false, "Sorry", "Text", 11)]
+    [TextField( "No Option Caption", "", false, "Sorry, there are currently not any available options to check into.", "Text", 12 )]
+    [TextField( "Selection No Option", "Text displayed if there are not any options after selecting an ability level. Use {0} for person's name.", false, "Sorry, based on your selection, there are currently not any available locations that {0} can check into.", "Text", 13 )]
+
     public partial class AbilityLevelSelect : CheckInBlockMultiPerson
     {
         private string _personAbilityLevelGuid;
@@ -280,10 +287,15 @@ namespace RockWeb.Blocks.CheckIn
             {
                 pnlNoOptions.Visible = true;
                 divAbilityLevel.Visible = false;
+
+                lNoOptionTitle.Text = GetAttributeValue( "NoOptionTitle" );
+                lNoOptionCaption.Text = GetAttributeValue( "NoOptionCaption" );
+
             }
             else
             {
-                lPersonName.Text = person.ToString();
+                lTitle.Text = string.Format( GetAttributeValue( "Title" ), person.ToString() );
+                lCaption.Text = GetAttributeValue( "Caption" );
 
                 if ( IsOverride || NoConfiguredAbilityLevels( person.GroupTypes ) )
                 {
@@ -330,7 +342,7 @@ namespace RockWeb.Blocks.CheckIn
                 () => CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes
                     .Where( t => !t.ExcludedByFilter ) 
                     .Count() <= 0,
-                string.Format( "<p>Sorry, based on your selection, there are currently not any available locations that {0} can check into.</p>", CurrentCheckInState.CheckIn.CurrentPerson.Person.NickName ),
+                string.Format( "<p>{0}</p>", string.Format( GetAttributeValue( "SelectionNoOption" ), CurrentCheckInState.CheckIn.CurrentPerson.Person.NickName ) ),
                 true ) ) 
             {
                 // Clear any filtered items so that user can select another option

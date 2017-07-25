@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ConnectionRequestActivitiesController : Rock.Rest.ApiController<Rock.Model.ConnectionRequestActivity>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionRequestActivitiesController"/> class.
+        /// </summary>
         public ConnectionRequestActivitiesController() : base( new Rock.Model.ConnectionRequestActivityService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -23,6 +23,8 @@ using Rock;
 using Rock.Attribute;
 using Rock.Security;
 using System.Text;
+using System.Text.RegularExpressions;
+using Rock.Model;
 
 namespace RockWeb.Blocks.Security
 {
@@ -196,7 +198,10 @@ namespace RockWeb.Blocks.Security
                 var currentPage = Rock.Web.Cache.PageCache.Read( RockPage.PageId );
                 if ( currentPage != null && currentPage.IsAuthorized(Authorization.VIEW, null))
                 {
-                    Response.Redirect( CurrentPageReference.BuildUrl() );
+                    string url = CurrentPageReference.BuildUrl();
+
+                    string cleanUrl = PersonToken.RemoveRockMagicToken( url );
+                    Response.Redirect( cleanUrl );
                     Context.ApplicationInstance.CompleteRequest();
                 }
                 else

@@ -231,7 +231,9 @@ namespace RockWeb.Blocks.Event
                     using ( RockContext rockContext = new RockContext() )
                     {
                         RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
-                        _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" ).AsNoTracking()
+
+                        // NOTE: Do not use AsNoTracking because lava might need to lazy load some stuff
+                        _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" )
                                                     .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
 
 
@@ -244,6 +246,9 @@ namespace RockWeb.Blocks.Event
                             mergeObjects.Add( "RegistrationInstance", _registrationInstance );
 
                             ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
+                            
+                            // needed to work in IE
+                            ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
                         }
                     }
                 }
@@ -270,7 +275,9 @@ namespace RockWeb.Blocks.Event
                 using ( RockContext rockContext = new RockContext() )
                 {
                     RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
-                    _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" ).AsNoTracking()
+
+                    // NOTE: Do not use AsNoTracking because lava might need to lazy load some stuff
+                    _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" )
                                                 .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
 
 
@@ -285,6 +292,9 @@ namespace RockWeb.Blocks.Event
                         ceEmailMessage.Text = _registrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate;
 
                         ifEmailPreview.Attributes["srcdoc"] = _registrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate.ResolveMergeFields( mergeObjects );
+
+                        // needed to work in IE
+                        ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
 
                         txtFromEmail.Text = _registrationInstance.RegistrationTemplate.PaymentReminderFromEmail.ResolveMergeFields( mergeObjects );
                         txtFromName.Text = _registrationInstance.RegistrationTemplate.PaymentReminderFromName.ResolveMergeFields( mergeObjects );

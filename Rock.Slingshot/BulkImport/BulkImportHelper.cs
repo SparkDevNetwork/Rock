@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
@@ -1088,6 +1088,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 person.FirstName = person.NickName;
             }
 
+            person.MiddleName = personImport.MiddleName.FixCase();
             person.LastName = personImport.LastName.FixCase();
             person.SuffixValueId = personImport.SuffixValueId;
             person.BirthDay = personImport.BirthDay;
@@ -1303,7 +1304,9 @@ WHERE gta.GroupTypeId IS NULL" );
 
                 if ( !useBulkInsertForPhotos )
                 {
-                    binaryFileToInsert.ContentStream = new MemoryStream( Convert.FromBase64String( photoImport.PhotoData ) );
+                    byte[] photoData = Convert.FromBase64String( photoImport.PhotoData );
+                    binaryFileToInsert.FileSize = photoData.Length;
+                    binaryFileToInsert.ContentStream = new MemoryStream( photoData );
                 }
 
                 binaryFileToInsert.SetStorageEntityTypeId( binaryFileType.StorageEntityTypeId );

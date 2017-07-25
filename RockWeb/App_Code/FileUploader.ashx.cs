@@ -227,6 +227,7 @@ namespace RockWeb
             binaryFile.IsTemporary = context.Request.QueryString["IsTemporary"].AsBooleanOrNull() ?? true;
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
             binaryFile.MimeType = uploadedFile.ContentType;
+            binaryFile.FileSize = uploadedFile.ContentLength;
             binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
             binaryFile.ContentStream = GetFileContentStream( context, uploadedFile );
             rockContext.SaveChanges();

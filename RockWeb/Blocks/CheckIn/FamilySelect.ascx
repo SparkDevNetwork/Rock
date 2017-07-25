@@ -14,7 +14,7 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <div class="checkin-header">
-        <h1>Families</h1>
+        <h1><asp:Literal ID="lTitle" runat="server" /></h1>
     </div>
                 
     <div class="checkin-body">
@@ -23,7 +23,7 @@
             <div class="scroller">
 
                 <div class="control-group checkin-body-container">
-                    <label class="control-label">Select Your Family</label>
+                    <label class="control-label"><asp:Literal ID="lCaption" runat="server" /></label>
                     <div class="controls">
                         <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
                             <ItemTemplate>
