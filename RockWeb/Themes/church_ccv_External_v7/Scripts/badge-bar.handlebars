@@ -89,4 +89,14 @@
   </div>
   {{/if}}
 
+  {{#if SharedStoryResult.SharedStory}}
+  <div class="badge badge-share badge-icon" data-toggle="tooltip" title="Has shared a story" data-container="body">
+    <i class="icon ccv-share"></i>
+  </div>
+  {{else}}
+  <div class="badge badge-share badge-icon step-nottaken" data-toggle="tooltip" title="Has not shared a story" data-container="body">
+    <i class="icon ccv-share"></i>
+  </div>
+  {{/if}}
+
 </div>
