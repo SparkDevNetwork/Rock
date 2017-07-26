@@ -129,13 +129,13 @@ namespace RockWeb.Blocks.Crm
                 if ( communication != null && CurrentPersonAliasId.HasValue )
                 {
                     // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-                    var testCommunication = new Rock.Model.Communication();
-                    testCommunication.SenderPersonAliasId = communication.SenderPersonAliasId;
-                    testCommunication.Subject = communication.Subject;
-                    testCommunication.IsBulkCommunication = communication.IsBulkCommunication;
-                    testCommunication.MediumEntityTypeId = communication.MediumEntityTypeId;
-                    testCommunication.MediumDataJson = communication.MediumDataJson;
-                    testCommunication.AdditionalMergeFieldsJson = communication.AdditionalMergeFieldsJson;
+                    var testCommunication = communication.Clone( false );
+                    testCommunication.Id = 0;
+                    testCommunication.Guid = Guid.Empty;
+                    testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+                    testCommunication.ForeignGuid = null;
+                    testCommunication.ForeignId = null;
+                    testCommunication.ForeignKey = null;
 
                     testCommunication.FutureSendDateTime = null;
                     testCommunication.Status = CommunicationStatus.Approved;

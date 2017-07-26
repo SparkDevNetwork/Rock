@@ -100,7 +100,6 @@ namespace Rock.Model
             target.FutureSendDateTime = source.FutureSendDateTime;
             target.IsBulkCommunication = source.IsBulkCommunication;
             target.ListGroupId = source.ListGroupId;
-            target.MediumDataJson = source.MediumDataJson;
             target.MediumEntityTypeId = source.MediumEntityTypeId;
             target.Message = source.Message;
             target.MessageMetaData = source.MessageMetaData;

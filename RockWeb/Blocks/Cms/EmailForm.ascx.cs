@@ -322,7 +322,7 @@ namespace RockWeb.Blocks.Cms
                 // send email
                 foreach ( string recipient in GetAttributeValue( "RecipientEmail" ).Split( ',' ).ToList() )
                 {
-                    message.AddRecipient( new RecipientData( recipient, mergeFields );
+                    message.AddRecipient( new RecipientData( recipient, mergeFields ) );
                 }
                 message.Message = GetAttributeValue( "MessageBody" );
                 message.FromEmail = GetAttributeValue( "FromEmail" );

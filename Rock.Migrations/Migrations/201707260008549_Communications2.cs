@@ -59,6 +59,7 @@ namespace Rock.Migrations
             AddColumn("dbo.CommunicationRecipient", "MediumEntityTypeId", c => c.Int());
             AddColumn("dbo.Communication", "Name", c => c.String(maxLength: 100));
             AddColumn("dbo.Communication", "CommunicationType", c => c.Int(nullable: false));
+            AddColumn("dbo.Communication", "UrlReferrer", c => c.String(maxLength: 200));
             AddColumn("dbo.Communication", "ListGroupId", c => c.Int());
             AddColumn("dbo.Communication", "Segments", c => c.String());
             AddColumn("dbo.Communication", "SegmentCriteria", c => c.Int(nullable: false));
@@ -385,8 +386,9 @@ INSERT INTO [DataView] ([IsSystem], [Name], [Description], [CategoryId], [Entity
 VALUES(0,'Under 35','A filter to help refine a communications recipient list to include only people that under age of 35',@categoryId,@entityTypeId,@dataViewFilterId,@transformEntityTypeId,'FF608842-BB10-4C9C-AA18-9D5C407590D3')
 END
 " );
+
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -485,6 +487,7 @@ END
             DropColumn("dbo.Communication", "SegmentCriteria");
             DropColumn("dbo.Communication", "Segments");
             DropColumn("dbo.Communication", "ListGroupId");
+            DropColumn("dbo.Communication", "UrlReferrer");
             DropColumn("dbo.Communication", "CommunicationType");
             DropColumn("dbo.Communication", "Name");
             DropColumn("dbo.CommunicationRecipient", "MediumEntityTypeId");

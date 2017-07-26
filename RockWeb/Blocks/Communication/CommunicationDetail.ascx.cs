@@ -471,9 +471,9 @@ namespace RockWeb.Blocks.Communication
             pnlOpened.Visible = false;
 
             lDetails.Text = GetMediumData( communication );
-            if ( communication.MediumData != null && communication.MediumData.ContainsKey( "UrlReferrer" ) )
+            if ( communication.UrlReferrer.IsNotNullOrWhitespace() )
             {
-                lDetails.Text += string.Format( "<small>Originated from <a href='{0}'>this page</a></small>", communication.MediumData["UrlReferrer"] );
+                lDetails.Text += string.Format( "<small>Originated from <a href='{0}'>this page</a></small>", communication.UrlReferrer );
             }
 
             BindRecipients();

@@ -23,6 +23,7 @@ using System.Text;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -190,12 +191,11 @@ namespace RockWeb.Blocks.Finance
             var confirmationEmailTemplateGuid = GetAttributeValue( "ConfirmationEmailTemplate" ).AsGuidOrNull();
             if ( confirmationEmailTemplateGuid.HasValue )
             {
-                var recipients = new List<Rock.Communication.RecipientData>();
-
-                // add person and the mergeObjects (same mergeobjects as receipt)
-                recipients.Add( new Rock.Communication.RecipientData( person.Email, mergeFields ) );
-
-                Rock.Communication.Email.Send( confirmationEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+                var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid.Value );
+                emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                emailMessage.Send();
             }
         }
 
