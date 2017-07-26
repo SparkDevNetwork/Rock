@@ -411,6 +411,9 @@ namespace RockWeb.Blocks.Reporting
                         {
                             // not configurable so just label it with the selection summary
                             filterControl.Label = component.FormatSelection( reportEntityTypeModel, filter.Selection );
+
+                            // configuration not visible, so set the selection to what it was in the dataview when it was saved, even if setSelection=False
+                            filterControl.SetSelection( filter.Selection );
                         }
                         else if ( component is Rock.Reporting.DataFilter.PropertyFilter )
                         {
