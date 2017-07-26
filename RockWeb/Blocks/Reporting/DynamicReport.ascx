@@ -72,11 +72,12 @@
 
                     <Rock:Grid ID="grdDataFilters" runat="server" DisplayType="Light" DataKeyNames="Guid" RowItemText="Filter" OnRowDataBound="grdDataFilters_RowDataBound">
                         <Columns>
-                            <Rock:SelectField HeaderText="Show as a Filter" DataSelectedField="ShowAsFilter" ShowSelectAll="false" ItemStyle-CssClass="js-select-show-filter" Tooltip="Show filter to user" />
-                            <Rock:SelectField HeaderText="Configurable" DataSelectedField="IsConfigurable" ShowSelectAll="false" ItemStyle-CssClass="js-select-configure-filter" Tooltip="Allow this filter to be configured" />
-                            <Rock:SelectField HeaderText="Toggle Filter" DataSelectedField="IsTogglable" ShowSelectAll="false" ItemStyle-CssClass="js-select-togglable-filter" Tooltip="Show checkbox so user can choose to include the filter or not" />
+                            <Rock:SelectField HeaderText="Visible" DataSelectedField="IsVisible" ShowSelectAll="false" ItemStyle-CssClass="js-select-show-filter" HeaderTooltip="Show filter to user" />
+                            <Rock:SelectField HeaderText="Configurable" DataSelectedField="IsConfigurable" ShowSelectAll="false" ItemStyle-CssClass="js-select-configure-filter" HeaderTooltip="Allow this filter to be configured" />
+                            <Rock:SelectField HeaderText="Toggle Filter" DataSelectedField="IsTogglable" ShowSelectAll="false" ItemStyle-CssClass="js-select-togglable-filter" HeaderTooltip="Show checkbox so user can choose to include the filter or not" />
                             <asp:BoundField DataField="TitlePath" HeaderText="Title" />
                             <asp:BoundField DataField="Summary" HeaderText="Summary" />
+                            <asp:BoundField DataField="ParentDataView" HeaderText="Parent DataView" />
                         </Columns>
                     </Rock:Grid>
                 </Content>

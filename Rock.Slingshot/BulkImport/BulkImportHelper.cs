@@ -42,9 +42,14 @@ namespace Rock.Slingshot
         }
 
         /// <summary>
-        /// Occurs when [on progress].
+        /// Definition for OnProgress delegate
         /// </summary>
-        public static event EventHandler<string> OnProgress;
+        public delegate void OnProgressEvent( string message );
+
+        /// <summary>
+        /// Delegate for handling ProgressMessages
+        /// </summary>
+        public static OnProgressEvent OnProgress;
 
         #endregion util
 
@@ -402,7 +407,7 @@ namespace Rock.Slingshot
                 financialPaymentDetailToInsert.Add( financialPaymentDetail );
             }
 
-            OnProgress?.Invoke( null, $"Bulk Importing FinancialTransactions ( Payment Details )... " );
+            OnProgress?.Invoke( $"Bulk Importing FinancialTransactions ( Payment Details )... " );
             
             rockContext.BulkInsert( financialPaymentDetailToInsert );
 
@@ -446,7 +451,7 @@ namespace Rock.Slingshot
                 financialTransactionsToInsert.Add( financialTransaction );
             }
 
-            OnProgress?.Invoke( null, $"Bulk Importing FinancialTransactions... " );
+            OnProgress?.Invoke( $"Bulk Importing FinancialTransactions... " );
             rockContext.BulkInsert( financialTransactionsToInsert );
 
             var financialTransactionIdLookup = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
@@ -487,7 +492,7 @@ namespace Rock.Slingshot
                 }
             }
 
-            OnProgress?.Invoke( null, $"Bulk Importing FinancialTransactions ( Transaction Details )... " );
+            OnProgress?.Invoke( $"Bulk Importing FinancialTransactions ( Transaction Details )... " );
             rockContext.BulkInsert( financialTransactionDetailsToInsert );
 
             stopwatchTotal.Stop();
@@ -842,7 +847,7 @@ WHERE gta.GroupTypeId IS NULL" );
                         return "Client Disconnected";
                     }
 
-                    OnProgress?.Invoke( null, $"Bulk Importing Person {progress} of {total}..." );
+                    OnProgress?.Invoke( $"Bulk Importing Person {progress} of {total}..." );
                 }
 
                 Group family = null;
@@ -1668,6 +1673,14 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
             var entityTypeCache = EntityTypeCache.Read( entityTypeId );
+            var entityFriendlyName = entityTypeCache.FriendlyName;
+            if ( entityTypeId == EntityTypeCache.GetId<Rock.Model.Group>().Value )
+            {
+                if ( groupEntityIsFamily.Value )
+                {
+                    entityFriendlyName = "Family";
+                }
+            }
 
             // first check for invalid NoteType or NoteType.EntityType
             var noteTypeList = noteImports.Select( a => a.NoteTypeId ).Distinct().ToList().Select( a => NoteTypeCache.Read( a ) ).ToList();
@@ -1682,7 +1695,7 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
 
             RockContext rockContext = new RockContext();
 
-            var qryNotesWithForeignIds = new NoteService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
+            var qryNotesWithForeignIds = new NoteService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.NoteType.EntityTypeId == entityTypeId );
 
             var noteAlreadyExistForeignIdHash = new HashSet<int>( qryNotesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
@@ -1715,6 +1728,9 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
                     .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
             }
 
+            var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.Person.ForeignKey == foreignSystemKey && a.PersonId == a.AliasPersonId )
+                .Select( a => new { PersonAliasId = a.Id, PersonForeignId = a.Person.ForeignId } ).ToDictionary( k => k.PersonForeignId.Value, v => v.PersonAliasId );
+
             List<Note> notesToInsert = new List<Note>();
             var newNoteImports = noteImports.Where( a => !noteAlreadyExistForeignIdHash.Contains( a.NoteForeignId ) ).ToList();
 
@@ -1736,6 +1752,11 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
                 note.IsAlert = noteImport.IsAlert;
                 note.IsPrivateNote = noteImport.IsPrivateNote;
                 note.Text = noteImport.Text;
+                note.CreatedDateTime = noteImport.DateTime;
+                if ( noteImport.CreatedByPersonForeignId.HasValue )
+                {
+                    note.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull( noteImport.CreatedByPersonForeignId.Value );
+                }
 
                 notesToInsert.Add( note );
             }
@@ -1749,7 +1770,7 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
                 responseText += $"WARNING: Unable to import {noteImportErrors} notes due to invalid NoteType or NoteType EntityType mismatch.\n";
             }
 
-            responseText += GetResponseMessage( notesToInsert.Count, $"{entityTypeCache.FriendlyName} Notes", stopwatchTotal.ElapsedMilliseconds );
+            responseText += GetResponseMessage( notesToInsert.Count, $"{entityFriendlyName} Notes", stopwatchTotal.ElapsedMilliseconds );
 
             return responseText;
         }
