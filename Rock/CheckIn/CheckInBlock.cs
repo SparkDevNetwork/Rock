@@ -174,7 +174,7 @@ namespace Rock.CheckIn
 
             set
             {
-                if (this.CurrentCheckInState != null)
+                if ( this.CurrentCheckInState != null )
                 {
                     this.CurrentCheckInState.ManagerLoggedIn = value;
                 }
@@ -274,7 +274,7 @@ namespace Rock.CheckIn
                         if ( CurrentWorkflow == null )
                         {
                             CurrentWorkflow = Rock.Model.Workflow.Activate( workflowType, CurrentCheckInState.Kiosk.Device.Name, rockContext );
-                            
+
                             if ( IsOverride )
                             {
                                 CurrentWorkflow.SetAttributeValue( "Override", "True" );
@@ -313,7 +313,7 @@ namespace Rock.CheckIn
         /// </summary>
         protected void SaveState()
         {
-            if ( !string.IsNullOrWhiteSpace( CurrentTheme))
+            if ( !string.IsNullOrWhiteSpace( CurrentTheme ) )
             {
                 Session["CheckInTheme"] = CurrentTheme;
             }
@@ -588,6 +588,39 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Builds and returns the URL for a linked <see cref="Rock.Model.Page" /> from a "linked page attribute" and any necessary query parameters.
+        /// </summary>
+        /// <param name="attributeKey">A <see cref="System.String" /> representing the name of the linked <see cref="Rock.Model.Page" /> attribute key.</param>
+        /// <param name="queryParams">A <see cref="System.Collections.Generic.Dictionary{String,String}" /> containing the query string parameters to be added to the URL.
+        /// In each <see cref="System.Collections.Generic.KeyValuePair{String,String}" /> the key value is a <see cref="System.String" /> that represents the name of the query string
+        /// parameter, and the value is a <see cref="System.String" /> that represents the query string value..</param>
+        /// <returns>
+        /// A <see cref="System.String" /> representing the URL to the linked <see cref="Rock.Model.Page" />.
+        /// </returns>
+        public override string LinkedPageUrl( string attributeKey, Dictionary<string, string> queryParams = null )
+        {
+            var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
+            if ( pageReference.PageId > 0 )
+            {
+                var page = PageCache.Read( pageReference.PageId );
+                if ( page != null && page.PageTitle == "Welcome" )
+                {
+                    if ( pageReference.Parameters == null )
+                    {
+                        pageReference.Parameters = new Dictionary<string, string>();
+                    }
+
+                    pageReference.Parameters.AddOrIgnore( "IsActive", "True" );
+                }
+                return pageReference.BuildUrl();
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Checks if the override option is currently being used.
         /// </summary>
         /// <param name="queryParams">The query parameters.</param>
@@ -631,8 +664,8 @@ namespace Rock.CheckIn
                 var page = Rock.Web.Cache.PageCache.Read( pageReference.PageId );
                 if ( page != null )
                 {
-                    foreach( var block in page.Blocks.OrderBy( b => b.Order ) )
-                    { 
+                    foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )
+                    {
                         var control = TemplateControl.LoadControl( block.BlockType.Path );
                         if ( control != null )
                         {

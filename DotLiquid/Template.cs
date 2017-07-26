@@ -28,6 +28,7 @@ namespace DotLiquid
 		public static INamingConvention NamingConvention;
 		public static IFileSystem FileSystem { get; set; }
 		private static Dictionary<string, Type> Tags { get; set; }
+        private static Dictionary<string, Type> Shortcodes { get; set; }
         private static readonly Dictionary<Type, Func<object, object>> SafeTypeTransformers;
 		private static readonly Dictionary<Type, Func<object, object>> ValueTypeTransformers;
 
@@ -36,6 +37,7 @@ namespace DotLiquid
 			NamingConvention = new RubyNamingConvention();
 			FileSystem = new BlankFileSystem();
 			Tags = new Dictionary<string, Type>();
+            Shortcodes = new Dictionary<string, Type>();
             SafeTypeTransformers = new Dictionary<Type, Func<object, object>>();
 			ValueTypeTransformers = new Dictionary<Type, Func<object, object>>();
 		}
@@ -53,12 +55,33 @@ namespace DotLiquid
 			return result;
 		}
 
-		/// <summary>
-		/// Pass a module with filter methods which should be available
-		///  to all liquid views. Good for registering the standard library
-		/// </summary>
-		/// <param name="filter"></param>
-		public static void RegisterFilter(Type filter)
+        public static void RegisterShortcode<T>( string name )
+            where T : Tag, new()
+        {
+            Shortcodes[name] = typeof( T );
+        }
+
+        public static void UnregisterShortcode( string name )
+        {
+            if ( Shortcodes.ContainsKey( name ) )
+            {
+                Shortcodes.Remove( name );
+            }
+        }
+
+        public static Type GetShortcodeType( string name )
+        {
+            Type result;
+            Shortcodes.TryGetValue( name, out result );
+            return result;
+        }
+
+        /// <summary>
+        /// Pass a module with filter methods which should be available
+        ///  to all liquid views. Good for registering the standard library
+        /// </summary>
+        /// <param name="filter"></param>
+        public static void RegisterFilter(Type filter)
 		{
 			Strainer.GlobalFilter(filter);
 		}
@@ -305,10 +328,10 @@ namespace DotLiquid
 				return new List<string>();
 
 			// Trim leading whitespace.
-			source = Regex.Replace(source, string.Format(@"([ \t]+)?({0}|{1})-", Liquid.VariableStart, Liquid.TagStart), "$2");
+			source = Regex.Replace(source, string.Format(@"([ \t]+)?({0}|{1}|{2})-", Liquid.VariableStart, Liquid.TagStart, Liquid.ShortCodeStart), "$2");
 
 			// Trim trailing whitespace.
-			source = Regex.Replace(source, string.Format(@"-({0}|{1})(\n|\r\n|[ \t]+)?", Liquid.VariableEnd, Liquid.TagEnd), "$1");
+			source = Regex.Replace(source, string.Format(@"-({0}|{1}|{2})(\n|\r\n|[ \t]+)?", Liquid.VariableEnd, Liquid.TagEnd, Liquid.ShortCodeEnd), "$1");
 
 			List<string> tokens = Regex.Split(source, Liquid.TemplateParser).ToList();
 

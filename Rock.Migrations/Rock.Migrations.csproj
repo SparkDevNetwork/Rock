@@ -241,6 +241,30 @@
     <Compile Include="Migrations\201706141234225_CommunicationQueueAlertJob.Designer.cs">
       <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201706201728113_BinaryFileSize.cs" />
+    <Compile Include="Migrations\201706201728113_BinaryFileSize.Designer.cs">
+      <DependentUpon>201706201728113_BinaryFileSize.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706221549322_UrlMap.cs" />
+    <Compile Include="Migrations\201706221549322_UrlMap.Designer.cs">
+      <DependentUpon>201706221549322_UrlMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707052116053_LavaShortcodes.cs" />
+    <Compile Include="Migrations\201707052116053_LavaShortcodes.Designer.cs">
+      <DependentUpon>201707052116053_LavaShortcodes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707101648235_CommonBlockTypes.cs" />
+    <Compile Include="Migrations\201707101648235_CommonBlockTypes.Designer.cs">
+      <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.cs" />
+    <Compile Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.Designer.cs">
+      <DependentUpon>201707121812263_UniversalSearchContentChannelUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707132057256_UniversalSearchBoostAttrib.cs" />
+    <Compile Include="Migrations\201707132057256_UniversalSearchBoostAttrib.Designer.cs">
+      <DependentUpon>201707132057256_UniversalSearchBoostAttrib.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2488,6 +2512,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201611291825562_AddInteractionFieldsBackWithModifications.resx">
       <DependentUpon>201611291825562_AddInteractionFieldsBackWithModifications.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201612052305420_WorkflowTypeCleanupFields.resx">
       <DependentUpon>201612052305420_WorkflowTypeCleanupFields.cs</DependentUpon>
@@ -2569,6 +2594,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201706141234225_CommunicationQueueAlertJob.resx">
       <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706201728113_BinaryFileSize.resx">
+      <DependentUpon>201706201728113_BinaryFileSize.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706221549322_UrlMap.resx">
+      <DependentUpon>201706221549322_UrlMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707052116053_LavaShortcodes.resx">
+      <DependentUpon>201707052116053_LavaShortcodes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707101648235_CommonBlockTypes.resx">
+      <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.resx">
+      <DependentUpon>201707121812263_UniversalSearchContentChannelUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707132057256_UniversalSearchBoostAttrib.resx">
+      <DependentUpon>201707132057256_UniversalSearchBoostAttrib.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -4329,6 +4372,9 @@
     </Content>
     <Content Include="Migrations\201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset.sql">
       <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707101648235_CommonBlockTypes_spCore_BinaryFileGet.sql">
+      <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />

@@ -205,6 +205,15 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 BatchStatus batchStatus = (BatchStatus)ddlStatus.SelectedIndex;
+
+                string errorMessage;
+                if ( !batch.IsValidBatchStatusChange( batch.Status, batchStatus, this.CurrentPerson, out errorMessage ) )
+                {
+                    cvBatch.IsValid = false;
+                    cvBatch.ErrorMessage = errorMessage;
+                    return;
+                }
+
                 History.EvaluateChange( changes, "Status", batch.Status, batchStatus );
                 batch.Status = batchStatus;
 
@@ -402,6 +411,14 @@ namespace RockWeb.Blocks.Finance
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
             }
+            else if ( batch.Status == BatchStatus.Closed )
+            {
+                if ( !batch.IsAuthorized( "ReopenBatch", this.CurrentPerson ) )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = "Batch is closed and requires authorization to re-open before editing.";
+                }
+            }
 
             if ( readOnly )
             {
@@ -561,6 +578,14 @@ namespace RockWeb.Blocks.Finance
 
                 ddlStatus.BindToEnum<BatchStatus>();
                 ddlStatus.SelectedIndex = (int)(BatchStatus)batch.Status;
+                ddlStatus.Enabled = true;
+                if ( batch.Status == BatchStatus.Closed )
+                {
+                    if ( !batch.IsAuthorized( "ReopenBatch", this.CurrentPerson ) )
+                    {
+                        ddlStatus.Enabled = false;
+                    }
+                }
 
                 campCampus.Campuses = CampusCache.All();
                 if ( batch.CampusId.HasValue )
@@ -575,6 +600,36 @@ namespace RockWeb.Blocks.Finance
 
                 tbAccountingCode.Text = batch.AccountingSystemCode;
                 tbNote.Text = batch.Note;
+
+                SetEditableForBatchStatus( ddlStatus.SelectedValueAsEnum<BatchStatus>() );
+            }
+        }
+
+        /// <summary>
+        /// Sets the editable for batch status.
+        /// </summary>
+        /// <param name="batch">The batch.</param>
+        private void SetEditableForBatchStatus( BatchStatus batchStatus )
+        {
+            if ( batchStatus == BatchStatus.Closed )
+            {
+                tbName.ReadOnly = true;
+                dtpStart.Enabled = false;
+                dtpEnd.Enabled = false;
+                tbControlAmount.ReadOnly = true;
+                campCampus.Enabled = false;
+                tbAccountingCode.ReadOnly = true;
+                tbNote.ReadOnly = true;
+            }
+            else
+            {
+                tbName.ReadOnly = false;
+                dtpStart.Enabled = true;
+                dtpEnd.Enabled = true;
+                tbControlAmount.ReadOnly = false;
+                campCampus.Enabled = true;
+                tbAccountingCode.ReadOnly = false;
+                tbNote.ReadOnly = false;
             }
         }
 
@@ -587,16 +642,7 @@ namespace RockWeb.Blocks.Finance
         {
             lTitle.Text = title.FormatAsHtmlTitle();
 
-            hlStatus.Text = batch.Status.ConvertToString();
-            switch ( batch.Status )
-            {
-                case BatchStatus.Pending: hlStatus.LabelType = LabelType.Danger;
-                    break;
-                case BatchStatus.Open: hlStatus.LabelType = LabelType.Warning;
-                    break;
-                case BatchStatus.Closed: hlStatus.LabelType = LabelType.Default;
-                    break;
-            }
+            SetHeadingBatchStatus( batch.Status );
 
             if ( batch.Campus != null )
             {
@@ -613,6 +659,27 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Sets the heading batch status.
+        /// </summary>
+        /// <param name="batchStatus">The batch status.</param>
+        private void SetHeadingBatchStatus( BatchStatus batchStatus )
+        {
+            hlStatus.Text = batchStatus.ConvertToString();
+            switch ( batchStatus )
+            {
+                case BatchStatus.Pending:
+                    hlStatus.LabelType = LabelType.Danger;
+                    break;
+                case BatchStatus.Open:
+                    hlStatus.LabelType = LabelType.Warning;
+                    break;
+                case BatchStatus.Closed:
+                    hlStatus.LabelType = LabelType.Default;
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Sets the edit mode.
         /// </summary>
         /// <param name="editable">if set to <c>true</c> [editable].</param>
@@ -622,6 +689,18 @@ namespace RockWeb.Blocks.Finance
             fieldsetViewSummary.Visible = !editable;
 
             this.HideSecondaryBlocks( editable );
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlStatus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
+        protected void ddlStatus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var batchStatus = ddlStatus.SelectedValueAsEnum<BatchStatus>();
+            SetEditableForBatchStatus( batchStatus );
+            SetHeadingBatchStatus( batchStatus );
         }
 
         #endregion

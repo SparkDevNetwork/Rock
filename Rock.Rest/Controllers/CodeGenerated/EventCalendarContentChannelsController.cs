@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class EventCalendarContentChannelsController : Rock.Rest.ApiController<Rock.Model.EventCalendarContentChannel>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventCalendarContentChannelsController"/> class.
+        /// </summary>
         public EventCalendarContentChannelsController() : base( new Rock.Model.EventCalendarContentChannelService( new Rock.Data.RockContext() ) ) { } 
     }
 }

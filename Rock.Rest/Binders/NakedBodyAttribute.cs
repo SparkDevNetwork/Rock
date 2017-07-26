@@ -30,6 +30,14 @@ namespace System.Web.Http
     [AttributeUsage( AttributeTargets.Class | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true )]
     public sealed class NakedBodyAttribute : ParameterBindingAttribute
     {
+        /// <summary>
+        /// Gets the parameter binding.
+        /// </summary>
+        /// <param name="parameter">The parameter description.</param>
+        /// <returns>
+        /// The parameter binding.
+        /// </returns>
+        /// <exception cref="System.ArgumentException">Invalid parameter</exception>
         public override HttpParameterBinding GetBinding( HttpParameterDescriptor parameter )
         {
             if ( parameter == null )

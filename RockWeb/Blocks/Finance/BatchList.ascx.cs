@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]
+    [BooleanField( "Show Accounts Column", "Should the accounts column be displayed.", true, "", 2 )]
     public partial class BatchList : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
         #region Fields
@@ -467,6 +468,14 @@ namespace RockWeb.Blocks.Finance
                     {
                         var changes = new List<string>();
                         History.EvaluateChange( changes, "Status", batch.Status, newStatus );
+
+                        string errorMessage;
+                        if ( !batch.IsValidBatchStatusChange( batch.Status, newStatus, this.CurrentPerson, out errorMessage ) )
+                        {
+                            maWarningDialog.Show( errorMessage, ModalAlertType.Warning );
+                            return;
+                        }
+
                         batch.Status = newStatus;
 
                         if ( !batch.IsValid )
@@ -515,12 +524,23 @@ namespace RockWeb.Blocks.Finance
         {
             bool showAccountingCode = GetAttributeValue( "ShowAccountingCode" ).AsBoolean();
             tbAccountingCode.Visible = showAccountingCode;
-            gBatchList.Columns[4].Visible = showAccountingCode;
+            var accountingCodeColumn = gBatchList.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "AccountingSystemCode" );
+            if ( accountingCodeColumn != null )
+            {
+                accountingCodeColumn.Visible = showAccountingCode;
+            }
 
             if ( showAccountingCode )
             {
                 string accountingCode = gfBatchFilter.GetUserPreference( "Accounting Code" );
                 tbAccountingCode.Text = !string.IsNullOrWhiteSpace( accountingCode ) ? accountingCode : string.Empty;
+            }
+
+            bool showAccountsColumn = GetAttributeValue( "ShowAccountsColumn" ).AsBoolean();
+            var accountsColumn = gBatchList.ColumnsOfType<RockBoundField>().FirstOrDefault( c => c.HeaderText == "Accounts" );
+            if ( accountsColumn != null )
+            {
+                accountsColumn.Visible = showAccountsColumn;
             }
         }
 

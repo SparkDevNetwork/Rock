@@ -15,7 +15,10 @@ namespace DotLiquid
 
 		internal static readonly Regex FullToken = new Regex(string.Format(@"^{0}\s*(\w+)\s*(.*)?{1}$", Liquid.TagStart, Liquid.TagEnd));
 
-		protected override void Parse(List<string> tokens)
+        internal static readonly Regex IsShortCode = new Regex( string.Format( @"^{0}", Liquid.ShortCodeStart ) );
+        internal static readonly Regex FullShortCodeToken = new Regex( string.Format( @"^{0}\s*(\w+)\s*(.*)?{1}$", Liquid.ShortCodeStart, Liquid.ShortCodeEnd ) );
+
+        protected override void Parse(List<string> tokens)
 		{
 			NodeList = NodeList ?? new List<object>();
 			NodeList.Clear();
@@ -24,6 +27,8 @@ namespace DotLiquid
 			while ((token = tokens.Shift()) != null)
 			{
 				Match isTagMatch = IsTag.Match(token);
+                Match isShortCodeMatch = IsShortCode.Match( token );
+
 				if (isTagMatch.Success)
 				{
 					Match fullTokenMatch = FullToken.Match(token);
@@ -60,6 +65,42 @@ namespace DotLiquid
 						throw new SyntaxException(Liquid.ResourceManager.GetString("BlockTagNotTerminatedException"), token, Liquid.TagEnd);
 					}
 				}
+                else if ( isShortCodeMatch.Success )
+                {
+                    Match fullShortCodeMatch = FullShortCodeToken.Match( token );
+                    if ( fullShortCodeMatch.Success )
+                    {
+                        // If we found the proper block delimitor just end parsing here and let the outer block
+                        // proceed
+                        if ( BlockDelimiter == fullShortCodeMatch.Groups[1].Value )
+                        {
+                            EndTag();
+                            return;
+                        }
+
+                        // Fetch the shortcode from registered shortcodes
+                        Type shortcodeType;
+                        if ( (shortcodeType = Template.GetShortcodeType( fullShortCodeMatch.Groups[1].Value )) != null )
+                        {
+                            Tag shortcode = (Tag)Activator.CreateInstance( shortcodeType );
+                            shortcode.Initialize( fullShortCodeMatch.Groups[1].Value, fullShortCodeMatch.Groups[2].Value, tokens );
+                            NodeList.Add( shortcode );
+
+                            // If the tag has some rules (eg: it must occur once) then check for them
+                            shortcode.AssertTagRulesViolation( NodeList );
+                        }
+                        else
+                        {
+                            // This tag is not registered with the system
+                            // pass it to the current block for special handling or error reporting
+                            UnknownTag( fullShortCodeMatch.Groups[1].Value, fullShortCodeMatch.Groups[2].Value, tokens );
+                        }
+                    }
+                    else
+                    {
+                        throw new SyntaxException( Liquid.ResourceManager.GetString( "BlockTagNotTerminatedException" ), token, Liquid.TagEnd );
+                    }
+                }
 				else if (IsVariable.Match(token).Success)
 				{
 					NodeList.Add(CreateVariable(token));
