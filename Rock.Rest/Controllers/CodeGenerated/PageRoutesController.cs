@@ -30,9 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PageRoutesController : Rock.Rest.ApiController<Rock.Model.PageRoute>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PageRoutesController"/> class.
-        /// </summary>
         public PageRoutesController() : base( new Rock.Model.PageRouteService( new Rock.Data.RockContext() ) ) { } 
     }
 }

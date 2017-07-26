@@ -30,9 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class GroupScheduleExclusionsController : Rock.Rest.ApiController<Rock.Model.GroupScheduleExclusion>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupScheduleExclusionsController"/> class.
-        /// </summary>
         public GroupScheduleExclusionsController() : base( new Rock.Model.GroupScheduleExclusionService( new Rock.Data.RockContext() ) ) { } 
     }
 }

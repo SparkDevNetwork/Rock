@@ -297,15 +297,8 @@ namespace RockWeb
             }
             catch (Exception ex)
             {
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "##Startup Exception##: {0}\n{1}", ex.Message, ex.StackTrace ) );
-                }
-
                 SetError66();
-                var startupException = new Exception( "Error occurred during application startup", ex );
-                LogError( startupException, null );
-                throw startupException;
+                throw ( new Exception( "Error occurred during application startup", ex ) );
             }
 
             // Update attributes for new workflow actions
@@ -767,9 +760,6 @@ namespace RockWeb
 
             // Add a default route for when no parameters are passed
             routes.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
-
-            // Add a default route for shortlinks
-            routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
         }
 
         /// <summary>

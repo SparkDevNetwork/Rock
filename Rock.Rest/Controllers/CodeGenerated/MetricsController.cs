@@ -30,9 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class MetricsController : Rock.Rest.ApiController<Rock.Model.Metric>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MetricsController"/> class.
-        /// </summary>
         public MetricsController() : base( new Rock.Model.MetricService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -18,7 +18,6 @@
         + function wheel( event ) now only adjust the content when the scrollbar is vertical (axis == 'y')
         + touch events now only get attached when the content when the scrollbar is vertical (axis == 'y')
         + if a scroll position is specified, it now will only scroll if there is a scrollbar visible
-        + always enable mouse based scrolling, even on touch devices (some devices support both)
  */
 ;( function( $ ) 
 {
@@ -118,10 +117,12 @@
 
         function setEvents()
         {
-            oThumb.obj.bind( 'mousedown', start );
-            oTrack.obj.bind( 'mouseup', drag );
-
-            if ( touchEvents )
+			if( ! touchEvents )
+            {
+                oThumb.obj.bind( 'mousedown', start );
+                oTrack.obj.bind( 'mouseup', drag );
+            }
+            else
             {
                 oViewport.obj[0].ontouchstart = function( event )
                 {   
@@ -161,11 +162,13 @@
             iMouse.start    = sAxis ? event.pageX : event.pageY;
             iPosition.start = oThumbDir == 'auto' ? 0 : oThumbDir;
             
-            $( document ).bind( 'mousemove', drag );
-            $( document ).bind( 'mouseup', end );
-            oThumb.obj.bind( 'mouseup', end );
-
-            if (touchEvents)
+            if( ! touchEvents )
+            {
+                $( document ).bind( 'mousemove', drag );
+                $( document ).bind( 'mouseup', end );
+                oThumb.obj.bind( 'mouseup', end );
+            }
+            else
             {
                 if (options.axis == 'x') {
                     // don't hook to document.ontouchmove when in X mode

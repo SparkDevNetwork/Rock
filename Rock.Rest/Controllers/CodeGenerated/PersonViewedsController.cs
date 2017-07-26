@@ -30,9 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PersonViewedsController : Rock.Rest.ApiController<Rock.Model.PersonViewed>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonViewedsController"/> class.
-        /// </summary>
         public PersonViewedsController() : base( new Rock.Model.PersonViewedService( new Rock.Data.RockContext() ) ) { } 
     }
 }

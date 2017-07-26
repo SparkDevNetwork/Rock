@@ -1303,9 +1303,7 @@ WHERE gta.GroupTypeId IS NULL" );
 
                 if ( !useBulkInsertForPhotos )
                 {
-                    byte[] photoData = Convert.FromBase64String( photoImport.PhotoData );
-                    binaryFileToInsert.FileSize = photoData.Length;
-                    binaryFileToInsert.ContentStream = new MemoryStream( photoData );
+                    binaryFileToInsert.ContentStream = new MemoryStream( Convert.FromBase64String( photoImport.PhotoData ) );
                 }
 
                 binaryFileToInsert.SetStorageEntityTypeId( binaryFileType.StorageEntityTypeId );

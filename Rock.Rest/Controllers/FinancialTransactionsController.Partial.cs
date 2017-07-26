@@ -39,7 +39,8 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Posts the scanned.
         /// </summary>
-        /// <param name="financialTransactionScannedCheck">The financial transaction scanned check.</param>
+        /// <param name="financialTransaction">The financial transaction.</param>
+        /// <param name="checkMicr">The check micr.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]

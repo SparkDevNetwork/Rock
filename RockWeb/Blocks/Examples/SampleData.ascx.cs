@@ -2996,9 +2996,7 @@ namespace RockWeb.Blocks.Examples
             var webClient = new WebClient();
             try
             {
-                byte[] imageData = webClient.DownloadData( imageUrl );
-                binaryFile.FileSize = imageData.Length;
-                binaryFile.ContentStream = new MemoryStream( imageData );
+                binaryFile.ContentStream = new MemoryStream( webClient.DownloadData( imageUrl ) );
 
                 if ( webClient.ResponseHeaders != null )
                 {

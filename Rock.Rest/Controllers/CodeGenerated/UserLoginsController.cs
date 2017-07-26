@@ -30,9 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class UserLoginsController : Rock.Rest.ApiController<Rock.Model.UserLogin>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserLoginsController"/> class.
-        /// </summary>
         public UserLoginsController() : base( new Rock.Model.UserLoginService( new Rock.Data.RockContext() ) ) { } 
     }
 }

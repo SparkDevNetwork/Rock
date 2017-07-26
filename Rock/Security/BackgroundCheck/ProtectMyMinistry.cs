@@ -769,7 +769,6 @@ Response XML ({0}):
                         binaryFile.BinaryFileTypeId = binaryFileType.Id;
                         binaryFile.MimeType = "application/pdf";
                         binaryFile.FileName = fileName;
-                        binaryFile.FileSize = data.Length;
                         binaryFile.ContentStream = new MemoryStream( data );
 
                         var binaryFileService = new BinaryFileService( rockContext );

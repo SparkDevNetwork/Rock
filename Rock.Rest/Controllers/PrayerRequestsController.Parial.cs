@@ -31,10 +31,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PrayerRequestsController
     {
-        /// <summary>
-        /// Queryable GET of PrayerRequest records that Public, Active, Approved and not expired
-        /// </summary>
-        /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [EnableQuery]
@@ -52,7 +48,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Queryable GET of Prayer Requests for the specified top-level category
+        /// Gets Prayer Requests for the specified top-level category
         /// Prayer Requests that are in categories that are decendents of the specified category will also be included
         /// </summary>
         /// <param name="categoryId">The category identifier.</param>

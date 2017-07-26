@@ -144,9 +144,6 @@ namespace RockWeb.Blocks.Event
                         tbFromEmail.Text = _template.WaitListTransitionFromEmail.ResolveMergeFields( mergeObjects );
                         ceEmailMessage.Text = _template.WaitListTransitionEmailTemplate;
                         ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
-
-                        // needed to work in IE
-                        ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
                     }
                 }
                 else
@@ -186,9 +183,6 @@ namespace RockWeb.Blocks.Event
                 {
                     Dictionary<string, object> mergeObjects = GetMergeObjects( _firstRegistration );
                     ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
-
-                    // needed to work in IE
-                    ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
                 }
             }
             else

@@ -36,7 +36,7 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Uploads a file and stores it as a binary file
         /// </summary>
-        /// <param name="binaryFileTypeGuid">The binary file type unique identifier.</param>
+        /// <param name="binaryFileTypeId"></param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]
@@ -109,7 +109,6 @@ namespace Rock.Rest.Controllers
                 binaryFile.BinaryFileTypeId = binaryFileType.Id;
                 binaryFile.MimeType = uploadedFile.ContentType;
                 binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
-                binaryFile.FileSize = uploadedFile.ContentLength;
                 binaryFile.ContentStream = FileUtilities.GetFileContentStream( uploadedFile );
 
                 rockContext.SaveChanges();

@@ -115,10 +115,8 @@ namespace RockWeb
             Exception ex = GetSavedValue( "RockLastException" ) as Exception;
             if ( ex != null )
             {
-                bool partialPostback = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
-
                 int? siteId = ( GetSavedValue( "Rock:SiteId" ) ?? string.Empty ).ToString().AsIntegerOrNull();
-                if ( !partialPostback && siteId.HasValue )
+                if ( siteId.HasValue )
                 {
                     var site = SiteCache.Read( siteId.Value );
                     if ( site != null && !string.IsNullOrWhiteSpace( site.ErrorPage ) )
@@ -171,7 +169,7 @@ namespace RockWeb
                     }
                 }
 
-                if ( partialPostback )
+                if ( Request.Headers["X-Requested-With"] == "XMLHttpRequest" )
                 {
                     Response.StatusCode = 500;
                     Response.Clear();

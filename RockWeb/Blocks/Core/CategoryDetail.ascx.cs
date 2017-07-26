@@ -245,7 +245,6 @@ namespace RockWeb.Blocks.Core
             }
 
             category.Name = tbName.Text;
-            category.Description = tbDescription.Text;
             category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
             category.IconCssClass = tbIconCssClass.Text;
             category.HighlightColor = tbHighlightColor.Text;
@@ -420,7 +419,16 @@ namespace RockWeb.Blocks.Core
             SetEditMode( true );
 
             tbName.Text = category.Name;
-            tbDescription.Text = category.Description;
+
+            if ( category.EntityTypeId != 0 )
+            {
+                var entityType = EntityTypeCache.Read( category.EntityTypeId );
+                lblEntityTypeName.Text = entityType.Name;
+            }
+            else
+            {
+                lblEntityTypeName.Text = string.Empty;
+            }
 
             var excludeCategoriesGuids = this.GetAttributeValue( "ExcludeCategories" ).SplitDelimitedValues().AsGuidList();
             List<int> excludedCategoriesIds = new List<int>();
@@ -445,6 +453,10 @@ namespace RockWeb.Blocks.Core
             cpParentCategory.RootCategoryId = rootCategory != null ? rootCategory.Id : (int?)null;
             cpParentCategory.SetValue( category.ParentCategoryId );
 
+            lblEntityTypeQualifierColumn.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierColumn );
+            lblEntityTypeQualifierColumn.Text = category.EntityTypeQualifierColumn;
+            lblEntityTypeQualifierValue.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierValue );
+            lblEntityTypeQualifierValue.Text = category.EntityTypeQualifierValue;
             tbIconCssClass.Text = category.IconCssClass;
             tbHighlightColor.Text = category.HighlightColor;
         }
@@ -472,7 +484,7 @@ namespace RockWeb.Blocks.Core
             }
 
             lblMainDetails.Text = new DescriptionList()
-                .Add( "Description", category.Description )
+                .Add( "Entity Type", category.EntityType.Name )
                 .Html;
 
         }

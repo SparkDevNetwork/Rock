@@ -18,7 +18,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Web;
@@ -480,15 +479,8 @@ namespace Rock.Web.Cache
         {
             get
             {
-                var formattedTransitionDate = GetValue( "GradeTransitionDate" ) + "/" + RockDateTime.Today.Year;
-                DateTime transitionDate;
-
-                // Check Date Validity
-                if ( !DateTime.TryParseExact( formattedTransitionDate, new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" }, CultureInfo.InvariantCulture,
-                    DateTimeStyles.AllowWhiteSpaces, out transitionDate ) )
-                {
-                    transitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
-                }
+                var transitionDate = GetValue( "GradeTransitionDate" ).AsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
+                transitionDate = new DateTime( RockDateTime.Today.Year, transitionDate.Month, transitionDate.Day );
                 return RockDateTime.Now.Date < transitionDate ? transitionDate.Year : transitionDate.Year + 1;
             }
         }

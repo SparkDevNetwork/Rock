@@ -36,10 +36,9 @@ namespace Rock.Rest.Controllers
     public partial class PersonBadgesController
     {
         /// <summary>
-        /// Gets the attendance summary data for the 24 month attendance badge
+        /// Gets the attendance summary data for the 24 month attenance badge 
         /// </summary>
         /// <param name="personId">The person id.</param>
-        /// <param name="groupTypeGuid">The group type unique identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
@@ -95,10 +94,9 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the attendance summary data for the 24 month attendance badge
+        /// Gets the attendance summary data for the 24 month attenance badge 
         /// </summary>
         /// <param name="personId">The person id.</param>
-        /// <param name="definedValueGuid">The defined value unique identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
@@ -150,7 +148,6 @@ namespace Rock.Rest.Controllers
         /// Returns groups that are a specified type and geofence a given person
         /// </summary>
         /// <param name="personId">The person id.</param>
-        /// <param name="groupTypeGuid">The group type unique identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
@@ -182,10 +179,9 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the attendance summary data for the 24 month attendance badge
+        /// Gets the attendance summary data for the 24 month attenance badge 
         /// </summary>
         /// <param name="personId">The person id.</param>
-        /// <param name="weekCount">The week count.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
@@ -206,10 +202,9 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the attendance summary data for the 24 month attendance badge
+        /// Gets the attendance summary data for the 24 month attenance badge 
         /// </summary>
         /// <param name="personId">The person id.</param>
-        /// <param name="siteId">The site identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
@@ -242,10 +237,9 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the attendance summary data for the 24 month attendance badge
+        /// Gets the attendance summary data for the 24 month attenance badge 
         /// </summary>
         /// <param name="personId">The person id.</param>
-        /// <param name="monthCount">The month count.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]

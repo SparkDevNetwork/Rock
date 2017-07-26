@@ -74,6 +74,16 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Prompts the name of for bank account.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public override bool PromptForBankAccountName( FinancialGateway financialGateway )
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Gets a value indicating whether [address required].
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>

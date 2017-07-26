@@ -47,9 +47,6 @@ namespace Rock.Client
         public string FileName { get; set; }
 
         /// <summary />
-        public long? FileSize { get; set; }
-
-        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -112,7 +109,6 @@ namespace Rock.Client
             this.ContentLastModified = source.ContentLastModified;
             this.Description = source.Description;
             this.FileName = source.FileName;
-            this.FileSize = source.FileSize;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsSystem = source.IsSystem;

@@ -30,9 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class RegistrationsController : Rock.Rest.ApiController<Rock.Model.Registration>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RegistrationsController"/> class.
-        /// </summary>
         public RegistrationsController() : base( new Rock.Model.RegistrationService( new Rock.Data.RockContext() ) ) { } 
     }
 }

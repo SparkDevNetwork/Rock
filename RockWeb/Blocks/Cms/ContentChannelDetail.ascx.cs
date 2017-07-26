@@ -369,9 +369,6 @@ namespace RockWeb.Blocks.Cms
                 Response.Redirect( pageReference.BuildUrl(), false );
             }
 
-            // flush cache
-            ContentChannelCache.Flush( contentChannel.Id );
-
         }
 
         /// <summary>

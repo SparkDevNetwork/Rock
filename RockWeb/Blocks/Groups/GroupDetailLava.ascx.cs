@@ -952,11 +952,6 @@ namespace RockWeb.Blocks.Groups
                 groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
                 groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
                 groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                ppGroupMemberPerson.Enabled = true;
-            }
-            else
-            {
-                ppGroupMemberPerson.Enabled = false;
             }
 
             // load dropdowns

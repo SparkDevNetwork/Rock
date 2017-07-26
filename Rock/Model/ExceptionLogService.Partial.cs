@@ -154,9 +154,7 @@ namespace Rock.Model
                 var rockContext = new Rock.Data.RockContext();
                 var exceptionLogService = new ExceptionLogService( rockContext );
                 exceptionLogService.Add( exceptionLog );
-
-                // call SaveChanges with 'disablePrePostProcessing=true' just in case the pre/post processing would also cause exceptions
-                rockContext.SaveChanges( true );
+                rockContext.SaveChanges();
 
                 // Recurse if inner exception is found
                 if ( exceptionLog.HasInnerException.GetValueOrDefault( false ) )
@@ -191,7 +189,7 @@ namespace Rock.Model
                     string when = RockDateTime.Now.ToString();
                     while ( ex != null )
                     {
-                        File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\",\"{3}\"\r\n", when, ex.GetType(), ex.Message, ex.StackTrace ) );
+                        File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", when, ex.GetType(), ex.Message ) );
                         ex = ex.InnerException;
                     }
                 }

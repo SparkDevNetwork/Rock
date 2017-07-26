@@ -30,9 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class FinancialTransactionImagesController : Rock.Rest.ApiController<Rock.Model.FinancialTransactionImage>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialTransactionImagesController"/> class.
-        /// </summary>
         public FinancialTransactionImagesController() : base( new Rock.Model.FinancialTransactionImageService( new Rock.Data.RockContext() ) ) { } 
     }
 }

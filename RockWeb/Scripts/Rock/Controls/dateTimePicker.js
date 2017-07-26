@@ -14,24 +14,20 @@
                     dateFormat = options.format;
                 }
 
-                var $dp = $('#' + options.id + " .js-datetime-date");
-
-                var $dateTimePickerContainer = $dp.closest('.js-datetime-picker-container');
-                var $dateTimePickerInputGroup = $dp.closest('.input-group.date');
+                var $dp = $('#' + options.id + " .input-group.date");
 
                 // uses https://github.com/eternicode/bootstrap-datepicker
-                $dateTimePickerInputGroup.datepicker({
+                $dp.datepicker({
                     format: dateFormat,
                     autoclose: true,
                     todayBtn: true,
                     startView: options.startView || 'month',
                     todayHighlight: options.todayHighlight || true
                 });
-
+                
                 // if the guest clicks the addon select all the text in the input
-                $dateTimePickerInputGroup.find('.input-group-addon').on('click', function ()
-                {
-                  $(this).siblings('.form-control').select();
+                $dp.find('.input-group-addon').on('click', function () {
+                    $(this).siblings('.form-control').select();
                 });
 
                 var $tp = $('#' + options.id + " .js-datetime-time");
@@ -43,6 +39,8 @@
                         });
                     }
                 }
+
+                var $dateTimePickerContainer = $dp.closest('.js-datetime-picker-container');
                 
                 $dateTimePickerContainer.find('.js-current-datetime-checkbox').on('click', function (a, b, c) {
                     var $dateTimeOffsetBox = $dateTimePickerContainer.find('.js-current-datetime-offset');
