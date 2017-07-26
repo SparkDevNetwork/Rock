@@ -64,7 +64,7 @@ namespace Rock.Workflow.Action.CheckIn
                         person.Labels = new List<CheckInLabel>();
 
                         var attendanceRecs = attendanceService
-                            .Queryable().AsNoTracking()
+                            .Queryable()
                             .Where( a =>
                                 person.AttendanceIds.Contains( a.Id ) &&
                                 a.PersonAlias != null &&

@@ -2313,9 +2313,18 @@ Sys.Application.add_load(function () {
         {
             HtmlLink htmlLink = new HtmlLink();
 
+            if ( fingerprint )
+            {
+                htmlLink.Attributes.Add( "href", Fingerprint.Tag( page.ResolveUrl( href ) ) );
+            }
+            else
+            {
+                htmlLink.Attributes.Add( "href", page.ResolveUrl( href ) );
+            }
+
             htmlLink.Attributes.Add( "type", "text/css" );
             htmlLink.Attributes.Add( "rel", "stylesheet" );
-            htmlLink.Attributes.Add( "href", page.ResolveUrl( href ) );
+            
             if ( mediaType != string.Empty )
             {
                 htmlLink.Attributes.Add( "media", mediaType );

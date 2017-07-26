@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class InteractionChannelsController : Rock.Rest.ApiController<Rock.Model.InteractionChannel>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InteractionChannelsController"/> class.
+        /// </summary>
         public InteractionChannelsController() : base( new Rock.Model.InteractionChannelService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class InteractionDeviceTypesController : Rock.Rest.ApiController<Rock.Model.InteractionDeviceType>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InteractionDeviceTypesController"/> class.
+        /// </summary>
         public InteractionDeviceTypesController() : base( new Rock.Model.InteractionDeviceTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

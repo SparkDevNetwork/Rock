@@ -26,6 +26,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -154,6 +155,7 @@ namespace RockWeb.Blocks.Administration
             {
                 if ( !Page.IsPostBack )
                 {
+                    LoadDropDowns();
                     BindGrids();
                 }
             }
@@ -728,6 +730,52 @@ namespace RockWeb.Blocks.Administration
 
             pnlLists.Visible = false;
             pnlDetails.Visible = true;
+        }
+
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {
+            var rockContext = new RockContext();
+            var commonBlockTypes = new BlockTypeService( rockContext ).Queryable().Where( a => a.IsCommon ).OrderBy( a => a.Name ).AsNoTracking().ToList();
+
+            rptCommonBlockTypes.DataSource = commonBlockTypes;
+            rptCommonBlockTypes.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptCommonBlockTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptCommonBlockTypes_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            LinkButton btnNewBlockQuickSetting = e.Item.FindControl( "btnNewBlockQuickSetting" ) as LinkButton;
+            var blockType = e.Item.DataItem as BlockType;
+            if ( blockType != null && btnNewBlockQuickSetting != null )
+            {
+                btnNewBlockQuickSetting.Text = blockType.Name;
+                btnNewBlockQuickSetting.CommandArgument = blockType.Id.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnNewBlockQuickSetting control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnNewBlockQuickSetting_Click( object sender, EventArgs e )
+        {
+            LinkButton btnNewBlockQuickSetting = sender as LinkButton;
+
+            BlockTypeCache quickSettingBlockType = BlockTypeCache.Read( btnNewBlockQuickSetting.CommandArgument.AsInteger() );
+
+            if ( quickSettingBlockType != null )
+            {
+                ddlBlockType.SetValue( quickSettingBlockType.Id );
+                ddlBlockType_SelectedIndexChanged( sender, e );
+            }
         }
 
         #endregion

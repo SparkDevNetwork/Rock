@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class SchedulesController : Rock.Rest.ApiController<Rock.Model.Schedule>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SchedulesController"/> class.
+        /// </summary>
         public SchedulesController() : base( new Rock.Model.ScheduleService( new Rock.Data.RockContext() ) ) { } 
     }
 }

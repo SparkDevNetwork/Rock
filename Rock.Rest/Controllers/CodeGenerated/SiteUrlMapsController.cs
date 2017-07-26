@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class SiteUrlMapsController : Rock.Rest.ApiController<Rock.Model.SiteUrlMap>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SiteUrlMapsController"/> class.
+        /// </summary>
         public SiteUrlMapsController() : base( new Rock.Model.SiteUrlMapService( new Rock.Data.RockContext() ) ) { } 
     }
 }

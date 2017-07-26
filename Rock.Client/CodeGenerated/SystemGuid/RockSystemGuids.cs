@@ -85,6 +85,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Category
     {
+        public const string DEFINEDTYPE_CMS = "6B1B3106-B7F5-BBA2-4F81-8300F21F6661";
         public const string HISTORY_EVENT_REGISTRATION = "813DF1A5-ADBD-481C-AC1D-884F0FA7AE77";
         public const string HISTORY_FINANCIAL_BATCH = "AF6A8CFF-F24F-4AA8-B126-94B6903961C0";
         public const string HISTORY_FINANCIAL_TRANSACTION = "477EE3BE-C68F-48BD-B218-FAFC99AF56B3";
@@ -142,6 +143,7 @@ namespace Rock.Client.SystemGuid
         public const string GROUP_LOCATION_TYPE = "2E68D37C-FB7B-4AA5-9E09-3785D52156CB";
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
         public const string INTERACTION_CHANNEL_MEDIUM = "9bf5777a-961f-49a8-a834-45e5c2077967";
+        public const string LAVA_SHORTCODES = "3B1AF656-7AEF-52A8-4E2C-5EFF75A1A23A";
         public const string LINKLIST_DEFAULT_LIST = "7E7969BD-945C-4472-8A80-889EF5833776";
         public const string LOCATION_ADDRESS_STATE = "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB";
         public const string LOCATION_COUNTRIES = "D7979EA1-44E9-46E2-BF37-DDAF7F741378";
@@ -165,6 +167,7 @@ namespace Rock.Client.SystemGuid
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
+        public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
     }
 
@@ -276,6 +279,7 @@ namespace Rock.Client.SystemGuid
         public const string CONTENT_CHANNEL = "44484685-477E-4668-89A6-84F29739EB68";
         public const string CONTENT_CHANNEL_ITEM = "BF12AE64-21FB-433B-A8A4-E40E8C426DDA";
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
+        public const string DEFINED_TYPE = "6028D502-79F4-4A74-9323-525E90F900C7";
         public const string FINANCIAL_ACCOUNT = "798BCE48-6AA7-4983-9214-F9BCEFB4521D";
         public const string FINANCIAL_BATCH = "BDD09C8E-2C52-4D08-9062-BE7D52D190C2";
         public const string FINANCIAL_TRANSACTION = "2C1CB26B-AB22-42D0-8164-AEDEE0DAE667";
@@ -531,6 +535,7 @@ namespace Rock.Client.SystemGuid
         public const string COMMUNICATIONS_ROCK_SETTINGS = "199DC522-F4D6-4D82-AF44-3C16EE9D2CDA";
         public const string CONFIGURATION = "4AB679AF-C8CC-427C-A615-0BF9F52E8E3E";
         public const string CONFIRM = "D73F83B4-E20E-4F95-9A2C-511FB669F44C";
+        public const string CONNECTION_REQUEST_DETAIL = "50f04e77-8d3b-4268-80ab-bc15dd6cb262";
         public const string CONNECTIONS = "530860ED-BC73-4A43-8E7C-69533EF2B6AD";
         public const string CONTACT_US = "B1E63FE3-779C-4388-AFE4-FD6DFC034932";
         public const string CONTENT = "117B547B-9D71-4EE9-8047-176676F5DC8C";

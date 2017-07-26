@@ -125,6 +125,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionDeviceType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionSession.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LavaShortcode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Layout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Location.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LoginParameters.cs" />
@@ -143,6 +144,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageRoute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Person.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonalDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonAlias.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonBadge.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonDuplicate.cs" />
@@ -172,6 +174,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteDomain.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteUrlMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemEmail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Tag.cs" />

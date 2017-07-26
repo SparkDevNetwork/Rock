@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -36,7 +37,7 @@ namespace RockWeb.Blocks.Core
 
     [LinkedPage("Detail Page")]
     public partial class DeviceList : RockBlock
-    { 
+    {
         #region Control Methods
 
         /// <summary>
@@ -55,6 +56,8 @@ namespace RockWeb.Blocks.Core
             gDevice.Actions.ShowAdd = true;
             gDevice.Actions.AddClick += gDevice_Add;
             gDevice.GridRebind += gDevice_GridRebind;
+
+            AddDynamicColumns();
 
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
@@ -214,6 +217,52 @@ namespace RockWeb.Blocks.Core
         #region Internal Methods
 
         /// <summary>
+        /// Add all the dynamic columns needed to properly display devices.
+        /// </summary>
+        protected void AddDynamicColumns()
+        {
+            // Remove attribute columns
+            foreach ( var column in gDevice.Columns.OfType<AttributeField>().ToList() )
+            {
+                gDevice.Columns.Remove( column );
+            }
+
+            // Add attribute columns
+            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Device ) ).Id;
+            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn && 
+                    a.EntityTypeQualifierColumn == string.Empty
+                    )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
+            {
+                string dataFieldExpression = attribute.Key;
+                bool columnExists = gDevice.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                if ( !columnExists )
+                {
+                    AttributeField boundField = new AttributeField();
+                    boundField.DataField = dataFieldExpression;
+                    boundField.AttributeId = attribute.Id;
+                    boundField.HeaderText = attribute.Name;
+
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    if ( attributeCache != null )
+                    {
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                    }
+
+                    gDevice.Columns.Add( boundField );
+                }
+            }
+
+            var deleteField = new DeleteField();
+            gDevice.Columns.Add( deleteField );
+            deleteField.Click += gDevice_Delete;
+        }
+
+        /// <summary>
         /// Binds the filter.
         /// </summary>
         private void BindFilter()
@@ -254,19 +303,7 @@ namespace RockWeb.Blocks.Core
             var sortProperty = gDevice.SortProperty;
             gDevice.EntityTypeId = EntityTypeCache.Read<Device>().Id;
 
-            var queryable = deviceService.Queryable().Select( a =>
-                new
-                {
-                    a.Id,
-                    a.Name,
-                    DeviceTypeName = a.DeviceType.Value,
-                    a.IPAddress,
-                    a.PrintToOverride,
-                    a.PrintFrom,
-                    PrinterDeviceName = a.PrinterDevice.Name,
-                    a.PrinterDeviceId,
-                    a.DeviceTypeValueId
-                } );
+            var queryable = deviceService.Queryable();
 
             string name = fDevice.GetUserPreference( "Name" );
             if ( !string.IsNullOrWhiteSpace( name ) )
@@ -304,14 +341,31 @@ namespace RockWeb.Blocks.Core
                 PrintFrom printFrom = (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), fDevice.GetUserPreference( "Print From" ) ); ;
                 queryable = queryable.Where( d => d.PrintFrom == printFrom );
             }
-                   
+
+            gDevice.ObjectList = new Dictionary<string, object>();
+            queryable.ToList().ForEach( d => gDevice.ObjectList.Add( d.Id.ToString(), d ) );
+
+            var gridList = queryable.Select( a =>
+                new
+                {
+                    a.Id,
+                    a.Name,
+                    DeviceTypeName = a.DeviceType.Value,
+                    a.IPAddress,
+                    a.PrintToOverride,
+                    a.PrintFrom,
+                    PrinterDeviceName = a.PrinterDevice.Name,
+                    a.PrinterDeviceId,
+                    a.DeviceTypeValueId
+                } );
+
             if ( sortProperty != null )
             {
-                gDevice.DataSource = queryable.Sort( sortProperty ).ToList();
+                gDevice.DataSource = gridList.Sort( sortProperty ).ToList();
             }
             else
             {
-                gDevice.DataSource = queryable.OrderBy( d => d.Name ).ToList();
+                gDevice.DataSource = gridList.OrderBy( d => d.Name ).ToList();
             }
 
             gDevice.EntityTypeId = EntityTypeCache.Read<Rock.Model.Device>().Id;

@@ -74,10 +74,10 @@ namespace RockWeb.Blocks.Connection
     {% if ConnectionRequestStatusIcons.IsUnassigned %}
     <span class='badge badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned'>&nbsp;</span>
     {% endif %}
-    {% if ConnectionRequestStatusIcons.IsIdle %}
+    {% if ConnectionRequestStatusIcons.IsCritical %}
     <span class='badge badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical'>&nbsp;</span>
     {% endif %}
-    {% if ConnectionRequestStatusIcons.IsCritical %}
+    {% if ConnectionRequestStatusIcons.IsIdle %}
     <span class='badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'>&nbsp;</span> 
     {% endif %}
 </div>
@@ -90,6 +90,7 @@ namespace RockWeb.Blocks.Connection
 
         private const string TOGGLE_SETTING = "MyConnectionOpportunities_Toggle";
         private const string SELECTED_OPPORTUNITY_SETTING = "MyConnectionOpportunities_SelectedOpportunity";
+        private const string CAMPUS_SETTING = "MyConnectionOpportunities_SelectedCampus";
         DateTime _midnightToday = RockDateTime.Today.AddDays( 1 );
         #endregion
 
@@ -166,6 +167,12 @@ namespace RockWeb.Blocks.Connection
                 // Reset the state filter on every initial request to be Active and Past Due future follow up
                 rFilter.SaveUserPreference( "State", "State", "0;-2" );
 
+                // NOTE: Don't include Inactive Campuses for the "Campus Filter for Page"
+                cpCampusFilterForPage.Campuses = CampusCache.All( false );
+                cpCampusFilterForPage.Items[0].Text = "All";
+
+                cpCampusFilterForPage.SelectedCampusId = GetUserPreference( CAMPUS_SETTING ).AsIntegerOrNull();
+
                 GetSummaryData();
 
                 RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.visible.min.js" ) );
@@ -197,6 +204,17 @@ namespace RockWeb.Blocks.Connection
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cpCampusPickerForPage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cpCampusPickerForPage_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetUserPreference( CAMPUS_SETTING, cpCampusFilterForPage.SelectedCampusId.ToString() );
+            GetSummaryData();
+        }
 
         #region Events
 
@@ -316,7 +334,7 @@ namespace RockWeb.Blocks.Connection
             personId = ppConnector.PersonId;
             rFilter.SaveUserPreference( "Connector", "Connector", personId.HasValue ? personId.Value.ToString() : string.Empty );
 
-            rFilter.SaveUserPreference( "Campus", "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( "Campus", "Campus", cblCampusGridFilter.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( "State", "State", cblState.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Status" ), "Status", cblStatus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "LastActivity" ), "Last Activity", cblLastActivity.SelectedValues.AsDelimited( ";" ) );
@@ -363,7 +381,15 @@ namespace RockWeb.Blocks.Connection
                 }
                 else if ( e.Key == "Campus" )
                 {
-                    e.Value = ResolveValues( e.Value, cblCampus );
+                    if ( cpCampusFilterForPage.SelectedCampusId.HasValue )
+                    {
+                        // using the Campus Filter for the Page, and not the grid filter, so don't show the campus grid filter value
+                        e.Value = null;
+                    }
+                    else
+                    {
+                        e.Value = ResolveValues( e.Value, cblCampusGridFilter );
+                    }
                 }
                 else if ( e.Key == "State" )
                 {
@@ -561,6 +587,11 @@ namespace RockWeb.Blocks.Connection
                     // get list of idle requests (no activity in past X days)
 
                     var connectionRequestsQry = new ConnectionRequestService( rockContext ).Queryable().Where( a => a.ConnectionOpportunityId == opportunity.Id );
+                    if ( cpCampusFilterForPage.SelectedCampusId.HasValue )
+                    {
+                        connectionRequestsQry = connectionRequestsQry.Where( a => a.CampusId.HasValue && a.CampusId == cpCampusFilterForPage.SelectedCampusId );
+                    }
+
                     var currentDateTime = RockDateTime.Now;
                     int activeRequestCount = connectionRequestsQry
                         .Where( cr =>
@@ -627,7 +658,7 @@ namespace RockWeb.Blocks.Connection
 
             // Get all the active and past-due future followup request ids, and include the campus id and personid of connector
             var midnightToday = RockDateTime.Today.AddDays( 1 );
-            var activeRequests = new ConnectionRequestService( rockContext )
+            var activeRequestsQry = new ConnectionRequestService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( r =>
                     allOpportunities.Contains( r.ConnectionOpportunityId ) &&
@@ -639,8 +670,15 @@ namespace RockWeb.Blocks.Connection
                     r.ConnectionOpportunityId,
                     r.CampusId,
                     ConnectorPersonId = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.PersonId : -1
-                } )
-                .ToList();
+                } );
+                
+
+            if ( cpCampusFilterForPage.SelectedCampusId.HasValue )
+            {
+                activeRequestsQry = activeRequestsQry.Where( a => a.CampusId.HasValue && a.CampusId == cpCampusFilterForPage.SelectedCampusId );
+            }
+
+            var activeRequests = activeRequestsQry.ToList();
 
             // Based on the active requests, set additional properties for each opportunity
             foreach ( var opportunity in SummaryState.SelectMany( s => s.Opportunities ) )
@@ -766,10 +804,11 @@ namespace RockWeb.Blocks.Connection
                     cblState.Visible = true;
                     cblState.SetValues( rFilter.GetUserPreference( "State" ).SplitDelimitedValues().AsIntegerList() );
                 }
-                
-                cblCampus.DataSource = CampusCache.All();
-                cblCampus.DataBind();
-                cblCampus.SetValues( rFilter.GetUserPreference( "Campus" ).SplitDelimitedValues().AsIntegerList() );
+
+                cblCampusGridFilter.Visible = !cpCampusFilterForPage.SelectedCampusId.HasValue;
+                cblCampusGridFilter.DataSource = CampusCache.All();
+                cblCampusGridFilter.DataBind();
+                cblCampusGridFilter.SetValues( rFilter.GetUserPreference( "Campus" ).SplitDelimitedValues().AsIntegerList() );
 
                 cblStatus.Items.Clear();
                 if ( SelectedOpportunityId.HasValue )
@@ -881,13 +920,23 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     // Filter by Campus
-                    List<int> campusIds = cblCampus.SelectedValuesAsInt;
-                    if ( campusIds.Count > 0 )
+                    if ( cpCampusFilterForPage.SelectedCampusId.HasValue )
                     {
+                        int campusId = cpCampusFilterForPage.SelectedCampusId.Value;
                         requests = requests
-                            .Where( r =>
-                                r.Campus != null &&
-                                campusIds.Contains( r.CampusId.Value ) );
+                                .Where( r =>
+                                    r.CampusId.HasValue && r.CampusId == campusId );
+                    }
+                    else
+                    {
+                        List<int> campusIds = cblCampusGridFilter.SelectedValuesAsInt;
+                        if ( campusIds.Count > 0 )
+                        {
+                            requests = requests
+                                .Where( r =>
+                                    r.Campus != null &&
+                                    campusIds.Contains( r.CampusId.Value ) );
+                        }
                     }
 
                     // Filter by Last Activity Note

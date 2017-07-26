@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AnalyticsSourcePersonHistoricalsController : Rock.Rest.ApiController<Rock.Model.AnalyticsSourcePersonHistorical>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsSourcePersonHistoricalsController"/> class.
+        /// </summary>
         public AnalyticsSourcePersonHistoricalsController() : base( new Rock.Model.AnalyticsSourcePersonHistoricalService( new Rock.Data.RockContext() ) ) { } 
     }
 }

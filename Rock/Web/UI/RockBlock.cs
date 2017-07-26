@@ -650,7 +650,7 @@ namespace Rock.Web.UI
         /// In each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value..</param>
         /// <returns>A <see cref="System.String"/> representing the URL to the linked <see cref="Rock.Model.Page"/>. </returns>
-        public string LinkedPageUrl( string attributeKey, Dictionary<string, string> queryParams = null )
+        public virtual string LinkedPageUrl( string attributeKey, Dictionary<string, string> queryParams = null )
         {
             var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
             if ( pageReference.PageId > 0 )
@@ -680,7 +680,7 @@ namespace Rock.Web.UI
         /// <param name="queryParams">A <see cref="System.Collections.Generic.Dictionary{String,String}"/> containing the query string parameters to include in the linked page URL.
         /// Each <see cref="System.Collections.Generic.KeyValuePair{String,String}"/> the key value is a <see cref="System.String"/> that represents the name of the query string
         /// parameter, and the value is a <see cref="System.String"/> that represents the query string value. This dictionary defaults to a null value.</param>
-        public bool NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
+        public virtual bool NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
         {
             string url = LinkedPageUrl( attributeKey, queryParams );
 
@@ -874,6 +874,7 @@ namespace Rock.Web.UI
                 {
                     return string.Format( "<img src='{0}'{1}/>", photoUrl.ToString(), styleString );
                 }
+
             }
 
             return string.Empty;

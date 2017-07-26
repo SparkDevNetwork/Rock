@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class NotificationsController : Rock.Rest.ApiController<Rock.Model.Notification>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NotificationsController"/> class.
+        /// </summary>
         public NotificationsController() : base( new Rock.Model.NotificationService( new Rock.Data.RockContext() ) ) { } 
     }
 }
