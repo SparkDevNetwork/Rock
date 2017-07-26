@@ -63,6 +63,16 @@ namespace Rock.Model
         public CommunicationType CommunicationType { get; set; }
 
         /// <summary>
+        /// Gets or sets the URL from where this communication was created (grid)
+        /// </summary>
+        /// <value>
+        /// The URL referrer.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string UrlReferrer { get; set; }
+
+        /// <summary>
         /// Gets or sets the list that email is being sent to.
         /// </summary>
         /// <value>

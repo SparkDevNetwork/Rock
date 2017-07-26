@@ -1311,7 +1311,7 @@ namespace Rock.Web.UI.Controls
 
                     if ( rockPage.Request != null && rockPage.Request.Url != null )
                     {
-                        communication.Name.AddOrReplace( "UrlReferrer", rockPage.Request.Url.AbsoluteUri );
+                        communication.UrlReferrer = rockPage.Request.Url.AbsoluteUri;
                     }
 
                     communicationService.Add( communication );

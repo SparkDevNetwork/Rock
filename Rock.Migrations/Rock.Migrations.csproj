@@ -257,9 +257,6 @@
     <Compile Include="Migrations\201707101648235_CommonBlockTypes.Designer.cs">
       <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201706302335586_communicationV2.cs" />
-    <Compile Include="Migrations\201706302335586_communicationV2.Designer.cs">
-      <DependentUpon>201706302335586_communicationV2.cs</DependentUpon>
     <Compile Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.cs" />
     <Compile Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.Designer.cs">
       <DependentUpon>201707121812263_UniversalSearchContentChannelUpdates.cs</DependentUpon>
@@ -295,6 +292,10 @@
     <Compile Include="Migrations\201707241828445_PersonAliasNullableId.cs" />
     <Compile Include="Migrations\201707241828445_PersonAliasNullableId.Designer.cs">
       <DependentUpon>201707241828445_PersonAliasNullableId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707260008549_Communications2.cs" />
+    <Compile Include="Migrations\201707260008549_Communications2.Designer.cs">
+      <DependentUpon>201707260008549_Communications2.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -2638,9 +2639,6 @@
     <EmbeddedResource Include="Migrations\201707101648235_CommonBlockTypes.resx">
       <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201706302335586_communicationV2.resx">
-      <DependentUpon>201706302335586_communicationV2.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.resx">
       <DependentUpon>201707121812263_UniversalSearchContentChannelUpdates.cs</DependentUpon>
     </EmbeddedResource>
@@ -2667,6 +2665,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707241828445_PersonAliasNullableId.resx">
       <DependentUpon>201707241828445_PersonAliasNullableId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707260008549_Communications2.resx">
+      <DependentUpon>201707260008549_Communications2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
