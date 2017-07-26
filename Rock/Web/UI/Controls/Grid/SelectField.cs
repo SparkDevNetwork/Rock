@@ -36,9 +36,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.HeaderStyle.CssClass = "grid-select-field";
             this.ItemStyle.CssClass = "grid-select-field";
-
         }
 
         #region Properties
@@ -172,6 +170,25 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["Tooltip"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the header tooltip
+        /// </summary>
+        /// <value>
+        /// The header tooltip
+        /// </value>
+        public string HeaderTooltip
+        {
+            get
+            {
+                return ViewState["HeaderTooltip"] as string;
+            }
+
+            set
+            {
+                ViewState["HeaderTooltip"] = value;
             }
         }
 
@@ -396,6 +413,7 @@ namespace Rock.Web.UI.Controls
                     Literal l = new Literal();
                     l.Text = selectField.HeaderText;
                     cell.Controls.Add( l );
+                    cell.ToolTip = selectField.HeaderTooltip;
 
                     if ( selectField.SelectionMode == SelectionMode.Multiple && selectField.ShowHeader && selectField.ShowSelectAll )
                     {
