@@ -60,14 +60,6 @@ namespace Rock.Web.Cache
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this blocktype is commonly used
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is common; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsCommon { get; private set; }
-
-        /// <summary>
         /// Gets or sets the path.
         /// </summary>
         /// <value>
@@ -115,7 +107,6 @@ namespace Rock.Web.Cache
         /// The security actions.
         /// </value>
         public ConcurrentDictionary<string, string> SecurityActions { get; set; }
-        
 
         #endregion
 
@@ -157,7 +148,6 @@ namespace Rock.Web.Cache
                 SetCache( blockType.Guid.ToString(), blockType.Id, guidCachePolicy );
 
                 this.IsSystem = blockType.IsSystem;
-                this.IsCommon = blockType.IsCommon;
                 this.Path = blockType.Path;
                 this.Name = blockType.Name;
                 this.Description = blockType.Description;

@@ -218,11 +218,11 @@ namespace RockWeb.Blocks.Checkin
                 _addedGroupIds = new List<int>();
                 int? campusId = bddlCampus.SelectedValueAsInt();
 
-                lContent.Text = BuildHierarchy( groupTypeIds, campusId );
+                lContent.Text = BuildHeirarchy( groupTypeIds, campusId );
             } 
         }
 
-        private string BuildHierarchy( List<int> groupTypeIds, int? campusId )
+        private string BuildHeirarchy( List<int> groupTypeIds, int? campusId )
         {
             GroupTypeService groupTypeService = new GroupTypeService( _rockContext );
 
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Checkin
 
                         if ( groupType.ChildGroupTypes.Count > 0 )
                         {
-                            groupTypeContent = BuildHierarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId );
+                            groupTypeContent = BuildHeirarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId );
                         }
 
                         var groupContent = new StringBuilder();
@@ -298,7 +298,7 @@ namespace RockWeb.Blocks.Checkin
                     {
                         if ( groupType.ChildGroupTypes.Count > 0 )
                         {
-                            content.Append( BuildHierarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId ) );
+                            BuildHeirarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId );
                         }
                     }
                 }

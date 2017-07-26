@@ -35,9 +35,10 @@ namespace Rock.Rest.Controllers
     public partial class WorkflowsController
     {
         /// <summary>
-        /// Initiates a new workflow
+        /// Gets the children.
         /// </summary>
-        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        /// <param name="id">The id.</param>
+        /// <param name="hidePageIds">List of pages that should not be included in results</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]

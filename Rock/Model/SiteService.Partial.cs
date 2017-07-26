@@ -81,22 +81,5 @@ namespace Rock.Model
 
             return null;
         }
-
-
-        /// <summary>
-        /// Gets the domain URI.
-        /// </summary>
-        /// <param name="siteId">The site identifier.</param>
-        /// <returns></returns>
-        public Uri GetDefaultDomainUri( int siteId )
-        {
-            var site = this.Get( siteId );
-            if ( site != null )
-            {
-                return site.DefaultDomainUri;
-            }
-
-            return null;
-        }
     }
 }

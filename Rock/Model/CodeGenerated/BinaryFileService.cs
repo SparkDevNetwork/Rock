@@ -152,7 +152,6 @@ namespace Rock.Model
             target.ContentLastModified = source.ContentLastModified;
             target.Description = source.Description;
             target.FileName = source.FileName;
-            target.FileSize = source.FileSize;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;

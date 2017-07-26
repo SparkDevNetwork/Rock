@@ -177,7 +177,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Prompts for the person name associated with a bank account.
+        /// Prompts the name of for bank account.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <returns></returns>

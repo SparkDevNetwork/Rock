@@ -416,17 +416,17 @@ namespace RockWeb.Blocks.Finance
 
             // Last Modified
             drp.DelimitedValues = gfPledges.GetUserPreference( "Last Modified" );
-            var filterModifedStartDate = drp.LowerValue ?? DateTime.MinValue;
-            var filterModifiedEndDate = drp.UpperValue ?? DateTime.MaxValue;
+            filterStartDate = drp.LowerValue ?? DateTime.MinValue;
+            filterEndDate = drp.UpperValue ?? DateTime.MaxValue;
 
-            if ( filterModifiedEndDate != DateTime.MaxValue)
+            if (filterEndDate != DateTime.MaxValue)
             {
-                filterModifiedEndDate = filterModifiedEndDate.AddDays( 1 );
+                filterEndDate = filterEndDate.AddDays( 1 );
             }
 
             if ( drpLastModifiedDates.Visible )
             {
-                pledges = pledges.Where( p => !(p.ModifiedDateTime >= filterModifiedEndDate ) && !(p.ModifiedDateTime <= filterModifedStartDate ) );
+                pledges = pledges.Where( p => !(p.ModifiedDateTime >= filterEndDate) && !(p.ModifiedDateTime <= filterStartDate) );
             }
 
             gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.AccountId ).ToList();

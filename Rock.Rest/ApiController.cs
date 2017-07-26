@@ -68,10 +68,7 @@ namespace Rock.Rest
             SetProxyCreation( false );
         }
 
-        /// <summary>
-        /// Queryable GET endpoint
-        /// </summary>
-        /// <returns></returns>
+        // GET api/<controller>
         [Authenticate, Secured]
         [EnableQuery]
         public virtual IQueryable<T> Get()
@@ -80,12 +77,7 @@ namespace Rock.Rest
             return result;
         }
 
-        /// <summary>
-        /// GET endpoint to get a single record 
-        /// </summary>
-        /// <param name="id">The Id of the record</param>
-        /// <returns></returns>
-        /// <exception cref="HttpResponseException"></exception>
+        // GET api/<controller>/5
         [Authenticate, Secured]
         [ActionName( "GetById" )]
         public virtual T GetById( int id )
@@ -99,12 +91,7 @@ namespace Rock.Rest
             return model;
         }
 
-        /// <summary>
-        /// GET endpoint to get a single record 
-        /// </summary>
-        /// <param name="key">The Id of the record</param>
-        /// <returns></returns>
-        /// <exception cref="HttpResponseException"></exception>
+        // GET api/<controller>(5)
         [Authenticate, Secured]
         [EnableQuery]
         public virtual T Get( [FromODataUri] int key )
@@ -118,12 +105,7 @@ namespace Rock.Rest
             return model;
         }
 
-        /// <summary>
-        /// POST endpoint. Use this to INSERT a new record
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        /// <exception cref="HttpResponseException"></exception>
+        // POST api/<controller> (insert)
         [Authenticate, Secured]
         public virtual HttpResponseMessage Post( [FromBody]T value )
         {
@@ -149,23 +131,16 @@ namespace Rock.Rest
             {
                 System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
             }
-
             Service.Context.SaveChanges();
 
             var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created, value.Id );
 
-            //// TODO set response.Headers.Location as per REST POST convention
-            // response.Headers.Location = new Uri( Request.RequestUri, "/api/pages/" + page.Id.ToString() );
+            // TODO set response.Headers.Location as per REST POST convention
+            //response.Headers.Location = new Uri( Request.RequestUri, "/api/pages/" + page.Id.ToString() );
             return response;
         }
 
-        /// <summary>
-        /// PUT endpoint. Use this to UPDATE a record
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="value">The value.</param>
-        /// <exception cref="HttpResponseException">
-        /// </exception>
+        // PUT api/<controller>/5  (update)
         [Authenticate, Secured]
         public virtual void Put( int id, [FromBody]T value )
         {
@@ -192,7 +167,6 @@ namespace Rock.Rest
                 {
                     System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
                 }
-
                 Service.Context.SaveChanges();
             }
             else
@@ -204,13 +178,7 @@ namespace Rock.Rest
             }
         }
 
-        /// <summary>
-        /// PATCH endpoint. Use this to update a subset of the properties of the record
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="values">The values.</param>
-        /// <exception cref="HttpResponseException">
-        /// </exception>
+        // PATCH api/<controller>/5  (update subset of atttributes)
         [Authenticate, Secured]
         public virtual void Patch( int id, [FromBody]Dictionary<string, object> values )
         {
@@ -318,7 +286,6 @@ namespace Rock.Rest
                 {
                     System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
                 }
-
                 Service.Context.SaveChanges();
             }
             else
@@ -330,11 +297,7 @@ namespace Rock.Rest
             }
         }
 
-        /// <summary>
-        /// DELETE endpoint. To delete the record
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <exception cref="HttpResponseException"></exception>
+        // DELETE api/<controller>/5
         [Authenticate, Secured]
         public virtual void Delete( int id )
         {
@@ -363,10 +326,10 @@ namespace Rock.Rest
         public IQueryable<T> GetDataView( int id )
         {
             var dataView = new DataViewService( new RockContext() ).Get( id );
-
+            
             // since DataViews can be secured at the Dataview or Category level, specifically check for CanView
             CheckCanView( dataView, GetPerson() );
-
+            
             SetProxyCreation( false );
 
             if ( dataView != null && dataView.EntityType.Name == typeof( T ).FullName )
@@ -414,7 +377,6 @@ namespace Rock.Rest
                 {
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
-
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
         }
@@ -448,17 +410,11 @@ namespace Rock.Rest
                 {
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
-
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
         }
 
-        /// <summary>
-        /// DELETE to delete the specified attribute value for the record
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <returns></returns>
+        // DELETE api/<controller>/AttributeValue 
         [Authenticate, Secured]
         [HttpDelete]
         public virtual HttpResponseMessage DeleteAttributeValue( int id, string attributeKey )
@@ -466,17 +422,7 @@ namespace Rock.Rest
             return SetAttributeValue( id, attributeKey, string.Empty );
         }
 
-        /// <summary>
-        /// POST an attribute value. Use this to set an attribute value for the record
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <param name="attributeValue">The attribute value.</param>
-        /// <returns></returns>
-        /// <exception cref="HttpResponseException">
-        /// </exception>
-        /// <exception cref="HttpResponseMessage">
-        /// </exception>
+        // POST api/<controller>/AttributeValue 
         [Authenticate, Secured]
         [HttpPost]
         public virtual HttpResponseMessage SetAttributeValue( int id, string attributeKey, string attributeValue )
@@ -521,12 +467,11 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Sets the Context Cookie to the specified record. Use this to set the Campus Context, Group Context, etc
+        /// Gets the encrypted context key for an entity.
         /// </summary>
         /// <param name="id">The identifier.</param>
+        /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
-        /// <exception cref="HttpResponseException">
-        /// </exception>
         [Authenticate, Secured]
         [HttpPut, HttpOptions]
         [ActionName( "SetContext" )]
@@ -558,7 +503,6 @@ namespace Rock.Rest
             {
                 contextCookie = new System.Web.HttpCookie( cookieName );
             }
-
             contextCookie.Values[typeName] = contextValue;
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
             httpContext.Response.Cookies.Add( contextCookie );
@@ -574,7 +518,7 @@ namespace Rock.Rest
         {
             if ( entity is ISecured )
             {
-                CheckCanEdit( ( ISecured ) entity );
+                CheckCanEdit( (ISecured)entity );
             }
         }
 
@@ -610,7 +554,7 @@ namespace Rock.Rest
                     // Need to reload using service with a proxy enabled so that if model has custom
                     // parent authorities, those properties can be lazy-loaded and checked for authorization
                     SetProxyCreation( true );
-                    ISecured reloadedModel = ( ISecured ) Service.Get( securedModel.Id );
+                    ISecured reloadedModel = (ISecured)Service.Get( securedModel.Id );
                     if ( reloadedModel != null && !reloadedModel.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
                     {
                         throw new HttpResponseException( HttpStatusCode.Unauthorized );
@@ -642,7 +586,7 @@ namespace Rock.Rest
                     // Need to reload using service with a proxy enabled so that if model has custom
                     // parent authorities, those properties can be lazy-loaded and checked for authorization
                     SetProxyCreation( true );
-                    ISecured reloadedModel = ( ISecured ) Service.Get( securedModel.Id );
+                    ISecured reloadedModel = (ISecured)Service.Get( securedModel.Id );
                     if ( reloadedModel != null && !reloadedModel.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                     {
                         throw new HttpResponseException( HttpStatusCode.Unauthorized );

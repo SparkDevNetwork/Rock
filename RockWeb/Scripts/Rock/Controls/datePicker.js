@@ -41,10 +41,7 @@
                     if ($(this).is(':checked')) {
                         $dateOffsetlabel.show();
                         $dateOffsetBox.show();
-
-                        // set textbox val to something instead of empty string so that validation doesn't complain
-                        $textBox.val('current');
-
+                        $textBox.val('');
                         $textBox.prop('disabled', true);
                         $textBox.addClass('aspNetDisabled');
 
@@ -52,10 +49,6 @@
                         $dateOffsetlabel.hide();
                         $dateOffsetBox.hide();
                         $textBox.prop('disabled', false);
-                        
-                        // set textbox val to empty string so that validation will work again (if it is enabled)
-                        $textBox.val('');
-
                         $textBox.removeClass('aspNetDisabled');
                     }
                 });

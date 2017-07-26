@@ -30,9 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ScheduleCategoryExclusionsController : Rock.Rest.ApiController<Rock.Model.ScheduleCategoryExclusion>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleCategoryExclusionsController"/> class.
-        /// </summary>
         public ScheduleCategoryExclusionsController() : base( new Rock.Model.ScheduleCategoryExclusionService( new Rock.Data.RockContext() ) ) { } 
     }
 }

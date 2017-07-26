@@ -38,9 +38,9 @@ namespace Rock.Rest
 
     /// <summary>
     /// Base ApiController for Rock REST endpoints
-    /// Supports ODataV3 Queries and ODataRouting
+    /// Supports ODataV3 Queries and ODataRouting 
     /// </summary>
-    /// <seealso cref="System.Web.Http.ApiController" />
+    /// <typeparam name="T"></typeparam>
     [ODataRouting]
     public class ApiControllerBase : ApiController
     {
@@ -98,5 +98,6 @@ namespace Rock.Rest
 
             return null;
         }
+
     }
 }

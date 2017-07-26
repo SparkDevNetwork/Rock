@@ -119,8 +119,7 @@ namespace Rock.Web.UI.Adapters
                     string itemId = string.Format("{0}_{1}", cbl.ClientID, i);
                     writer.AddAttribute("id", itemId);
                     writer.AddAttribute("type", "checkbox");
-                    var checkboxInputName = string.Format( "{0}${1}", cbl.UniqueID, i++ );
-                    writer.AddAttribute("name", checkboxInputName);
+                    writer.AddAttribute("name", string.Format("{0}${1}", cbl.UniqueID, i++));
                     writer.AddAttribute("value", li.Value);
                     if (li.Selected)
                     {
@@ -140,9 +139,7 @@ namespace Rock.Web.UI.Adapters
 
                     if (postBackOption != null)
                     {
-                        var postBackReference = Page.ClientScript.GetPostBackEventReference( postBackOption, true );
-                        postBackReference = postBackReference.Replace( cbl.UniqueID, checkboxInputName );
-                        writer.AddAttribute(HtmlTextWriterAttribute.Onclick, postBackReference );
+                        writer.AddAttribute(HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference(postBackOption, true));
                     }
 
                     writer.RenderBeginTag(HtmlTextWriterTag.Input);

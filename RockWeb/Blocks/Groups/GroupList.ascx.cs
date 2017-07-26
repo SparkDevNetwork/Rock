@@ -68,6 +68,8 @@ namespace RockWeb.Blocks.Groups
 
             ApplyBlockSettings();
 
+            BindFilter();
+
             modalDetails.SaveClick += modalDetails_SaveClick;
 
             this.BlockUpdated += GroupList_BlockUpdated;
@@ -82,7 +84,6 @@ namespace RockWeb.Blocks.Groups
         {
             if ( !Page.IsPostBack )
             {
-                BindFilter();
                 BindGrid();
             }
 
@@ -209,8 +210,6 @@ namespace RockWeb.Blocks.Groups
                 gfSettings.SaveUserPreference( "Active Status", ddlActiveFilter.SelectedValue );
             }
 
-            gfSettings.SaveUserPreference( "Group Type Purpose", ddlGroupTypePurpose.SelectedValue );
-
             BindGrid();
         }
 
@@ -239,20 +238,6 @@ namespace RockWeb.Blocks.Groups
 
                     // if the ActiveFilter control is hidden (because there is a block setting that overrides it), don't filter by Active Status
                     if ( !ddlActiveFilter.Visible )
-                    {
-                        e.Value = string.Empty;
-                    }
-
-                    break;
-
-                case "Group Type Purpose":
-                    var groupTypePurposeTypeValueId = e.Value.AsIntegerOrNull();
-                    if ( groupTypePurposeTypeValueId.HasValue )
-                    {
-                        var groupTypePurpose = DefinedValueCache.Read( groupTypePurposeTypeValueId.Value );
-                        e.Value = groupTypePurpose != null ? groupTypePurpose.ToString() : string.Empty;
-                    }
-                    else
                     {
                         e.Value = string.Empty;
                     }
@@ -463,9 +448,6 @@ namespace RockWeb.Blocks.Groups
                 gtpGroupType.SelectedValue = gfSettings.GetUserPreference( "Group Type" );
             }
 
-            ddlGroupTypePurpose.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() ), true );
-            ddlGroupTypePurpose.SetValue( gfSettings.GetUserPreference( "Group Type Purpose" ) );
-
             // Set the Active Status
             var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfSettings.GetUserPreference( "Active Status" ) );
             if ( itemActiveStatus != null )
@@ -547,9 +529,6 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-
-            var groupTypePurposeValue = gfSettings.GetUserPreference( "Group Type Purpose" ).AsIntegerOrNull();
-
             var groupList = new List<GroupListRowInfo>();
 
             // Person context will exist if used on a person detail page
@@ -574,11 +553,6 @@ namespace RockWeb.Blocks.Groups
                     {
                         // Show only inactive Groups or inactive Memberships.
                         qry = qry.Where( gmg => !gmg.Group.IsActive || gmg.GroupMember.GroupMemberStatus == GroupMemberStatus.Inactive );
-                    }
-
-                    if ( groupTypePurposeValue.HasValue && gfSettings.Visible )
-                    {
-                        qry = qry.Where( t => t.Group.GroupType.GroupTypePurposeValueId == groupTypePurposeValue );
                     }
 
                     groupList = qry
@@ -615,11 +589,6 @@ namespace RockWeb.Blocks.Groups
                 else if ( !showActive )
                 {
                     qryGroups = qryGroups.Where( x => !x.IsActive );
-                }
-
-                if ( groupTypePurposeValue.HasValue && gfSettings.Visible )
-                {
-                    qryGroups = qryGroups.Where( t => t.GroupType.GroupTypePurposeValueId == groupTypePurposeValue );
                 }
 
                 groupList = qryGroups

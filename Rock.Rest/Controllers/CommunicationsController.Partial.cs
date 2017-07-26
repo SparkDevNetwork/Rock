@@ -27,7 +27,8 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Sends a communication.
         /// </summary>
-        /// <param name="id">The identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Communications/Send/{id}" )]

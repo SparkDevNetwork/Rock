@@ -26,7 +26,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Security;
-using System.IO;
 
 namespace RockWeb.Blocks.Core
 {
@@ -337,10 +336,7 @@ namespace RockWeb.Blocks.Core
                 if ( uploadedBinaryFile != null )
                 {
                     binaryFile.BinaryFileTypeId = uploadedBinaryFile.BinaryFileTypeId;
-                    binaryFile.FileSize = uploadedBinaryFile.FileSize;
-                    var memoryStream = new MemoryStream();
-                    uploadedBinaryFile.ContentStream.CopyTo( memoryStream );
-                    binaryFile.ContentStream = memoryStream;
+                    binaryFile.ContentStream = uploadedBinaryFile.ContentStream;
                 }
             }
 

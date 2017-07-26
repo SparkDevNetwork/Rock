@@ -27,11 +27,7 @@ namespace Rock.Controllers
     /// </summary>
     public partial class SearchController : ApiController
     {
-        /// <summary>
-        /// GET that returns a list of results based on the Search Type and Term
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="HttpResponseException"></exception>
+        // GET api/<controller>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/search" )]
         [EnableQuery]

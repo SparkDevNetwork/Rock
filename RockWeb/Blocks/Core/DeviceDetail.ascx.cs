@@ -93,15 +93,6 @@ namespace RockWeb.Blocks.Core
             {
                 ShowDetail( PageParameter( "DeviceId" ).AsInteger() );
             }
-            else
-            {
-                var device = new Device();
-                device.Id = hfDeviceId.ValueAsInt();
-                device.DeviceTypeValueId = hfTypeId.ValueAsInt();
-                device.LoadAttributes();
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( device, phAttributes, false, BlockValidationGroup );
-            }
 
             if ( hfAddLocationId.Value.AsIntegerOrNull().HasValue )
             {
@@ -182,9 +173,6 @@ namespace RockWeb.Blocks.Core
                 Device.Location.GeoPoint = geopPoint.SelectedValue;
                 Device.Location.GeoFence = geopFence.SelectedValue;
 
-                Device.LoadAttributes( rockContext );
-                Rock.Attribute.Helper.GetEditValues( phAttributes, Device );
-
                 if ( !Device.IsValid || !Page.IsValid )
                 {
                     // Controls will render the error messages
@@ -210,11 +198,7 @@ namespace RockWeb.Blocks.Core
                     Device.Locations.Add( location );
                 }
 
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    Device.SaveAttributeValues( rockContext );
-                } );
+                rockContext.SaveChanges();
 
                 Rock.CheckIn.KioskDevice.Flush( Device.Id );
 
@@ -249,21 +233,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlDeviceType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            Device device = null;
-
-            int deviceId = hfDeviceId.ValueAsInt();
-            if ( deviceId != 0 )
-            {
-                device = new DeviceService( new RockContext() ).Get( deviceId );
-            }
-
-            if ( device == null )
-            {
-                device = new Device();
-            }
-
             SetPrinterSettingsVisibility();
-            UpdateControlsForDeviceType( device );
         }
 
         /// <summary>
@@ -421,8 +391,6 @@ namespace RockWeb.Blocks.Core
             geopPoint.MapStyleValueGuid = mapStyleValueGuid;
             geopFence.MapStyleValueGuid = mapStyleValueGuid;
 
-            UpdateControlsForDeviceType( Device );
-
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
@@ -448,30 +416,6 @@ namespace RockWeb.Blocks.Core
             ddlPrintFrom.Enabled = !readOnly;
 
             btnSave.Visible = !readOnly;
-        }
-
-        /// <summary>
-        /// Adds the attribute controls.
-        /// </summary>
-        /// <param name="device">The device.</param>
-        private void AddAttributeControls( Device device)
-        {
-            int typeId = ddlDeviceType.SelectedValueAsInt() ?? 0;
-            hfTypeId.Value = typeId.ToString();
-
-            device.DeviceTypeValueId = typeId;
-            device.LoadAttributes();
-            phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( device, phAttributes, true, BlockValidationGroup );
-        }
-
-        /// <summary>
-        /// Updates the type of the controls for device.
-        /// </summary>
-        /// <param name="device">The device.</param>
-        private void UpdateControlsForDeviceType( Device device )
-        {
-            AddAttributeControls( device );
         }
 
         /// <summary>

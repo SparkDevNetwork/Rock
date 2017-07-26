@@ -30,9 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class WorkflowActionsController : Rock.Rest.ApiController<Rock.Model.WorkflowAction>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowActionsController"/> class.
-        /// </summary>
         public WorkflowActionsController() : base( new Rock.Model.WorkflowActionService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -62,8 +62,7 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
         /// </summary>
-        /// <param name="facebookUser">The facebook user.</param>
-        /// <exception cref="HttpResponseException"></exception>
+        /// <param name="loginParameters">The login parameters.</param>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpPost]
         [System.Web.Http.Route( "api/Auth/FacebookLogin" )]
@@ -83,8 +82,7 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
         /// </summary>
-        /// <param name="googleUser">The google user.</param>
-        /// <exception cref="HttpResponseException"></exception>
+        /// <param name="loginParameters">The login parameters.</param>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpPost]
         [System.Web.Http.Route("api/Auth/GoogleLogin")]
@@ -104,8 +102,7 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
         /// </summary>
-        /// <param name="twitterUser">The twitter user.</param>
-        /// <exception cref="HttpResponseException"></exception>
+        /// <param name="loginParameters">The login parameters.</param>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpPost]
         [System.Web.Http.Route( "api/Auth/TwitterLogin" )]

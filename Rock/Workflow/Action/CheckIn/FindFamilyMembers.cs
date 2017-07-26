@@ -56,7 +56,7 @@ namespace Rock.Workflow.Action.CheckIn
                     var service = new GroupMemberService( rockContext );
 
                     var people = service.GetByGroupId( family.Group.Id ).AsNoTracking();
-                    if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeople )
+                    if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele )
                     {
                         var dvInactive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
                         if ( dvInactive != null )

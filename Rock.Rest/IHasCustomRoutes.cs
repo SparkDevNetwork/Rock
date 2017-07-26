@@ -22,10 +22,6 @@ namespace Rock.Rest
     /// </summary>
     public interface IHasCustomRoutes
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
         void AddRoutes( System.Web.Routing.RouteCollection routes );
     }
 }

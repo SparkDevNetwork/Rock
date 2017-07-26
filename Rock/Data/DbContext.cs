@@ -325,7 +325,8 @@ namespace Rock.Data
                 }
             }
 
-            List<ITransaction> indexTransactions = new List<ITransaction>();
+            var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
+
             foreach ( var item in updatedItems )
             {
                 if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
@@ -345,7 +346,7 @@ namespace Rock.Data
                 }
 
                 // check if this entity should be passed on for indexing
-                if ( item.Entity is IRockIndexable )
+                if ( indexingEnabled && item.Entity is IRockIndexable )
                 {
                     if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
                     {
@@ -353,7 +354,7 @@ namespace Rock.Data
                         transaction.EntityTypeId = item.Entity.TypeId;
                         transaction.EntityId = item.Entity.Id;
 
-                        indexTransactions.Add( transaction );
+                        RockQueue.TransactionQueue.Enqueue( transaction );
                     }
                     else
                     {
@@ -361,22 +362,9 @@ namespace Rock.Data
                         transaction.EntityTypeId = item.Entity.TypeId;
                         transaction.EntityId = item.Entity.Id;
 
-                        indexTransactions.Add( transaction );
+                        RockQueue.TransactionQueue.Enqueue( transaction );
                     }
                 }
-            }
-
-            // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
-            if ( indexTransactions.Any() )
-            {
-                System.Threading.Tasks.Task.Run( () =>
-                {
-                    var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
-                    if ( indexingEnabled )
-                    {
-                        indexTransactions.ForEach( t => RockQueue.TransactionQueue.Enqueue( t ) );
-                    }
-                } );
             }
         }
 

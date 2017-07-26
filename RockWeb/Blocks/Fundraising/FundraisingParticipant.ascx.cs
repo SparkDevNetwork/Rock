@@ -67,15 +67,16 @@ namespace RockWeb.Blocks.Fundraising
             if ( this.GetAttributeValue( "ShowClipboardIcon" ).AsBoolean() )
             {
                 // Setup for being able to copy text to clipboard
-                RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
+                RockPage.AddScriptLink( this.Page, "~/Scripts/ZeroClipboard/ZeroClipboard.js" );
                 string script = string.Format( @"
-    new Clipboard('#{0}');
+    var client = new ZeroClipboard( $('#{0}'));
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
                 ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
+                btnCopyToClipboard.Attributes["data-clipboard-target"] = hfShareUrl.ClientID;
 
                 Uri uri = new Uri( Request.Url.ToString() );
-                btnCopyToClipboard.Attributes["data-clipboard-text"] = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + CurrentPageReference.BuildUrl();
+                hfShareUrl.Value = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + CurrentPageReference.BuildUrl();
                 btnCopyToClipboard.Visible = true;
             }
             else
@@ -603,9 +604,8 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             // if btnContributionsTab is the only visible tab, hide the tab since there is nothing else to tab to
-            if ( !btnUpdatesTab.Visible && btnContributionsTab.Visible )
+            if ( !btnUpdatesTab.Visible )
             {
-                SetActiveTab( "Contributions" );
                 btnContributionsTab.Visible = false;
             }
         }
@@ -641,16 +641,14 @@ namespace RockWeb.Blocks.Fundraising
             Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
             if ( financialTransaction != null && lAddress != null && financialTransaction.AuthorizedPersonAliasId.HasValue )
             {
-                var personAddress = financialTransaction.AuthorizedPersonAlias.Person.GetHomeLocation();
-
-                if ( financialTransaction.ShowAsAnonymous || personAddress == null )
+                if ( financialTransaction.ShowAsAnonymous )
                 {
                     // don't show the person's address if they wanted to give anonymously
-                    // or if they don't have a home address.
                     lAddress.Text = string.Empty;
                 }
                 else
                 { 
+                    var personAddress = financialTransaction.AuthorizedPersonAlias.Person.GetHomeLocation();
                     lAddress.Text = personAddress.GetFullStreetAddress();
                 }
             }

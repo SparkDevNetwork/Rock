@@ -30,9 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class EventItemAudiencesController : Rock.Rest.ApiController<Rock.Model.EventItemAudience>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EventItemAudiencesController"/> class.
-        /// </summary>
         public EventItemAudiencesController() : base( new Rock.Model.EventItemAudienceService( new Rock.Data.RockContext() ) ) { } 
     }
 }

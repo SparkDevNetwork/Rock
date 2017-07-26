@@ -353,6 +353,10 @@ namespace Rock.Web.UI.Controls
                         object selectValue = DataBinder.Eval( gridViewRow.DataItem, DataSelectedField );
                         cb.Checked = (bool)selectValue;
                     }
+                    else
+                    {
+                        cb.Checked =false;
+                    }
 
                     if ( !string.IsNullOrWhiteSpace( DataVisibleField ) )
                     {

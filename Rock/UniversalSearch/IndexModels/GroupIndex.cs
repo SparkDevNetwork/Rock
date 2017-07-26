@@ -86,7 +86,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name.
         /// </value>
-        [RockIndexField( Boost = 2 )]
+        [RockIndexField( Boost = 3 )]
         public string Name { get; set; }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The leader list.
         /// </value>
-        [RockIndexField]
+        [RockIndexField( Boost = 2 )]
         public string LeaderList { get; set; }
 
         /// <summary>
@@ -156,9 +156,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="displayOptions">The display options.</param>
-        /// <param name="mergeFields">The merge fields.</param>
         /// <returns></returns>
-        public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null, Dictionary<string, object> mergeFields = null )
+        public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
         {
             var result = base.FormatSearchResult( person, displayOptions );
 

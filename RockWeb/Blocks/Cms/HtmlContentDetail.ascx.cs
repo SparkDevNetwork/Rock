@@ -479,7 +479,7 @@ namespace RockWeb.Blocks.Cms
 
                 string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
 
-                htmlEditor.CallbackOnKeyupScript = onchangeScript;
+                htmlEditor.OnChangeScript = onchangeScript;
             }
 
             htmlEditor.MergeFields.Clear();
