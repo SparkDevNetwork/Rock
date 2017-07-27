@@ -137,6 +137,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for Default link list
         /// </summary>
+        public const string LAVA_SHORTCODES = "3B1AF656-7AEF-52A8-4E2C-5EFF75A1A23A";
+
+        /// <summary>
+        /// Guid for Default link list
+        /// </summary>
         public const string LINKLIST_DEFAULT_LIST = "7E7969BD-945C-4472-8A80-889EF5833776";
 
         /// <summary>
@@ -260,8 +265,13 @@ namespace Rock.SystemGuid
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
 
         /// <summary>
-        /// Used to manage the .
+        /// Used to manage the workflows that can be launched via webhook.
         /// </summary>
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
+
+        /// <summary>
+        /// Used to manage the lava code that can be launched via webhook.
+        /// </summary>
+        public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
     }
 }

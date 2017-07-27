@@ -300,21 +300,61 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the custom javascript that will get executed when the editor 'on change' event occurs
+        /// Gets or sets the custom javascript that will get executed when the editor 'onKeyUp' event occurs.
+        /// Obsolete because it is misleading that this actually is triggered off of the onKeyUp event
         /// </summary>
         /// <value>
         /// The custom on change press script.
         /// </value>
+        [Obsolete( "Use CallbackOnKeyupScript or CallbackOnChangeScript instead" )]
         public string OnChangeScript
         {
             get
             {
-                return ViewState["OnChangeScript"] as string;
+                return CallbackOnKeyupScript;
             }
 
             set
             {
-                ViewState["OnChangeScript"] = value;
+               CallbackOnKeyupScript= value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the custom javascript that will get executed when the editor 'onChange' event occurs
+        /// </summary>
+        /// <value>
+        /// The custom on change press script.
+        /// </value>
+        public string CallbackOnChangeScript
+        {
+            get
+            {
+                return ViewState["CallbackOnChangeScript"] as string;
+            }
+
+            set
+            {
+                ViewState["CallbackOnChangeScript"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the custom javascript that will get executed when the editor 'onKeyUp' event occurs
+        /// </summary>
+        /// <value>
+        /// The custom on change press script.
+        /// </value>
+        public string CallbackOnKeyupScript
+        {
+            get
+            {
+                return ViewState["CallbackOnKeyupScript"] as string;
+            }
+
+            set
+            {
+                ViewState["CallbackOnKeyupScript"] = value;
             }
         }
 
@@ -597,79 +637,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            string summernoteInitScriptFormat = @"
-$(document).ready( function() {{
-    var summerNoteEditor_{0} = $('#{0}').summernote({{
-        height: '{2}', //set editable area's height
-        toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{11},
-
-        popover: {{
-          image: [
-            ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
-            ['custom', ['rockimagebrowser']],
-            ['float', ['floatLeft', 'floatRight', 'floatNone']],
-            ['remove', ['removeMedia']]
-          ],
-          link: [
-            ['link', ['linkDialogShow', 'unlink']]
-          ],
-          air: [
-            ['color', ['color']],
-            ['font', ['bold', 'underline', 'clear']],
-            ['para', ['ul', 'paragraph']],
-            ['table', ['table']],
-            ['insert', ['link', 'picture']]
-          ]
-        }},
-
-        callbacks: {{
-           {12} 
-        }},
-
-        buttons: {{
-            rockfilebrowser: RockFileBrowser,
-            rockimagebrowser: RockImageBrowser, 
-            rockmergefield: RockMergeField,
-            rockcodeeditor: RockCodeEditor,
-            rockpastetext: RockPasteText,
-            rockpastefromword: RockPasteFromWord
-        }},
-
-        rockFileBrowserOptions: {{ 
-            enabled: {3},
-            documentFolderRoot: '{4}', 
-            imageFolderRoot: '{5}',
-            imageFileTypeWhiteList: '{6}',
-            fileTypeBlackList: '{7}'
-        }},
-
-        rockMergeFieldOptions: {{ 
-            enabled: {9},
-            mergeFields: '{8}' 
-        }},
-        rockTheme: '{10}',
-
-        codeEditorOptions: {{
-            controlId: '{13}',
-            inCodeEditorModeHiddenFieldId: '{14}'
-        }},
-
-        // summernote-cleaner.js plugin options
-        cleaner:{{
-                el:'#{0}',  // Element ID or Class used to Initialise Summernote.
-                notTime:2400, // Time to display Notifications.
-                action:'paste', // both|button|paste 'button' only cleans via toolbar button, 'paste' only clean when pasting content, both does both options.
-        }}
-
-    }});
-
-    if ({15} && RockCodeEditor) {{
-        RockCodeEditor(summerNoteEditor_{0}.data('summernote'), true).click();
-    }}
-
-}});
-";
-
             bool rockMergeFieldEnabled = MergeFields.Any();
             bool rockFileBrowserEnabled = false;
 
@@ -704,36 +671,91 @@ $(document).ready( function() {{
                 }
             }
 
-            string callbacksOption = null;
-            if ( !string.IsNullOrEmpty( this.OnChangeScript ) )
+            string callbacksOption = string.Empty;
+            if ( !string.IsNullOrEmpty( this.CallbackOnKeyupScript ) || !string.IsNullOrEmpty( this.CallbackOnChangeScript ) )
             {
-                callbacksOption = string.Format(
-@" onKeyup: function() {{  
-    {0}  
-}}",
-   this.OnChangeScript );
-            }
+                callbacksOption =
+$@" 
+onKeyup: function(e) {{  
+    {this.CallbackOnKeyupScript}  
+}},
+onChange: function(contents, $editable) {{  
+    {this.CallbackOnChangeScript}  
+}}
+";
+             }
 
-            string summernoteInitScript = string.Format(
-                summernoteInitScriptFormat,
-                this.ClientID,   // {0}
-                null, // {1}
-                this.Height, // {2}
-                rockFileBrowserEnabled.ToTrueFalse().ToLower(),                 // {3}
-                Rock.Security.Encryption.EncryptString( documentFolderRoot ),   // {4} encrypt the folders so the folder can only be configured on the server
-                Rock.Security.Encryption.EncryptString( imageFolderRoot ),      // {5}
-                imageFileTypeWhiteList,                                         // {6}
-                fileTypeBlackList,                                              // {7}
-                this.MergeFields.AsDelimited( "," ),                            // {8}
-                rockMergeFieldEnabled.ToTrueFalse().ToLower(),                  // {9} 
-                ( (RockPage)this.Page ).Site.Theme,                             // {10}
-                this.Toolbar.ConvertToString(),                                 // {11} 
-                callbacksOption,                                                // {12}
-                _ceEditor.ClientID,                                             // {13}
-                _hfInCodeEditorMode.ClientID,                                   // {14}
-                StartInCodeEditorMode.ToTrueFalse().ToLower()                   // {15}
-                );
 
+            string summernoteInitScript = $@"
+$(document).ready( function() {{
+
+    // workaround for https://github.com/summernote/summernote/issues/2017 and/or https://github.com/summernote/summernote/issues/1984
+    if(!!document.createRange) {{
+      document.getSelection().removeAllRanges();
+    }}
+
+    var summerNoteEditor_{this.ClientID} = $('#{this.ClientID}').summernote({{
+        height: '{this.Height}', //set editable area's height
+        toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{this.Toolbar.ConvertToString()},
+
+        popover: {{
+          image: [
+            ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
+            ['custom', ['rockimagebrowser']],
+            ['float', ['floatLeft', 'floatRight', 'floatNone']],
+            ['remove', ['removeMedia']]
+          ],
+          link: [
+            ['link', ['linkDialogShow', 'unlink']]
+          ],
+          air: [
+            ['color', ['color']],
+            ['font', ['bold', 'underline', 'clear']],
+            ['para', ['ul', 'paragraph']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture']]
+          ]
+        }},
+
+        callbacks: {{
+           {callbacksOption} 
+        }},
+
+        buttons: {{
+            rockfilebrowser: RockFileBrowser,
+            rockimagebrowser: RockImageBrowser, 
+            rockmergefield: RockMergeField,
+            rockcodeeditor: RockCodeEditor,
+            rockpastetext: RockPasteText,
+            rockpastefromword: RockPasteFromWord
+        }},
+
+        rockFileBrowserOptions: {{ 
+            enabled: {rockFileBrowserEnabled.ToTrueFalse().ToLower()},
+            documentFolderRoot: '{Rock.Security.Encryption.EncryptString( documentFolderRoot )}', 
+            imageFolderRoot: '{Rock.Security.Encryption.EncryptString( imageFolderRoot )}',
+            imageFileTypeWhiteList: '{imageFileTypeWhiteList}',
+            fileTypeBlackList: '{fileTypeBlackList}'
+        }},
+
+        rockMergeFieldOptions: {{ 
+            enabled: {rockMergeFieldEnabled.ToTrueFalse().ToLower()},
+            mergeFields: '{this.MergeFields.AsDelimited( "," )}' 
+        }},
+        rockTheme: '{( ( RockPage ) this.Page ).Site.Theme}',
+
+        codeEditorOptions: {{
+            controlId: '{_ceEditor.ClientID}',
+            inCodeEditorModeHiddenFieldId: '{_hfInCodeEditorMode.ClientID}'
+        }},
+    }});
+
+    if ({StartInCodeEditorMode.ToTrueFalse().ToLower()} && RockCodeEditor) {{
+        RockCodeEditor(summerNoteEditor_{this.ClientID}.data('summernote'), true).click();
+    }}
+
+}});
+";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "summernote_init_script_" + this.ClientID, summernoteInitScript, true );
 
             // add script on demand only when there will be an htmleditor rendered

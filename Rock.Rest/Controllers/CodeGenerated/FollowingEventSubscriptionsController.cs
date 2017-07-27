@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class FollowingEventSubscriptionsController : Rock.Rest.ApiController<Rock.Model.FollowingEventSubscription>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FollowingEventSubscriptionsController"/> class.
+        /// </summary>
         public FollowingEventSubscriptionsController() : base( new Rock.Model.FollowingEventSubscriptionService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class RegistrationTemplateFormFieldsController : Rock.Rest.ApiController<Rock.Model.RegistrationTemplateFormField>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegistrationTemplateFormFieldsController"/> class.
+        /// </summary>
         public RegistrationTemplateFormFieldsController() : base( new Rock.Model.RegistrationTemplateFormFieldService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class GroupMemberRequirementsController : Rock.Rest.ApiController<Rock.Model.GroupMemberRequirement>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupMemberRequirementsController"/> class.
+        /// </summary>
         public GroupMemberRequirementsController() : base( new Rock.Model.GroupMemberRequirementService( new Rock.Data.RockContext() ) ) { } 
     }
 }

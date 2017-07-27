@@ -38,8 +38,6 @@ namespace RockWeb.Blocks.Communication
     [LinkedPage( "Detail Page" )]
     public partial class CommunicationQueue : Rock.Web.UI.RockBlock
     {
-        private bool canApprove = false;
-
         #region Control Methods
 
         /// <summary>

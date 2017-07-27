@@ -2899,5 +2899,33 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- create stored proc that retrieves a binaryfile record
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the BinaryFile for a given Id or Guid, depending on which is specified
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* BinaryFile record
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;Id&apos; datatype=&apos;int&apos;&gt;The binary id to use&lt;/param&gt;
+        ///	&lt;param name=&apos;Guid&apos; datatype=&apos;uniqueidentifier&apos;&gt;The binaryfile guid to use&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		EXEC [dbo].[spCore_BinaryFileGet] 14, null -- car-promo.jpg
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTE [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201707101648235_CommonBlockTypes_spCore_BinaryFileGet {
+            get {
+                return ResourceManager.GetString("_201707101648235_CommonBlockTypes_spCore_BinaryFileGet", resourceCulture);
+            }
+        }
     }
 }

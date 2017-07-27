@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PersonalDevicesController : Rock.Rest.ApiController<Rock.Model.PersonalDevice>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonalDevicesController"/> class.
+        /// </summary>
         public PersonalDevicesController() : base( new Rock.Model.PersonalDeviceService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -1224,6 +1224,7 @@ namespace RockWeb.Blocks.Groups
                         FirstAttended = attendanceFirstLast.Where( a => a.Key == m.PersonId ).Select( a => a.Value.Start ).FirstOrDefault(),
                         LastAttended = attendanceFirstLast.Where( a => a.Key == m.PersonId ).Select( a => a.Value.End ).FirstOrDefault(),
                         Email = m.Person.Email,
+                        Gender = isExporting ? m.Person.Gender.ToString() : string.Empty,
                         HomePhone = isExporting && homePhoneType != null ?
                             m.Person.PhoneNumbers
                                 .Where( p => p.NumberTypeValueId.HasValue && p.NumberTypeValueId.Value == homePhoneType.Id )
@@ -1243,7 +1244,8 @@ namespace RockWeb.Blocks.Groups
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
-                        IsDeceased = m.Person.IsDeceased
+                        IsDeceased = m.Person.IsDeceased,
+                        m.Person.MaritalStatusValueId
                     } ).ToList();
 
                     if ( sortProperty != null )

@@ -459,6 +459,7 @@ namespace RockWeb.Blocks.Cms
                     siteDomainService.Delete( domain );
                 }
 
+                int order = 0;
                 foreach ( string domain in currentDomains )
                 {
                     SiteDomain sd = site.SiteDomains.Where( d => d.Domain == domain ).FirstOrDefault();
@@ -469,6 +470,7 @@ namespace RockWeb.Blocks.Cms
                         sd.Guid = Guid.NewGuid();
                         site.SiteDomains.Add( sd );
                     }
+                    sd.Order = order++;
                 }
 
                 if ( !site.DefaultPageId.HasValue && !newSite )
@@ -839,7 +841,7 @@ namespace RockWeb.Blocks.Cms
 
             tbErrorPage.Text = site.ErrorPage;
 
-            tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
+            tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.OrderBy( d => d.Order ).Select( d => d.Domain ).ToArray() );
             tbGoogleAnalytics.Text = site.GoogleAnalyticsCode;
             cbRequireEncryption.Checked = site.RequiresEncryption;
 
@@ -898,7 +900,7 @@ namespace RockWeb.Blocks.Cms
             lSiteDescription.Text = site.Description;
 
             DescriptionList descriptionList = new DescriptionList();
-            descriptionList.Add( "Domain(s)", site.SiteDomains.Select( d => d.Domain ).ToList().AsDelimited( ", " ) );
+            descriptionList.Add( "Domain(s)", site.SiteDomains.OrderBy( d => d.Order ).Select( d => d.Domain ).ToList().AsDelimited( ", " ) );
             descriptionList.Add( "Theme", site.Theme );
             descriptionList.Add( "Default Page", site.DefaultPageRoute );
             lblMainDetails.Text = descriptionList.Html;

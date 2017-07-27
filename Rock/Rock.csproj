@@ -75,10 +75,6 @@
       <HintPath>..\packages\Elasticsearch.Net.2.4.6\lib\net45\Elasticsearch.Net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Elasticsearch.Net.Aws, Version=2.2.0.0, Culture=neutral, PublicKeyToken=7b2b00f739ab9aca, processorArchitecture=MSIL">
-      <HintPath>..\packages\Elasticsearch.Net.Aws.2.2.0\lib\net45\Elasticsearch.Net.Aws.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
       <Private>True</Private>
@@ -370,6 +366,7 @@
     <Compile Include="Attribute\CustomDropdownListFieldAttribute.cs" />
     <Compile Include="Attribute\CustomRadioListFieldAttribute.cs" />
     <Compile Include="Attribute\DataViewFieldAttribute.cs" />
+    <Compile Include="Attribute\DataViewsFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DateTimeFieldAttribute.cs" />
@@ -538,6 +535,7 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\DataViewsFieldType.cs" />
     <Compile Include="Field\Types\LavaFieldType.cs" />
     <Compile Include="Field\Types\AccountFieldType.cs" />
     <Compile Include="Field\Types\AccountsFieldType.cs" />
@@ -658,6 +656,7 @@
     <Compile Include="Follow\Event\PersonBirthday.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
     <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />
+    <Compile Include="Follow\Event\PersonHistory.cs" />
     <Compile Include="Follow\SuggestionComponent.cs" />
     <Compile Include="Follow\SuggestionContainer.cs" />
     <Compile Include="Follow\Suggestion\InGroupTogether.cs" />
@@ -710,6 +709,12 @@
     <Compile Include="Lava\LavaSupportLevel.cs" />
     <Compile Include="Lava\LegacyLavaSyntaxDetectedException.cs" />
     <Compile Include="Lava\RockFilters.cs" />
+    <Compile Include="Lava\Shortcodes\DynamicShortcodeBlock.cs" />
+    <Compile Include="Lava\Shortcodes\DynamicShortcodeInline.cs" />
+    <Compile Include="Lava\Shortcodes\IRockShortcode.cs" />
+    <Compile Include="Lava\Shortcodes\RockLavaShortcodeBlockBase.cs" />
+    <Compile Include="Lava\Shortcodes\RockLavaShortcodeBase.cs" />
+    <Compile Include="Lava\Shortcodes\BootstrapAlert.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
@@ -742,10 +747,12 @@
     <Compile Include="Model\CodeGenerated\AnalyticsSourceAttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
     <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
+    <Compile Include="Model\CodeGenerated\LavaShortcodeService.cs" />
     <Compile Include="Model\CodeGenerated\PersonalDeviceService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
+    <Compile Include="Model\CodeGenerated\SiteUrlMapService.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
@@ -1100,16 +1107,20 @@
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
+    <Compile Include="Model\SiteDomain.cs" />
+    <Compile Include="Model\LavaShortCode.cs" />
+    <Compile Include="Model\SiteUrlMapService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
-    <Compile Include="Plugin\HotFixes\024_PrayerRequestAttributes.cs" />
+    <Compile Include="Reporting\DataFilter\Person\FinancialPledgeDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialTransactionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\LocationFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PostalCodeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasNoteFilter.cs" />
     <Compile Include="Reporting\DataSelect\FormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\GroupFormattedFieldSelect.cs" />
@@ -1126,6 +1137,7 @@
     <Compile Include="Transactions\IndexEntityTransaction.cs" />
     <Compile Include="Transactions\BulkIndexEntityTypeTransaction.cs" />
     <Compile Include="Transactions\LaunchWorkflowsTransaction.cs" />
+    <Compile Include="Transactions\ShortLinkTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReceipts.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="UniversalSearch\Crawler\Crawler.cs" />
@@ -1153,7 +1165,7 @@
     <Compile Include="Model\SignatureDocumentTemplate.cs" />
     <Compile Include="Model\SignatureDocumentTemplateService.Partial.cs" />
     <Compile Include="Model\Site.cs" />
-    <Compile Include="Model\SiteDomain.cs" />
+    <Compile Include="Model\SiteUrlMap.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
     <Compile Include="Model\SystemEmail.cs" />
@@ -1211,6 +1223,9 @@
     <Compile Include="Plugin\HotFixes\021_UpdateCheckInMergefieldDebugInfo.cs" />
     <Compile Include="Plugin\HotFixes\019_FixIpadClientPrinting.cs" />
     <Compile Include="Plugin\HotFixes\018_RestrictGroupRegistrationGroupTypes.cs" />
+    <Compile Include="Plugin\HotFixes\024_PrayerRequestAttributes.cs" />
+    <Compile Include="Plugin\HotFixes\030_MyConnectionOpportunitiesLava.cs" />
+    <Compile Include="Plugin\HotFixes\029_BatchDetailReopenBatchSecurity.cs" />
     <Compile Include="Plugin\HotFixes\025_PersonGivingEnvelopeAttribute.cs" />
     <Compile Include="Plugin\HotFixes\026_PersonEditConnectionRecordStatus.cs" />
     <Compile Include="Plugin\HotFixes\027_AddCheckinFeatures.cs" />
@@ -1332,7 +1347,6 @@
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="UniversalSearch\FormattedSearchResult.cs" />
-    <Compile Include="UniversalSearch\IndexComponents\ElasticsearchAws.cs" />
     <Compile Include="UniversalSearch\IndexComponents\Elasticsearch.cs" />
     <Compile Include="UniversalSearch\IndexContainer.cs" />
     <Compile Include="UniversalSearch\IndexComponent.cs" />
@@ -1354,6 +1368,8 @@
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
+    <Compile Include="Web\Cache\ContentChannelCache.cs" />
+    <Compile Include="Web\Cache\LavaShortcodeCache.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\Cache\WorkflowActionFormAttributeCache.cs" />
     <Compile Include="Web\Cache\WorkflowActivityTypeCache.cs" />
@@ -1362,7 +1378,9 @@
     <Compile Include="Web\Cache\WorkflowTypeCache.cs" />
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DataViewsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />

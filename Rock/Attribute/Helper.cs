@@ -76,7 +76,7 @@ namespace Rock.Attribute
             {
                 List<string> existingKeys = new List<string>();
 
-                var blockProperties = new List<FieldAttribute>();
+                var entityProperties = new List<FieldAttribute>();
 
                 // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
                 int properties = 0;
@@ -90,15 +90,15 @@ namespace Rock.Attribute
                             string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                             properties++;
 
-                            blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                            entityProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
                         }
                     }
                 }
 
-                // Add any property attributes that were defined for the block
+                // Add any property attributes that were defined for the entity
                 foreach ( var customAttribute in type.GetCustomAttributes( typeof( FieldAttribute ), true ) )
                 {
-                    blockProperties.Add( (FieldAttribute)customAttribute );
+                    entityProperties.Add( (FieldAttribute)customAttribute );
                 }
 
                 rockContext = rockContext ?? new RockContext();
@@ -106,16 +106,16 @@ namespace Rock.Attribute
                 bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );
 
                 // Create any attributes that need to be created
-                foreach ( var blockProperty in blockProperties )
+                foreach ( var entityProperty in entityProperties )
                 {
                     try
                     {
-                        attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, dynamicAttributesBlock, rockContext ) || attributesUpdated;
-                        existingKeys.Add( blockProperty.Key );
+                        attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, dynamicAttributesBlock, rockContext ) || attributesUpdated;
+                        existingKeys.Add( entityProperty.Key );
                     }
                     catch ( Exception ex )
                     {
-                        ExceptionLogService.LogException( new Exception( string.Format( "Could not update a block attribute ( Entity Type Id: {0}; Property Name: {1} ). ", entityTypeId, blockProperty.Name ), ex ), null );
+                        ExceptionLogService.LogException( new Exception( string.Format( "Could not update an entity attribute ( Entity Type Id: {0}; Property Name: {1} ). ", entityTypeId, entityProperty.Name ), ex ), null );
                     }
                 }
 
@@ -124,7 +124,7 @@ namespace Rock.Attribute
                 {
                     var attributeService = new Model.AttributeService( rockContext );
 
-                    // if the blocktype implements IDynamicAttributesBlock, don't delete the attribute
+                    // if the entity is a block that implements IDynamicAttributesBlock, don't delete the attribute
                     if ( !dynamicAttributesBlock )
                     {
                         foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
@@ -565,9 +565,10 @@ namespace Rock.Attribute
                         {
                             var attributeValue = new AttributeValueCache();
                             attributeValue.AttributeId = attribute.Id;
-                            if ( entity.AttributeValueDefaults != null && entity.AttributeValueDefaults.ContainsKey( attribute.Name ) )
+                            var attributeValueDefaults = entity.AttributeValueDefaults;
+                            if ( attributeValueDefaults != null && attributeValueDefaults.ContainsKey( attribute.Key ) )
                             {
-                                attributeValue.Value = entity.AttributeValueDefaults[attribute.Name];
+                                attributeValue.Value = attributeValueDefaults[attribute.Key];
                             }
                             else
                             {
