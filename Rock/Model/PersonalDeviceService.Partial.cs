@@ -14,27 +14,24 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Rock.SystemGuid
+namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Data access/service class for <see cref="Rock.Model.PersonalDevice"/> entity type objects.
     /// </summary>
-    public class InteractionChannel
+    public partial class PersonalDeviceService
     {
         /// <summary>
-        /// Interaction Channel GUID for all Email, SMS, etc
+        /// Gets the by mac address.
         /// </summary>
-        public const string COMMUNICATION = "C88A187F-0343-4E7C-AF3F-79A8989DFA65";
+        /// <param name="macAddress">The mac address.</param>
+        /// <returns></returns>
+        public PersonalDevice GetByMACAddress( string macAddress )
+        {
+            return Queryable().FirstOrDefault( d => d.MACAddress == macAddress );
+        }
 
-        /// <summary>
-        /// Interaction Channel GUID for wifi presence
-        /// </summary>
-        public const string WIFI_PRESENCE = "23888303-4847-4C80-93E2-4C5EB8029D18";
     }
 }

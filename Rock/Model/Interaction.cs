@@ -111,6 +111,15 @@ namespace Rock.Model
         [DataMember]
         public string InteractionData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the personal device identifier.
+        /// </summary>
+        /// <value>
+        /// The personal device identifier.
+        /// </value>
+        [DataMember]
+        public int? PersonalDeviceId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -141,6 +150,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual InteractionSession InteractionSession { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personal device.
+        /// </summary>
+        /// <value>
+        /// The personal device.
+        /// </value>
+        [LavaInclude]
+        public virtual PersonalDevice PersonalDevice { get; set; }
 
         #endregion
 
@@ -190,6 +208,7 @@ namespace Rock.Model
             this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.InteractionComponent ).WithMany().HasForeignKey( r => r.InteractionComponentId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.InteractionSession ).WithMany( r => r.Interactions ).HasForeignKey( r => r.InteractionSessionId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonalDevice ).WithMany().HasForeignKey( r => r.PersonalDeviceId ).WillCascadeOnDelete( false );
         }
     }
 

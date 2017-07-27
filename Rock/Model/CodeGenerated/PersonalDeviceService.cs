@@ -92,7 +92,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.NotificationsEnabled = source.NotificationsEnabled;
-            target.PersonalDeviceTypeId = source.PersonalDeviceTypeId;
+            target.PersonalDeviceTypeValueId = source.PersonalDeviceTypeValueId;
             target.PersonAliasId = source.PersonAliasId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
