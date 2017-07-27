@@ -1,10 +1,14 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Welcome.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Welcome" %>
 <style>
     .js-search-value {
-        position:absolute;
+        position: absolute;
         top: 200px;
     }
 </style>
+<script> 
+    var timeout = 0;
+</script>
+
 <asp:UpdatePanel ID="upContent" runat="server">
 
     <Triggers>
@@ -19,7 +23,39 @@
 
         <script>
 
+            Sys.WebForms.PageRequestManager.getInstance().add_pageLoading(function () {
+                // Note: We need to destroy the old countdown timer so that it does not generate multiplier
+                // expire events. There is a visual anomaly with doing this. Depending on when the response
+                // from the server is received the displayed time could display the same second for more
+                // than one second and/or skip displaying a second entirely.
+                $('.countdown-timer').countdown('destroy');
+                if (timeout)
+                {
+                    window.clearTimeout(timeout)
+                }
+            });
+
             Sys.Application.add_load(function () {
+
+                var timeoutSeconds = $('.js-refresh-timer-seconds').val();
+                timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
+
+                function refreshKiosk() {
+                    $('.countdown-timer').countdown('destroy');
+                    PostRefresh();
+                }
+
+                var $ActiveWhen = $('.active-when');
+                var $CountdownTimer = $('.countdown-timer');
+
+                if ($ActiveWhen.text() != '') {
+                    var timeActive = new Date($ActiveWhen.text());
+                    $CountdownTimer.countdown({
+                        until: timeActive,
+                        compact: true,
+                        onExpiry: refreshKiosk
+                    });
+                }
 
                 var lastKeyPress = 0;
                 var keyboardBuffer = '';
@@ -69,12 +105,6 @@
                     lastKeyPress = date.getTime();
 
                 });
-
-                if ($(".js-active").is(":visible")) {
-                    location.hash = 'active';
-                } else {
-                    location.hash = '';
-                }
 
                 function submitFamilyIdSearch( familyIds ) {
                     $('#hfSearchEntry').val(familyIds);
@@ -205,8 +235,8 @@
                             <ItemTemplate>
                                 <div class="controls kioskmanager-location">
                                     <div class="btn-group kioskmanager-location-toggle">
-                                        <asp:LinkButton runat="server" ID="lbOpen" CssClass="btn btn-default btn-lg btn-success" Text="Open" CommandName="Open" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>'/>
-                                        <asp:LinkButton runat="server" ID="lbClose" CssClass="btn btn-default btn-lg" Text="Close" CommandName="Close" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>'/>
+                                        <asp:LinkButton runat="server" ID="lbOpen" CssClass="btn btn-default btn-lg btn-success" Text="Open" CommandName="Open" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>' />
+                                        <asp:LinkButton runat="server" ID="lbClose" CssClass="btn btn-default btn-lg" Text="Close" CommandName="Close" CommandArgument='<%# DataBinder.Eval(Container.DataItem, "LocationId") %>' />
 
                                     </div>
                                     <div class="kioskmanager-location-label">
@@ -247,7 +277,7 @@
                     <div class="scroller">
                         <div class="row">
                             <div class="col-md-6">
-                                 <div class="checkin-search-body">
+                                <div class="checkin-search-body">
                                     <Rock:RockTextBox ID="tbPIN" CssClass="checkin-phone-entry" TextMode="Password" runat="server" Label="PIN" />
 
                                     <div class="tenkey checkin-phone-keypad">
@@ -286,8 +316,8 @@
                             </div>
                         </div>
                     </div>
-                    
-                       
+
+
 
                 </div>
             </div>

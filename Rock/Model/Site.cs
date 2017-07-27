@@ -492,6 +492,35 @@ namespace Rock.Model
         [DataMember]
         public virtual Page MobilePage { get; set; }
 
+        /// <summary>
+        /// Gets the default domain URI.
+        /// </summary>
+        /// <value>
+        /// The default domain URI.
+        /// </value>
+        [LavaInclude]
+        public virtual Uri DefaultDomainUri 
+        {
+            get 
+            {
+                try
+                {
+                    string protocol = this.RequiresEncryption ? "https://" : "http://";
+                    string host = this.SiteDomains.OrderBy( d => d.Order ).Select( d => d.Domain ).FirstOrDefault();
+                    if ( host != null )
+                    {
+                        host = host.ToLower().StartsWith( "http://" ) ? host.Substring( 7 ) : host;
+                        host = host.ToLower().StartsWith( "https://" ) ? host.Substring( 8 ) : host;
+
+                        return new Uri( protocol + host );
+                    }
+                }
+                catch { }
+
+                return null;
+            }
+        }
+
         #endregion
 
         #region Methods

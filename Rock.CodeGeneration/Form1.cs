@@ -141,7 +141,7 @@ namespace Rock.CodeGeneration
                     foreach ( object item in cblModels.CheckedItems )
                     {
                         progressBar1.Value++;
-                        Type type = (Type)item;
+                        Type type = ( Type ) item;
 
                         // only generate Service and REST for IEntity types
                         if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) )
@@ -516,7 +516,7 @@ order by [parentTable], [columnName]
             {
                 string parentTable = reader["parentTable"] as string;
                 string columnName = reader["columnName"] as string;
-                bool isPrimaryKey = (int)reader["IsPrimaryKey"] == 1;
+                bool isPrimaryKey = ( int ) reader["IsPrimaryKey"] == 1;
                 bool ignoreCanDelete = false;
                 bool hasEntityModel = true;
 
@@ -568,7 +568,7 @@ order by [parentTable], [columnName]
                 }
 
                 // detect associative table where the foreign key column is also part of the primary key.  EF will automatically take care of it on the DELETE
-                if ( item.IsPartOfPrimaryKey || item.Ignore)
+                if ( item.IsPartOfPrimaryKey || item.Ignore )
                 {
                     canDeleteMiddle += string.Format(
 @"            
@@ -680,17 +680,20 @@ order by [parentTable], [columnName]
             sb.AppendLine( "//" );
             sb.AppendLine( "" );
 
-            sb.AppendFormat( "using {0};" + Environment.NewLine, type.Namespace );
+            sb.AppendLine( $"using {type.Namespace};" );
             sb.AppendLine( "" );
 
-            sb.AppendFormat( "namespace {0}" + Environment.NewLine, restNamespace );
+            sb.AppendLine( $"namespace {restNamespace}" );
             sb.AppendLine( "{" );
             sb.AppendLine( "    /// <summary>" );
-            sb.AppendFormat( "    /// {0} REST API" + Environment.NewLine, pluralizedName );
+            sb.AppendLine( $"    /// {pluralizedName} REST API" );
             sb.AppendLine( "    /// </summary>" );
-            sb.AppendFormat( "    public partial class {0}Controller : Rock.Rest.ApiController<{1}.{2}>" + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
+            sb.AppendLine( $"    public partial class {pluralizedName}Controller : Rock.Rest.ApiController<{type.Namespace}.{type.Name}>" );
             sb.AppendLine( "    {" );
-            sb.AppendFormat( "        public {0}Controller() : base( new {1}.{2}Service( new {3}() ) ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name, dbContextFullName );
+            sb.AppendLine( "        /// <summary>" );
+            sb.AppendLine( $"        /// Initializes a new instance of the <see cref=\"{ pluralizedName}Controller\"/> class." );
+            sb.AppendLine( "        /// </summary>" );
+            sb.AppendLine( $"        public {pluralizedName}Controller() : base( new {type.Namespace}.{type.Name}Service( new {dbContextFullName}() ) ) {{ }} " );
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
 
@@ -760,7 +763,7 @@ order by [parentTable], [columnName]
                 else
                 {
                     var sb = new StringBuilder();
-                    sb.AppendFormat( "{0}<", propertyType.Name.Split( (char)96 )[0] );
+                    sb.AppendFormat( "{0}<", propertyType.Name.Split( ( char ) 96 )[0] );
 
                     foreach ( var argType in propertyType.GetGenericArguments() )
                     {
@@ -806,18 +809,30 @@ order by [parentTable], [columnName]
         {
             switch ( typeName )
             {
-                case "Boolean": return "bool";
-                case "Byte": return "byte";
-                case "Char": return "char";
-                case "Decimal": return "decimal";
-                case "Double": return "double";
-                case "Single": return "float";
-                case "Int32": return "int";
-                case "Int64": return "long";
-                case "SByte": return "sbyte";
-                case "Int16": return "short";
-                case "String": return "string";
-                case "DbGeography": return "object";
+                case "Boolean":
+                    return "bool";
+                case "Byte":
+                    return "byte";
+                case "Char":
+                    return "char";
+                case "Decimal":
+                    return "decimal";
+                case "Double":
+                    return "double";
+                case "Single":
+                    return "float";
+                case "Int32":
+                    return "int";
+                case "Int64":
+                    return "long";
+                case "SByte":
+                    return "sbyte";
+                case "Int16":
+                    return "short";
+                case "String":
+                    return "string";
+                case "DbGeography":
+                    return "object";
             }
 
             return typeName;
@@ -952,7 +967,7 @@ order by [parentTable], [columnName]
                     var enumValues = Enum.GetValues( enumType );
                     foreach ( var enumValueName in Enum.GetNames( enumType ) )
                     {
-                        int enumValue = (int)Convert.ChangeType( Enum.Parse( enumType, enumValueName ), typeof( int ) );
+                        int enumValue = ( int ) Convert.ChangeType( Enum.Parse( enumType, enumValueName ), typeof( int ) );
                         string enumValueParam = enumValue >= 0 ? " = 0x" + enumValue.ToString( "x" ) : " = " + enumValue.ToString();
                         sb.AppendFormat( "        {0}{1},", enumValueName, enumValueParam );
                         sb.AppendLine( "" );
@@ -1164,7 +1179,7 @@ order by [parentTable], [columnName]
                     }
                     else if ( defaultValueAttribute.Value is bool )
                     {
-                        sb.AppendFormat( "        private {0} _{1} = {2};" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key, (bool)defaultValueAttribute.Value ? "true" : "false" );
+                        sb.AppendFormat( "        private {0} _{1} = {2};" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key, ( bool ) defaultValueAttribute.Value ? "true" : "false" );
                     }
                     else
                     {

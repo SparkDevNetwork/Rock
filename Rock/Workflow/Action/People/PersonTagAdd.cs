@@ -54,7 +54,7 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
             
             // get the tag
-            string tagName = GetAttributeValue( action, "OrganizationTag" ).ResolveMergeFields( GetMergeFields( action ) ); ;
+            string tagName = GetAttributeValue( action, "OrganizationTag" ).ResolveMergeFields( GetMergeFields( action ) );
             if (!string.IsNullOrEmpty(tagName)) {
 
                 // get person entity type

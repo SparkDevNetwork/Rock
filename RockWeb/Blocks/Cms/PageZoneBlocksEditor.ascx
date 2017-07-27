@@ -86,11 +86,20 @@
             <Content>
                 <asp:ValidationSummary ID="vsAddBlock" runat="server" ValidationGroup="vgAddBlock" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <Rock:RockTextBox ID="tbNewBlockName" runat="server" Label="Name" Required="true" ValidationGroup="vgAddBlock" />
-                <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" />
-
-                <asp:LinkButton ID="btnHtmlContentQuickSetting" runat="server" Text="HTML Content" CssClass="btn btn-default" OnClick="btnNewBlockQuickSetting_Click" />
-                <asp:LinkButton ID="btnContentChannelQuickSetting" runat="server" Text="Content Channel" CssClass="btn btn-default" OnClick="btnNewBlockQuickSetting_Click" />
-                <asp:LinkButton ID="btnPageMenuQuickSetting" runat="server" Text="Page Menu" CssClass="btn btn-default" OnClick="btnNewBlockQuickSetting_Click" />
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" />
+                    </div>
+                    <div class="col-md-6 padding-t-md">
+                        <label>Common Block Types</label><br />
+                        <asp:Repeater ID="rptCommonBlockTypes" runat="server" OnItemDataBound="rptCommonBlockTypes_ItemDataBound">
+                            <ItemTemplate>
+                                <asp:LinkButton ID="btnNewBlockQuickSetting" runat="server" Text="Todo" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
+                </div>
 
                 <Rock:RockRadioButtonList ID="rblAddBlockLocation" runat="server" Label="Add To" RepeatDirection="Horizontal" FormGroupCssClass="margin-t-md" />
 

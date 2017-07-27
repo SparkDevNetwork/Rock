@@ -224,7 +224,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                         <div class="pull-right">
-                            <asp:LinkButton ID="btnChildPageOrder" runat="server" ToolTip="Child Page Order" CssClass="btn btn-default btn-sm page-child-pages fa fa-list-ol" OnClick="btnChildPageOrder_Click" />
+                            <a title="Child Pages" class="btn btn-default btn-sm page-child-pages fa fa-sitemap" runat="server" id="aChildPages"></a>
                             <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Page" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </div>
@@ -236,18 +236,7 @@
                         <Rock:RockCheckBox ID="cbCopyPageIncludeChildPages" runat="server" Text="Include Child Pages" Checked="true" />
                     </Content>
                 </Rock:ModalDialog>
-
-                <Rock:ModalDialog ID="mdChildPageOrdering" runat="server" Title="Child Page Order" Visible="false" SaveButtonText="Done" OnSaveClick="mdChildPageOrdering_SaveClick" CancelLinkVisible="false">
-                    <Content>
-                        <Rock:Grid ID="gChildPageOrder" runat="server" OnGridReorder="gChildPageOrder_GridReorder" ShowActionRow="false" AllowPaging="false" >
-                            <Columns>
-                                <Rock:ReorderField />
-                                <Rock:RockBoundField DataField="InternalName" HeaderText="Name" />
-                                <Rock:RockBoundField DataField="Layout.Name" HeaderText="Layout"  />
-                            </Columns>
-                        </Rock:Grid>
-                    </Content>
-                </Rock:ModalDialog>
+                
             </asp:Panel>
         </asp:Panel>
     </ContentTemplate>

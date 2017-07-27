@@ -47,7 +47,7 @@ namespace Rock.Rest.Controllers
         /// <param name="includedGroupTypeIds">The included group type ids.</param>
         /// <param name="excludedGroupTypeIds">The excluded group type ids.</param>
         /// <param name="includeInactiveGroups">if set to <c>true</c> [include inactive groups].</param>
-        /// <param name="includeCounts">if set to <c>true</c> [include counts].</param>
+        /// <param name="countsType">Type of the counts.</param>
         /// <param name="campusId">if set it will filter groups based on campus</param>
         /// <param name="includeNoCampus">if campus set and set to <c>true</c> [include groups with no campus].</param>
         /// <returns></returns>
@@ -174,6 +174,7 @@ namespace Rock.Rest.Controllers
         /// Gets the families by name search.
         /// </summary>
         /// <param name="searchString">String to use for search.</param>
+        /// <param name="maxResults">The maximum results.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]

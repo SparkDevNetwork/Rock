@@ -48,7 +48,6 @@ namespace Rock.NMI
     [TextField( "Three Step API URL", "The URL of the NMI Three Step API", true, "https://secure.networkmerchants.com/api/v2/three-step", "", 3, "APIUrl" )]
     [TextField( "Query API URL", "The URL of the NMI Query API", true, "https://secure.networkmerchants.com/api/query.php", "", 4, "QueryUrl" )]
     [BooleanField( "Prompt for Name On Card", "Should users be prompted to enter name on the card", false, "", 5, "PromptForName" )]
-    [BooleanField( "Prompt for Bank Account Name", "Should users be prompted to enter a name for the bank account (in addition to routing and account numbers).", true, "", 6, "PromptForBankAccountName" )]
     [BooleanField( "Prompt for Billing Address", "Should users be prompted to enter billing address", false, "", 7, "PromptForAddress" )]
     public class Gateway : ThreeStepGatewayComponent
     {
@@ -95,13 +94,13 @@ namespace Rock.NMI
         }
 
         /// <summary>
-        /// Prompts the name of for bank account.
+        /// Prompts for the person name associated with a bank account.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <returns></returns>
         public override bool PromptForBankAccountName( FinancialGateway financialGateway )
         {
-            return GetAttributeValue( financialGateway, "PromptForBankAccountName" ).AsBoolean();
+            return true;
         }
 
         /// <summary>

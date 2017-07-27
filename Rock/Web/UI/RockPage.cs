@@ -1083,6 +1083,15 @@ namespace Rock.Web.UI
                                 }
                                 catch ( Exception ex )
                                 {
+                                    try
+                                    {
+                                        LogException( ex );
+                                    }
+                                    catch
+                                    {
+                                        //
+                                    }
+
                                     NotificationBox nbBlockLoad = new NotificationBox();
                                     nbBlockLoad.ID = string.Format( "nbBlockLoad_{0}", block.Id );
                                     nbBlockLoad.CssClass = "system-error";
@@ -1201,6 +1210,24 @@ namespace Rock.Web.UI
                         HtmlGenericControl buttonBar = new HtmlGenericControl( "div" );
                         adminFooter.Controls.Add( buttonBar );
                         buttonBar.Attributes.Add( "class", "button-bar" );
+
+                        if ( canAdministratePage )
+                        {
+                            // ShorLink Properties
+                            HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aShortLink );
+                            aShortLink.ID = "aShortLink";
+                            aShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aShortLink.Attributes.Add( "class", "btn properties" );
+                            aShortLink.Attributes.Add( "height", "500px" );
+                            aShortLink.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + 
+                                ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.Url.AbsoluteUri.ToString() ) ) ) 
+                                + "')" );
+                            aShortLink.Attributes.Add( "Title", "Add Short Link" );
+                            HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
+                            aShortLink.Controls.Add( iAttributes );
+                            iAttributes.Attributes.Add( "class", "fa fa-link" );
+                        }
 
                         // RockBlock Config
                         HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
@@ -2286,9 +2313,18 @@ Sys.Application.add_load(function () {
         {
             HtmlLink htmlLink = new HtmlLink();
 
+            if ( fingerprint )
+            {
+                htmlLink.Attributes.Add( "href", Fingerprint.Tag( page.ResolveUrl( href ) ) );
+            }
+            else
+            {
+                htmlLink.Attributes.Add( "href", page.ResolveUrl( href ) );
+            }
+
             htmlLink.Attributes.Add( "type", "text/css" );
             htmlLink.Attributes.Add( "rel", "stylesheet" );
-            htmlLink.Attributes.Add( "href", page.ResolveUrl( href ) );
+            
             if ( mediaType != string.Empty )
             {
                 htmlLink.Attributes.Add( "media", mediaType );
@@ -2525,16 +2561,26 @@ Sys.Application.add_load(function () {
         /// <returns></returns>
         public static string GetClientIpAddress()
         {
-            string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+            return GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current.Request ) );
+        }
+
+        /// <summary>
+        /// Gets the client ip address.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        public static string GetClientIpAddress( HttpRequestBase request )
+        { 
+            string ipAddress = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
             if ( String.IsNullOrWhiteSpace( ipAddress ) )
             {
-                ipAddress = HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+                ipAddress = request.ServerVariables["REMOTE_ADDR"];
             }
 
             if ( string.IsNullOrWhiteSpace( ipAddress ) )
             {
-                ipAddress = HttpContext.Current.Request.UserHostAddress;
+                ipAddress = request.UserHostAddress;
             }
 
             if ( string.IsNullOrWhiteSpace( ipAddress ) || ipAddress.Trim() == "::1" )

@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class SignatureDocumentTemplatesController : Rock.Rest.ApiController<Rock.Model.SignatureDocumentTemplate>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SignatureDocumentTemplatesController"/> class.
+        /// </summary>
         public SignatureDocumentTemplatesController() : base( new Rock.Model.SignatureDocumentTemplateService( new Rock.Data.RockContext() ) ) { } 
     }
 }

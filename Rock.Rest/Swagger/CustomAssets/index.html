@@ -1,0 +1,267 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Rock REST API Documentation</title>
+  
+  <link href='css/typography-css' media='screen' rel='stylesheet' type='text/css'/>
+  <link href='css/reset-css' media='screen' rel='stylesheet' type='text/css'/>
+  <link href='css/screen-css' media='screen' rel='stylesheet' type='text/css'/>
+  <link href='css/reset-css' media='print' rel='stylesheet' type='text/css'/>
+  <link href='css/print-css' media='print' rel='stylesheet' type='text/css'/>
+  %(StylesheetIncludes)
+
+  <script src='lib/object-assign-pollyfill-js' type='text/javascript'></script>
+  <script src='lib/jquery-1-8-0-min-js' type='text/javascript'></script>
+  <script src='lib/jquery-slideto-min-js' type='text/javascript'></script>
+  <script src='lib/jquery-wiggle-min-js' type='text/javascript'></script>
+  <script src='lib/jquery-ba-bbq-min-js' type='text/javascript'></script>
+  <script src='lib/handlebars-4-0-5-js' type='text/javascript'></script>
+  <script src='lib/lodash-min-js' type='text/javascript'></script>
+  <script src='lib/backbone-min-js' type='text/javascript'></script>
+  <script src='swagger-ui-min-js' type='text/javascript'></script>
+  <script src='lib/highlight-9-1-0-pack-js' type='text/javascript'></script>
+  <script src='lib/highlight-9-1-0-pack_extended-js' type='text/javascript'></script>
+  <script src='lib/jsoneditor-min-js' type='text/javascript'></script>
+  <script src='lib/marked-js' type='text/javascript'></script>
+  <script src='lib/swagger-oauth-js' type='text/javascript'></script>
+
+  <!-- Some basic translations -->
+  <!-- <script src='lang/translator.js' type='text/javascript'></script> -->
+  <!-- <script src='lang/ru.js' type='text/javascript'></script> -->
+  <!-- <script src='lang/en.js' type='text/javascript'></script> -->
+
+  <script type="text/javascript">
+    $(function () {
+
+      // Get Swashbuckle config into JavaScript
+      function arrayFrom(configString) {
+        return (configString !== "") ? configString.split('|') : [];
+      }
+
+      function stringOrNullFrom(configString) {
+        return (configString !== "null") ? configString : null;
+      }
+
+      window.swashbuckleConfig = {
+        rootUrl: '%(RootUrl)',
+        discoveryPaths: arrayFrom('%(DiscoveryPaths)'),
+        booleanValues: arrayFrom('%(BooleanValues)'),
+        validatorUrl: stringOrNullFrom('%(ValidatorUrl)'),
+        customScripts: arrayFrom('%(CustomScripts)'),
+        docExpansion: '%(DocExpansion)',
+        supportedSubmitMethods: arrayFrom('%(SupportedSubmitMethods)'),
+        oAuth2Enabled: ('%(OAuth2Enabled)' == 'true'),
+        oAuth2ClientId: '%(OAuth2ClientId)',
+        oAuth2ClientSecret: '%(OAuth2ClientSecret)',
+        oAuth2Realm: '%(OAuth2Realm)',
+        oAuth2AppName: '%(OAuth2AppName)',
+        oAuth2ScopeSeperator: '%(OAuth2ScopeSeperator)',
+        oAuth2AdditionalQueryStringParams: JSON.parse('%(OAuth2AdditionalQueryStringParams)'),
+        apiKeyName: '%(ApiKeyName)',
+        apiKeyIn: '%(ApiKeyIn)'
+      };
+
+      hljs.configure({
+        highlightSizeThreshold: 5000
+      });
+
+      // Pre load translate...
+      if(window.SwaggerTranslator) {
+        window.SwaggerTranslator.translate();
+      }
+      window.swaggerUi = new SwaggerUi({
+        url: swashbuckleConfig.rootUrl + "/" + swashbuckleConfig.discoveryPaths[0],
+        dom_id: "swagger-ui-container",
+        booleanValues: swashbuckleConfig.booleanValues,
+        supportedSubmitMethods: swashbuckleConfig.supportedSubmitMethods,
+        onComplete: function(swaggerApi, swaggerUi){
+          if (typeof initOAuth == "function" && swashbuckleConfig.oAuth2Enabled) {
+            initOAuth({
+              clientId: swashbuckleConfig.oAuth2ClientId,
+              clientSecret: swashbuckleConfig.oAuth2ClientSecret,
+              realm: swashbuckleConfig.oAuth2Realm,
+              appName: swashbuckleConfig.oAuth2AppName,
+              scopeSeparator: swashbuckleConfig.oAuth2ScopeSeperator,
+              additionalQueryStringParams: swashbuckleConfig.oAuth2AdditionalQueryStringParams
+            });
+          }
+
+          if(window.SwaggerTranslator) {
+            window.SwaggerTranslator.translate();
+          }
+
+          addApiKeyAuthorization();
+
+          window.swaggerApi = swaggerApi;
+          _.each(swashbuckleConfig.customScripts, function (script) {
+            $.getScript(script);
+          });
+        },
+        onFailure: function(data) {
+          log("Unable to Load SwaggerUI");
+        },
+        docExpansion: swashbuckleConfig.docExpansion,
+        jsonEditor: false,
+        apisSorter: null, // default to server
+        defaultModelRendering: 'schema',
+        showRequestHeaders: false,
+        oauth2RedirectUrl: window.location.href.replace('index', 'o2c-html').split('#')[0]
+      });
+
+      if (window.swashbuckleConfig.validatorUrl !== '')
+        window.swaggerUi.options.validatorUrl = window.swashbuckleConfig.validatorUrl;
+
+      function addApiKeyAuthorization() {
+        var key = $('#input_apiKey')[0].value;
+        if (key && key.trim() != "") {
+          if (swashbuckleConfig.apiKeyIn === "query") {
+              key = encodeURIComponent(key);
+          }
+          var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization(swashbuckleConfig.apiKeyName, key, swashbuckleConfig.apiKeyIn);
+          window.swaggerUi.api.clientAuthorizations.add("api_key", apiKeyAuth);
+          log("added key " + key);
+        }
+      }
+      $('#input_apiKey').change(addApiKeyAuthorization);
+
+      window.swaggerUi.load();
+
+      function log() {
+        if ('console' in window) {
+          console.log.apply(console, arguments);
+        }
+      }
+  });
+  </script>
+</head>
+
+<body class="swagger-section">
+    
+    <!-- This div is from the stock Swagger UI. We can hide it but we need the form and inputs so that the navigation works -->
+    <div id='header' style="display:none">
+        <div class="swagger-ui-wrap">
+            <a id="logo" href="http://swagger.io"><img class="logo__img" alt="swagger" height="30" width="30" src="images/logo_small-png" /><span class="logo__title">swagger</span></a>
+            <form id='api_selector'>
+                <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text" /></div>
+                <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text" /></div>
+                <div class='input'><a id="explore" class="header__btn" href="#" data-sw-translate>Explore</a></div>
+            </form>
+        </div>
+    </div>
+
+    <div id='pageheader'>
+        <img class="pageheader-logo" />
+        <h1>Rock REST Documentation</h1>
+    </div>
+
+    <script type="text/javascript">
+        // add a bootstrap stylesheet
+        var cssBootstrapUrl = '%(RootUrl)' + '/Themes/Rock/Styles/bootstrap.css';
+        $('head').append('<link rel="stylesheet" href="' + cssBootstrapUrl + '" type="text/css" />');
+
+        // add rock logo
+        var rockLogoUrl = '%(RootUrl)' + '/Assets/Images/rock-logo-circle.svg';
+        $('.pageheader-logo').attr("src", rockLogoUrl);
+
+        // Normally, SwaggerUI will load the entire Model into a single page, but Rock has a lot of models, so we'll break it up one controller at a time
+        // Fetch a list of all the REST Controllers in Rock to make.  When the user clicks on one, the SwaggerUI will be loaded for that Controller
+        $.get('%(RootUrl)' + '/api/RestControllers/EnsureRestControllers', function ()
+        {
+            $.get('%(RootUrl)' + '/api/RestControllers?$select=Name&$orderby=Name', function (data)
+            {
+                var $rockControllerList = $('#rock-controller-list ul');
+                $.each(data, function (index, value)
+                {
+                    $rockControllerList.append('<li><a href="#" onclick="showUiForController(\'' + value.Name + '\')">' + value.Name + '</a></li>');
+                });
+            }).fail(function (a)
+            {
+                if (a.status == 401)
+                {
+                    redirectToLoginPage(a);
+                }
+            });
+        }).fail(function (a)
+        {
+            if (a.status == 401)
+            {
+                redirectToLoginPage(a);
+            }
+        });
+
+        function showUiForController(controllerName)
+        {
+            $('#input_baseUrl').val(swashbuckleConfig.rootUrl + '/' + swashbuckleConfig.discoveryPaths[0] + '?controllerName=' + controllerName);
+            $('#explore').click();
+        }
+
+        function redirectToLoginPage(a)
+        {
+            debugger
+            var currentUrl = window.location;
+            window.location = swashbuckleConfig.rootUrl + '/login?returnUrl=' + encodeURIComponent(currentUrl);
+        }
+    </script>
+
+    <div id="message-bar" class="swagger-ui-wrap" data-sw-translate>&nbsp;</div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div id="rock-controller-list" class="well">
+                    <ul></ul>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div id="rock-swagger-ui">
+                    <div id="swagger-ui-container" class="swagger-ui-wrap">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        body {
+            background-color: #fff;
+        }
+
+        #pageheader {
+            background-color: #ee7725;
+            color: #fff;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .pageheader-logo {
+            width: 25px;
+        }
+
+        #pageheader h1 {
+            font-size: 18px;
+            display: inline;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .well {
+            background-color: #f3f3f3;
+            border-color: #f3f3f3;
+        }
+
+        .swagger-section .swagger-ui-wrap .info_title {
+            font-size: 45px;
+            letter-spacing: -2px;
+        }
+
+        #resources_container > .footer {
+            display: none;
+        }
+        
+    </style>
+
+</body>
+</html>

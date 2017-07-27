@@ -69,6 +69,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [CustomDropdownListField( "SMS", "Should SMS be enabled for cell phone numbers by default?", "True^SMS is enabled by default,False^SMS is not enabled by default,None^SMS option is hidden", false, "", "", 19 )]
     [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 20 )]
     [BooleanField( "Show Nick Name", "Show an edit box for Nick Name.", false, order: 21 )]
+    [LinkedPage( "Person Detail Page", "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.", false, order: 22 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -483,6 +484,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 var rockContext = new RockContext();
 
                                 Guid? parentGroupGuid = GetAttributeValue( "ParentGroup" ).AsGuidOrNull();
+                            	int? groupId = null;
 
 	                            try
 	                            {
@@ -500,6 +502,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	
 	                                    if ( group != null )
 	                                    {
+                                	        groupId = group.Id;
 	                                        string locationKey = GetLocationKey();
 	                                        if ( !string.IsNullOrEmpty( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
 	                                        {
@@ -507,8 +510,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                                        }
 	                                    }
 	                                } );
+
+	                                // If a custom PersonDetailPage is specified, navigate to that. Otherwise, just go to ~/Person/{PersonId}
+	                                var queryParams = new Dictionary<string, string>();
+	                                queryParams.Add( "PersonId", GroupMembers[0].Person.Id.ToString() );
+	                                if ( groupId.HasValue )
+	                                {
+	                                    queryParams.Add( "GroupId", groupId.ToString() );
+	                                }
 	
-	                                Response.Redirect( string.Format( "~/Person/{0}", GroupMembers[0].Person.Id ), false );
+	                                var personDetailUrl = LinkedPageUrl( "PersonDetailPage", queryParams );
+	                                if ( !string.IsNullOrWhiteSpace( personDetailUrl ) )
+	                                {
+	                                    NavigateToLinkedPage( "PersonDetailPage", queryParams );
+	                                }
+	                                else
+	                                {
+		                                Response.Redirect( string.Format( "~/Person/{0}", GroupMembers[0].Person.Id ), false );
+	                                }
 	                            }
 	                            catch (GroupMemberValidationException vex)
 	                            {
@@ -597,7 +616,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMemberRow.RequireGrade = nfmMembers.RequireGrade;
                 groupMemberRow.RoleId = groupMember.GroupRoleId;
                 groupMemberRow.ShowTitle = showTitle;
-                groupMemberRow.ShowMiddleName = showGrade;
+                groupMemberRow.ShowMiddleName = showMiddleName;
                 groupMemberRow.ShowSuffix = showSuffix;
                 groupMemberRow.ShowGradeColumn = _isFamilyGroupType && showGrade;
                 groupMemberRow.ShowGradePicker = groupMember.GroupRoleId == _childRoleId;
