@@ -391,7 +391,8 @@ namespace Rock.Rest.Controllers
                     Name = showFullNameReversed
                     ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
                     : Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
-                    IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId
+                    IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId,
+                    RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Read( a.RecordStatusValueId.Value ).Value : string.Empty
                 } );
 
                 return simpleResult.AsQueryable();
