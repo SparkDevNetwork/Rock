@@ -69,46 +69,14 @@
                 });
             });
 
-            // debouncing function from John Hann
-            // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
-            var debouncePersonPicker = function (func, threshold, execAsap)
-            {
-              var timeout;
-
-              return function debounced()
-              {
-                var obj = this, args = arguments;
-                function delayed()
-                {
-                  if (!execAsap)
-                    func.apply(obj, args);
-                  timeout = null;
-                };
-
-                if (timeout) {
-                  clearTimeout(timeout);
-                }
-                else if (execAsap)
-                  func.apply(obj, args);
-
-                timeout = setTimeout(delayed, threshold || 250);
-              };
-            }
-
-            $('#' + controlId + ' .picker-select').on('click mouseenter', '.picker-select-item', debouncePersonPicker(function (e)
-            {
-                if (e.type == 'click' && $(e.target).is(':input') == false) {
-                  // only process the click event if it has bubbled up to the input tag
-                  return;
-                }
-
+            $('#' + controlId + ' .picker-select').on('click', '.picker-select-item :input', function (e) {
                 e.stopPropagation();
 
                 var $selectedItem = $(this).closest('.picker-select-item');
 
                 var selectedPersonId = $selectedItem.attr('data-person-id');
                 var alreadySelected = $selectedItem.find('.picker-select-item-details').is(':visible');
-                if (alreadySelected && e.type == 'click') {
+                if (alreadySelected) {
                     $('#' + controlId + '_btnSelect').get(0).click();
                 }
 
@@ -118,7 +86,7 @@
                        currentPersonId = $el.closest('.picker-select-item').attr('data-person-id');
 
                     if (currentPersonId != selectedPersonId) {
-                        $el.hide();
+                        $el.slideUp();
                     }
                 });
 
@@ -146,7 +114,7 @@
                         exports.personPickers[controlId].updateScrollbar();
                     });
                 }
-            }));
+            });
 
             $('#' + controlId).hover(
                 function () {
