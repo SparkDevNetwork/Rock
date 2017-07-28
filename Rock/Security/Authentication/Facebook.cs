@@ -46,6 +46,8 @@ namespace Rock.Security.ExternalAuthentication
     [BooleanField( "Sync Friends", "Should the person's Facebook friends who are also in Rock be added as a known relationship?", true )]
     public class Facebook : AuthenticationComponent
     {
+        protected static string sGraphAPIVersion = "v2.10";
+
         /// <summary>
         /// Gets the type of the service.
         /// </summary>
@@ -131,7 +133,7 @@ namespace Rock.Security.ExternalAuthentication
                     restRequest.AddParameter( "access_token", accessToken );
                     restRequest.RequestFormat = DataFormat.Json;
                     restRequest.AddHeader( "Accept", "application/json" );
-                    restClient = new RestClient( "https://graph.facebook.com/v2.5/me?fields=email,last_name,first_name,link" );
+                    restClient = new RestClient( string.Format( "https://graph.facebook.com/{0}/me?fields=email,last_name,first_name,link", sGraphAPIVersion ) );
                     restResponse = restClient.Execute( restRequest );
 
                     if ( restResponse.StatusCode == HttpStatusCode.OK )
@@ -433,7 +435,7 @@ namespace Rock.Security.ExternalAuthentication
                             // If person does not have a photo, try to get their Facebook photo
                             if ( !person.PhotoId.HasValue )
                             {
-                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/v2.2/{0}/picture?redirect=false&type=square&height=400&width=400", facebookId ) );
+                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/{0}/{1}/picture?redirect=false&type=square&height=400&width=400", sGraphAPIVersion, facebookId ) );
                                 var restRequest = new RestRequest( Method.GET );
                                 restRequest.RequestFormat = DataFormat.Json;
                                 restRequest.AddHeader( "Accept", "application/json" );
@@ -495,7 +497,7 @@ namespace Rock.Security.ExternalAuthentication
                                 restRequest.RequestFormat = DataFormat.Json;
                                 restRequest.AddHeader( "Accept", "application/json" );
 
-                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/v2.2/{0}/friends", facebookId ) );
+                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/{0}/{1}/friends", sGraphAPIVersion, facebookId ) );
                                 var restResponse = restClient.Execute( restRequest );
 
                                 if ( restResponse.StatusCode == HttpStatusCode.OK )
