@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CommunicationEntryWizard.ascx.cs" Inherits="RockWeb.Blocks.Communication.CommunicationEntryWizard" %>
 
-<asp:UpdatePanel ID="upnlContent" runat="server">
+<asp:UpdatePanel ID="upnlContent" runat="server" ChildrenAsTriggers="true" UpdateMode="Conditional">
     <ContentTemplate>
 
         <style>
@@ -30,6 +30,7 @@
                     
                     <asp:Panel ID="pnlRecipientSelectionList" runat="server">
 
+                        <Rock:NotificationBox ID="nbCommunicationGroupWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
                         <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true"  OnSelectedIndexChanged="ddlCommunicationGroupList_SelectedIndexChanged" AutoPostBack="true" />
 
                         
@@ -97,6 +98,7 @@
 
                     <div class="row margin-b-md">
                         <div class="col-md-6">
+                            <Rock:NotificationBox ID="nbSendDateTimeWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
                             <Rock:Toggle ID="tglSendDateTime" runat="server" OnText="Send Immediately" OffText="Send at a Specific Date and Time" ActiveButtonCssClass="btn-primary" Checked="false" OnCheckedChanged="tglSendDateTime_CheckedChanged" />
                             <Rock:DateTimePicker ID="dtpSendDateTime" runat="server" CssClass="margin-t-md" Visible="true" Required="true" ValidationGroup="vgMediumSelection" />
                         </div>
@@ -145,27 +147,6 @@
                 </asp:Panel>
 
                 <asp:HiddenField ID="hfSelectedCommunicationTemplateId" runat="server" />
-
-                <%-- Email Summary --%>
-                <asp:Panel ID="pnlEmailSummary" runat="server" Visible="false">
-                    <h4>Email Summary</h4>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" />
-                            <Rock:RockTextBox ID="tbEmailSubject" runat="server" Label="Email Subject" />
-                        </div>
-                        <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbFromAddress" runat="server" Label="From Address" />
-                            <Rock:RockTextBox ID="tbEmailPreview" runat="server" Label="Email Preview" TextMode="MultiLine" Rows="4"  />
-                        </div>
-                    </div>
-                    
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEmailSummaryPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnEmailSummaryPrevious_Click"  />
-                        <asp:LinkButton ID="btnEmailSummaryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgEmailSummary" CausesValidation="true" OnClick="btnEmailSummaryNext_Click" />
-                    </div>
-                </asp:Panel>
-
 
                 <%-- Email Editor --%>
                 <asp:Panel ID="pnlEmailEditor" runat="server" Visible="false">
@@ -575,6 +556,62 @@
                     
                 </asp:Panel>
 
+                <%-- Email Summary --%>
+                <asp:Panel ID="pnlEmailSummary" runat="server" Visible="false">
+                    <h4>Email Summary</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbFromAddress" runat="server" Label="From Address" Required="true" ValidationGroup="vgEmailSummary"/>
+                            <div class="pull-right">
+                                <a href="#" class="btn btn-xs btn-link js-show-additional-fields" >Show Additional Fields</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <asp:Panel ID="pnlEmailSummaryAdditionalFields" runat="server" CssClass="js-additional-fields" style="display:none">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbReplyToAddress" runat="server" Label="Reply To Address" />
+                            </div>
+                            <div class="col-md-6">
+                                
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbCCList" runat="server" Label="CC List" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbBCCList" runat="server" Label="BCC List" />
+                            </div>
+                        </div>
+                    </asp:Panel>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbEmailSubject" runat="server" Label="Email Subject" Required="true" ValidationGroup="vgEmailSummary" />
+                            <asp:UpdatePanel ID="upFileAttachments" runat="server">
+                                <ContentTemplate>
+                                    <asp:HiddenField ID="hfAttachedBinaryFileIds" runat="server" />
+                                    <Rock:FileUploader Id="fupAttachments" runat="server" Label="Attachments" OnFileUploaded="fupAttachments_FileUploaded" />
+                                    <asp:Literal ID="lAttachmentListHtml" runat="server" />
+                                </ContentTemplate>
+                            </asp:UpdatePanel>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbEmailPreview" runat="server" Label="Email Preview" TextMode="MultiLine" Rows="4" />
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <asp:LinkButton ID="btnEmailSummaryPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnEmailSummaryPrevious_Click" />
+                        <asp:LinkButton ID="btnEmailSummaryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgEmailSummary" CausesValidation="true" OnClick="btnEmailSummaryNext_Click" />
+                    </div>
+                </asp:Panel>
+
             </div>
         
         </asp:Panel>
@@ -594,8 +631,29 @@
                 });
 
                 setActiveButtonGroupButton($('.js-mediumtype').find("[data-val='" + $('.js-mediumtype .js-hidden-selected').val() + "']"));
+
+                $('.js-show-additional-fields').off('click').on('click', function ()
+                {
+                    $('.js-additional-fields').slideToggle();
+                });
             }
             );
+
+            function removeAttachment(source, hf, fileId)
+            {
+                // Get the attachment list
+                var $hf = $('#' + hf);
+                var fileIds = $hf.val().split(',');
+
+                // Remove the selected attachment 
+                var removeAt = $.inArray(fileId, fileIds);
+                fileIds.splice(removeAt, 1);
+                $hf.val(fileIds.join());
+
+                // Remove parent <li>
+                $(source).closest($('li')).remove();
+            }
+
 
             function loadEmailEditor()
             {
