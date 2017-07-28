@@ -42,8 +42,14 @@ namespace RockWeb.Blocks.Communication
     [Description( "Used for creating and sending a new communications such as email, SMS, etc. to recipients." )]
 
     [BinaryFileTypeField( "Binary File Type", "The FileType to use for images that are added to the email using the image component", true, Rock.SystemGuid.BinaryFiletype.DEFAULT )]
+    [IntegerField( "Character Limit", "Set this to show a character limit countdown for SMS communications. Set to 0 to disable", false, 160 )]
     public partial class CommunicationEntryWizard : Rock.Web.UI.RockBlock
     {
+        #region fields
+
+
+        #endregion
+
         /// <summary>
         /// Gets or sets the individual recipient person ids.
         /// </summary>
@@ -81,6 +87,7 @@ namespace RockWeb.Blocks.Communication
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             componentImageUploader.BinaryFileTypeGuid = this.GetAttributeValue( "BinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+            hfSMSCharLimit.Value = ( this.GetAttributeValue( "CharacterLimit" ).AsIntegerOrNull() ?? 160 ).ToString();
         }
 
         /// <summary>
@@ -153,6 +160,10 @@ namespace RockWeb.Blocks.Communication
             UpdateRecipientFromListCount();
 
             BindTemplatePicker();
+
+            btnMediumUserPreference.Attributes["data-val"] = Rock.Model.CommunicationType.UserPreference.ConvertToInt().ToString();
+            btnMediumEmail.Attributes["data-val"] = Rock.Model.CommunicationType.Email.ConvertToInt().ToString();
+            btnMediumSMS.Attributes["data-val"] = Rock.Model.CommunicationType.SMS.ConvertToInt().ToString();
         }
 
         /// <summary>
@@ -481,8 +492,15 @@ namespace RockWeb.Blocks.Communication
             
             ifEmailDesigner.Attributes["srcdoc"] = templateHtml;
 
-            // TODO
-            pnlEmailEditor.Visible = true;
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
+            {
+                pnlEmailSummary.Visible = true;
+            }
+            else if (communicationType == CommunicationType.SMS)
+            {
+                pnlMobileTextEditor.Visible = true;
+            }
         }
 
         /// <summary>
@@ -520,8 +538,16 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailEditorPrevious_Click( object sender, EventArgs e )
         {
-            pnlTemplateSelection.Visible = true;
             pnlEmailEditor.Visible = false;
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
+            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.UserPreference )
+            {
+                pnlMobileTextEditor.Visible = true;
+            }
+            else
+            {
+                pnlEmailSummary.Visible = true;
+            }
         }
 
         /// <summary>
@@ -532,7 +558,7 @@ namespace RockWeb.Blocks.Communication
         protected void btnEmailEditorNext_Click( object sender, EventArgs e )
         {
             pnlEmailEditor.Visible = false;
-            pnlEmailSummary.Visible = true;
+            pnlConfirmation.Visible = true;
         }
 
         #endregion Email Editor
@@ -550,11 +576,28 @@ namespace RockWeb.Blocks.Communication
             pnlEmailSummary.Visible = false;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnEmailSummaryNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailSummaryNext_Click( object sender, EventArgs e )
         {
-            // TODO
-            //pnlEmailSummary.Visible = false;
-            //pnl??.Visible = true;
+            pnlEmailSummary.Visible = false;
+            
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
+            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.UserPreference )
+            {
+                // TODO: is this the right person and the right time to initialize?
+                InitializeSMSFromSender( this.CurrentPerson );
+                pnlMobileTextEditor.Visible = true;
+
+                // TODO: Init Merge Field Picker?
+            }
+            else if ( communicationType == CommunicationType.Email )
+            {
+                pnlEmailEditor.Visible = true;
+            }
         }
 
         /// <summary>
@@ -609,6 +652,112 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion Email Summary
+
+        #region Mobile Text Editor
+
+        /// <summary>
+        /// Handles the Click event of the btnMobileTextEditorPrevious control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnMobileTextEditorPrevious_Click( object sender, EventArgs e )
+        {
+            pnlMobileTextEditor.Visible = false;
+            pnlEmailSummary.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnMobileTextEditorNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnMobileTextEditorNext_Click( object sender, EventArgs e )
+        {
+            pnlMobileTextEditor.Visible = false;
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
+            {
+                pnlEmailEditor.Visible = true;
+            }
+            else
+            {
+                pnlConfirmation.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Initializes the SMS from sender.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        public void InitializeSMSFromSender( Person sender )
+        {
+            ddlSMSFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), false, true );
+            var numbers = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
+            if ( numbers != null )
+            {
+                foreach ( var number in numbers.DefinedValues )
+                {
+                    var personAliasGuid = number.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull();
+                    if ( personAliasGuid.HasValue && sender.Aliases.Any( a => a.Guid == personAliasGuid.Value ) )
+                    {
+                        ddlSMSFrom.SetValue( number.Id );
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the mfpMessage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mfpMessage_SelectItem( object sender, EventArgs e )
+        {
+            tbSMSTextMessage.Text += mfpSMSMessage.SelectedMergeField;
+            mfpSMSMessage.SetValue( string.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSMSSendTest control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSMSSendTest_Click( object sender, EventArgs e )
+        {
+
+        }
+
+        #endregion Mobile Text Editor
+
+        #region Confirmation
+
+        protected void btnConfirmationPrevious_Click( object sender, EventArgs e )
+        {
+
+        }
+
+        protected void btnSend_Click( object sender, EventArgs e )
+        {
+
+        }
+
+        protected void btnSaveAsDraft_Click( object sender, EventArgs e )
+        {
+
+        }
+
+        protected void btnConfirmationCancel_Click( object sender, EventArgs e )
+        {
+
+        }
+
+        protected void tglSendDateTimeConfirmation_CheckedChanged( object sender, EventArgs e )
+        {
+
+        }
+
+        #endregion
 
         #region Methods
 
@@ -861,6 +1010,14 @@ namespace RockWeb.Blocks.Communication
 
 
 
-        
+
+
+
+
+
+
+
+
+       
     }
 }

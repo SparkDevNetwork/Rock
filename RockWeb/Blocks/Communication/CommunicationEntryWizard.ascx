@@ -612,6 +612,71 @@
                     </div>
                 </asp:Panel>
 
+                <%-- Mobile Text Editor --%>
+                <asp:Panel ID="pnlMobileTextEditor" runat="server" Visible="false">
+                    <h4>Mobile Text Editor</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlSMSFrom" runat="server" Label="From" Help="The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values)." Required="true" ValidationGroup="vgMobileTextEditor"/>
+                            <Rock:RockControlWrapper ID="rcwSMSMessage" runat="server" Label="Message" Help="<span class='tip tip-lava'></span>">
+                                <Rock:MergeFieldPicker ID="mfpSMSMessage" runat="server" CssClass="margin-b-sm pull-right" OnSelectItem="mfpMessage_SelectItem" ValidationGroup="vgMobileTextEditor"/>
+                                <asp:HiddenField ID="hfSMSCharLimit" runat="server" />
+                                <asp:Label ID="lblSMSMessageCount" runat="server" CssClass="badge margin-all-sm pull-right" />
+                                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor"/>
+                                <div class="actions margin-t-sm pull-right">
+                                    <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-sm btn-default" Text="Send Test" OnClick="btnSMSSendTest_Click" />
+                                </div>
+                            </Rock:RockControlWrapper>
+                        </div>
+                        <div class="col-md-6">
+                            <%-- TODO: This is where the SMS Bubbles thing would probably go --%>
+                            <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <asp:LinkButton ID="btnMobileTextEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnMobileTextEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnMobileTextEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgMobileTextEditor" CausesValidation="true" OnClick="btnMobileTextEditorNext_Click" />
+                    </div>
+                </asp:Panel>
+
+                <%-- Confirmation --%>
+                <asp:Panel ID="pnlConfirmation" runat="server" Visible="false">
+                    <h4>Confirmation</h4>
+                    <div class="alert alert-info">
+                        <asp:Literal ID="lConfirmationInfoHtml" runat="server" /><a href='#' class="btm btn-link js-show-confirmation-datetime"><strong>Edit</strong></a>
+                    </div>
+                    <asp:Label ID="lblConfirmationSendHtml" runat="server">
+                        <p>Now Is the Moment Of Truth</p>
+                        <p>You are about to send this communication to <strong>???</strong> individuals</p>
+
+                    </asp:Label>
+                    <div class="row">
+                        <div class="col-md-6">
+                        </div>
+                    </div>
+
+                    <div class="row margin-b-md js-confirmation-datetime" style="display:none">
+                        <div class="col-md-6">
+                            <Rock:NotificationBox ID="nbSendDateTimeWarningConfirmation" runat="server" NotificationBoxType="Danger" Visible="false" />
+                            <Rock:Toggle ID="tglSendDateTimeConfirmation" runat="server" OnText="Send Immediately" OffText="Send at a Specific Date and Time" ActiveButtonCssClass="btn-primary" Checked="false" OnCheckedChanged="tglSendDateTimeConfirmation_CheckedChanged" />
+                            <Rock:DateTimePicker ID="dtpSendDateTimeConfirmation" runat="server" CssClass="margin-t-md" Visible="true" Required="true" ValidationGroup="vgConfirmation" />
+                        </div>
+                        <div class="col-md-6">
+
+                        </div>
+                    </div>
+                    
+                    <div class="actions margin-b-lg">
+                        <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-primary" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSend_Click" />
+                        <asp:LinkButton ID="btnSaveAsDraft" runat="server" Text="Save as Draft" CssClass="btn btn-default" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSaveAsDraft_Click" />
+                        <asp:LinkButton ID="btnConfirmationCancel" runat="server" Text="Send" CssClass="btn btn-default" CausesValidation="false" ValidationGroup="vgConfirmation" OnClick="btnConfirmationCancel_Click" />
+                    </div>
+                    
+                    <div class="actions">
+                        <asp:LinkButton ID="btnConfirmationPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnConfirmationPrevious_Click" />
+                    </div>
+                </asp:Panel>
+
             </div>
         
         </asp:Panel>
@@ -636,6 +701,24 @@
                 {
                     $('.js-additional-fields').slideToggle();
                 });
+
+                $('.js-show-confirmation-datetime').off('click').on('click', function ()
+                {
+                    $('.js-confirmation-datetime').slideToggle();
+                });
+
+                var smsCharLimit = $('#<%=hfSMSCharLimit.ClientID%>').val();
+                if ( smsCharLimit && smsCharLimit > 0)
+                {
+                    $('#<%=tbSMSTextMessage.ClientID%>').limit(
+                        {
+                            maxChars: smsCharLimit,
+                            counter: '#<%=lblSMSMessageCount.ClientID%>',
+                            normalClass: 'badge',
+                            warningClass: 'badge-warning',
+                            overLimitClass: 'badge-danger'
+                        });
+                }
             }
             );
 
@@ -653,7 +736,6 @@
                 // Remove parent <li>
                 $(source).closest($('li')).remove();
             }
-
 
             function loadEmailEditor()
             {
