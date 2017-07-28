@@ -30,6 +30,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using System.Text;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -92,11 +93,14 @@ namespace RockWeb.Blocks.Communication
 
             if ( !Page.IsPostBack )
             {
-                
-
                 LoadDropDowns();
 
                 tglRecipientSelection_CheckedChanged( null, null );
+
+                // DEBUG
+                ddlCommunicationGroupList.Items[1].Selected = true;
+                tbCommunicationName.Text = "DEBUG";
+                dtpSendDateTime.SelectedDateTime = RockDateTime.Now;
             }
         }
 
@@ -112,16 +116,32 @@ namespace RockWeb.Blocks.Communication
             var groupService = new GroupService( rockContext );
 
             var communicationGroupList = groupService.Queryable().Where( a => a.GroupTypeId == groupTypeCommunicationGroupId ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            var authorizedCommunicationGroupList = communicationGroupList.Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
 
             ddlCommunicationGroupList.Items.Clear();
             ddlCommunicationGroupList.Items.Add( new ListItem() );
-            foreach ( var communicationGroup in communicationGroupList )
+            foreach ( var communicationGroup in authorizedCommunicationGroupList )
             {
-                if ( communicationGroup.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
-                {
+                ddlCommunicationGroupList.Items.Add( new ListItem( communicationGroup.Name, communicationGroup.Id.ToString() ) );
+            }
 
-                    ddlCommunicationGroupList.Items.Add( new ListItem( communicationGroup.Name, communicationGroup.Id.ToString() ) );
+            if ( !authorizedCommunicationGroupList.Any() )
+            {
+                nbCommunicationGroupWarning.Visible = true;
+                if ( !communicationGroupList.Any() )
+                {
+                    // there are no communication groups in the system, so explain how to add them
+                    nbCommunicationGroupWarning.Text = "No communications lists. Go to Home / Communications / Communication Lists to add a communication list.";
                 }
+                else
+                {
+                    // there are communication groups in the system, but the user isn't authorized to see any of them
+                    nbCommunicationGroupWarning.Text = "No communications lists available.";
+                }
+            }
+            else
+            {
+                nbCommunicationGroupWarning.Visible = false;
             }
 
             LoadCommunicationSegmentFilters();
@@ -356,6 +376,23 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnMediumSelectionNext_Click( object sender, EventArgs e )
         {
+            if ( dtpSendDateTime.Visible )
+            {
+                if ( !dtpSendDateTime.SelectedDateTime.HasValue )
+                {
+                    nbSendDateTimeWarning.NotificationBoxType = NotificationBoxType.Danger;
+                    nbSendDateTimeWarning.Text = "Send Date Time is required";
+                    nbSendDateTimeWarning.Visible = true;
+                    return;
+                }
+                else
+                {
+                    // TODO: In case we want to check for Date too far into the past or too far in the future
+                }
+            }
+
+            nbSendDateTimeWarning.Visible = false;
+
             pnlMediumSelection.Visible = false;
             pnlTemplateSelection.Visible = true;
 
@@ -402,7 +439,7 @@ namespace RockWeb.Blocks.Communication
         {
             // TODO
             CommunicationTemplate communicationTemplate = e.Item.DataItem as CommunicationTemplate;
-            
+
             if ( communicationTemplate != null )
             {
                 Literal lTemplateImagePreview = e.Item.FindControl( "lTemplateImagePreview" ) as Literal;
@@ -429,8 +466,19 @@ namespace RockWeb.Blocks.Communication
             hfSelectedCommunicationTemplateId.Value = ( sender as LinkButton ).CommandArgument;
             pnlTemplateSelection.Visible = false;
 
-            var templateHtml = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() ).Message;
-            //templateHtml = this.sampleTemplate;
+            var communicationTemplate = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() );
+
+            string templateHtml;
+            if ( string.IsNullOrEmpty(communicationTemplate.Message) )
+            {
+                // TODO, shouldn't need to do this after CommunicationTemplateDetails block is fixed up
+                templateHtml = communicationTemplate.MediumData["HtmlMessage"];
+            }
+            else
+            {
+                templateHtml = communicationTemplate.Message;
+            }
+            
             ifEmailDesigner.Attributes["srcdoc"] = templateHtml;
 
             // TODO
@@ -483,10 +531,84 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailEditorNext_Click( object sender, EventArgs e )
         {
-            // TODO
+            pnlEmailEditor.Visible = false;
+            pnlEmailSummary.Visible = true;
         }
 
         #endregion Email Editor
+
+        #region Email Summary
+
+        /// <summary>
+        /// Handles the Click event of the btnEmailSummaryPrevious control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnEmailSummaryPrevious_Click( object sender, EventArgs e )
+        {
+            pnlEmailEditor.Visible = true;
+            pnlEmailSummary.Visible = false;
+        }
+
+        protected void btnEmailSummaryNext_Click( object sender, EventArgs e )
+        {
+            // TODO
+            //pnlEmailSummary.Visible = false;
+            //pnl??.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the FileUploaded event of the fupAttachments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
+        protected void fupAttachments_FileUploaded( object sender, FileUploaderEventArgs e )
+        {
+            List<int> attachmentList = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+            if ( fupAttachments.BinaryFileId.HasValue )
+            {
+                attachmentList.Add( fupAttachments.BinaryFileId.Value );
+            }
+
+            hfAttachedBinaryFileIds.Value = attachmentList.AsDelimited( "," );
+            fupAttachments.BinaryFileId = null;
+
+            // pre-populate dictionary so that the attachments are listed in the order they were added
+            Dictionary<int, string> binaryFileAttachments = attachmentList.ToDictionary( k => k, v => string.Empty);
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileInfoList = new BinaryFileService( rockContext ).Queryable()
+                        .Where( f => attachmentList.Contains( f.Id ) )
+                        .Select( f => new
+                        {
+                            f.Id,
+                            f.FileName
+                        } );
+
+                foreach ( var binaryFileInfo in binaryFileInfoList )
+                {
+                    binaryFileAttachments[binaryFileInfo.Id] = binaryFileInfo.FileName;
+                }
+            }
+
+            StringBuilder sbAttachmentsHtml = new StringBuilder();
+            sbAttachmentsHtml.AppendLine( "<div class='attachment'>" );
+            sbAttachmentsHtml.AppendLine( "  <ul class='attachment-content'>" );
+
+            foreach (var binaryFileAttachment in binaryFileAttachments )
+            {
+                var attachmentUrl = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFileAttachment.Key );
+                var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
+                sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank'>{1}</a> <a><i class='fa fa-times' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
+            }
+            
+            sbAttachmentsHtml.AppendLine( "  </ul>" );
+            sbAttachmentsHtml.AppendLine( "</div>" );
+
+            lAttachmentListHtml.Text = sbAttachmentsHtml.ToString();
+        }
+
+        #endregion Email Summary
 
         #region Methods
 
@@ -737,14 +859,8 @@ namespace RockWeb.Blocks.Communication
 ";
 
 
-        protected void btnEmailSummaryPrevious_Click( object sender, EventArgs e )
-        {
 
-        }
 
-        protected void btnEmailSummaryNext_Click( object sender, EventArgs e )
-        {
-
-        }
+        
     }
 }
