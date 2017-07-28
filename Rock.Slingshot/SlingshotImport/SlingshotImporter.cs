@@ -6,6 +6,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using CsvHelper;
 
@@ -878,11 +880,29 @@ namespace Rock.Slingshot
         {
             this.ReportProgress( 0, "Preparing AttendanceImport..." );
             var attendanceImportList = new List<Rock.Slingshot.Model.AttendanceImport>();
+            HashSet<int> attendanceIds = new HashSet<int>();
             foreach ( var slingshotAttendance in this.SlingshotAttendanceList )
             {
                 var attendanceImport = new Rock.Slingshot.Model.AttendanceImport();
 
-                //// Note: There is no Attendance.Id in slingshotAttendance
+                if ( slingshotAttendance.AttendanceId > 0 )
+                {
+                    attendanceImport.AttendanceForeignId = slingshotAttendance.AttendanceId;
+                }
+                else
+                {
+                    MD5 md5Hasher = MD5.Create();
+                    var bytes = Encoding.UTF8.GetBytes( slingshotAttendance.ToJson() );
+                    var hashed = md5Hasher.ComputeHash( bytes );
+                    attendanceImport.AttendanceForeignId = Math.Abs( BitConverter.ToInt32( hashed, 0 ) ); // used abs to ensure positive number
+                }
+
+                if ( !attendanceIds.Add( attendanceImport.AttendanceForeignId.Value) )
+                {
+                    // shouldn't happen
+                    System.Diagnostics.Debug.WriteLine( "#### Duplicate AttendanceId! ####" );
+                }
+
                 attendanceImport.PersonForeignId = slingshotAttendance.PersonId;
                 attendanceImport.GroupForeignId = slingshotAttendance.GroupId;
                 attendanceImport.LocationForeignId = slingshotAttendance.LocationId;
@@ -1528,7 +1548,7 @@ namespace Rock.Slingshot
 
 
             /* Attendance */
-            this.SlingshotAttendanceList = LoadSlingshotListFromFile<SlingshotCore.Model.Attendance>();
+            this.SlingshotAttendanceList = LoadSlingshotListFromFile<SlingshotCore.Model.Attendance>( false );
 
             /* Groups (non-family) (note: there might be duplicates, so just get the distinct ones */
             this.SlingshotGroupList = LoadSlingshotListFromFile<SlingshotCore.Model.Group>().DistinctBy( a => a.Id ).ToList();
