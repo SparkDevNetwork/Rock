@@ -82,18 +82,17 @@ namespace Rock.Slingshot
             // Get the primary alias id lookup for each person foreign id
             var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.Person.ForeignKey == foreignSystemKey && a.PersonId == a.AliasPersonId )
                 .Select( a => new { PersonAliasId = a.Id, PersonForeignId = a.Person.ForeignId } ).ToDictionary( k => k.PersonForeignId.Value, v => v.PersonAliasId );
+            
+            var qryAttendancesWithForeignIds = new AttendanceService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
+            var attendancesAlreadyExistForeignIdHash = new HashSet<int>( qryAttendancesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
-            var attendancesToInsert = new List<Attendance>( attendanceImports.Count );
-            foreach ( var attendanceImport in attendanceImports )
+            var newAttendanceImports = attendanceImports.Where( a => !a.AttendanceForeignId.HasValue || !attendancesAlreadyExistForeignIdHash.Contains( a.AttendanceForeignId.Value ) ).ToList();
+
+            var attendancesToInsert = new List<Attendance>( newAttendanceImports.Count );
+            foreach ( var attendanceImport in newAttendanceImports )
             {
                 var attendance = new Attendance();
-
-                // NOTE: attendanceImport doesn't have to have an AttendanceForeignId and probably won't have one
-                if ( attendanceImport.AttendanceForeignId.HasValue )
-                {
-                    attendance.ForeignId = attendanceImport.AttendanceForeignId;
-                }
-
+                attendance.ForeignId = attendanceImport.AttendanceForeignId;
                 attendance.ForeignKey = foreignSystemKey;
 
                 attendance.CampusId = attendanceImport.CampusId;
@@ -128,7 +127,7 @@ namespace Rock.Slingshot
 
             rockContext.BulkInsert( attendancesToInsert );
 
-            sbStats.AppendLine( GetResponseMessage( attendanceImports.Count, "Attendance", stopwatchTotal.ElapsedMilliseconds ) );
+            sbStats.AppendLine( GetResponseMessage( newAttendanceImports.Count, "Attendance", stopwatchTotal.ElapsedMilliseconds ) );
             var responseText = sbStats.ToString();
 
             return responseText;
@@ -1210,7 +1209,6 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             person.EmailNote = personImport.EmailNote;
             person.EmailPreference = ( EmailPreference ) personImport.EmailPreference;
             person.InactiveReasonNote = personImport.InactiveReasonNote;
-            person.ConnectionStatusValueId = personImport.ConnectionStatusValueId;
             person.ForeignId = personImport.PersonForeignId;
             person.ForeignKey = foreignSystemKey;
         }
