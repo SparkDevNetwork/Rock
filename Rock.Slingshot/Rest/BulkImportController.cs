@@ -24,7 +24,7 @@ namespace Rock.Slingshot.Rest.Controllers
         [Authenticate, Secured]
         public System.Net.Http.HttpResponseMessage AttendanceImport( [FromBody]List<Rock.Slingshot.Model.AttendanceImport> attendanceImports, string foreignSystemKey )
         {
-            var responseText = Slingshot.BulkImportHelper.BulkAttendanceImport( attendanceImports, foreignSystemKey );
+            var responseText = new Slingshot.BulkImporter().BulkAttendanceImport( attendanceImports, foreignSystemKey );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
@@ -38,7 +38,7 @@ namespace Rock.Slingshot.Rest.Controllers
         [Authenticate, Secured]
         public System.Net.Http.HttpResponseMessage GroupImport( [FromBody]List<Rock.Slingshot.Model.GroupImport> groupImports, string foreignSystemKey )
         {
-            var responseText = Slingshot.BulkImportHelper.BulkGroupImport( groupImports, foreignSystemKey );
+            var responseText = new Slingshot.BulkImporter().BulkGroupImport( groupImports, foreignSystemKey );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
@@ -52,7 +52,7 @@ namespace Rock.Slingshot.Rest.Controllers
         [Authenticate, Secured]
         public System.Net.Http.HttpResponseMessage FinancialAccountImport( [FromBody]List<Rock.Slingshot.Model.FinancialAccountImport> financialAccountImports, string foreignSystemKey )
         {
-            var responseText = Slingshot.BulkImportHelper.BulkFinancialAccountImport( financialAccountImports, foreignSystemKey );
+            var responseText = new Slingshot.BulkImporter().BulkFinancialAccountImport( financialAccountImports, foreignSystemKey );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
@@ -66,7 +66,7 @@ namespace Rock.Slingshot.Rest.Controllers
         [Authenticate, Secured]
         public System.Net.Http.HttpResponseMessage FinancialBatchImport( [FromBody]List<Rock.Slingshot.Model.FinancialBatchImport> financialBatchImports, string foreignSystemKey )
         {
-            var responseText = Slingshot.BulkImportHelper.BulkFinancialBatchImport( financialBatchImports, foreignSystemKey );
+            var responseText = new Slingshot.BulkImporter().BulkFinancialBatchImport( financialBatchImports, foreignSystemKey );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
@@ -80,7 +80,7 @@ namespace Rock.Slingshot.Rest.Controllers
         [Authenticate, Secured]
         public System.Net.Http.HttpResponseMessage FinancialTransactionImport( [FromBody]List<Rock.Slingshot.Model.FinancialTransactionImport> financialTransactionImports, string foreignSystemKey )
         {
-            var responseText = Slingshot.BulkImportHelper.BulkFinancialTransactionImport( financialTransactionImports, foreignSystemKey );
+            var responseText = new Slingshot.BulkImporter().BulkFinancialTransactionImport( financialTransactionImports, foreignSystemKey );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
@@ -94,7 +94,7 @@ namespace Rock.Slingshot.Rest.Controllers
         [Authenticate, Secured]
         public System.Net.Http.HttpResponseMessage LocationImport( [FromBody]List<Rock.Slingshot.Model.LocationImport> locationImports, string foreignSystemKey )
         {
-            var responseText = Slingshot.BulkImportHelper.BulkLocationImport( locationImports, foreignSystemKey );
+            var responseText = new Slingshot.BulkImporter().BulkLocationImport( locationImports, foreignSystemKey );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
@@ -108,7 +108,7 @@ namespace Rock.Slingshot.Rest.Controllers
         [Authenticate, Secured]
         public System.Net.Http.HttpResponseMessage PersonImport( [FromBody]List<Rock.Slingshot.Model.PersonImport> personImports, string foreignSystemKey )
         {
-            var responseText = Slingshot.BulkImportHelper.BulkPersonImport( personImports, foreignSystemKey );
+            var responseText = new Slingshot.BulkImporter().BulkPersonImport( personImports, foreignSystemKey );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
@@ -122,7 +122,7 @@ namespace Rock.Slingshot.Rest.Controllers
         [Authenticate, Secured]
         public System.Net.Http.HttpResponseMessage PhotoImport( [FromBody]List<Rock.Slingshot.Model.PhotoImport> photoImports, string foreignSystemKey )
         {
-            var responseText = Slingshot.BulkImportHelper.BulkPhotoImport( photoImports, foreignSystemKey );
+            var responseText = new Slingshot.BulkImporter().BulkPhotoImport( photoImports, foreignSystemKey );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
@@ -136,7 +136,7 @@ namespace Rock.Slingshot.Rest.Controllers
         [Authenticate, Secured]
         public System.Net.Http.HttpResponseMessage ScheduleImport( [FromBody]List<Rock.Slingshot.Model.ScheduleImport> scheduleImports, string foreignSystemKey )
         {
-            var responseText = Slingshot.BulkImportHelper.BulkScheduleImport( scheduleImports, foreignSystemKey );
+            var responseText = new Slingshot.BulkImporter().BulkScheduleImport( scheduleImports, foreignSystemKey );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
@@ -150,7 +150,7 @@ namespace Rock.Slingshot.Rest.Controllers
         [Authenticate, Secured]
         public System.Net.Http.HttpResponseMessage FinancialPledgeImport( [FromBody]List<Rock.Slingshot.Model.FinancialPledgeImport> financialPledgeImports, string foreignSystemKey )
         {
-            var responseText = Slingshot.BulkImportHelper.BulkFinancialPledgeImport( financialPledgeImports, foreignSystemKey );
+            var responseText = new Slingshot.BulkImporter().BulkFinancialPledgeImport( financialPledgeImports, foreignSystemKey );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
@@ -167,7 +167,7 @@ namespace Rock.Slingshot.Rest.Controllers
         [Authenticate, Secured]
         public System.Net.Http.HttpResponseMessage NoteImport( [FromBody]List<Rock.Slingshot.Model.NoteImport> noteImports, int entityTypeId, string foreignSystemKey, bool groupEntityIsFamily )
         {
-            var responseText = Slingshot.BulkImportHelper.BulkNoteImport( noteImports, entityTypeId, foreignSystemKey, groupEntityIsFamily );
+            var responseText = new Slingshot.BulkImporter().BulkNoteImport( noteImports, entityTypeId, foreignSystemKey, groupEntityIsFamily );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
     }

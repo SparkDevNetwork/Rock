@@ -24,6 +24,7 @@ using Microsoft.AspNet.SignalR;
 
 using Rock;
 using Rock.Model;
+using Rock.Slingshot;
 using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -175,20 +176,35 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCheckForeignSystemKey_Click( object sender, EventArgs e )
         {
-            var tableList = Rock.Slingshot.BulkImportHelper.TablesThatHaveForeignSystemKey( tbForeignSystemKey.Text );
-            if ( !tableList.Any() )
+            nbCheckForeignSystemKey.Visible = false;
+            if ( !string.IsNullOrEmpty( tbForeignSystemKey.Text ) )
             {
-                nbCheckForeignSystemKey.Text = "OK. Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has not be used to import data.";
-                nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Success;
+                var tableList = Rock.Slingshot.BulkImporter.TablesThatHaveForeignSystemKey( tbForeignSystemKey.Text );
+
+                if ( !tableList.Any() )
+                {
+                    nbCheckForeignSystemKey.Text = "OK. Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has not be used to import data.";
+                    nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Success;
+                }
+                else
+                {
+                    nbCheckForeignSystemKey.Text = "Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has already been used. Import again to insert any new records that are detected, and update any person records that have changed.";
+                    nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Info;
+                }
+
+                nbCheckForeignSystemKey.Details = tableList.AsDelimited( "<br />" );
+                nbCheckForeignSystemKey.Visible = true;
             }
             else
             {
-                nbCheckForeignSystemKey.Text = "Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has already been used. Attendance Data that does not have an Id might be duplicated. Besides that, is it OK to import it again to insert any new records that are detected. It will also update any person records that have changed.";
-                nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Info;
+                var foreignSystemKeyList = BulkImporter.UsedForeignSystemKeys();
+                if ( foreignSystemKeyList.Any() )
+                {
+                    nbCheckForeignSystemKey.Text = "The following ForeignSystemKeys have been used from previous imports:<br /><br />" + foreignSystemKeyList.AsDelimited( "<br />" );
+                    nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Default;
+                    nbCheckForeignSystemKey.Visible = true;
+                }
             }
-
-            nbCheckForeignSystemKey.Details = tableList.AsDelimited( "<br />" );
-            nbCheckForeignSystemKey.Visible = true;
         }
 
         /// <summary>
@@ -210,7 +226,22 @@ namespace RockWeb.Blocks.BulkImport
 
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
-                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text );
+                BulkImporter.ImportUpdateType importUpdateType;
+
+                if ( rbOnlyAddNewRecords.Checked )
+                {
+                    importUpdateType = BulkImporter.ImportUpdateType.AddOnly;
+                }
+                else if ( rbMostRecentWins.Checked )
+                {
+                    importUpdateType = BulkImporter.ImportUpdateType.MostRecentWins;
+                }
+                else
+                {
+                    importUpdateType = BulkImporter.ImportUpdateType.AlwaysUpdate;
+                }
+
+                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text, importUpdateType );
                 _importer.FinancialTransactionChunkSize = 100000;
                 _importer.OnProgress += _importer_OnProgress;
 

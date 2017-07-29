@@ -18,7 +18,7 @@ namespace Rock.Slingshot
     /// <summary>
     /// 
     /// </summary>
-    public static class BulkImportHelper
+    public class BulkImporter
     {
         #region util
 
@@ -29,7 +29,7 @@ namespace Rock.Slingshot
         /// <param name="tableName">Name of the table.</param>
         /// <param name="milliseconds">The milliseconds.</param>
         /// <returns></returns>
-        private static string GetResponseMessage( int recordsInserted, string tableName, long milliseconds )
+        private string GetResponseMessage( int recordsInserted, string tableName, long milliseconds )
         {
             if ( recordsInserted == 0 )
             {
@@ -49,7 +49,25 @@ namespace Rock.Slingshot
         /// <summary>
         /// Delegate for handling ProgressMessages
         /// </summary>
-        public static OnProgressEvent OnProgress;
+        public OnProgressEvent OnProgress;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum ImportUpdateType
+        {
+            AlwaysUpdate,
+            AddOnly,
+            MostRecentWins
+        }
+
+        /// <summary>
+        /// Gets or sets the import update option.
+        /// </summary>
+        /// <value>
+        /// The import update option.
+        /// </value>
+        public ImportUpdateType ImportUpdateOption { get; set; }
 
         #endregion util
 
@@ -60,7 +78,7 @@ namespace Rock.Slingshot
         /// </summary>
         /// <param name="attendanceImports">The attendance imports.</param>
         /// <returns></returns>
-        public static string BulkAttendanceImport( List<AttendanceImport> attendanceImports, string foreignSystemKey )
+        public string BulkAttendanceImport( List<AttendanceImport> attendanceImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -82,7 +100,7 @@ namespace Rock.Slingshot
             // Get the primary alias id lookup for each person foreign id
             var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.Person.ForeignKey == foreignSystemKey && a.PersonId == a.AliasPersonId )
                 .Select( a => new { PersonAliasId = a.Id, PersonForeignId = a.Person.ForeignId } ).ToDictionary( k => k.PersonForeignId.Value, v => v.PersonAliasId );
-            
+
             var qryAttendancesWithForeignIds = new AttendanceService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
             var attendancesAlreadyExistForeignIdHash = new HashSet<int>( qryAttendancesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
@@ -142,7 +160,7 @@ namespace Rock.Slingshot
         /// </summary>
         /// <param name="financialAccountImports">The financial account imports.</param>
         /// <returns></returns>
-        public static string BulkFinancialAccountImport( List<FinancialAccountImport> financialAccountImports, string foreignSystemKey )
+        public string BulkFinancialAccountImport( List<FinancialAccountImport> financialAccountImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
@@ -283,6 +301,15 @@ namespace Rock.Slingshot
             return tableList;
         }
 
+        /// <summary>
+        /// Get foreign system keys that have been used in previous Imports
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> UsedForeignSystemKeys()
+        {
+            return new PersonService( new RockContext() ).Queryable().Where( a => a.ForeignId.HasValue && !string.IsNullOrEmpty( a.ForeignKey ) ).Select( a => a.ForeignKey ).Distinct().ToList();
+        }
+
         #endregion FinancialAccountImport
 
         #region FinancialBatchImport
@@ -292,7 +319,7 @@ namespace Rock.Slingshot
         /// </summary>
         /// <param name="financialBatchImports">The financial batch imports.</param>
         /// <returns></returns>
-        public static string BulkFinancialBatchImport( List<FinancialBatchImport> financialBatchImports, string foreignSystemKey )
+        public string BulkFinancialBatchImport( List<FinancialBatchImport> financialBatchImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
@@ -373,7 +400,7 @@ namespace Rock.Slingshot
         /// </summary>
         /// <param name="financialTransactionImports">The financial transaction imports.</param>
         /// <returns></returns>
-        public static string BulkFinancialTransactionImport( List<FinancialTransactionImport> financialTransactionImports, string foreignSystemKey )
+        public string BulkFinancialTransactionImport( List<FinancialTransactionImport> financialTransactionImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
@@ -407,7 +434,7 @@ namespace Rock.Slingshot
             }
 
             OnProgress?.Invoke( $"Bulk Importing FinancialTransactions ( Payment Details )... " );
-            
+
             rockContext.BulkInsert( financialPaymentDetailToInsert );
 
             var financialPaymentDetailLookup = new FinancialPaymentDetailService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
@@ -507,7 +534,7 @@ namespace Rock.Slingshot
         /// </summary>
         /// <param name="groupImports">The group imports.</param>
         /// <returns></returns>
-        public static string BulkGroupImport( List<GroupImport> groupImports, string foreignSystemKey )
+        public string BulkGroupImport( List<GroupImport> groupImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -709,7 +736,7 @@ WHERE gta.GroupTypeId IS NULL" );
         /// </summary>
         /// <param name="locationImports">The location imports.</param>
         /// <returns></returns>
-        public static string BulkLocationImport( List<LocationImport> locationImports, string foreignSystemKey )
+        public string BulkLocationImport( List<LocationImport> locationImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
@@ -774,15 +801,15 @@ WHERE gta.GroupTypeId IS NULL" );
 
         #region PersonImport
 
-        private static string _defaultPhoneCountryCode = null;
-        private static int _recordTypePersonId;
+        private string _defaultPhoneCountryCode = null;
+        private int _recordTypePersonId;
 
         /// <summary>
         /// Bulks the import.
         /// </summary>
         /// <param name="personImports">The person imports.</param>
         /// <returns></returns>
-        public static string BulkPersonImport( List<PersonImport> personImports, string foreignSystemKey )
+        public string BulkPersonImport( List<PersonImport> personImports, string foreignSystemKey )
         {
             var initiatedWithWebRequest = HttpContext.Current?.Request != null;
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
@@ -894,13 +921,16 @@ WHERE gta.GroupTypeId IS NULL" );
                 }
                 else
                 {
-                    Stopwatch stopwatchPersonUpdates = Stopwatch.StartNew();
-                    bool wasChanged = UpdatePersonFromPersonImport( person, personImport, attributeValuesLookup, familiesLookup, foreignSystemKey );
-                    stopwatchPersonUpdates.Stop();
-                    personUpdatesMS += stopwatchPersonUpdates.ElapsedMilliseconds;
-                    if ( wasChanged )
+                    if ( this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate )
                     {
-                        personUpdatesCount++;
+                        Stopwatch stopwatchPersonUpdates = Stopwatch.StartNew();
+                        bool wasChanged = UpdatePersonFromPersonImport( person, personImport, attributeValuesLookup, familiesLookup, foreignSystemKey );
+                        stopwatchPersonUpdates.Stop();
+                        personUpdatesMS += stopwatchPersonUpdates.ElapsedMilliseconds;
+                        if ( wasChanged )
+                        {
+                            personUpdatesCount++;
+                        }
                     }
                 }
             }
@@ -1113,10 +1143,10 @@ WHERE gta.GroupTypeId IS NULL" );
 
             rockContext.BulkInsert( attributeValuesToInsert );
 
-            if (attributeValuesToInsert.Any())
+            if ( attributeValuesToInsert.Any() )
             {
                 // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
-             var rowsUpdated = rockContext.Database.ExecuteSqlCommand( @"
+                var rowsUpdated = rockContext.Database.ExecuteSqlCommand( @"
 UPDATE [AttributeValue] SET ValueAsDateTime = 
 		CASE WHEN 
 			LEN(value) < 50 and 
@@ -1165,7 +1195,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
         /// <param name="personImport">The person import.</param>
         /// <param name="person">The person.</param>
         /// <param name="foreignSystemKey">The foreign system key.</param>
-        private static void UpdatePersonPropertiesFromPersonImport( PersonImport personImport, Person person, string foreignSystemKey )
+        private void UpdatePersonPropertiesFromPersonImport( PersonImport personImport, Person person, string foreignSystemKey )
         {
             person.RecordTypeValueId = personImport.RecordTypeValueId ?? _recordTypePersonId;
             person.RecordStatusValueId = personImport.RecordStatusValueId;
@@ -1218,7 +1248,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
         /// </summary>
         /// <param name="phoneNumberImport">The phone number import.</param>
         /// <param name="phoneNumberToInsert">The phone number to insert.</param>
-        private static void UpdatePhoneNumberFromPhoneNumberImport( PhoneNumberImport phoneNumberImport, PhoneNumber phoneNumberToInsert )
+        private void UpdatePhoneNumberFromPhoneNumberImport( PhoneNumberImport phoneNumberImport, PhoneNumber phoneNumberToInsert )
         {
             phoneNumberToInsert.NumberTypeValueId = phoneNumberImport.NumberTypeValueId;
             phoneNumberToInsert.CountryCode = _defaultPhoneCountryCode;
@@ -1238,7 +1268,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
         /// <param name="familiesLookup">The families lookup.</param>
         /// <param name="foreignSystemKey">The foreign system key.</param>
         /// <returns></returns>
-        private static bool UpdatePersonFromPersonImport( Person lookupPerson, PersonImport personImport, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, Dictionary<int, Group> familiesLookup, string foreignSystemKey )
+        private bool UpdatePersonFromPersonImport( Person lookupPerson, PersonImport personImport, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, Dictionary<int, Group> familiesLookup, string foreignSystemKey )
         {
             using ( var rockContextForPersonUpdate = new RockContext() )
             {
@@ -1378,7 +1408,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
         /// <param name="photoImports">The photo imports.</param>
         /// <param name="foreignSystemKey">The foreign system key.</param>
         /// <returns></returns>
-        public static string BulkPhotoImport( List<PhotoImport> photoImports, string foreignSystemKey )
+        public string BulkPhotoImport( List<PhotoImport> photoImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
@@ -1533,7 +1563,7 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
         /// </summary>
         /// <param name="scheduleImports">The schedule imports.</param>
         /// <returns></returns>
-        public static string BulkScheduleImport( List<ScheduleImport> scheduleImports, string foreignSystemKey )
+        public string BulkScheduleImport( List<ScheduleImport> scheduleImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
@@ -1596,13 +1626,13 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
         /// </summary>
         /// <param name="financialPledgeImports">The financial pledge imports.</param>
         /// <returns></returns>
-        public static string BulkFinancialPledgeImport( List<FinancialPledgeImport> financialPledgeImports, string foreignSystemKey )
+        public string BulkFinancialPledgeImport( List<FinancialPledgeImport> financialPledgeImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
             RockContext rockContext = new RockContext();
 
-            var qryFinancialPledgesWithForeignIds = new FinancialPledgeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey);
+            var qryFinancialPledgesWithForeignIds = new FinancialPledgeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 
             var financialPledgeAlreadyExistForeignIdHash = new HashSet<int>( qryFinancialPledgesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
@@ -1614,7 +1644,7 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
-            var familyGroupIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId == groupTypeIdFamily && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey  )
+            var familyGroupIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId == groupTypeIdFamily && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, a.ForeignId } )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
@@ -1666,7 +1696,7 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
         /// <param name="foreignSystemKey">The foreign system key.</param>
         /// <param name="groupEntityIsFamily">If this is a GroupEntity, is it a Family GroupType?</param>
         /// <returns></returns>
-        public static string BulkNoteImport( List<NoteImport> noteImports, int entityTypeId, string foreignSystemKey, bool? groupEntityIsFamily )
+        public string BulkNoteImport( List<NoteImport> noteImports, int entityTypeId, string foreignSystemKey, bool? groupEntityIsFamily )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
@@ -1703,7 +1733,7 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
                 int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
                 if ( groupEntityIsFamily.Value == true )
                 {
-                    entityIdLookup = new GroupService( rockContext ).Queryable().Where(a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == groupTypeIdFamily )
+                    entityIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == groupTypeIdFamily )
                         .Select( a => new { a.Id, a.ForeignId } )
                         .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
                 }
