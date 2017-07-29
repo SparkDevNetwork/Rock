@@ -87,7 +87,9 @@
                                 <Rock:RockRadioButton ID="rbOnlyAddNewRecords" runat="server" Text="Only Add New Records" GroupName="ImportOptions" />
                                 <Rock:HelpBlock ID="hbOnlyAddNewRecords" runat="server" Visible="true">Only new records that don't exist in Rock will be added. Existing records will not be updated.</Rock:HelpBlock>
                             </div>
-                            <div>
+                            
+                            <%-- TODO. Set Visible to True once this is implemented --%>
+                            <div style="display:none">
                                 <Rock:RockRadioButton ID="rbMostRecentWins" runat="server" Text="Most Recent Wins" GroupName="ImportOptions" />
                                 <Rock:HelpBlock ID="hbMostRecentWins" runat="server" Visible="true">The lastest record will be used. Note, when determining the last update date from Rock the date will reflect the latest date any information about a  was updated. The import is not able to update each data point (phone number, email,  attribute) separately.</Rock:HelpBlock>
                             </div>

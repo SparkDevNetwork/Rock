@@ -921,13 +921,16 @@ WHERE gta.GroupTypeId IS NULL" );
                 }
                 else
                 {
-                    Stopwatch stopwatchPersonUpdates = Stopwatch.StartNew();
-                    bool wasChanged = UpdatePersonFromPersonImport( person, personImport, attributeValuesLookup, familiesLookup, foreignSystemKey );
-                    stopwatchPersonUpdates.Stop();
-                    personUpdatesMS += stopwatchPersonUpdates.ElapsedMilliseconds;
-                    if ( wasChanged )
+                    if ( this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate )
                     {
-                        personUpdatesCount++;
+                        Stopwatch stopwatchPersonUpdates = Stopwatch.StartNew();
+                        bool wasChanged = UpdatePersonFromPersonImport( person, personImport, attributeValuesLookup, familiesLookup, foreignSystemKey );
+                        stopwatchPersonUpdates.Stop();
+                        personUpdatesMS += stopwatchPersonUpdates.ElapsedMilliseconds;
+                        if ( wasChanged )
+                        {
+                            personUpdatesCount++;
+                        }
                     }
                 }
             }
