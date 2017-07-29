@@ -30,7 +30,7 @@ namespace Rock.Slingshot
         /// Initializes a new instance of the <see cref="Importer"/> class.
         /// </summary>
         /// <param name="slingshotFileName">Name of the slingshot file.</param>
-        public SlingshotImporter( string slingshotFileName, string foreignSystemKey )
+        public SlingshotImporter( string slingshotFileName, string foreignSystemKey, BulkImporter.ImportUpdateType importUpdateType )
         {
             SlingshotFileName = slingshotFileName;
             ForeignSystemKey = foreignSystemKey;
@@ -49,6 +49,10 @@ namespace Rock.Slingshot
             }
 
             this.Results = new Dictionary<string, string>();
+
+            BulkImporter = new BulkImporter();
+            BulkImporter.ImportUpdateOption = importUpdateType;
+            BulkImporter.OnProgress = BulkImporter_OnProgress;
         }
 
         /// <summary>
@@ -249,13 +253,14 @@ namespace Rock.Slingshot
 
         public event EventHandler<object> OnProgress;
 
+        private BulkImporter BulkImporter { get; set; }
+
         /// <summary>
         /// Does the import.
         /// </summary>
         /// <param name="foreignSystemKey">The foreign system key.</param>
         public void DoImport()
         {
-            BulkImportHelper.OnProgress = BulkImportHelper_OnProgress;
             this.Results.Clear();
 
             // Load Slingshot Models from .slingshot
@@ -318,7 +323,7 @@ namespace Rock.Slingshot
         /// </summary>
         public void DoImportPhotos()
         {
-            BulkImportHelper.OnProgress = BulkImportHelper_OnProgress;
+            BulkImporter.OnProgress = BulkImporter_OnProgress;
 
             this.Results.Clear();
 
@@ -455,7 +460,7 @@ namespace Rock.Slingshot
         /// <exception cref="SlingshotPOSTFailedException"></exception>
         private void UploadPhotoImports( List<Rock.Slingshot.Model.PhotoImport> photoImportList )
         {
-            var result = BulkImportHelper.BulkPhotoImport( photoImportList, this.ForeignSystemKey );
+            var result = BulkImporter.BulkPhotoImport( photoImportList, this.ForeignSystemKey );
             this.Results[UPLOAD_PHOTO_STATS] = result + "<br />";
         }
 
@@ -590,7 +595,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, $"Bulk Importing {entityFriendlyName} Notes..." );
-            var result = BulkImportHelper.BulkNoteImport( noteImportList, entityType.Id, this.ForeignSystemKey, groupEntityIsFamily );
+            var result = BulkImporter.BulkNoteImport( noteImportList, entityType.Id, this.ForeignSystemKey, groupEntityIsFamily );
             Results.Add( $"{entityFriendlyName ?? entityType.FriendlyName} Note Import", result );
         }
 
@@ -647,7 +652,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing FinancialPledges..." );
-            var result = BulkImportHelper.BulkFinancialPledgeImport( financialPledgeImportList, this.ForeignSystemKey );
+            var result = BulkImporter.BulkFinancialPledgeImport( financialPledgeImportList, this.ForeignSystemKey );
             Results.Add( "FinancialPledge Import", result );
         }
 
@@ -686,7 +691,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing FinancialAccounts..." );
-            var result = BulkImportHelper.BulkFinancialAccountImport( financialAccountImportList, this.ForeignSystemKey );
+            var result = BulkImporter.BulkFinancialAccountImport( financialAccountImportList, this.ForeignSystemKey );
             Results.Add( "FinancialAccount Import", result );
         }
 
@@ -735,7 +740,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing FinancialBatches..." );
-            var result = BulkImportHelper.BulkFinancialBatchImport( financialBatchImportList, this.ForeignSystemKey );
+            var result = BulkImporter.BulkFinancialBatchImport( financialBatchImportList, this.ForeignSystemKey );
             Results.Add( "FinancialBatch Import", result );
         }
 
@@ -840,7 +845,7 @@ namespace Rock.Slingshot
             {
                 var postChunk = financialTransactionImportList.Take( postChunkSize ).ToList();
                 this.ReportProgress( 0, "Bulk Importing FinancialTransactions..." );
-                var result = BulkImportHelper.BulkFinancialTransactionImport( postChunk, this.ForeignSystemKey );
+                var result = BulkImporter.BulkFinancialTransactionImport( postChunk, this.ForeignSystemKey );
 
                 if ( this.FinancialTransactionChunkSize.HasValue )
                 {
@@ -892,15 +897,20 @@ namespace Rock.Slingshot
                 else
                 {
                     MD5 md5Hasher = MD5.Create();
-                    var bytes = Encoding.UTF8.GetBytes( slingshotAttendance.ToJson() );
-                    var hashed = md5Hasher.ComputeHash( bytes );
-                    attendanceImport.AttendanceForeignId = Math.Abs( BitConverter.ToInt32( hashed, 0 ) ); // used abs to ensure positive number
+                    var hashed = md5Hasher.ComputeHash( Encoding.UTF8.GetBytes( $@"
+ {slingshotAttendance.PersonId}
+ {slingshotAttendance.StartDateTime}
+ {slingshotAttendance.LocationId}
+ {slingshotAttendance.ScheduleId}
+ {slingshotAttendance.GroupId}
+" ) );
+                    attendanceImport.AttendanceForeignId = Math.Abs( BitConverter.ToInt32( hashed, 0 ) ); // used abs to ensure positive number */
                 }
 
                 if ( !attendanceIds.Add( attendanceImport.AttendanceForeignId.Value) )
                 {
-                    // shouldn't happen
-                    System.Diagnostics.Debug.WriteLine( "#### Duplicate AttendanceId! ####" );
+                    // shouldn't happen (but if it does, it'll be treated as a duplicate and not imported)
+                    System.Diagnostics.Debug.WriteLine( $"#### Duplicate AttendanceId detected:{attendanceImport.AttendanceForeignId.Value} ####" );
                 }
 
                 attendanceImport.PersonForeignId = slingshotAttendance.PersonId;
@@ -919,7 +929,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing Attendance..." );
-            var result = BulkImportHelper.BulkAttendanceImport( attendanceImportList, this.ForeignSystemKey );
+            var result = BulkImporter.BulkAttendanceImport( attendanceImportList, this.ForeignSystemKey );
 
             Results.Add( "Attendance Import", result );
         }
@@ -940,7 +950,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing Schedules..." );
-            var result = BulkImportHelper.BulkScheduleImport( scheduleImportList, this.ForeignSystemKey );
+            var result = BulkImporter.BulkScheduleImport( scheduleImportList, this.ForeignSystemKey );
             Results.Add( "Schedule Import", result );
         }
 
@@ -973,7 +983,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing Locations..." );
-            var result = BulkImportHelper.BulkLocationImport( locationImportList, this.ForeignSystemKey );
+            var result = BulkImporter.BulkLocationImport( locationImportList, this.ForeignSystemKey );
             Results.Add( "Location Import", result );
         }
 
@@ -1020,7 +1030,7 @@ namespace Rock.Slingshot
             }
 
             this.ReportProgress( 0, "Bulk Importing Groups..." );
-            var result = BulkImportHelper.BulkGroupImport( groupImportList, this.ForeignSystemKey );
+            var result = BulkImporter.BulkGroupImport( groupImportList, this.ForeignSystemKey );
 
             Results.Add( "Group Import", result );
         }
@@ -1040,17 +1050,16 @@ namespace Rock.Slingshot
 
             this.ReportProgress( 0, "Bulk Importing Person..." );
 
-            var result = BulkImportHelper.BulkPersonImport( personImportList, this.ForeignSystemKey );
+            var result = BulkImporter.BulkPersonImport( personImportList, this.ForeignSystemKey );
 
             Results.Add( "Person Import", result );
         }
 
         /// <summary>
-        /// Bulks the import helper on progress.
+        /// Bulks the importer on progress.
         /// </summary>
-        /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private void BulkImportHelper_OnProgress( string e )
+        private void BulkImporter_OnProgress( string e )
         {
             ReportProgress( 0, e );
         }
