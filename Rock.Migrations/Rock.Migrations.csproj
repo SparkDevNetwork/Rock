@@ -293,9 +293,9 @@
     <Compile Include="Migrations\201707241828445_PersonAliasNullableId.Designer.cs">
       <DependentUpon>201707241828445_PersonAliasNullableId.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707260008549_Communications2.cs" />
-    <Compile Include="Migrations\201707260008549_Communications2.Designer.cs">
-      <DependentUpon>201707260008549_Communications2.cs</DependentUpon>
+    <Compile Include="Migrations\201707312234324_Communications2.cs" />
+    <Compile Include="Migrations\201707312234324_Communications2.Designer.cs">
+      <DependentUpon>201707312234324_Communications2.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -2666,8 +2666,8 @@
     <EmbeddedResource Include="Migrations\201707241828445_PersonAliasNullableId.resx">
       <DependentUpon>201707241828445_PersonAliasNullableId.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707260008549_Communications2.resx">
-      <DependentUpon>201707260008549_Communications2.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201707312234324_Communications2.resx">
+      <DependentUpon>201707312234324_Communications2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

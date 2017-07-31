@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Communication;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -49,7 +50,27 @@ namespace RockWeb.Blocks.Crm
 
         #region Properties
 
-        Dictionary<string, string> MediumData = new Dictionary<string, string>();
+        /// <summary>
+        /// Gets or sets the communication data.
+        /// </summary>
+        /// <value>
+        /// The communication data.
+        /// </value>
+        protected CommunicationDetails CommunicationData
+        {
+            get
+            {
+                var communicationData = ViewState["CommunicationData"] as CommunicationDetails;
+                if ( communicationData == null )
+                {
+                    communicationData = new CommunicationDetails();
+                    ViewState["CommunicationData"] = communicationData;
+                }
+                return communicationData;
+            }
+
+            set { ViewState["CommunicationData"] = value; }
+        }
 
         #endregion
 
@@ -157,11 +178,7 @@ namespace RockWeb.Blocks.Crm
                     communicationService.Add( testCommunication );
                     rockContext.SaveChanges();
 
-                    var medium = testCommunication.Medium;
-                    if ( medium != null )
-                    {
-                        medium.Send( testCommunication );
-                    }
+                    Communication.Send( testCommunication );
 
                     communicationService.Delete( testCommunication );
                     rockContext.SaveChanges();
@@ -368,7 +385,7 @@ namespace RockWeb.Blocks.Crm
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
                 communicationService.Add( communication );
                 communication.IsBulkCommunication = true;
-                communication.MediumEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Medium.Email" ).Id;
+                communication.CommunicationType = CommunicationType.Email;
                 communication.FutureSendDateTime = null;
 
                 // add each person as a recipient to the communication
@@ -385,21 +402,7 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
-                // add the MediumData to the communication
-                communication.MediumData.Clear();
-                foreach ( var keyVal in MediumData )
-                {
-                    if ( !string.IsNullOrEmpty( keyVal.Value ) )
-                    {
-                        communication.MediumData.Add( keyVal.Key, keyVal.Value );
-                    }
-                }
-
-                if ( communication.MediumData.ContainsKey( "Subject" ) )
-                {
-                    communication.Subject = communication.MediumData["Subject"];
-                    communication.MediumData.Remove( "Subject" );
-                }
+                CommunicationDetails.Copy( CommunicationData, communication );
 
                 return communication;
             }
@@ -430,26 +433,7 @@ namespace RockWeb.Blocks.Crm
                 return false;
             }
 
-            var mediumData = template.MediumData;
-            if ( !mediumData.ContainsKey( "Subject" ) )
-            {
-                mediumData.Add( "Subject", template.Subject );
-            }
-
-            foreach ( var dataItem in mediumData )
-            {
-                if ( !string.IsNullOrWhiteSpace( dataItem.Value ) )
-                {
-                    if ( MediumData.ContainsKey( dataItem.Key ) )
-                    {
-                        MediumData[dataItem.Key] = dataItem.Value;
-                    }
-                    else
-                    {
-                        MediumData.Add( dataItem.Key, dataItem.Value );
-                    }
-                }
-            }
+            CommunicationDetails.Copy( template, CommunicationData );
 
             return true;
         }

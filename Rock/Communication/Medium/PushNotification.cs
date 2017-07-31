@@ -33,6 +33,8 @@ namespace Rock.Communication.Medium
     class PushNotification : MediumComponent
     {
 
+        public override CommunicationType CommunicationType { get { return CommunicationType.PushNotification; } }
+
         /// <summary>
         /// Gets the control.
         /// </summary>

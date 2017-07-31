@@ -68,6 +68,14 @@ namespace Rock.Communication
         }
 
         /// <summary>
+        /// Gets the type of the communication.
+        /// </summary>
+        /// <value>
+        /// The type of the communication.
+        /// </value>
+        public abstract CommunicationType CommunicationType { get; }
+
+        /// <summary>
         /// Gets the control.
         /// </summary>
         /// <param name="useSimpleMode">if set to <c>true</c> [use simple mode].</param>

@@ -95,6 +95,7 @@ namespace Rock.Model
                 Rock.Model.Communication communication = new Rock.Model.Communication();
                 Add( communication );
 
+                communication.CommunicationType = CommunicationType.Email;
                 communication.Status = CommunicationStatus.Approved;
                 communication.SenderPersonAliasId = senderPersonAliasId;
                 communication.FromName = fromName;
@@ -103,7 +104,6 @@ namespace Rock.Model
                 communication.Subject = subject;
                 communication.Message = message;
                 communication.IsBulkCommunication = bulkCommunication;
-                communication.MediumEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Medium.Email" ).Id;
                 communication.FutureSendDateTime = null;
 
                 // add each person as a recipient to the communication

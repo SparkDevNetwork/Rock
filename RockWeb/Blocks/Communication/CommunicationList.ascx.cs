@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.Communication
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Subject", tbSubject.Text );
-            rFilter.SaveUserPreference( "Medium", cpMedium.SelectedValue );
+            rFilter.SaveUserPreference( "Communication Type", ddlType.SelectedValue );
             rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             int personId = ppSender.PersonId ?? 0;
             rFilter.SaveUserPreference( "Created By", canApprove ? personId.ToString() : "" );
@@ -122,12 +122,11 @@ namespace RockWeb.Blocks.Communication
         {
             switch ( e.Key )
             {
-                case "Medium":
+                case "Communication Type":
                     {
-                        var entity = EntityTypeCache.Read( e.Value.AsGuid() );
-                        if ( entity != null )
+                        if ( !string.IsNullOrWhiteSpace( e.Value ) )
                         {
-                            e.Value = entity.FriendlyName;
+                            e.Value = ( (CommunicationType)System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
                         }
 
                         break;
@@ -247,11 +246,8 @@ namespace RockWeb.Blocks.Communication
         {
             tbSubject.Text = rFilter.GetUserPreference( "Subject" );
 
-            if ( cpMedium.Items[0].Value != string.Empty )
-            {
-                cpMedium.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-            }
-            cpMedium.SelectedValue = rFilter.GetUserPreference( "Medium" );
+            ddlType.BindToEnum<CommunicationType>( true );
+            ddlType.SetValue( rFilter.GetUserPreference( "Communication Type" ) );
 
             ddlStatus.BindToEnum<CommunicationStatus>();
             // Replace the Transient status with an empty value (need an empty one, and don't need transient value)
@@ -304,10 +300,10 @@ namespace RockWeb.Blocks.Communication
                 communications = communications.Where( c => c.Subject.Contains( subject ) );
             }
 
-            Guid? entityTypeGuid = cpMedium.SelectedValue.AsGuidOrNull();
-            if ( entityTypeGuid.HasValue )
+            var communicationType = ddlType.SelectedValueAsEnumOrNull<CommunicationType>();
+            if ( communicationType != null )
             {
-                communications = communications.Where( c => c.MediumEntityType != null && c.MediumEntityType.Guid.Equals( entityTypeGuid.Value ) );
+                communications = communications.Where( c => c.CommunicationType == communicationType );
             }
 
             string status = ddlStatus.SelectedValue;
@@ -361,8 +357,7 @@ namespace RockWeb.Blocks.Communication
             var queryable = communications
                 .Select( c => new CommunicationItem {
                     Id = c.Id,
-                    MediumEntityTypeId = c.MediumEntityTypeId,
-                    MediumName = c.MediumEntityTypeId.HasValue ? c.MediumEntityType.FriendlyName : null,
+                    CommunicationType = c.CommunicationType,
                     Subject = c.Subject,
                     CreatedDateTime = c.CreatedDateTime,
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
@@ -397,8 +392,7 @@ namespace RockWeb.Blocks.Communication
         protected class CommunicationItem
         {
             public int Id { get; set; }
-            public int? MediumEntityTypeId { get; set; }
-            public string MediumName { get; set; }
+            public CommunicationType CommunicationType { get; set; }
             public string Subject { get; set; }
             public DateTime? CreatedDateTime { get; set; }
             public Person Sender { get; set; }

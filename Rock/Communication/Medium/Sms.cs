@@ -38,7 +38,9 @@ namespace Rock.Communication.Medium
     public class Sms : MediumComponent
     {
         const int TOKEN_REUSE_DURATION = 30; // number of days between token reuse
-        
+
+        public override CommunicationType CommunicationType { get { return CommunicationType.SMS; } }
+
         /// <summary>
         /// Gets the control.
         /// </summary>

@@ -36,7 +36,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "CommunicationTemplate" )]
     [DataContract]
-    public partial class CommunicationTemplate : Model<CommunicationTemplate>
+    public partial class CommunicationTemplate : Model<CommunicationTemplate>, ICommunicationDetails
     {
 
         #region Entity Properties
@@ -51,6 +51,16 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication type value identifier.
+        /// </summary>
+        /// <value>
+        /// The communication type value identifier.
+        /// </value>
+        [Required]
+        [DataMember]
+        public CommunicationType CommunicationType { get; set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -78,15 +88,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ImageFileId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Medium that is being used for this Communication.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Medium that is being used for this Communication. 
-        /// </value>
-        [DataMember]
-        public int? MediumEntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets a Json formatted string containing the Medium specific data.
@@ -196,8 +197,7 @@ namespace Rock.Model
         /// From number.
         /// </value>
         [DataMember]
-        [MaxLength( 100 )]
-        public string FromNumber { get; set; }
+        public int? SMSFromDefinedValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the message.
@@ -220,7 +220,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
-        public string Title { get; set; }
+        public string PushTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the message.
@@ -242,9 +242,24 @@ namespace Rock.Model
         public string PushSound { get; set; }
 
         #endregion
+
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the attachments.
+        /// </summary>
+        /// <value>
+        /// The attachments.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<CommunicationTemplateAttachment> Attachments
+        {
+            get { return _attachments ?? ( _attachments = new Collection<CommunicationTemplateAttachment>() ); }
+            set { _attachments = value; }
+        }
+        private ICollection<CommunicationTemplateAttachment> _attachments;
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the Communication's sender.
@@ -256,45 +271,30 @@ namespace Rock.Model
         public virtual PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the communications Medium that is being used by this Communication.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.EntityType"/> of the communications Medium that is being used by this Communication.
-        /// </value>
-        [DataMember]
-        public virtual EntityType MediumEntityType { get; set; }
-
-        /// <summary>
         /// Gets the <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
         /// </value>
-        public virtual MediumComponent Medium
+        [NotMapped]
+        public virtual List<MediumComponent> Mediums
         {
             get
             {
-                if ( this.MediumEntityType != null || this.MediumEntityTypeId.HasValue )
+                var mediums = new List<MediumComponent>();
+
+                foreach ( var serviceEntry in MediumContainer.Instance.Components )
                 {
-                    foreach ( var serviceEntry in MediumContainer.Instance.Components )
+                    var component = serviceEntry.Value.Value;
+                    if ( component.IsActive &&
+                        ( this.CommunicationType == component.CommunicationType ||
+                         this.CommunicationType == CommunicationType.UserPreference ) )
                     {
-                        var component = serviceEntry.Value.Value;
-
-                        if ( this.MediumEntityTypeId.HasValue &&
-                            this.MediumEntityTypeId == component.EntityType.Id )
-                        {
-                            return component;
-                        }
-
-                        string componentName = component.GetType().FullName;
-                        if ( this.MediumEntityType != null &&
-                            this.MediumEntityType.Name == componentName)
-                        {
-                            return component;
-                        }
+                        mediums.Add( component );
                     }
                 }
-                return null;
+
+                return mediums;
             }
         }
 
@@ -311,6 +311,25 @@ namespace Rock.Model
             set { _mediumData = value; }
         }
         private Dictionary<string, string> _mediumData = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Gets or sets the SMS from defined value.
+        /// </summary>
+        /// <value>
+        /// The SMS from defined value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue SMSFromDefinedValue { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets a list of binary file ids
+        /// </summary>
+        /// <value>
+        /// The attachment binary file ids
+        /// </value>
+        [NotMapped]
+        public virtual IEnumerable<int> AttachmentBinaryFileIds { get; set; }
 
         #endregion
 
@@ -386,7 +405,7 @@ namespace Rock.Model
         public CommunicationTemplateConfiguration()
         {
             this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
-            this.HasOptional( c => c.MediumEntityType ).WithMany().HasForeignKey( c => c.MediumEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.SMSFromDefinedValue ).WithMany().HasForeignKey( c => c.SMSFromDefinedValueId ).WillCascadeOnDelete( false );
         }
     }
 
