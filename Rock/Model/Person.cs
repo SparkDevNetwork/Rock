@@ -425,6 +425,24 @@ namespace Rock.Model
         [DataMember]
         public int? ViewedCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the MetaPersonicxLifestageCluster Id of the <see cref="Rock.Model.MetaPersonicxLifestageCluster"/>.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing a MetaPersonicxLifestageCluster Id of the <see cref="Rock.Model.MetaPersonicxLifestageCluster"/>.
+        /// </value>
+        [DataMember]
+        public int? MetaPersonicxLifestageClusterId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MetaPersonicxLifestageGroup Id of the <see cref="Rock.Model.MetaPersonicxLifestageGroup"/>.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing a MetaPersonicxLifestageGroup Id of the <see cref="Rock.Model.MetaPersonicxLifestageGroup"/>.
+        /// </value>
+        [DataMember]
+        public int? MetaPersonicxLifestageGroupId { get; set; }
+
         #endregion
 
         #region Constructors
@@ -901,6 +919,24 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual Group GivingGroup { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metaPersonicxLifestage cluster.
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
+        [DataMember]
+        public virtual MetaPersonicxLifestageCluster MetaPersonicxLifestageCluster { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metaPersonicxLifestage group.
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
+        [DataMember]
+        public virtual MetaPersonicxLifestageGroup MetaPersonicxLifestageGroup { get; set; }
 
         /// <summary>
         /// Gets the Person's birth date. Note: Use SetBirthDate to set the Birthdate
@@ -2815,6 +2851,8 @@ namespace Rock.Model
             this.HasOptional( p => p.TitleValue ).WithMany().HasForeignKey( p => p.TitleValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GivingGroup ).WithMany().HasForeignKey( p => p.GivingGroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.MetaPersonicxLifestageCluster ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageClusterId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.MetaPersonicxLifestageGroup ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageGroupId ).WillCascadeOnDelete( false );
         }
     }
 
