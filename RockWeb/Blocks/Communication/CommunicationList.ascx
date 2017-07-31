@@ -16,7 +16,7 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server">
                         <Rock:RockTextBox ID="tbSubject" runat="server" Label="Subject" />
-                        <Rock:ComponentPicker ID="cpMedium" runat="server" ContainerType="Rock.Communication.MediumContainer, Rock" Label="Medium" />
+                        <Rock:RockDropDownList ID="ddlType" runat="server" Label="Communication Type" />
                         <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                         <Rock:PersonPicker ID="ppSender" runat="server" Label="Created By" />
                         <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" Help="Note: Leaving dates blank will default to last 7 days." />
@@ -26,7 +26,7 @@
                     <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" OnRowSelected="gCommunication_RowSelected" OnRowDataBound="gCommunication_RowDataBound">
                         <Columns>
                             <Rock:RockBoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
-                            <Rock:RockBoundField DataField="MediumName" SortExpression="MediumName" HeaderText="Medium" />
+                            <Rock:EnumField DataField="CommunicationType" SortExpression="CommunicationType" HeaderText="Type" />
                             <Rock:DateTimeField DataField="CreatedDateTime" SortExpression="CreatedDateTime" ColumnPriority="DesktopLarge" HeaderText="Created" />
                             <Rock:RockBoundField DataField="Sender.FullName" HeaderText="Created By" SortExpression="Sender.LastName,Sender.NickName" />
                             <Rock:EnumField DataField="Status" SortExpression="Status" HeaderText="Status" />

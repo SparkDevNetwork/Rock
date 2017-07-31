@@ -14,14 +14,14 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server">
                         <Rock:PersonPicker ID="ppCreatedBy" runat="server" Label="Created By" Help="The person who created the template." />
-                        <Rock:ComponentPicker ID="cpMedium" runat="server" ContainerType="Rock.Communication.MediumContainer, Rock" Label="Medium" />
+                        <Rock:RockDropDownList ID="ddlType" runat="server" Label="Communication Type" />
                     </Rock:GridFilter>
 
                     <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" TooltipField="Description" OnRowSelected="gCommunication_RowSelected">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" SortExpression="Subject" HeaderText="Name" />
                             <Rock:RockBoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
-                            <Rock:RockBoundField DataField="MediumEntityType.FriendlyName" SortExpression="MediumEntityType.FriendlyName" HeaderText="Medium" />
+                            <Rock:EnumField DataField="CommunicationType" SortExpression="CommunicationType" HeaderText="Type" />
                             <Rock:RockBoundField DataField="CreatedByPersonAlias.Person.FullName" SortExpression="CreatedByPersonAlias.Person.FullName" HeaderText="Created By" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gCommunication_Delete" />

@@ -37,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "Communication" )]
     [DataContract]
-    public partial class Communication : Model<Communication>
+    public partial class Communication : Model<Communication>, ICommunicationDetails
     {
 
         #region Entity Properties
@@ -162,15 +162,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string ReviewerNote { get; set; }
-
-        /// <summary>
-        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Medium that is being used for this Communication.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Medium that is being used for this Communication. 
-        /// </value>
-        [DataMember]
-        public int? MediumEntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets a Json formatted string containing the Medium specific data.
@@ -415,45 +406,30 @@ namespace Rock.Model
         private ICollection<CommunicationAttachment> _attachments;
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the communications Medium that is being used by this Communication.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.EntityType"/> of the communications Medium that is being used by this Communication.
-        /// </value>
-        [DataMember]
-        public virtual EntityType MediumEntityType { get; set; }
-
-        /// <summary>
         /// Gets the <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
         /// </value>
-        public virtual MediumComponent Medium
+        [NotMapped]
+        public virtual List<MediumComponent> Mediums
         {
             get
             {
-                if ( this.MediumEntityType != null || this.MediumEntityTypeId.HasValue )
+                var mediums = new List<MediumComponent>();
+
+                foreach ( var serviceEntry in MediumContainer.Instance.Components )
                 {
-                    foreach ( var serviceEntry in MediumContainer.Instance.Components )
+                    var component = serviceEntry.Value.Value;
+                    if ( component.IsActive &&
+                        ( this.CommunicationType == component.CommunicationType ||
+                         this.CommunicationType == CommunicationType.UserPreference ) )
                     {
-                        var component = serviceEntry.Value.Value;
-
-                        if ( this.MediumEntityTypeId.HasValue &&
-                            this.MediumEntityTypeId == component.EntityType.Id )
-                        {
-                            return component;
-                        }
-
-                        string componentName = component.GetType().FullName;
-                        if ( this.MediumEntityType != null &&
-                            this.MediumEntityType.Name == componentName )
-                        {
-                            return component;
-                        }
+                        mediums.Add( component );
                     }
                 }
-                return null;
+
+                return mediums;
             }
         }
 
@@ -488,8 +464,23 @@ namespace Rock.Model
         }
         private List<string> _additionalMergeFields = new List<string>();
 
+        /// <summary>
+        /// Gets or sets the SMS from defined value.
+        /// </summary>
+        /// <value>
+        /// The SMS from defined value.
+        /// </value>
         [DataMember]
         public virtual DefinedValue SMSFromDefinedValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list of binary file ids
+        /// </summary>
+        /// <value>
+        /// The attachment binary file ids
+        /// </value>
+        [NotMapped]
+        public virtual IEnumerable<int> AttachmentBinaryFileIds { get; set; }
 
         #endregion
 
@@ -564,6 +555,34 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Sets from template.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        public void SetFromTemplate( CommunicationTemplate template )
+        {
+            this.FromEmail = template.FromEmail;
+            this.FromName = template.FromName;
+            this.ReplyToEmail = template.ReplyToEmail;
+
+            if ( this.Subject.IsNullOrWhiteSpace() && template.Subject.IsNotNullOrWhitespace() )
+            {
+                this.Subject = template.Subject;
+            }
+
+            this.BCCEmails = template.BCCEmails;
+            this.CCEmails = template.CCEmails;
+            this.Message = template.Message;
+            this.MessageMetaData = template.MessageMetaData;
+
+            this.SMSFromDefinedValueId = template.SMSFromDefinedValueId;
+            this.SMSMessage = template.SMSMessage;
+
+            this.PushMessage = template.PushMessage;
+            this.PushSound = template.PushSound;
+            this.PushTitle = template.PushTitle;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -590,10 +609,12 @@ namespace Rock.Model
         /// <param name="communication">The communication.</param>
         public static void Send( Rock.Model.Communication communication )
         {
-            var medium = MediumContainer.GetComponent( communication?.MediumEntityType?.Name );
-            if ( medium != null && medium.IsActive )
+            if ( communication != null && communication.Status == CommunicationStatus.Approved )
             {
-                medium.Send( communication );
+                foreach ( var medium in communication.Mediums )
+                {
+                    medium.Send( communication );
+                }
             }
         }
 
@@ -682,7 +703,6 @@ namespace Rock.Model
         /// </summary>
         public CommunicationConfiguration()
         {
-            this.HasOptional( c => c.MediumEntityType ).WithMany().HasForeignKey( c => c.MediumEntityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.ReviewerPersonAlias ).WithMany().HasForeignKey( c => c.ReviewerPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SMSFromDefinedValue ).WithMany().HasForeignKey( c => c.SMSFromDefinedValueId ).WillCascadeOnDelete( false );

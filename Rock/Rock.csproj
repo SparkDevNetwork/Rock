@@ -457,7 +457,9 @@
     <Compile Include="CheckIn\KioskScheduleAttendance.cs" />
     <Compile Include="Communication\BouncedEmail.cs" />
     <Compile Include="Communication\Email.cs" />
+    <Compile Include="Communication\CommunicationDetails.cs" />
     <Compile Include="Communication\IEmailProvider.cs" />
+    <Compile Include="Communication\ICommunicationDetails.cs" />
     <Compile Include="Communication\MediumComponent.cs" />
     <Compile Include="Communication\MediumContainer.cs" />
     <Compile Include="Communication\Medium\Email.cs" />
@@ -758,6 +760,7 @@
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
+    <Compile Include="Model\CommunicationTemplateAttachment.cs" />
     <Compile Include="Model\CommunicationAttachment.cs" />
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />

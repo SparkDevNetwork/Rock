@@ -62,17 +62,13 @@ namespace Rock.Jobs
 
             var exceptionMsgs = new List<string>();
             int communicationsSent = 0;
-
+            
             foreach ( var comm in qry.AsNoTracking().ToList() )
             {
                 try
                 {
-                    var medium = comm.Medium;
-                    if ( medium != null && medium.IsActive )
-                    {
-                        medium.Send( comm );
-                        communicationsSent++;
-                    }
+                    Rock.Model.Communication.Send( comm );
+                    communicationsSent++;
                 }
 
                 catch ( Exception ex )

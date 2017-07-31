@@ -95,10 +95,9 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.FromEmail = source.FromEmail;
             target.FromName = source.FromName;
-            target.FromNumber = source.FromNumber;
+            target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
             target.ImageFileId = source.ImageFileId;
             target.MediumDataJson = source.MediumDataJson;
-            target.MediumEntityTypeId = source.MediumEntityTypeId;
             target.Message = source.Message;
             target.MessageMetaData = source.MessageMetaData;
             target.Name = source.Name;
@@ -108,7 +107,7 @@ namespace Rock.Model
             target.SenderPersonAliasId = source.SenderPersonAliasId;
             target.SMSMessage = source.SMSMessage;
             target.Subject = source.Subject;
-            target.Title = source.Title;
+            target.PushTitle = source.PushTitle;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
