@@ -199,6 +199,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             gfSettings.SaveUserPreference( "End Time", dtpEndDateTime.SelectedDateTime.ToString() );
             gfSettings.SaveUserPreference( "Resource Category", cpResource.SelectedValue.ToString() );
             gfSettings.SaveUserPreference( "Parent Location", lipLocation.SelectedValue.ToString() );
+            gfSettings.SaveUserPreference( "Expected Occupants", nbMaxOccupants.Text );
             BindGrid();
         }
 
@@ -251,9 +252,15 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 lipLocation.SetValues( gfSettings.GetUserPreference( "Parent Location" ).Split( ',' ).AsIntegerList() );
             }
+
             if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Selected Entity" ) ) )
             {
                 rblResourceLocation.SetValue( gfSettings.GetUserPreference( "Selected Entity" ) );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Expected Occupants" ) ) )
+            {
+                nbMaxOccupants.Text = gfSettings.GetUserPreference( "Expected Occupants" );
             }
         }
 
@@ -269,6 +276,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                 gLocations.Visible = false;
                 lipLocation.Visible = false;
+                nbMaxOccupants.Visible = false;
 
                 BindResourcesGrid();
             }
@@ -279,6 +287,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                 gLocations.Visible = true;
                 lipLocation.Visible = true;
+                nbMaxOccupants.Visible = true;
 
                 BindLocationsGrid();
             }
@@ -312,6 +321,11 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 locationList = locationService.Queryable().AsNoTracking().Where( l => l.Name != null && l.Name != string.Empty ).ToList();
             }
 
+            if ( nbMaxOccupants.Text.AsInteger() > 0 )
+            {
+                locationList = locationList.Where( l => l.FirmRoomThreshold >= nbMaxOccupants.Text.AsInteger() ).ToList();
+            }
+
             var locationIds = locationList.Select( l => l.Id ).ToList();
             var locationResourceList = new ResourceService( rockContext ).Queryable().Where( r => r.LocationId.HasValue && locationIds.Contains( r.LocationId.Value ) ).ToList();
 
@@ -330,6 +344,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                             l.Name,
                             locationResourceList.Where( r => r.LocationId.HasValue && r.LocationId == l.Id ).Any() ? "</br>" : String.Empty,
                             locationResourceList.Where( r => r.LocationId.HasValue && r.LocationId == l.Id ).Select( r => r.Name + " (" + r.Quantity + ")" ).ToList().AsDelimited( "</br>" ) ),
+                MaxOccupants = l.FirmRoomThreshold,
                 IsAvailable = !reservationSummaryList.Any( r => r.ReservationLocations.Any( rl => rl.ApprovalState != ReservationLocationApprovalState.Denied && rl.LocationId == l.Id ) ),
                 Availability = reservationSummaryList.Any( r => r.ReservationLocations.Any( rl => rl.ApprovalState != ReservationLocationApprovalState.Denied && rl.LocationId == l.Id ) ) ? reservationSummaryList.Where( r => r.ReservationLocations.Any( rl => rl.ApprovalState != ReservationLocationApprovalState.Denied && rl.LocationId == l.Id ) ).Select( r => r.ReservationName + "</br>" + r.ReservationDateTimeDescription ).ToList().AsDelimited( "</br></br>" ) : "Available"
             } ).OrderBy( l => l.Name ).ToList();

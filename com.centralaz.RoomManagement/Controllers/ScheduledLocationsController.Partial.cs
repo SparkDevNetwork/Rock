@@ -98,7 +98,7 @@ namespace Rock.Rest.Controllers
                     locationList.Add( location );
                     var treeViewItem = new TreeViewItem();
                     treeViewItem.Id = location.Id.ToString();
-                    treeViewItem.Name = System.Web.HttpUtility.HtmlEncode( location.Name );
+                    treeViewItem.Name = string.Format( "{0}<small style='color:grey;'>{1}</small>", System.Web.HttpUtility.HtmlEncode( location.Name ), location.FirmRoomThreshold != null ? "\t(" + location.FirmRoomThreshold + ")" : "" );
                     treeViewItem.IsActive = !reservedLocationIds.Contains( location.Id ) &&
                         ( attendeeCount == null || location.FirmRoomThreshold == null || attendeeCount.Value <= location.FirmRoomThreshold.Value );
                     locationNameList.Add( treeViewItem );
