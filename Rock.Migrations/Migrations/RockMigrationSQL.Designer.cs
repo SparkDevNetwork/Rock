@@ -2993,5 +2993,103 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201707182207536_AttendanceAnalyticsScheduleFilter_Attendees", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;A&apos;&apos;mya&apos;,0,4,&apos;US&apos;,&apos;EN&apos;,4,100,0
+        ///&apos;A&apos;&apos;Niyah&apos;,0,3,&apos;US&apos;,&apos;EN&apos;,3,100,0
+        ///&apos;A&apos;&apos;riyah&apos;,0,3,&apos;US&apos;,&apos;EN&apos;,3,100,0
+        ///&apos;Aaden&apos;,22,0,&apos;US&apos;,&apos;EN&apos;,22,0,100
+        ///&apos;Aadyn&apos;,3,0,&apos;US&apos;,&apos;EN&apos;,3,0,100
+        ///&apos;Aaiden&apos;,5,0,&apos;US&apos;,&apos;EN&apos;,5,0,100
+        ///&apos;Aalaya&apos;,0,3,&apos;US&apos;,&apos;EN&apos;,3,100,0
+        ///&apos;Aalayah&apos;,0,3,&apos;US&apos;,&apos;EN&apos;,3,100,0
+        ///&apos;Aaleyah&apos;,0,3,&apos;US&apos;,&apos;EN&apos;,3,100,0
+        ///&apos;Aaliah&apos;,0,3,&apos;US&apos;,&apos;EN&apos;,3,100,0
+        ///&apos;Aalijah&apos;,3,0,&apos;US&apos;,&apos;EN&apos;,3,0,100
+        ///&apos;Aaliya&apos;,0,7,&apos;US&apos;,&apos;EN&apos;,7,100,0
+        ///&apos;Aaliyah&apos;,0,424,&apos;US&apos;,&apos;EN&apos;,424,100,0
+        ///&apos;Aaliyana&apos;,0,3,&apos;US&apos;,&apos;EN&apos;,3,100,0
+        ///&apos;Aallyah&apos;,0,3,&apos;US&apos;,&apos;EN&apos;,3,100,0
+        ///&apos;Aalyah&apos;,0,4,&apos;US&apos; [rest of....
+        /// </summary>
+        public static string _201707311527250_FirstNameGender {
+            get {
+                return ResourceManager.GetString("_201707311527250_FirstNameGender", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;SMITH&apos;,1,2376206,880.85
+        ///&apos;JOHNSON&apos;,2,1857160,688.44
+        ///&apos;WILLIAMS&apos;,3,1534042,568.66
+        ///&apos;BROWN&apos;,4,1380145,511.62
+        ///&apos;JONES&apos;,5,1362755,505.17
+        ///&apos;MILLER&apos;,6,1127803,418.07
+        ///&apos;DAVIS&apos;,7,1072335,397.51
+        ///&apos;GARCIA&apos;,8,858289,318.17
+        ///&apos;RODRIGUEZ&apos;,9,804240,298.13
+        ///&apos;WILSON&apos;,10,783051,290.27
+        ///&apos;MARTINEZ&apos;,11,775072,287.32
+        ///&apos;ANDERSON&apos;,12,762394,282.62
+        ///&apos;TAYLOR&apos;,13,720370,267.04
+        ///&apos;THOMAS&apos;,14,710696,263.45
+        ///&apos;HERNANDEZ&apos;,15,706372,261.85
+        ///&apos;MOORE&apos;,16,698671,259
+        ///&apos;MARTIN&apos;,17,672711,249.37
+        ///&apos;JACKSON&apos;,18,666125,246.93
+        ///&apos;THOMPSON&apos;,19,644368,2 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201707311527250_LastName {
+            get {
+                return ResourceManager.GetString("_201707311527250_LastName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;Abigail&apos;,&apos;Abbey&apos;,2,18
+        ///&apos;Abigail&apos;,&apos;Abbi&apos;,2,11
+        ///&apos;Abigail&apos;,&apos;Abbie&apos;,2,27
+        ///&apos;Abigail&apos;,&apos;Abby&apos;,2,238
+        ///&apos;Abigail&apos;,&apos;Abi&apos;,2,21
+        ///&apos;Addison&apos;,&apos;Addie&apos;,2,19
+        ///&apos;Addison&apos;,&apos;Addy&apos;,2,21
+        ///&apos;Adrian&apos;,&apos;Adrián&apos;,1,20
+        ///&apos;Alejandra&apos;,&apos;Alex&apos;,2,11
+        ///&apos;Alejandro&apos;,&apos;Alex&apos;,1,44
+        ///&apos;Alexander&apos;,&apos;Alex&apos;,1,287
+        ///&apos;Alexander&apos;,&apos;Xander&apos;,1,15
+        ///&apos;Alexandra&apos;,&apos;Alex&apos;,2,146
+        ///&apos;Alexandra&apos;,&apos;Ali&apos;,2,21
+        ///&apos;Alexandra&apos;,&apos;Allie&apos;,2,29
+        ///&apos;Alexandra&apos;,&apos;Ally&apos;,2,11
+        ///&apos;Alexandra&apos;,&apos;Lexi&apos;,2,18
+        ///&apos;Alexandra&apos;,&apos;Lexie&apos;,2,12
+        ///&apos;Alexandria&apos;,&apos;Alex&apos;,2,65
+        ///&apos;Alexandria&apos;,&apos;Ali&apos;,2,11
+        ///&apos;Alexis&apos;,&apos;Lexi&apos;,2, [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201707311527250_NickName {
+            get {
+                return ResourceManager.GetString("_201707311527250_NickName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;01&apos;,&apos;Summit Estates&apos;,&apos;Summit Estates combines above-average wealth and education. These late-30s to early-60s households with children and teens rank high for household income (5th), home value (2nd) and net worth (1st). Fully 70% have earned a college of post-graduate degree. Summit Estates create time in their often professional-dual-income-with-children schedules for cultural activities, sports, fitness and travel. They generally are not heavy TV viewers, but references include financial channels, sport [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201707311527250_PersonicxCluster {
+            get {
+                return ResourceManager.GetString("_201707311527250_PersonicxCluster", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;01Y&apos;,&apos;Starting Out&apos;,&apos;Members of the Starting Out group are mostly renters in their mid-to-late-20s with entry-level jobs and an eye to the future – changing jobs, getting engaged, becoming parents. They have an avid interest in video games of all kinds; in fact, many are seen as video game experts by family and friends. Often without landlines in their homes, they think of their cell phones as a source of entertainment, using their mobile devices and the internet to watch TV and movies and listen to music  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201707311527250_PersonicxGroup {
+            get {
+                return ResourceManager.GetString("_201707311527250_PersonicxGroup", resourceCulture);
+            }
+        }
     }
 }

@@ -44,7 +44,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing last name.
         /// </value>
         [Required]
-        [MaxLength( 10 )]
+        [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string LastName { get; set; }
 
