@@ -241,17 +241,17 @@ namespace Rock.Slingshot
             var rockContext = new RockContext();
             var tableList = new List<string>();
 
-            // Don't check Attandance ForeignId since it might not have a ForeignId from the source system
+            // Don't check Attendance ForeignId since it might not have a ForeignId from the source system
             if ( new AttendanceService( rockContext ).Queryable().Any( a => a.ForeignKey == foreignSystemKey ) )
             {
                 tableList.Add( "Attendance" );
             }
 
-            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
-            if ( new GroupService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId != groupTypeIdFamily ) )
+            if ( new CampusService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
             {
-                tableList.Add( "Group" );
+                tableList.Add( "Campus" );
             }
+
 
             if ( new FinancialAccountService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
             {
@@ -263,9 +263,41 @@ namespace Rock.Slingshot
                 tableList.Add( "Financial Batch" );
             }
 
+            if ( new FinancialPaymentDetailService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Financial Payment Detail" );
+            }
+
+            if ( new FinancialPledgeService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Financial Pledge" );
+            }
+
+            if ( new FinancialTransactionDetailService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Financial Detail Transaction" );
+            }
+
             if ( new FinancialTransactionService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
             {
                 tableList.Add( "Financial Transaction" );
+            }
+
+            // Check Group as used as Family and non-Family
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+            if ( new GroupService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == groupTypeIdFamily ) )
+            {
+                tableList.Add( "Family" );
+            }
+
+            if ( new GroupService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId != groupTypeIdFamily ) )
+            {
+                tableList.Add( "Group" );
+            }
+
+            if ( new GroupTypeService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Group Type" );
             }
 
             if ( new LocationService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
@@ -273,19 +305,20 @@ namespace Rock.Slingshot
                 tableList.Add( "Location" );
             }
 
+
+            if ( new NoteService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Note" );
+            }
+
+            if ( new PersonAliasService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "PersonAlias" );
+            }
+
             if ( new PersonService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
             {
                 tableList.Add( "Person" );
-            }
-
-            if ( new GroupService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == groupTypeIdFamily ) )
-            {
-                tableList.Add( "Family" );
-            }
-
-            if ( new BinaryFileService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
-            {
-                tableList.Add( "Photo" );
             }
 
             if ( new ScheduleService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
@@ -293,9 +326,16 @@ namespace Rock.Slingshot
                 tableList.Add( "Schedule" );
             }
 
-            if ( new FinancialPledgeService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            var binaryFileFamilyForeignKeyPrefix = "FamilyForeignId_foreignSystemKey_";
+            var binaryFilePersonForeignKeyPrefix = "PersonForeignId_foreignSystemKey_";
+            if ( new BinaryFileService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey.StartsWith( binaryFilePersonForeignKeyPrefix ) ) )
             {
-                tableList.Add( "Financial Pledge" );
+                tableList.Add( "Person Photo" );
+            }
+
+            if ( new BinaryFileService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey.StartsWith( binaryFileFamilyForeignKeyPrefix ) ) )
+            {
+                tableList.Add( "Family Photo" );
             }
 
             return tableList;
@@ -1020,7 +1060,7 @@ WHERE gta.GroupTypeId IS NULL" );
             List<PersonAlias> personAliasesToInsert = qryAllPersons.Where( p => p.ForeignId.HasValue && p.ForeignKey == foreignSystemKey && !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
                 .Select( x => new { x.Id, x.Guid } )
                 .ToList()
-                .Select( person => new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid, PersonId = person.Id } ).ToList();
+                .Select( person => new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid, PersonId = person.Id, ForeignKey = foreignSystemKey } ).ToList();
 
             rockContext.BulkInsert( personAliasesToInsert, useSqlBulkCopy );
 
