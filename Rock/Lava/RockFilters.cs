@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -65,6 +66,16 @@ namespace Rock.Lava
         public static string ToString( object input )
         {
             return input.ToString();
+        }
+
+        /// <summary>
+        /// Uniques the identifier.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string UniqueIdentifier( object input )
+        {
+            return Guid.NewGuid().ToString();
         }
 
         /// <summary>
@@ -571,6 +582,11 @@ namespace Rock.Lava
                 return string.Empty;
             }
 
+            if (@string == null )
+            {
+                return input.ToString();
+            }
+
             string inputAsString = input.ToString();
 
             return inputAsString == null
@@ -713,7 +729,7 @@ namespace Rock.Lava
 
             if ( input.ToString() == "Now" )
             {
-                input = RockDateTime.Now.ToString();
+                input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
             }
 
             if ( string.IsNullOrWhiteSpace( format ) ) 
@@ -2677,6 +2693,51 @@ namespace Rock.Lava
             return null;
         }
 
+        /// <summary>
+        /// Gets the Notes of the entity
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="documentTemplateId">The Id number of the signed document type to query for.</param>
+        /// <param name="trueValue">The value to be returned if the person has signed the document.</param>
+        /// <param name="falseValue">The value to be returned if the person has not signed the document.</param>
+        /// <returns></returns>
+        public static object HasSignedDocument( DotLiquid.Context context, object input, object documentTemplateId, object trueValue = null, object falseValue = null )
+        {
+            int personId;
+            int templateId;
+
+            trueValue = trueValue ?? true;
+            falseValue = falseValue ?? false;
+
+            if ( input == null || documentTemplateId == null )
+            {
+                return falseValue;
+            }
+
+            templateId = documentTemplateId.ToString().AsInteger();
+
+            if ( input is Person )
+            {
+                personId = ( input as Person ).Id;
+            }
+            else
+            {
+                personId = input.ToString().AsInteger();
+            }
+
+            bool found = new SignatureDocumentService( new RockContext() )
+                .Queryable().AsNoTracking()
+                .Where( d =>
+                    d.SignatureDocumentTemplateId == templateId &&
+                    d.Status == SignatureDocumentStatus.Signed &&
+                    d.BinaryFileId.HasValue &&
+                    d.AppliesToPersonAlias.PersonId == personId )
+                .Any();
+
+            return found ? trueValue : falseValue;
+        }
+
         #endregion
 
         #region Misc Filters
@@ -2777,12 +2838,16 @@ namespace Rock.Lava
             if ( input.StartsWith( "~~" ) )
             {
                 string theme = "Rock";
-                if ( page.Theme != null )
+                if ( page.Theme.IsNotNullOrWhitespace() )
                 {
                     theme = page.Theme;
                 }
+                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhitespace() )
+                {
+                    theme = page.Site.Theme;
+                }
 
-                input = "~/Themes/" + page.Theme + (input.Length > 2 ? input.Substring( 2 ) : string.Empty);
+                input = "~/Themes/" + theme + (input.Length > 2 ? input.Substring( 2 ) : string.Empty);
             }
 
             return page.ResolveUrl( input );
@@ -2800,7 +2865,7 @@ namespace Rock.Lava
             Guid? inputAsGuid = null;
 
             // ensure they provided a cache type
-            if ( cacheType.IsNullOrWhiteSpace() )
+            if ( input == null || cacheType.IsNullOrWhiteSpace() )
             {
                 return null;
             }
@@ -2936,6 +3001,17 @@ namespace Rock.Lava
                             else
                             {
                                 return NoteTypeCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "ContentChannel":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return ContentChannelCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return ContentChannelCache.Read( inputAsGuid.Value );
                             }
                         }
                     default:
@@ -3087,6 +3163,34 @@ namespace Rock.Lava
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Adds the script link.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
+        /// <returns></returns>
+        public static string AddScriptLink( string input, bool fingerprintLink = false )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage.AddScriptLink( page, ResolveRockUrl( input ), fingerprintLink );
+
+            return String.Empty;
+        }
+
+        /// <summary>
+        /// Adds the CSS link.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
+        /// <returns></returns>
+        public static string AddCssLink( string input, bool fingerprintLink = false )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage.AddCSSLink( page, ResolveRockUrl( input ), fingerprintLink );
+
+            return String.Empty;
         }
 
         /// <summary>

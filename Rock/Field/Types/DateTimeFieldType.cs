@@ -212,14 +212,14 @@ namespace Rock.Field.Types
                     {
                         dtp.CurrentTimeOffsetMinutes = valueParts[1].AsInteger();
                     }
+                    else
+                    {
+                        dtp.CurrentTimeOffsetMinutes = 0;
+                    }
                 }
                 else
                 {
-                    var dt = value.AsDateTime();
-                    if ( dt.HasValue )
-                    {
-                        dtp.SelectedDateTime = dt;
-                    }
+                    dtp.SelectedDateTime = value.AsDateTime();
                 }
             }
         }

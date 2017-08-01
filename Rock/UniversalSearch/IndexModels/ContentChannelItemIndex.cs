@@ -37,7 +37,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The title.
         /// </value>
-        [RockIndexField]
+        [RockIndexField( Analyzer = "snowball" )] //https://www.elastic.co/blog/found-text-analysis-part-1
         public string Title { get; set; }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The content.
         /// </value>
-        [RockIndexField]
+        [RockIndexField( Analyzer = "snowball")] //https://www.elastic.co/blog/found-text-analysis-part-1
         public string Content { get; set; }
 
         /// <summary>
@@ -178,10 +178,11 @@ namespace Rock.UniversalSearch.IndexModels
         /// <summary>
         /// Formats the search result.
         /// </summary>
-        /// <param name="person"></param>
-        /// <param name="displayOptions"></param>
+        /// <param name="person">The person.</param>
+        /// <param name="displayOptions">The display options.</param>
+        /// <param name="mergeFields"></param>
         /// <returns></returns>
-        public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
+        public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null, Dictionary<string, object> mergeFields = null )
         {
             string url = string.Empty;
             bool isSecurityDisabled = false;
@@ -221,10 +222,15 @@ namespace Rock.UniversalSearch.IndexModels
 
                     if ( url.IsNotNullOrWhitespace() )
                     {
-                        var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "Id", this.Id );
-                        mergeFields.Add( "Title", this.Title );
-                        mergeFields.Add( "ContentChannelId", this.ContentChannelId );
+                        if ( mergeFields == null )
+                        {
+                            mergeFields = new Dictionary<string, object>();
+
+                        }
+                        
+                        mergeFields.AddOrReplace( "Id", this.Id );
+                        mergeFields.AddOrReplace( "Title", this.Title );
+                        mergeFields.AddOrReplace( "ContentChannelId", this.ContentChannelId );
 
                         if (displayOptions == null )
                         {

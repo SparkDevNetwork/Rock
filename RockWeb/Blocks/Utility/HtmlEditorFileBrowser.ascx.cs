@@ -338,10 +338,14 @@ namespace RockWeb.Blocks.Utility
 <li class='js-rocklist-item rocklist-item' data-id='{0}'>
     <div class='rollover-container'>
         <div class='rollover-item actions'>
-        <a title='delete' class='btn btn-xs btn-danger js-delete-file'>
-            <i class='fa fa-times'></i>
-        </a>
+            <a title='delete' class='btn btn-xs btn-danger js-delete-file action'>
+                <i class='fa fa-times'></i>
+            </a> 
+            <a href='{3}' target='_blank' title='download' class='btn btn-xs btn-default js-download-file action'>
+                <i class='fa fa-download'></i>
+            </a>
         </div>
+
         <img src='{1}' class='file-browser-image' />
         <br />
         <span class='file-name'>{2}</span>
@@ -362,7 +366,8 @@ namespace RockWeb.Blocks.Utility
                         nameHtmlFormat,
                         HttpUtility.HtmlEncode( relativeFilePath ),
                         imageUrl,
-                        fileName );
+                        fileName,
+                        HttpUtility.HtmlEncode( this.ResolveUrl( imagePath ) ) );
 
                     sb.AppendLine( nameHtml );
                 }

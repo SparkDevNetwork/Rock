@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class HtmlContentsController : Rock.Rest.ApiController<Rock.Model.HtmlContent>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HtmlContentsController"/> class.
+        /// </summary>
         public HtmlContentsController() : base( new Rock.Model.HtmlContentService( new Rock.Data.RockContext() ) ) { } 
     }
 }

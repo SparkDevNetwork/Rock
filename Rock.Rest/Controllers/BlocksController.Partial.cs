@@ -76,8 +76,10 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Moves a block from one zone to another
         /// </summary>
-        /// <param name="block"></param>
-        /// <returns></returns>
+        /// <param name="id">The identifier.</param>
+        /// <param name="block">The block.</param>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/blocks/move/{id}" )]

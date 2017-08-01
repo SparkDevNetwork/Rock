@@ -169,7 +169,8 @@ namespace Rock.Reporting.DataSelect.Person
             parentControl.Controls.Add( ddlNoteType );
 
             var noteTypeService = new NoteTypeService( new RockContext() );
-            var noteTypes = noteTypeService.Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new
+            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
+            var noteTypes = noteTypeService.Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new
             {
                 a.Id,
                 a.Name

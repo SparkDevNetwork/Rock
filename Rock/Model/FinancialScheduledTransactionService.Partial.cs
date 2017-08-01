@@ -274,6 +274,7 @@ namespace Rock.Model
             int totalNoMatchingTransaction = 0;
             int totalAdded = 0;
             int totalReversals = 0;
+            int totalFailures = 0;
             int totalStatusChanges = 0;
 
             var batchSummary = new Dictionary<Guid, List<Decimal>>();
@@ -282,7 +283,7 @@ namespace Rock.Model
             var gatewayComponent = gateway.GetGatewayComponent();
 
             var newTransactions = new List<FinancialTransaction>();
-            var failedScheduledPayments = new List<FinancialTransaction>();
+            var failedPayments = new List<FinancialTransaction>();
 
             var contributionTxnType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
 
@@ -513,9 +514,14 @@ namespace Rock.Model
                                 newTransactions.Add( transaction );
                             }
 
-                            if ( txnAmount == 0.0M && payment.IsFailure && scheduledTransaction != null && ( failedPaymentEmail.HasValue || failedPaymentWorkflowType.HasValue ) )
+                            if ( 
+                                payment.IsFailure && 
+                                ( 
+                                    ( txnAmount == 0.0M && scheduledTransaction != null && originalTxn == null ) || 
+                                    ( txnAmount < 0.0M && originalTxn != null ) 
+                                ) )
                             {
-                                failedScheduledPayments.Add( transaction );
+                                failedPayments.Add( transaction );
                             }
 
                             // Add summary
@@ -525,13 +531,15 @@ namespace Rock.Model
                             }
                             batchSummary[batch.Guid].Add( txnAmount );
 
-                            if ( txnAmount >= 0.0M )
-                            {
-                                totalAdded++;
-                            }
-                            else
+                            totalAdded++;
+
+                            if ( txnAmount < 0.0M )
                             {
                                 totalReversals++;
+                            }
+                            else if ( txnAmount == 0.0M )
+                            {
+                                totalFailures++;
                             }
                         }
                         else
@@ -588,12 +596,12 @@ namespace Rock.Model
             }
 
             // Queue transactions to launch failed payment workflow
-            if ( failedScheduledPayments.Any() )
+            if ( failedPayments.Any() )
             {
                 if ( failedPaymentEmail.HasValue )
                 {
                     // Queue a transaction to send payment failure
-                    var newTransactionIds = failedScheduledPayments.Select( t => t.Id ).ToList();
+                    var newTransactionIds = failedPayments.Select( t => t.Id ).ToList();
                     var sendPaymentFailureTxn = new Rock.Transactions.SendPaymentReceipts( failedPaymentEmail.Value, newTransactionIds );
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentFailureTxn );
                 }
@@ -601,7 +609,7 @@ namespace Rock.Model
                 if ( failedPaymentWorkflowType.HasValue )
                 {
                     // Queue a transaction to launch workflow
-                    var workflowDetails = failedScheduledPayments.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
+                    var workflowDetails = failedPayments.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                     var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( failedPaymentWorkflowType.Value, workflowDetails );
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
                 }
@@ -637,6 +645,12 @@ namespace Rock.Model
             {
                 sb.AppendFormat( "<li>{0} {1} added as a reversal to a previous transaction.</li>", totalReversals.ToString( "N0" ),
                     ( totalReversals == 1 ? "payment was" : "payments were" ) );
+            }
+
+            if ( totalFailures > 0 )
+            {
+                sb.AppendFormat( "<li>{0} {1} recorded as a failed transaction.</li>", totalFailures.ToString( "N0" ),
+                    ( totalFailures == 1 ? "payment was" : "payments were" ) );
             }
 
             using ( var rockContext = new RockContext() )

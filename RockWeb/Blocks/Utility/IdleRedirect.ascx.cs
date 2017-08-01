@@ -47,6 +47,10 @@ namespace RockWeb.Blocks.Utility
             int ms = idleSeconds * 1000;
             string script = string.Format( @"
             $(function () {{
+                Sys.WebForms.PageRequestManager.getInstance().add_pageLoading(function () {{
+                    $.idleTimer('destroy');
+                }});
+
                 $.idleTimer({0});
                 $(document).bind('idle.idleTimer', function() {{
                     window.location = '{1}';

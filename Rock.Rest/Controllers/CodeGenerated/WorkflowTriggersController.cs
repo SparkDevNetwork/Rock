@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class WorkflowTriggersController : Rock.Rest.ApiController<Rock.Model.WorkflowTrigger>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowTriggersController"/> class.
+        /// </summary>
         public WorkflowTriggersController() : base( new Rock.Model.WorkflowTriggerService( new Rock.Data.RockContext() ) ) { } 
     }
 }

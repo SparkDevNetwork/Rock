@@ -129,8 +129,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
             {
                 firstForms.Add( formActions.First( a => a.ActivityId == activityId ) );
             }
-            
+
             return firstForms;
+
         }
 
         /// <summary>
