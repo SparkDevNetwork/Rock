@@ -648,6 +648,8 @@ namespace Rock.Slingshot
 
                 financialPledgeImport.StartDate = slingshotFinancialPledge.StartDate ?? DateTime.MinValue;
                 financialPledgeImport.EndDate = slingshotFinancialPledge.EndDate ?? DateTime.MaxValue;
+                financialPledgeImport.CreatedDateTime = slingshotFinancialPledge.CreatedDateTime;
+                financialPledgeImport.ModifiedDateTime = slingshotFinancialPledge.ModifiedDateTime;
                 financialPledgeImportList.Add( financialPledgeImport );
             }
 
@@ -1603,7 +1605,7 @@ namespace Rock.Slingshot
             }
 
             /* Financial Pledges */
-            this.SlingshotFinancialPledgeList = LoadSlingshotListFromFile<SlingshotCore.Model.FinancialPledge>();
+            this.SlingshotFinancialPledgeList = LoadSlingshotListFromFile<SlingshotCore.Model.FinancialPledge>( false );
 
             /* Person Notes */
             this.SlingshotPersonNoteList = LoadSlingshotListFromFile<SlingshotCore.Model.PersonNote>();
