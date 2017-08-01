@@ -1064,11 +1064,13 @@ WHERE gta.GroupTypeId IS NULL" );
 
             rockContext.BulkInsert( personAliasesToInsert, useSqlBulkCopy );
 
+            var familyGroupMembersQry = new GroupMemberService( rockContext ).Queryable( true ).Where( a => a.Group.GroupTypeId == familyGroupTypeId );
+
             // get the person Ids along with the PersonImport and GroupMember record
             var personsIdsForPersonImport = from p in qryAllPersons.AsNoTracking().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new { a.Id, a.ForeignId } ).ToList()
                                             join pi in personImports on p.ForeignId equals pi.PersonForeignId
-                                            join f in groupService.Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new { a.Id, a.ForeignId } ).ToList() on pi.FamilyForeignId equals f.ForeignId
-                                            join gm in groupMemberService.Queryable( true ).Select( a => new { a.Id, a.PersonId } ) on p.Id equals gm.PersonId into gmj
+                                            join f in groupService.Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == familyGroupTypeId ).Select( a => new { a.Id, a.ForeignId } ).ToList() on pi.FamilyForeignId equals f.ForeignId
+                                            join gm in familyGroupMembersQry.Select( a => new { a.Id, a.PersonId } ) on p.Id equals gm.PersonId into gmj
                                             from gm in gmj.DefaultIfEmpty()
                                             select new
                                             {
@@ -1215,9 +1217,9 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             }
 
             stopwatchTotal.Stop();
-            if ( personsToInsert.Count > 0 )
+            if ( personsToInsert.Any() || groupMemberRecordsToInsertList.Any() || familiesToInsert.Any() )
             {
-                sbStats.AppendLine( $"Imported {personsToInsert.Count} People and {familiesToInsert.Count} Families [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+                sbStats.AppendLine( $"Imported {personsToInsert.Count} People and {familiesToInsert.Count} Families [{stopwatchTotal.ElapsedMilliseconds}ms] and {groupMemberRecordsToInsertList.Count} family members" );
             }
             else
             {
