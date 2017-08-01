@@ -288,6 +288,7 @@ namespace RockWeb.Blocks.BulkImport
                 {
                     foreach ( var exception in t.Exception.InnerExceptions )
                     {
+                        LogException( exception );
                         _importer.Exceptions.Add( exception.GetBaseException() );
                     }
 
