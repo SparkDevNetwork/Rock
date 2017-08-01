@@ -198,21 +198,28 @@ namespace RockWeb.Blocks.BulkImport
             }
 
             var foreignSystemKeyList = BulkImporter.UsedForeignSystemKeys();
+
+            if ( nbCheckForeignSystemKey.Text == string.Empty )
+            {
+                nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Default;
+            }
+            else
+            {
+                nbCheckForeignSystemKey.Text += "<br /><br />";
+            }
+
             if ( foreignSystemKeyList.Any() )
             {
-                if ( nbCheckForeignSystemKey.Text == string.Empty )
-                {
-                    nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Default;
-                }
-                else
-                {
-                    nbCheckForeignSystemKey.Text += "<br /><br />";
-                }
-
                 nbCheckForeignSystemKey.Text += "The following ForeignSystemKeys have been used from previous imports:<br /><br />" + foreignSystemKeyList.AsDelimited( "<br />" );
-
-                nbCheckForeignSystemKey.Visible = true;
             }
+            else
+            {
+                nbCheckForeignSystemKey.Text += "No ForeignSystemKeys have been used from previous imports";
+            }
+
+            nbCheckForeignSystemKey.Text += "<br />";
+
+            nbCheckForeignSystemKey.Visible = true;
         }
 
         /// <summary>
