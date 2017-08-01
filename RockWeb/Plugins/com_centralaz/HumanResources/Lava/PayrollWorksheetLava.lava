@@ -265,6 +265,7 @@
         </tr>
         {% if fullTime %}
         <tr> {% assign employmentPreviousYears = Person | Attribute:'Arena-22-212' | Minus:1 | Ceiling %}
+			{% if employmentPreviousYears > 0 %} {% assign employmentPreviousYears = 0 %} {% endif %}
           <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentPreviousYears | ToString | NumberToOrdinal }}</b></p></td>
           <td><p> </p></td>
         </tr>
