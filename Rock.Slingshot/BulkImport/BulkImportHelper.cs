@@ -106,6 +106,8 @@ namespace Rock.Slingshot
 
             var newAttendanceImports = attendanceImports.Where( a => !a.AttendanceForeignId.HasValue || !attendancesAlreadyExistForeignIdHash.Contains( a.AttendanceForeignId.Value ) ).ToList();
 
+            DateTime importDateTime = RockDateTime.Now;
+
             var attendancesToInsert = new List<Attendance>( newAttendanceImports.Count );
             foreach ( var attendanceImport in newAttendanceImports )
             {
@@ -135,6 +137,8 @@ namespace Rock.Slingshot
                 attendance.PersonAliasId = personAliasIdLookup.GetValueOrNull( attendanceImport.PersonForeignId );
                 attendance.Note = attendanceImport.Note;
                 attendance.DidAttend = true;
+                attendance.CreatedDateTime = importDateTime;
+                attendance.ModifiedDateTime = importDateTime;
 
                 attendancesToInsert.Add( attendance );
             }
@@ -173,6 +177,8 @@ namespace Rock.Slingshot
             List<FinancialAccount> financialAccountsToInsert = new List<FinancialAccount>();
             var newFinancialAccountImports = financialAccountImports.Where( a => !financialAccountAlreadyExistForeignIdHash.Contains( a.FinancialAccountForeignId ) ).ToList();
 
+            var importDateTime = RockDateTime.Now;
+
             foreach ( var financialAccountImport in newFinancialAccountImports )
             {
                 var financialAccount = new FinancialAccount();
@@ -190,6 +196,8 @@ namespace Rock.Slingshot
 
                 financialAccount.CampusId = financialAccountImport.CampusId;
                 financialAccount.IsTaxDeductible = financialAccountImport.IsTaxDeductible;
+                financialAccount.CreatedDateTime = importDateTime;
+                financialAccount.ModifiedDateTime = importDateTime;
 
                 financialAccountsToInsert.Add( financialAccount );
             }
@@ -376,6 +384,8 @@ namespace Rock.Slingshot
             var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.Person.ForeignKey == foreignSystemKey && a.PersonId == a.AliasPersonId )
                 .Select( a => new { PersonAliasId = a.Id, PersonForeignId = a.Person.ForeignId } ).ToDictionary( k => k.PersonForeignId.Value, v => v.PersonAliasId );
 
+            var importDateTime = RockDateTime.Now;
+
             foreach ( var financialBatchImport in newFinancialBatchImports )
             {
                 var financialBatch = new FinancialBatch();
@@ -393,10 +403,10 @@ namespace Rock.Slingshot
                 financialBatch.CampusId = financialBatchImport.CampusId;
                 financialBatch.ControlAmount = financialBatchImport.ControlAmount;
 
-                financialBatch.CreatedDateTime = financialBatchImport.CreatedDateTime;
+                financialBatch.CreatedDateTime = financialBatchImport.CreatedDateTime ?? importDateTime;
                 financialBatch.BatchEndDateTime = financialBatchImport.EndDate;
 
-                financialBatch.ModifiedDateTime = financialBatchImport.ModifiedDateTime;
+                financialBatch.ModifiedDateTime = financialBatchImport.ModifiedDateTime ?? importDateTime;
                 financialBatch.BatchStartDateTime = financialBatchImport.StartDate;
 
                 switch ( financialBatchImport.Status )
@@ -462,6 +472,8 @@ namespace Rock.Slingshot
             var accountIdLookup = new FinancialAccountService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, a.ForeignId } ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
+            var importDateTime = RockDateTime.Now;
+
             // Insert FinancialPaymentDetail for all the transactions first
             List<FinancialPaymentDetail> financialPaymentDetailToInsert = new List<FinancialPaymentDetail>( newFinancialTransactionImports.Count );
             foreach ( var financialTransactionImport in newFinancialTransactionImports )
@@ -470,6 +482,8 @@ namespace Rock.Slingshot
                 financialPaymentDetail.CurrencyTypeValueId = financialTransactionImport.CurrencyTypeValueId;
                 financialPaymentDetail.ForeignId = financialTransactionImport.FinancialTransactionForeignId;
                 financialPaymentDetail.ForeignKey = foreignSystemKey;
+                financialPaymentDetail.CreatedDateTime = financialTransactionImport.CreatedDateTime ?? importDateTime;
+                financialPaymentDetail.ModifiedDateTime = financialTransactionImport.ModifiedDateTime ?? importDateTime;
                 financialPaymentDetailToInsert.Add( financialPaymentDetail );
             }
 
@@ -501,8 +515,8 @@ namespace Rock.Slingshot
                 financialTransaction.TransactionDateTime = financialTransactionImport.TransactionDate;
                 financialTransaction.SourceTypeValueId = financialTransactionImport.TransactionSourceValueId;
                 financialTransaction.TransactionTypeValueId = financialTransactionImport.TransactionTypeValueId;
-                financialTransaction.CreatedDateTime = financialTransactionImport.CreatedDateTime;
-                financialTransaction.ModifiedDateTime = financialTransactionImport.ModifiedDateTime;
+                financialTransaction.CreatedDateTime = financialTransactionImport.CreatedDateTime ?? importDateTime;
+                financialTransaction.ModifiedDateTime = financialTransactionImport.ModifiedDateTime ?? importDateTime;
 
                 if ( financialTransactionImport.CreatedByPersonForeignId.HasValue )
                 {
@@ -541,8 +555,8 @@ namespace Rock.Slingshot
                     financialTransactionDetail.Amount = financialTransactionDetailImport.Amount;
                     financialTransactionDetail.AccountId = financialAccountIdLookup[financialTransactionDetailImport.FinancialAccountForeignId.Value];
                     financialTransactionDetail.Summary = financialTransactionDetailImport.Summary;
-                    financialTransactionDetail.CreatedDateTime = financialTransactionDetailImport.CreatedDateTime;
-                    financialTransactionDetail.ModifiedDateTime = financialTransactionDetailImport.ModifiedDateTime;
+                    financialTransactionDetail.CreatedDateTime = financialTransactionDetailImport.CreatedDateTime ?? importDateTime;
+                    financialTransactionDetail.ModifiedDateTime = financialTransactionDetailImport.ModifiedDateTime ?? importDateTime;
 
                     if ( financialTransactionDetailImport.CreatedByPersonForeignId.HasValue )
                     {
@@ -597,6 +611,8 @@ namespace Rock.Slingshot
             // Create any missing roles on the GroupType
             var groupTypeRolesToInsert = new List<GroupTypeRole>();
 
+            var importedDateTime = RockDateTime.Now;
+
             foreach ( var importedGroupTypeRoleName in importedGroupTypeRoleNames )
             {
                 var groupTypeCache = GroupTypeCache.Read( importedGroupTypeRoleName.GroupTypeId, rockContext );
@@ -607,6 +623,8 @@ namespace Rock.Slingshot
                         var groupTypeRole = new GroupTypeRole();
                         groupTypeRole.GroupTypeId = groupTypeCache.Id;
                         groupTypeRole.Name = roleName.Truncate( 100 );
+                        groupTypeRole.CreatedDateTime = importedDateTime;
+                        groupTypeRole.ModifiedDateTime = importedDateTime;
                         groupTypeRolesToInsert.Add( groupTypeRole );
                     }
                 }
@@ -640,7 +658,8 @@ namespace Rock.Slingshot
 
                 group.Order = groupImport.Order;
                 group.CampusId = groupImport.CampusId;
-
+                group.CreatedDateTime = importedDateTime;
+                group.ModifiedDateTime = importedDateTime;
                 groupsToInsert.Add( group );
             }
 
@@ -671,6 +690,8 @@ namespace Rock.Slingshot
                     groupMember.GroupId = groupTypeGroupLookup[groupWithMembers.GroupTypeId][groupWithMembers.GroupForeignId].Id;
                     groupMember.GroupRoleId = groupTypeRoleLookup[groupMemberImport.RoleName];
                     groupMember.PersonId = personIdLookup[groupMemberImport.PersonForeignId];
+                    groupMember.CreatedDateTime = importedDateTime;
+                    groupMember.ModifiedDateTime = importedDateTime;
                     groupMembersToInsert.Add( groupMember );
                 }
             }
@@ -786,6 +807,8 @@ WHERE gta.GroupTypeId IS NULL" );
             List<Location> locationsToInsert = new List<Location>();
             var newLocationImports = locationImports.Where( a => !locationsAlreadyExistForeignIdHash.Contains( a.LocationForeignId ) ).ToList();
 
+            var importDateTime = RockDateTime.Now;
+
             foreach ( var locationImport in newLocationImports )
             {
                 var location = new Location();
@@ -803,6 +826,8 @@ WHERE gta.GroupTypeId IS NULL" );
 
                 location.Name = locationImport.Name.Truncate( 100 );
                 location.IsActive = locationImport.IsActive;
+                location.CreatedDateTime = importDateTime;
+                location.ModifiedDateTime = importDateTime;
                 locationsToInsert.Add( location );
             }
 
@@ -871,6 +896,8 @@ WHERE gta.GroupTypeId IS NULL" );
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v );
 
             _defaultPhoneCountryCode = PhoneNumber.DefaultCountryCode();
+
+            var importDateTime = RockDateTime.Now;
 
             int nextNewFamilyForeignId = familiesLookup.Any() ? familiesLookup.Max( a => a.Key ) : 0;
             if ( personImports.Any() )
@@ -941,6 +968,8 @@ WHERE gta.GroupTypeId IS NULL" );
 
                     family.ForeignId = personImport.FamilyForeignId;
                     family.ForeignKey = foreignSystemKey;
+                    family.CreatedDateTime = personImport.CreatedDateTime ?? importDateTime;
+                    family.ModifiedDateTime = personImport.ModifiedDateTime ?? importDateTime;
                     familiesLookup.Add( personImport.FamilyForeignId.Value, family );
                 }
 
@@ -961,7 +990,7 @@ WHERE gta.GroupTypeId IS NULL" );
                     if ( this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate )
                     {
                         Stopwatch stopwatchPersonUpdates = Stopwatch.StartNew();
-                        bool wasChanged = UpdatePersonFromPersonImport( person, personImport, attributeValuesLookup, familiesLookup, foreignSystemKey );
+                        bool wasChanged = UpdatePersonFromPersonImport( person, personImport, attributeValuesLookup, familiesLookup, foreignSystemKey, importDateTime );
                         stopwatchPersonUpdates.Stop();
                         personUpdatesMS += stopwatchPersonUpdates.ElapsedMilliseconds;
                         if ( wasChanged )
@@ -989,7 +1018,6 @@ WHERE gta.GroupTypeId IS NULL" );
 
             double buildImportListsMS = stopwatch.ElapsedMilliseconds;
             stopwatch.Restart();
-            bool useSqlBulkCopy = true;
             List<int> insertedPersonForeignIds = new List<int>();
 
             // insert all the [Group] records
@@ -999,7 +1027,7 @@ WHERE gta.GroupTypeId IS NULL" );
             // NOTE: we are only inserting the [Person] record, not the PersonAlias or GroupMember records yet
             var personsToInsert = personLookup.Where( a => a.Value.Id == 0 ).Select( a => a.Value ).ToList();
 
-            rockContext.BulkInsert( familiesToInsert, useSqlBulkCopy );
+            rockContext.BulkInsert( familiesToInsert );
 
             // lookup GroupId from Group.ForeignId
             var familyIdLookup = groupService.Queryable().AsNoTracking().Where( a => a.GroupTypeId == familyGroupTypeId && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
@@ -1026,28 +1054,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 }
             }
 
-            try
-            {
-                rockContext.BulkInsert( personsToInsert, useSqlBulkCopy );
-
-                // TODO: Figure out a good way to handle database errors since SqlBulkCopy doesn't tell you which record failed.  Maybe do it like this where we catch the exception, rollback to a EF AddRange, and then report which record(s) had the problem
-            }
-            catch
-            {
-                try
-                {
-                    // do it the EF AddRange which is slower, but it will help us determine which record fails
-                    rockContext.BulkInsert( personsToInsert, false );
-                }
-                catch ( System.Data.Entity.Infrastructure.DbUpdateException dex )
-                {
-                    // nbResults.Text = string.Empty;
-                    foreach ( var entry in dex.Entries )
-                    {
-                        var errorRecord = entry.Entity as IEntity;
-                    }
-                }
-            }
+            rockContext.BulkInsert( personsToInsert );
 
             insertedPersonForeignIds = personsToInsert.Select( a => a.ForeignId.Value ).ToList();
 
@@ -1059,7 +1066,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 .ToList()
                 .Select( person => new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid, PersonId = person.Id, ForeignKey = foreignSystemKey } ).ToList();
 
-            rockContext.BulkInsert( personAliasesToInsert, useSqlBulkCopy );
+            rockContext.BulkInsert( personAliasesToInsert );
 
             var familyGroupMembersQry = new GroupMemberService( rockContext ).Queryable( true ).Where( a => a.Group.GroupTypeId == familyGroupTypeId );
 
@@ -1088,12 +1095,14 @@ WHERE gta.GroupTypeId IS NULL" );
                                                     PersonId = ppi.PersonId,
                                                     GroupRoleId = ppi.PersonImport.GroupRoleId,
                                                     GroupId = ppi.FamilyId,
-                                                    GroupMemberStatus = GroupMemberStatus.Active
+                                                    GroupMemberStatus = GroupMemberStatus.Active,
+                                                    CreatedDateTime = ppi.PersonImport.CreatedDateTime ?? importDateTime,
+                                                    ModifiedDateTime = ppi.PersonImport.ModifiedDateTime ?? importDateTime,
                                                 };
 
             var groupMemberRecordsToInsertList = groupMemberRecordsToInsertQry.ToList();
 
-            rockContext.BulkInsert( groupMemberRecordsToInsertList, useSqlBulkCopy );
+            rockContext.BulkInsert( groupMemberRecordsToInsertList );
 
             List<Location> locationsToInsert = new List<Location>();
             List<GroupLocation> groupLocationsToInsert = new List<GroupLocation>();
@@ -1112,6 +1121,8 @@ WHERE gta.GroupTypeId IS NULL" );
                     groupLocation.GroupId = familyRecord.Key;
                     groupLocation.IsMailingLocation = address.IsMailingLocation;
                     groupLocation.IsMappedLocation = address.IsMappedLocation;
+                    groupLocation.CreatedDateTime = locationCreatedDateTimeStart;
+                    groupLocation.ModifiedDateTime = locationCreatedDateTimeStart;
 
                     Location location = new Location();
 
@@ -1123,6 +1134,7 @@ WHERE gta.GroupTypeId IS NULL" );
                     location.Country = address.Country;
                     location.PostalCode = address.PostalCode;
                     location.CreatedDateTime = locationCreatedDateTimeStart;
+                    location.ModifiedDateTime = locationCreatedDateTimeStart;
                     if ( address.Latitude.HasValue && address.Longitude.HasValue )
                     {
                         location.SetLocationPointFromLatLong( address.Latitude.Value, address.Longitude.Value );
@@ -1156,7 +1168,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 {
                     var phoneNumberToInsert = new PhoneNumber();
                     phoneNumberToInsert.PersonId = personsIds.PersonId;
-                    UpdatePhoneNumberFromPhoneNumberImport( phoneNumberImport, phoneNumberToInsert );
+                    UpdatePhoneNumberFromPhoneNumberImport( phoneNumberImport, phoneNumberToInsert, importDateTime );
 
                     phoneNumbersToInsert.Add( phoneNumberToInsert );
                 }
@@ -1175,7 +1187,8 @@ WHERE gta.GroupTypeId IS NULL" );
                     attributeValue.EntityId = personsIds.PersonId;
                     attributeValue.AttributeId = attributeValueImport.AttributeId;
                     attributeValue.Value = attributeValueImport.Value;
-
+                    attributeValue.CreatedDateTime = personsIds.PersonImport.CreatedDateTime ?? importDateTime;
+                    attributeValue.ModifiedDateTime = personsIds.PersonImport.ModifiedDateTime ?? importDateTime;
                     attributeValuesToInsert.Add( attributeValue );
                 }
             }
@@ -1278,6 +1291,8 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             person.EmailNote = personImport.EmailNote;
             person.EmailPreference = ( EmailPreference ) personImport.EmailPreference;
             person.InactiveReasonNote = personImport.InactiveReasonNote;
+            person.CreatedDateTime = personImport.CreatedDateTime;
+            person.ModifiedDateTime = personImport.ModifiedDateTime;
             person.ForeignId = personImport.PersonForeignId;
             person.ForeignKey = foreignSystemKey;
         }
@@ -1287,7 +1302,8 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
         /// </summary>
         /// <param name="phoneNumberImport">The phone number import.</param>
         /// <param name="phoneNumberToInsert">The phone number to insert.</param>
-        private void UpdatePhoneNumberFromPhoneNumberImport( PhoneNumberImport phoneNumberImport, PhoneNumber phoneNumberToInsert )
+        /// <param name="importDateTime">The import date time.</param>
+        private void UpdatePhoneNumberFromPhoneNumberImport( PhoneNumberImport phoneNumberImport, PhoneNumber phoneNumberToInsert, DateTime importDateTime )
         {
             phoneNumberToInsert.NumberTypeValueId = phoneNumberImport.NumberTypeValueId;
             phoneNumberToInsert.CountryCode = _defaultPhoneCountryCode;
@@ -1296,6 +1312,8 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             phoneNumberToInsert.Extension = phoneNumberImport.Extension;
             phoneNumberToInsert.IsMessagingEnabled = phoneNumberImport.IsMessagingEnabled;
             phoneNumberToInsert.IsUnlisted = phoneNumberImport.IsUnlisted;
+            phoneNumberToInsert.CreatedDateTime = importDateTime;
+            phoneNumberToInsert.ModifiedDateTime = importDateTime;
         }
 
         /// <summary>
@@ -1306,8 +1324,9 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
         /// <param name="attributeValuesLookup">The attribute values lookup.</param>
         /// <param name="familiesLookup">The families lookup.</param>
         /// <param name="foreignSystemKey">The foreign system key.</param>
+        /// <param name="importDateTime">The import date time.</param>
         /// <returns></returns>
-        private bool UpdatePersonFromPersonImport( Person lookupPerson, PersonImport personImport, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, Dictionary<int, Group> familiesLookup, string foreignSystemKey )
+        private bool UpdatePersonFromPersonImport( Person lookupPerson, PersonImport personImport, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, Dictionary<int, Group> familiesLookup, string foreignSystemKey, DateTime importDateTime )
         {
             using ( var rockContextForPersonUpdate = new RockContext() )
             {
@@ -1330,7 +1349,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                     {
                         var personPhoneNumber = new PhoneNumber();
                         personPhoneNumber.PersonId = person.Id;
-                        UpdatePhoneNumberFromPhoneNumberImport( phoneNumberImport, personPhoneNumber );
+                        UpdatePhoneNumberFromPhoneNumberImport( phoneNumberImport, personPhoneNumber, importDateTime );
                         phoneNumberService.Add( personPhoneNumber );
                     }
                 }
@@ -1467,6 +1486,8 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
 
             bool useBulkInsertForPhotos = false;
 
+            var importDateTime = RockDateTime.Now;
+
             foreach ( var photoImport in photoImports )
             {
                 var binaryFileToInsert = new BinaryFile()
@@ -1474,6 +1495,8 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                     FileName = photoImport.FileName,
                     MimeType = photoImport.MimeType,
                     BinaryFileTypeId = binaryFileType.Id,
+                    CreatedDateTime = importDateTime,
+                    ModifiedDateTime = importDateTime,
                     Guid = Guid.NewGuid()
                 };
 
@@ -1526,7 +1549,9 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                         var binaryFileDataToInsert = new BinaryFileData()
                         {
                             Id = binaryFileId,
-                            Content = Convert.FromBase64String( photoImport.PhotoData )
+                            Content = Convert.FromBase64String( photoImport.PhotoData ),
+                            CreatedDateTime = importDateTime,
+                            ModifiedDateTime = importDateTime
                         };
 
                         binaryFileDatasToInsert.Add( binaryFileDataToInsert );
@@ -1629,6 +1654,8 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
                 rockContext.SaveChanges();
             }
 
+            var importDateTime = RockDateTime.Now;
+
             foreach ( var scheduleImport in newScheduleImports )
             {
                 var schedule = new Schedule();
@@ -1644,6 +1671,9 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
                 {
                     schedule.Name = scheduleImport.Name;
                 }
+
+                schedule.CreatedDateTime = importDateTime;
+                schedule.ModifiedDateTime = importDateTime;
 
                 schedulesToInsert.Add( schedule );
             }
@@ -1688,6 +1718,8 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
             List<FinancialPledge> financialPledgesToInsert = new List<FinancialPledge>();
             var newFinancialPledgeImports = financialPledgeImports.Where( a => !financialPledgeAlreadyExistForeignIdHash.Contains( a.FinancialPledgeForeignId ) ).ToList();
 
+            var importDateTime = RockDateTime.Now;
+
             foreach ( var financialPledgeImport in newFinancialPledgeImports )
             {
                 var financialPledge = new FinancialPledge();
@@ -1710,6 +1742,9 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
                 financialPledge.PledgeFrequencyValueId = financialPledgeImport.PledgeFrequencyValueId;
                 financialPledge.StartDate = financialPledgeImport.StartDate;
                 financialPledge.EndDate = financialPledgeImport.EndDate;
+
+                financialPledge.CreatedDateTime = financialPledgeImport.CreatedDateTime ?? importDateTime;
+                financialPledge.ModifiedDateTime = financialPledgeImport.ModifiedDateTime?? importDateTime;
 
                 financialPledgesToInsert.Add( financialPledge );
             }
@@ -1801,6 +1836,8 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
 
             int noteImportErrors = 0;
 
+            var importDateTime = RockDateTime.Now;
+
             foreach ( var noteImport in newNoteImports )
             {
                 var note = new Note();
@@ -1817,7 +1854,8 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
                 note.IsAlert = noteImport.IsAlert;
                 note.IsPrivateNote = noteImport.IsPrivateNote;
                 note.Text = noteImport.Text;
-                note.CreatedDateTime = noteImport.DateTime;
+                note.CreatedDateTime = noteImport.DateTime ?? importDateTime;
+                note.ModifiedDateTime = noteImport.DateTime ?? importDateTime;
                 if ( noteImport.CreatedByPersonForeignId.HasValue )
                 {
                     note.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull( noteImport.CreatedByPersonForeignId.Value );
