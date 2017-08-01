@@ -169,6 +169,15 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in CleanupOrphanedAttributes", ex ) );
             }
 
+            try
+            {
+                databaseRowsDeleted.Add( "Person Token", CleanupPersonTokens( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupPersonTokens", ex ) );
+            }
+
             if ( databaseRowsDeleted.Any( a => a.Value > 0 ) )
             {
                 context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsDeleted.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
@@ -660,7 +669,7 @@ WHERE ic.ChannelId = @channelId
                 var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value ).ToList().AsGuidList();
 
                 // clean up any orphaned attribute matrices
-                var dayAgo = RockDateTime.Now.AddDays( 0 );
+                var dayAgo = RockDateTime.Now.AddDays( -1 );
                 var orphanedAttributeMatrices = attributeMatrixService.Queryable().Where( a => ( a.CreatedDateTime < dayAgo ) && !usedAttributeMatrices.Contains( a.Guid ) ).ToList();
                 if ( orphanedAttributeMatrices.Any() )
                 {
@@ -711,6 +720,49 @@ WHERE ic.ChannelId = @channelId
             }
 
             return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Cleanups the person tokens.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns></returns>
+        private int CleanupPersonTokens( JobDataMap dataMap )
+        {
+            int totalRowsDeleted = 0;
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
+
+            // Cleanup PersonTokens records that are expired
+            using ( RockContext rockContext = new RockContext() )
+            {
+                PersonTokenService personTokenService = new PersonTokenService( rockContext );
+
+                // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
+                bool keepDeleting = true;
+                while ( keepDeleting )
+                {
+                    var dbTransaction = rockContext.Database.BeginTransaction();
+                    try
+                    {
+                        string sqlCommand = @"
+DELETE TOP (@batchAmount)
+FROM [PersonToken]
+WHERE ExpireDateTime IS NOT NULL
+	AND ExpireDateTime < GetDate()
+
+";
+                        int rowsDeleted = rockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ) );
+                        keepDeleting = rowsDeleted > 0;
+                        totalRowsDeleted += rowsDeleted;
+                    }
+                    finally
+                    {
+                        dbTransaction.Commit();
+                    }
+                }
+            }
+
+            return totalRowsDeleted;
         }
 
         /// <summary>

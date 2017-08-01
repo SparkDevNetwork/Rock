@@ -96,7 +96,7 @@ namespace Rock.Model
                 return site.DefaultDomainUri;
             }
 
-            return null;
+            return new Uri( Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ) );
         }
     }
 }

@@ -231,7 +231,9 @@ namespace RockWeb.Blocks.Event
                     using ( RockContext rockContext = new RockContext() )
                     {
                         RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
-                        _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" ).AsNoTracking()
+
+                        // NOTE: Do not use AsNoTracking because lava might need to lazy load some stuff
+                        _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" )
                                                     .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
 
 
@@ -273,7 +275,9 @@ namespace RockWeb.Blocks.Event
                 using ( RockContext rockContext = new RockContext() )
                 {
                     RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
-                    _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" ).AsNoTracking()
+
+                    // NOTE: Do not use AsNoTracking because lava might need to lazy load some stuff
+                    _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" )
                                                 .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
 
 

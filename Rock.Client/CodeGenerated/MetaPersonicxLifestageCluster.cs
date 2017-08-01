@@ -27,12 +27,21 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for SiteUrlMap that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for MetaPersonicxLifestageCluster that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class SiteUrlMapEntity
+    public partial class MetaPersonicxLifestageClusterEntity
     {
         /// <summary />
         public int Id { get; set; }
+
+        /// <summary />
+        public string Children { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public string DetailsUrl { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -40,19 +49,67 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
+        /// <summary />
+        public string HomeOwnership { get; set; }
+
+        /// <summary />
+        public string Income { get; set; }
+
+        /// <summary />
+        public string IncomeLevel { get; set; }
+
+        /// <summary />
+        public int? IncomeRank { get; set; }
+
+        /// <summary />
+        public string LifeStage { get; set; }
+
+        /// <summary />
+        public string LifestyleClusterCode { get; set; }
+
+        /// <summary />
+        public string LifestyleClusterName { get; set; }
+
+        /// <summary />
+        public string MaritalStatus { get; set; }
+
+        /// <summary />
+        public int MetaPersonicxLifestyleGroupId { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int SiteId { get; set; }
+        public string NetWorth { get; set; }
 
         /// <summary />
-        public string Token { get; set; }
+        public string NetWorthLevel { get; set; }
 
         /// <summary />
-        public string Url { get; set; }
+        public int? NetworthRank { get; set; }
+
+        /// <summary />
+        public int? OrganizationHouseholdCount { get; set; }
+
+        /// <summary />
+        public int? OrganizationIndividualCount { get; set; }
+
+        /// <summary />
+        public decimal? PercentOrganization { get; set; }
+
+        /// <summary />
+        public decimal? PercentUS { get; set; }
+
+        /// <summary />
+        public string Summary { get; set; }
+
+        /// <summary />
+        public string Urbanicity { get; set; }
+
+        /// <summary />
+        public int? UrbanicityRank { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -81,18 +138,37 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source SiteUrlMap object
+        /// Copies the base properties from a source MetaPersonicxLifestageCluster object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( SiteUrlMap source )
+        public void CopyPropertiesFrom( MetaPersonicxLifestageCluster source )
         {
             this.Id = source.Id;
+            this.Children = source.Children;
+            this.Description = source.Description;
+            this.DetailsUrl = source.DetailsUrl;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.HomeOwnership = source.HomeOwnership;
+            this.Income = source.Income;
+            this.IncomeLevel = source.IncomeLevel;
+            this.IncomeRank = source.IncomeRank;
+            this.LifeStage = source.LifeStage;
+            this.LifestyleClusterCode = source.LifestyleClusterCode;
+            this.LifestyleClusterName = source.LifestyleClusterName;
+            this.MaritalStatus = source.MaritalStatus;
+            this.MetaPersonicxLifestyleGroupId = source.MetaPersonicxLifestyleGroupId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.SiteId = source.SiteId;
-            this.Token = source.Token;
-            this.Url = source.Url;
+            this.NetWorth = source.NetWorth;
+            this.NetWorthLevel = source.NetWorthLevel;
+            this.NetworthRank = source.NetworthRank;
+            this.OrganizationHouseholdCount = source.OrganizationHouseholdCount;
+            this.OrganizationIndividualCount = source.OrganizationIndividualCount;
+            this.PercentOrganization = source.PercentOrganization;
+            this.PercentUS = source.PercentUS;
+            this.Summary = source.Summary;
+            this.Urbanicity = source.Urbanicity;
+            this.UrbanicityRank = source.UrbanicityRank;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -104,9 +180,9 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for SiteUrlMap that includes all the fields that are available for GETs. Use this for GETs (use SiteUrlMapEntity for POST/PUTs)
+    /// Client model for MetaPersonicxLifestageCluster that includes all the fields that are available for GETs. Use this for GETs (use MetaPersonicxLifestageClusterEntity for POST/PUTs)
     /// </summary>
-    public partial class SiteUrlMap : SiteUrlMapEntity
+    public partial class MetaPersonicxLifestageCluster : MetaPersonicxLifestageClusterEntity
     {
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

@@ -93,13 +93,13 @@ namespace RockWeb.Blocks.Cms
             bool canDelete = false;
 
             var rockContext = new RockContext();
-            SiteUrlMapService siteUrlMapService = new SiteUrlMapService( rockContext );
+            PageShortLinkService pageShortLinkService = new PageShortLinkService( rockContext );
 
-            var shortLink = siteUrlMapService.Get( e.RowKeyId );
+            var shortLink = pageShortLinkService.Get( e.RowKeyId );
             if ( shortLink != null )
             {
                 string errorMessage;
-                canDelete = siteUrlMapService.CanDelete( shortLink, out errorMessage );
+                canDelete = pageShortLinkService.CanDelete( shortLink, out errorMessage );
                 if ( !canDelete )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Cms
 
                 int siteId = shortLink.SiteId;
 
-                siteUrlMapService.Delete( shortLink );
+                pageShortLinkService.Delete( shortLink );
                 rockContext.SaveChanges();
             }
 
@@ -154,9 +154,9 @@ namespace RockWeb.Blocks.Cms
         {
             using ( var rockContext = new RockContext() )
             {
-                var siteUrlMapService = new SiteUrlMapService( rockContext );
+                var pageShortLinkService = new PageShortLinkService( rockContext );
 
-                var qry = siteUrlMapService.Queryable().ToList()
+                var qry = pageShortLinkService.Queryable().ToList()
                     .Select( s => new ShortLinkRow( s ) )
                     .ToList()
                     .AsQueryable();
@@ -201,16 +201,15 @@ namespace RockWeb.Blocks.Cms
             public string Url { get; set; }
             public string ShortLink { get; set; }
 
-            public ShortLinkRow ( SiteUrlMap siteUrlMap )
+            public ShortLinkRow ( PageShortLink pageShortLink )
             {
-                Id = siteUrlMap.Id;
-                SiteId = siteUrlMap.Site.Id;
-                SiteName = siteUrlMap.Site.Name;
-                Token = siteUrlMap.Token;
-                Url = siteUrlMap.Url;
+                Id = pageShortLink.Id;
+                SiteId = pageShortLink.Site.Id;
+                SiteName = pageShortLink.Site.Name;
+                Token = pageShortLink.Token;
+                Url = pageShortLink.Url;
 
-                var uri = siteUrlMap.Site.DefaultDomainUri;
-                var url = uri != null ? uri.ToString() : Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" );
+                var url = pageShortLink.Site.DefaultDomainUri.ToString();
                 ShortLink = url.EnsureTrailingForwardslash() + Token;
             }
         }
