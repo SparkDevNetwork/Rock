@@ -1778,7 +1778,9 @@ namespace Rock.Slingshot
             this.PersonAttributeKeyLookup = personAttributes.ToDictionary( k => k.Key, v => v );
 
             // Family Attributes
-            var familyAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Read( a ) ).ToList();
+            string groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id.ToString();
+
+            var familyAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup && a.EntityTypeQualifierColumn == "GroupTypeId" && a.EntityTypeQualifierValue == groupTypeIdFamily ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Read( a ) ).ToList();
             this.FamilyAttributeKeyLookup = familyAttributes.ToDictionary( k => k.Key, v => v );
 
             // FieldTypes
