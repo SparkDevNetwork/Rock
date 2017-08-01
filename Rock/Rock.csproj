@@ -1380,6 +1380,7 @@
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
+    <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Web\Cache\ContentChannelCache.cs" />
     <Compile Include="Web\Cache\LavaShortcodeCache.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />

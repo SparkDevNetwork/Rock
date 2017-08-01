@@ -1994,23 +1994,44 @@ BEGIN
                 DECLARE @EntityTypeId int
                 SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.DefinedValue')
 
-                -- Delete existing attribute first (might have been created by Rock system)
-                DELETE [Attribute]
-                WHERE [EntityTypeId] = @EntityTypeId
-                AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
-                AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
-                AND [Key] = '{2}'
+                IF NOT EXISTS (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
+                    AND [Key] = '{2}' )
+                BEGIN
 
-                INSERT INTO [Attribute] (
-                    [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                    [Key],[Name],[Description],
-                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-                    [Guid])
-                VALUES(
-                    1,@FieldTypeId, @EntityTypeId,'DefinedTypeId',CAST(@DefinedTypeId as varchar),
-                    '{2}','{3}','{4}',
-                    {5},0,'{6}',0,0,
-                    '{7}')
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId, @EntityTypeId,'DefinedTypeId',CAST(@DefinedTypeId as varchar),
+                        '{2}','{3}','{4}',
+                        {5},0,'{6}',0,0,
+                        '{7}')
+
+                END
+                ELSE
+                BEGIN
+
+                    UPDATE [Attribute] SET
+                        [IsSystem] = 1,
+                        [FieldTypeId] = @FieldTypeId,
+                        [Name] = '{3}',
+                        [Description] = '{4}',
+                        [Order] = {5},
+                        [DefaultValue] = '{6}',
+                        [Guid] = '{7}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
+                    AND [Key] = '{2}'  
+
+                END
 ",
                     definedTypeGuid,
                     fieldTypeGuid,
