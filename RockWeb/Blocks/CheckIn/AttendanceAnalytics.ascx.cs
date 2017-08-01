@@ -43,10 +43,11 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
     [GroupTypesField( "Group Types", "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance type's areas will be available.", false, "", "", 0 )]
-    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true, "", 1 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, "", "", 2 )]
-    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false, "", "", 3 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", "", true, false, Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, "", 4 )]
+    [BooleanField( "Show All Groups", "Should all of the available groups be listed individually with checkboxes? If not, a group dropdown will be used instead for selecting the desired groups", true, "", 1)]
+    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true, "", 2 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, "", "", 3 )]
+    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false, "", "", 4 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", "", true, false, Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, "", 5 )]
     public partial class AttendanceAnalytics : RockBlock
     {
         #region Fields
@@ -108,7 +109,7 @@ namespace RockWeb.Blocks.CheckIn
             base.OnLoad( e );
 
             // GroupTypesUI dynamically creates controls, so we need to rebuild it on every OnLoad()
-            BuildGroupTypesUI();
+            BuildGroupTypesUI( false );
 
             var chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
 
@@ -169,7 +170,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            BuildGroupTypesUI();
+            BuildGroupTypesUI( true );
 
             if ( pnlResults.Visible )
             {
@@ -240,7 +241,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <summary>
         /// Builds the group types UI
         /// </summary>
-        private void BuildGroupTypesUI()
+        private void BuildGroupTypesUI( bool clearSelection )
         {
             var groupTypes = this.GetSelectedGroupTypes();
             if ( groupTypes.Any() )
@@ -250,13 +251,70 @@ namespace RockWeb.Blocks.CheckIn
                 // only add each grouptype/group once in case they are a child of multiple parents
                 _addedGroupTypeIds = new List<int>();
                 _addedGroupIds = new List<int>();
-                rptGroupTypes.DataSource = groupTypes.ToList();
-                rptGroupTypes.DataBind();
+
+                var showAllGroups = GetAttributeValue( "ShowAllGroups" ).AsBoolean();
+                if ( showAllGroups )
+                {
+                    rptGroupTypes.DataSource = groupTypes.ToList();
+                    rptGroupTypes.DataBind();
+
+                    pnlGroups.Visible = true;
+                    gpGroups.Visible = false;
+                }
+                else
+                {
+                    gpGroups.IncludedGroupTypeIds = groupTypes.Select( t => t.Id ).ToList();
+                    if ( clearSelection )
+                    {
+                        gpGroups.SetValues( null );
+                        BindSelectedGroups();
+                    }
+
+                    gpGroups.Visible = true;
+
+                    pnlGroups.Visible = false;
+                    gpGroups.Visible = true;
+                }
+
+                dvpDataView.Visible = true;
             }
             else
             {
+                pnlGroups.Visible = false;
+                gpGroups.Visible = false;
+                dvpDataView.Visible = false;
+
                 nbGroupTypeWarning.Text = "Please select a check-in type.";
                 nbGroupTypeWarning.Visible = true;
+            }
+        }
+
+        private void BindSelectedGroups()
+        {
+            var selectedGroupIds = GetSelectedGroupIds();
+            bool showGroupAncestry = GetAttributeValue( "ShowGroupAncestry" ).AsBoolean( true );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupService = new GroupService( rockContext );
+                var groups = groupService.Queryable().AsNoTracking()
+                    .Where( g => selectedGroupIds.Contains( g.Id ) )
+                    .ToList();
+
+                var groupList = new List<string>();
+
+                foreach ( int id in selectedGroupIds )
+                {
+                    var group = groups.FirstOrDefault( g => g.Id == id );
+                    if ( group != null )
+                    {
+                        groupList.Add( showGroupAncestry ? groupService.GroupAncestorPathName( id ) : group.Name );
+                    }
+                }
+
+                rptSelectedGroups.DataSource = groupList;
+                rptSelectedGroups.DataBind();
+                rcwSelectedGroups.Visible = groupList.Any();
             }
         }
 
@@ -512,10 +570,19 @@ function(item) {
         private List<int> GetSelectedGroupIds()
         {
             var selectedGroupIds = new List<int>();
-            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
-            foreach ( var cblGroup in checkboxListControls )
+
+            var showAllGroups = GetAttributeValue( "ShowAllGroups" ).AsBoolean();
+            if ( showAllGroups )
             {
-                selectedGroupIds.AddRange( cblGroup.SelectedValuesAsInt );
+                var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
+                foreach ( var cblGroup in checkboxListControls )
+                {
+                    selectedGroupIds.AddRange( cblGroup.SelectedValuesAsInt );
+                }
+            }
+            else
+            {
+                selectedGroupIds = gpGroups.SelectedValuesAsInt().ToList();
             }
 
             return selectedGroupIds;
@@ -531,7 +598,7 @@ function(item) {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
             ddlAttendanceType.SelectedGroupTypeId = GetSetting( keyPrefix, "TemplateGroupTypeId" ).AsIntegerOrNull();
-            BuildGroupTypesUI();
+            BuildGroupTypesUI( false );
 
             string slidingDateRangeSettings = GetSetting( keyPrefix, "SlidingDateRange" );
             if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
@@ -590,16 +657,25 @@ function(item) {
 
             var groupIdList = GetSetting( keyPrefix, "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
-            // if no groups are selected, default to showing all of them
-            var selectAll = groupIdList.Count == 0;
+            // if no groups are selected, and option to show all groups is configured, default to showing all of them
 
-            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
-            foreach ( var cblGroup in checkboxListControls )
+            var showAllGroups = GetAttributeValue( "ShowAllGroups" ).AsBoolean();
+            if ( showAllGroups )
             {
-                foreach ( ListItem item in cblGroup.Items )
+                var selectAll = groupIdList.Count == 0;
+                var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
+                foreach ( var cblGroup in checkboxListControls )
                 {
-                    item.Selected = selectAll || groupIdList.Contains( item.Value );
+                    foreach ( ListItem item in cblGroup.Items )
+                    {
+                        item.Selected = selectAll || groupIdList.Contains( item.Value );
+                    }
                 }
+            }
+            else
+            {
+                gpGroups.SetValues( groupIdList.AsIntegerList() );
+                BindSelectedGroups();
             }
 
             ShowBy showBy = GetSetting( keyPrefix, "ShowBy" ).ConvertToEnumOrNull<ShowBy>() ?? ShowBy.Chart;
@@ -2017,7 +2093,7 @@ function(item) {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlCheckinType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            BuildGroupTypesUI();
+            BuildGroupTypesUI( true );
         }
 
         /// <summary>
@@ -2157,5 +2233,10 @@ function(item) {
 
             public string LocationName { get; set; }
         }
+
+        protected void gpGroups_SelectItem( object sender, EventArgs e )
+        {
+            BindSelectedGroups();
+        }        
     }
 }

@@ -78,7 +78,7 @@ namespace Rock.Rest.Controllers
 
             var person = GetPerson();
 
-            foreach ( var group in qry.OrderBy( g => g.Name ) )
+            foreach ( var group in qry.OrderBy( g => g.Order ).ThenBy( g => g.Name ) )
             {
                 if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
