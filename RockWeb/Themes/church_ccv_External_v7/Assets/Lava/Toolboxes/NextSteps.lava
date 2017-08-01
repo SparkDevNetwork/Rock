@@ -13,12 +13,6 @@
 {% assign showMap = false %}
 {% assign showAddMember = false %}
 
-{% capture extraFooterButtons %}
-<a href="/page/996" class="btn btn-default btn-xs">
-  <i class="fa fa-plus"></i> Request More Clients
-</a>
-{% endcapture %}
-
 
 {% comment %}
   Person partial variables
