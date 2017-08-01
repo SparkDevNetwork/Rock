@@ -275,6 +275,11 @@ namespace Rock.SystemGuid
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
 
         /// <summary>
+        /// Used to manage the workflows that can be launched via a text message.
+        /// </summary>
+        public const string TEXT_TO_WORKFLOW = "2CACB86F-D811-4483-98E1-272F1FF8FF5D";
+
+        /// <summary>
         /// Used to manage the lava code that can be launched via webhook.
         /// </summary>
         public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";

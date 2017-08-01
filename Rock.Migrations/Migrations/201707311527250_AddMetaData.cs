@@ -52,12 +52,12 @@ namespace Rock.Migrations
                 MigrationSQL._201707311527250_NickName );
 
             ExecuteSqlInsert(
-              "INSERT INTO [MetaPersonicxLifestageGroup] ([LifestyleGroupCode],[LifestyleGroupName],[Description],[Summary],[PercentUS],[LifeStage],[MaritalStatus],[HomeOwnership],[Children],[Income],[IncomeRank],[Urbanicity], [UrbanicityRank], [NetWorth], [NetworthRank],[DetailsUrl],[Guid])",
-              MigrationSQL._201707311527250_PersonicxGroup );
+                "INSERT INTO [MetaPersonicxLifestageGroup] ([LifestyleGroupCode],[LifestyleGroupName],[Description],[Summary],[PercentUS],[LifeStage],[MaritalStatus],[HomeOwnership],[Children],[Income],[IncomeRank],[Urbanicity], [UrbanicityRank], [NetWorth], [NetworthRank],[DetailsUrl],[Guid])",
+                MigrationSQL._201707311527250_PersonicxGroup );
 
             ExecuteSqlInsert(
-              "INSERT INTO [MetaPersonicxLifestageCluster] ([LifestyleClusterCode],[LifestyleClusterName],[Description],[Summary],[PercentUS],[LifeStage],[MaritalStatus],[HomeOwnership],[Children],[Income],[IncomeRank],[Urbanicity], [UrbanicityRank], [NetWorth], [NetworthRank],[MetaPersonicxLifestyleGroupId],[DetailsUrl],[Guid])",
-              MigrationSQL._201707311527250_PersonicxCluster );
+                "INSERT INTO [MetaPersonicxLifestageCluster] ([LifestyleClusterCode],[LifestyleClusterName],[Description],[Summary],[PercentUS],[LifeStage],[MaritalStatus],[HomeOwnership],[Children],[Income],[IncomeRank],[Urbanicity], [UrbanicityRank], [NetWorth], [NetworthRank],[MetaPersonicxLifestyleGroupId],[DetailsUrl],[Guid])",
+                MigrationSQL._201707311527250_PersonicxCluster );
         }
         
         /// <summary>
