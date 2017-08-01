@@ -582,13 +582,11 @@ namespace Rock.Slingshot
             RockContext rockContext = new RockContext();
             StringBuilder sbStats = new StringBuilder();
 
-            var groupsAlreadyExistLookupQry = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new
-            {
-                GroupForeignId = a.ForeignId.Value,
-                GroupTypeId = a.GroupTypeId
-            } );
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
 
-            var newGroupImports = groupImports.Where( a => !groupsAlreadyExistLookupQry.ToList().Any( x => x.GroupForeignId == a.GroupForeignId && x.GroupTypeId == a.GroupTypeId ) ).ToList();
+            var groupsAlreadyExistLookupQry = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId != groupTypeIdFamily ).Select( a => a.ForeignId.Value );
+
+            var newGroupImports = groupImports.Where( a => !groupsAlreadyExistLookupQry.ToList().Contains( a.GroupForeignId ) ).ToList();
 
             var importedGroupTypeRoleNames = groupImports.GroupBy( a => a.GroupTypeId ).Select( a => new
             {
@@ -681,13 +679,12 @@ namespace Rock.Slingshot
 
             var groupsUpdated = false;
             var groupImportsWithParentGroup = newGroupImports.Where( a => a.ParentGroupForeignId.HasValue ).ToList();
-
-            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
-            var parentGroupLookup = qryGroupTypeGroupLookup.Where( a => a.GroupTypeId != groupTypeIdFamily ).Select( a => new
+            
+            var parentGroupLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId != groupTypeIdFamily && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new
             {
-                GroupId = a.Group.Id,
-                a.GroupForeignId
-            } ).ToDictionary( k => k.GroupForeignId, v => v.GroupId );
+                GroupId = a.Id,
+                a.ForeignId
+            } ).ToDictionary( k => k.ForeignId, v => v.GroupId );
 
             foreach ( var groupImport in groupImportsWithParentGroup )
             {
