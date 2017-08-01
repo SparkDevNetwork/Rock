@@ -241,17 +241,17 @@ namespace Rock.Slingshot
             var rockContext = new RockContext();
             var tableList = new List<string>();
 
-            // Don't check Attandance ForeignId since it might not have a ForeignId from the source system
+            // Don't check Attendance ForeignId since it might not have a ForeignId from the source system
             if ( new AttendanceService( rockContext ).Queryable().Any( a => a.ForeignKey == foreignSystemKey ) )
             {
                 tableList.Add( "Attendance" );
             }
 
-            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
-            if ( new GroupService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId != groupTypeIdFamily ) )
+            if ( new CampusService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
             {
-                tableList.Add( "Group" );
+                tableList.Add( "Campus" );
             }
+
 
             if ( new FinancialAccountService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
             {
@@ -263,9 +263,41 @@ namespace Rock.Slingshot
                 tableList.Add( "Financial Batch" );
             }
 
+            if ( new FinancialPaymentDetailService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Financial Payment Detail" );
+            }
+
+            if ( new FinancialPledgeService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Financial Pledge" );
+            }
+
+            if ( new FinancialTransactionDetailService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Financial Detail Transaction" );
+            }
+
             if ( new FinancialTransactionService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
             {
                 tableList.Add( "Financial Transaction" );
+            }
+
+            // Check Group as used as Family and non-Family
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+            if ( new GroupService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == groupTypeIdFamily ) )
+            {
+                tableList.Add( "Family" );
+            }
+
+            if ( new GroupService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId != groupTypeIdFamily ) )
+            {
+                tableList.Add( "Group" );
+            }
+
+            if ( new GroupTypeService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Group Type" );
             }
 
             if ( new LocationService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
@@ -273,19 +305,20 @@ namespace Rock.Slingshot
                 tableList.Add( "Location" );
             }
 
+
+            if ( new NoteService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Note" );
+            }
+
+            if ( new PersonAliasService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "PersonAlias" );
+            }
+
             if ( new PersonService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
             {
                 tableList.Add( "Person" );
-            }
-
-            if ( new GroupService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == groupTypeIdFamily ) )
-            {
-                tableList.Add( "Family" );
-            }
-
-            if ( new BinaryFileService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
-            {
-                tableList.Add( "Photo" );
             }
 
             if ( new ScheduleService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
@@ -293,9 +326,16 @@ namespace Rock.Slingshot
                 tableList.Add( "Schedule" );
             }
 
-            if ( new FinancialPledgeService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            var binaryFileFamilyForeignKeyPrefix = "FamilyForeignId_foreignSystemKey_";
+            var binaryFilePersonForeignKeyPrefix = "PersonForeignId_foreignSystemKey_";
+            if ( new BinaryFileService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey.StartsWith( binaryFilePersonForeignKeyPrefix ) ) )
             {
-                tableList.Add( "Financial Pledge" );
+                tableList.Add( "Person Photo" );
+            }
+
+            if ( new BinaryFileService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey.StartsWith( binaryFileFamilyForeignKeyPrefix ) ) )
+            {
+                tableList.Add( "Family Photo" );
             }
 
             return tableList;
@@ -542,13 +582,11 @@ namespace Rock.Slingshot
             RockContext rockContext = new RockContext();
             StringBuilder sbStats = new StringBuilder();
 
-            var groupsAlreadyExistLookupQry = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new
-            {
-                GroupForeignId = a.ForeignId.Value,
-                GroupTypeId = a.GroupTypeId
-            } );
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
 
-            var newGroupImports = groupImports.Where( a => !groupsAlreadyExistLookupQry.ToList().Any( x => x.GroupForeignId == a.GroupForeignId && x.GroupTypeId == a.GroupTypeId ) ).ToList();
+            var groupsAlreadyExistLookupQry = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId != groupTypeIdFamily ).Select( a => a.ForeignId.Value );
+
+            var newGroupImports = groupImports.Where( a => !groupsAlreadyExistLookupQry.ToList().Contains( a.GroupForeignId ) ).ToList();
 
             var importedGroupTypeRoleNames = groupImports.GroupBy( a => a.GroupTypeId ).Select( a => new
             {
@@ -641,13 +679,12 @@ namespace Rock.Slingshot
 
             var groupsUpdated = false;
             var groupImportsWithParentGroup = newGroupImports.Where( a => a.ParentGroupForeignId.HasValue ).ToList();
-
-            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
-            var parentGroupLookup = qryGroupTypeGroupLookup.Where( a => a.GroupTypeId != groupTypeIdFamily ).Select( a => new
+            
+            var parentGroupLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId != groupTypeIdFamily && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new
             {
-                GroupId = a.Group.Id,
-                a.GroupForeignId
-            } ).ToDictionary( k => k.GroupForeignId, v => v.GroupId );
+                GroupId = a.Id,
+                a.ForeignId
+            } ).ToDictionary( k => k.ForeignId, v => v.GroupId );
 
             foreach ( var groupImport in groupImportsWithParentGroup )
             {
@@ -1020,15 +1057,17 @@ WHERE gta.GroupTypeId IS NULL" );
             List<PersonAlias> personAliasesToInsert = qryAllPersons.Where( p => p.ForeignId.HasValue && p.ForeignKey == foreignSystemKey && !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
                 .Select( x => new { x.Id, x.Guid } )
                 .ToList()
-                .Select( person => new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid, PersonId = person.Id } ).ToList();
+                .Select( person => new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid, PersonId = person.Id, ForeignKey = foreignSystemKey } ).ToList();
 
             rockContext.BulkInsert( personAliasesToInsert, useSqlBulkCopy );
+
+            var familyGroupMembersQry = new GroupMemberService( rockContext ).Queryable( true ).Where( a => a.Group.GroupTypeId == familyGroupTypeId );
 
             // get the person Ids along with the PersonImport and GroupMember record
             var personsIdsForPersonImport = from p in qryAllPersons.AsNoTracking().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new { a.Id, a.ForeignId } ).ToList()
                                             join pi in personImports on p.ForeignId equals pi.PersonForeignId
-                                            join f in groupService.Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new { a.Id, a.ForeignId } ).ToList() on pi.FamilyForeignId equals f.ForeignId
-                                            join gm in groupMemberService.Queryable( true ).Select( a => new { a.Id, a.PersonId } ) on p.Id equals gm.PersonId into gmj
+                                            join f in groupService.Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == familyGroupTypeId ).Select( a => new { a.Id, a.ForeignId } ).ToList() on pi.FamilyForeignId equals f.ForeignId
+                                            join gm in familyGroupMembersQry.Select( a => new { a.Id, a.PersonId } ) on p.Id equals gm.PersonId into gmj
                                             from gm in gmj.DefaultIfEmpty()
                                             select new
                                             {
@@ -1175,9 +1214,9 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             }
 
             stopwatchTotal.Stop();
-            if ( personsToInsert.Count > 0 )
+            if ( personsToInsert.Any() || groupMemberRecordsToInsertList.Any() || familiesToInsert.Any() )
             {
-                sbStats.AppendLine( $"Imported {personsToInsert.Count} People and {familiesToInsert.Count} Families [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+                sbStats.AppendLine( $"Imported {personsToInsert.Count} People and {familiesToInsert.Count} Families [{stopwatchTotal.ElapsedMilliseconds}ms] and {groupMemberRecordsToInsertList.Count} family members" );
             }
             else
             {
