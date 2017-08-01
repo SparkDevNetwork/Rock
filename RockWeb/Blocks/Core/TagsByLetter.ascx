@@ -11,6 +11,7 @@
                      <div class="nav nav-pills margin-b-md">
                         <li class='<%= personalTagsCss %>'><asp:LinkButton id="lbPersonalTags" runat="server" OnClick="lbPersonalTags_Click" Text="Personal Tags" CssClass="active"></asp:LinkButton></li>
                         <li class="<%= publicTagsCss %>"><asp:LinkButton id="lbPublicTags" runat="server" OnClick="lbPublicTags_Click" Text="Organizational Tags"></asp:LinkButton></li>
+                        <Rock:Toggle ID="tglStatus" runat="server" CssClass="pull-right"  OffText="Active" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-sm" OnText="All"   AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
                     </div>
 
                     <asp:Literal ID="lLetters" runat="server"></asp:Literal>

@@ -53,6 +53,7 @@ BEGIN
 		    P.[NickName],
 		    P.[LastName],
 		    P.[Email],
+            P.[GivingId],
 		    P.[BirthDate],
             P.[ConnectionStatusValueId]
 	    FROM (
@@ -89,17 +90,19 @@ BEGIN
 
             -- Child attended, also include their parents
 	        SELECT	
-		        C.[Id],
-		        C.[NickName],
-		        C.[LastName],
-		        C.[Email],
-		        C.[BirthDate],
+                C.[Id],
+                C.[NickName],
+                C.[LastName],
+                C.[Email],
+                C.[GivingId],
+                C.[BirthDate],
                 C.[ConnectionStatusValueId],
-		        A.[Id] AS [ParentId],
-		        A.[NickName] AS [ParentNickName],
-		        A.[LastName] AS [ParentLastName],
-		        A.[Email] AS [ParentEmail],
-		        A.[BirthDate] AS [ParentBirthDate]
+                A.[Id] AS [ParentId],
+                A.[NickName] AS [ParentNickName],
+                A.[LastName] AS [ParentLastName],
+                A.[Email] AS [ParentEmail],
+       A.[GivingId] as [ParentGivingId],
+                A.[BirthDate] AS [ParentBirthDate]
 	        FROM (
 				SELECT DISTINCT PA.[PersonId]
 				FROM (
@@ -137,17 +140,19 @@ BEGIN
 
             -- Parents attended, include their children
 	        SELECT	
-		        A.[Id],
-		        A.[NickName],
-		        A.[LastName],
-		        A.[Email],
-		        A.[BirthDate],
+                A.[Id],
+                A.[NickName],
+                A.[LastName],
+                A.[Email],
+                A.[GivingId],
+                A.[BirthDate],
                 A.[ConnectionStatusValueId],
-		        C.[Id] AS [ChildId],
-		        C.[NickName] AS [ChildNickName],
-		        C.[LastName] AS [ChildLastName],
-		        C.[Email] AS [ChildEmail],
-		        C.[BirthDate] AS [ChildBirthDate]
+                C.[Id] AS [ChildId],
+                C.[NickName] AS [ChildNickName],
+                C.[LastName] AS [ChildLastName],
+                C.[Email] AS [ChildEmail],
+                C.[GivingId] as [ChildGivingId],
+                C.[BirthDate] AS [ChildBirthDate]
 	        FROM (
 				SELECT DISTINCT PA.[PersonId]
 				FROM (

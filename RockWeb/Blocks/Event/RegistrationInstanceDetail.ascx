@@ -97,6 +97,15 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockLiteral ID="lStartDate" runat="server" Label="Registration Starts" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockLiteral ID="lEndDate" runat="server" Label="Registration Ends" />
+                            </div>
+                        </div>
+
                         <Rock:RockLiteral ID="lDetails" runat="server" Label="Details"></Rock:RockLiteral>
 
                         <div class="actions">

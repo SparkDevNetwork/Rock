@@ -46,6 +46,7 @@ namespace Rock.Web.UI
         #region Private Variables
 
         private PlaceHolder phLoadStats;
+        private LinkButton _btnRestoreImpersonatedByUser;
         private ScriptManager _scriptManager;
         private PageCache _pageCache = null;
 
@@ -727,29 +728,17 @@ namespace Rock.Web.UI
                 stopwatchInitEvents.Restart();
             }
 
-            // If the impersonated query key was included then set the current person
-            Page.Trace.Warn( "Checking for person impersanation" );
-            string impersonatedPersonKey = PageParameter( "rckipid" );
-            if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
+            // If the impersonated query key was included or is in session then set the current person
+            Page.Trace.Warn( "Checking for person impersonation" );
+            if (!ProcessImpersonation( rockContext ) )
             {
-                Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-
-                Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
-                if ( impersonatedPerson == null )
-                {
-                    impersonatedPerson = personService.GetByUrlEncodedKey( impersonatedPersonKey );
-                }
-                if ( impersonatedPerson != null )
-                {
-                    Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
-                    CurrentUser = impersonatedPerson.GetImpersonatedUser();
-                }
+                return;
             }
 
             // Get current user/person info
             Page.Trace.Warn( "Getting CurrentUser" );
             Rock.Model.UserLogin user = CurrentUser;
-
+            
             if ( showDebugTimings )
             {
                 slDebugTimings.AppendFormat( "GetCurrentUser [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
@@ -972,6 +961,17 @@ namespace Rock.Web.UI
 
                     Page.Trace.Warn( "Checking if user can administer" );
                     canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
+                    if ( !canAdministratePage )
+                    {
+                        // if the current user is impersonated by an Admin, then show the admin bar
+                        var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
+                        var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
+                        if ( impersonatedByUser != null && currentUserIsImpersonated )
+                        {
+                            canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, impersonatedByUser.Person );
+                        }
+                    }
 
                     if ( showDebugTimings )
                     {
@@ -1207,27 +1207,26 @@ namespace Rock.Web.UI
                         phLoadStats = new PlaceHolder();
                         adminFooter.Controls.Add( phLoadStats );
 
+                        // If the current user is Impersonated by an admin, show a link on the admin bar to login back in as the original user
+                        var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
+                        var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
+                        if ( canAdministratePage && currentUserIsImpersonated && impersonatedByUser != null)
+                        {
+                             HtmlGenericControl impersonatedByUserDiv = new HtmlGenericControl( "span" );
+                            impersonatedByUserDiv.AddCssClass( "admin-actions button-bar pull-left" );
+                            _btnRestoreImpersonatedByUser = new LinkButton();
+                            _btnRestoreImpersonatedByUser.ID = "_btnRestoreImpersonatedByUser";
+                            _btnRestoreImpersonatedByUser.CssClass = "btn";
+                            _btnRestoreImpersonatedByUser.Visible = impersonatedByUser != null;
+                            _btnRestoreImpersonatedByUser.Click += _btnRestoreImpersonatedByUser_Click;
+                            _btnRestoreImpersonatedByUser.Text = $"<i class='fa-fw fa fa-unlock'></i> "+ $"Restore { impersonatedByUser?.Person?.ToString()}";
+                            impersonatedByUserDiv.Controls.Add( _btnRestoreImpersonatedByUser );
+                            adminFooter.Controls.Add( impersonatedByUserDiv );
+                        }
+
                         HtmlGenericControl buttonBar = new HtmlGenericControl( "div" );
                         adminFooter.Controls.Add( buttonBar );
                         buttonBar.Attributes.Add( "class", "button-bar" );
-
-                        if ( canAdministratePage )
-                        {
-                            // ShorLink Properties
-                            HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
-                            buttonBar.Controls.Add( aShortLink );
-                            aShortLink.ID = "aShortLink";
-                            aShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aShortLink.Attributes.Add( "class", "btn properties" );
-                            aShortLink.Attributes.Add( "height", "500px" );
-                            aShortLink.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + 
-                                ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.Url.AbsoluteUri.ToString() ) ) ) 
-                                + "')" );
-                            aShortLink.Attributes.Add( "Title", "Add Short Link" );
-                            HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
-                            aShortLink.Controls.Add( iAttributes );
-                            iAttributes.Attributes.Add( "class", "fa fa-link" );
-                        }
 
                         // RockBlock Config
                         HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
@@ -1242,17 +1241,17 @@ namespace Rock.Web.UI
                         if ( canAdministratePage )
                         {
                             // RockPage Properties
-                            HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
-                            buttonBar.Controls.Add( aAttributes );
-                            aAttributes.ID = "aPageProperties";
-                            aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aAttributes.Attributes.Add( "class", "btn properties" );
-                            aAttributes.Attributes.Add( "height", "500px" );
-                            aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", _pageCache.Id ) ) + "')" );
-                            aAttributes.Attributes.Add( "Title", "Page Properties" );
-                            HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
-                            aAttributes.Controls.Add( iAttributes );
-                            iAttributes.Attributes.Add( "class", "fa fa-cog" );
+                            HtmlGenericControl aPageProperties = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aPageProperties );
+                            aPageProperties.ID = "aPageProperties";
+                            aPageProperties.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aPageProperties.Attributes.Add( "class", "btn properties" );
+                            aPageProperties.Attributes.Add( "height", "500px" );
+                            aPageProperties.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", _pageCache.Id ) ) + "')" );
+                            aPageProperties.Attributes.Add( "Title", "Page Properties" );
+                            HtmlGenericControl iPageProperties = new HtmlGenericControl( "i" );
+                            aPageProperties.Controls.Add( iPageProperties );
+                            iPageProperties.Attributes.Add( "class", "fa fa-cog" );
 
                             // Child Pages
                             HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
@@ -1290,6 +1289,21 @@ namespace Rock.Web.UI
                             HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
                             aPageSecurity.Controls.Add( iPageSecurity );
                             iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
+
+                            // ShorLink Properties
+                            HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aShortLink );
+                            aShortLink.ID = "aShortLink";
+                            aShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aShortLink.Attributes.Add( "class", "btn properties" );
+                            aShortLink.Attributes.Add( "height", "500px" );
+                            aShortLink.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" +
+                                ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.Url.AbsoluteUri.ToString() ) ) )
+                                + "')" );
+                            aShortLink.Attributes.Add( "Title", "Add Short Link" );
+                            HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
+                            aShortLink.Controls.Add( iShortLink );
+                            iShortLink.Attributes.Add( "class", "fa fa-link" );
 
                             // System Info
                             HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
@@ -1400,6 +1414,94 @@ namespace Rock.Web.UI
                     } );
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _btnRestoreImpersonatedByUser control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void _btnRestoreImpersonatedByUser_Click( object sender, EventArgs e )
+        {
+            var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
+            if ( impersonatedByUser != null )
+            {
+                FormsAuthentication.SignOut();
+                UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
+                Rock.Security.Authorization.SetAuthCookie( impersonatedByUser.UserName, false, false );
+                Response.Redirect( PersonToken.RemoveRockMagicToken( Request.RawUrl ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+        }
+
+        /// <summary>
+        /// Checks for and processes any impersonation parameters
+        /// Returns False if an invalid token was specified
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private bool ProcessImpersonation( RockContext rockContext )
+        {
+            string impersonatedPersonKeyParam = PageParameter( "rckipid" );
+            string impersonatedPersonKeyIdentity = string.Empty;
+            if ( HttpContext.Current?.User?.Identity?.Name != null )
+            {
+                if ( HttpContext.Current.User.Identity.Name.StartsWith( "rckipid=" ) )
+                {
+                    // get the impersonatedPersonKey from the Auth ticket
+                    impersonatedPersonKeyIdentity = HttpContext.Current.User.Identity.Name.Substring( 8 );
+                }
+            }
+
+            // if there is a impersonatedPersonKeyParam specified, and it isn't already associated with the current HttpContext.Current.User.Identity,
+            // then set the currentuser and ticket using the impersonatedPersonKeyParam
+            if ( !string.IsNullOrEmpty( impersonatedPersonKeyParam ) && impersonatedPersonKeyParam != impersonatedPersonKeyIdentity )
+            {
+                Rock.Model.PersonService personService = new Model.PersonService( rockContext );
+
+                Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, true, this.PageId );
+                if ( impersonatedPerson != null )
+                {
+                    FormsAuthentication.SignOut();
+                    Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPersonKeyParam, false, true );
+                    CurrentUser = impersonatedPerson.GetImpersonatedUser();
+                    UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
+
+                    // reload page as the impersonated user (we probably could remove the token from the URL, but some blocks might be looking for rckipid in the PageParameters, so just leave it)
+                    Response.Redirect( Request.RawUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+                else
+                {
+                    // Attempting to use an impersonation token that doesn't exist or is no longer valid, so log them out
+                    FormsAuthentication.SignOut();
+                    Session["InvalidPersonToken"] = true;
+                    Response.Redirect( PersonToken.RemoveRockMagicToken(Request.RawUrl), false );
+                    Context.ApplicationInstance.CompleteRequest();
+                    return false;
+                }
+            }
+            else if ( !string.IsNullOrEmpty( impersonatedPersonKeyIdentity ) )
+            {
+                if ( !this.IsPostBack )
+                {
+                    var impersonationToken = impersonatedPersonKeyIdentity;
+                    var personToken = new PersonTokenService( rockContext ).GetByImpersonationToken( impersonationToken );
+                    if ( personToken != null )
+                    {
+                        // attempting to use a page specific impersonation token for a different page, so log them out
+                        if ( personToken.PageId.HasValue && personToken.PageId != this.PageId )
+                        {
+                            FormsAuthentication.SignOut();
+                            Session["InvalidPersonToken"] = true;
+                            Response.Redirect( Request.RawUrl, false );
+                            Context.ApplicationInstance.CompleteRequest();
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
         }
 
         /// <summary>

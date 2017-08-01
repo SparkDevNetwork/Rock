@@ -2153,6 +2153,13 @@ namespace RockWeb.Blocks.Event
                 RegistrationInstance.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
 
+            lStartDate.Text = RegistrationInstance.StartDateTime.HasValue ?
+                RegistrationInstance.StartDateTime.Value.ToShortDateString() : string.Empty;
+            lStartDate.Visible = RegistrationInstance.StartDateTime.HasValue;
+            lEndDate.Text = RegistrationInstance.EndDateTime.HasValue ?
+            RegistrationInstance.EndDateTime.Value.ToShortDateString() : string.Empty;
+            lEndDate.Visible = RegistrationInstance.EndDateTime.HasValue;
+
             lDetails.Visible = !string.IsNullOrWhiteSpace( RegistrationInstance.Details );
             lDetails.Text = RegistrationInstance.Details;
 

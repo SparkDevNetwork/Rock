@@ -9,6 +9,7 @@
         <asp:HiddenField ID="hfTransactionGuid" runat="server" Value="" />
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
+        <Rock:NotificationBox ID="nbInvalidPersonWarning" runat="server" Visible="false"></Rock:NotificationBox>
 
         <asp:Panel ID="pnlSelection" CssClass="panel panel-block" runat="server">
 
@@ -135,7 +136,7 @@
                                 <asp:HiddenField ID="hfPaymentTab" runat="server" />
                                 <asp:PlaceHolder ID="phPills" runat="server" Visible="false">
                                     <ul class="nav nav-pills">
-                                        <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">Credit Card</a></li>
+                                        <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">Card</a></li>
                                         <li id="liACH" runat="server"><a href='#<%=divACHPaymentInfo.ClientID%>' data-toggle="pill">Bank Account</a></li>
                                     </ul>
                                 </asp:PlaceHolder>
@@ -146,7 +147,7 @@
                                         <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false"></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false"></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false"></Rock:RockTextBox>
-                                        <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="credit-card" />
+                                        <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Card Number" MaxLength="19" CssClass="credit-card" />
                                         <ul class="card-logos list-unstyled">
                                             <li class="card-visa"></li>
                                             <li class="card-mastercard"></li>
@@ -168,9 +169,9 @@
                                     </div>
 
                                     <div id="divACHPaymentInfo" runat="server" visible="false" class="tab-pane">
-                                        <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Name on Account" />
-                                        <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" />
-                                        <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account #" />
+                                        <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Account Name" />
+                                        <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing Number" />
+                                        <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account Number" />
                                         <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">
                                             <asp:ListItem Text="Checking" Value="checking" Selected="true" />
                                             <asp:ListItem Text="Savings" Value="savings" />

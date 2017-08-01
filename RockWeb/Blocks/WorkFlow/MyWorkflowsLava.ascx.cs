@@ -43,7 +43,9 @@ namespace RockWeb.Blocks.WorkFlow
     [CategoryField( "Categories", "Optional categories to limit display to.", true, "Rock.Model.WorkflowType", "", "", false, "", "", 1 )]
     [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 2 )]
     [CodeEditorField( "Contents", @"The Lava template to use for displaying activities assigned to current user.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{% include '/Assets/Lava/MyWorkflowsSortable.lava' %}", "", 3 )]
-    public partial class MyWorkflowsLiquid : Rock.Web.UI.RockBlock
+    [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the block name.", required: false, order: 4 )]
+    [TextField( "Set Panel Icon", "The icon to display in the panel header.", required: false, order: 5 )]
+    public partial class MyWorkflowsLava : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -111,6 +113,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 string contents = GetAttributeValue( "Contents" );
+                string panelTitle = GetAttributeValue( "SetPanelTitle" );
+                string panelIcon = GetAttributeValue( "SetPanelIcon" );
 
                 string appRoot = ResolveRockUrl( "~/" );
                 string themeRoot = ResolveRockUrl( "~~/" );
@@ -131,10 +135,12 @@ namespace RockWeb.Blocks.WorkFlow
                     var mergeFields = new Dictionary<string, object>();
                     mergeFields.Add( "Role", role );
                     mergeFields.Add( "Actions", actions.OrderByDescending( a => a.CreatedDateTime ) );
+                    mergeFields.Add( "PanelTitle", panelTitle );
+                    mergeFields.Add( "PanelIcon", panelIcon );
 
                     lContents.Text = contents.ResolveMergeFields( mergeFields );
                 }
-                
+
             }
             catch ( Exception ex )
             {
