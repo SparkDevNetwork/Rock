@@ -670,52 +670,53 @@ $(document).ready(function() {
 
                         items = new List<ContentChannelItem>();
 
-                        var qry = service.Queryable( "ContentChannel,ContentChannelType" );
+                        var qry = service
+                            .Queryable( "ContentChannel,ContentChannelType" )
+                            .Where( i => i.ContentChannelId == contentChannel.Id );
 
                         int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
                         if ( queryParameterFiltering && itemId.HasValue )
                         {
                             qry = qry.Where( i => i.Id == itemId.Value );
                         }
-                        else
+
+                        if ( contentChannel.RequiresApproval )
                         {
-                            qry = qry.Where( i => i.ContentChannelId == contentChannel.Id );
+                            // Check for the configured status and limit query to those
+                            var statuses = new List<ContentChannelItemStatus>();
 
-                            if ( contentChannel.RequiresApproval )
+                            foreach ( string statusVal in ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                             {
-                                // Check for the configured status and limit query to those
-                                var statuses = new List<ContentChannelItemStatus>();
-
-                                foreach ( string statusVal in ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                                var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                                if ( status != null )
                                 {
-                                    var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
-                                    if ( status != null )
-                                    {
-                                        statuses.Add( status.Value );
-                                    }
-                                }
-                                if ( statuses.Any() )
-                                {
-                                    qry = qry.Where( i => statuses.Contains( i.Status ) );
+                                    statuses.Add( status.Value );
                                 }
                             }
-
-                            int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
-                            if ( dataFilterId.HasValue )
+                            if ( statuses.Any() )
                             {
-                                var dataFilterService = new DataViewFilterService( rockContext );
-                                var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
-                                Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, service, paramExpression, errorMessages ) : null;
-
-                                qry = qry.Where( paramExpression, whereExpression, null );
+                                qry = qry.Where( i => statuses.Contains( i.Status ) );
                             }
+                        }
+
+                        int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
+                        if ( dataFilterId.HasValue )
+                        {
+                            var dataFilterService = new DataViewFilterService( rockContext );
+                            var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
+                            Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, service, paramExpression, errorMessages ) : null;
+
+                            qry = qry.Where( paramExpression, whereExpression, null );
                         }
 
                         // All filtering has been added, now run query and load attributes
                         foreach ( var item in qry.ToList() )
                         {
-                            item.LoadAttributes( rockContext );
-                            items.Add( item );
+                            if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            {
+                                item.LoadAttributes( rockContext );
+                                items.Add( item );
+                            }
                         }
 
                         // Order the items
