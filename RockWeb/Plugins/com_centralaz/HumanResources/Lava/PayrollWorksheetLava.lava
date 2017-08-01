@@ -255,7 +255,7 @@
           </td>
           <td><p> </p></td>
         </tr>
-        <tr>{% assign totalPreviousBiWeeklyPay = previousTotalAmount | DividedBy:26 %}
+        <tr>{% assign totalPreviousBiWeeklyPay = previousTotalAmount | DividedBy:26,4 %}
           <td style="border:1pt solid black;text-align:right;"><p> {{ totalPreviousBiWeeklyPay | FormatAsCurrency }}</p></td>
           <td><p> </p></td>
         </tr>
@@ -264,9 +264,11 @@
           <td><p> </p></td>
         </tr>
         {% if fullTime %}
-        <tr> {% assign employmentPreviousYears = Person | Attribute:'Arena-22-212' | Minus:1 | Ceiling %}
-			{% if employmentPreviousYears > 0 %} {% assign employmentPreviousYears = 0 %} {% endif %}
-          <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentPreviousYears | ToString | NumberToOrdinal }}</b></p></td>
+        {% assign employmentPreviousYears = 0 | AsInteger %}
+        {% assign employmentPreviousYearsAttribute = Person | Attribute:'Arena-22-212' %}
+        <tr> {% if employmentPreviousYearsAttribute and employmentPreviousYearsAttribute != empty %}{% assign employmentPreviousYears = employmentPreviousYearsAttribute | Minus:1 | Ceiling %}{% endif %}
+            {% if employmentPreviousYears < 0 %}{% assign employmentPreviousYears = 0 | AsInteger %}{% endif %}
+          <td style="border:1pt solid black;text-align:center;"><p><b>{{ employmentPreviousYears | ToString | NumberToOrdinal }}</b></p></td>
           <td><p> </p></td>
         </tr>
         <tr> {% if employmentPreviousYears == 1 %}{% assign employeePreviousPercent = 0.04 %}{% elseif employmentPreviousYears == 2 %}{% assign employeePreviousPercent = 0.08 %}{% elseif employmentPreviousYears >= 3 %}{% assign employeePreviousPercent = 0.12 %}{% else %}{% assign employeePreviousPercent = 0.00 %}{% endif %}
@@ -313,7 +315,7 @@
           </td>
           <td><p> </p></td>
         </tr>
-        <tr>{% assign totalCurrentBiWeeklyPay = currentTotalAmount | DividedBy:26 %}
+        <tr>{% assign totalCurrentBiWeeklyPay = currentTotalAmount | DividedBy:26,4 %}
           <td style="border:1pt solid black;text-align:right;"><p> {{ totalCurrentBiWeeklyPay | FormatAsCurrency }}</p></td>
           <td><p> </p></td>
         </tr>
@@ -322,7 +324,9 @@
           <td><p> </p></td>
         </tr>
         {% if fullTime %}
-        <tr> {% assign employmentCurrentYears = Person | Attribute:'Arena-22-212' | Ceiling %}
+        {% assign employmentCurrentYears = 0 | AsInteger %}
+        {% assign employmentCurrentYearsAttribute = Person | Attribute:'Arena-22-212' %}
+        <tr> {% if employmentCurrentYearsAttribute and employmentCurrentYearsAttribute != empty %}{% assign employmentCurrentYears = employmentCurrentYearsAttribute | Ceiling %}{% endif %}
           <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentCurrentYears | ToString | NumberToOrdinal }}</b></p></td>
           <td><p> </p></td>
         </tr>
@@ -370,7 +374,7 @@
           </td>
           <td><p> </p></td>
         </tr>
-        <tr>{% assign totalFutureBiWeeklyPay = futureTotalAmount | DividedBy:26 %}
+        <tr>{% assign totalFutureBiWeeklyPay = futureTotalAmount | DividedBy:26,4 %}
           <td style="border:1pt solid black;text-align:right;"><p> {{ totalFutureBiWeeklyPay | FormatAsCurrency }}</p></td>
           <td><p> </p></td>
         </tr>
@@ -491,7 +495,7 @@
               {% assign previousEmployeeAmount = retirementFund.PreviousEmployeeAmount %}
             {% else %}
 			{% if totalPreviousBiWeeklyPay and totalPreviousBiWeeklyPay != empty %}
-              {% assign previousEmployeeAmount = totalPreviousBiWeeklyPay | Times:retirementFund.PreviousEmployeeAmount | DividedBy:100 %}
+              {% assign previousEmployeeAmount = totalPreviousBiWeeklyPay | Times:retirementFund.PreviousEmployeeAmount | DividedBy:100,4 %}
 			  {% endif %}
             {% endif %}
 			{% if previousEmployeeAmount and previousEmployeeAmount != empty %}
@@ -502,10 +506,10 @@
           <td style="border:1pt solid black;text-align:right;">
             {% if retirementFund.PreviousFixed %}
 			{% if totalPreviousBiWeeklyPay and totalPreviousBiWeeklyPay != empty %}
-              {% assign previousEmployeePercent = retirementFund.PreviousEmployeeAmount | DividedBy:totalPreviousBiWeeklyPay %}
+              {% assign previousEmployeePercent = retirementFund.PreviousEmployeeAmount | DividedBy:totalPreviousBiWeeklyPay,4 %}
 			  {% endif %}
             {% else %}
-              {% assign previousEmployeePercent = retirementFund.PreviousEmployeeAmount | DividedBy:100 %}
+              {% assign previousEmployeePercent = retirementFund.PreviousEmployeeAmount | DividedBy:100,4 %}
             {% endif %}
 			{% if previousEmployeePercent and previousEmployeePercent != empty %}
             <p{% if retirementFund.PreviousFixed %} style="color:darkgray !important;"{% endif %}>{{previousEmployeePercent | Format:'P' }}</p>
@@ -518,7 +522,7 @@
                 {% assign previousEmployerAmount = retirementFund.PreviousEmployerAmount %}
               {% else %}
 			  {% if totalPreviousBiWeeklyPay and totalPreviousBiWeeklyPay != empty %}
-                {% assign previousEmployerAmount = totalPreviousBiWeeklyPay | Times:retirementFund.PreviousEmployerAmount | DividedBy:100 %}
+                {% assign previousEmployerAmount = totalPreviousBiWeeklyPay | Times:retirementFund.PreviousEmployerAmount | DividedBy:100,4 %}
 				{% endif %}
               {% endif %}
 			  {% if previousEmployerAmount and previousEmployerAmount != empty %}
@@ -531,10 +535,10 @@
             {% if fullTime %}
               {% if retirementFund.PreviousFixed %}
 			  {% if totalPreviousBiWeeklyPay and totalPreviousBiWeeklyPay != empty %}
-                {% assign previousEmployerPercent = retirementFund.PreviousEmployerAmount | DividedBy:totalPreviousBiWeeklyPay %}
+                {% assign previousEmployerPercent = retirementFund.PreviousEmployerAmount | DividedBy:totalPreviousBiWeeklyPay,4 %}
 				{% endif %}
               {% else %}
-                {% assign previousEmployerPercent = retirementFund.PreviousEmployerAmount | DividedBy:100 %}
+                {% assign previousEmployerPercent = retirementFund.PreviousEmployerAmount | DividedBy:100,4 %}
               {% endif %}
 			  {% if previousEmployerPercent and previousEmployerPercent != empty %}
               <p{% if retirementFund.PreviousFixed %} style="color:darkgray !important;"{% endif %}>{{previousEmployerPercent | Format:'P' }}</p>
@@ -631,7 +635,7 @@
               {% assign CurrentEmployeeAmount = retirementFund.CurrentEmployeeAmount %}
             {% else %}
 			{% if totalCurrentBiWeeklyPay and totalCurrentBiWeeklyPay != empty %}
-              {% assign CurrentEmployeeAmount = totalCurrentBiWeeklyPay | Times:retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
+              {% assign CurrentEmployeeAmount = totalCurrentBiWeeklyPay | Times:retirementFund.CurrentEmployeeAmount | DividedBy:100,4 %}
 			  {% endif %}
             {% endif %}
 			{% if CurrentEmployeeAmount and CurrentEmployeeAmount != empty %}
@@ -642,10 +646,10 @@
           <td style="border:1pt solid black;text-align:right;">
             {% if retirementFund.CurrentFixed %}
 			{% if totalCurrentBiWeeklyPay and totalCurrentBiWeeklyPay != empty %}
-              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:totalCurrentBiWeeklyPay %}
+              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:totalCurrentBiWeeklyPay,4 %}
 			  {% endif %}
             {% else %}
-              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
+              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:100,4 %}
             {% endif %}
 			{% if CurrentEmployeePercent and CurrentEmployeePercent != empty %}
             <p{% if retirementFund.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentEmployeePercent | Format:'P' }}</p>
@@ -658,7 +662,7 @@
                 {% assign CurrentEmployerAmount = retirementFund.CurrentEmployerAmount %}
               {% else %}
 			  {% if totalCurrentBiWeeklyPay and totalCurrentBiWeeklyPay != empty %}
-                {% assign CurrentEmployerAmount = totalCurrentBiWeeklyPay | Times:retirementFund.CurrentEmployerAmount | DividedBy:100 %}
+                {% assign CurrentEmployerAmount = totalCurrentBiWeeklyPay | Times:retirementFund.CurrentEmployerAmount | DividedBy:100,4 %}
 				{% endif %}
               {% endif %}
 			  {% if CurrentEmployerAmount and CurrentEmployerAmount != empty %}
@@ -671,10 +675,10 @@
             {% if fullTime %}
               {% if retirementFund.CurrentFixed %}
 			  {% if totalCurrentBiWeeklyPay and totalCurrentBiWeeklyPay != empty %}
-                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:totalCurrentBiWeeklyPay %}
+                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:totalCurrentBiWeeklyPay,4 %}
 				{% endif %}
               {% else %}
-                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:100 %}
+                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:100,4 %}
               {% endif %}
 			  {% if CurrentEmployerPercent and CurrentEmployerPercent != empty %}
               <p{% if retirementFund.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentEmployerPercent | Format:'P' }}</p>
@@ -771,7 +775,7 @@
               {% assign CurrentEmployeeAmount = retirementFund.CurrentEmployeeAmount %}
             {% else %}
 			{% if totalFutureBiWeeklyPay and totalFutureBiWeeklyPay != empty %}
-              {% assign CurrentEmployeeAmount = totalFutureBiWeeklyPay | Times:retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
+              {% assign CurrentEmployeeAmount = totalFutureBiWeeklyPay | Times:retirementFund.CurrentEmployeeAmount | DividedBy:100,4 %}
 			  {% endif %}
             {% endif %}
 			{% if CurrentEmployeeAmount and CurrentEmployeeAmount != empty %}
@@ -782,10 +786,10 @@
           <td style="border:1pt solid black;text-align:right;">
             {% if retirementFund.CurrentFixed %}
 			{% if totalFutureBiWeeklyPay and totalFutureBiWeeklyPay != empty %}
-              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:totalFutureBiWeeklyPay %}
+              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:totalFutureBiWeeklyPay,4 %}
 			  {% endif %}
             {% else %}
-              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
+              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:100,4 %}
             {% endif %}
 			{% if CurrentEmployeePercent and CurrentEmployeePercent != empty %}
             <p{% if retirementFund.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentEmployeePercent | Format:'P' }}</p>
@@ -798,7 +802,7 @@
                 {% assign CurrentEmployerAmount = retirementFund.CurrentEmployerAmount %}
               {% else %}
 			  {% if totalFutureBiWeeklyPay and totalFutureBiWeeklyPay != empty %}
-                {% assign CurrentEmployerAmount = totalFutureBiWeeklyPay | Times:retirementFund.CurrentEmployerAmount | DividedBy:100 %}
+                {% assign CurrentEmployerAmount = totalFutureBiWeeklyPay | Times:retirementFund.CurrentEmployerAmount | DividedBy:100,4 %}
 				{% endif %}
               {% endif %}
 			  {% if CurrentEmployerAmount and CurrentEmployerAmount != empty %}
@@ -811,10 +815,10 @@
             {% if fullTime %}
               {% if retirementFund.CurrentFixed %}
 			  {% if totalFutureBiWeeklyPay and totalFutureBiWeeklyPay != empty %}
-                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:totalFutureBiWeeklyPay %}
+                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:totalFutureBiWeeklyPay,4 %}
 				{% endif %}
               {% else %}
-                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:100 %}
+                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:100,4 %}
               {% endif %}
 			  {% if CurrentEmployerPercent and CurrentEmployerPercent != empty %}
               <p{% if retirementFund.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentEmployerPercent | Format:'P' }}</p>
@@ -1116,7 +1120,7 @@
             {% assign previousAmount = contribution.PreviousAmount %}
           {% else %}
 		  {% if totalPreviousBiWeeklyPay and totalPreviousBiWeeklyPay != empty %}
-            {% assign previousAmount = totalPreviousBiWeeklyPay | Times:contribution.PreviousAmount | DividedBy:100 %}
+            {% assign previousAmount = totalPreviousBiWeeklyPay | Times:contribution.PreviousAmount | DividedBy:100,4 %}
 			{% endif %}
           {% endif %}
 		  {% if previousAmount and previousAmount != empty %}
@@ -1127,10 +1131,10 @@
         <td style="border:1pt solid black;text-align:right;">
           {% if contribution.PreviousFixed %}
 		  {% if totalPreviousBiWeeklyPay and totalPreviousBiWeeklyPay != empty %}
-            {% assign previousPercent = contribution.PreviousAmount | DividedBy:totalPreviousBiWeeklyPay %}
+            {% assign previousPercent = contribution.PreviousAmount | DividedBy:totalPreviousBiWeeklyPay,4 %}
 			{% endif %}
           {% else %}
-            {% assign previousPercent = contribution.PreviousAmount | DividedBy:100 %}
+            {% assign previousPercent = contribution.PreviousAmount | DividedBy:100,4 %}
           {% endif %}
 		  {% if previousPercent and previousPercent != empty %}
           <p{% if contribution.PreviousFixed %} style="color:darkgray !important;"{% endif %}>{{previousPercent | Format:'P' }}</p>
@@ -1147,7 +1151,7 @@
   </br>
     <table width="100%">
       <tr>
-        <td style="text-align:right;" width="50%"><p>{{ totalPreviousBiWeeklyPay | DividedBy:10 | FormatAsCurrency }}</p></td>
+        <td style="text-align:right;" width="50%"><p>{{ totalPreviousBiWeeklyPay | DividedBy:10,4 | FormatAsCurrency }}</p></td>
         <td style="text-align:right;" width="50%"><p> </p></td>
       </tr>
     </table>
@@ -1167,7 +1171,7 @@
           {% assign CurrentAmount = contribution.CurrentAmount %}
         {% else %}
 		{% if totalCurrentBiWeeklyPay and totalCurrentBiWeeklyPay != empty %}
-          {% assign CurrentAmount = totalCurrentBiWeeklyPay | Times:contribution.CurrentAmount | DividedBy:100 %}
+          {% assign CurrentAmount = totalCurrentBiWeeklyPay | Times:contribution.CurrentAmount | DividedBy:100,4 %}
 		  {% endif %}
         {% endif %}
 		{% if CurrentAmount and CurrentAmount != empty %}
@@ -1178,10 +1182,10 @@
       <td style="border:1pt solid black;text-align:right;">
         {% if contribution.CurrentFixed %}
 		{% if totalCurrentBiWeeklyPay and totalCurrentBiWeeklyPay != empty %}
-          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:totalCurrentBiWeeklyPay %}
+          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:totalCurrentBiWeeklyPay,4 %}
 		  {% endif %}
         {% else %}
-          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:100 %}
+          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:100,4 %}
         {% endif %}
 		{% if CurrentPercent and CurrentPercent != empty %}
         <p{% if contribution.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentPercent | Format:'P' }}</p>
@@ -1198,7 +1202,7 @@
 </br>
   <table width="100%">
     <tr>
-      <td style="text-align:right;" width="50%"><p>{{ totalCurrentBiWeeklyPay | DividedBy:10 | FormatAsCurrency }}</p></td>
+      <td style="text-align:right;" width="50%"><p>{{ totalCurrentBiWeeklyPay | DividedBy:10,4 | FormatAsCurrency }}</p></td>
       <td style="text-align:right;" width="50%"><p> </p></td>
     </tr>
   </table>
@@ -1218,7 +1222,7 @@
           {% assign CurrentAmount = contribution.CurrentAmount %}
         {% else %}
 		{% if totalFutureBiWeeklyPay and totalFutureBiWeeklyPay != empty %}
-          {% assign CurrentAmount = totalFutureBiWeeklyPay | Times:contribution.CurrentAmount | DividedBy:100 %}
+          {% assign CurrentAmount = totalFutureBiWeeklyPay | Times:contribution.CurrentAmount | DividedBy:100,4 %}
 		  {% endif %}
         {% endif %}
 		{% if CurrentAmount and CurrentAmount != empty %}
@@ -1229,10 +1233,10 @@
       <td style="border:1pt solid black;text-align:right;">
         {% if contribution.CurrentFixed %}
 		{% if totalFutureBiWeeklyPay and totalFutureBiWeeklyPay != empty %}
-          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:totalFutureBiWeeklyPay %}
+          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:totalFutureBiWeeklyPay,4 %}
 		  {% endif %}
         {% else %}
-          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:100 %}
+          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:100,4 %}
         {% endif %}
 		{% if CurrentPercent and CurrentPercent != empty %}
         <p{% if contribution.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentPercent | Format:'P' }}</p>
@@ -1249,7 +1253,7 @@
 </br>
   <table width="100%">
     <tr>
-      <td style="text-align:right;" width="50%"><p>{{ totalFutureBiWeeklyPay | DividedBy:10 | FormatAsCurrency }}</p></td>
+      <td style="text-align:right;" width="50%"><p>{{ totalFutureBiWeeklyPay | DividedBy:10,4 | FormatAsCurrency }}</p></td>
       <td style="text-align:right;" width="50%"><p> </p></td>
     </tr>
   </table>
