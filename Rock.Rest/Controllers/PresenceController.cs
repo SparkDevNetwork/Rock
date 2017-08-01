@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
@@ -35,10 +37,9 @@ namespace Rock.Rest.Controllers
         /// Posts the specified presence list.
         /// </summary>
         /// <param name="presenceList">The presence list.</param>
-        [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Presence" )]
-        public void Post( List<MACPresence> presenceList )
+        public HttpResponseMessage Post( List<MACPresence> presenceList )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -53,7 +54,7 @@ namespace Rock.Rest.Controllers
 
                     var epochTime = new DateTime( 1970, 1, 1, 0, 0, 0, 0 ).ToLocalTime();
 
-                    foreach ( var macPresence in presenceList )
+                    foreach ( var macPresence in presenceList.Where( l => l.Mac != null && l.Mac != "" ) )
                     {
                         var device = personalDeviceService.GetByMACAddress( macPresence.Mac );
                         if ( device == null )
@@ -65,41 +66,52 @@ namespace Rock.Rest.Controllers
                             rockContext.SaveChanges();
                         }
 
-                        foreach ( var presence in macPresence.Presence )
+                        if ( macPresence.Presence != null && macPresence.Presence.Any() )
                         {
-                            if ( !interactionComponentIds.ContainsKey( presence.Space ))
+                            foreach ( var presence in macPresence.Presence )
                             {
-                                var component = interactionComponentService
-                                    .Queryable().AsNoTracking()
-                                    .Where( c =>
-                                        c.ChannelId == interactionChannel.Id &&
-                                        c.Name == presence.Space )
-                                    .FirstOrDefault();
-                                if ( component == null )
+                                if ( !interactionComponentIds.ContainsKey( presence.Space ) )
                                 {
-                                    new InteractionComponent();
-                                    component.ChannelId = interactionChannel.Id;
-                                    component.Name = presence.Space;
-                                    interactionComponentService.Add( component );
-                                    rockContext.SaveChanges();
+                                    var component = interactionComponentService
+                                        .Queryable().AsNoTracking()
+                                        .Where( c =>
+                                            c.ChannelId == interactionChannel.Id &&
+                                            c.Name == presence.Space )
+                                        .FirstOrDefault();
+                                    if ( component == null )
+                                    {
+                                        component = new InteractionComponent();
+                                        interactionComponentService.Add( component );
+                                        component.ChannelId = interactionChannel.Id;
+                                        component.Name = presence.Space;
+                                        rockContext.SaveChanges();
+                                    }
+
+                                    interactionComponentIds.Add( presence.Space, component.Id );
                                 }
 
-                                interactionComponentIds.Add( presence.Space, component.Id );
+                                var interaction = new Interaction();
+                                interaction.InteractionDateTime = epochTime.AddSeconds( presence.Arrive );
+                                interaction.Operation = "Present";
+                                interaction.InteractionComponentId = interactionComponentIds[presence.Space];
+                                interaction.InteractionData = presence.ToJson();
+                                interaction.PersonalDeviceId = device.Id;
+                                interaction.PersonAliasId = device.PersonAliasId;
+
+                                interactionService.Add( interaction );
+
+                                rockContext.SaveChanges();
                             }
-
-                            var interaction = new Interaction();
-                            interaction.InteractionDateTime = epochTime.AddSeconds( presence.Arrive );
-                            interaction.Operation = "Present";
-                            interaction.InteractionComponentId = interactionComponentIds[presence.Space];
-                            interaction.InteractionData = presence.ToJson();
-                            interaction.PersonalDeviceId = device.Id;
-                            interaction.PersonAliasId = device.PersonAliasId;
-
-                            interactionService.Add( interaction );
-
-                            rockContext.SaveChanges();
                         }
                     }
+
+                    var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+                    return response;
+                }
+                else
+                {
+                    var response = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "A WiFi Presense Interaction Channel Was Not Found!" );
+                    throw new HttpResponseException( response );
                 }
             }
         }
