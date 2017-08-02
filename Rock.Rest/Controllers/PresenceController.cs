@@ -90,9 +90,15 @@ namespace Rock.Rest.Controllers
                                     interactionComponentIds.Add( presence.Space, component.Id );
                                 }
 
+                                DateTime interactionStart = epochTime.AddSeconds( presence.Arrive );
+                                DateTime interactionEnd = epochTime.AddSeconds( presence.Depart );
+                                TimeSpan ts = interactionEnd.Subtract( interactionStart );
+                                string duration = ( ts.TotalMinutes >= 60 ? $"{ts:%h} hours and " : "" ) + $"{ts:%m} minutes";
+
                                 var interaction = new Interaction();
-                                interaction.InteractionDateTime = epochTime.AddSeconds( presence.Arrive );
+                                interaction.InteractionDateTime = interactionStart;
                                 interaction.Operation = "Present";
+                                interaction.InteractionSummary = $"Arrived at {presence.Space} on {interactionStart.ToShortDateTimeString()}. Stayed for {duration}.";
                                 interaction.InteractionComponentId = interactionComponentIds[presence.Space];
                                 interaction.InteractionData = presence.ToJson();
                                 interaction.PersonalDeviceId = device.Id;
