@@ -44,6 +44,14 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="GroupPicker"/> class.
+        /// </summary>
+        public GroupPicker(): base()
+        {
+            this.ShowSelectChildren = true;
+        }
+
+        /// <summary>
         /// Gets or sets the root group identifier.
         /// </summary>
         /// <value>
