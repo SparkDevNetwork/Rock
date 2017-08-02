@@ -24,9 +24,6 @@ using System.Threading;
 /// </summary>
 public class TextToWorkflowTwilio : IHttpAsyncHandler
 {
-    private HttpRequest request;
-    private HttpResponse response;
-
     /// <summary>
     /// Begins the process request.
     /// </summary>
