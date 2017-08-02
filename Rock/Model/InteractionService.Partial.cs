@@ -28,6 +28,27 @@ namespace Rock.Model
     /// </summary>
     public partial class InteractionService
     {
+
+        public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
+            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress )
+        {
+            Interaction interaction = new Interaction();
+            interaction.InteractionComponentId = interactionComponentId;
+            interaction.EntityId = entityId;
+            interaction.Operation = operation;
+            interaction.InteractionData = PersonToken.ObfuscateRockMagicToken( interactionData );
+            interaction.InteractionDateTime = dateTime;
+            interaction.PersonAliasId = personAliasId;
+
+            var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
+            var session = this.GetInteractionSession( null, ipAddress, deviceType.Id );
+
+            interaction.InteractionSessionId = session.Id;
+            this.Add( interaction );
+
+            return interaction;
+        }
+
         /// <summary>
         /// Gets the interaction device type. If it can't be found, a new InteractionDeviceType record will be created and returned.
         /// </summary>
