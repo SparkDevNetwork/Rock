@@ -37,6 +37,7 @@ namespace Rock.Rest.Controllers
         /// Posts the specified presence list.
         /// </summary>
         /// <param name="presenceList">The presence list.</param>
+        [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Presence" )]
         public HttpResponseMessage Post( List<MACPresence> presenceList )
