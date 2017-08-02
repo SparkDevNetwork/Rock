@@ -86,7 +86,7 @@ namespace Rock.Utility
                                 if ( workflowType != null )
                                 {
                                     // Activate a new workflow
-                                    var workflow = Rock.Model.Workflow.Activate( workflowType, "Request from " + fromPhone );
+                                    var workflow = Rock.Model.Workflow.Activate( workflowType, "Request from " + ( fromPhone ?? "??" ) );
 
                                     // give preference to people with the phone in the mobile phone type
                                     // first look for a person with the phone number as a mobile phone order by family role then age
@@ -172,7 +172,11 @@ namespace Rock.Utility
                                     }
 
                                     // set workflow name
-                                    workflow.Name = nameTemplate.ResolveMergeFields( mergeValues );
+                                    string name = nameTemplate.ResolveMergeFields( mergeValues );
+                                    if ( name.IsNotNullOrWhitespace() )
+                                    {
+                                        workflow.Name = name;
+                                    }
 
                                     // process the workflow
                                     List<string> workflowErrors;
