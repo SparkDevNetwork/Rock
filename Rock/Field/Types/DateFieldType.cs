@@ -68,6 +68,7 @@ namespace Rock.Field.Types
             keys.Add( "displayDiff" );
             keys.Add( "displayCurrentOption" );
             keys.Add( "datePickerControlType" );
+            keys.Add( "futureYearCount" );
             return keys;
         }
 
@@ -90,6 +91,11 @@ namespace Rock.Field.Types
         /// The Display Current configuration control
         /// </summary>
         protected RockCheckBox _cbDisplayCurrent;
+
+        /// <summary>
+        /// The future year count (for the date parts picker)
+        /// </summary>
+        protected NumberBox _nbFutureYearCount;
 
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
@@ -128,6 +134,12 @@ namespace Rock.Field.Types
             _cbDisplayCurrent.Text = "Yes";
             _cbDisplayCurrent.Help = "Include option to specify value as the current date.";
 
+            _nbFutureYearCount = new NumberBox();
+            controls.Add( _nbFutureYearCount );
+            _nbFutureYearCount.Label = "Future Years";
+            _nbFutureYearCount.Text = "";
+            _nbFutureYearCount.Help = "The number of years in the future in include the year picker. Set to 0 to limit to current year. Leaving it blank will default to 50.";
+
             return controls;
         }
 
@@ -146,6 +158,7 @@ namespace Rock.Field.Types
                 var cbDisplayDiff = controls[1] as RockCheckBox;
                 var ddlDatePickerMode = controls[2] as RockDropDownList;
                 var cbDisplayCurrent = controls[3] as RockCheckBox;
+                var nbFutureYearCount = controls[4] as NumberBox;
 
                 if ( configurationValues.ContainsKey( "format" ) && tbDateFormat != null )
                 {
@@ -172,6 +185,13 @@ namespace Rock.Field.Types
                     // only support the 'Use Current' option of they are using the DatePicker
                     cbDisplayCurrent.Visible = datePickerControlType == DatePickerControlType.DatePicker;
                 }
+
+                if ( configurationValues.ContainsKey( "futureYearCount" ) )
+                {
+                    nbFutureYearCount.Text = configurationValues["futureYearCount"].Value;
+                }
+
+                nbFutureYearCount.Visible = datePickerControlType == DatePickerControlType.DatePartsPicker;
             }
         }
 
@@ -187,18 +207,21 @@ namespace Rock.Field.Types
             values.Add( "displayDiff", new ConfigurationValue( "Display as Elapsed Time", "Display value as an elapsed time.", "False" ) );
             values.Add( "displayCurrentOption", new ConfigurationValue( "Display Current Option", "Include option to specify value as the current date.", "False" ) );
             values.Add( "datePickerControlType", new ConfigurationValue( "Control Type", "Select 'Date' to use a DatePicker, or 'Month,Day,Year' to select Month, Day and Year individually", DatePickerControlType.DatePicker.ConvertToString() ) );
+            values.Add( "futureYearCount", new ConfigurationValue( "Future Years", "The number of years in the future in include the year picker. Set to 0 to limit to current year. Leaving it blank will default to 50.", string.Empty ) );
 
-            if ( controls != null && controls.Count > 3 )
+            if ( controls != null && controls.Count > 4 )
             {
                 var tbDateFormat = controls[0] as RockTextBox;
                 var cbDisplayDiff = controls[1] as RockCheckBox;
                 var ddlDatePickerMode = controls[2] as RockDropDownList;
                 var cbDisplayCurrent = controls[3] as RockCheckBox;
+                var nbFutureYearCount = controls[4] as NumberBox;
 
                 values["format"].Value = tbDateFormat.Text;
                 values["displayDiff"].Value = cbDisplayDiff.Checked.ToString();
                 values["displayCurrentOption"].Value = cbDisplayCurrent.Checked.ToString();
                 values["datePickerControlType"].Value = ddlDatePickerMode.SelectedValue;
+                values["futureYearCount"].Value = nbFutureYearCount.Text;
             }
 
             return values;
@@ -330,6 +353,7 @@ namespace Rock.Field.Types
             {
                 case DatePickerControlType.DatePartsPicker:
                     var datePartsPicker = new DatePartsPicker { ID = id };
+                    datePartsPicker.FutureYearCount = configurationValues?.GetValueOrNull( "futureYearCount" ).AsIntegerOrNull();
                     return datePartsPicker;
                 case DatePickerControlType.DatePicker:
                 default:
@@ -470,7 +494,7 @@ namespace Rock.Field.Types
                 case DatePickerControlType.DatePartsPicker:
                     var datePartsPicker = new DatePartsPicker { ID = id };
                     datePartsPicker.ID = string.Format( "{0}_dtPicker", id );
-                    //datePartsPicker.DisplayCurrentOption = true;
+                    datePartsPicker.FutureYearCount = configurationValues?.GetValueOrNull( "futureYearCount" ).AsIntegerOrNull();
                     datePickerPanel.AddCssClass( "js-filter-control" );
                     datePickerPanel.Controls.Add( datePartsPicker );
                     break;
