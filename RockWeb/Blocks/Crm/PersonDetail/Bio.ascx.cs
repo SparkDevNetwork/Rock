@@ -50,7 +50,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 </pre>
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [BooleanField( "Enable Impersonation", "Should the Impersonate custom action be enabled? Note: If enabled, it is only visible to users that are authorized to administrate the person.", false, "", 3 )]
-    [LinkedPage( "Impersonation Start Page", "The page to navigate to after clicking the Impersonate action.", false, Rock.SystemGuid.Page.EXTERNAL_HOMEPAGE, "", 4)]
+    [LinkedPage( "Impersonation Start Page", "The page to navigate to after clicking the Impersonate action.", false, "", "", 4)]
     [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 5 )]
     [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers.", false, "", 6 )]
     [BooleanField( "Display Middle Name", "Display the middle name of the person.", false, "", 7)]
@@ -424,7 +424,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     var qryParams = new Dictionary<string, string>();
                     qryParams.Add( "rckipid", impersonationToken );
-                    NavigateToLinkedPage( "ImpersonationStartPage", qryParams );
+                    if ( !string.IsNullOrEmpty( this.GetAttributeValue( "ImpersonationStartPage" ) ) )
+                    {
+                        NavigateToLinkedPage( "ImpersonationStartPage", qryParams );
+                    }
+                    else
+                    {
+                        NavigateToCurrentPageReference( qryParams );
+                    }
                 }
             }
         }
