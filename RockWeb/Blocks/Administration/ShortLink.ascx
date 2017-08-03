@@ -6,9 +6,15 @@
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
         <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
+        <div class="clearfix">
+            <a href="#" class="pull-right js-copy-to-clipboard"
+                data-toggle="tooltip" data-placement="bottom" data-trigger="hover" data-delay="250" title="Copy to Clipboard"
+                onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;"></a>
+        </div>
+
         <div class="row">
             <div class="col-sm-6">
-                <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlSite_SelectedIndexChanged"
+                <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Shortening Link Site" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlSite_SelectedIndexChanged"
                     RequiredErrorMessage="Site is Required" Help="The site to use for the short link." />
                 <asp:HiddenField ID="hfSiteUrl" runat="server" />
             </div>

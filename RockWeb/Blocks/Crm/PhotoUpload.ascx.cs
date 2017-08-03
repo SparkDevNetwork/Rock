@@ -181,7 +181,8 @@ namespace RockWeb.Blocks.Crm
             {
                 try
                 {
-                    targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
+                    // the Token would have been used by RockPage.cs already, so don't increment usage
+                    targetPerson = new PersonService( new RockContext() ).GetByImpersonationToken( personKey, false, this.PageCache.Id );
                 }
                 catch ( Exception ex )
                 {

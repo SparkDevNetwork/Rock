@@ -344,9 +344,12 @@ namespace RockWeb.Blocks.WorkFlow
 
                     // Loop through all the query string parameters and try to set any workflow
                     // attributes that might have the same key
-                    foreach ( string key in Request.QueryString.AllKeys )
+                    foreach ( var param in RockPage.PageParameters() )
                     {
-                        _workflow.SetAttributeValue( key, Request.QueryString[key] );
+                        if ( param.Value != null && param.Value.ToString().IsNotNullOrWhitespace() )
+                        {
+                            _workflow.SetAttributeValue( param.Key, param.Value.ToString() );
+                        }
                     }
 
                     List<string> errorMessages;

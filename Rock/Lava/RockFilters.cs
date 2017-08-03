@@ -2738,7 +2738,72 @@ namespace Rock.Lava
             return found ? trueValue : falseValue;
         }
 
-        #endregion
+        /// <summary>
+        /// Creates a Person Token (rckipid) for the specified Person (person can be specified by Person, Guid, or Id). Specify ExpireMinutes, UsageLimit and PageId to 
+        /// limit the usage of the token for the specified number of minutes, usage count, and specific pageid
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="expireMinutes">The expire minutes.</param>
+        /// <param name="usageLimit">The usage limit.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        public static string PersonTokenCreate( DotLiquid.Context context, object input, int? expireMinutes = null, int? usageLimit = null, int? pageId = null )
+        {
+            Person person = GetPerson( input ) ?? PersonById( context, input ) ?? PersonByGuid( context, input );
+
+            if ( person != null )
+            {
+                DateTime? expireDateTime = null;
+                if ( expireMinutes.HasValue )
+                {
+                    expireDateTime = RockDateTime.Now.AddMinutes( expireMinutes.Value );
+                }
+
+                if ( pageId.HasValue )
+                {
+                    var page = new PageService( new RockContext() ).Get( pageId.Value );
+                    if ( page == null )
+                    {
+                        // invalid page specified, so don't return a token
+                        return null;
+                    }
+                }
+
+                return person.GetImpersonationToken( expireDateTime, usageLimit, pageId );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Looks up a Person using an encrypted person token (rckipid) with an option to incrementUsage and to validate against a specific page
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="incrementUsage">if set to <c>true</c> [increment usage].</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        public static Person PersonTokenRead( DotLiquid.Context context, object input, bool incrementUsage = false, int? pageId = null )
+        {
+            string encryptedPersonToken = input as string;
+
+            if ( !string.IsNullOrEmpty( encryptedPersonToken ) )
+            {
+                var rockContext = new RockContext();
+                
+
+                return new PersonService( rockContext ).GetByImpersonationToken( encryptedPersonToken, incrementUsage, pageId );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        #endregion Person
 
         #region Misc Filters
 
@@ -3583,7 +3648,7 @@ namespace Rock.Lava
                             result.Add( liquidObject[selectKey] );
                         }
                     }
-                    else if ( value is IDictionary<string, object> )
+                    else if ( value is IDictionary<string, object> ) 
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
                         if ( dictionaryObject.ContainsKey( selectKey ) && dictionaryObject[selectKey].Equals( selectKey ) )
