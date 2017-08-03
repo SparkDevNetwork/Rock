@@ -721,6 +721,30 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the impersonation parameter.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
+        public string GetImpersonationParameter( int personId )
+        {		
+            string result = string.Empty;		
+       		
+            var rockContext = this.Service.Context as Rock.Data.RockContext;		
+
+            var person = new PersonService( rockContext ).Get( personId );		
+
+            if (person != null )		
+            {		
+                result = person.ImpersonationParameter;		
+            }		
+
+            return result;		
+        }		
+
+        /// <summary>
         /// Gets the popup html for the selected person
         /// </summary>
         /// <param name="personId">The person id.</param>
