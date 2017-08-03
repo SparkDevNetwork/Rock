@@ -1339,7 +1339,7 @@ namespace Rock.Model
         {
             get
             {
-                return "rckipid=" + this.GetImpersonationToken();
+                return this.GetImpersonationParameter();
             }
         }
 
@@ -1422,6 +1422,35 @@ namespace Rock.Model
         public virtual string GetImpersonationToken()
         {
             return GetImpersonationToken( null, null, null );
+        }
+
+        /// <summary>
+        /// Creates and stores a new PersonToken for a person using the default ExpireDateTime and UsageLimit.
+        /// Returns the encrypted URLEncoded Token along with the ImpersonationParameter key in the form of "rckipid={ImpersonationParameter}"
+        /// </summary>
+        /// <returns></returns>
+        /// <value>
+        /// A <see cref="System.String" /> representing the impersonation parameter.
+        /// </value>
+        public virtual string GetImpersonationParameter()
+        {
+            return GetImpersonationParameter( null, null, null );
+        }
+
+        /// <summary>
+        /// Creates and stores a new PersonToken for a person using the specified ExpireDateTime, UsageLimit, and Page
+        /// Returns the encrypted URLEncoded Token along with the ImpersonationParameter key in the form of "rckipid={ImpersonationParameter}"
+        /// </summary>
+        /// <param name="expireDateTime">The expire date time.</param>
+        /// <param name="usageLimit">The usage limit.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        /// <value>
+        /// A <see cref="System.String" /> representing the impersonation parameter.
+        /// </value>
+        public virtual string GetImpersonationParameter( DateTime? expireDateTime, int? usageLimit, int? pageId )
+        {
+            return $"rckipid={GetImpersonationToken( expireDateTime, usageLimit, pageId )}";
         }
 
         /// <summary>
