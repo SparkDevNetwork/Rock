@@ -631,6 +631,29 @@ namespace Rock.Rest.Controllers
             return GetPopupHtml( personId, true );
         }
 
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
+        [Obsolete( "Returns incorrect results, will be removed in a future version" )]
+        public string GetImpersonationParameterObsolete( int personId )
+        {
+            // NOTE: This route is called GetSearchDetails but really returns an ImpersonationParameter due to a copy/paste bug. 
+            // Marked obsolete but kept around in case anybody was taking advantage of this bug 
+
+            string result = string.Empty;
+
+            var rockContext = this.Service.Context as Rock.Data.RockContext;
+
+            var person = new PersonService( rockContext ).Get( personId );
+
+            if ( person != null )
+            {
+                result = person.ImpersonationParameter;
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Gets the popup html for the selected person
         /// </summary>
