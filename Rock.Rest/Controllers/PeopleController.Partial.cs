@@ -732,11 +732,11 @@ namespace Rock.Rest.Controllers
         {		
             string result = string.Empty;		
        		
-            var rockContext = this.Service.Context as Rock.Data.RockContext;		
+            var rockContext = this.Service.Context as Rock.Data.RockContext;
 
-            var person = new PersonService( rockContext ).Get( personId );		
+            var person = new PersonService( rockContext ).Queryable().Include( a => a.Aliases ).AsNoTracking().FirstOrDefault( a => a.Id == personId );
 
-            if (person != null )		
+            if ( person != null )		
             {		
                 result = person.ImpersonationParameter;		
             }		
