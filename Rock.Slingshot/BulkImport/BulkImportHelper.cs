@@ -334,8 +334,8 @@ namespace Rock.Slingshot
                 tableList.Add( "Schedule" );
             }
 
-            var binaryFileFamilyForeignKeyPrefix = "FamilyForeignId_foreignSystemKey_";
-            var binaryFilePersonForeignKeyPrefix = "PersonForeignId_foreignSystemKey_";
+            var binaryFileFamilyForeignKeyPrefix = $"FamilyForeignId_{foreignSystemKey}_";
+            var binaryFilePersonForeignKeyPrefix = $"PersonForeignId_{foreignSystemKey}_";
             if ( new BinaryFileService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey.StartsWith( binaryFilePersonForeignKeyPrefix ) ) )
             {
                 tableList.Add( "Person Photo" );
@@ -684,15 +684,26 @@ namespace Rock.Slingshot
             foreach ( var groupWithMembers in newGroupImports.Where( a => a.GroupMemberImports.Any() ) )
             {
                 var groupTypeRoleLookup = GroupTypeCache.Read( groupWithMembers.GroupTypeId ).Roles.ToDictionary( k => k.Name, v => v.Id );
+
+                var groupId = groupTypeGroupLookup.GetValueOrNull( groupWithMembers.GroupTypeId )?.GetValueOrNull( groupWithMembers.GroupForeignId )?.Id;
+
                 foreach ( var groupMemberImport in groupWithMembers.GroupMemberImports )
                 {
-                    var groupMember = new GroupMember();
-                    groupMember.GroupId = groupTypeGroupLookup[groupWithMembers.GroupTypeId][groupWithMembers.GroupForeignId].Id;
-                    groupMember.GroupRoleId = groupTypeRoleLookup[groupMemberImport.RoleName];
-                    groupMember.PersonId = personIdLookup[groupMemberImport.PersonForeignId];
-                    groupMember.CreatedDateTime = importedDateTime;
-                    groupMember.ModifiedDateTime = importedDateTime;
-                    groupMembersToInsert.Add( groupMember );
+                    var groupRoleId = groupTypeRoleLookup.GetValueOrNull(groupMemberImport.RoleName);
+                    if ( groupId.HasValue && groupRoleId.HasValue )
+                    {
+                        var groupMember = new GroupMember();
+                        groupMember.GroupId = groupId.Value;
+                        groupMember.GroupRoleId = groupRoleId.Value;
+                        groupMember.PersonId = personIdLookup[groupMemberImport.PersonForeignId];
+                        groupMember.CreatedDateTime = importedDateTime;
+                        groupMember.ModifiedDateTime = importedDateTime;
+                        groupMembersToInsert.Add( groupMember );
+                    }
+                    else
+                    {
+                        Debug.WriteLine( $"### Unable to determine GroupId or GroupRoleId for GroupMember. GroupType may have been altered since last import. Group.ForeignId {groupWithMembers.GroupForeignId}, Person.PersonForeignId {groupMemberImport.PersonForeignId} ##" );
+                    }
                 }
             }
 
@@ -700,7 +711,7 @@ namespace Rock.Slingshot
 
             var groupsUpdated = false;
             var groupImportsWithParentGroup = newGroupImports.Where( a => a.ParentGroupForeignId.HasValue ).ToList();
-            
+
             var parentGroupLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId != groupTypeIdFamily && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new
             {
                 GroupId = a.Id,
@@ -1746,7 +1757,7 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
                 financialPledge.EndDate = financialPledgeImport.EndDate;
 
                 financialPledge.CreatedDateTime = financialPledgeImport.CreatedDateTime ?? importDateTime;
-                financialPledge.ModifiedDateTime = financialPledgeImport.ModifiedDateTime?? importDateTime;
+                financialPledge.ModifiedDateTime = financialPledgeImport.ModifiedDateTime ?? importDateTime;
 
                 financialPledgesToInsert.Add( financialPledge );
             }
