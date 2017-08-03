@@ -68,6 +68,19 @@
                         <asp:LinkButton ID="btnRecipientSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgRecipientSelection" CausesValidation="true" OnClick="btnRecipientSelectionNext_Click" />
                     </div>
 
+                    <Rock:ModalDialog Id="mdIndividualRecipients" runat="server" Title="Individual Recipients" ValidationGroup="mdIndividualRecipientsModal">
+                        <Content>
+                            <Rock:Grid ID="gIndividualRecipients" runat="server">
+                                <Columns>
+                                    <Rock:SelectField></Rock:SelectField>
+                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName" />
+                                    <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
+                                    <Rock:DeleteField OnClick="gIndividualRecipients_DeleteClick" />
+                                </Columns>
+                            </Rock:Grid>
+                        </Content>
+                    </Rock:ModalDialog>
+
                 </asp:Panel>
 
                 <%-- Medium Selection --%>
@@ -122,7 +135,7 @@
                             <ItemTemplate>
                                 <div class="col-md-4">
                                     
-                                    <div class="template-preview js-template-preview">
+                                    <asp:Panel Id="pnlTemplatePreview" runat="server" class="template-preview js-template-preview">
                                         <div class="row">
                                             <div class="col-md-5">
                                                 <asp:Literal ID="lTemplateImagePreview" runat="server"></asp:Literal>
@@ -133,7 +146,7 @@
                                                 <asp:LinkButton ID="btnSelectTemplate" runat="server" CssClass="btn btn-action" OnClick="btnSelectTemplate_Click" Text="Select" />
                                             </div>
                                         </div>
-                                    </div>
+                                    </asp:Panel>
                                     
                                 </div>
                             </ItemTemplate>
@@ -147,6 +160,8 @@
                 </asp:Panel>
 
                 <asp:HiddenField ID="hfSelectedCommunicationTemplateId" runat="server" />
+                <asp:HiddenField ID="hfEmailEditorHtml" runat="server" />
+                <asp:HiddenField ID="hfEmailEditorHtml_dvrm" runat="server" Value="True" />
 
                 <%-- Email Editor --%>
                 <asp:Panel ID="pnlEmailEditor" runat="server" Visible="false">
@@ -505,7 +520,7 @@
 		                </section>
 			
 		                <div id="editor-controls" style="display: none;">
-                            <div id="editor-toolbar-container">
+                            <div id="editor-toolbar-container" class="js-emaileditor-addon">
 			                    <div id="editor-toolbar-content">
 				                    <div class="component component-text" data-content="<h1>Big News</h1><p> This is a text block. You can use it to add text to your template.</p>" data-state="template">
 					                    <i class="fa fa-align-justify"></i><br /> Text
@@ -642,19 +657,17 @@
                 <%-- Confirmation --%>
                 <asp:Panel ID="pnlConfirmation" runat="server" Visible="false">
                     <h4>Confirmation</h4>
-                    <div class="alert alert-info">
-                        <asp:Literal ID="lConfirmationInfoHtml" runat="server" /><a href='#' class="btm btn-link js-show-confirmation-datetime"><strong>Edit</strong></a>
+                    <div class="alert alert-info js-confirmation-senddatetime-alert">
+                        <asp:Label ID="lConfirmationSendDateTimeHtml" runat="server" />
+                        <a href='#' class="btn btn-link btn-xs js-show-confirmation-datetime"><strong>Edit</strong></a>
                     </div>
-                    <asp:Label ID="lblConfirmationSendHtml" runat="server">
-                        <p>Now Is the Moment Of Truth</p>
-                        <p>You are about to send this communication to <strong>???</strong> individuals</p>
-
-                    </asp:Label>
+                    <asp:Label ID="lblConfirmationSendHtml" runat="server" />
                     <div class="row">
                         <div class="col-md-6">
                         </div>
                     </div>
 
+                    <asp:HiddenField ID="hfShowConfirmationDateTime" runat="server" />
                     <div class="row margin-b-md js-confirmation-datetime" style="display:none">
                         <div class="col-md-6">
                             <Rock:NotificationBox ID="nbSendDateTimeWarningConfirmation" runat="server" NotificationBoxType="Danger" Visible="false" />
@@ -702,11 +715,20 @@
                     $('.js-additional-fields').slideToggle();
                 });
 
+                // Show the Send Date controls on the confirmation page if they click 'edit'
                 $('.js-show-confirmation-datetime').off('click').on('click', function ()
                 {
-                    $('.js-confirmation-datetime').slideToggle();
+                    $('.js-confirmation-senddatetime-alert').slideUp();
+                    $('.js-confirmation-datetime').slideDown();
+                    $('#ctl00_main_ctl23_ctl01_ctl06_hfShowConfirmationDateTime').val("true");
                 });
-
+                
+                // Ensure the visibility of of Send Date controls on the confirmation page if they clicked 'edit' and are navigating back and forth to it
+                if ($('#<%=hfShowConfirmationDateTime.ClientID %>').val() == "true") {
+                    $('.js-confirmation-senddatetime-alert').hide()
+                    $('.js-confirmation-datetime').show();
+                }
+                
                 var smsCharLimit = $('#<%=hfSMSCharLimit.ClientID%>').val();
                 if ( smsCharLimit && smsCharLimit > 0)
                 {
@@ -719,6 +741,21 @@
                             overLimitClass: 'badge-danger'
                         });
                 }
+
+                $('#<%=btnEmailEditorNext.ClientID%>').off('click').on('click', function ()
+                {
+                    debugger
+                    var $editorIframe = $('#<%=ifEmailDesigner.ClientID%>');
+                    var $editorHtml = $editorIframe.contents().find('HTML');
+
+                    // remove all the email editor stuff 
+                    $editorHtml.find('.js-emaileditor-addon').remove();
+
+
+                    var emailHtmlContent = $editorHtml[0].outerHTML;
+
+                    $('#<%=hfEmailEditorHtml.ClientID%>').val(emailHtmlContent);
+                });
             }
             );
 
@@ -741,26 +778,32 @@
             {
                 // load in editor styles and scripts
                 var cssLink = document.createElement("link")
+                cssLink.className = "js-emaileditor-addon";
                 cssLink.href = '<%=RockPage.ResolveRockUrl("~/Themes/Rock/Styles/email-editor.css", true ) %>';
                 cssLink.rel = "stylesheet";
                 cssLink.type = "text/css";
+                
 
                 var fontAwesomeLink = document.createElement("link")
+                fontAwesomeLink.className = "js-emaileditor-addon";
                 fontAwesomeLink.href = '<%=RockPage.ResolveRockUrl("~/Themes/Rock/Styles/font-awesome.css", true ) %>';
                 fontAwesomeLink.rel = "stylesheet";
                 fontAwesomeLink.type = "text/css";
 
                 var jqueryLoaderScript = document.createElement("script");
+                jqueryLoaderScript.className = "js-emaileditor-addon";
                 jqueryLoaderScript.type = "text/javascript";
                 jqueryLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js", true ) %>';
 
                 var dragulaLoaderScript = document.createElement("script");
+                dragulaLoaderScript.className = "js-emaileditor-addon";
                 dragulaLoaderScript.type = "text/javascript";
                 dragulaLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/dragula.min.js", true ) %>';
 
                 var $editorIframe = $('.js-emaileditor-iframe');
 
                 var editorScript = document.createElement("script");
+                editorScript.className = "js-emaileditor-addon";
                 editorScript.type = "text/javascript";
                 editorScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/email-editor.js", true ) %>';
                 editorScript.onload = function ()

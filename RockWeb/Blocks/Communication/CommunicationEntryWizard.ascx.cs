@@ -88,6 +88,11 @@ namespace RockWeb.Blocks.Communication
 
             componentImageUploader.BinaryFileTypeGuid = this.GetAttributeValue( "BinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             hfSMSCharLimit.Value = ( this.GetAttributeValue( "CharacterLimit" ).AsIntegerOrNull() ?? 160 ).ToString();
+
+            gIndividualRecipients.DataKeyNames = new string[] { "Id" };
+            gIndividualRecipients.GridRebind += gIndividualRecipients_GridRebind;
+            gIndividualRecipients.Actions.ShowAdd = false;
+            gIndividualRecipients.ShowActionRow = false;
         }
 
         /// <summary>
@@ -104,10 +109,16 @@ namespace RockWeb.Blocks.Communication
 
                 tglRecipientSelection_CheckedChanged( null, null );
 
-                // DEBUG
-                ddlCommunicationGroupList.Items[1].Selected = true;
+                /** DEBUG **/
+                if ( ddlCommunicationGroupList.Items.Count > 1 )
+                {
+                    ddlCommunicationGroupList.SelectedValue = ddlCommunicationGroupList.Items[1].Value;
+                    ddlCommunicationGroupList_SelectedIndexChanged( null, null );
+                }
+
                 tbCommunicationName.Text = "DEBUG";
                 dtpSendDateTime.SelectedDateTime = RockDateTime.Now;
+                /**********/
             }
         }
 
@@ -158,8 +169,6 @@ namespace RockWeb.Blocks.Communication
             rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "Any segment filters", FilterExpressionType.GroupAny.ToString() ) );
 
             UpdateRecipientFromListCount();
-
-            BindTemplatePicker();
 
             btnMediumUserPreference.Attributes["data-val"] = Rock.Model.CommunicationType.UserPreference.ConvertToInt().ToString();
             btnMediumEmail.Attributes["data-val"] = Rock.Model.CommunicationType.Email.ConvertToInt().ToString();
@@ -238,9 +247,20 @@ namespace RockWeb.Blocks.Communication
                 if ( !IndividualRecipientPersonIds.Contains( ppAddPerson.PersonId.Value ) )
                 {
                     IndividualRecipientPersonIds.Add( ppAddPerson.PersonId.Value );
+
+                    // clear out the personpicker since they are added to the list
+                    ppAddPerson.SetValue( null );
                 }
             }
 
+            UpdateIndividualRecipientsCountText();
+        }
+
+        /// <summary>
+        /// Updates the individual recipients count text.
+        /// </summary>
+        private void UpdateIndividualRecipientsCountText()
+        {
             var individualRecipientCount = this.IndividualRecipientPersonIds.Count();
             lIndividualRecipientCount.Text = string.Format( "{0} {1} selected", individualRecipientCount, "recipient".PluralizeIf( individualRecipientCount != 1 ) );
         }
@@ -253,6 +273,47 @@ namespace RockWeb.Blocks.Communication
         protected void btnViewIndividualRecipients_Click( object sender, EventArgs e )
         {
             // TODO
+            BindIndividualRecipientsGrid();
+
+            mdIndividualRecipients.Show();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gIndividualRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        private void gIndividualRecipients_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindIndividualRecipientsGrid();
+        }
+
+        /// <summary>
+        /// Binds the individual recipients grid.
+        /// </summary>
+        private void BindIndividualRecipientsGrid()
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var qryPersons = personService.GetByIds( this.IndividualRecipientPersonIds ).OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+
+            gIndividualRecipients.SetLinqDataSource( qryPersons );
+            gIndividualRecipients.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the DeleteClick event of the gIndividualRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gIndividualRecipients_DeleteClick( object sender, RowEventArgs e )
+        {
+            this.IndividualRecipientPersonIds.Remove( e.RowKeyId );
+            BindIndividualRecipientsGrid();
+            UpdateIndividualRecipientsCountText();
+
+            // upnlContent has UpdateMode = Conditional and this is a modal, so we have to update manually
+            upnlContent.Update();
         }
 
         /// <summary>
@@ -402,11 +463,15 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
+            // set the confirmation send datetime controls to what we pick here
+            tglSendDateTimeConfirmation.Checked = tglSendDateTime.Checked;
+            dtpSendDateTimeConfirmation.SelectedDateTime = dtpSendDateTime.SelectedDateTime;
+
             nbSendDateTimeWarning.Visible = false;
 
             pnlMediumSelection.Visible = false;
             pnlTemplateSelection.Visible = true;
-
+            BindTemplatePicker();
         }
 
         /// <summary>
@@ -422,7 +487,6 @@ namespace RockWeb.Blocks.Communication
         #endregion Medium Selection
 
         #region Template Selection
-
 
         /// <summary>
         /// Binds the template picker.
@@ -448,11 +512,12 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptSelectTemplate_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            // TODO
+            // TODO more details after Communication Template block is fixed up
             CommunicationTemplate communicationTemplate = e.Item.DataItem as CommunicationTemplate;
 
             if ( communicationTemplate != null )
             {
+                Panel pnlTemplatePreview = e.Item.FindControl( "pnlTemplatePreview" ) as Panel;
                 Literal lTemplateImagePreview = e.Item.FindControl( "lTemplateImagePreview" ) as Literal;
                 Literal lTemplateName = e.Item.FindControl( "lTemplateName" ) as Literal;
                 Literal lTemplateDescription = e.Item.FindControl( "lTemplateDescription" ) as Literal;
@@ -463,6 +528,16 @@ namespace RockWeb.Blocks.Communication
                 lTemplateDescription.Text = communicationTemplate.Description;
                 btnSelectTemplate.CommandName = "CommunicationTemplateId";
                 btnSelectTemplate.CommandArgument = communicationTemplate.Id.ToString();
+
+                // TODO, ask about display of selected template, etc
+                if ( hfSelectedCommunicationTemplateId.Value == communicationTemplate.Id.ToString() )
+                {
+                    pnlTemplatePreview.AddCssClass( "accent-light-color-bordered" );
+                }
+                else
+                {
+                    pnlTemplatePreview.RemoveCssClass( "accent-light-color-bordered" );
+                }
             }
 
         }
@@ -475,12 +550,12 @@ namespace RockWeb.Blocks.Communication
         protected void btnSelectTemplate_Click( object sender, EventArgs e )
         {
             hfSelectedCommunicationTemplateId.Value = ( sender as LinkButton ).CommandArgument;
-            pnlTemplateSelection.Visible = false;
+            
 
             var communicationTemplate = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() );
 
             string templateHtml;
-            if ( string.IsNullOrEmpty(communicationTemplate.Message) )
+            if ( string.IsNullOrEmpty( communicationTemplate.Message ) )
             {
                 // TODO, shouldn't need to do this after CommunicationTemplateDetails block is fixed up
                 templateHtml = communicationTemplate.MediumData["HtmlMessage"];
@@ -489,18 +564,10 @@ namespace RockWeb.Blocks.Communication
             {
                 templateHtml = communicationTemplate.Message;
             }
-            
+
             ifEmailDesigner.Attributes["srcdoc"] = templateHtml;
 
-            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
-            {
-                pnlEmailSummary.Visible = true;
-            }
-            else if (communicationType == CommunicationType.SMS)
-            {
-                pnlMobileTextEditor.Visible = true;
-            }
+            btnTemplateSelectionNext_Click( sender, e );
         }
 
         /// <summary>
@@ -521,10 +588,22 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnTemplateSelectionNext_Click( object sender, EventArgs e )
         {
-            //pnlTemplateSelection.Visible = false;
+            if ( !hfSelectedCommunicationTemplateId.Value.AsIntegerOrNull().HasValue )
+            {
+                return;
+            }
 
-            // TODO
-            //pnlEmailEditor.Visible = true;
+            pnlTemplateSelection.Visible = false;
+
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
+            {
+                pnlEmailSummary.Visible = true;
+            }
+            else if ( communicationType == CommunicationType.SMS )
+            {
+                pnlMobileTextEditor.Visible = true;
+            }
         }
 
         #endregion Template Selection
@@ -559,6 +638,27 @@ namespace RockWeb.Blocks.Communication
         {
             pnlEmailEditor.Visible = false;
             pnlConfirmation.Visible = true;
+
+            ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
+
+            string sendDateTimeText = string.Empty;
+            if ( tglSendDateTimeConfirmation.Checked )
+            {
+                sendDateTimeText = "immediately";
+            }
+            else if ( dtpSendDateTimeConfirmation.SelectedDateTime.HasValue)
+            {
+                sendDateTimeText = dtpSendDateTimeConfirmation.SelectedDateTime.Value.ToString( "f" );
+            }
+
+            lConfirmationSendDateTimeHtml.Text = string.Format( "This email has been configured to send {0}.", sendDateTimeText );
+
+            string sendCount = "???";
+            string sendCountTerm = "individuals";
+            lblConfirmationSendHtml.Text = string.Format( @"
+<p>Now Is the Moment Of Truth</p>
+<p>You are about to send this communication to <strong>{0}</strong> {1}</p>
+", sendCount, sendCountTerm );
         }
 
         #endregion Email Editor
@@ -572,7 +672,9 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailSummaryPrevious_Click( object sender, EventArgs e )
         {
-            pnlEmailEditor.Visible = true;
+            pnlTemplateSelection.Visible = true;
+            BindTemplatePicker();
+
             pnlEmailSummary.Visible = false;
         }
 
@@ -584,7 +686,7 @@ namespace RockWeb.Blocks.Communication
         protected void btnEmailSummaryNext_Click( object sender, EventArgs e )
         {
             pnlEmailSummary.Visible = false;
-            
+
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
             if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.UserPreference )
             {
@@ -617,7 +719,7 @@ namespace RockWeb.Blocks.Communication
             fupAttachments.BinaryFileId = null;
 
             // pre-populate dictionary so that the attachments are listed in the order they were added
-            Dictionary<int, string> binaryFileAttachments = attachmentList.ToDictionary( k => k, v => string.Empty);
+            Dictionary<int, string> binaryFileAttachments = attachmentList.ToDictionary( k => k, v => string.Empty );
             using ( var rockContext = new RockContext() )
             {
                 var binaryFileInfoList = new BinaryFileService( rockContext ).Queryable()
@@ -638,13 +740,13 @@ namespace RockWeb.Blocks.Communication
             sbAttachmentsHtml.AppendLine( "<div class='attachment'>" );
             sbAttachmentsHtml.AppendLine( "  <ul class='attachment-content'>" );
 
-            foreach (var binaryFileAttachment in binaryFileAttachments )
+            foreach ( var binaryFileAttachment in binaryFileAttachments )
             {
                 var attachmentUrl = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFileAttachment.Key );
                 var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
                 sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank'>{1}</a> <a><i class='fa fa-times' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
             }
-            
+
             sbAttachmentsHtml.AppendLine( "  </ul>" );
             sbAttachmentsHtml.AppendLine( "</div>" );
 
@@ -725,16 +827,31 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSMSSendTest_Click( object sender, EventArgs e )
         {
-
+            // TODO
         }
 
         #endregion Mobile Text Editor
 
         #region Confirmation
 
+        /// <summary>
+        /// Handles the Click event of the btnConfirmationPrevious control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnConfirmationPrevious_Click( object sender, EventArgs e )
         {
+            pnlConfirmation.Visible = false;
 
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
+            {
+                pnlEmailEditor.Visible = true;
+            }
+            else if ( communicationType == CommunicationType.SMS )
+            {
+                pnlMobileTextEditor.Visible = true;
+            }
         }
 
         protected void btnSend_Click( object sender, EventArgs e )
@@ -752,9 +869,14 @@ namespace RockWeb.Blocks.Communication
 
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglSendDateTimeConfirmation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglSendDateTimeConfirmation_CheckedChanged( object sender, EventArgs e )
         {
-
+            dtpSendDateTimeConfirmation.Visible = !tglSendDateTimeConfirmation.Checked;
         }
 
         #endregion
@@ -1018,6 +1140,8 @@ namespace RockWeb.Blocks.Communication
 
 
 
-       
+
+
+
     }
 }
