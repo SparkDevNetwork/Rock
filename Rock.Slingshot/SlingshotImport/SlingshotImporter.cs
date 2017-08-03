@@ -909,7 +909,7 @@ namespace Rock.Slingshot
                     attendanceImport.AttendanceForeignId = Math.Abs( BitConverter.ToInt32( hashed, 0 ) ); // used abs to ensure positive number */
                 }
 
-                if ( !attendanceIds.Add( attendanceImport.AttendanceForeignId.Value) )
+                if ( !attendanceIds.Add( attendanceImport.AttendanceForeignId.Value ) )
                 {
                     // shouldn't happen (but if it does, it'll be treated as a duplicate and not imported)
                     System.Diagnostics.Debug.WriteLine( $"#### Duplicate AttendanceId detected:{attendanceImport.AttendanceForeignId.Value} ####" );
@@ -1305,6 +1305,12 @@ namespace Rock.Slingshot
 
             var rockContext = new RockContext();
             var campusService = new CampusService( rockContext );
+
+            // Flush the campuscache just in case it was updated in the Database without rock knowing about it
+            foreach ( var campuscache in CampusCache.All() )
+            {
+                Rock.Web.Cache.CampusCache.Flush( campuscache.Id );
+            }
 
             // Rock has a Unique Constraint on Campus.Name so, make sure campus name is unique and rename it if a new campus happens to have the same name as an existing campus
             var usedCampusNames = CampusCache.All().Select( a => a.Name ).ToList();
