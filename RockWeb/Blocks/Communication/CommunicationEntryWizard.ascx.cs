@@ -254,10 +254,11 @@ namespace RockWeb.Blocks.Communication
                 if ( !IndividualRecipientPersonIds.Contains( ppAddPerson.PersonId.Value ) )
                 {
                     IndividualRecipientPersonIds.Add( ppAddPerson.PersonId.Value );
-
-                    // clear out the personpicker since they are added to the list
-                    ppAddPerson.SetValue( null );
                 }
+
+                // clear out the personpicker and have it say "Add Person" again since they are added to the list
+                ppAddPerson.SetValue( null );
+                ppAddPerson.PersonName = "Add Person";
             }
 
             UpdateIndividualRecipientsCountText();
@@ -291,6 +292,84 @@ namespace RockWeb.Blocks.Communication
         private void gIndividualRecipients_GridRebind( object sender, GridRebindEventArgs e )
         {
             BindIndividualRecipientsGrid();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gIndividualRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gIndividualRecipients_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            var recipientPerson = e.Row.DataItem as Person;
+            var lRecipientAlert = e.Row.FindControl( "lRecipientAlert" ) as Literal;
+            var lRecipientAlertEmail = e.Row.FindControl( "lRecipientAlertEmail" ) as Literal;
+            var lRecipientAlertSMS = e.Row.FindControl( "lRecipientAlertSMS" ) as Literal;
+            if ( recipientPerson != null && lRecipientAlert != null )
+            {
+                string alertClass = string.Empty;
+                string alertMessage = string.Empty;
+                string alertClassEmail = string.Empty;
+                string alertMessageEmail = recipientPerson.Email;
+                string alertClassSMS = string.Empty;
+                string alertMessageSMS = string.Format( "{0}", recipientPerson.PhoneNumbers.FirstOrDefault( a => a.IsMessagingEnabled ) );
+
+                // General alert info about recipient
+                if ( recipientPerson.IsDeceased )
+                {
+                    alertClass = "text-danger";
+                    alertMessage = "Deceased";
+                }
+
+                // Email related
+                if ( string.IsNullOrWhiteSpace( recipientPerson.Email ) )
+                {
+                    alertClassEmail = "text-danger";
+                    alertMessageEmail = "No Email." + recipientPerson.EmailNote;
+                }
+                else if ( !recipientPerson.IsEmailActive )
+                {
+                    // if email is not active, show reason why as tooltip
+                    alertClassEmail = "text-danger";
+                    alertMessageEmail = "Email is Inactive. " + recipientPerson.EmailNote;
+                }
+                else
+                {
+                    // Email is active
+                    if ( recipientPerson.EmailPreference != EmailPreference.EmailAllowed )
+                    {
+                        alertMessageEmail = string.Format( "{0} <span class='label label-warning'>{1}</span>", recipientPerson.Email, recipientPerson.EmailPreference.ConvertToString( true ) );
+                        if ( recipientPerson.EmailPreference == EmailPreference.NoMassEmails )
+                        {
+                            alertClassEmail = "js-no-bulk-email";
+                            if ( tglBulkCommunication.Checked )
+                            {
+                                // This is a bulk email and user does not want bulk emails
+                                alertClassEmail += " text-danger";
+                            }
+                        }
+                        else
+                        {
+                            // Email preference is 'Do Not Email'
+                            alertClassEmail = "text-danger";
+                        }
+                    }
+                }
+
+                // SMS Related
+                if ( !recipientPerson.PhoneNumbers.Any( a => a.IsMessagingEnabled ) )
+                {
+                    // No SMS Number
+                    alertClassSMS = "text-danger";
+                    alertMessageSMS = "No phone number with SMS enabled.";
+                }
+
+                lRecipientAlert.Text = string.Format( "<span class=\"{0}\">{1}</span>", alertClass, alertMessage );
+                lRecipientAlertEmail.Text = string.Format( "<span class=\"{0}\">{1}</span>", alertClassEmail, alertMessageEmail );
+                lRecipientAlertSMS.Text = string.Format( "<span class=\"{0}\">{1}</span>", alertClassSMS, alertMessageSMS );
+            }
+
+
         }
 
         /// <summary>
@@ -356,9 +435,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void UpdateRecipientFromListCount()
         {
-            IQueryable<GroupMember> groupMemberQuery = null;
-
-            groupMemberQuery = GetRecipientFromListSelection( groupMemberQuery );
+            IQueryable<GroupMember> groupMemberQuery = GetRecipientFromListSelection();
 
             if ( groupMemberQuery != null )
             {
@@ -378,8 +455,9 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         /// <param name="groupMemberQuery">The group member query.</param>
         /// <returns></returns>
-        private IQueryable<GroupMember> GetRecipientFromListSelection( IQueryable<GroupMember> groupMemberQuery )
+        private IQueryable<GroupMember> GetRecipientFromListSelection()
         {
+            IQueryable<GroupMember> groupMemberQuery = null;
             var rockContext = new RockContext();
             var groupMemberService = new GroupMemberService( rockContext );
             var personService = new PersonService( rockContext );
@@ -478,12 +556,22 @@ namespace RockWeb.Blocks.Communication
 
             // set the confirmation send datetime controls to what we pick here
             tglSendDateTimeConfirmation.Checked = tglSendDateTime.Checked;
+            tglSendDateTimeConfirmation_CheckedChanged( null, null );
             dtpSendDateTimeConfirmation.SelectedDateTime = dtpSendDateTime.SelectedDateTime;
 
             nbSendDateTimeWarning.Visible = false;
 
             pnlMediumSelection.Visible = false;
-            ShowTemplateSelection();
+
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
+            {
+                ShowTemplateSelection();
+            }
+            else if ( communicationType == CommunicationType.SMS )
+            {
+                ShowMobileTextEditor();
+            }
         }
 
         /// <summary>
@@ -585,8 +673,15 @@ namespace RockWeb.Blocks.Communication
                 templateHtml = communicationTemplate.Message;
             }
 
-            ifEmailDesigner.Attributes["srcdoc"] = templateHtml;
+            hfEmailEditorHtml.Value = templateHtml;
 
+            // See if the template supports preview-text
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( templateHtml );
+            var preheaderTextNode = templateDoc.GetElementbyId("preheader-text");
+            tbEmailPreview.Visible = preheaderTextNode != null;
+            tbEmailPreview.Text = preheaderTextNode != null ? preheaderTextNode.InnerHtml : string.Empty;
+            
             btnTemplateSelectionNext_Click( sender, e );
         }
 
@@ -616,6 +711,7 @@ namespace RockWeb.Blocks.Communication
 
             pnlTemplateSelection.Visible = false;
 
+            // The next page should be ShowEmailSummary since this is the Select Email Template Page, but just in case...
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
             if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
             {
@@ -636,6 +732,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void ShowEmailEditor()
         {
+            ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
             pnlEmailEditor.Visible = true;
         }
 
@@ -681,7 +778,7 @@ namespace RockWeb.Blocks.Communication
         private void ShowEmailSummary()
         {
             pnlEmailSummary.Visible = true;
-        }
+}
 
         /// <summary>
         /// Handles the Click event of the btnEmailSummaryPrevious control.
@@ -703,6 +800,21 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailSummaryNext_Click( object sender, EventArgs e )
         {
+            if ( tbEmailPreview.Visible )
+            {
+                // set the preheader-text of our email html
+                HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+                templateDoc.LoadHtml( hfEmailEditorHtml.Value );
+                var preheaderTextNode = templateDoc.GetElementbyId( "preheader-text" );
+                if (preheaderTextNode != null )
+                {
+                    preheaderTextNode.InnerHtml = tbEmailPreview.Text;
+                    hfEmailEditorHtml.Value = templateDoc.DocumentNode.OuterHtml;
+                }
+
+                tbEmailPreview.Text = preheaderTextNode != null ? preheaderTextNode.InnerHtml : string.Empty;
+            }
+
             pnlEmailSummary.Visible = false;
 
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
@@ -792,7 +904,15 @@ namespace RockWeb.Blocks.Communication
         {
             pnlMobileTextEditor.Visible = false;
 
-            ShowEmailSummary();
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
+            {
+                ShowEmailSummary();
+            }
+            else
+            {
+                ShowMediumSelection();
+            }
         }
 
         /// <summary>
@@ -877,14 +997,24 @@ namespace RockWeb.Blocks.Communication
                 sendDateTimeText = dtpSendDateTimeConfirmation.SelectedDateTime.Value.ToString( "f" );
             }
 
-            lConfirmationSendDateTimeHtml.Text = string.Format( "This email has been configured to send {0}.", sendDateTimeText );
+            lConfirmationSendDateTimeHtml.Text = string.Format( "This communication has been configured to send {0}.", sendDateTimeText );
 
-            string sendCount = "???";
-            string sendCountTerm = "individuals";
+            int sendCount;
+            string sendCountTerm = "individual";
+
+            if ( tglRecipientSelection.Checked )
+            {
+                sendCount = this.GetRecipientFromListSelection().Count();
+            }
+            else
+            {
+                sendCount = this.IndividualRecipientPersonIds.Count();
+            }
+
             lblConfirmationSendHtml.Text = string.Format( @"
 <p>Now Is the Moment Of Truth</p>
 <p>You are about to send this communication to <strong>{0}</strong> {1}</p>
-", sendCount, sendCountTerm );
+", sendCount, sendCountTerm.PluralizeIf(sendCount != 1));
         }
 
         /// <summary>
@@ -1050,7 +1180,7 @@ namespace RockWeb.Blocks.Communication
 <body style=""margin: 0 !important; padding: 0 !important;"">
 
 <!-- HIDDEN PREHEADER TEXT -->
-<div style=""display: none; font-size: 1px; color: #fefefe; line-height: 1px; font-family: Helvetica, Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;"">
+<div id=""preheader-text"" style=""display: none; font-size: 1px; color: #fefefe; line-height: 1px; font-family: Helvetica, Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;"">
     Entice the open with some amazing preheader text. Use a little mystery and get those subscribers to read through...
 </div>
 
@@ -1181,5 +1311,7 @@ namespace RockWeb.Blocks.Communication
 </body>
 </html>
 ";
+
+        
     }
 }
