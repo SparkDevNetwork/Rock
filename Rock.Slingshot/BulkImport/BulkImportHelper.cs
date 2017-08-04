@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
@@ -690,19 +690,27 @@ namespace Rock.Slingshot
                 foreach ( var groupMemberImport in groupWithMembers.GroupMemberImports )
                 {
                     var groupRoleId = groupTypeRoleLookup.GetValueOrNull(groupMemberImport.RoleName);
-                    if ( groupId.HasValue && groupRoleId.HasValue )
+                    var personId = personIdLookup.GetValueOrNull( groupMemberImport.PersonForeignId );
+                    if ( groupId.HasValue && groupRoleId.HasValue && personId.HasValue )
                     {
                         var groupMember = new GroupMember();
                         groupMember.GroupId = groupId.Value;
                         groupMember.GroupRoleId = groupRoleId.Value;
-                        groupMember.PersonId = personIdLookup[groupMemberImport.PersonForeignId];
+                        groupMember.PersonId = personId.Value;
                         groupMember.CreatedDateTime = importedDateTime;
                         groupMember.ModifiedDateTime = importedDateTime;
                         groupMembersToInsert.Add( groupMember );
                     }
                     else
                     {
-                        Debug.WriteLine( $"### Unable to determine GroupId or GroupRoleId for GroupMember. GroupType may have been altered since last import. Group.ForeignId {groupWithMembers.GroupForeignId}, Person.PersonForeignId {groupMemberImport.PersonForeignId} ##" );
+                        if ( !personId.HasValue )
+                        {
+                            Debug.WriteLine( $"### Unable to determine PersonId for GroupMember. Associated person may have been deleted or orphaned. Person.PersonForeignId {groupMemberImport.PersonForeignId} ##" );
+                        }
+                        else
+                        {
+                            Debug.WriteLine( $"### Unable to determine GroupId or GroupRoleId for GroupMember. GroupType may have been altered since last import. Group.ForeignId {groupWithMembers.GroupForeignId}, Person.PersonForeignId {groupMemberImport.PersonForeignId} ##" );
+                        }
                     }
                 }
             }
