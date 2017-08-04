@@ -2,19 +2,11 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server" ChildrenAsTriggers="true" UpdateMode="Conditional">
     <ContentTemplate>
-
-        <style>
-            /* always hide thead image remove */
-            .propertypanel-image .imageupload-remove {
-                display: none !important;
-            }
-        </style>
-
-
+        <asp:HiddenField ID="hfCommunicationId" runat="server" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-comment"></i> New Communication</h1>
+                <h1 class="panel-title"><i class="fa fa-comment"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
 
                 <div class="panel-labels">
                     <div class="label label-default"><a href="#">Use Legacy Editor</a></div>
@@ -24,16 +16,17 @@
 
                 <%-- Recipient Selection --%>
                 <asp:Panel ID="pnlRecipientSelection" runat="server" Visible="true">
-                    <h4>Recipient Selection</h4>
+                    <h1>Recipient Selection</h1>
+
+                    <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgRecipientSelection" CssClass="alert alert-danger" />
+
+                    <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Danger" />
 
                     <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="btn-group-justified margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-primary" OffCssClass="btn-primary" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" />
                     
                     <asp:Panel ID="pnlRecipientSelectionList" runat="server">
 
-                        <Rock:NotificationBox ID="nbCommunicationGroupWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
                         <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true"  OnSelectedIndexChanged="ddlCommunicationGroupList_SelectedIndexChanged" AutoPostBack="true" />
-
-                        
                         <asp:Panel ID="pnlCommunicationGroupSegments" runat="server">
                             <label>Segments</label>
                             <p>Optionally, further refine your recipients by filtering by segment.</p>
@@ -89,6 +82,8 @@
 
                 <%-- Medium Selection --%>
                 <asp:Panel ID="pnlMediumSelection" runat="server" Visible="false" >
+                    <h1>Medium Selection</h1>
+                    <asp:ValidationSummary ID="vsMediumSelection" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgMediumSelection" CssClass="alert alert-danger" />
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbCommunicationName" runat="server" Label="Communication Name" Required="true" ValidationGroup="vgMediumSelection"/>
@@ -134,6 +129,7 @@
                 <%-- Template Selection --%>
                 <asp:Panel ID="pnlTemplateSelection" runat="server" Visible="false">
                     <h1>Email Template</h1>
+                    <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
                     <div class="row template-selection">
                         <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
                             <ItemTemplate>
@@ -171,7 +167,9 @@
 
                 <%-- Email Editor --%>
                 <asp:Panel ID="pnlEmailEditor" runat="server" Visible="false">
-                    <div class="emaileditor-wrapper">
+                    <h1>Email Editor</h1>
+
+                    <div class="emaileditor-wrapper margin-t-md">
                         <section id="emaileditor">
 			                <div id="emaileditor-designer">
 				                <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
@@ -579,13 +577,17 @@
 
                 <%-- Email Summary --%>
                 <asp:Panel ID="pnlEmailSummary" runat="server" Visible="false">
-                    <h4>Email Summary</h4>
+                    <h1>Email Summary</h1>
+
+                    <asp:ValidationSummary ID="vsEmailSummary" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgEmailSummary" CssClass="alert alert-danger" />
+
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbFromAddress" runat="server" Label="From Address" Required="true" ValidationGroup="vgEmailSummary"/>
+                            <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
                             <div class="pull-right">
                                 <a href="#" class="btn btn-xs btn-link js-show-additional-fields" >Show Additional Fields</a>
                             </div>
@@ -635,7 +637,9 @@
 
                 <%-- Mobile Text Editor --%>
                 <asp:Panel ID="pnlMobileTextEditor" runat="server" Visible="false">
-                    <h4>Mobile Text Editor</h4>
+                    <h1>Mobile Text Editor</h1>
+
+                    <asp:ValidationSummary ID="vsMobileTextEditor" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgMobileTextEditor" CssClass="alert alert-danger" />
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlSMSFrom" runat="server" Label="From" Help="The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values)." Required="true" ValidationGroup="vgMobileTextEditor"/>
@@ -643,7 +647,7 @@
                                 <Rock:MergeFieldPicker ID="mfpSMSMessage" runat="server" CssClass="margin-b-sm pull-right" OnSelectItem="mfpMessage_SelectItem" ValidationGroup="vgMobileTextEditor"/>
                                 <asp:HiddenField ID="hfSMSCharLimit" runat="server" />
                                 <asp:Label ID="lblSMSMessageCount" runat="server" CssClass="badge margin-all-sm pull-right" />
-                                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor"/>
+                                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required"/>
                                 <div class="actions margin-t-sm pull-right">
                                     <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-sm btn-default" Text="Send Test" OnClick="btnSMSSendTest_Click" />
                                 </div>
@@ -662,7 +666,7 @@
 
                 <%-- Confirmation --%>
                 <asp:Panel ID="pnlConfirmation" runat="server" Visible="false">
-                    <h4>Confirmation</h4>
+                    <h1>Confirmation</h1>
                     <div class="alert alert-info js-confirmation-senddatetime-alert">
                         <asp:Label ID="lConfirmationSendDateTimeHtml" runat="server" />
                         <a href='#' class="btn btn-link btn-xs js-show-confirmation-datetime"><strong>Edit</strong></a>
@@ -718,15 +722,21 @@
 
                 $('.js-show-additional-fields').off('click').on('click', function ()
                 {
+                    $('#<%=hfShowAdditionalFields.ClientID %>').val(!$('.js-addition-fields').is(':visible'));
                     $('.js-additional-fields').slideToggle();
                 });
+
+                if ($('#<%=hfShowAdditionalFields.ClientID %>').val() == "true")
+                {
+                    $('.js-additional-fields').show();
+                }
 
                 // Show the Send Date controls on the confirmation page if they click 'edit'
                 $('.js-show-confirmation-datetime').off('click').on('click', function ()
                 {
                     $('.js-confirmation-senddatetime-alert').slideUp();
                     $('.js-confirmation-datetime').slideDown();
-                    $('#ctl00_main_ctl23_ctl01_ctl06_hfShowConfirmationDateTime').val("true");
+                    $('#<%=hfShowConfirmationDateTime.ClientID %>').val("true");
                 });
                 
                 // Ensure the visibility of of Send Date controls on the confirmation page if they clicked 'edit' and are navigating back and forth to it
