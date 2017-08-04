@@ -1062,7 +1062,7 @@ TransactionAcountDetails: [
                         if ( btnFrequency.Items.FindByValue( frequencyValues[0] ) != null )
                         {
                             btnFrequency.SelectedValue = frequencyValues[0];
-                            if ( frequencyValues[1].AsBoolean( true ) == false )
+                            if ( frequencyValues.Length >= 2 && frequencyValues[1].AsBoolean( true ) == false )
                             {
                                 btnFrequency.Visible = false;
                                 txtFrequency.Visible = true;
