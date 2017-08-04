@@ -64,17 +64,21 @@
                         
                     </asp:Panel>
 
-                    <div class="actions">
+                    <div class="actions margin-t-md">
                         <asp:LinkButton ID="btnRecipientSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgRecipientSelection" CausesValidation="true" OnClick="btnRecipientSelectionNext_Click" />
                     </div>
 
+                    <%-- Recipient Selection: Individual Recipients Modal --%>
                     <Rock:ModalDialog Id="mdIndividualRecipients" runat="server" Title="Individual Recipients" ValidationGroup="mdIndividualRecipientsModal">
                         <Content>
-                            <Rock:Grid ID="gIndividualRecipients" runat="server">
+                            <Rock:Grid ID="gIndividualRecipients" runat="server" OnRowDataBound="gIndividualRecipients_RowDataBound" HideDeleteButtonForIsSystem="false" ShowConfirmDeleteDialog="false">
                                 <Columns>
                                     <Rock:SelectField></Rock:SelectField>
-                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName" />
+                                    <asp:BoundField DataField="NickName" HeaderText="First Name" SortExpression="NickName"  />
                                     <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
+                                    <Rock:RockLiteralField ID="lRecipientAlert" HeaderText="Notes" />
+                                    <Rock:RockLiteralField ID="lRecipientAlertEmail" HeaderText="Email" />
+                                    <Rock:RockLiteralField ID="lRecipientAlertSMS" HeaderText="SMS" />
                                     <Rock:DeleteField OnClick="gIndividualRecipients_DeleteClick" />
                                 </Columns>
                             </Rock:Grid>
@@ -135,7 +139,7 @@
                             <ItemTemplate>
                                 <div class="col-md-4">
                                     
-                                    <asp:Panel Id="pnlTemplatePreview" runat="server" class="template-preview js-template-preview">
+                                    <asp:Panel Id="pnlTemplatePreview" runat="server" class="template-preview js-template-preview margin-b-md">
                                         <div class="row">
                                             <div class="col-md-5">
                                                 <asp:Literal ID="lTemplateImagePreview" runat="server"></asp:Literal>
@@ -143,8 +147,10 @@
                                             <div class="col-md-7">
                                                 <label><asp:Literal ID="lTemplateName" runat="server"></asp:Literal></label>
                                                 <p><asp:Literal ID="lTemplateDescription" runat="server"></asp:Literal></p>
-                                                <asp:LinkButton ID="btnSelectTemplate" runat="server" CssClass="btn btn-action" OnClick="btnSelectTemplate_Click" Text="Select" />
                                             </div>
+                                        </div>
+                                        <div class="select-template margin-t-sm">
+                                            <asp:LinkButton ID="btnSelectTemplate" runat="server" CssClass="btn btn-action btn-xs" OnClick="btnSelectTemplate_Click" Text="Select" />
                                         </div>
                                     </asp:Panel>
                                     
@@ -153,7 +159,7 @@
                         </asp:Repeater>
                     </div>
 
-                    <div class="actions">
+                    <div class="actions margin-t-md">
                         <asp:LinkButton ID="btnTemplateSelectionPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnTemplateSelectionPrevious_Click"  />
                         <asp:LinkButton ID="btnTemplateSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgTemplateSelection" CausesValidation="true" OnClick="btnTemplateSelectionNext_Click" />
                     </div>
@@ -648,7 +654,7 @@
                             <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
                         </div>
                     </div>
-                    <div class="actions">
+                    <div class="actions margin-t-md">
                         <asp:LinkButton ID="btnMobileTextEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnMobileTextEditorPrevious_Click" />
                         <asp:LinkButton ID="btnMobileTextEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgMobileTextEditor" CausesValidation="true" OnClick="btnMobileTextEditorNext_Click" />
                     </div>
@@ -682,7 +688,7 @@
                     <div class="actions margin-b-lg">
                         <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-primary" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSend_Click" />
                         <asp:LinkButton ID="btnSaveAsDraft" runat="server" Text="Save as Draft" CssClass="btn btn-default" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSaveAsDraft_Click" />
-                        <asp:LinkButton ID="btnConfirmationCancel" runat="server" Text="Send" CssClass="btn btn-default" CausesValidation="false" ValidationGroup="vgConfirmation" OnClick="btnConfirmationCancel_Click" />
+                        <asp:LinkButton ID="btnConfirmationCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" ValidationGroup="vgConfirmation" OnClick="btnConfirmationCancel_Click" />
                     </div>
                     
                     <div class="actions">
@@ -744,13 +750,11 @@
 
                 $('#<%=btnEmailEditorNext.ClientID%>').off('click').on('click', function ()
                 {
-                    debugger
                     var $editorIframe = $('#<%=ifEmailDesigner.ClientID%>');
                     var $editorHtml = $editorIframe.contents().find('HTML');
 
                     // remove all the email editor stuff 
                     $editorHtml.find('.js-emaileditor-addon').remove();
-
 
                     var emailHtmlContent = $editorHtml[0].outerHTML;
 
