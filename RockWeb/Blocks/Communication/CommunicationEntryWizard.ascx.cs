@@ -31,6 +31,8 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
+using Rock.Web.UI;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -41,9 +43,14 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Used for creating and sending a new communications such as email, SMS, etc. to recipients." )]
 
-    [BinaryFileTypeField( "Binary File Type", "The FileType to use for images that are added to the email using the image component", true, Rock.SystemGuid.BinaryFiletype.DEFAULT )]
-    [IntegerField( "Character Limit", "Set this to show a character limit countdown for SMS communications. Set to 0 to disable", false, 160 )]
-    public partial class CommunicationEntryWizard : Rock.Web.UI.RockBlock
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
+
+    [BinaryFileTypeField( "Binary File Type", "The FileType to use for images that are added to the email using the image component", true, Rock.SystemGuid.BinaryFiletype.DEFAULT, order: 1 )]
+    [IntegerField( "Character Limit", "Set this to show a character limit countdown for SMS communications. Set to 0 to disable", false, 160, order: 2 )]
+
+    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 3 )]
+    [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved.", false, 0, "", order: 4 )]
+    public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
         #region Properties
 
@@ -104,21 +111,122 @@ namespace RockWeb.Blocks.Communication
 
             if ( !Page.IsPostBack )
             {
-                LoadDropDowns();
-
-                tglRecipientSelection_CheckedChanged( null, null );
-
-                /** DEBUG **/
-                if ( ddlCommunicationGroupList.Items.Count > 1 )
-                {
-                    ddlCommunicationGroupList.SelectedValue = ddlCommunicationGroupList.Items[1].Value;
-                    ddlCommunicationGroupList_SelectedIndexChanged( null, null );
-                }
-
-                tbCommunicationName.Text = "DEBUG";
-                dtpSendDateTime.SelectedDateTime = RockDateTime.Now;
-                /**********/
+                ShowDetail( PageParameter( "CommunicationId" ).AsInteger() );
             }
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="communicationId">The communication identifier.</param>
+        public void ShowDetail( int communicationId )
+        {
+            Rock.Model.Communication communication = null;
+            var rockContext = new RockContext();
+
+            if ( communicationId != 0 )
+            {
+                communication = new CommunicationService( rockContext ).Get( communicationId );
+            }
+
+            var editingApproved = PageParameter( "Edit" ).AsBoolean() && IsUserAuthorized( "Approve" );
+
+            if ( communication == null )
+            {
+                communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
+                communication.SenderPersonAliasId = CurrentPersonAliasId;
+                communication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+            }
+
+            CommunicationStatus[] editableStatuses = new CommunicationStatus[] { CommunicationStatus.Transient, CommunicationStatus.Draft, CommunicationStatus.Denied };
+            if ( editableStatuses.Contains( communication.Status ) || ( communication.Status == CommunicationStatus.PendingApproval && editingApproved ) )
+            {
+                // communication is either new or OK to edit
+            }
+            else
+            {
+                // Not an editable communication, so hide this block. If there is a CommunicationDetail block on this page, it'll be shown instead
+                this.Visible = false;
+                return;
+            }
+
+            LoadDropDowns();
+
+            hfCommunicationId.Value = communication.Id.ToString();
+            lTitle.Text = ( communication.Name ?? "New Communication" ).FormatAsHtmlTitle();
+
+            tbCommunicationName.Text = communication.Name;
+            tglBulkCommunication.Checked = communication.IsBulkCommunication;
+
+            this.IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
+            UpdateIndividualRecipientsCountText();
+            if ( this.IndividualRecipientPersonIds.Any() )
+            {
+                // existing communication with at least one recipient, so show the Individual Recipients mode
+                tglRecipientSelection.Checked = false;
+            }
+            else
+            {
+                tglRecipientSelection.Checked = true;
+            }
+
+            // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
+            if ( ddlCommunicationGroupList.Items.Count <= 1 )
+            {
+                tglRecipientSelection.Checked = false;
+                tglRecipientSelection.Visible = false;
+            }
+
+            tglRecipientSelection_CheckedChanged( null, null );
+
+            // Note: Javascript takes care of making sure the buttons are set up based on this
+            hfMediumType.Value = communication.CommunicationType.ConvertToInt().ToString();
+
+            tglSendDateTime.Checked = !communication.FutureSendDateTime.HasValue;
+            dtpSendDateTime.SelectedDateTime = communication.FutureSendDateTime;
+            tglSendDateTime_CheckedChanged( null, null );
+
+
+            // TODO 
+            // 1) when editing an existing communication, do we know which template they used?  
+            // 2) when editing an existing communication, can they change which template to use? (what do we do on the Select Template page, skip it?)??
+            // hfSelectedCommunicationTemplateId.Value = communication.
+
+            // Email Summary fields
+            tbFromName.Text = communication.FromName;
+            tbFromAddress.Text = communication.FromEmail;
+
+            // Email Summary fields: additional fields
+            tbReplyToAddress.Text = communication.ReplyToEmail;
+            tbCCList.Text = communication.CCEmails;
+            tbBCCList.Text = communication.BCCEmails;
+
+            hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( communication.ReplyToEmail ) || !string.IsNullOrEmpty( communication.CCEmails ) || !string.IsNullOrEmpty( communication.BCCEmails ) ).ToTrueFalse().ToLower();
+
+            tbEmailSubject.Text = communication.Subject;
+
+            // NOTE: tbEmailPreview will be populated by parsing the Html of the Email/Template
+
+            hfAttachedBinaryFileIds.Value = communication.AttachmentBinaryFileIds != null ? communication.AttachmentBinaryFileIds.ToList().AsDelimited( "," ) : string.Empty;
+
+            // Mobile Text Editor
+            ddlSMSFrom.SetValue( communication.SMSFromDefinedValueId );
+            tbSMSTextMessage.Text = communication.SMSMessage;
+
+            // Email Editor
+            hfEmailEditorHtml.Value = communication.Message;
+
+
+            /** DEBUG **/
+            if ( ddlCommunicationGroupList.Items.Count > 1 )
+            {
+                ddlCommunicationGroupList.SelectedValue = ddlCommunicationGroupList.Items[1].Value;
+                ddlCommunicationGroupList_SelectedIndexChanged( null, null );
+            }
+
+            tbCommunicationName.Text = "DEBUG";
+            dtpSendDateTime.SelectedDateTime = RockDateTime.Now;
+            /**********/
         }
 
         /// <summary>
@@ -140,25 +248,6 @@ namespace RockWeb.Blocks.Communication
             foreach ( var communicationGroup in authorizedCommunicationGroupList )
             {
                 ddlCommunicationGroupList.Items.Add( new ListItem( communicationGroup.Name, communicationGroup.Id.ToString() ) );
-            }
-
-            if ( !authorizedCommunicationGroupList.Any() )
-            {
-                nbCommunicationGroupWarning.Visible = true;
-                if ( !communicationGroupList.Any() )
-                {
-                    // there are no communication groups in the system, so explain how to add them
-                    nbCommunicationGroupWarning.Text = "No communications lists. Go to Home / Communications / Communication Lists to add a communication list.";
-                }
-                else
-                {
-                    // there are communication groups in the system, but the user isn't authorized to see any of them
-                    nbCommunicationGroupWarning.Text = "No communications lists available.";
-                }
-            }
-            else
-            {
-                nbCommunicationGroupWarning.Visible = false;
             }
 
             LoadCommunicationSegmentFilters();
@@ -227,6 +316,26 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRecipientSelectionNext_Click( object sender, EventArgs e )
         {
+            nbRecipientsAlert.Visible = false;
+            if ( tglRecipientSelection.Checked )
+            {
+                if ( !GetRecipientFromListSelection().Any() )
+                {
+                    nbRecipientsAlert.Text = "At least one recipient is required.";
+                    nbRecipientsAlert.Visible = true;
+                    return;
+                }
+            }
+            else
+            {
+                if ( !this.IndividualRecipientPersonIds.Any() )
+                {
+                    nbRecipientsAlert.Text = "At least one recipient is required.";
+                    nbRecipientsAlert.Visible = true;
+                    return;
+                }
+            }
+
             pnlRecipientSelection.Visible = false;
             ShowMediumSelection();
         }
@@ -238,6 +347,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglRecipientSelection_CheckedChanged( object sender, EventArgs e )
         {
+            nbRecipientsAlert.Visible = false;
             pnlRecipientSelectionList.Visible = tglRecipientSelection.Checked;
             pnlRecipientSelectionIndividual.Visible = !tglRecipientSelection.Checked;
         }
@@ -379,7 +489,7 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
-            var qryPersons = personService.GetByIds( this.IndividualRecipientPersonIds ).OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+            var qryPersons = personService.GetByIds( this.IndividualRecipientPersonIds ).Include( a => a.PhoneNumbers ).OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
 
             gIndividualRecipients.SetLinqDataSource( qryPersons );
             gIndividualRecipients.DataBind();
@@ -548,9 +658,11 @@ namespace RockWeb.Blocks.Communication
                     nbSendDateTimeWarning.Visible = true;
                     return;
                 }
-                else
+                else if ( dtpSendDateTime.SelectedDateTime.Value < RockDateTime.Now )
                 {
-                    // TODO: In case we want to check for Date too far into the past or too far in the future
+                    nbSendDateTimeWarning.NotificationBoxType = NotificationBoxType.Danger;
+                    nbSendDateTimeWarning.Text = "Send Date Time must be immediate or a future date/time";
+                    nbSendDateTimeWarning.Visible = true;
                 }
             }
 
@@ -581,6 +693,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglSendDateTime_CheckedChanged( object sender, EventArgs e )
         {
+            nbSendDateTimeWarning.Visible = false;
             dtpSendDateTime.Visible = !tglSendDateTime.Checked;
         }
 
@@ -678,10 +791,10 @@ namespace RockWeb.Blocks.Communication
             // See if the template supports preview-text
             HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
             templateDoc.LoadHtml( templateHtml );
-            var preheaderTextNode = templateDoc.GetElementbyId("preheader-text");
+            var preheaderTextNode = templateDoc.GetElementbyId( "preheader-text" );
             tbEmailPreview.Visible = preheaderTextNode != null;
             tbEmailPreview.Text = preheaderTextNode != null ? preheaderTextNode.InnerHtml : string.Empty;
-            
+
             btnTemplateSelectionNext_Click( sender, e );
         }
 
@@ -706,8 +819,12 @@ namespace RockWeb.Blocks.Communication
         {
             if ( !hfSelectedCommunicationTemplateId.Value.AsIntegerOrNull().HasValue )
             {
+                nbTemplateSelectionWarning.Text = "Please select a template.";
+                nbTemplateSelectionWarning.Visible = true;
                 return;
             }
+
+            nbTemplateSelectionWarning.Visible = false;
 
             pnlTemplateSelection.Visible = false;
 
@@ -778,7 +895,7 @@ namespace RockWeb.Blocks.Communication
         private void ShowEmailSummary()
         {
             pnlEmailSummary.Visible = true;
-}
+        }
 
         /// <summary>
         /// Handles the Click event of the btnEmailSummaryPrevious control.
@@ -806,7 +923,7 @@ namespace RockWeb.Blocks.Communication
                 HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
                 templateDoc.LoadHtml( hfEmailEditorHtml.Value );
                 var preheaderTextNode = templateDoc.GetElementbyId( "preheader-text" );
-                if (preheaderTextNode != null )
+                if ( preheaderTextNode != null )
                 {
                     preheaderTextNode.InnerHtml = tbEmailPreview.Text;
                     hfEmailEditorHtml.Value = templateDoc.DocumentNode.OuterHtml;
@@ -1014,7 +1131,7 @@ namespace RockWeb.Blocks.Communication
             lblConfirmationSendHtml.Text = string.Format( @"
 <p>Now Is the Moment Of Truth</p>
 <p>You are about to send this communication to <strong>{0}</strong> {1}</p>
-", sendCount, sendCountTerm.PluralizeIf(sendCount != 1));
+", sendCount, sendCountTerm.PluralizeIf( sendCount != 1 ) );
         }
 
         /// <summary>
@@ -1037,8 +1154,129 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSend control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSend_Click( object sender, EventArgs e )
         {
+            if ( dtpSendDateTimeConfirmation.Visible )
+            {
+                if ( !dtpSendDateTimeConfirmation.SelectedDateTime.HasValue )
+                {
+                    nbSendDateTimeWarningConfirmation.NotificationBoxType = NotificationBoxType.Danger;
+                    nbSendDateTimeWarningConfirmation.Text = "Send Date Time is required";
+                    nbSendDateTimeWarningConfirmation.Visible = true;
+                    return;
+                }
+                else if ( dtpSendDateTimeConfirmation.SelectedDateTime.Value < RockDateTime.Now )
+                {
+                    nbSendDateTimeWarningConfirmation.NotificationBoxType = NotificationBoxType.Danger;
+                    nbSendDateTimeWarningConfirmation.Text = "Send Date Time must be immediate or a future date/time";
+                    nbSendDateTimeWarningConfirmation.Visible = true;
+                }
+            }
+
+            // TODO
+            var rockContext = new RockContext();
+            var communicationService = new CommunicationService( rockContext );
+            var communicationRecipientService = new CommunicationRecipientService( rockContext );
+
+            Rock.Model.Communication communication = null;
+            IQueryable<CommunicationRecipient> qryRecipients = null;
+
+            int communicationId = hfCommunicationId.Value.AsInteger();
+            if ( communicationId > 0 )
+            {
+                communication = communicationService.Get( communicationId );
+            }
+
+            List<int> recipientPersonIds;
+            if ( tglRecipientSelection.Checked )
+            {
+                recipientPersonIds = GetRecipientFromListSelection().Select( a => a.PersonId ).ToList();
+            }
+            else
+            {
+                recipientPersonIds = this.IndividualRecipientPersonIds;
+            }
+
+            if ( communication != null )
+            {
+                // Remove any deleted recipients
+                HashSet<int> personIdHash = new HashSet<int>( recipientPersonIds );
+                qryRecipients = communication.GetRecipientsQry( rockContext );
+
+                foreach ( var item in qryRecipients.Select( a => new
+                {
+                    Id = a.Id,
+                    PersonId = a.PersonAlias.PersonId
+                } ) )
+                {
+                    if ( !personIdHash.Contains( item.PersonId ) )
+                    {
+                        var recipient = qryRecipients.Where( a => a.Id == item.Id ).FirstOrDefault();
+                        communicationRecipientService.Delete( recipient );
+                        communication.Recipients.Remove( recipient );
+                    }
+                }
+            }
+
+            if ( communication == null )
+            {
+                communication = new Rock.Model.Communication();
+                communication.Status = CommunicationStatus.Transient;
+                communication.SenderPersonAliasId = CurrentPersonAliasId;
+                communicationService.Add( communication );
+            }
+
+            communication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+
+            if ( qryRecipients == null )
+            {
+                qryRecipients = communication.GetRecipientsQry( rockContext );
+            }
+
+
+            // Add any new recipients
+            HashSet<int> communicationPersonIdHash = new HashSet<int>( qryRecipients.Select( a => a.PersonAlias.PersonId ) );
+            foreach ( var recipientPersonId in recipientPersonIds )
+            {
+                if ( !communicationPersonIdHash.Contains( recipientPersonId ) )
+                {
+                    var person = new PersonService( rockContext ).Get( recipientPersonId );
+                    if ( person != null )
+                    {
+                        var communicationRecipient = new CommunicationRecipient();
+                        communicationRecipient.PersonAlias = person.PrimaryAlias;
+                        communication.Recipients.Add( communicationRecipient );
+                    }
+                }
+            }
+
+            communication.IsBulkCommunication = tglBulkCommunication.Checked;
+            communication.CommunicationType = ( CommunicationType ) hfMediumType.Value.AsInteger();
+
+            communication.FromName = tbFromName.Text;
+            communication.FromEmail = tbFromAddress.Text;
+            communication.ReplyToEmail = tbReplyToAddress.Text;
+            communication.CCEmails = tbCCList.Text;
+            communication.BCCEmails = tbBCCList.Text;
+            communication.Subject = tbEmailSubject.Text;
+            communication.Message = hfEmailEditorHtml.Value;
+
+            communication.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
+            communication.SMSMessage = tbSMSTextMessage.Text;
+
+            if ( tglSendDateTimeConfirmation.Checked )
+            {
+                communication.FutureSendDateTime = null;
+            }
+            else
+            {
+                communication.FutureSendDateTime = dtpSendDateTimeConfirmation.SelectedDateTime;
+            }
 
         }
 
@@ -1059,8 +1297,11 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglSendDateTimeConfirmation_CheckedChanged( object sender, EventArgs e )
         {
+            nbSendDateTimeWarningConfirmation.Visible = false;
             dtpSendDateTimeConfirmation.Visible = !tglSendDateTimeConfirmation.Checked;
         }
+
+
 
         #endregion
 
@@ -1312,6 +1553,6 @@ namespace RockWeb.Blocks.Communication
 </html>
 ";
 
-        
+
     }
 }
