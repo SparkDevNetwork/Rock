@@ -29,6 +29,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            RockMigrationHelper.UpdateFieldType( "Data Views", "", "Rock", "Rock.Field.Types.DataViewsFieldType", "F739BF5D-3FDC-45EC-A03C-1AE7C47E3883" );
+            RockMigrationHelper.UpdateFieldType( "Communication Preference", "", "Rock", "Rock.Field.Types.CommunicationPreferenceFieldType", "507C28F2-8BC0-4909-A4FE-9C2B1149E2B2" );
+
             DropForeignKey("dbo.Communication", "ChannelEntityTypeId", "dbo.EntityType");
             DropForeignKey("dbo.CommunicationTemplate", "ChannelEntityTypeId", "dbo.EntityType");
             DropIndex("dbo.Communication", new[] { "MediumEntityTypeId" });
@@ -128,26 +131,17 @@ namespace Rock.Migrations
             AddForeignKey("dbo.CommunicationTemplate", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
             DropColumn("dbo.Communication", "MediumEntityTypeId");
             DropColumn("dbo.CommunicationTemplate", "MediumEntityTypeId");
-
-            // defined type of mediums
-            RockMigrationHelper.AddDefinedType( "Communication", "Communication Mediums", "Used by Rock's communication features for selecting which mediums a user prefers.", "BCBE1494-23F5-3683-4EC5-C0B5CACE8A5A" );
-            RockMigrationHelper.AddDefinedTypeAttribute( "BCBE1494-23F5-3683-4EC5-C0B5CACE8A5A", SystemGuid.FieldType.TEXT, "Icon CSS Class", "IconCssClass", "An icon to use for the communication medium.", 0, "", "CA8DF904-5281-86B2-433E-3C914F1A106A" );
-
-            RockMigrationHelper.UpdateDefinedValue( "BCBE1494-23F5-3683-4EC5-C0B5CACE8A5A", "Email", "", "0A299F1D-D703-FDBA-4826-7D0CA03A71A6", true );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "0A299F1D-D703-FDBA-4826-7D0CA03A71A6", "CA8DF904-5281-86B2-433E-3C914F1A106A", "fa fa-envelope-o" );
-
-            RockMigrationHelper.UpdateDefinedValue( "BCBE1494-23F5-3683-4EC5-C0B5CACE8A5A", "SMS", "", "D5F097D9-0415-9584-4019-681C77FD1513", true );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "D5F097D9-0415-9584-4019-681C77FD1513", "CA8DF904-5281-86B2-433E-3C914F1A106A", "fa fa-commenting" );
-
-            RockMigrationHelper.UpdateDefinedValue( "BCBE1494-23F5-3683-4EC5-C0B5CACE8A5A", "Push Notification", "", "54E16D83-A226-4369-8E42-3C9298B653A3", true );
-            RockMigrationHelper.AddDefinedValueAttributeValue( "54E16D83-A226-4369-8E42-3C9298B653A3", "CA8DF904-5281-86B2-433E-3C914F1A106A", "fa fa-mobile" );
-
+                        
             // group type
             RockMigrationHelper.AddGroupType( "Communication List", "For groups used by Rock's communication tools for storing lists of people to communicate to.", "List", "Recipient", false, true, false, "fa fa-bullhorn", 0, null, 0, null, "D1D95777-FFA3-CBB3-4A6D-658706DAED33" );
             RockMigrationHelper.AddGroupTypeRole( "D1D95777-FFA3-CBB3-4A6D-658706DAED33", "Recipient", "", 0, null, null, "9D85AB4E-59BC-B48A-494A-5684BA41578E", true, false, true );
 
+            // group attribute
+            RockMigrationHelper.AddGroupTypeGroupAttribute( "D1D95777-FFA3-CBB3-4A6D-658706DAED33", SystemGuid.FieldType.DATAVIEWS, "Communication Segments", "Additional Communication Segments to be presented when this communication list is selected.", 0, "", "73A53BC1-2178-46A1-8413-C7A4DD49F0B4" );
+            RockMigrationHelper.AddAttributeQualifier( "73A53BC1-2178-46A1-8413-C7A4DD49F0B4", "entityTypeName", "Rock.Model.Person", "37C5CD82-C4D2-4B58-BBCB-D2D59EF4B200" );
+
             // group member attribute
-            RockMigrationHelper.AddGroupTypeGroupAttribute( "D1D95777-FFA3-CBB3-4A6D-658706DAED33", SystemGuid.FieldType.DEFINED_VALUE, "Preferred Medium", "Used to store the user's preference for the sending medium for the communication list.", 0, "", "D7941908-1F65-CC9B-416C-CCFABE4221B9" );
+            RockMigrationHelper.AddGroupTypeGroupMemberAttribute( "D1D95777-FFA3-CBB3-4A6D-658706DAED33", SystemGuid.FieldType.COMMUNICATION_PREFERENCE_TYPE, "Preferred Communication Type", "The preferred communication type for this group member. Select None to use the person's default communication preference.", 0, "0", "D7941908-1F65-CC9B-416C-CCFABE4221B9" );
             RockMigrationHelper.AddAttributeQualifier( "D7941908-1F65-CC9B-416C-CCFABE4221B9", "allowmultiple", "False", "AEB4720A-B053-8D92-407E-9B29564882D2" );
             RockMigrationHelper.AddAttributeQualifier( "D7941908-1F65-CC9B-416C-CCFABE4221B9", "displaydescription", "False", "3A85C857-43E1-6586-41E5-9E9DF7D7D6B0" );
 
@@ -435,6 +429,7 @@ END
             RockMigrationHelper.DeleteGroupType( "D1D95777-FFA3-CBB3-4A6D-658706DAED33" );
             RockMigrationHelper.DeleteAttribute( "E3810936-182E-2585-4F8E-030A0E18B27A" );
             RockMigrationHelper.DeleteAttribute( "D7941908-1F65-CC9B-416C-CCFABE4221B9" );
+            RockMigrationHelper.DeleteAttribute( "73A53BC1-2178-46A1-8413-C7A4DD49F0B4" );
 
             // Delete DataView: 35 and older
             Sql( @"DELETE FROM DataView where [Guid] = '5537D54C-1B9B-4B81-AA63-F10D676FAE77'" );
