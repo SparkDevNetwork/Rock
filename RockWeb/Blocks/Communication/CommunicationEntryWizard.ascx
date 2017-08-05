@@ -526,7 +526,8 @@
 		                <div id="editor-controls" style="display: none;">
                             <div id="editor-toolbar-container" class="js-emaileditor-addon">
 			                    <div id="editor-toolbar-content">
-				                    <div class="component component-text" data-content="<h1>Big News</h1><p> This is a text block. You can use it to add text to your template.</p>" data-state="template">
+				                    <p><small><strong>Content Blocks</strong></small></p>
+                                    <div class="component component-text" data-content="<h1>Big News</h1><p> This is a text block. You can use it to add text to your template.</p>" data-state="template">
 					                    <i class="fa fa-align-justify"></i><br /> Text
 				                    </div>
 				                    <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-width='full' />" data-state="template">
@@ -544,23 +545,25 @@
 				                    </div>
 			                    </div>
                                 <div id="editor-toolbar-structure">
+                                    <p><small><strong>Content Zones</strong></small></p>
                                     <div class="component component-section" data-content="<div class='dropzone'></div>" data-state="template">
-					                    <i class="fa fa-columns"></i> <br /> Section_100
+					                    <i class="rk rk-one-column"></i> <br /> One
 				                    </div>
                                     <div class="component component-section" data-content="<table width='100%'><tr><td width='50%'><div class='dropzone'></div></td><td width='50%'><div class='dropzone'></div></td></tr></table>" data-state="template">
-					                    <i class="fa fa-columns"></i> <br /> Section_2x
+					                    <i class="rk rk-two-column"></i> <br /> Two
 				                    </div>
                                     <div class="component component-section" data-content="<table width='100%'><tr><td width='33%'><div class='dropzone'></div></td><td width='34%'><div class='dropzone'></div></td><td width='33%'><div class='dropzone'></div></td></tr></table>" data-state="template">
-					                    <i class="fa fa-columns"></i> <br /> Section_3x
+					                    <i class="rk rk-three-column"></i> <br /> Three
 				                    </div>
+                                    <!--
                                     <div class="component component-section" data-content="<table width='100%'><tr><td width='25%'><div class='dropzone'></div></td><td width='25%'><div class='dropzone'></div></td><td width='25%'><div class='dropzone'></div></td><td width='25%'><div class='dropzone'></div></td></tr></table>" data-state="template">
-					                    <i class="fa fa-columns"></i> <br /> Section_4x
-				                    </div>
+					                    <i class="rk rk-four-column"></i> <br /> Four
+				                    </div> -->
                                     <div class="component component-section" data-content="<table width='100%'><tr><td width='33%'><div class='dropzone'></div></td><td width='67%'><div class='dropzone'></div></td></tr></table>" data-state="template">
-					                    <i class="fa fa-columns"></i> <br /> Section_1:2
+					                    <i class="rk rk-left-column"></i> <br /> Left
 				                    </div>
                                     <div class="component component-section" data-content="<table width='100%'><tr><td width='67%'><div class='dropzone'></div></td><td width='33%'><div class='dropzone'></div></td></tr></table>" data-state="template">
-					                    <i class="fa fa-columns"></i> <br /> Section_2:1
+					                    <i class="rk rk-right-column"></i> <br /> Right
 				                    </div>
                                 </div>
                             </div>
