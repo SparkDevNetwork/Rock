@@ -7,6 +7,7 @@
 
 @import "../../../Styles/Bootstrap/variables.less";
 @import "../../../Styles/_rock-variables.less";
+@import (inline)  "../../../Styles/RockFont/style.css";
 @import "_variables.less";
 @import "_variable-overrides.less";
 
@@ -30,9 +31,21 @@
 	width: 100%;
 }
 
+#editor-toolbar-container {
+  background-color: @panel-heading-bg;
+  font-family: @font-family-sans-serif;
+  color: @text-color;
+  overflow: auto;
+}
+
+#editor-toolbar-container p {
+  margin: 0 0 2px 0;
+}
+
 #editor-toolbar-content {
-	padding: 12px 12px 0 12px;
-	background-color: @panel-heading-bg;
+  padding: 12px 12px 0 12px;
+  width: 50%;
+  float: left;
 }
 
 #editor-toolbar-content:after {
@@ -43,7 +56,7 @@
 
 #editor-toolbar-structure {
 	padding: 12px 12px 0 12px;
-	background-color: @panel-heading-bg;
+    float: left;
 }
 
 #editor-toolbar-structure:after {
@@ -67,24 +80,23 @@
 }
 
 .component[data-state=template] {
-	border: 1px solid #aaa;
-	text-align: center;
-	padding: 12px;
-	margin-bottom: 12px;
-	font-size: 12px;
-	font-family: Arial, Helvetica, sans-serif;
-	background-color: #dfdede;
-	color: #555;
-	border-radius: 4px;
-	width: 60px;
-	float: left;
-	margin-right: 12px;
-	cursor: move;
+  border: 1px solid @btn-default-border;
+  text-align: center;
+  padding: 6px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-family: @font-family-sans-serif;
+  background-color: @btn-default-bg;
+  color: @btn-default-color;
+  border-radius: 4px;
+  width: 50px;
+  float: left;
+  margin-right: 8px;
+  cursor: move;
 }
 
 .component[data-state=template] i {
-	font-size: 24px;
-	margin-bottom: 6px;
+	font-size: 22px;
 }
 
 // miniturize the image component when dragging to make it easier to 
