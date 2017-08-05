@@ -537,6 +537,7 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\CommunicationPreferenceFieldType.cs" />
     <Compile Include="Field\Types\DataViewsFieldType.cs" />
     <Compile Include="Field\Types\LavaFieldType.cs" />
     <Compile Include="Field\Types\AccountFieldType.cs" />
