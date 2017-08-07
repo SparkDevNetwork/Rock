@@ -335,13 +335,13 @@ namespace Rock.Model
 
         #endregion
 
-        #region Private Methods
+        #region Static Methods
 
         /// <summary>
         /// Gets the interaction details.
         /// </summary>
         /// <returns></returns>
-        private string GetInteractionDetails( Interaction interaction )
+        public static string GetInteractionDetails( Interaction interaction )
         {
             string interactionDetails = string.Empty;
             string deviceTypeDetails = $"{interaction.InteractionSession.DeviceType.OperatingSystem} {interaction.InteractionSession.DeviceType.DeviceTypeData} {interaction.InteractionSession.DeviceType.Application} {interaction.InteractionSession.DeviceType.ClientType}";
@@ -360,10 +360,6 @@ namespace Rock.Model
 
             return interactionDetails;
         }
-
-        #endregion
-
-        #region Static Methods
 
         #endregion
 
