@@ -393,7 +393,7 @@ namespace Rock.Model
         /// The communication preference.
         /// </value>
         [DataMember]
-        public CommunicationType? CommunicationPreference { get; set; }
+        public CommunicationType CommunicationPreference { get; set; }
 
         /// <summary>
         /// Gets or sets notes about why a person profile needs to be reviewed
@@ -466,6 +466,7 @@ namespace Rock.Model
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
             _aliases = new Collection<PersonAlias>();
+            CommunicationPreference = CommunicationType.Email;
         }
 
         #endregion

@@ -149,6 +149,11 @@
                                 <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
                             </Rock:RockRadioButtonList>
 
+                            <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference" >
+                                <asp:ListItem Text="Email" Value="1" />
+                                <asp:ListItem Text="SMS" Value="2" />
+                            </Rock:RockRadioButtonList>
+
                         </fieldset>
                         </div>
 
