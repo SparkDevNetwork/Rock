@@ -100,6 +100,14 @@ namespace Rock.Model
         public SegmentCriteria SegmentCriteria { get; set; }
 
         /// <summary>
+        /// Gets or sets the Communication Template that was used to compose this communication
+        /// </summary>
+        /// <value>
+        /// The communication template identifier.
+        /// </value>
+        public int? CommunicationTemplateId { get; set; }
+
+        /// <summary>
         /// Gets or sets the sender person alias identifier.
         /// </summary>
         /// <value>
@@ -482,6 +490,14 @@ namespace Rock.Model
         [NotMapped]
         public virtual IEnumerable<int> AttachmentBinaryFileIds { get; set; }
 
+        /// <summary>
+        /// /// Gets or sets the Communication Template that was used to compose this communication
+        /// </summary>
+        /// <value>
+        /// The communication template.
+        /// </value>
+        public CommunicationTemplate CommunicationTemplate { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -706,6 +722,9 @@ namespace Rock.Model
             this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.ReviewerPersonAlias ).WithMany().HasForeignKey( c => c.ReviewerPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SMSFromDefinedValue ).WithMany().HasForeignKey( c => c.SMSFromDefinedValueId ).WillCascadeOnDelete( false );
+
+            // the Migration will manually add a CASCADE DELETE SET NULL for CommunicationTemplateId
+            this.HasOptional( c => c.CommunicationTemplate ).WithMany().HasForeignKey( c => c.CommunicationTemplateId ).WillCascadeOnDelete( false );
         }
     }
 
