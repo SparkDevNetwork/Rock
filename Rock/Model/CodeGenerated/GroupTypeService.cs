@@ -147,6 +147,7 @@ namespace Rock.Model
             target.ShowConnectionStatus = source.ShowConnectionStatus;
             target.ShowInGroupList = source.ShowInGroupList;
             target.ShowInNavigation = source.ShowInNavigation;
+            target.ShowMaritalStatus = source.ShowMaritalStatus;
             target.TakesAttendance = source.TakesAttendance;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

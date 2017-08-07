@@ -225,6 +225,11 @@ namespace Rock.SystemGuid
         public const string PERSONAL_DEVICE_TYPE = "C1848F4C-D6F8-4514-8DB6-CD3C19621025";
 
         /// <summary>
+        /// The personal device platform type (ios, android, etc).
+        /// </summary>
+        public const string PERSONAL_DEVICE_PLATFORM = "A55849D7-5C7B-4B36-9024-A672169E4C9C";
+
+        /// <summary>
         /// Protect My Ministry MVR jurisdiction codes
         /// </summary>
         public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
@@ -268,6 +273,11 @@ namespace Rock.SystemGuid
         /// Used to manage the workflows that can be launched via webhook.
         /// </summary>
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
+
+        /// <summary>
+        /// Used to manage the workflows that can be launched via a text message.
+        /// </summary>
+        public const string TEXT_TO_WORKFLOW = "2CACB86F-D811-4483-98E1-272F1FF8FF5D";
 
         /// <summary>
         /// Used to manage the lava code that can be launched via webhook.

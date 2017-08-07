@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "CustomSetting" )]
     [BooleanField( "Query Parameter Filtering", "Determines if block should evaluate the query string parameters for additional filter criteria.", false, "CustomSetting" )]
     [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "CustomSetting" )]
-    [BooleanField("Merge Content", "Should the content data and attribute values be merged using the Lava's template engine.", false, "CustomSetting" )]
+    [BooleanField( "Merge Content", "Should the content data and attribute values be merged using the Lava's template engine.", false, "CustomSetting" )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", false, "CustomSetting" )]
     [BooleanField( "Rss Autodiscover", "Determines if a RSS autodiscover link should be added to the page head.", false, "CustomSetting" )]
     [TextField( "Meta Description Attribute", "Attribute to use for storing the description attribute.", false, "", "CustomSetting" )]
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Cms
 
             rockContext.SaveChanges();
 
-            SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited(",") );
+            SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
             SetAttributeValue( "Channel", ddlChannel.SelectedValue );
             SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
             SetAttributeValue( "Template", ceTemplate.Text );
@@ -298,7 +298,7 @@ namespace RockWeb.Blocks.Cms
             filterField.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( filterField );
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
-            
+
             // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
             filterField.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
@@ -634,7 +634,8 @@ $(document).ready(function() {
         {
             Template template = null;
 
-            try {
+            try
+            {
 
                 // only load from the cache if a cacheDuration was specified
                 if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
@@ -653,9 +654,9 @@ $(document).ready(function() {
                     }
                 }
             }
-            catch(Exception ex )
+            catch ( Exception ex )
             {
-                template = Template.Parse( string.Format("Lava error: {0}", ex.Message ) );
+                template = Template.Parse( string.Format( "Lava error: {0}", ex.Message ) );
             }
 
             return template;
@@ -664,7 +665,7 @@ $(document).ready(function() {
         private List<ContentChannelItem> GetContent( List<string> errorMessages )
         {
             List<ContentChannelItem> items = null;
-            
+
             // only load from the cache if a cacheDuration was specified
             if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
             {
@@ -681,7 +682,7 @@ $(document).ready(function() {
                     var rockContext = new RockContext();
                     var service = new ContentChannelItemService( rockContext );
                     var itemType = typeof( Rock.Model.ContentChannelItem );
-                    
+
                     ParameterExpression paramExpression = service.ParameterExpression;
 
                     var contentChannel = new ContentChannelService( rockContext ).Get( channelGuid.Value );
@@ -691,52 +692,52 @@ $(document).ready(function() {
 
                         items = new List<ContentChannelItem>();
 
-                        var qry = service.Queryable( "ContentChannel,ContentChannelType" );
+                        var qry = service
+                            .Queryable( "ContentChannel,ContentChannelType" )
+                            .Where( i => i.ContentChannelId == contentChannel.Id );
 
                         int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
                         if ( queryParameterFiltering && itemId.HasValue )
                         {
                             qry = qry.Where( i => i.Id == itemId.Value );
                         }
-                        else
+
+                        if ( contentChannel.RequiresApproval && !contentChannel.ContentChannelType.DisableStatus )
                         {
-                            qry = qry.Where( i => i.ContentChannelId == contentChannel.Id );
-
-                            if ( contentChannel.RequiresApproval && !contentChannel.ContentChannelType.DisableStatus )
+                            // Check for the configured status and limit query to those
+                            var statuses = new List<ContentChannelItemStatus>();
+                            foreach ( string statusVal in ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                             {
-                                // Check for the configured status and limit query to those
-                                var statuses = new List<ContentChannelItemStatus>();
-
-                                    foreach ( string statusVal in ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                                var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                                if ( status != null )
                                 {
-                                    var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
-                                    if ( status != null )
-                                    {
-                                        statuses.Add( status.Value );
-                                    }
-                                }
-                                if ( statuses.Any() )
-                                {
-                                    qry = qry.Where( i => statuses.Contains( i.Status ) );
+                                    statuses.Add( status.Value );
                                 }
                             }
-
-                            int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
-                            if ( dataFilterId.HasValue )
+                            if ( statuses.Any() )
                             {
-                                var dataFilterService = new DataViewFilterService( rockContext );
-                                var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
-                                Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, service, paramExpression, errorMessages ) : null;
-
-                                qry = qry.Where( paramExpression, whereExpression, null );
+                                qry = qry.Where( i => statuses.Contains( i.Status ) );
                             }
                         }
 
-                        // All filtering has been added, now run query and load attributes
+                        int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
+                        if ( dataFilterId.HasValue )
+                        {
+                            var dataFilterService = new DataViewFilterService( rockContext );
+                            var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
+                            Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, service, paramExpression, errorMessages ) : null;
+
+                            qry = qry.Where( paramExpression, whereExpression, null );
+                        }
+
+                        // All filtering has been added, now run query, check security and load attributes
                         foreach ( var item in qry.ToList() )
                         {
-                            item.LoadAttributes( rockContext );
-                            items.Add( item );
+                            if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            {
+                                item.LoadAttributes( rockContext );
+                                items.Add( item );
+                            }
                         }
 
                         // Order the items
@@ -814,12 +815,12 @@ $(document).ready(function() {
 
                             }
 
-                                try
+                            try
+                            {
+                                if ( orderedQry != null )
                                 {
-                                    if ( orderedQry != null )
-                                    {
-                                        items = orderedQry.ToList();
-                                    }
+                                    items = orderedQry.ToList();
+                                }
                             }
                             catch { }
 
@@ -962,10 +963,10 @@ $(document).ready(function() {
                     var itemAttributes = attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
                                             .Where( a => (
                                                     a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                                                    a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() ) 
+                                                    a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() )
                                                 ) || (
                                                     a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
-                                                    a.EntityTypeQualifierValue.Equals( channel.Id.ToString() ) 
+                                                    a.EntityTypeQualifierValue.Equals( channel.Id.ToString() )
                                                 ) )
                                             .ToList();
 
@@ -1001,7 +1002,7 @@ $(document).ready(function() {
         {
             foreach ( ListItem item in listControl.Items )
             {
-                item.Selected = (item.Value == value);
+                item.Selected = ( item.Value == value );
             }
         }
 
@@ -1025,16 +1026,16 @@ $(document).ready(function() {
                     HttpContext.Current.Items.Remove( Rock.Reporting.EntityHelper.GetCacheKey( entityType ) );
 
                     var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
-                    foreach( var entityField in entityFields
-                        .Where( f => 
+                    foreach ( var entityField in entityFields
+                        .Where( f =>
                             f.FieldKind == Rock.Reporting.FieldKind.Attribute &&
                             f.AttributeGuid.HasValue )
                         .ToList() )
                     {
                         // remove EntityFields that aren't attributes for this ContentChannelType or ChannelChannel (to avoid duplicate Attribute Keys)
                         var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
-                        if ( attribute != null && 
-                            attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" && 
+                        if ( attribute != null &&
+                            attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" &&
                             attribute.EntityTypeQualifierValue.AsInteger() != channel.ContentChannelTypeId )
                         {
                             entityFields.Remove( entityField );
@@ -1129,11 +1130,11 @@ $(document).ready(function() {
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
-                
+
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
-                
+
                     // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
                     filterControl.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
                     filterControl.FilteredEntityTypeName = ITEM_TYPE_NAME;
@@ -1314,12 +1315,12 @@ $(document).ready(function() {
             /// <value>
             /// The previous page.
             /// </value>
-            public int PreviousPage 
-            { 
-                get 
+            public int PreviousPage
+            {
+                get
                 {
                     CurrentPage = CurrentPage > TotalPages ? TotalPages : CurrentPage;
-                    return ( CurrentPage > 1 ) ? CurrentPage - 1 : -1; 
+                    return ( CurrentPage > 1 ) ? CurrentPage - 1 : -1;
                 }
             }
 
@@ -1329,9 +1330,9 @@ $(document).ready(function() {
             /// <value>
             /// The next page.
             /// </value>
-            public int NextPage 
-            { 
-                get 
+            public int NextPage
+            {
+                get
                 {
                     CurrentPage = CurrentPage > TotalPages ? TotalPages : CurrentPage;
                     return ( CurrentPage < TotalPages ) ? CurrentPage + 1 : -1;
@@ -1355,7 +1356,7 @@ $(document).ready(function() {
                     else
                     {
                         return Convert.ToInt32( Math.Abs( ItemCount / PageSize ) ) +
-                            ((ItemCount % PageSize) > 0 ? 1 : 0);
+                            ( ( ItemCount % PageSize ) > 0 ? 1 : 0 );
                     }
                 }
             }
@@ -1411,7 +1412,7 @@ $(document).ready(function() {
             /// </summary>
             /// <param name="urlTemplate">The URL template.</param>
             /// <param name="pageNumber">The page number.</param>
-            public PaginationPage( string urlTemplate, int pageNumber)
+            public PaginationPage( string urlTemplate, int pageNumber )
             {
                 UrlTemplate = urlTemplate;
                 PageNumber = pageNumber;
@@ -1433,11 +1434,11 @@ $(document).ready(function() {
             /// <value>
             /// The page URL.
             /// </value>
-            public string PageUrl 
-            { 
+            public string PageUrl
+            {
                 get
                 {
-                    if ( !string.IsNullOrWhiteSpace( UrlTemplate ) && UrlTemplate.Contains( "{0}"))
+                    if ( !string.IsNullOrWhiteSpace( UrlTemplate ) && UrlTemplate.Contains( "{0}" ) )
                     {
                         return string.Format( UrlTemplate, PageNumber );
                     }
@@ -1448,7 +1449,7 @@ $(document).ready(function() {
                 }
             }
 
-        #endregion
+            #endregion
 
         }
     }
