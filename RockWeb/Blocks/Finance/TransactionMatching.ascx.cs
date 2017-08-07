@@ -297,7 +297,8 @@ namespace RockWeb.Blocks.Finance
         private enum Direction
         {
             Prev,
-            Next
+            Next,
+            Current
         }
 
         /// <summary>
@@ -328,12 +329,17 @@ namespace RockWeb.Blocks.Finance
                 {
                     position--;
                 }
-                else
+                else if ( direction == Direction.Next)
                 {
                     position++;
                 }
+                else if ( direction == Direction.Current )
+                {
+                    // If navigate is set to stay on current, stay on the current transaction ( and don't change history position )
+                    toTransactionId = fromTransactionId;
+                }
 
-                if ( historyList.Count > position )
+                if ( ( toTransactionId == null ) && ( historyList.Count > position ) )
                 {
                     if ( position >= 0 )
                     {
@@ -700,8 +706,12 @@ namespace RockWeb.Blocks.Finance
 
             mdAccountsPersonalFilter.Hide();
 
-            Block_BlockUpdated( null, null );
+            // load the dropdowns again since account filter may have changed
+            LoadDropDowns();
 
+            // load the current transaction again to make sure UI shows the accounts based on the updated filter settings
+            NavigateToTransaction( Direction.Current );
+            
             // Reload the transaction amounts after changing the displayed accounts.
             int? transactionId = hfTransactionId.Value.AsIntegerOrNull();
             if (transactionId.HasValue)
