@@ -387,6 +387,15 @@ namespace Rock.Model
         public EmailPreference EmailPreference { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication preference.
+        /// </summary>
+        /// <value>
+        /// The communication preference.
+        /// </value>
+        [DataMember]
+        public CommunicationType? CommunicationPreference { get; set; }
+
+        /// <summary>
         /// Gets or sets notes about why a person profile needs to be reviewed
         /// </summary>
         /// <value>
