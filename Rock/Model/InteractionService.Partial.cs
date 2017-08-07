@@ -29,6 +29,21 @@ namespace Rock.Model
     public partial class InteractionService
     {
 
+        /// <summary>
+        /// Adds the interaction.
+        /// </summary>
+        /// <param name="interactionComponentId">The interaction component identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="interactionData">The interaction data.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="deviceApplication">The device application.</param>
+        /// <param name="deviceOs">The device os.</param>
+        /// <param name="deviceClientType">Type of the device client.</param>
+        /// <param name="deviceTypeData">The device type data.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <returns></returns>
         public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
             string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress )
         {
