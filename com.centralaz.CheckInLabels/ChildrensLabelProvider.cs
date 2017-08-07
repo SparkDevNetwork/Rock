@@ -27,6 +27,25 @@ using Rock.Web.Cache;
 
 namespace com.centralaz.CheckInLabels
 {
+    /// <summary>
+    /// This is a port from our original pre-arena print label system which
+    /// has been adapted to work with Rock's Label Merge Fields.  It will look for
+    /// and use the following merge code keys in the Zebra .PRN file so they can be mapped
+    /// to Rock's Label Merge Fields:
+    /// * CentralAZ.BirthdayImageFile (whose reference should point to a .BMP of a Birthday cake icon)
+    /// * CentralAZ.ClaimCardFooter
+    /// * CentralAZ.ClaimCardTitle
+    /// * CentralAZ.HealthNotesTitle
+    /// * CentralAZ.ParentsInitialsTitle
+    /// * CentralAZ.ServicesLabel
+    /// * AllergyNote
+    /// * SpecialNeedsIntakeFlag
+    /// * InfoIconFile (whose reference should point to a .BMP of a Info icon)
+    /// * EpiPenFlag
+    /// * SelfCheckOutFlag
+    /// * LegalNote
+    /// </summary>
+    /// <seealso cref="com.centralaz.CheckInLabels.IPrintLabel" />
     internal class ChildrensLabelProvider : IPrintLabel
     {
         private RockContext rockContext = new RockContext();
@@ -141,6 +160,8 @@ namespace com.centralaz.CheckInLabels
             label.Services = services.ToString();
             SetAgeGroup( attendee.Person );
 
+            label.SpecialNeedsIntakeFlag = checkInLabel.MergeFields.ContainsKey( "SpecialNeedsIntakeFlag" ) ? checkInLabel.MergeFields["SpecialNeedsIntakeFlag"].AsBoolean() : false;
+            label.InfoIconFile = checkInLabel.MergeFields.ContainsKey( "InfoIconFile" ) ? checkInLabel.MergeFields["InfoIconFile"] : string.Empty;
             label.EpiPenFlag = checkInLabel.MergeFields.ContainsKey( "EpiPenFlag" ) ? checkInLabel.MergeFields["EpiPenFlag"].AsBoolean() : false;
             label.SelfCheckOutFlag = checkInLabel.MergeFields.ContainsKey( "SelfCheckOutFlag" ) ? checkInLabel.MergeFields["SelfCheckOutFlag"].AsBoolean() : false;
             label.LegalNoteFlag = checkInLabel.MergeFields.ContainsKey( "LegalNote" ) && !string.IsNullOrWhiteSpace( checkInLabel.MergeFields["LegalNote"] ) ? true : false;

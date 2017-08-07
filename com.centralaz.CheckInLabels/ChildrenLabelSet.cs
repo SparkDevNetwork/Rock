@@ -123,7 +123,14 @@ namespace com.centralaz.CheckInLabels
 			set { _EpiPenFlag = value; }
 		}
 
-		protected bool _HealthNoteFlag = false;
+        protected bool _SpecialNeedsIntakeFlag = false;
+        public bool SpecialNeedsIntakeFlag
+        {
+            get { return _SpecialNeedsIntakeFlag; }
+            set { _SpecialNeedsIntakeFlag = value; }
+        }
+
+        protected bool _HealthNoteFlag = false;
 		public bool HealthNoteFlag
 		{
 			get { return _HealthNoteFlag; }
@@ -175,21 +182,28 @@ namespace com.centralaz.CheckInLabels
 			set { _AgeGroup = value; }
 		}
 
-		protected string _LogoImageFile = @"C:\Inetpub\wwwroot\CheckIn\images\xlogo_bw_lg.bmp";
+		protected string _LogoImageFile = @"C:\inetpub\wwwroot\RockWeb\Content\InternalSite\Check-in\xlogo_bw_lg.bmp";
 		public string LogoImageFile
 		{
 			get { return _LogoImageFile; }
 			set { _LogoImageFile = value; }
 		}
 
-		protected string _BirthdayImageFile = @"C:\Inetpub\wwwroot\CheckIn\images\cake.bmp";
-		public string BirthdayImageFile
-		{
-			get { return _BirthdayImageFile; }
-			set { _BirthdayImageFile = value; }
+		protected string _InfoIconFile = @"C:\inetpub\wwwroot\RockWeb\Content\InternalSite\Check-in\info.bmp";
+		public string InfoIconFile
+        {
+			get { return _InfoIconFile; }
+			set { _InfoIconFile = value; }
 		}
 
-		protected DateTime _BirthdayDate = DateTime.MinValue;
+        protected string _BirthdayImageFile = @"C:\inetpub\wwwroot\RockWeb\Content\InternalSite\Check-in\cake.bmp";
+        public string BirthdayImageFile
+        {
+            get { return _BirthdayImageFile; }
+            set { _BirthdayImageFile = value; }
+        }
+
+        protected DateTime _BirthdayDate = DateTime.MinValue;
 		public DateTime BirthdayDate
 		{
 			get { return _BirthdayDate; }
@@ -793,8 +807,8 @@ namespace com.centralaz.CheckInLabels
 				format.Alignment = StringAlignment.Center;
 				//Set text color back to black
 				br.Color = Color.Black;
-				g.DrawString( LabelSymbols.EpiPenFlag, new Font( "Arial", 20, FontStyle.Bold ), br, Rf, format );
-			}
+                g.DrawString( LabelSymbols.EpiPenFlag, new Font( "Arial", 20, FontStyle.Bold ), br, Rf, format );
+            }
 
 			/*******************************************************************/
 			/*Attendance              [HealthNotes ]                             */
@@ -1015,14 +1029,26 @@ namespace com.centralaz.CheckInLabels
 				flags = flags + LabelSymbols.EpiPenFlag;
 			}
 
-			g.DrawString( flags, new Font( "Arial", 20, FontStyle.Bold ), br, rectangle, format );
+            g.DrawString( flags, new Font( "Arial", 20, FontStyle.Bold ), br, rectangle, format );
 
-			/*******************************************************************/
-			/*                             Separator Line                      */
-			/*******************************************************************/
+            if ( this.SpecialNeedsIntakeFlag )
+            {
+                var img = System.Drawing.Image.FromFile( this._InfoIconFile, true );
 
-			//Set color to black
-			br.Color = Color.Black;
+                // Define a rectangle to locate the graphic:
+                // x,y ,width, height (where x,y is the coord of the upper left corner of the rectangle)
+                RectangleF rect = new RectangleF( rectangle.X + 64, rectangle.Y + 10, 16.0F, 16.0F );
+
+                // Add the image to the document
+                g.DrawImage( img, rect );
+            }
+
+            /*******************************************************************/
+            /*                             Separator Line                      */
+            /*******************************************************************/
+
+            //Set color to black
+            br.Color = Color.Black;
 			g.FillRectangle( br, 0, 95, labelwidth, 1 );
 
 			/*******************************************************************/
@@ -1082,5 +1108,5 @@ namespace com.centralaz.CheckInLabels
 		public static string HealthNote = "+";
 		public static string LegalNote = "!";
 		public static string SelfCheckOutFlag = "*";
-	}
+    }
 }

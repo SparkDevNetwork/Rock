@@ -9,3 +9,5 @@ Assembly:com.centralaz.CheckInLabels,ChildrensLabelProvider
 ^FDAllergyNote^FS
 ^FDLegalNote^FS
 ^FDSelfCheckOutFlag^FS
+^FDSpecialNeedsIntakeFlag^FS
+^InfoIconFile^FS
