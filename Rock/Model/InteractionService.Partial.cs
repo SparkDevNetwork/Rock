@@ -28,6 +28,42 @@ namespace Rock.Model
     /// </summary>
     public partial class InteractionService
     {
+
+        /// <summary>
+        /// Adds the interaction.
+        /// </summary>
+        /// <param name="interactionComponentId">The interaction component identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="interactionData">The interaction data.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="deviceApplication">The device application.</param>
+        /// <param name="deviceOs">The device os.</param>
+        /// <param name="deviceClientType">Type of the device client.</param>
+        /// <param name="deviceTypeData">The device type data.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <returns></returns>
+        public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
+            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress )
+        {
+            Interaction interaction = new Interaction();
+            interaction.InteractionComponentId = interactionComponentId;
+            interaction.EntityId = entityId;
+            interaction.Operation = operation;
+            interaction.InteractionData = PersonToken.ObfuscateRockMagicToken( interactionData );
+            interaction.InteractionDateTime = dateTime;
+            interaction.PersonAliasId = personAliasId;
+
+            var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
+            var session = this.GetInteractionSession( null, ipAddress, deviceType.Id );
+
+            interaction.InteractionSessionId = session.Id;
+            this.Add( interaction );
+
+            return interaction;
+        }
+
         /// <summary>
         /// Gets the interaction device type. If it can't be found, a new InteractionDeviceType record will be created and returned.
         /// </summary>

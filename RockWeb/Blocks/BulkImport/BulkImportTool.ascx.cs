@@ -24,6 +24,7 @@ using Microsoft.AspNet.SignalR;
 
 using Rock;
 using Rock.Model;
+using Rock.Slingshot;
 using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -82,7 +83,7 @@ namespace RockWeb.Blocks.BulkImport
         {
             base.OnLoad( e );
 
-            if (this.IsPostBack)
+            if ( this.IsPostBack )
             {
                 if ( !string.IsNullOrEmpty( tbForeignSystemKey.Text ) )
                 {
@@ -99,8 +100,8 @@ namespace RockWeb.Blocks.BulkImport
         /// Handles the FileUploaded event of the fupSlingshotFile control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
-        protected void fupSlingshotFile_FileUploaded( object sender, FileUploaderEventArgs e )
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void fupSlingshotFile_FileUploaded( object sender, EventArgs e )
         {
             pnlActions.Visible = false;
             var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
@@ -140,11 +141,6 @@ namespace RockWeb.Blocks.BulkImport
         }
 
         /// <summary>
-        /// The importer
-        /// </summary>
-        private Rock.Slingshot.SlingshotImporter _importer;
-
-        /// <summary>
         /// 
         /// </summary>
         private enum ImportType
@@ -180,19 +176,49 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCheckForeignSystemKey_Click( object sender, EventArgs e )
         {
-            var tableList = Rock.Slingshot.BulkImportHelper.TablesThatHaveForeignSystemKey( tbForeignSystemKey.Text );
-            if ( !tableList.Any())
+            nbCheckForeignSystemKey.Visible = false;
+            nbCheckForeignSystemKey.Text = string.Empty;
+            if ( !string.IsNullOrEmpty( tbForeignSystemKey.Text ) )
             {
-                nbCheckForeignSystemKey.Text = "OK. Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has not be used to import data.";
-                nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Success;
+                var tableList = Rock.Slingshot.BulkImporter.TablesThatHaveForeignSystemKey( tbForeignSystemKey.Text );
+
+                if ( !tableList.Any() )
+                {
+                    nbCheckForeignSystemKey.Text = "OK. Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has not be used to import data.";
+                    nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Success;
+                }
+                else
+                {
+                    nbCheckForeignSystemKey.Text = "Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has already been used. Import again to insert any new records that are detected, and update any person records that have changed.";
+                    nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Info;
+                }
+
+                nbCheckForeignSystemKey.Details = tableList.AsDelimited( "<br />" );
+                nbCheckForeignSystemKey.Visible = true;
+            }
+
+            var foreignSystemKeyList = BulkImporter.UsedForeignSystemKeys();
+
+            if ( nbCheckForeignSystemKey.Text == string.Empty )
+            {
+                nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Default;
             }
             else
             {
-                nbCheckForeignSystemKey.Text = "Foreign System Key <strong>" + tbForeignSystemKey.Text + "</strong> has already been used. Attendance Data that does not have an Id might be duplicated. Besides that, is it OK to import it again to insert any new records that are detected. It will also update any person records that have changed.";
-                nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Info;
+                nbCheckForeignSystemKey.Text += "<br /><br />";
             }
 
-            nbCheckForeignSystemKey.Details = tableList.AsDelimited("<br />");
+            if ( foreignSystemKeyList.Any() )
+            {
+                nbCheckForeignSystemKey.Text += "The following ForeignSystemKeys have been used from previous imports:<br /><br />" + foreignSystemKeyList.AsDelimited( "<br />" );
+            }
+            else
+            {
+                nbCheckForeignSystemKey.Text += "No ForeignSystemKeys have been used from previous imports";
+            }
+
+            nbCheckForeignSystemKey.Text += "<br />";
+
             nbCheckForeignSystemKey.Visible = true;
         }
 
@@ -205,16 +231,32 @@ namespace RockWeb.Blocks.BulkImport
             var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
             long totalMilliseconds = 0;
 
+            Rock.Slingshot.SlingshotImporter _importer = null;
+
             var importTask = new Task( () =>
             {
                 // wait a little so the browser can render and start listening to events
                 System.Threading.Thread.Sleep( 1000 );
                 _hubContext.Clients.All.showButtons( this.SignalRNotificationKey, false );
 
-                _hubContext.Clients.All.showLog();
                 Stopwatch stopwatch = Stopwatch.StartNew();
 
-                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text );
+                BulkImporter.ImportUpdateType importUpdateType;
+
+                if ( rbOnlyAddNewRecords.Checked )
+                {
+                    importUpdateType = BulkImporter.ImportUpdateType.AddOnly;
+                }
+                else if ( rbMostRecentWins.Checked )
+                {
+                    importUpdateType = BulkImporter.ImportUpdateType.MostRecentWins;
+                }
+                else
+                {
+                    importUpdateType = BulkImporter.ImportUpdateType.AlwaysUpdate;
+                }
+
+                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text, importUpdateType );
                 _importer.FinancialTransactionChunkSize = 100000;
                 _importer.OnProgress += _importer_OnProgress;
 
@@ -246,14 +288,15 @@ namespace RockWeb.Blocks.BulkImport
                 {
                     foreach ( var exception in t.Exception.InnerExceptions )
                     {
+                        LogException( exception );
                         _importer.Exceptions.Add( exception.GetBaseException() );
                     }
 
-                    _importer_OnProgress( null, "ERROR" );
+                    _importer_OnProgress( _importer, "ERROR" );
                 }
                 else
                 {
-                    _importer_OnProgress( null, string.Format( "{0} Complete: [{1}ms]", importType.ConvertToString(), totalMilliseconds ) );
+                    _importer_OnProgress( _importer, string.Format( "{0} Complete: [{1}ms]", importType.ConvertToString(), totalMilliseconds ) );
                 }
 
             } );
@@ -268,6 +311,8 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="e">The <see cref="ProgressChangedEventArgs"/> instance containing the event data.</param>
         private void _importer_OnProgress( object sender, object e )
         {
+            Rock.Slingshot.SlingshotImporter _importer = sender as Rock.Slingshot.SlingshotImporter;
+
             string progressMessage = string.Empty;
             DescriptionList progressResults = new DescriptionList();
             if ( e is string )

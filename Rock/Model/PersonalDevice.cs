@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -30,7 +32,6 @@ namespace Rock.Model
     [DataContract]
     public partial class PersonalDevice : Model<PersonalDevice>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace Rock.Model
         /// The person alias identifier.
         /// </value>
         [DataMember]
-        public int PersonAliasId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the registration id of the device.
@@ -51,7 +52,6 @@ namespace Rock.Model
         [DataMember]
         public string DeviceRegistrationId { get; set; }
 
-
         /// <summary>
         /// Gets or sets the Id of the Device Type <see cref="DefinedValue" /> representing what type of device this is.
         /// </summary>
@@ -60,7 +60,47 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE )]
-        public int PersonalDeviceTypeId { get; set; }
+        public int? PersonalDeviceTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the platform value identifier (i.e. iOS, Android, etc)
+        /// </summary>
+        /// <value>
+        /// The platform value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM )]
+        public int? PlatformValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the device unique identifier (MEID/IMEI)
+        /// </summary>
+        /// <value>
+        /// The device unique identifier.
+        /// </value>
+        [DataMember]
+        [MaxLength( 20 )]
+        public string DeviceUniqueIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the device version.
+        /// </summary>
+        /// <value>
+        /// The device version.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string DeviceVersion { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MAC address.
+        /// </summary>
+        /// <value>
+        /// The mac address.
+        /// </value>
+        [DataMember]
+        [MaxLength( 12 )]
+        public string MACAddress { get; set; }
 
         /// <summary>
         /// Gets or sets whether or not notifications are enabled for this device.
@@ -93,10 +133,19 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue PersonalDeviceType { get; set; }
 
-        #endregion
-
-        #region Public Methods
-
+        /// <summary>
+        /// Gets or sets the personal device type identifier.
+        /// </summary>
+        /// <value>
+        /// The personal device type identifier.
+        /// </value>
+        [DataMember]
+        [Obsolete("Use PersonalDeviceTypeValueId instead.")]
+        public virtual int PersonalDeviceTypeId
+        {
+            get { return PersonalDeviceTypeValueId ?? 0; }
+            set { PersonalDeviceTypeValueId = value;  }
+        }
 
         #endregion
     }
@@ -113,8 +162,8 @@ namespace Rock.Model
         /// </summary>
         public PersonalDeviceConfiguration()
         {
-            this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
-            this.HasRequired( r => r.PersonalDeviceType ).WithMany().HasForeignKey( r => r.PersonalDeviceTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonalDeviceType ).WithMany().HasForeignKey( r => r.PersonalDeviceTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 

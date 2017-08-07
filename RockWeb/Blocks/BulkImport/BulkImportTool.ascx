@@ -24,9 +24,8 @@
         proxy.client.showButtons = function (name, visible)
         {
             if (name == '<%=this.SignalRNotificationKey %>') {
-                
-                if (visible)
-                {
+
+                if (visible) {
                     $('#<%=pnlActions.ClientID%>').show();
                 }
                 else {
@@ -51,31 +50,37 @@
                 <h1 class="panel-title"><i class="fa fa-upload"></i>&nbsp;Bulk Import Tool</h1>
             </div>
             <div class="panel-body">
-                <Rock:RockTextBox ID="tbForeignSystemKey" runat="server" Required="true" Label="Foreign System Key" Help="The Key used to uniquely identify the source system" />
-                <asp:LinkButton ID="btnCheckForeignSystemKey" runat="server" CssClass="btn btn-xs btn-action margin-b-md" Text="Check Foreign System Key" OnClick="btnCheckForeignSystemKey_Click" />
-                <Rock:NotificationBox ID="nbCheckForeignSystemKey" runat="server" CssClass="margin-b-md" NotificationBoxType="Warning" Visible = "false" Dismissable="true" />
+                <Rock:RockTextBox ID="tbForeignSystemKey" runat="server" Required="true" Label="Foreign System Key" Help="The Key used to uniquely identify the source system. For example, use the domain of the the source system's website: 'somechurch.ccbchurch.com'. Click 'Check Foreign System Key' to see what keys have already been used or to see if the key has already been used." />
+                <asp:LinkButton ID="btnCheckForeignSystemKey" runat="server" CssClass="btn btn-xs btn-action margin-b-md" Text="Check Foreign System Key" CausesValidation="false" OnClick="btnCheckForeignSystemKey_Click" />
+                <Rock:NotificationBox ID="nbCheckForeignSystemKey" runat="server" CssClass="margin-b-md" NotificationBoxType="Warning" Visible="false" Dismissable="true" />
 
                 <Rock:FileUploader ID="fupSlingshotFile" runat="server" Label="Select Slingshot File" IsBinaryFile="false" RootFolder="~/App_Data/SlingshotFiles" DisplayMode="DropZone" OnFileUploaded="fupSlingshotFile_FileUploaded" OnFileRemoved="fupSlingshotFile_FileRemoved" />
                 <asp:Literal ID="lSlingshotFileInfo" runat="server" Text="" />
 
+                <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
+                    <Rock:RockControlWrapper ID="rcwImportOptions" runat="server" Label="Import Options">
+                        <asp:Panel ID="pnlAdvanced" runat="server">
+                            <div>
+                                <Rock:RockRadioButton ID="rbAlwaysUpdate" runat="server" Text="Always Update" GroupName="ImportOptions" Checked="true" />
+                                <Rock:HelpBlock ID="hbAlwaysUpdate" runat="server" Visible="true">All data from the import will be updated in Rock</Rock:HelpBlock>
+                            </div>
+                            <div>
+                                <Rock:RockRadioButton ID="rbOnlyAddNewRecords" runat="server" Text="Only Add New Records" GroupName="ImportOptions" />
+                                <Rock:HelpBlock ID="hbOnlyAddNewRecords" runat="server" Visible="true">Only new records that don't exist in Rock will be added. Existing records will not be updated.</Rock:HelpBlock>
+                            </div>
+                            
+                            <%-- TODO. Set Visible to True once this is implemented --%>
+                            <div style="display:none">
+                                <Rock:RockRadioButton ID="rbMostRecentWins" runat="server" Text="Most Recent Wins" GroupName="ImportOptions" />
+                                <Rock:HelpBlock ID="hbMostRecentWins" runat="server" Visible="true">The lastest record will be used. Note, when determining the last update date from Rock the date will reflect the latest date any information about a  was updated. The import is not able to update each data point (phone number, email,  attribute) separately.</Rock:HelpBlock>
+                            </div>
 
-                <asp:Panel ID="pnlProgress" runat="server" CssClass="js-messageContainer" Style="display:none">
-                    <strong>Progress</strong><br />
-                    <div class="alert alert-info"><asp:Label ID="lProgressMessage" CssClass="js-progressMessage" runat="server" /></div>
+                        </asp:Panel>
+                    </Rock:RockControlWrapper>
 
-                    <strong>Details</strong><br />
-                    <div class="alert alert-info">
-                        <pre><asp:Label ID="lProgressResults" CssClass="js-progressResults" runat="server" /></pre>
-                    </div>
-                </asp:Panel>
-
-
-                <asp:Panel ID="pnlActions" runat="server" CssClass="actions" Visible="false">
-                    <asp:LinkButton ID="btnImport" runat="server" CssClass="btn btn-primary" Text="Import" OnClick="btnImport_Click" />
-                    <asp:LinkButton ID="btnImportPhotos" runat="server" CssClass="btn btn-primary" Text="Import Photos" OnClick="btnImportPhotos_Click" />
-                </asp:Panel>
-
-                <Rock:HelpBlock ID="hbPostImportHelp" runat="server"><pre>
+                    <Rock:RockControlWrapper ID="rcwAdditionalNotes" runat="server" Label="Additional Notes">
+                        <asp:Panel ID="pnlAdditionalNotes" runat="server">
+                            <Rock:HelpBlock ID="hbPostImportHelp" runat="server"><pre>
 Before Importing
 -- Backup the Customer’s Database
 -- Verify that Rock > Home / General Settings / File Types / ‘Person Image’, has the Storage Type set to what you want.  Slingshot will use that when importing Photos
@@ -132,6 +137,28 @@ order by Gt.Id, Gt.Name, g.Name
 
 -- Now Attendance Analytics will be able to show the import Attendance Data
                 </pre></Rock:HelpBlock>
+                        </asp:Panel>
+                    
+                    </Rock:RockControlWrapper>
+
+                </Rock:PanelWidget>
+
+                <asp:Panel ID="pnlProgress" runat="server" CssClass="js-messageContainer" Style="display: none">
+                    <strong>Progress</strong><br />
+                    <div class="alert alert-info">
+                        <asp:Label ID="lProgressMessage" CssClass="js-progressMessage" runat="server" />
+                    </div>
+
+                    <strong>Details</strong><br />
+                    <div class="alert alert-info">
+                        <pre><asp:Label ID="lProgressResults" CssClass="js-progressResults" runat="server" /></pre>
+                    </div>
+                </asp:Panel>
+
+                <asp:Panel ID="pnlActions" runat="server" CssClass="actions" Visible="false">
+                    <asp:LinkButton ID="btnImport" runat="server" CssClass="btn btn-primary" Text="Import" OnClick="btnImport_Click" />
+                    <asp:LinkButton ID="btnImportPhotos" runat="server" CssClass="btn btn-primary" Text="Import Photos" OnClick="btnImportPhotos_Click" />
+                </asp:Panel>
             </div>
 
         </asp:Panel>

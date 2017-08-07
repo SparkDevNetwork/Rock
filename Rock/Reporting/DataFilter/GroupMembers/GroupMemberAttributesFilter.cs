@@ -110,8 +110,6 @@ namespace Rock.Reporting.DataFilter.GroupMember
                         if ( entityField != null )
                         {
                             entityField.Title = fieldName;
-                            entityField.AttributeGuid = null;
-
                             entityAttributeFields.Add( fieldKey, entityField );
                         }
                     }
