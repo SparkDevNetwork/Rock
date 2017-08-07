@@ -29,6 +29,13 @@ namespace Rock.Model
     public partial class InteractionComponentService
     {
 
+        /// <summary>
+        /// Gets the component by entity identifier.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
         public InteractionComponent GetComponentByEntityId( int channelId, int entityId, string name )
         {
             var component = this.Queryable()
@@ -53,6 +60,13 @@ namespace Rock.Model
             return component;
         }
 
+        /// <summary>
+        /// Gets the component by entity identifier.
+        /// </summary>
+        /// <param name="channelGuid">The channel unique identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
         public InteractionComponent GetComponentByEntityId( Guid channelGuid, int entityId, string name )
         {
             var component = this.Queryable()
