@@ -306,6 +306,29 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
+            int? communicationGroupId = ddlCommunicationGroupList.SelectedValue.AsIntegerOrNull();
+            List<Guid> segmentDataViewGuids = null;
+            if ( communicationGroupId.HasValue )
+            {
+                var communicationGroup = new GroupService( rockContext ).Get( communicationGroupId.Value );
+                if ( communicationGroup != null )
+                {
+                    communicationGroup.LoadAttributes();
+                    var segmentAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.GROUP_COMMUNICATION_SEGMENTS.AsGuid() );
+                    segmentDataViewGuids = communicationGroup.GetAttributeValue( segmentAttribute.Key ).SplitDelimitedValues().AsGuidList();
+                    var additionalSegmentDataViewList = dataviewService.GetByGuids( segmentDataViewGuids ).OrderBy( a => a.Name ).ToList();
+
+                    foreach ( var additionalSegmentDataView in additionalSegmentDataViewList )
+                    {
+                        if ( additionalSegmentDataView.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                        {
+                            cblCommunicationGroupSegments.Items.Add( new ListItem( additionalSegmentDataView.Name, additionalSegmentDataView.Id.ToString() ) );
+                        }
+                    }
+                }
+            }
+
+
             pnlCommunicationGroupSegments.Visible = cblCommunicationGroupSegments.Items.Count > 0;
         }
 
@@ -527,6 +550,9 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlCommunicationGroupList_SelectedIndexChanged( object sender, EventArgs e )
         {
+            // reload segments in case the communication list has additional segments
+            LoadCommunicationSegmentFilters();
+
             UpdateRecipientFromListCount();
         }
 
