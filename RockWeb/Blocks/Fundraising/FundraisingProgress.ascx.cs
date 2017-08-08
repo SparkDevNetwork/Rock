@@ -74,10 +74,11 @@ namespace RockWeb.Blocks.Fundraising
             if ( !Page.IsPostBack )
             {
                 int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
+                int? groupMemberId = this.PageParameter( "GroupMemberId" ).AsIntegerOrNull();
 
-                if ( groupId.HasValue )
+                if ( groupId.HasValue || groupMemberId.HasValue )
                 {
-                    ShowView( groupId.Value );
+                    ShowView( groupId, groupMemberId );
                 }
                 else
                 {
@@ -94,34 +95,55 @@ namespace RockWeb.Blocks.Fundraising
         /// Shows the view.
         /// </summary>
         /// <param name = "groupId" > The group identifier.</param>
-        protected void ShowView( int groupId )
+        protected void ShowView( int? groupId, int? groupMemberId )
         {
-            pnlView.Visible = true;
-            hfGroupId.Value = groupId.ToString();
             var rockContext = new RockContext();
-            var group = new GroupService( rockContext ).Get( groupId );
-            if ( group == null )
+            Group group = null;
+            GroupMember groupMember = null;
+            int fundraisingOpportunityTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY ).Id;
+
+            pnlView.Visible = true;
+            hfGroupId.Value = groupId.ToStringSafe();
+            hfGroupMemberId.Value = groupMemberId.ToStringSafe();
+
+            if ( groupId.HasValue )
+            {
+                group = new GroupService( rockContext ).Get( groupId.Value );
+            }
+            else
+            {
+                groupMember = new GroupMemberService( rockContext ).Get( groupMemberId ?? 0 );
+                group = groupMember.Group;
+            }
+
+            if ( group == null || group.GroupTypeId != fundraisingOpportunityTypeId )
             {
                 pnlView.Visible = false;
                 return;
             }
             lTitle.Text = group.Name.FormatAsHtmlTitle();
 
-            group.LoadAttributes( rockContext );
-
-            BindGroupMembersProgressGrid();
+            BindGroupMembersProgressGrid( group, groupMember, rockContext );
         }
 
         /// <summary>
         /// Binds the group members progress repeater.
         /// </summary>
-        protected void BindGroupMembersProgressGrid()
+        protected void BindGroupMembersProgressGrid( Group group, GroupMember gMember, RockContext rockContext )
         {
-            var rockContext = new RockContext();
+            IQueryable<GroupMember> groupMembersQuery;
 
-            int groupId = hfGroupId.Value.AsInteger();
-            var groupMembersQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == groupId );
-            var group = new GroupService( rockContext ).Get( groupId );
+            if ( gMember != null )
+            {
+                groupMembersQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.Id == gMember.Id );
+
+                pnlHeader.Visible = false;
+            }
+            else
+            {
+                groupMembersQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == group.Id );
+            }
+
             group.LoadAttributes( rockContext );
             var defaultIndividualFundRaisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
 
@@ -196,7 +218,7 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowView( hfGroupId.Value.AsInteger() );
+            ShowView( hfGroupId.Value.AsIntegerOrNull(), hfGroupMemberId.Value.AsIntegerOrNull() );
         }
 
         #endregion
