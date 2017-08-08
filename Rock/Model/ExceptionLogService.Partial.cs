@@ -287,7 +287,7 @@ namespace Rock.Model
                     formItems.Append( "<table class=\"form-items exception-table\">" );
                     foreach ( string formItem in formList )
                     {
-                        if ( formItem.IsNotNullOrWhitespace() )
+                        if ( !string.IsNullOrWhiteSpace( formItem ) )
                         {
                             string formValue = formList[formItem].EncodeHtml();
                             string lc = formItem.ToLower();
