@@ -22,7 +22,7 @@
 
                     <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Danger" />
 
-                    <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="btn-group-justified margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-primary" OffCssClass="btn-primary" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" />
+                    <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="btn-group-justified margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" />
                     
                     <asp:Panel ID="pnlRecipientSelectionList" runat="server">
 
@@ -34,7 +34,7 @@
 
                             <Rock:RockRadioButtonList ID="rblCommunicationGroupSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection" AutoPostBack="true" OnSelectedIndexChanged="rblCommunicationGroupSegmentFilterType_SelectedIndexChanged" />
                             
-                            <div class="control-label">
+                            <div class="label label-info">
                                 <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" />
                             </div>
                         </asp:Panel>
@@ -43,10 +43,14 @@
                     <asp:Panel ID="pnlRecipientSelectionIndividual" runat="server">
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="control-label">
-                                    <asp:Literal ID="lIndividualRecipientCount" runat="server" Text="" />
-                                </div>
-                                <asp:LinkButton ID="btnViewIndividualRecipients" runat="server" CssClass="btn btn-default" Text="View List" CausesValidation="false" OnClick="btnViewIndividualRecipients_Click" />
+                                
+                                <asp:LinkButton ID="btnViewIndividualRecipients" runat="server" CssClass="btn btn-default btn-sm" Text="Show List" CausesValidation="false" OnClick="btnViewIndividualRecipients_Click" />
+                                
+                                <p>
+                                    <div class="label label-info">
+                                        <asp:Literal ID="lIndividualRecipientCount" runat="server" Text="" />
+                                    </div>
+                                </p>
                             </div>
                             <div class="col-md-6">
                                 <div class="pull-right">
@@ -86,10 +90,10 @@
                     <asp:ValidationSummary ID="vsMediumSelection" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgMediumSelection" CssClass="alert alert-danger" />
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbCommunicationName" runat="server" Label="Communication Name" Required="true" ValidationGroup="vgMediumSelection"/>
+                            <Rock:RockTextBox ID="tbCommunicationName" runat="server" Label="Communication Name" Help="This name is used internally to describe the communication. It is not sent as a part of the communication." Required="true" ValidationGroup="vgMediumSelection"/>
                         </div>
                         <div class="col-md-6">
-                            <Rock:Toggle ID="tglBulkCommunication" runat="server" OnText="Yes" OffText="No" ActiveButtonCssClass="btn-primary" Help="Select this option if you are sending this email to a group of people. This will include the option for recipients to unsubscribe and will not send the email to any recipients that have already asked to be unsubscribed." Checked="false" Label="Is The Communication Bulk" />
+                            <Rock:Toggle ID="tglBulkCommunication" runat="server" OnText="Yes" OffText="No" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" Help="Select this option if you are sending this email to a group of people. This will include the option for recipients to unsubscribe and will not send the email to any recipients that have already asked to be unsubscribed." Checked="false" Label="Is The Communication Bulk" />
                         </div>
                     </div>
 
@@ -98,9 +102,9 @@
                             <div class="js-mediumtype">
                                 <Rock:HiddenFieldWithClass ID="hfMediumType" CssClass="js-hidden-selected" runat="server" />
                                 <div class="btn-group">
-                                    <a id="btnMediumUserPreference" runat="server" class="btn btn-primary active js-medium-userpreference" data-val="0" >User Preference</a>
-                                    <a id="btnMediumEmail" runat="server" class="btn btn-default" data-val="1" >Email</a>
-                                    <a id="btnMediumSMS" runat="server" class="btn btn-default" data-val="2" >SMS</a>
+                                    <a id="btnMediumUserPreference" runat="server" class="btn btn-info btn-sm active js-medium-userpreference" data-val="0" >User Preference</a>
+                                    <a id="btnMediumEmail" runat="server" class="btn btn-default btn-sm" data-val="1" >Email</a>
+                                    <a id="btnMediumSMS" runat="server" class="btn btn-default btn-sm" data-val="2" >SMS</a>
                                 </div>
                             </div>
                         </div>
@@ -110,12 +114,13 @@
 
                     <div class="row margin-b-md">
                         <div class="col-md-6">
-                            <Rock:NotificationBox ID="nbSendDateTimeWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
-                            <Rock:Toggle ID="tglSendDateTime" runat="server" OnText="Send Immediately" OffText="Send at a Specific Date and Time" ActiveButtonCssClass="btn-primary" Checked="false" OnCheckedChanged="tglSendDateTime_CheckedChanged" />
-                            <Rock:DateTimePicker ID="dtpSendDateTime" runat="server" CssClass="margin-t-md" Visible="true" Required="true" ValidationGroup="vgMediumSelection" />
-                        </div>
-                        <div class="col-md-6">
-
+                            <Rock:RockControlWrapper ID="rcwSendTime" runat="server" Label="When should the communication be sent?">
+                                <div class="controls">
+                                    <Rock:NotificationBox ID="nbSendDateTimeWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
+                                    <Rock:Toggle ID="tglSendDateTime" runat="server" OnText="Send Immediately" ButtonSizeCssClass="btn-sm" OffText="Send at a Specific Date and Time" ActiveButtonCssClass="btn-info" Checked="false" OnCheckedChanged="tglSendDateTime_CheckedChanged" />
+                                    <Rock:DateTimePicker ID="dtpSendDateTime" runat="server" CssClass="margin-t-md" Visible="true" Required="true" ValidationGroup="vgMediumSelection" />
+                                </div>
+                            </Rock:RockControlWrapper>
                         </div>
                     </div>
 
@@ -130,7 +135,7 @@
                 <asp:Panel ID="pnlTemplateSelection" runat="server" Visible="false">
                     <h1>Email Template</h1>
                     <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
-                    <div class="row template-selection">
+                    <div class="row margin-t-lg template-selection">
                         <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
                             <ItemTemplate>
                                 <div class="col-md-4">
@@ -658,7 +663,19 @@
                         </div>
                         <div class="col-md-6">
                             <%-- TODO: This is where the SMS Bubbles thing would probably go --%>
-                            <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
+                            <div class="device device-mobile hidden-md" style="width: 435px;">
+                                <div class="sms">
+                                    <header><span class="left">Messages</span><h2>Ted Decker</h2><span class="right">Contacts</span></header>
+                                    <div class="messages-wrapper" style="height: 525px;">
+                                      <div class="message to">
+                                          This is my first text message on ios7 
+                                          This is my first text message on ios7
+                                          <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
+                                      </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                         </div>
                     </div>
                     <div class="actions margin-t-md">
@@ -935,8 +952,8 @@
 
 			function setActiveButtonGroupButton($activeBtn)
 			{
-			    $activeBtn.addClass('active').addClass('btn-primary').removeClass('btn-default');
-			    $activeBtn.siblings('.btn').removeClass('active').removeClass('btn-primary').addClass('btn-default')
+			    $activeBtn.addClass('active').addClass('btn-info').removeClass('btn-default');
+			    $activeBtn.siblings('.btn').removeClass('active').removeClass('btn-info').addClass('btn-default')
 			    $activeBtn.closest('.btn-group').siblings('.js-hidden-selected').val($activeBtn.data('val'));
 
 			    if ($('.js-medium-userpreference').hasClass('active')) {
