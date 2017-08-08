@@ -1809,6 +1809,7 @@
     <Compile Include="Web\UI\RockPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Web\UI\RouteUtils.cs" />
     <Compile Include="Web\UI\Validation\DataAnnotationValidator.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Web\Utilities\RockUpdateHelper.cs" />
