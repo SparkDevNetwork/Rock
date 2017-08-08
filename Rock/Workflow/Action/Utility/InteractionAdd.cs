@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute( "Component Name", "Component Name",
         "The interaction component name. Either Component Name or EntityId must be specified. If only Component Name is specified, the component will be automatically created if it doesn't exist. <span class='tip tip-lava'></span>",
         true, "", "", 1, "ComponentName", new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Component EntityId", "Component EntityId",
+    [WorkflowTextOrAttribute( "Component Entity Id", "Component Entity Id",
         "The interaction component entityId. This is optional. If Component EntityId is known, it will be used to determine the component. Otherwise, it can be looked up using Component Name. <span class='tip tip-lava'></span>",
         false, "", "", 2, "ComponentEntityId", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
     [WorkflowAttribute( "Person Attribute", "The person for the interaction.", true, "", "", 3, null,
@@ -48,10 +48,13 @@ namespace Rock.Workflow.Action
     [TextField( "Operation", "The name of the operation.", true, "", "", 4, "Operation" )]
     [WorkflowTextOrAttribute( "Interaction Summary", "Interaction Summary",
         "The interaction summary. <span class='tip tip-lava'></span>",
-        true, "", "", 5, "InteractionSummary", new string[] { "Rock.Field.Types.TextFieldType" }, rows: 3 )]
+        true, "", "", 5, "InteractionSummary", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, rows: 3 )]
     [WorkflowTextOrAttribute( "Interaction Data", "Interaction Data",
         "The interaction data. <span class='tip tip-lava'></span>",
-        true, "", "", 6, "InteractionData", new string[] { "Rock.Field.Types.TextFieldType" }, rows: 3 )]
+        true, "", "", 6, "InteractionData", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, rows: 3 )]
+    [WorkflowTextOrAttribute( "Interaction Entity Id", "Interaction Entity Id",
+        "The interaction entityId. Optional. The EntityId that the Interaction record should be populated with.<span class='tip tip-lava'></span>",
+        false, "", "", 7, "InteractionEntityId", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
     public class InteractionAdd : ActionComponent
     {
         /// <summary>
@@ -136,8 +139,10 @@ namespace Rock.Workflow.Action
             // Get InteractionData
             var interactionData = GetAttributeValue( action, "InteractionData", true ).ResolveMergeFields( mergeFields );
 
+            var interactionEntityId = GetAttributeValue( action, "InteractionEntityId", true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
+
             // Write the interaction record
-            var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, operation, interactionData, personAliasId, RockDateTime.Now, null, null, null, null, null );
+            var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, interactionEntityId, operation, interactionData, personAliasId, RockDateTime.Now, null, null, null, null, null );
             interaction.InteractionSummary = interactionSummary;
             rockContext.SaveChanges();
 
