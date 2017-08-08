@@ -158,17 +158,18 @@ namespace RockWeb.Blocks.Communication
             tbCommunicationName.Text = communication.Name;
             tglBulkCommunication.Checked = communication.IsBulkCommunication;
 
+            tglRecipientSelection.Checked = communication.Id == 0 || communication.ListGroupId.HasValue;
+            ddlCommunicationGroupList.SetValue( communication.ListGroupId );
+
+            var segmentDataviewGuids = communication.Segments.SplitDelimitedValues().AsGuidList();
+            if ( segmentDataviewGuids.Any())
+            {
+                var segmentDataviewIds = new DataViewService( rockContext ).GetByGuids( segmentDataviewGuids ).Select( a => a.Id ).ToList();
+                cblCommunicationGroupSegments.SetValues( segmentDataviewIds );
+            }
+
             this.IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
             UpdateIndividualRecipientsCountText();
-            if ( this.IndividualRecipientPersonIds.Any() )
-            {
-                // existing communication with at least one recipient, so show the Individual Recipients mode
-                tglRecipientSelection.Checked = false;
-            }
-            else
-            {
-                tglRecipientSelection.Checked = true;
-            }
 
             // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
             if ( ddlCommunicationGroupList.Items.Count <= 1 )
@@ -190,7 +191,7 @@ namespace RockWeb.Blocks.Communication
             // TODO 
             // 1) when editing an existing communication, do we know which template they used?  
             // 2) when editing an existing communication, can they change which template to use? (what do we do on the Select Template page, skip it?)??
-            // hfSelectedCommunicationTemplateId.Value = communication.
+            hfSelectedCommunicationTemplateId.Value = communication.CommunicationTemplateId.ToString();
 
             // Email Summary fields
             tbFromName.Text = communication.FromName;
@@ -253,8 +254,8 @@ namespace RockWeb.Blocks.Communication
             LoadCommunicationSegmentFilters();
 
             rblCommunicationGroupSegmentFilterType.Items.Clear();
-            rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "All segment filters", FilterExpressionType.GroupAll.ToString() ) { Selected = true } );
-            rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "Any segment filters", FilterExpressionType.GroupAny.ToString() ) );
+            rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "All segment filters", SegmentCriteria.All.ToString() ) { Selected = true } );
+            rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "Any segment filters", SegmentCriteria.Any.ToString() ) );
 
             UpdateRecipientFromListCount();
 
@@ -297,6 +298,8 @@ namespace RockWeb.Blocks.Communication
             var categoryIdCommunicationSegments = CategoryCache.Read( Rock.SystemGuid.Category.DATAVIEW_COMMUNICATION_SEGMENTS.AsGuid() ).Id;
             var commonSegmentDataViewList = dataviewService.Queryable().Where( a => a.CategoryId == categoryIdCommunicationSegments ).OrderBy( a => a.Name ).ToList();
 
+            var selectedDataViewIds = cblCommunicationGroupSegments.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value ).AsIntegerList();
+
             cblCommunicationGroupSegments.Items.Clear();
             foreach ( var commonSegmentDataView in commonSegmentDataViewList )
             {
@@ -305,6 +308,9 @@ namespace RockWeb.Blocks.Communication
                     cblCommunicationGroupSegments.Items.Add( new ListItem( commonSegmentDataView.Name, commonSegmentDataView.Id.ToString() ) );
                 }
             }
+
+            // reselect any segments that they previously select (if they exist)
+            cblCommunicationGroupSegments.SetValues( selectedDataViewIds );
 
             int? communicationGroupId = ddlCommunicationGroupList.SelectedValue.AsIntegerOrNull();
             List<Guid> segmentDataViewGuids = null;
@@ -603,7 +609,7 @@ namespace RockWeb.Blocks.Communication
             {
                 groupMemberQuery = groupMemberService.Queryable().Where( a => a.GroupId == communicationGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
 
-                var segmentFilterType = rblCommunicationGroupSegmentFilterType.SelectedValueAsEnum<FilterExpressionType>();
+                var segmentFilterType = rblCommunicationGroupSegmentFilterType.SelectedValueAsEnum<SegmentCriteria>();
                 var segmentDataViewIds = cblCommunicationGroupSegments.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value.AsInteger() ).ToList();
 
                 Expression segmentExpression = null;
@@ -623,7 +629,7 @@ namespace RockWeb.Blocks.Communication
                         else
                         {
 
-                            if ( segmentFilterType == FilterExpressionType.GroupAll )
+                            if ( segmentFilterType == SegmentCriteria.All )
                             {
                                 segmentExpression = Expression.AndAlso( segmentExpression, exp );
                             }
@@ -1284,11 +1290,24 @@ namespace RockWeb.Blocks.Communication
             communication.IsBulkCommunication = tglBulkCommunication.Checked;
             communication.CommunicationType = ( CommunicationType ) hfMediumType.Value.AsInteger();
 
+            communication.ListGroupId = ddlCommunicationGroupList.SelectedValue.AsIntegerOrNull();
+            var segmentDataViewIds = cblCommunicationGroupSegments.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value.AsInteger() ).ToList();
+            var segmentDataViewGuids = new DataViewService( rockContext ).GetByIds( segmentDataViewIds ).Select( a => a.Guid ).ToList();
+
+            communication.Segments = segmentDataViewGuids.AsDelimited( "," );
+            communication.SegmentCriteria = rblCommunicationGroupSegmentFilterType.SelectedValueAsEnum<SegmentCriteria>();
+
+            communication.CommunicationTemplateId = hfSelectedCommunicationTemplateId.Value.AsIntegerOrNull();
+
             communication.FromName = tbFromName.Text;
             communication.FromEmail = tbFromAddress.Text;
             communication.ReplyToEmail = tbReplyToAddress.Text;
             communication.CCEmails = tbCCList.Text;
             communication.BCCEmails = tbBCCList.Text;
+            
+            // TODO: Remove any deleted Attachments
+            // TODO: Add any new attachments
+
             communication.Subject = tbEmailSubject.Text;
             communication.Message = hfEmailEditorHtml.Value;
 
@@ -1303,6 +1322,8 @@ namespace RockWeb.Blocks.Communication
             {
                 communication.FutureSendDateTime = dtpSendDateTimeConfirmation.SelectedDateTime;
             }
+
+            rockContext.SaveChanges();
 
         }
 
