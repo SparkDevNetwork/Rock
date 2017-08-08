@@ -34,25 +34,24 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Write to Interactions" )]
 
-    [WorkflowTextOrAttribute( "InteractionChannel Id or Guid", "Interaction Channel", 
-        "The interaction channel to use for writing to interactions. <span class='tip tip-lava'></span>", 
+    [WorkflowTextOrAttribute( "InteractionChannel Id or Guid", "Interaction Channel",
+        "The interaction channel to use for writing to interactions. <span class='tip tip-lava'></span>",
         true, "", "", 0, "InteractionChannel", new string[] { "Rock.Field.Types.InteractionChannelFieldType" } )]
     [WorkflowTextOrAttribute( "Component Name", "Component Name",
-        "The interaction component name. <span class='tip tip-lava'></span>", 
+        "The interaction component name. Either Component Name or EntityId must be specified. If only Component Name is specified, the component will be automatically created if it doesn't exist. <span class='tip tip-lava'></span>",
         true, "", "", 1, "ComponentName", new string[] { "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Component EntityId", "Component EntityId",
-        "The interaction component entityId. <span class='tip tip-lava'></span>",
+        "The interaction component entityId. This is optional. If Component EntityId is known, it will be used to determine the component. Otherwise, it can be looked up using Component Name. <span class='tip tip-lava'></span>",
         false, "", "", 2, "ComponentEntityId", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
-
-    /*
-    [WorkflowTextOrAttribute( "Target Url", "Target Url",
-        "The url that the short link will redirect to. <span class='tip tip-lava'></span>",
-        true, "", "", 2, "Url", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" } )]
-    [WorkflowAttribute( "Attribute", "The attribute to store the generated short link's url to.", 
-        false, "", "", 3, "Attribute", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" } )]
-    [IntegerField( "Random Token Length", "The number of characters to use when generating a random unique token.", false, 7, "", 4 )]
-    [BooleanField( "Allow Token Re-use", "If a short link already exists with the same token, should it be updated to the new URL? If this is not allowed, this action will fail due to existing short link.", true, "", 5, "Overwrite" )]
-    */
+    [WorkflowAttribute( "Person Attribute", "The person for the interaction.", true, "", "", 3, null,
+        new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [TextField( "Operation", "The name of the operation.", true, "", "", 4, "Operation" )]
+    [WorkflowTextOrAttribute( "Interaction Summary", "Interaction Summary",
+        "The interaction summary. <span class='tip tip-lava'></span>",
+        true, "", "", 5, "InteractionSummary", new string[] { "Rock.Field.Types.TextFieldType" }, rows: 3 )]
+    [WorkflowTextOrAttribute( "Interaction Data", "Interaction Data",
+        "The interaction data. <span class='tip tip-lava'></span>",
+        true, "", "", 6, "InteractionData", new string[] { "Rock.Field.Types.TextFieldType" }, rows: 3 )]
     public class InteractionAdd : ActionComponent
     {
         /// <summary>
@@ -80,59 +79,67 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
+            // Get the InteractionChannel using the supplied ComponentEntityId or ComponentName
+            var componentEntityId = GetAttributeValue( action, "ComponentEntityId", true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
+            var componentName = GetAttributeValue( action, "ComponentName", true ).ResolveMergeFields( mergeFields );
+
             var interactionComponentService = new InteractionComponentService( rockContext );
-            interactionComponentService.GetComponentByEntityId()
+            InteractionComponent interactionComponent = null;
 
-            // Get the token
-            string token = GetAttributeValue( action, "Token", true ).ResolveMergeFields( mergeFields );
-            if ( token.IsNullOrWhiteSpace() )
+            if ( componentEntityId.HasValue )
             {
-                int tokenLen = GetAttributeValue( action, "RandomTokenLength" ).AsIntegerOrNull() ?? 7;
-                token = service.GetUniqueToken( site.Id, tokenLen );
-            } 
-
-            // Get the target url
-            string url = GetAttributeValue( action, "Url", true ).ResolveMergeFields( mergeFields );
-            if ( url.IsNullOrWhiteSpace() )
-            {
-                errorMessages.Add( "A valid Target Url was not specified." );
-                return false;
-            }
-
-            // Save the short link
-            var link = service.GetByToken( token, site.Id );
-            if ( link != null )
-            {
-                if ( !GetAttributeValue( action, "Overwrite" ).AsBoolean() )
-                {
-                    errorMessages.Add( string.Format( "The selected token ('{0}') already exists. Please specify a unique token, or configure action to allow token re-use.", token ) );
-                    return false;
-                }
-                else
-                {
-                    link.Url = url;
-                }
+                interactionComponent = interactionComponentService.GetComponentByEntityId( interactionChannel.Id, componentEntityId.Value, componentName );
             }
             else
             {
-                link = new PageShortLink();
-                link.SiteId = site.Id;
-                link.Token = token;
-                link.Url = url;
-                service.Add( link );
+                if ( !string.IsNullOrEmpty( componentName ) )
+                {
+                    interactionComponent = interactionComponentService.GetComponentByComponentName( interactionChannel.Id, componentName );
+                }
+                else
+                {
+                    errorMessages.Add( "InteractionComponent requires that either ComponentEntityId or ComponentName is specified." );
+                    return false;
+                }
             }
-            rockContext.SaveChanges();
 
-            // Save the resulting short link url
-            var attribute = AttributeCache.Read( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
-            if ( attribute != null )
+            if ( interactionComponent == null )
             {
-                string domain = new SiteService( rockContext ).GetDefaultDomainUri( site.Id ).ToString();
-                string shortLink = domain.EnsureTrailingForwardslash() + token;
-
-                SetWorkflowAttributeValue( action, attribute.Guid, shortLink );
-                action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, shortLink ) );
+                // shouldn't happen
+                errorMessages.Add( "Error getting InteractionComponent." );
+                return false;
             }
+            else if ( interactionComponent.Id == 0 )
+            {
+                // a new component got created, so save changes to get our Id
+                rockContext.SaveChanges();
+            }
+
+            // Get Person
+            int? personAliasId = null;
+            Guid? personAliasGuid = GetAttributeValue( action, "PersonAttribute", true ).AsGuidOrNull();
+            if ( personAliasGuid.HasValue )
+            {
+                var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid.Value );
+                if ( personAlias != null )
+                {
+                    personAliasId = personAlias.Id;
+                }
+            }
+
+            // Get Operation
+            var operation = GetAttributeValue( action, "Operation", true ).ResolveMergeFields( mergeFields );
+
+            // Get InteractionSummary
+            var interactionSummary = GetAttributeValue( action, "InteractionSummary", true ).ResolveMergeFields( mergeFields );
+
+            // Get InteractionData
+            var interactionData = GetAttributeValue( action, "InteractionData", true ).ResolveMergeFields( mergeFields );
+
+            // Write the interaction record
+            var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, operation, interactionData, personAliasId, RockDateTime.Now, null, null, null, null, null );
+            interaction.InteractionSummary = interactionSummary;
+            rockContext.SaveChanges();
 
             return true;
         }
