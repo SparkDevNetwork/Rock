@@ -220,11 +220,16 @@
 // 5. SMS Sample
 // -------------------------
 .sms {
+  width: 400px;
+  overflow-X: hidden;
+  position: relative;
+  background: none repeat scroll 0 0 #fff;
+
   .left {
     position: absolute;
     top: 0;
-    left: 35px;
-    font-size: 18px
+    left: 20px;
+    font-size: 14px
   }
 
   .left:after {
@@ -233,9 +238,9 @@
     border-top: 3px solid transparent;
     content: " ";
     height: 14px;
-    left: -20px;
+    left: -12px;
     position: absolute;
-    top: 20px;
+    top: 22px;
     -webkit-transform: rotate(45deg);
     -moz-transform: rotate(45deg);
     transform: rotate(45deg);
@@ -246,7 +251,7 @@
     position: absolute;
     top: 0;
     right: 15px;
-    font-size: 18px
+    font-size: 14px
   }
 
   header {
@@ -265,6 +270,7 @@
   header h2 {
     font-weight: bold;
     color: #111111;
+    font-size: 16px;
   }
 
   .messages-wrapper {
@@ -279,6 +285,7 @@
     margin: 0 15px 10px;
     padding: 15px 20px;
     position: relative;
+    font-size: 16px;
   }
 
   .message.to {
@@ -309,8 +316,8 @@
     height: 40px;
     position: absolute;
     right: -50px;
-    width: 30px;
-    z-index: -1;
+    width: 70px;
+    z-index: 1;
   }
 
   .message.from:before {
