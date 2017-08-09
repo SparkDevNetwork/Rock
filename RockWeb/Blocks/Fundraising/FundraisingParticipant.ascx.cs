@@ -589,8 +589,9 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             // if btnContributionsTab is the only visible tab, hide the tab since there is nothing else to tab to
-            if ( !btnUpdatesTab.Visible )
+            if ( !btnUpdatesTab.Visible && btnContributionsTab.Visible )
             {
+                SetActiveTab( "Contributions" );
                 btnContributionsTab.Visible = false;
             }
         }
@@ -624,10 +625,13 @@ namespace RockWeb.Blocks.Fundraising
         {
             FinancialTransaction financialTransaction = e.Row.DataItem as FinancialTransaction;
             Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
-            if ( financialTransaction != null && lAddress != null && financialTransaction.AuthorizedPersonAliasId.HasValue )
+            if ( lAddress != null && 
+                financialTransaction != null && 
+                financialTransaction.AuthorizedPersonAlias != null && 
+                financialTransaction.AuthorizedPersonAlias.Person != null )
             {
-                var personAddress = financialTransaction.AuthorizedPersonAlias.Person.GetHomeLocation();
-                lAddress.Text = personAddress.GetFullStreetAddress();
+                var location = financialTransaction.AuthorizedPersonAlias.Person.GetMailingLocation();
+                lAddress.Text = location != null ? location.GetFullStreetAddress() : string.Empty;
             }
         }
 
