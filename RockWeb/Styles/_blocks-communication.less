@@ -2,6 +2,7 @@
     Used to manage styles for specific blocks.
 
     1. Communication Blocks - styles for the communication blocks
+    2. Communicatino Wizard - styles for the communication wizard
 
 */
 
@@ -97,4 +98,52 @@ iframe.email-body {
 	top: 0;
 	bottom: 0;
 	right: 0;
+}
+
+
+// 2. Communication Wizard
+// -------------------------
+
+.communication-template {
+  border: 1px solid @panel-border;
+  color: @text-color;
+  display: block;
+  padding: 15px;
+  position: relative;
+  margin-bottom: 24px;
+  height: 192px;
+  overflow: hidden;
+
+  &:focus {
+    color: @text-color;
+  }
+
+  &:hover {
+    border: 2px solid @alert-info-border;
+    color: @text-color;
+  }
+
+  label {
+    font-size: 16px;
+  }
+}
+
+.template-selected {
+  border: 2px solid @alert-info-text;
+
+  &:hover {
+    border: 2px solid @alert-info-text;
+  }
+
+  &:before {
+    font-family: FontAwesome;
+    content: @fa-var-check-circle;
+    color: @alert-info-text;
+    font-family: FontAwesome;
+    position: absolute;
+    top: -4px;
+    left: 8px;
+    z-index: 1;
+    font-size: 36px;
+  }
 }

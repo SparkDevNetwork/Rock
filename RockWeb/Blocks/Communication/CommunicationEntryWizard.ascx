@@ -138,13 +138,13 @@
                     <div class="row margin-t-lg template-selection">
                         <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
                             <ItemTemplate>
-                                <div class="col-md-4">
-                                    <asp:LinkButton ID="btnSelectTemplate" CssClass="template-preview" runat="server" OnClick="btnSelectTemplate_Click">
+                                <div class="col-md-4 col-sm-6">
+                                    <asp:LinkButton ID="btnSelectTemplate" CssClass="communication-template" runat="server" OnClick="btnSelectTemplate_Click">
                                         <div class="row">
-                                            <div class="col-md-5">
+                                            <div class="col-xs-5">
                                                 <asp:Literal ID="lTemplateImagePreview" runat="server"></asp:Literal>
                                             </div>
-                                            <div class="col-md-7">
+                                            <div class="col-xs-7">
                                                 <label><asp:Literal ID="lTemplateName" runat="server"></asp:Literal></label>
                                                 <p><asp:Literal ID="lTemplateDescription" runat="server"></asp:Literal></p>
                                             </div>
