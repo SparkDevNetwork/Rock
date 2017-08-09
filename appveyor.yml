@@ -68,6 +68,8 @@ before_build:
 
     npm install --production
 
+    npm install normajs
+
     node ./node_modules/normajs/bin/norma.js build
 
     nuget restore Rock.sln

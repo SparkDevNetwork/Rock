@@ -21,6 +21,10 @@
                 wsUrl += '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '');
             }
 
+            if (options.isTemporary == 'F') {
+              wsUrl += '&IsTemporary=False';
+            }
+
             // uses https://github.com/blueimp/jQuery-File-Upload
             $('#' + options.controlId).fileupload({
                 url: wsUrl,

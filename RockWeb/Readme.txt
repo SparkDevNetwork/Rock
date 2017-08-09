@@ -1,3 +1,32 @@
+Rock McKinley 6.9
+
++ Added GivingId to the Attendance Analytics Excel Export
++ Updated the active users block to show hints at color dot meanings
++ Fixed an exception that would occur in Attendance History block if a valid group id was not used.
++ Fixed an exception that would occur when attempting to configure Transaction Entry block with only an ACH gateway.
++ Fixed issue with not being able to logout when the current URL contains an Encoded Key parameter.
++ Fixed misspelled word in description of field in Check-in Label.
++ Added 'ReopenBatch' as a security action on Batch Detail
++ Fixed the "My Assigned Workflow" lists so they would not show a duplicate workflow when an assigned activity had more than one active form.
++ Fixed the IdleRedirect block so that it will not redirect prior to the configured idle seconds.
++ Fixed the person picker to correctly display 'Pending' record status.
++ Fixed the Pledge List block so that when exporting to Excel it includes all of the columns displayed in the list.
++ Fixed incorrect HTML in the default podcast series detail Lava file.
++ Fixed an issue with the Check-in Details page (under Attendance Analytics), sometimes not showing all of the correct groups.
++ Improved the GroupDetailLava block so that when editing an existing group member, the person picker field is disabled.
++ Fixed the Content Channel View block so that if Query Parameter Filtering is enabled, the items are not cached (regardless of Cache Duration setting). The Lava template will still be cached based on Cache Duration setting.
++ Fixed the NMI payment gateway to prompt for the "Name on Account" field correctly when adding a bank account (ACH) transaction.
++ Added new My Connection Opportunities Lava block
++ Added block setting to allow prayer requests to be public by default.
++ Added option to Batch List to hide the Accounts column
++ Added Campus Filter to the top of My Connections block that will filter both the Summary and the Grid by Campus
++ Fixed Date Attribute showing a required validation error when 'Use Current' is checked.
++ Fixed select columns on grids so that their selection will be persisted through a postback.
++ Fixed the date range filter in Pledge List block.
++ Updated Connection Requests to show the status dots for each connection request in the grid.
++ Added optional 'PersonDetailPage' to the New Family block that can be used to navigate to a custom page instead of the default ~/Person/{PersonId} route
+
+
 Rock McKinley 6.8
 
 + Fixed an issue with an early version of the v6.7 install missing an updated file.

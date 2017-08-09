@@ -4,27 +4,81 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Web;
 
-using Rock.Slingshot.Model;
 using Rock.Data;
 using Rock.Model;
+using Rock.Slingshot.Model;
 using Rock.Web.Cache;
-using System.Web;
 
 namespace Rock.Slingshot
 {
     /// <summary>
     /// 
     /// </summary>
-    public static class BulkImportHelper
+    public class BulkImporter
     {
+        #region util
+
+        /// <summary>
+        /// Gets the response message.
+        /// </summary>
+        /// <param name="recordsInserted">The records inserted.</param>
+        /// <param name="tableName">Name of the table.</param>
+        /// <param name="milliseconds">The milliseconds.</param>
+        /// <returns></returns>
+        private string GetResponseMessage( int recordsInserted, string tableName, long milliseconds )
+        {
+            if ( recordsInserted == 0 )
+            {
+                return $"No {tableName} records were imported [{milliseconds}ms]";
+            }
+            else
+            {
+                return $"Imported {recordsInserted} {tableName} records [{milliseconds}ms]";
+            }
+        }
+
+        /// <summary>
+        /// Definition for OnProgress delegate
+        /// </summary>
+        public delegate void OnProgressEvent( string message );
+
+        /// <summary>
+        /// Delegate for handling ProgressMessages
+        /// </summary>
+        public OnProgressEvent OnProgress;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum ImportUpdateType
+        {
+            AlwaysUpdate,
+            AddOnly,
+            MostRecentWins
+        }
+
+        /// <summary>
+        /// Gets or sets the import update option.
+        /// </summary>
+        /// <value>
+        /// The import update option.
+        /// </value>
+        public ImportUpdateType ImportUpdateOption { get; set; }
+
+        #endregion util
+
+        #region AttendanceImport
+
         /// <summary>
         /// Bulks the attendance import.
         /// </summary>
         /// <param name="attendanceImports">The attendance imports.</param>
         /// <returns></returns>
-        public static string BulkAttendanceImport( List<AttendanceImport> attendanceImports )
+        public string BulkAttendanceImport( List<AttendanceImport> attendanceImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -34,33 +88,30 @@ namespace Rock.Slingshot
 
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
 
-            var groupIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId != groupTypeIdFamily && a.ForeignId.HasValue )
+            var groupIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId != groupTypeIdFamily && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, a.ForeignId } ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
-            var locationIdLookup = new LocationService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue )
+            var locationIdLookup = new LocationService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, a.ForeignId } ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
-            var scheduleIdLookup = new ScheduleService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue )
+            var scheduleIdLookup = new ScheduleService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, a.ForeignId } ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
             // Get the primary alias id lookup for each person foreign id
-            var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.PersonId == a.AliasPersonId )
+            var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.Person.ForeignKey == foreignSystemKey && a.PersonId == a.AliasPersonId )
                 .Select( a => new { PersonAliasId = a.Id, PersonForeignId = a.Person.ForeignId } ).ToDictionary( k => k.PersonForeignId.Value, v => v.PersonAliasId );
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare Lookups for Attendance Insert" );
-            stopwatch.Restart();
+            var qryAttendancesWithForeignIds = new AttendanceService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
+            var attendancesAlreadyExistForeignIdHash = new HashSet<int>( qryAttendancesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
-            var attendancesToInsert = new List<Attendance>( attendanceImports.Count );
-            foreach ( var attendanceImport in attendanceImports )
+            var newAttendanceImports = attendanceImports.Where( a => !a.AttendanceForeignId.HasValue || !attendancesAlreadyExistForeignIdHash.Contains( a.AttendanceForeignId.Value ) ).ToList();
+
+            var attendancesToInsert = new List<Attendance>( newAttendanceImports.Count );
+            foreach ( var attendanceImport in newAttendanceImports )
             {
                 var attendance = new Attendance();
-
-                // NOTE: attendanceImport doesn't have to have an AttendanceForeignId and probably won't have one
-                if ( attendanceImport.AttendanceForeignId.HasValue )
-                {
-                    attendance.ForeignId = attendanceImport.AttendanceForeignId;
-                }
+                attendance.ForeignId = attendanceImport.AttendanceForeignId;
+                attendance.ForeignKey = foreignSystemKey;
 
                 attendance.CampusId = attendanceImport.CampusId;
                 attendance.StartDateTime = attendanceImport.StartDateTime;
@@ -88,35 +139,34 @@ namespace Rock.Slingshot
                 attendancesToInsert.Add( attendance );
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare Attendance Insert List" );
-            stopwatch.Restart();
-
             var groupIds = attendancesToInsert.Select( a => a.GroupId ).Distinct().ToList();
             var allGroupIds = new GroupService( rockContext ).Queryable().Select( a => a.Id ).ToList();
             var missing = groupIds.Where( a => !a.HasValue || !allGroupIds.Contains( a.Value ) );
 
             rockContext.BulkInsert( attendancesToInsert );
 
-            sbStats.AppendLine( $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {attendanceImports.Count} Attendance records" );
+            sbStats.AppendLine( GetResponseMessage( newAttendanceImports.Count, "Attendance", stopwatchTotal.ElapsedMilliseconds ) );
             var responseText = sbStats.ToString();
 
             return responseText;
         }
+
+        #endregion AttendanceImport
+
+        #region FinancialAccountImport
 
         /// <summary>
         /// Bulks the financial account import.
         /// </summary>
         /// <param name="financialAccountImports">The financial account imports.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public static string BulkFinancialAccountImport( List<FinancialAccountImport> financialAccountImports )
+        public string BulkFinancialAccountImport( List<FinancialAccountImport> financialAccountImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
             RockContext rockContext = new RockContext();
 
-            var qryFinancialAccountsWithForeignIds = new FinancialAccountService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue );
+            var qryFinancialAccountsWithForeignIds = new FinancialAccountService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 
             var financialAccountAlreadyExistForeignIdHash = new HashSet<int>( qryFinancialAccountsWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
@@ -127,6 +177,7 @@ namespace Rock.Slingshot
             {
                 var financialAccount = new FinancialAccount();
                 financialAccount.ForeignId = financialAccountImport.FinancialAccountForeignId;
+                financialAccount.ForeignKey = foreignSystemKey;
                 if ( financialAccountImport.Name.Length > 50 )
                 {
                     financialAccount.Name = financialAccountImport.Name.Truncate( 50 );
@@ -176,24 +227,105 @@ namespace Rock.Slingshot
             }
 
             stopwatchTotal.Stop();
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {financialAccountsToInsert.Count} Financial Accounts";
 
-            return responseText;
+            return GetResponseMessage( financialAccountsToInsert.Count, "Financial Accounts", stopwatchTotal.ElapsedMilliseconds );
         }
+
+        /// <summary>
+        /// Tables the that have a ForeignKey == foreign system key.
+        /// </summary>
+        /// <param name="foreignSystemKey">The foreign system key.</param>
+        /// <returns></returns>
+        public static List<string> TablesThatHaveForeignSystemKey( string foreignSystemKey )
+        {
+            var rockContext = new RockContext();
+            var tableList = new List<string>();
+
+            // Don't check Attandance ForeignId since it might not have a ForeignId from the source system
+            if ( new AttendanceService( rockContext ).Queryable().Any( a => a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Attendance" );
+            }
+
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+            if ( new GroupService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId != groupTypeIdFamily ) )
+            {
+                tableList.Add( "Group" );
+            }
+
+            if ( new FinancialAccountService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Financial Account" );
+            }
+
+            if ( new FinancialBatchService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Financial Batch" );
+            }
+
+            if ( new FinancialTransactionService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Financial Transaction" );
+            }
+
+            if ( new LocationService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Location" );
+            }
+
+            if ( new PersonService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Person" );
+            }
+
+            if ( new GroupService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == groupTypeIdFamily ) )
+            {
+                tableList.Add( "Family" );
+            }
+
+            if ( new BinaryFileService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Photo" );
+            }
+
+            if ( new ScheduleService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Schedule" );
+            }
+
+            if ( new FinancialPledgeService( rockContext ).Queryable().Any( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ) )
+            {
+                tableList.Add( "Financial Pledge" );
+            }
+
+            return tableList;
+        }
+
+        /// <summary>
+        /// Get foreign system keys that have been used in previous Imports
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> UsedForeignSystemKeys()
+        {
+            return new PersonService( new RockContext() ).Queryable().Where( a => a.ForeignId.HasValue && !string.IsNullOrEmpty( a.ForeignKey ) ).Select( a => a.ForeignKey ).Distinct().ToList();
+        }
+
+        #endregion FinancialAccountImport
+
+        #region FinancialBatchImport
 
         /// <summary>
         /// Bulks the financial batch import.
         /// </summary>
         /// <param name="financialBatchImports">The financial batch imports.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public static string BulkFinancialBatchImport( List<FinancialBatchImport> financialBatchImports )
+        public string BulkFinancialBatchImport( List<FinancialBatchImport> financialBatchImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
             RockContext rockContext = new RockContext();
 
-            var qryFinancialBatchsWithForeignIds = new FinancialBatchService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue );
+            var qryFinancialBatchsWithForeignIds = new FinancialBatchService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 
             var financialBatchAlreadyExistForeignIdHash = new HashSet<int>( qryFinancialBatchsWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
@@ -201,13 +333,14 @@ namespace Rock.Slingshot
             var newFinancialBatchImports = financialBatchImports.Where( a => !financialBatchAlreadyExistForeignIdHash.Contains( a.FinancialBatchForeignId ) ).ToList();
 
             // Get the primary alias id lookup for each person foreign id
-            var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.PersonId == a.AliasPersonId )
+            var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.Person.ForeignKey == foreignSystemKey && a.PersonId == a.AliasPersonId )
                 .Select( a => new { PersonAliasId = a.Id, PersonForeignId = a.Person.ForeignId } ).ToDictionary( k => k.PersonForeignId.Value, v => v.PersonAliasId );
 
             foreach ( var financialBatchImport in newFinancialBatchImports )
             {
                 var financialBatch = new FinancialBatch();
                 financialBatch.ForeignId = financialBatchImport.FinancialBatchForeignId;
+                financialBatch.ForeignKey = foreignSystemKey;
                 if ( financialBatchImport.Name.Length > 50 )
                 {
                     financialBatch.Name = financialBatchImport.Name.Truncate( 50 );
@@ -255,37 +388,38 @@ namespace Rock.Slingshot
             rockContext.BulkInsert( financialBatchsToInsert );
 
             stopwatchTotal.Stop();
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {financialBatchsToInsert.Count} Financial Batches";
-
-            return responseText;
+            return GetResponseMessage( financialBatchsToInsert.Count, "Financial Batches", stopwatchTotal.ElapsedMilliseconds );
         }
+
+        #endregion FinancialBatchImport
+
+        #region FinancialTransactionImport
 
         /// <summary>
         /// Bulks the financial transaction import.
         /// </summary>
         /// <param name="financialTransactionImports">The financial transaction imports.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public static string BulkFinancialTransactionImport( List<FinancialTransactionImport> financialTransactionImports )
+        public string BulkFinancialTransactionImport( List<FinancialTransactionImport> financialTransactionImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
             RockContext rockContext = new RockContext();
 
-            var qryFinancialTransactionsWithForeignIds = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue );
+            var qryFinancialTransactionsWithForeignIds = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 
             var financialTransactionAlreadyExistForeignIdHash = new HashSet<int>( qryFinancialTransactionsWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
             var newFinancialTransactionImports = financialTransactionImports.Where( a => !financialTransactionAlreadyExistForeignIdHash.Contains( a.FinancialTransactionForeignId ) ).ToList();
 
             // Get the primary alias id lookup for each person foreign id
-            var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.PersonId == a.AliasPersonId )
+            var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.Person.ForeignKey == foreignSystemKey && a.PersonId == a.AliasPersonId )
                 .Select( a => new { PersonAliasId = a.Id, PersonForeignId = a.Person.ForeignId } ).ToDictionary( k => k.PersonForeignId.Value, v => v.PersonAliasId );
 
-            var batchIdLookup = new FinancialBatchService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue )
+            var batchIdLookup = new FinancialBatchService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, a.ForeignId } ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
-            var accountIdLookup = new FinancialAccountService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue )
+            var accountIdLookup = new FinancialAccountService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, a.ForeignId } ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
             // Insert FinancialPaymentDetail for all the transactions first
@@ -295,12 +429,15 @@ namespace Rock.Slingshot
                 var financialPaymentDetail = new FinancialPaymentDetail();
                 financialPaymentDetail.CurrencyTypeValueId = financialTransactionImport.CurrencyTypeValueId;
                 financialPaymentDetail.ForeignId = financialTransactionImport.FinancialTransactionForeignId;
+                financialPaymentDetail.ForeignKey = foreignSystemKey;
                 financialPaymentDetailToInsert.Add( financialPaymentDetail );
             }
 
+            OnProgress?.Invoke( $"Bulk Importing FinancialTransactions ( Payment Details )... " );
+
             rockContext.BulkInsert( financialPaymentDetailToInsert );
 
-            var financialPaymentDetailLookup = new FinancialPaymentDetailService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue )
+            var financialPaymentDetailLookup = new FinancialPaymentDetailService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, a.ForeignId } ).ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
             // Prepare and Insert FinancialTransactions
@@ -309,6 +446,7 @@ namespace Rock.Slingshot
             {
                 var financialTransaction = new FinancialTransaction();
                 financialTransaction.ForeignId = financialTransactionImport.FinancialTransactionForeignId;
+                financialTransaction.ForeignKey = foreignSystemKey;
 
                 if ( financialTransactionImport.AuthorizedPersonForeignId.HasValue )
                 {
@@ -339,13 +477,14 @@ namespace Rock.Slingshot
                 financialTransactionsToInsert.Add( financialTransaction );
             }
 
+            OnProgress?.Invoke( $"Bulk Importing FinancialTransactions... " );
             rockContext.BulkInsert( financialTransactionsToInsert );
 
-            var financialTransactionIdLookup = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue )
+            var financialTransactionIdLookup = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, a.ForeignId } )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
-            var financialAccountIdLookup = new FinancialAccountService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue )
+            var financialAccountIdLookup = new FinancialAccountService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, a.ForeignId } )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
@@ -358,6 +497,7 @@ namespace Rock.Slingshot
                     var financialTransactionDetail = new FinancialTransactionDetail();
                     financialTransactionDetail.TransactionId = financialTransactionIdLookup[financialTransactionImport.FinancialTransactionForeignId];
                     financialTransactionDetail.ForeignId = financialTransactionDetailImport.FinancialTransactionDetailForeignId;
+                    financialTransactionDetail.ForeignKey = foreignSystemKey;
                     financialTransactionDetail.Amount = financialTransactionDetailImport.Amount;
                     financialTransactionDetail.AccountId = financialAccountIdLookup[financialTransactionDetailImport.FinancialAccountForeignId.Value];
                     financialTransactionDetail.Summary = financialTransactionDetailImport.Summary;
@@ -378,20 +518,23 @@ namespace Rock.Slingshot
                 }
             }
 
+            OnProgress?.Invoke( $"Bulk Importing FinancialTransactions ( Transaction Details )... " );
             rockContext.BulkInsert( financialTransactionDetailsToInsert );
 
             stopwatchTotal.Stop();
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {financialTransactionsToInsert.Count} Financial Transactions";
-
-            return responseText;
+            return GetResponseMessage( financialTransactionsToInsert.Count, "Financial Transactions", stopwatchTotal.ElapsedMilliseconds );
         }
+
+        #endregion FinancialTransactionImport
+
+        #region GroupImport
 
         /// <summary>
         /// Bulks the group import.
         /// </summary>
         /// <param name="groupImports">The group imports.</param>
         /// <returns></returns>
-        public static string BulkGroupImport( List<GroupImport> groupImports )
+        public string BulkGroupImport( List<GroupImport> groupImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -399,7 +542,7 @@ namespace Rock.Slingshot
             RockContext rockContext = new RockContext();
             StringBuilder sbStats = new StringBuilder();
 
-            var groupsAlreadyExistLookupQry = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue ).Select( a => new
+            var groupsAlreadyExistLookupQry = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new
             {
                 GroupForeignId = a.ForeignId.Value,
                 GroupTypeId = a.GroupTypeId
@@ -434,10 +577,6 @@ namespace Rock.Slingshot
             var updatedGroupTypes = groupTypeRolesToInsert.Select( a => a.GroupTypeId.Value ).Distinct().ToList();
             updatedGroupTypes.ForEach( id => GroupTypeCache.Flush( id ) );
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Updated {groupTypeRolesToInsert.Count} GroupType Roles" );
-            stopwatch.Restart();
-
             if ( groupTypeRolesToInsert.Any() )
             {
                 rockContext.BulkInsert( groupTypeRolesToInsert );
@@ -449,6 +588,7 @@ namespace Rock.Slingshot
             {
                 var group = new Group();
                 group.ForeignId = groupImport.GroupForeignId;
+                group.ForeignKey = foreignSystemKey;
                 group.GroupTypeId = groupImport.GroupTypeId;
                 if ( groupImport.Name.Length > 100 )
                 {
@@ -466,18 +606,10 @@ namespace Rock.Slingshot
                 groupsToInsert.Add( group );
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare {groupsToInsert.Count} Groups" );
-            stopwatch.Restart();
-
             rockContext.BulkInsert( groupsToInsert );
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {groupsToInsert.Count} Groups" );
-            stopwatch.Restart();
-
             // Get lookups for Group and Person so that we can populate the ParentGroups and GroupMembers
-            var qryGroupTypeGroupLookup = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue ).Select( a => new
+            var qryGroupTypeGroupLookup = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new
             {
                 Group = a,
                 GroupForeignId = a.ForeignId.Value,
@@ -486,12 +618,8 @@ namespace Rock.Slingshot
 
             Dictionary<int, Dictionary<int, Group>> groupTypeGroupLookup = qryGroupTypeGroupLookup.GroupBy( a => a.GroupTypeId ).ToDictionary( k => k.Key, v => v.ToDictionary( k1 => k1.GroupForeignId, v1 => v1.Group ) );
 
-            var personIdLookup = new PersonService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue )
+            var personIdLookup = new PersonService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .Select( a => new { a.Id, ForeignId = a.ForeignId.Value } ).ToDictionary( k => k.ForeignId, v => v.Id );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare Lookups for Group Members " );
-            stopwatch.Restart();
 
             // populate GroupMembers from the new groups that we added
             List<GroupMember> groupMembersToInsert = new List<GroupMember>();
@@ -510,10 +638,6 @@ namespace Rock.Slingshot
             }
 
             rockContext.BulkInsert( groupMembersToInsert );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {groupMembersToInsert.Count} Group Members " );
-            stopwatch.Restart();
 
             var groupsUpdated = false;
             var groupImportsWithParentGroup = newGroupImports.Where( a => a.ParentGroupForeignId.HasValue ).ToList();
@@ -561,10 +685,6 @@ namespace Rock.Slingshot
                 rockContext.SaveChanges( true );
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Update {groupImportsWithParentGroup.Count} Group's Parent Group " );
-            stopwatch.Restart();
-
             // Update GroupTypes' Allowed Child GroupTypes based on groups that became child groups
             rockContext.Database.ExecuteSqlCommand( @"
 INSERT INTO GroupTypeAssociation (
@@ -593,24 +713,36 @@ WHERE gta.GroupTypeId IS NULL" );
 
             stopwatchTotal.Stop();
 
-            sbStats.AppendLine( $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {newGroupImports.Count} Groups and {groupMembersToInsert.Count} Group Members" );
+            if ( newGroupImports.Any() || groupMembersToInsert.Any() )
+            {
+                sbStats.AppendLine( $"Imported {newGroupImports.Count} Groups and {groupMembersToInsert.Count} Group Members [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+            }
+            else
+            {
+                sbStats.AppendLine( $"No Groups were imported [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+            }
+
             var responseText = sbStats.ToString();
 
             return responseText;
         }
+
+        #endregion GroupImport
+
+        #region LocationImport
 
         /// <summary>
         /// Bulks the location import.
         /// </summary>
         /// <param name="locationImports">The location imports.</param>
         /// <returns></returns>
-        public static string BulkLocationImport( List<LocationImport> locationImports )
+        public string BulkLocationImport( List<LocationImport> locationImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
             RockContext rockContext = new RockContext();
 
-            var qryLocationsWithForeignIds = new LocationService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue );
+            var qryLocationsWithForeignIds = new LocationService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 
             var locationsAlreadyExistForeignIdHash = new HashSet<int>( qryLocationsWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
@@ -621,6 +753,7 @@ WHERE gta.GroupTypeId IS NULL" );
             {
                 var location = new Location();
                 location.ForeignId = locationImport.LocationForeignId;
+                location.ForeignKey = foreignSystemKey;
                 location.LocationTypeValueId = locationImport.LocationTypeValueId;
 
                 location.Street1 = locationImport.Street1.Truncate( 50 );
@@ -661,20 +794,22 @@ WHERE gta.GroupTypeId IS NULL" );
             }
 
             stopwatchTotal.Stop();
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {newLocationImports.Count} Locations";
-
-            return responseText;
+            return GetResponseMessage( newLocationImports.Count, "Locations", stopwatchTotal.ElapsedMilliseconds );
         }
 
-        private static string _defaultPhoneCountryCode = null;
-        private static int _recordTypePersonId;
+        #endregion LocationImport
+
+        #region PersonImport
+
+        private string _defaultPhoneCountryCode = null;
+        private int _recordTypePersonId;
 
         /// <summary>
         /// Bulks the import.
         /// </summary>
         /// <param name="personImports">The person imports.</param>
         /// <returns></returns>
-        public static string BulkPersonImport( List<PersonImport> personImports )
+        public string BulkPersonImport( List<PersonImport> personImports, string foreignSystemKey )
         {
             var initiatedWithWebRequest = HttpContext.Current?.Request != null;
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
@@ -692,15 +827,12 @@ WHERE gta.GroupTypeId IS NULL" );
 
             StringBuilder sbStats = new StringBuilder();
 
-            Dictionary<int, Group> familiesLookup = groupService.Queryable().AsNoTracking().Where( a => a.GroupTypeId == familyGroupTypeId && a.ForeignId.HasValue )
+            Dictionary<int, Group> familiesLookup = groupService.Queryable().AsNoTracking().Where( a => a.GroupTypeId == familyGroupTypeId && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v );
 
-            Dictionary<int, Person> personLookup = qryAllPersons.Include( a => a.PhoneNumbers ).AsNoTracking().Where( a => a.ForeignId.HasValue )
+            Dictionary<int, Person> personLookup = qryAllPersons.Include( a => a.PhoneNumbers ).AsNoTracking().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v );
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Get {familiesLookup.Count} family and {personLookup.Count} person lookups" );
-            stopwatch.Restart();
             _defaultPhoneCountryCode = PhoneNumber.DefaultCountryCode();
 
             int nextNewFamilyForeignId = familiesLookup.Any() ? familiesLookup.Max( a => a.Key ) : 0;
@@ -726,14 +858,14 @@ WHERE gta.GroupTypeId IS NULL" );
                     v => v.Select( x => new AttributeValueCache { AttributeId = x.AttributeId, EntityId = x.PersonId, Value = x.Value } ).ToList() );
 
             int personUpdatesCount = 0;
-            double personUpdatesMS = 0.0;
+            long personUpdatesMS = 0;
             int progress = 0;
             int total = personImports.Count();
 
             foreach ( var personImport in personImports )
             {
                 progress++;
-                if ( progress % 100 == 0 && personUpdatesMS > 0)
+                if ( progress % 100 == 0 && personUpdatesMS > 0 )
                 {
                     if ( initiatedWithWebRequest && HttpContext.Current?.Response?.IsClientConnected != true )
                     {
@@ -741,7 +873,7 @@ WHERE gta.GroupTypeId IS NULL" );
                         return "Client Disconnected";
                     }
 
-                    Debug.WriteLine( $"Progress {progress} of {total}. personUpdatesCount: {personUpdatesCount}, personUpdatesMS/progress={ personUpdatesMS / progress }" );
+                    OnProgress?.Invoke( $"Bulk Importing Person {progress} of {total}..." );
                 }
 
                 Group family = null;
@@ -771,6 +903,7 @@ WHERE gta.GroupTypeId IS NULL" );
                     family.CampusId = personImport.CampusId;
 
                     family.ForeignId = personImport.FamilyForeignId;
+                    family.ForeignKey = foreignSystemKey;
                     familiesLookup.Add( personImport.FamilyForeignId.Value, family );
                 }
 
@@ -783,18 +916,21 @@ WHERE gta.GroupTypeId IS NULL" );
                 if ( person == null )
                 {
                     person = new Person();
-                    UpdatePersonPropertiesFromPersonImport( personImport, person );
+                    UpdatePersonPropertiesFromPersonImport( personImport, person, foreignSystemKey );
                     personLookup.Add( personImport.PersonForeignId, person );
                 }
                 else
                 {
-                    Stopwatch stopwatchPersonUpdates = Stopwatch.StartNew();
-                    bool wasChanged = UpdatePersonFromPersonImport( person, personImport, attributeValuesLookup, familiesLookup );
-                    stopwatchPersonUpdates.Stop();
-                    personUpdatesMS += stopwatchPersonUpdates.Elapsed.TotalMilliseconds;
-                    if ( wasChanged )
+                    if ( this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate )
                     {
-                        personUpdatesCount++;
+                        Stopwatch stopwatchPersonUpdates = Stopwatch.StartNew();
+                        bool wasChanged = UpdatePersonFromPersonImport( person, personImport, attributeValuesLookup, familiesLookup, foreignSystemKey );
+                        stopwatchPersonUpdates.Stop();
+                        personUpdatesMS += stopwatchPersonUpdates.ElapsedMilliseconds;
+                        if ( wasChanged )
+                        {
+                            personUpdatesCount++;
+                        }
                     }
                 }
             }
@@ -802,18 +938,19 @@ WHERE gta.GroupTypeId IS NULL" );
             if ( personUpdatesMS > 0 || personUpdatesCount > 0 )
             {
                 stopwatch.Stop();
-                sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds - personUpdatesMS}ms] Build Import Lists" );
-                sbStats.AppendLine( $"[{personUpdatesMS}ms] Updated {personUpdatesCount} Person records" );
-                stopwatch.Restart();
-            }
-            else
-            {
-                stopwatch.Stop();
-                sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Build Import Lists" );
+                sbStats.AppendLine( $"Check for Person Updates [{stopwatch.ElapsedMilliseconds - personUpdatesMS}ms]" );
+                if ( personUpdatesCount > 0 )
+                {
+                    sbStats.AppendLine( $"Updated {personUpdatesCount} Person records [{personUpdatesMS}ms]" );
+                }
+                else
+                {
+                    sbStats.AppendLine( $"No Person records need to be updated [{personUpdatesMS}ms]" );
+                }
                 stopwatch.Restart();
             }
 
-            double buildImportListsMS = stopwatch.Elapsed.TotalMilliseconds;
+            double buildImportListsMS = stopwatch.ElapsedMilliseconds;
             stopwatch.Restart();
             bool useSqlBulkCopy = true;
             List<int> insertedPersonForeignIds = new List<int>();
@@ -827,12 +964,8 @@ WHERE gta.GroupTypeId IS NULL" );
 
             rockContext.BulkInsert( familiesToInsert, useSqlBulkCopy );
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {familiesToInsert.Count} Families" );
-            stopwatch.Restart();
-
             // lookup GroupId from Group.ForeignId
-            var familyIdLookup = groupService.Queryable().AsNoTracking().Where( a => a.GroupTypeId == familyGroupTypeId && a.ForeignId.HasValue )
+            var familyIdLookup = groupService.Queryable().AsNoTracking().Where( a => a.GroupTypeId == familyGroupTypeId && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
 
             var personToInsertLookup = personsToInsert.ToDictionary( k => k.ForeignId.Value, v => v );
@@ -881,27 +1014,20 @@ WHERE gta.GroupTypeId IS NULL" );
 
             insertedPersonForeignIds = personsToInsert.Select( a => a.ForeignId.Value ).ToList();
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {personsToInsert.Count} Person records" );
-            stopwatch.Restart();
-
             // Make sure everybody has a PersonAlias
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
             var personAliasServiceQry = personAliasService.Queryable();
-            List<PersonAlias> personAliasesToInsert = qryAllPersons.Where( p => p.ForeignId.HasValue && !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
+            List<PersonAlias> personAliasesToInsert = qryAllPersons.Where( p => p.ForeignId.HasValue && p.ForeignKey == foreignSystemKey && !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
                 .Select( x => new { x.Id, x.Guid } )
                 .ToList()
                 .Select( person => new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid, PersonId = person.Id } ).ToList();
 
             rockContext.BulkInsert( personAliasesToInsert, useSqlBulkCopy );
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {personAliasesToInsert.Count} Person Aliases" );
-            stopwatch.Restart();
 
             // get the person Ids along with the PersonImport and GroupMember record
-            var personsIdsForPersonImport = from p in qryAllPersons.AsNoTracking().Where( a => a.ForeignId.HasValue ).Select( a => new { a.Id, a.ForeignId } ).ToList()
+            var personsIdsForPersonImport = from p in qryAllPersons.AsNoTracking().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new { a.Id, a.ForeignId } ).ToList()
                                             join pi in personImports on p.ForeignId equals pi.PersonForeignId
-                                            join f in groupService.Queryable().Where( a => a.ForeignId.HasValue ).Select( a => new { a.Id, a.ForeignId } ).ToList() on pi.FamilyForeignId equals f.ForeignId
+                                            join f in groupService.Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey ).Select( a => new { a.Id, a.ForeignId } ).ToList() on pi.FamilyForeignId equals f.ForeignId
                                             join gm in groupMemberService.Queryable( true ).Select( a => new { a.Id, a.PersonId } ) on p.Id equals gm.PersonId into gmj
                                             from gm in gmj.DefaultIfEmpty()
                                             select new
@@ -927,21 +1053,14 @@ WHERE gta.GroupTypeId IS NULL" );
                                                 };
 
             var groupMemberRecordsToInsertList = groupMemberRecordsToInsertQry.ToList();
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare {groupMemberRecordsToInsertList.Count()} Family Members for insert" );
-            stopwatch.Restart();
 
             rockContext.BulkInsert( groupMemberRecordsToInsertList, useSqlBulkCopy );
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {groupMemberRecordsToInsertList.Count()} Family Members" );
-            stopwatch.Restart();
 
             List<Location> locationsToInsert = new List<Location>();
             List<GroupLocation> groupLocationsToInsert = new List<GroupLocation>();
 
             var locationCreatedDateTimeStart = RockDateTime.Now;
 
-            // NOTE: TODO To test the "Foriegn Key Issue" , don't narrow it down to just person records that we inserted
             foreach ( var familyRecord in personsIdsForPersonImport.GroupBy( a => a.FamilyId ) )
             {
                 // get the distinct addresses for each family in our import
@@ -979,14 +1098,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 }
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare {locationsToInsert.Count} Location and Group Location records" );
-            stopwatch.Restart();
             rockContext.BulkInsert( locationsToInsert );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {locationsToInsert.Count} Location records" );
-            stopwatch.Restart();
 
             var locationIdLookup = locationService.Queryable().Select( a => new { a.Id, a.Guid } ).ToList().ToDictionary( k => k.Guid, v => v.Id );
             foreach ( var groupLocation in groupLocationsToInsert )
@@ -995,10 +1107,6 @@ WHERE gta.GroupTypeId IS NULL" );
             }
 
             rockContext.BulkInsert( groupLocationsToInsert );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {groupLocationsToInsert.Count} Group Location records" );
-            stopwatch.Restart();
 
             // PhoneNumbers
             List<PhoneNumber> phoneNumbersToInsert = new List<PhoneNumber>();
@@ -1015,15 +1123,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 }
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare {phoneNumbersToInsert.Count} Phone records" );
-            stopwatch.Restart();
-
             rockContext.BulkInsert( phoneNumbersToInsert );
-
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {phoneNumbersToInsert.Count} Phone records" );
-            stopwatch.Restart();
 
             // Attribute Values
             var attributeValuesToInsert = new List<AttributeValue>();
@@ -1041,20 +1141,49 @@ WHERE gta.GroupTypeId IS NULL" );
                 }
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Prepare {attributeValuesToInsert.Count} Attribute Values" );
-            stopwatch.Restart();
-
             rockContext.BulkInsert( attributeValuesToInsert );
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Insert {attributeValuesToInsert.Count} Attribute Values" );
-            stopwatch.Restart();
+            if ( attributeValuesToInsert.Any() )
+            {
+                // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
+                var rowsUpdated = rockContext.Database.ExecuteSqlCommand( @"
+UPDATE [AttributeValue] SET ValueAsDateTime = 
+		CASE WHEN 
+			LEN(value) < 50 and 
+			ISNULL(value,'') != '' and 
+			ISNUMERIC([value]) = 0 THEN
+				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
+					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
+				ELSE
+					TRY_CAST( [value] as datetime )
+				END
+		END
+        where (CASE WHEN 
+			LEN(value) < 50 and 
+			ISNULL(value,'') != '' and 
+			ISNUMERIC([value]) = 0 THEN
+				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
+					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
+				ELSE
+					TRY_CAST( [value] as datetime )
+				END
+		END) is not null
+        and ValueAsDateTime is null
+" );
+
+                Debug.WriteLine( "ValueAsDateTime RowsUpdated: " + rowsUpdated.ToString() );
+            }
 
             stopwatchTotal.Stop();
-            sbStats.AppendLine( $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Total Person" );
+            if ( personsToInsert.Count > 0 )
+            {
+                sbStats.AppendLine( $"Imported {personsToInsert.Count} People and {familiesToInsert.Count} Families [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+            }
+            else
+            {
+                sbStats.AppendLine( $"No People were imported [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+            }
 
-            // TODO: Rebuild all indexes on the effected tables to fix bogus "Foreign Key violation" issue
             var responseText = sbStats.ToString();
 
             return responseText;
@@ -1065,7 +1194,8 @@ WHERE gta.GroupTypeId IS NULL" );
         /// </summary>
         /// <param name="personImport">The person import.</param>
         /// <param name="person">The person.</param>
-        private static void UpdatePersonPropertiesFromPersonImport( PersonImport personImport, Person person )
+        /// <param name="foreignSystemKey">The foreign system key.</param>
+        private void UpdatePersonPropertiesFromPersonImport( PersonImport personImport, Person person, string foreignSystemKey )
         {
             person.RecordTypeValueId = personImport.RecordTypeValueId ?? _recordTypePersonId;
             person.RecordStatusValueId = personImport.RecordStatusValueId;
@@ -1109,8 +1239,8 @@ WHERE gta.GroupTypeId IS NULL" );
             person.EmailNote = personImport.EmailNote;
             person.EmailPreference = ( EmailPreference ) personImport.EmailPreference;
             person.InactiveReasonNote = personImport.InactiveReasonNote;
-            person.ConnectionStatusValueId = personImport.ConnectionStatusValueId;
             person.ForeignId = personImport.PersonForeignId;
+            person.ForeignKey = foreignSystemKey;
         }
 
         /// <summary>
@@ -1118,7 +1248,7 @@ WHERE gta.GroupTypeId IS NULL" );
         /// </summary>
         /// <param name="phoneNumberImport">The phone number import.</param>
         /// <param name="phoneNumberToInsert">The phone number to insert.</param>
-        private static void UpdatePhoneNumberFromPhoneNumberImport( PhoneNumberImport phoneNumberImport, PhoneNumber phoneNumberToInsert )
+        private void UpdatePhoneNumberFromPhoneNumberImport( PhoneNumberImport phoneNumberImport, PhoneNumber phoneNumberToInsert )
         {
             phoneNumberToInsert.NumberTypeValueId = phoneNumberImport.NumberTypeValueId;
             phoneNumberToInsert.CountryCode = _defaultPhoneCountryCode;
@@ -1136,8 +1266,9 @@ WHERE gta.GroupTypeId IS NULL" );
         /// <param name="personImport">The person import.</param>
         /// <param name="attributeValuesLookup">The attribute values lookup.</param>
         /// <param name="familiesLookup">The families lookup.</param>
+        /// <param name="foreignSystemKey">The foreign system key.</param>
         /// <returns></returns>
-        private static bool UpdatePersonFromPersonImport( Person lookupPerson, PersonImport personImport, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, Dictionary<int, Group> familiesLookup )
+        private bool UpdatePersonFromPersonImport( Person lookupPerson, PersonImport personImport, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, Dictionary<int, Group> familiesLookup, string foreignSystemKey )
         {
             using ( var rockContextForPersonUpdate = new RockContext() )
             {
@@ -1145,7 +1276,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 var person = lookupPerson;
 
                 // Add/Update PhoneNumbers
-                UpdatePersonPropertiesFromPersonImport( personImport, person );
+                UpdatePersonPropertiesFromPersonImport( personImport, person, foreignSystemKey );
                 var phoneNumberService = new PhoneNumberService( rockContextForPersonUpdate );
                 var personPhoneNumberList = person.PhoneNumbers.Select( a => new
                 {
@@ -1267,12 +1398,17 @@ WHERE gta.GroupTypeId IS NULL" );
             }
         }
 
+        #endregion PersonImport
+
+        #region PhotoImport
+
         /// <summary>
         /// Bulks the photo import.
         /// </summary>
         /// <param name="photoImports">The photo imports.</param>
+        /// <param name="foreignSystemKey">The foreign system key.</param>
         /// <returns></returns>
-        public static string BulkPhotoImport( List<PhotoImport> photoImports )
+        public string BulkPhotoImport( List<PhotoImport> photoImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
@@ -1313,11 +1449,11 @@ WHERE gta.GroupTypeId IS NULL" );
 
                 if ( photoImport.PhotoType == PhotoImport.PhotoImportType.Person )
                 {
-                    binaryFileToInsert.ForeignKey = $"PersonForeignId_{photoImport.ForeignId}";
+                    binaryFileToInsert.ForeignKey = $"PersonForeignId_{foreignSystemKey}_{photoImport.ForeignId}";
                 }
                 else if ( photoImport.PhotoType == PhotoImport.PhotoImportType.Family )
                 {
-                    binaryFileToInsert.ForeignKey = $"FamilyForeignId_{photoImport.ForeignId}";
+                    binaryFileToInsert.ForeignKey = $"FamilyForeignId_{foreignSystemKey}_{photoImport.ForeignId}";
                 }
 
                 if ( !alreadyExists.Contains( binaryFileToInsert.ForeignKey ) )
@@ -1364,11 +1500,11 @@ WHERE gta.GroupTypeId IS NULL" );
             }
 
             // Update Person PhotoIds to the photos that were just Imported
-            rockContext.Database.ExecuteSqlCommand( @"UPDATE p
+            rockContext.Database.ExecuteSqlCommand( $@"UPDATE p
 SET p.PhotoId = b.Id
 FROM Person p
-INNER JOIN BinaryFile b ON p.ForeignId = Replace(b.ForeignKey, 'PersonForeignId_', '')
-WHERE b.ForeignKey LIKE 'PersonForeignId_%'
+INNER JOIN BinaryFile b ON p.ForeignId = Replace(b.ForeignKey, 'PersonForeignId_{foreignSystemKey}_', '')
+WHERE b.ForeignKey LIKE 'PersonForeignId_{foreignSystemKey}_%'
 	AND p.PhotoId IS NULL" );
 
             // Update FamilyPhoto attribute for photos that were imported
@@ -1402,9 +1538,9 @@ SELECT 0
 	,b.[Guid]
 	,newid()
 FROM [Group] g
-INNER JOIN BinaryFile b ON g.ForeignId = Replace(b.ForeignKey, 'FamilyForeignId_', '')
+INNER JOIN BinaryFile b ON g.ForeignId = Replace(b.ForeignKey, 'FamilyForeignId_{foreignSystemKey}_', '')
 WHERE g.GroupTypeId = {familyGroupType.Id}
-	AND b.ForeignKey LIKE 'FamilyForeignId_%'
+	AND b.ForeignKey LIKE 'FamilyForeignId_{foreignSystemKey}_%'
 	AND g.Id NOT IN (
 		SELECT EntityId
 		FROM AttributeValue
@@ -1414,25 +1550,26 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
             }
 
             stopwatchTotal.Stop();
-            string importType = useBulkInsertForPhotos ? "Bulk" : string.Empty;
 
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] {importType} Insert {binaryFilesToInsert.Count} Binary File records";
-
-            return responseText;
+            return GetResponseMessage( binaryFilesToInsert.Count, "Photo", stopwatchTotal.ElapsedMilliseconds );
         }
+
+        #endregion PhotoImport
+
+        #region ScheduleImport
 
         /// <summary>
         /// Bulks the schedule import.
         /// </summary>
         /// <param name="scheduleImports">The schedule imports.</param>
         /// <returns></returns>
-        public static string BulkScheduleImport( List<ScheduleImport> scheduleImports )
+        public string BulkScheduleImport( List<ScheduleImport> scheduleImports, string foreignSystemKey )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
 
             RockContext rockContext = new RockContext();
 
-            var qrySchedulesWithForeignIds = new ScheduleService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue );
+            var qrySchedulesWithForeignIds = new ScheduleService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 
             var scheduleAlreadyExistForeignIdHash = new HashSet<int>( qrySchedulesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
@@ -1459,6 +1596,7 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
             {
                 var schedule = new Schedule();
                 schedule.ForeignId = scheduleImport.ScheduleForeignId;
+                schedule.ForeignKey = foreignSystemKey;
                 schedule.CategoryId = scheduleCategory.Id;
                 if ( scheduleImport.Name.Length > 50 )
                 {
@@ -1476,9 +1614,195 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
             rockContext.BulkInsert( schedulesToInsert );
 
             stopwatchTotal.Stop();
-            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Bulk Insert {schedulesToInsert.Count} Schedules";
+            return GetResponseMessage( schedulesToInsert.Count, "Schedules", stopwatchTotal.ElapsedMilliseconds );
+        }
+
+        #endregion ScheduleImport
+
+        #region FinancialPledgeImport
+
+        /// <summary>
+        /// Bulks the financial pledge import.
+        /// </summary>
+        /// <param name="financialPledgeImports">The financial pledge imports.</param>
+        /// <returns></returns>
+        public string BulkFinancialPledgeImport( List<FinancialPledgeImport> financialPledgeImports, string foreignSystemKey )
+        {
+            Stopwatch stopwatchTotal = Stopwatch.StartNew();
+
+            RockContext rockContext = new RockContext();
+
+            var qryFinancialPledgesWithForeignIds = new FinancialPledgeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
+
+            var financialPledgeAlreadyExistForeignIdHash = new HashSet<int>( qryFinancialPledgesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
+
+            var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.Person.ForeignKey == foreignSystemKey && a.PersonId == a.AliasPersonId )
+                .Select( a => new { PersonAliasId = a.Id, PersonForeignId = a.Person.ForeignId } ).ToDictionary( k => k.PersonForeignId.Value, v => v.PersonAliasId );
+
+            var financialAccountIdLookup = new FinancialAccountService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
+                .Select( a => new { a.Id, a.ForeignId } )
+                .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
+
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+            var familyGroupIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId == groupTypeIdFamily && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
+                .Select( a => new { a.Id, a.ForeignId } )
+                .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
+
+            List<FinancialPledge> financialPledgesToInsert = new List<FinancialPledge>();
+            var newFinancialPledgeImports = financialPledgeImports.Where( a => !financialPledgeAlreadyExistForeignIdHash.Contains( a.FinancialPledgeForeignId ) ).ToList();
+
+            foreach ( var financialPledgeImport in newFinancialPledgeImports )
+            {
+                var financialPledge = new FinancialPledge();
+                financialPledge.ForeignId = financialPledgeImport.FinancialPledgeForeignId;
+                financialPledge.ForeignKey = foreignSystemKey;
+                financialPledge.PersonAliasId = personAliasIdLookup.GetValueOrNull( financialPledgeImport.PersonForeignId );
+
+                if ( financialPledgeImport.FinancialAccountForeignId.HasValue )
+                {
+                    financialPledge.AccountId = financialAccountIdLookup.GetValueOrNull( financialPledgeImport.FinancialAccountForeignId.Value );
+                }
+
+                if ( financialPledgeImport.GroupForeignId.HasValue )
+                {
+                    financialPledge.GroupId = familyGroupIdLookup.GetValueOrNull( financialPledgeImport.GroupForeignId.Value );
+                }
+
+                financialPledge.TotalAmount = financialPledgeImport.TotalAmount;
+
+                financialPledge.PledgeFrequencyValueId = financialPledgeImport.PledgeFrequencyValueId;
+                financialPledge.StartDate = financialPledgeImport.StartDate;
+                financialPledge.EndDate = financialPledgeImport.EndDate;
+
+                financialPledgesToInsert.Add( financialPledge );
+            }
+
+            rockContext.BulkInsert( financialPledgesToInsert );
+
+            stopwatchTotal.Stop();
+
+            return GetResponseMessage( financialPledgesToInsert.Count, "Financial Pledges", stopwatchTotal.ElapsedMilliseconds );
+        }
+
+        #endregion FinancialPledgeImport
+
+        #region NoteImport
+
+        /// <summary>
+        /// Bulks the note import.
+        /// </summary>
+        /// <param name="noteImports">The note imports.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="foreignSystemKey">The foreign system key.</param>
+        /// <param name="groupEntityIsFamily">If this is a GroupEntity, is it a Family GroupType?</param>
+        /// <returns></returns>
+        public string BulkNoteImport( List<NoteImport> noteImports, int entityTypeId, string foreignSystemKey, bool? groupEntityIsFamily )
+        {
+            Stopwatch stopwatchTotal = Stopwatch.StartNew();
+
+            var entityTypeCache = EntityTypeCache.Read( entityTypeId );
+            var entityFriendlyName = entityTypeCache.FriendlyName;
+            if ( entityTypeId == EntityTypeCache.GetId<Rock.Model.Group>().Value )
+            {
+                if ( groupEntityIsFamily.Value )
+                {
+                    entityFriendlyName = "Family";
+                }
+            }
+
+            // first check for invalid NoteType or NoteType.EntityType
+            var noteTypeList = noteImports.Select( a => a.NoteTypeId ).Distinct().ToList().Select( a => NoteTypeCache.Read( a ) ).ToList();
+            if ( noteTypeList.Any( a => a == null ) )
+            {
+                return "WARNING: Unable to determine NoteType for one or more notes. No Notes imported.";
+            }
+            else if ( noteTypeList.Where( a => a != null ).Any( a => a.EntityTypeId != entityTypeId ) )
+            {
+                return "WARNING: NoteType for one or more notes is not for the specified entityTypeId. No Notes imported.";
+            }
+
+            RockContext rockContext = new RockContext();
+
+            var qryNotesWithForeignIds = new NoteService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.NoteType.EntityTypeId == entityTypeId );
+
+            var noteAlreadyExistForeignIdHash = new HashSet<int>( qryNotesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
+
+            Dictionary<int, int> entityIdLookup;
+            if ( entityTypeId == EntityTypeCache.GetId<Rock.Model.Group>().Value )
+            {
+                int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+                if ( groupEntityIsFamily.Value == true )
+                {
+                    entityIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId == groupTypeIdFamily )
+                        .Select( a => new { a.Id, a.ForeignId } )
+                        .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
+                }
+                else
+                {
+                    entityIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey && a.GroupTypeId != groupTypeIdFamily )
+                        .Select( a => new { a.Id, a.ForeignId } )
+                        .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
+                }
+            }
+            else
+            {
+                Type entityType = entityTypeCache.GetEntityType();
+                var entityService = Reflection.GetServiceForEntityType( entityType, rockContext );
+                MethodInfo queryableMethodInfo = entityService.GetType().GetMethod( "Queryable", new Type[] { } );
+                IQueryable<IEntity> entityQuery = queryableMethodInfo.Invoke( entityService, null ) as IQueryable<IEntity>;
+
+                entityIdLookup = entityQuery.Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
+                    .Select( a => new { a.Id, a.ForeignId } )
+                    .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
+            }
+
+            var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.Person.ForeignKey == foreignSystemKey && a.PersonId == a.AliasPersonId )
+                .Select( a => new { PersonAliasId = a.Id, PersonForeignId = a.Person.ForeignId } ).ToDictionary( k => k.PersonForeignId.Value, v => v.PersonAliasId );
+
+            List<Note> notesToInsert = new List<Note>();
+            var newNoteImports = noteImports.Where( a => !noteAlreadyExistForeignIdHash.Contains( a.NoteForeignId ) ).ToList();
+
+            int noteImportErrors = 0;
+
+            foreach ( var noteImport in newNoteImports )
+            {
+                var note = new Note();
+                note.ForeignId = noteImport.NoteForeignId;
+                note.ForeignKey = foreignSystemKey;
+                note.EntityId = entityIdLookup.GetValueOrNull( noteImport.EntityForeignId );
+                note.NoteTypeId = noteImport.NoteTypeId;
+                note.Caption = noteImport.Caption ?? string.Empty;
+                if ( note.Caption.Length > 200 )
+                {
+                    note.Caption = note.Caption.Truncate( 200 );
+                }
+
+                note.IsAlert = noteImport.IsAlert;
+                note.IsPrivateNote = noteImport.IsPrivateNote;
+                note.Text = noteImport.Text;
+                note.CreatedDateTime = noteImport.DateTime;
+                if ( noteImport.CreatedByPersonForeignId.HasValue )
+                {
+                    note.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull( noteImport.CreatedByPersonForeignId.Value );
+                }
+
+                notesToInsert.Add( note );
+            }
+
+            rockContext.BulkInsert( notesToInsert );
+
+            stopwatchTotal.Stop();
+            string responseText = string.Empty;
+            if ( noteImportErrors > 0 )
+            {
+                responseText += $"WARNING: Unable to import {noteImportErrors} notes due to invalid NoteType or NoteType EntityType mismatch.\n";
+            }
+
+            responseText += GetResponseMessage( notesToInsert.Count, $"{entityFriendlyName} Notes", stopwatchTotal.ElapsedMilliseconds );
 
             return responseText;
         }
+
+        #endregion NoteImport
     }
 }
