@@ -53,6 +53,8 @@ install:
 
     git clone -q --depth=1 git@github.com:NewSpring/rock-spiritual-gifts.git c:\projects\rock-spiritual-gifts
 
+    git clone -q --depth=1 git@github.com:NewSpring/rock-misc.git c:\projects\rock-misc
+
 
 # directories to preserve between builds
 cache:
