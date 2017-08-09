@@ -83,10 +83,13 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             if ( !Page.IsPostBack )
             {
                 var rockContext = new RockContext();
-                
+
                 // Bind Devices
+                var printerDeviceType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER.AsGuid() );
+
                 var deviceService = new DeviceService( rockContext);
-                var devices = deviceService.Queryable().AsNoTracking().OrderBy( p => p.Name).ToList();
+                // Only get printers...
+                var devices = deviceService.Queryable().AsNoTracking().Where( d=>d.DeviceTypeValueId == printerDeviceType.Id ).OrderBy( p => p.Name).ToList();
                 ddlDevice.DataTextField = "Name";
                 ddlDevice.DataValueField = "Guid";
                 ddlDevice.DataSource = devices;

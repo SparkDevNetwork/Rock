@@ -21,7 +21,7 @@
 
                 <Rock:NotificationBox runat="server" ID="nbMessage" CssClass="margin-t-md margin-b-md"></Rock:NotificationBox>
 
-                <Rock:RockDropDownList runat="server" ID="ddlDevice" Label="Device"></Rock:RockDropDownList>
+                <Rock:RockDropDownList runat="server" ID="ddlDevice" Label="Printer"></Rock:RockDropDownList>
 
                 <Rock:RockDropDownList runat="server" ID="ddlLabel" Label="Labels"></Rock:RockDropDownList>
                 
