@@ -638,36 +638,23 @@ namespace RockWeb.Blocks.Fundraising
         protected void gContributions_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             FinancialTransaction financialTransaction = e.Row.DataItem as FinancialTransaction;
-            Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
-            if ( financialTransaction != null && lAddress != null && financialTransaction.AuthorizedPersonAliasId.HasValue )
+            if ( financialTransaction != null && 
+                financialTransaction.AuthorizedPersonAlias != null && 
+                financialTransaction.AuthorizedPersonAlias.Person != null )
             {
-                var personAddress = financialTransaction.AuthorizedPersonAlias.Person.GetHomeLocation();
+	            Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
+	            if ( lAddress != null )
+	            {
+	                var location = financialTransaction.AuthorizedPersonAlias.Person.GetMailingLocation();
+	                lAddress.Text = location != null ? location.GetFullStreetAddress() : string.Empty;
+	            }
 
-                if ( financialTransaction.ShowAsAnonymous || personAddress == null )
-                {
-                    // don't show the person's address if they wanted to give anonymously
-                    // or if they don't have a home address.
-                    lAddress.Text = string.Empty;
-                }
-                else
-                { 
-                    lAddress.Text = personAddress.GetFullStreetAddress();
-                }
-            }
-
-            Literal lPersonName = e.Row.FindControl( "lPersonName" ) as Literal;
-            if ( financialTransaction != null && lPersonName != null && financialTransaction.AuthorizedPersonAliasId.HasValue )
-            {
-                if (financialTransaction.ShowAsAnonymous)
-                {
-                    // don't show the person's name if they wanted to give anonymously
-                    lPersonName.Text = "Anonymous";
-                }
-                else
-                {
-                    lPersonName.Text = financialTransaction.AuthorizedPersonAlias.Person.FullName;
-                }
-            }
+	            Literal lPersonName = e.Row.FindControl( "lPersonName" ) as Literal;
+	            if ( lPersonName != null )
+	            {
+	                lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
+	            }
+	        }
         }
 
         /// <summary>
