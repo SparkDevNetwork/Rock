@@ -34,9 +34,10 @@ namespace Rock.Workflow.Action
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Activate Workflow")]
 
-    [TextField("Workflow Name", "The name of your new workflow", true)]
-    [WorkflowTypeField("Workflow Type", "The workflow type to activate", false, true)]
-    [KeyValueListField("Workflow Attribute Key", "Used to match the current workflow's attribute keys to the keys of the new workflow. The new workflow will inherit the attribute values of the keys provided.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute")]
+    [TextField("Workflow Name", "The name of your new workflow", true, order: 1)]
+    [WorkflowTypeField("Workflow Type", "The workflow type to activate.  To set the Workflow Type from an Attribute, leave this blank and set Workflow Type from Attribute.", false, false, order: 2)]
+    [WorkflowAttribute( "Workflow Type from Attribute", "The workflow type to activate. Either this or Workflow Type must be set.", false, fieldTypeClassNames: new string[] {"Rock.Field.Types.TextFieldType",  "Rock.Field.Types.WorkflowTypeFieldType"}, order: 3)]
+    [KeyValueListField("Workflow Attribute Key", "Used to match the current workflow's attribute keys to the keys of the new workflow. The new workflow will inherit the attribute values of the keys provided.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute", order:4)]
 
     public class ActivateWorkflow : ActionComponent
     {
@@ -52,6 +53,7 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
             var workflowTypeGuid = GetAttributeValue(action, "WorkflowType").AsGuidOrNull();
+            var workflowTypeFromAttributeGuid = GetAttributeValue( action, "WorkflowTypefromAttribute", true ).AsGuidOrNull();
             var workflowName = GetAttributeValue(action, "WorkflowName");
 
             WorkflowTypeCache workflowType = null;
@@ -59,6 +61,10 @@ namespace Rock.Workflow.Action
             if ( workflowTypeGuid.HasValue )
             {
                 workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+            }
+            else if ( workflowTypeFromAttributeGuid.HasValue )
+            {
+                workflowType = WorkflowTypeCache.Read( workflowTypeFromAttributeGuid.Value );
             }
 
             if ( workflowType != null && !string.IsNullOrEmpty(workflowName))
@@ -101,8 +107,9 @@ namespace Rock.Workflow.Action
                         }
                     }
 
-                    new Rock.Model.WorkflowService(rockContext).Process(workflow, out errorMessages);        
-                    
+                    List<string> workflowErrorMessages = new List<string>();
+                    new Rock.Model.WorkflowService(rockContext).Process(workflow, out workflowErrorMessages );
+                    errorMessages.AddRange( workflowErrorMessages );
                 }        
             }
             else
