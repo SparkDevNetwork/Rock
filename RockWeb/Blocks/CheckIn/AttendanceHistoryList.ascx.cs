@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Checkin
         protected void RFilter_ClearFilterClick( object sender, EventArgs e )
         {
             rFilter.DeleteUserPreferences();
-            BindGrid();
+            BindFilter();
         }
 
         #endregion
