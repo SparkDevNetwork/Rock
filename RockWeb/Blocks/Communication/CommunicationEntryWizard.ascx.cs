@@ -771,26 +771,32 @@ namespace RockWeb.Blocks.Communication
 
             if ( communicationTemplate != null )
             {
-                Panel pnlTemplatePreview = e.Item.FindControl( "pnlTemplatePreview" ) as Panel;
                 Literal lTemplateImagePreview = e.Item.FindControl( "lTemplateImagePreview" ) as Literal;
                 Literal lTemplateName = e.Item.FindControl( "lTemplateName" ) as Literal;
                 Literal lTemplateDescription = e.Item.FindControl( "lTemplateDescription" ) as Literal;
                 LinkButton btnSelectTemplate = e.Item.FindControl( "btnSelectTemplate" ) as LinkButton;
 
-                lTemplateImagePreview.Text = this.GetImageTag( communicationTemplate.ImageFileId );
+                if ( communicationTemplate.ImageFileId.HasValue )
+                {
+                    lTemplateImagePreview.Text = this.GetImageTag( communicationTemplate.ImageFileId, showPlaceholderImage: false );
+                }
+                else
+                {
+                    lTemplateImagePreview.Text = string.Format("<img src='{0}'/>", this.ResolveRockUrl( "~/Assets/Images/communication-template-default.svg"));
+                }
+
                 lTemplateName.Text = communicationTemplate.Name;
                 lTemplateDescription.Text = communicationTemplate.Description;
                 btnSelectTemplate.CommandName = "CommunicationTemplateId";
                 btnSelectTemplate.CommandArgument = communicationTemplate.Id.ToString();
 
-                // TODO, ask about display of selected template, etc
                 if ( hfSelectedCommunicationTemplateId.Value == communicationTemplate.Id.ToString() )
                 {
-                    pnlTemplatePreview.AddCssClass( "accent-light-color-bordered" );
+                    btnSelectTemplate.AddCssClass( "template-selected" );
                 }
                 else
                 {
-                    pnlTemplatePreview.RemoveCssClass( "accent-light-color-bordered" );
+                    btnSelectTemplate.RemoveCssClass( "template-selected" );
                 }
             }
 

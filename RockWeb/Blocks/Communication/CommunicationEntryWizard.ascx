@@ -139,8 +139,7 @@
                         <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
                             <ItemTemplate>
                                 <div class="col-md-4">
-                                    
-                                    <asp:Panel Id="pnlTemplatePreview" runat="server" class="template-preview js-template-preview margin-b-md">
+                                    <asp:LinkButton ID="btnSelectTemplate" CssClass="template-preview" runat="server" OnClick="btnSelectTemplate_Click">
                                         <div class="row">
                                             <div class="col-md-5">
                                                 <asp:Literal ID="lTemplateImagePreview" runat="server"></asp:Literal>
@@ -150,11 +149,7 @@
                                                 <p><asp:Literal ID="lTemplateDescription" runat="server"></asp:Literal></p>
                                             </div>
                                         </div>
-                                        <div class="select-template margin-t-sm">
-                                            <asp:LinkButton ID="btnSelectTemplate" runat="server" CssClass="btn btn-action btn-xs" OnClick="btnSelectTemplate_Click" Text="Select" />
-                                        </div>
-                                    </asp:Panel>
-                                    
+                                    </asp:LinkButton>
                                 </div>
                             </ItemTemplate>
                         </asp:Repeater>
