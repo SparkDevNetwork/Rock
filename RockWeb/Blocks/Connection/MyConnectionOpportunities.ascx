@@ -33,7 +33,7 @@
                 <div class="pull-right">
                     <asp:Literal ID="lStatusBarContent" runat="server" />
                     <Rock:Toggle ID="tglMyOpportunities" CssClass="margin-r-sm pull-left" runat="server" OnText="My Requests" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="All Requests" AutoPostBack="true" OnCheckedChanged="tglMyOpportunities_CheckedChanged" Checked="true" />
-                    <asp:Label ID="lTotal" runat="server" CssClass="margin-r-sm pull-left" />
+                    <asp:Label ID="lTotal" runat="server" CssClass="margin-r-sm pull-left label label-info" Style="line-height:1.6" />
                     <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass=" pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"><i class="fa fa-gear"></i></asp:LinkButton>
                 </div>
 

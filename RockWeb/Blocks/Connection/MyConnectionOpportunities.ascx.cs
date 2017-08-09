@@ -684,6 +684,9 @@ namespace RockWeb.Blocks.Connection
 
                 // Flag indicating if current user is connector for any of the active types
                 opportunity.HasActiveRequestsForConnector = opportunityRequests.Any( r => r.ConnectorPersonId == CurrentPersonId );
+
+                // Total number of requests for opportunity/campus/connector
+                opportunity.TotalRequests = opportunityRequests.Count();
             }
 
             //Set the Idle tooltip
@@ -714,7 +717,7 @@ namespace RockWeb.Blocks.Connection
             if ( GetAttributeValue( "ShowRequestTotal" ).AsBoolean( true ) )
             {
                 lTotal.Visible = true;
-                lTotal.Text = string.Format( "Total Requests: {0:N0}", activeRequests.Count() );
+                lTotal.Text = string.Format( "Total Requests: {0:N0}", SummaryState.SelectMany( s => s.Opportunities ).Sum( o => o.TotalRequests ) );
             }
             else
             {
@@ -1106,6 +1109,7 @@ namespace RockWeb.Blocks.Connection
             public List<int> UnassignedConnectionRequests { get; internal set; }
             public List<int> IdleConnectionRequests { get; internal set; }
             public List<int> CriticalConnectionRequests { get; internal set; }
+            public int TotalRequests { get; internal set; }
         }
 
         [Serializable]
