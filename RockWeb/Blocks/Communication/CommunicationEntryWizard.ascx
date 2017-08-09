@@ -16,7 +16,7 @@
 
                 <%-- Recipient Selection --%>
                 <asp:Panel ID="pnlRecipientSelection" runat="server" Visible="true">
-                    <h1>Recipient Selection</h1>
+                    <h1 class="step-title">Recipient Selection</h1>
 
                     <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgRecipientSelection" CssClass="alert alert-danger" />
 
@@ -86,7 +86,7 @@
 
                 <%-- Medium Selection --%>
                 <asp:Panel ID="pnlMediumSelection" runat="server" Visible="false" >
-                    <h1>Medium Selection</h1>
+                    <h1 class="step-title">Medium Selection</h1>
                     <asp:ValidationSummary ID="vsMediumSelection" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgMediumSelection" CssClass="alert alert-danger" />
                     <div class="row">
                         <div class="col-md-6">
@@ -133,7 +133,7 @@
 
                 <%-- Template Selection --%>
                 <asp:Panel ID="pnlTemplateSelection" runat="server" Visible="false">
-                    <h1>Email Template</h1>
+                    <h1 class="step-title">Email Template</h1>
                     <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
                     <div class="row margin-t-lg template-selection">
                         <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
@@ -167,7 +167,7 @@
 
                 <%-- Email Editor --%>
                 <asp:Panel ID="pnlEmailEditor" runat="server" Visible="false">
-                    <h1>Email Editor</h1>
+                    <h1 class="step-title">Email Editor</h1>
 
                     <div class="emaileditor-wrapper margin-t-md">
                         <section id="emaileditor">
@@ -181,6 +181,8 @@
                                     <div class="propertypanel propertypanel-text" data-component="text" style="display: none;">
 						                <h4 class="propertypanel-title">Text</h4>
 
+                                        <Rock:HtmlEditor ID="htmlEditor" CssClass="js-component-text-htmlEditor" runat="server" Height="350" CallbackOnChangeScript="updateTextComponent(this, contents);" />
+
                                         <div class="row">
 							                <div class="col-md-6">
 								                <div class="form-group">
@@ -190,6 +192,9 @@
 										                <span class="input-group-addon"><i></i></span>
 									                </div>
 								                </div>
+                                                
+							                </div>
+							                <div class="col-md-6">
                                                 <Rock:RockDropDownList Id="ddlLineHeight" CssClass="js-component-text-lineheight" ClientIDMode="Static" runat="server" Label="Line Height">
                                                     <asp:ListItem />
                                                     <asp:ListItem Text="Normal" Value="100%" />
@@ -198,52 +203,51 @@
                                                     <asp:ListItem Text="Double space" Value="200%" />
                                                     <asp:ListItem />
                                                 </Rock:RockDropDownList>
-							                </div>
-							                <div class="col-md-6">
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-									                        <label for="component-text-margin-top">Margin Top</label>
-                                                            <div class="input-group input-width-md">
-								                                <input class="form-control" id="component-text-margin-top" type="number"><span class="input-group-addon">px</span>
-							                                </div>
-								                        </div>
-                                                        <div class="form-group">
-									                        <label for="component-text-margin-bottom">Margin Bottom</label>
-									                        <div class="input-group input-width-md">
-								                                <input class="form-control" id="component-text-margin-bottom" type="number"><span class="input-group-addon">px</span>
-							                                </div>
-								                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-									                        <label for="component-text-margin-left">Margin Left</label>
-									                        <div class="input-group input-width-md">
-								                                <input class="form-control" id="component-text-margin-left" type="number"><span class="input-group-addon">px</span>
-							                                </div>
-								                        </div>
-                                                        <div class="form-group">
-									                        <label for="component-text-margin-right">Margin Right</label>
-									                        <div class="input-group input-width-md">
-								                                <input class="form-control" id="component-text-margin-right" type="number"><span class="input-group-addon">px</span>
-							                                </div>
-								                        </div>
-                                                    </div>
-                                                </div>
-							                </div>
-						                </div>
+                                            </div>
+                                        </div>
 
-                                        <Rock:HtmlEditor ID="htmlEditor" CssClass="js-component-text-htmlEditor" runat="server" Height="350" CallbackOnChangeScript="updateTextComponent(this, contents);" />
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+									                <label for="component-text-margin-top">Margin Top</label>
+                                                    <div class="input-group input-width-md">
+								                        <input class="form-control" id="component-text-margin-top" type="number"><span class="input-group-addon">px</span>
+							                        </div>
+								                </div>
+                                                <div class="form-group">
+									                <label for="component-text-margin-left">Margin Left</label>
+									                <div class="input-group input-width-md">
+								                        <input class="form-control" id="component-text-margin-left" type="number"><span class="input-group-addon">px</span>
+							                        </div>
+								                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+									                <label for="component-text-margin-bottom">Margin Bottom</label>
+									                <div class="input-group input-width-md">
+								                        <input class="form-control" id="component-text-margin-bottom" type="number"><span class="input-group-addon">px</span>
+							                        </div>
+								                </div>
+                                                <div class="form-group">
+									                <label for="component-text-margin-right">Margin Right</label>
+									                <div class="input-group input-width-md">
+								                        <input class="form-control" id="component-text-margin-right" type="number"><span class="input-group-addon">px</span>
+							                        </div>
+								                </div>
+                                            </div>
+                                        </div> 
 					                </div>
 
                                     <!-- Image Properties -->
                                     <div class="propertypanel propertypanel-image" data-component="image" style="display: none;">
 						                <h4 class="propertypanel-title">Image</h4>
-						                <Rock:ImageUploader ID="componentImageUploader" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" DoneFunctionClientScript="handleImageUpdate(e, data)" DeleteFunctionClientScript="handleImageUpdate()" />
-
+						                
                                         <div class="row">
-							                <div class="col-md-6">
-								                <div class="form-group">
+                                            <div class="col-md-6">
+                                                <Rock:ImageUploader ID="componentImageUploader" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" DoneFunctionClientScript="handleImageUpdate(e, data)" DeleteFunctionClientScript="handleImageUpdate()" />
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
 									                <label for="component-image-imgcsswidth">Width</label>
 									                <select id="component-image-imgcsswidth" class="form-control">
 										                <option value="0">Image Width</option>
@@ -268,57 +272,49 @@
 										                <option value="stretch">Stretch</option>
 									                </select>
 								                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+							                <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="component-image-imagewidth">Image Width</label>
+                                                    <div class="input-group input-width-md">
+                                                        <input class="form-control" id="component-image-imagewidth" type="number"><span class="input-group-addon">px</span>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+									                <label for="component-image-margin-top">Margin Top</label>
+                                                    <div class="input-group input-width-md">
+								                        <input class="form-control" id="component-image-margin-top" type="number"><span class="input-group-addon">px</span>
+							                        </div>
+								                </div>
+                                                <div class="form-group">
+									                <label for="component-image-margin-left">Margin Left</label>
+									                <div class="input-group input-width-md">
+								                        <input class="form-control" id="component-image-margin-left" type="number"><span class="input-group-addon">px</span>
+							                        </div>
+								                </div>
 							                </div>
 							                <div class="col-md-6">
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label for="component-image-imagewidth">Image Width</label>
-                                                            <div class="input-group input-width-md">
-                                                                <input class="form-control" id="component-image-imagewidth" type="number"><span class="input-group-addon">px</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label for="component-image-imageheight">Image Height</label>
-                                                            <div class="input-group input-width-md">
-                                                                <input class="form-control" id="component-image-imageheight" type="number"><span class="input-group-addon">px</span>
-                                                            </div>
-                                                        </div>
+                                                <div class="form-group">
+                                                    <label for="component-image-imageheight">Image Height</label>
+                                                    <div class="input-group input-width-md">
+                                                        <input class="form-control" id="component-image-imageheight" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
-
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-									                        <label for="component-image-margin-top">Margin Top</label>
-                                                            <div class="input-group input-width-md">
-								                                <input class="form-control" id="component-image-margin-top" type="number"><span class="input-group-addon">px</span>
-							                                </div>
-								                        </div>
-                                                        <div class="form-group">
-									                        <label for="component-image-margin-bottom">Margin Bottom</label>
-									                        <div class="input-group input-width-md">
-								                                <input class="form-control" id="component-image-margin-bottom" type="number"><span class="input-group-addon">px</span>
-							                                </div>
-								                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-									                        <label for="component-image-margin-left">Margin Left</label>
-									                        <div class="input-group input-width-md">
-								                                <input class="form-control" id="component-image-margin-left" type="number"><span class="input-group-addon">px</span>
-							                                </div>
-								                        </div>
-                                                        <div class="form-group">
-									                        <label for="component-image-margin-right">Margin Right</label>
-									                        <div class="input-group input-width-md">
-								                                <input class="form-control" id="component-image-margin-right" type="number"><span class="input-group-addon">px</span>
-							                                </div>
-								                        </div>
-                                                    </div>
-                                                </div>
+                                                <div class="form-group">
+									                <label for="component-image-margin-bottom">Margin Bottom</label>
+									                <div class="input-group input-width-md">
+								                        <input class="form-control" id="component-image-margin-bottom" type="number"><span class="input-group-addon">px</span>
+							                        </div>
+								                </div>
+                                                <div class="form-group">
+									                <label for="component-image-margin-right">Margin Right</label>
+									                <div class="input-group input-width-md">
+								                        <input class="form-control" id="component-image-margin-right" type="number"><span class="input-group-addon">px</span>
+							                        </div>
+								                </div>
 							                </div>
 						                </div>
 					                </div>
@@ -340,19 +336,19 @@
 							                        </div>
 								                </div>
                                                 <div class="form-group">
+									                <label for="component-divider-margin-top">Margin Top</label>
+                                                    <div class="input-group input-width-md">
+								                        <input class="form-control" id="component-divider-margin-top" type="number"><span class="input-group-addon">px</span>
+							                        </div>
+								                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
 									                <label for="component-divider-color">Color</label>
 									                <div id="component-divider-color" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
 									                </div>
-								                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-									                <label for="component-divider-margin-top">Margin Top</label>
-                                                    <div class="input-group input-width-md">
-								                        <input class="form-control" id="component-divider-margin-top" type="number"><span class="input-group-addon">px</span>
-							                        </div>
 								                </div>
                                                 <div class="form-group">
 									                <label for="component-divider-margin-bottom">Margin Bottom</label>
@@ -380,17 +376,17 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="component-code-margin-bottom">Margin Bottom</label>
+                                                    <label for="component-code-margin-left">Margin Left</label>
                                                     <div class="input-group input-width-md">
-                                                        <input class="form-control" id="component-code-margin-bottom" type="number"><span class="input-group-addon">px</span>
+                                                        <input class="form-control" id="component-code-margin-left" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-code-margin-left">Margin Left</label>
+                                                    <label for="component-code-margin-bottom">Margin Bottom</label>
                                                     <div class="input-group input-width-md">
-                                                        <input class="form-control" id="component-code-margin-left" type="number"><span class="input-group-addon">px</span>
+                                                        <input class="form-control" id="component-code-margin-bottom" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
@@ -527,7 +523,7 @@
                             <div id="editor-toolbar-container" class="js-emaileditor-addon">
 			                    <div id="editor-toolbar-content">
 				                    <p><small><strong>Content Blocks</strong></small></p>
-                                    <div class="component component-text" data-content="<h1>Big News</h1><p> This is a text block. You can use it to add text to your template.</p>" data-state="template">
+                                    <div class="component component-text" data-content="<h1>Title</h1><p> Can't wait to see what you have to say!</p>" data-state="template">
 					                    <i class="fa fa-align-justify"></i><br /> Text
 				                    </div>
 				                    <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-width='full' />" data-state="template">
@@ -549,20 +545,20 @@
                                     <div class="component component-section" data-content="<div class='dropzone'></div>" data-state="template">
 					                    <i class="rk rk-one-column"></i> <br /> One
 				                    </div>
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='50%'><div class='dropzone'></div></td><td width='50%'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='50%' valign='top'><div class='dropzone'></div></td><td width='50%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
 					                    <i class="rk rk-two-column"></i> <br /> Two
 				                    </div>
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='33%'><div class='dropzone'></div></td><td width='34%'><div class='dropzone'></div></td><td width='33%'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='33%' valign='top'><div class='dropzone'></div></td><td width='34%' valign='top'><div class='dropzone'></div></td><td width='33%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
 					                    <i class="rk rk-three-column"></i> <br /> Three
 				                    </div>
                                     <!--
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='25%'><div class='dropzone'></div></td><td width='25%'><div class='dropzone'></div></td><td width='25%'><div class='dropzone'></div></td><td width='25%'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='25%' valign='top'><div class='dropzone'></div></td><td width='25%' valign='top'><div class='dropzone'></div></td><td width='25%' valign='top'><div class='dropzone'></div></td><td width='25%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
 					                    <i class="rk rk-four-column"></i> <br /> Four
 				                    </div> -->
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='33%'><div class='dropzone'></div></td><td width='67%'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='33%' valign='top'><div class='dropzone'></div></td><td width='67%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
 					                    <i class="rk rk-left-column"></i> <br /> Left
 				                    </div>
-                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='67%'><div class='dropzone'></div></td><td width='33%'><div class='dropzone'></div></td></tr></table>" data-state="template">
+                                    <div class="component component-section" data-content="<table width='100%'><tr><td width='67%' valign='top'><div class='dropzone'></div></td><td width='33%' valign='top'><div class='dropzone'></div></td></tr></table>" data-state="template">
 					                    <i class="rk rk-right-column"></i> <br /> Right
 				                    </div>
                                 </div>
@@ -580,7 +576,7 @@
 
                 <%-- Email Summary --%>
                 <asp:Panel ID="pnlEmailSummary" runat="server" Visible="false">
-                    <h1>Email Summary</h1>
+                    <h1 class="step-title">Email Summary</h1>
 
                     <asp:ValidationSummary ID="vsEmailSummary" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgEmailSummary" CssClass="alert alert-danger" />
 
@@ -640,7 +636,7 @@
 
                 <%-- Mobile Text Editor --%>
                 <asp:Panel ID="pnlMobileTextEditor" runat="server" Visible="false">
-                    <h1>Mobile Text Editor</h1>
+                    <h1 class="step-title">Mobile Text Editor</h1>
 
                     <asp:ValidationSummary ID="vsMobileTextEditor" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgMobileTextEditor" CssClass="alert alert-danger" />
                     <div class="row">
@@ -681,7 +677,7 @@
 
                 <%-- Confirmation --%>
                 <asp:Panel ID="pnlConfirmation" runat="server" Visible="false">
-                    <h1>Confirmation</h1>
+                    <h1 class="step-title">Confirmation</h1>
                     <div class="alert alert-info js-confirmation-senddatetime-alert">
                         <asp:Label ID="lConfirmationSendDateTimeHtml" runat="server" />
                         <a href='#' class="btn btn-link btn-xs js-show-confirmation-datetime"><strong>Edit</strong></a>
