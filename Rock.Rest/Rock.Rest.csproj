@@ -121,6 +121,8 @@
     <Compile Include="Controllers\CodeGenerated\MetaPersonicxLifestageClustersController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaPersonicxLifestageGroupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
+    <Compile Include="Controllers\PresenceController.cs" />
+    <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
     <Compile Include="Swagger\RockSwaggerHelper.cs" />
     <Compile Include="Swagger\RockDocumentFilter.cs" />
     <Compile Include="Swagger\RockOperationFilter.cs" />

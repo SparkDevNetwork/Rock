@@ -97,6 +97,7 @@ namespace Rock.Model
             target.InteractionSessionId = source.InteractionSessionId;
             target.InteractionSummary = source.InteractionSummary;
             target.Operation = source.Operation;
+            target.PersonalDeviceId = source.PersonalDeviceId;
             target.PersonAliasId = source.PersonAliasId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

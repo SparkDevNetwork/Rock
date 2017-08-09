@@ -31,5 +31,10 @@ namespace Rock.SystemGuid
         /// Interaction Channel GUID for all Email, SMS, etc
         /// </summary>
         public const string COMMUNICATION = "C88A187F-0343-4E7C-AF3F-79A8989DFA65";
+
+        /// <summary>
+        /// Interaction Channel GUID for wifi presence
+        /// </summary>
+        public const string WIFI_PRESENCE = "23888303-4847-4C80-93E2-4C5EB8029D18";
     }
 }

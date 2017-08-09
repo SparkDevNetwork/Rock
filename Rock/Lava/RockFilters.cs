@@ -710,6 +710,68 @@ namespace Rock.Lava
             return input.Substring(start, length);
         }
 
+        /// <summary>
+        /// Parse the input string as a URL and then return a specific part of the URL.
+        /// </summary>
+        /// <param name="input">The string to be parsed as a URL.</param>
+        /// <param name="part">The part of the Uri object to retrieve.</param>
+        /// <param name="key">Extra parameter used by the QueryParameter key for which query parameter to retrieve.</param>
+        /// <returns>A string that identifies the part of the URL that was requested.</returns>
+        public static object Url( string input, string part, string key = null )
+        {
+            if ( string.IsNullOrEmpty( input ) || string.IsNullOrEmpty( part ) )
+            {
+                return input;
+            }
+
+            Uri uri;
+            if ( !Uri.TryCreate( input, UriKind.Absolute, out uri ) )
+            {
+                return string.Empty;
+            }
+
+            switch ( part.ToUpper() )
+            {
+                case "HOST":
+                    return uri.Host;
+
+                case "PORT":
+                    return uri.Port;
+
+                case "SEGMENTS":
+                    return uri.Segments;
+
+                case "SCHEME":
+                case "PROTOCOL":
+                    return uri.Scheme;
+
+                case "LOCALPATH":
+                    return uri.LocalPath;
+
+                case "PATHANDQUERY":
+                    return uri.PathAndQuery;
+
+                case "QUERYPARAMETER":
+                    if ( key != null )
+                    {
+                        var parameters = HttpUtility.ParseQueryString( uri.Query );
+
+                        if ( parameters.AllKeys.Contains( key ) )
+                        {
+                            return parameters[key];
+                        }
+                    }
+
+                    return string.Empty;
+
+                case "URL":
+                    return uri.ToString();
+
+                default:
+                    return string.Empty;
+            }
+        }
+
         #endregion
 
         #region DateTime Filters

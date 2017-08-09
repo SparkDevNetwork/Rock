@@ -289,6 +289,14 @@
     <Compile Include="Migrations\201707212034122_PersonToken.Designer.cs">
       <DependentUpon>201707212034122_PersonToken.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707241828445_PersonAliasNullableId.cs" />
+    <Compile Include="Migrations\201707241828445_PersonAliasNullableId.Designer.cs">
+      <DependentUpon>201707241828445_PersonAliasNullableId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707272046132_Presence.cs" />
+    <Compile Include="Migrations\201707272046132_Presence.Designer.cs">
+      <DependentUpon>201707272046132_Presence.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2654,6 +2662,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707212034122_PersonToken.resx">
       <DependentUpon>201707212034122_PersonToken.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707241828445_PersonAliasNullableId.resx">
+      <DependentUpon>201707241828445_PersonAliasNullableId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707272046132_Presence.resx">
+      <DependentUpon>201707272046132_Presence.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
