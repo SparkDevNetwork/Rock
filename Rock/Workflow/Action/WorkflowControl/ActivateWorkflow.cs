@@ -29,15 +29,15 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Activates all the actions for the current action's activity.
     /// </summary>
-    [ActionCategory("Workflow Control")]
-    [Description("Activates a new workflow with the provided attribute values.")]
-    [Export(typeof(ActionComponent))]
-    [ExportMetadata("ComponentName", "Activate Workflow")]
+    [ActionCategory( "Workflow Control" )]
+    [Description( "Activates a new workflow with the provided attribute values." )]
+    [Export( typeof( ActionComponent ) )]
+    [ExportMetadata( "ComponentName", "Activate Workflow" )]
 
-    [TextField("Workflow Name", "The name of your new workflow", true, order: 1)]
-    [WorkflowTypeField("Workflow Type", "The workflow type to activate.  To set the Workflow Type from an Attribute, leave this blank and set Workflow Type from Attribute.", false, false, order: 2)]
-    [WorkflowAttribute( "Workflow Type from Attribute", "The workflow type to activate. Either this or Workflow Type must be set.", false, fieldTypeClassNames: new string[] {"Rock.Field.Types.TextFieldType",  "Rock.Field.Types.WorkflowTypeFieldType"}, order: 3)]
-    [KeyValueListField("Workflow Attribute Key", "Used to match the current workflow's attribute keys to the keys of the new workflow. The new workflow will inherit the attribute values of the keys provided.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute", order:4)]
+    [TextField( "Workflow Name", "The name of your new workflow", true, order: 1 )]
+    [WorkflowTypeField( "Workflow Type", "The workflow type to activate.  To set the Workflow Type from an Attribute, leave this blank and set Workflow Type from Attribute.", false, false, order: 2 )]
+    [WorkflowAttribute( "Workflow Type from Attribute", "The workflow type to activate. Either this or Workflow Type must be set.", false, fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.WorkflowTypeFieldType" }, order: 3 )]
+    [KeyValueListField( "Workflow Attribute Key", "Used to match the current workflow's attribute keys to the keys of the new workflow. The new workflow will inherit the attribute values of the keys provided.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute", order: 4 )]
 
     public class ActivateWorkflow : ActionComponent
     {
@@ -49,12 +49,12 @@ namespace Rock.Workflow.Action
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute(RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages)
+        public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-            var workflowTypeGuid = GetAttributeValue(action, "WorkflowType").AsGuidOrNull();
+            var workflowTypeGuid = GetAttributeValue( action, "WorkflowType" ).AsGuidOrNull();
             var workflowTypeFromAttributeGuid = GetAttributeValue( action, "WorkflowTypefromAttribute", true ).AsGuidOrNull();
-            var workflowName = GetAttributeValue(action, "WorkflowName");
+            var workflowName = GetAttributeValue( action, "WorkflowName" );
 
             WorkflowTypeCache workflowType = null;
 
@@ -67,7 +67,7 @@ namespace Rock.Workflow.Action
                 workflowType = WorkflowTypeCache.Read( workflowTypeFromAttributeGuid.Value );
             }
 
-            if ( workflowType != null && !string.IsNullOrEmpty(workflowName))
+            if ( workflowType != null && !string.IsNullOrEmpty( workflowName ) )
             {
                 if ( !( workflowType.IsActive ?? true ) )
                 {
@@ -76,45 +76,44 @@ namespace Rock.Workflow.Action
                 }
 
                 var sourceKeyMap = new Dictionary<string, string>();
-                var workflowAttributeKeys = GetAttributeValue(action, "WorkflowAttributeKey");
+                var workflowAttributeKeys = GetAttributeValue( action, "WorkflowAttributeKey" );
 
-                if (!string.IsNullOrWhiteSpace(workflowAttributeKeys))
+                if ( !string.IsNullOrWhiteSpace( workflowAttributeKeys ) )
                 {
-                    //TODO Find a way upstream to stop an additional being appended to the value
-                    sourceKeyMap = workflowAttributeKeys.AsDictionaryOrNull();     
-                    
+                    // TODO Find a way upstream to stop an additional being appended to the value
+                    sourceKeyMap = workflowAttributeKeys.AsDictionaryOrNull();
+
                     var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
-                    workflow.LoadAttributes(rockContext);
-                    foreach (var keyPair in sourceKeyMap)
+                    workflow.LoadAttributes( rockContext );
+                    foreach ( var keyPair in sourceKeyMap )
                     {
-                        //Does the source key exist as an attribute in the source workflow?
-                        if (action.Activity.Workflow.Attributes.ContainsKey(keyPair.Key))
+                        // Does the source key exist as an attribute in the source workflow?
+                        if ( action.Activity.Workflow.Attributes.ContainsKey( keyPair.Key ) )
                         {
-                            if (workflow.Attributes.ContainsKey(keyPair.Value))
+                            if ( workflow.Attributes.ContainsKey( keyPair.Value ) )
                             {
                                 var value = action.Activity.Workflow.AttributeValues[keyPair.Key].Value;
-                                workflow.SetAttributeValue(keyPair.Value, value);
+                                workflow.SetAttributeValue( keyPair.Value, value );
                             }
                             else
                             {
-                                errorMessages.Add(string.Format("{0} not a key in {1}", keyPair.Value, action.Activity.Workflow.Name));
+                                errorMessages.Add( string.Format( "{0} not a key in {1}", keyPair.Value, action.Activity.Workflow.Name ) );
                             }
-                                                    
                         }
                         else
                         {
-                            errorMessages.Add(string.Format("{0} not a key in {1}", keyPair.Key, workflowName));
+                            errorMessages.Add( string.Format( "{0} not a key in {1}", keyPair.Key, workflowName ) );
                         }
                     }
 
                     List<string> workflowErrorMessages = new List<string>();
-                    new Rock.Model.WorkflowService(rockContext).Process(workflow, out workflowErrorMessages );
+                    new Rock.Model.WorkflowService( rockContext ).Process( workflow, out workflowErrorMessages );
                     errorMessages.AddRange( workflowErrorMessages );
-                }        
+                }
             }
             else
             {
-                errorMessages.Add("Workflow type or name not provided");
+                errorMessages.Add( "Workflow type or name not provided" );
             }
 
             return true;
