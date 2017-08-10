@@ -646,7 +646,7 @@
                                 <Rock:MergeFieldPicker ID="mfpSMSMessage" runat="server" CssClass="margin-b-sm pull-right" OnSelectItem="mfpMessage_SelectItem" ValidationGroup="vgMobileTextEditor"/>
                                 <asp:HiddenField ID="hfSMSCharLimit" runat="server" />
                                 <asp:Label ID="lblSMSMessageCount" runat="server" CssClass="badge margin-all-sm pull-right" />
-                                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required"/>
+                                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required"/>
                                 <div class="actions margin-t-sm pull-right">
                                     <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-sm btn-default" Text="Send Test" OnClick="btnSMSSendTest_Click" />
                                 </div>
@@ -656,9 +656,9 @@
                             <%-- TODO: This is where the SMS Bubbles thing would probably go --%>
                             <div class="device device-mobile hidden-md" style="width: 435px;">
                                 <div class="sms">
-                                    <header><span class="left">Messages</span><h2>Ted Decker</h2><span class="right">Contacts</span></header>
+                                    <header><span class="left">Messages</span><h2><asp:Literal ID="lSMSChatPerson" runat="server" Text="Ted Decker" /></h2><span class="right">Contacts</span></header>
                                     <div class="messages-wrapper" style="height: 525px;">
-                                      <div class="message to">
+                                      <div class="js-sms-chatoutput message to">
                                           This is my first text message on ios7 
                                           This is my first text message on ios7
                                           <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
@@ -741,6 +741,12 @@
                 {
                     $('.js-additional-fields').show();
                 }
+                
+                setSMSBubbleText();
+                $('#<%=tbSMSTextMessage.ClientID %>').off('input').on('input', function ()
+                {
+                    setSMSBubbleText();
+                });
 
                 // Show the Send Date controls on the confirmation page if they click 'edit'
                 $('.js-show-confirmation-datetime').off('click').on('click', function ()
@@ -940,6 +946,24 @@
 			{
 			    Rock.controls.emailEditor.imageComponentHelper.handleImageUpdate(e, data);
 			}
+
+			function setSMSBubbleText()
+			{
+			    var updatedText = $('#<%=tbSMSTextMessage.ClientID %>').val();
+			    $('.js-sms-chatoutput').html(updatedText);
+
+			    if (updatedText) {
+			        $('.js-sms-chatoutput').show();
+			    }
+			    else {
+			        $('.js-sms-chatoutput').hide();
+			    }
+
+			    $.post('<%=this.ResolveUrl("~/api/Lava/RenderTemplate")%>', updatedText, function (data)
+			    {
+			        $('.js-sms-chatoutput').html(data);
+			    });
+            }
 
 			function setActiveButtonGroupButton($activeBtn)
 			{
