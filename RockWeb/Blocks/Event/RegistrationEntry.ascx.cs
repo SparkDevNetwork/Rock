@@ -2644,16 +2644,20 @@ namespace RockWeb.Blocks.Event
                             var noteText = new StringBuilder();
                             noteText.AppendFormat( "Registered for {0}", RegistrationInstanceState.Name );
 
+                            string registrarFullName = string.Empty;
+
                             if ( registrar != null && registrar.Id != registrant.Id )
                             {
-                                noteText.AppendFormat( " by {0}", registrar.FullName );
+                                registrarFullName = string.Format( " by {0}", registrar.FullName );
                                 registrantNames.Add( registrant.FullName );
                             }
 
                             if ( registrar != null && ( RegistrationState.FirstName != registrar.NickName || RegistrationState.LastName != registrar.LastName ) )
                             {
-                                noteText.AppendFormat( " by {0}", RegistrationState.FirstName + " " + RegistrationState.LastName );
+                                registrarFullName = string.Format( " by {0}", RegistrationState.FirstName + " " + RegistrationState.LastName );
                             }
+
+                            noteText.Append( registrarFullName );
 
                             if ( noteText.Length > 0 )
                             {
