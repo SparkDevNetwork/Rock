@@ -35,9 +35,9 @@
           <h4 class="no-caps margin-t-none">Meets every {{Group.Schedule.FriendlyScheduleText}}</h4>
         {% endif %}
         <p>{{ Group.Description }}</p>
-        {% assign groupPicture = Group | Attribute: 'GroupPicture', 'RawValue' %}
-        {% if groupPicture != empty %}
-          <img src="/GetImage.ashx?guid={{ groupPicture }}&width=600" alt="Group Picture" />
+        {% assign familyPicture = Group | Attribute: 'FamilyPicture', 'RawValue' %}
+        {% if familyPicture != empty %}
+          <img src="/GetImage.ashx?guid={{ familyPicture }}&width=600" alt="Family Picture" />
         {% endif %}
       </div>
       <div class="col-md-7">
@@ -54,7 +54,7 @@
         <p>
           {% for attribute in Group.AttributeValues %}
             {% unless attribute.AttributeName == "Meeting Day" or attribute.AttributeName == "Meeting Time" or attribute.ValueFormatted == empty %}
-              {% unless attribute.AttributeName == "Group Picture" %}
+              {% unless attribute.AttributeName == "Family Picture" %}
                 <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
               {% endunless %}
             {% endunless %}

@@ -63,6 +63,32 @@ namespace chuch.ccv.MobileApp.Rest
         }
 
         [System.Web.Http.HttpGet]
+        [System.Web.Http.Route("api/MobileApp/GroupsByLocation")]
+        [Authenticate, Secured]
+        public HttpResponseMessage GetGroupsByLocation( int groupTypeId, int locationId, int skip, int top, bool publicOnly )
+        {
+            List<GroupResult> groups = GroupFinder.GetGroupsByLocation( groupTypeId, locationId, skip, top, publicOnly );
+
+            HttpResponseMessage response = null;
+
+            if (groups != null )
+            {
+                StringContent restContent = new StringContent(JsonConvert.SerializeObject( groups ), Encoding.UTF8, "application/json");
+
+                response = new HttpResponseMessage()
+                {
+                    Content = restContent
+                };
+            }
+            else
+            {
+                response = new HttpResponseMessage( HttpStatusCode.NotFound );
+            }
+
+            return response;
+        }
+
+        [System.Web.Http.HttpGet]
         [System.Web.Http.Route("api/MobileApp/GroupInfo")]
         [Authenticate, Secured]
         public HttpResponseMessage GetGroupInfo( int groupId )

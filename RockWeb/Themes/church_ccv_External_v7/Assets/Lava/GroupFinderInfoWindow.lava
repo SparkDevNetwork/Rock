@@ -9,17 +9,15 @@
 {% endfor %}
 
 <div class="clearfix">
-  {% assign groupPicture = Group | Attribute:'GroupPicture','Url' %}
-  {% if groupPicture != empty %}
-    <img class="pull-left margin-r-sm margin-b-sm" src="{{ groupPicture }}&height=180&width=180&mode=crop&scale=both" height="60" width="60"/>
-  {% elseif groupLeader %}
-    <img class="pull-left margin-r-sm margin-b-sm" src="{{ groupLeader.Person.PhotoUrl }}&height=180&width=180&mode=crop&scale=both" height="60" width="60"/> 
+  {% assign familyPicture = Group | Attribute:'FamilyPicture','Url' %}
+  {% if familyPicture != empty %}
+    <img class="pull-left margin-r-sm margin-b-sm" src="{{ familyPicture }}&height=180&width=180&mode=crop&scale=both" height="60" width="60"/>
   {% endif %}
 
   <div class='margin-b-sm'>
     {% for attribute in Group.AttributeValues %}
       {% if attribute.Value != empty %}
-        {% unless attribute.AttributeName == "Group Picture" %}
+        {% unless attribute.AttributeName == "Family Picture" %}
           <strong>{{ attribute.AttributeName }}:</strong>
           {{ attribute.ValueFormatted }}
           <br/>

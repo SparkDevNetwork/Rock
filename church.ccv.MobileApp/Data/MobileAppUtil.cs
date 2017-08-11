@@ -27,6 +27,7 @@ using System.Data.Entity;
 using church.ccv.MobileApp.Models;
 using System.Net;
 using church.ccv.Actions;
+using System.Data.Entity.Spatial;
 
 namespace church.ccv.MobileApp
 {
@@ -44,12 +45,88 @@ namespace church.ccv.MobileApp
                 139, //Young Adults
                 158  //Short Term Group
             };
-
-        const string GroupLeaderInfo_Key = "LeaderInformation";
+        
         const string GroupInfo_Key = "GroupDescription";
-        const string ChildrenInfo_Key = "Children";
-        const string GroupPicture_Key = "GroupPicture";
+        const string ChildcareInfo_Key = "Childcare";
+        const string FamilyPicture_Key = "FamilyPicture";
+        const string GroupFilters_Key = "GroupFilters";
 
+        public static List<GroupResult> GetGroupsByLocation( int groupTypeId, int locationId, int skip, int top, bool publicOnly )
+        {
+            var rockContext = new RockContext( );
+            GroupService groupService = new GroupService( rockContext );
+
+            List<GroupResult> resultGroups = new List<GroupResult>();
+            
+            do
+            {
+                // we MUST have a valid location
+                var specifiedLocation = new LocationService( rockContext ).Get( locationId );
+                if( specifiedLocation == null ) break;
+
+                // we MUST have a geoPoint (from which latitude / long derive)
+                if( specifiedLocation.GeoPoint == null ) break;
+
+                // get all groups of this group type that are either public, if publicOnly is true, or either if publicOnly is false
+                IEnumerable<Group> groupList = groupService.Queryable( "Schedule,GroupLocations.Location" ).AsNoTracking( )
+                                                           .Where( a => a.GroupTypeId == groupTypeId && (a.IsPublic == publicOnly || publicOnly == false) )
+                                                           .Include( a => a.GroupLocations ).ToList( );
+                
+
+                // calculate the distance of each of the groups locations from the specified geoFence
+                foreach ( var group in groupList )
+                {
+                    foreach ( var gl in group.GroupLocations )
+                    {
+                        // Calculate distance
+                        if ( gl.Location.GeoPoint != null )
+                        {
+                            double meters = gl.Location.GeoPoint.Distance( specifiedLocation.GeoPoint ) ?? 0.0D;
+                            gl.Location.SetDistance( meters * Location.MilesPerMeter );
+                        }
+                    }
+                }
+
+                // remove groups that don't have a GeoPoint
+                groupList = groupList.Where( a => a.GroupLocations.Any( x => x.Location.GeoPoint != null ) );
+                
+                // sort by distance
+                groupList = groupList.OrderBy( a => a.GroupLocations.FirstOrDefault() != null ? a.GroupLocations.FirstOrDefault().Location.Distance : int.MaxValue );
+                
+                // grab the nth set
+                groupList = groupList.Skip( skip );
+                groupList = groupList.Take( top ).ToList();
+
+                // now take only what we need from each group (drops our return package to about 2kb, from 40kb)
+                foreach( Group group in groupList )
+                {
+                    Location locationObj = group.GroupLocations.First( ).Location;
+
+                    GroupResult groupResult = new GroupResult( )
+                    {
+                        Name = group.Name,
+                        Id = group.Id,
+                        Longitude = locationObj.Longitude.Value,
+                        Latitude = locationObj.Latitude.Value,
+                        DistanceFromSource = locationObj.Distance,
+                        MeetingTime = group.Schedule.FriendlyScheduleText
+                    };
+                    
+                    // load the attributes so we can take the filters value
+                    group.LoadAttributes( );
+                    if ( group.AttributeValues.ContainsKey( GroupFilters_Key ) )
+                    {
+                        groupResult.Filters = group.AttributeValues[ GroupFilters_Key ].Value;
+                    }
+
+                    resultGroups.Add( groupResult );
+                }
+            }
+            while( false );
+            
+            return resultGroups;
+        }
+        
         // Returns the info for a joinable Group in the Mobile App
         public static bool GetGroupInfo(int groupId, out GroupInfo groupInfo)
         {
@@ -70,28 +147,25 @@ namespace church.ccv.MobileApp
                     group.LoadAttributes();
 
                     // test for the known attributes, and set them if they exist.
-                    if (group.AttributeValues.ContainsKey(GroupLeaderInfo_Key))
-                    {
-                        groupInfo.LeaderInformation = group.AttributeValues[GroupLeaderInfo_Key].Value;
-                    }
-
                     if (group.AttributeValues.ContainsKey(GroupInfo_Key))
                     {
                         groupInfo.Description = group.AttributeValues[GroupInfo_Key].Value;
                     }
 
-                    if (group.AttributeValues.ContainsKey( ChildrenInfo_Key ))
+                    if (group.AttributeValues.ContainsKey( ChildcareInfo_Key ))
                     {
-                        groupInfo.Children = group.AttributeValues[ ChildrenInfo_Key ].Value;
+                        groupInfo.ChildcareDesc = group.AttributeValues[ ChildcareInfo_Key ].Value;
                     }
 
-                    if( group.AttributeValues.ContainsKey( GroupPicture_Key ) )
+                    if( group.AttributeValues.ContainsKey( FamilyPicture_Key ) )
                     {
-                        groupInfo.GroupPhotoGuid = group.AttributeValues[ GroupPicture_Key ].Value.AsGuid( );
+                        groupInfo.FamilyPhotoGuid = group.AttributeValues[ FamilyPicture_Key ].Value.AsGuid( );
                     }
 
-                    // finally, set the photo ID for the leader and group
-                    groupInfo.CoachPhotoId = leader.Person.PhotoId.HasValue ? leader.Person.PhotoId.Value : 0;
+                    if ( group.AttributeValues.ContainsKey( GroupFilters_Key ) )
+                    {
+                        groupInfo.Filters = group.AttributeValues[ GroupFilters_Key ].Value;
+                    }
 
                     success = true;
                 }
@@ -353,13 +427,6 @@ namespace church.ccv.MobileApp
                 int.TryParse(mobileAppAttribute.Value, out launchData.MobileAppVersion);
             }
 
-            // HACK: Jingle Bells
-            var jingleBellsAttribute = new AttributeValueService(rockContext).Queryable().Where(av => av.AttributeId == 33723).SingleOrDefault();
-            if (jingleBellsAttribute!= null)
-            {
-                bool.TryParse(jingleBellsAttribute.Value, out launchData.EnableJingleBells);
-            }
-
             return launchData;
         }
     }
@@ -464,6 +531,9 @@ namespace church.ccv.MobileApp
 
                     DateTime? startingPointDate;
                     personData.TakenStartingPoint = Actions_Adult.StartingPoint.TakenStartingPoint( person.Id, out startingPointDate );
+
+                    List<int> storyIds;
+                    personData.SharedStory = Actions_Adult.ShareStory.SharedStory( person.Id, out storyIds );
                 }
                 // get the students version
                 else
@@ -494,6 +564,9 @@ namespace church.ccv.MobileApp
 
                     DateTime? startingPointDate;
                     personData.TakenStartingPoint = Actions_Student.StartingPoint.TakenStartingPoint( person.Id, out startingPointDate );
+
+                    List<int> storyIds;
+                    personData.SharedStory = Actions_Student.ShareStory.SharedStory( person.Id, out storyIds );
                 }
 
                 return personData;

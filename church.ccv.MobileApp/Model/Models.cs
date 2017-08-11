@@ -40,6 +40,33 @@ namespace church.ccv.MobileApp.Models
     }
 
     [Serializable]
+    public class GroupInfo
+    {
+        public string Description { get; set; }
+        public string ChildcareDesc { get; set; }
+        
+        public Guid FamilyPhotoGuid { get; set; }
+
+        public string Filters { get; set; }
+    }
+
+    [Serializable]
+    public class GroupResult
+    {
+        public int Id;
+
+        public double Latitude;
+        public double Longitude;
+
+        public string Name;
+        public double DistanceFromSource;
+         
+        public string MeetingTime;
+
+        public string Filters;
+    }
+
+    [Serializable]
     public class PersonData
     {
         public Person Person;
@@ -67,6 +94,8 @@ namespace church.ccv.MobileApp.Models
         public bool IsMentored;
 
         public bool IsTeaching;
+
+        public bool SharedStory;
     }
 
     [Serializable]
@@ -79,9 +108,6 @@ namespace church.ccv.MobileApp.Models
 
         // campuses need the guid, name and ID, so we'll pass down the entire model
         public List<Campus> Campuses;
-
-        // HACK: Jingle Bells
-        public bool EnableJingleBells;
     }
 
     [Serializable]
@@ -95,15 +121,5 @@ namespace church.ccv.MobileApp.Models
 
         public string Username;
         public string Password;
-    }
-
-    [Serializable]
-    public class GroupInfo
-    {
-        public string Description { get; set; }
-        public string LeaderInformation { get; set; }
-        public string Children { get; set; }
-        public int CoachPhotoId { get; set; }
-        public Guid GroupPhotoGuid { get; set; }
     }
 }
