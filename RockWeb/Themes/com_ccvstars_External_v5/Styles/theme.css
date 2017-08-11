@@ -7667,7 +7667,7 @@ h1.page-header:empty {
   }
 }
 .main-feature {
-  background: #9d261d;
+  background: #e43d35;
   color: #fff;
   overflow: auto;
 }
@@ -7719,7 +7719,7 @@ h2 {
   color: #fff;
 }
 .module-red {
-  background: #9d261d;
+  background: #e43d35;
   color: #fff;
 }
 .module-red .nav-pills li {
@@ -7860,7 +7860,7 @@ h2 {
   color: #999;
 }
 .sports.exceptional {
-  color: #9d261d;
+  color: #e43d35;
 }
 .sports.baseball {
   color: #000;
