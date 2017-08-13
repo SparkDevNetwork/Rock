@@ -38,10 +38,19 @@ namespace Rock.Client
         public string DeviceRegistrationId { get; set; }
 
         /// <summary />
+        public string DeviceUniqueIdentifier { get; set; }
+
+        /// <summary />
+        public string DeviceVersion { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public string MACAddress { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -52,10 +61,13 @@ namespace Rock.Client
         public bool NotificationsEnabled { get; set; }
 
         /// <summary />
-        public int PersonalDeviceTypeId { get; set; }
+        public int? PersonalDeviceTypeValueId { get; set; }
 
         /// <summary />
-        public int PersonAliasId { get; set; }
+        public int? PersonAliasId { get; set; }
+
+        /// <summary />
+        public int? PlatformValueId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -91,12 +103,16 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.DeviceRegistrationId = source.DeviceRegistrationId;
+            this.DeviceUniqueIdentifier = source.DeviceUniqueIdentifier;
+            this.DeviceVersion = source.DeviceVersion;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.MACAddress = source.MACAddress;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NotificationsEnabled = source.NotificationsEnabled;
-            this.PersonalDeviceTypeId = source.PersonalDeviceTypeId;
+            this.PersonalDeviceTypeValueId = source.PersonalDeviceTypeValueId;
             this.PersonAliasId = source.PersonAliasId;
+            this.PlatformValueId = source.PlatformValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

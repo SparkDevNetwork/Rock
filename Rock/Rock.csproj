@@ -1084,6 +1084,7 @@
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\PersonalDevice.cs" />
     <Compile Include="Model\PersonAlias.cs" />
+    <Compile Include="Model\PersonalDeviceService.Partial.cs" />
     <Compile Include="Model\PersonAliasService.Partial.cs" />
     <Compile Include="Model\PersonBadge.cs" />
     <Compile Include="Model\PersonBadgeService.partial.cs" />
@@ -1239,6 +1240,7 @@
     <Compile Include="Plugin\HotFixes\024_PrayerRequestAttributes.cs" />
     <Compile Include="Plugin\HotFixes\030_MyConnectionOpportunitiesLava.cs" />
     <Compile Include="Plugin\HotFixes\031_AttendanceAnalyticsGivingId.cs" />
+    <Compile Include="Plugin\HotFixes\032_MigrationRollupsForV6_9.cs" />
     <Compile Include="Plugin\HotFixes\029_BatchDetailReopenBatchSecurity.cs" />
     <Compile Include="Plugin\HotFixes\025_PersonGivingEnvelopeAttribute.cs" />
     <Compile Include="Plugin\HotFixes\026_PersonEditConnectionRecordStatus.cs" />
@@ -1382,6 +1384,7 @@
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
+    <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Web\Cache\ContentChannelCache.cs" />
     <Compile Include="Web\Cache\LavaShortcodeCache.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />

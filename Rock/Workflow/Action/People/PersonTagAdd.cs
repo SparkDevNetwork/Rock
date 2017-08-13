@@ -103,11 +103,11 @@ namespace Rock.Workflow.Action
                                     if ( person != null )
                                     {
                                         // add person to tag if they are not already in it
-                                        if ( orgTag.TaggedItems.Where( i => i.EntityGuid == person.PrimaryAlias.AliasPersonGuid && i.TagId == orgTag.Id ).Count() == 0 )
+                                        if ( orgTag.TaggedItems.Where( i => i.EntityGuid == person.Guid && i.TagId == orgTag.Id ).Count() == 0 )
                                         {
                                             TaggedItem taggedPerson = new TaggedItem();
                                             taggedPerson.Tag = orgTag;
-                                            taggedPerson.EntityGuid = person.PrimaryAlias.AliasPersonGuid;
+                                            taggedPerson.EntityGuid = person.Guid;
                                             orgTag.TaggedItems.Add( taggedPerson );
                                             rockContext.SaveChanges();
                                         }

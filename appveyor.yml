@@ -53,6 +53,8 @@ install:
 
     git clone -q --depth=1 git@github.com:NewSpring/rock-spiritual-gifts.git c:\projects\rock-spiritual-gifts
 
+    git clone -q --depth=1 git@github.com:NewSpring/rock-misc.git c:\projects\rock-misc
+
 
 # directories to preserve between builds
 cache:
@@ -67,6 +69,8 @@ before_build:
     (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v3.3.0/nuget.exe', "$nugetDir\NuGet.exe")
 
     npm install --production
+
+    npm install normajs
 
     node ./node_modules/normajs/bin/norma.js build
 
