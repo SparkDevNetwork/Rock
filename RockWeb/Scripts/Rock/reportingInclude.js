@@ -148,7 +148,7 @@
                     return title + ' is ' + selectedItems
                 },
 
-                //
+                // NOTE: this is specifically for the Rock.Reporting.DataFilter.Person.InGroupFilter component
                 formatFilterForGroupFilterField: function (title, $selectedContent) {
                     var groupNames = $('.js-group-picker', $selectedContent).find('.selected-names').text();
                     var checkedRoles = $('.js-roles', $selectedContent).find(':checked').closest('label');
@@ -183,10 +183,20 @@
                     if (groupMemberStatus) {
                         result = result + ', with member status:' + groupMemberStatus;
                     }
+                    
+                    var dateAddedDateRangeText = $('.js-dateadded-sliding-date-range .js-slidingdaterange-text-value', $selectedContent).val()
+                    if (dateAddedDateRangeText) {
+                      result = result + ', added to group in Date Range: ' + dateAddedDateRangeText;
+                    }
 
-                    var dateRangeText = $('.js-slidingdaterange-text-value', $content).val()
-                    if (dateRangeText) {
-                        result = result + ', added to group in Date Range: ' + dateRangeText;
+                    var firstAttendanceDateRangeText = $('.js-firstattendance-sliding-date-range .js-slidingdaterange-text-value', $selectedContent).val()
+                    if (firstAttendanceDateRangeText) {
+                      result = result + ', first attendance to group in Date Range: ' + firstAttendanceDateRangeText;
+                    }
+
+                    var lastAttendanceDateRangeText = $('.js-lastattendance-sliding-date-range .js-slidingdaterange-text-value', $selectedContent).val()
+                    if (lastAttendanceDateRangeText) {
+                      result = result + ', last attendance to group in Date Range: ' + lastAttendanceDateRangeText;
                     }
 
                     return result;
