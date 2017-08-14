@@ -23,12 +23,19 @@
                 </ul>
             </li>
         {% endfor %}
+		
+		
+		{% assign adultGroupCount = Groups | Size %}
+		{% assign childGroupCount = 0 %}
         
         {% assign children = CurrentPerson | Children %}
         {% for child in children %}
             {% assign childGroups = child | Groups:'73','Active' %}
             
-            {% for group in childGroups %}
+			{% assign childGroupSize = childGroups | Size %}
+			{% assign childGroupCount = childGroupCount | Plus: childGroupSize %}
+            
+			{% for group in childGroups %}
             <li class="list-group-item">
                 {% assign color = group.Group | Attribute:'Color' %}
                 {% assign practLocation = group.Group | Attribute:'PracticeLocation' %}
@@ -46,8 +53,7 @@
             {% endfor %}
         {% endfor %}
         
-        {% assign adultGroupCount = Groups | Size %}
-        {% assign childGroupCount = childGroups | Size %}
+        
         {% if adultGroupCount == 0 and childGroupCount == 0 %}
             <div class="margin-all-md"> Currently not on a team</div>
         {% endif %}
