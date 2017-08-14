@@ -114,15 +114,8 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             string script = @"
-// checkin-area animation
-//$('section.checkin-area').click(function () {
-//    $(this).siblings('div').slideToggle();
-//    $expanded = $(this).children('input.area-expanded');
-//    $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
-//});
-
 // fix so that the Remove button will fire its event, but not the parent event
-$('.checkin-area a.btn-danger').click(function (event) {
+$('.resource-area a.btn-danger').click(function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
@@ -130,7 +123,7 @@ $('.checkin-area a.btn-danger').click(function (event) {
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event
-$('.checkin-area a.checkin-area-reorder').click(function (event) {
+$('.resource-area a.resource-area-reorder').click(function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
@@ -138,15 +131,15 @@ $('.checkin-area a.checkin-area-reorder').click(function (event) {
 });
 
 // fix so that the Add Sub-Area button will fire its event, but not the parent event
-$('.checkin-area a.checkin-area-add-area').click(function (event) {
+$('.resource-area a.resource-area-add-area').click(function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
     }}
 });
 
-// fix so that the Ad Check-in Group button will fire its event, but not the parent event
-$('.checkin-area a.checkin-area-add-group').click(function (event) {
+// fix so that the Add Resource Group button will fire its event, but not the parent event
+$('.resource-area a.resource-area-add-group').click(function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
@@ -192,7 +185,7 @@ $('.checkin-area a.checkin-area-add-group').click(function (event) {
 
             _lbAddArea = new LinkButton();
             _lbAddArea.ID = this.ID + "_lblbAddArea";
-            _lbAddArea.CssClass = "btn btn-xs btn-default checkin-area-add-area";
+            _lbAddArea.CssClass = "btn btn-xs btn-default resource-area-add-area";
             _lbAddArea.Click += lbAddArea_Click;
             _lbAddArea.CausesValidation = false;
             _lbAddArea.ToolTip = "Add New Area";
@@ -200,7 +193,7 @@ $('.checkin-area a.checkin-area-add-group').click(function (event) {
 
             _lbAddGroup = new LinkButton();
             _lbAddGroup.ID = this.ID + "_lbAddGroup";
-            _lbAddGroup.CssClass = "btn btn-xs btn-default checkin-area-add-group";
+            _lbAddGroup.CssClass = "btn btn-xs btn-default resource-area-add-group";
             _lbAddGroup.Click += lbAddGroup_Click;
             _lbAddGroup.CausesValidation = false;
             _lbAddGroup.ToolTip = "Add New Group";
@@ -222,19 +215,19 @@ $('.checkin-area a.checkin-area-add-group').click(function (event) {
             writer.AddAttribute( "data-key", _hfGroupTypeGuid.Value );
             writer.RenderBeginTag( HtmlTextWriterTag.Li );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, string.Format( "checkin-item{0} checkin-area rollover-container", Selected ? " checkin-item-selected" : "" ) );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, string.Format( "resource-item{0} resource-area rollover-container", Selected ? " resource-item-selected" : "" ) );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ID + "_section" );
             writer.RenderBeginTag( "section" );
 
             // Hidden Field to track expansion
             _hfExpanded.RenderControl( writer );
 
-            writer.WriteLine( "<a class='checkin-area-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( "<a class='checkin-area-expand'><i class='checkin-area-state fa fa-folder-open'></i></a>" );
+            writer.WriteLine( "<a class='resource-area-reorder'><i class='fa fa-bars'></i></a>" );
+            writer.WriteLine( "<a class='resource-area-expand'><i class='resource-area-state fa fa-folder-open'></i></a>" );
 
             _lblAreaRowName.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right checkin-item-actions rollover-item" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right resource-item-actions rollover-item" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _lbAddArea.RenderControl( writer );
@@ -254,7 +247,7 @@ $('.checkin-area a.checkin-area-add-group').click(function (event) {
             var areaRows = this.Controls.OfType<ResourceAreaRow>();
             if ( areaRows.Any() )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-list js-checkin-area-list" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "resource-list js-resource-area-list" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Ul );
                 foreach ( var areaRow in areaRows )
                 {
@@ -267,7 +260,7 @@ $('.checkin-area a.checkin-area-add-group').click(function (event) {
             var groupRows = this.Controls.OfType<ResourceGroupRow>();
             if ( groupRows.Any() )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-list js-checkin-group-list" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "resource-list js-resource-group-list" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Ul );
                 foreach ( var groupRow in groupRows )
                 {

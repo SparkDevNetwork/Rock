@@ -15,9 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
@@ -41,7 +39,9 @@ namespace Rock.Web.UI.Controls
 
         private PlaceHolder _phGroupTypeAttributes;
 
-        private Grid _gCheckinLabels;
+        protected string _rowLabel;
+
+        //protected bool Enable
 
         /// <summary>
         /// Gets the group type unique identifier.
@@ -99,7 +99,7 @@ namespace Rock.Web.UI.Controls
 
             if ( Page.IsPostBack )
             {
-                HandleGridEvents();
+                //HandleGridEvents();
             }
         }
 
@@ -120,89 +120,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the grid events.
-        /// </summary>
-        private void HandleGridEvents()
-        {
-            // manually wireup the grid events since they don't seem to do it automatically
-            string eventTarget = Page.Request.Params["__EVENTTARGET"];
-            if ( eventTarget.StartsWith( _gCheckinLabels.UniqueID ) )
-            {
-                List<string> subTargetList = eventTarget.Replace( _gCheckinLabels.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                EnsureChildControls();
-
-                string lblAddControlId = subTargetList.Last();
-                var lblAdd = _gCheckinLabels.Actions.FindControl( lblAddControlId );
-                if ( lblAdd != null )
-                {
-                    AddCheckinLabel_Click( this, new EventArgs() );
-                }
-                else
-                {
-                    // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
-                    int rowIndex = subTargetList.First().AsNumeric().AsInteger() - 2;
-                    RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.CheckinLabels[rowIndex].AttributeKey );
-                    DeleteCheckinLabel_Click( this, rowEventArgs );
-                }
-            }
-        }
-
-        /// <summary>
-        /// special class for storing CheckinLabel attributes for the grid
-        /// </summary>
-        [Serializable]
-        public class CheckinLabelAttributeInfo
-        {
-            /// <summary>
-            /// Gets or sets the attribute key.
-            /// </summary>
-            /// <value>
-            /// The attribute key.
-            /// </value>
-            [DataMember]
-            public string AttributeKey { get; set; }
-
-            /// <summary>
-            /// Gets or sets the binary file unique identifier.
-            /// </summary>
-            /// <value>
-            /// The binary file unique identifier.
-            /// </value>
-            [DataMember]
-            public Guid BinaryFileGuid { get; set; }
-
-            /// <summary>
-            /// Gets or sets the name of the file.
-            /// </summary>
-            /// <value>
-            /// The name of the file.
-            /// </value>
-            [DataMember]
-            public string FileName { get; set; }
-        }
-
-        /// <summary>
-        /// Gets or sets the checkin labels.
-        /// Key is AttributeKey
-        /// Value is BinaryFileName
-        /// </summary>
-        /// <value>
-        /// The checkin labels.
-        /// </value>
-        public List<CheckinLabelAttributeInfo> CheckinLabels
-        {
-            get
-            {
-                return ViewState["CheckinLabels"] as List<CheckinLabelAttributeInfo>;
-            }
-
-            set
-            {
-                ViewState["CheckinLabels"] = value;
-            }
-        }
-
-        /// <summary>
         /// Gets the type of the checkin group.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
@@ -212,9 +129,10 @@ namespace Rock.Web.UI.Controls
 
             groupType.Name = _tbGroupTypeName.Text;
 
-            // ensure checkin areas get additional options
-            if ( groupType.GroupTypePurposeValue.Guid == Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() )
+            // ensure checkin area types get additional options
+            if ( groupType.GroupTypePurposeValue != null && groupType.GroupTypePurposeValue.Guid == Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() )
             {
+                _rowLabel = "Check-in Area Name";
                 groupType.InheritedGroupTypeId = _ddlGroupTypeInheritFrom.SelectedValueAsId();
                 groupType.AttendanceRule = _ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
                 groupType.AttendancePrintTo = _ddlPrintTo.SelectedValueAsEnum<PrintTo>();
@@ -240,8 +158,8 @@ namespace Rock.Web.UI.Controls
             {
                 GroupTypeGuid = groupType.Guid;
                 _tbGroupTypeName.Text = groupType.Name;
-
-                if ( groupType.GroupTypePurposeValue.Guid == Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() )
+                                                                                                  
+                if ( groupType.GroupTypePurposeValue != null && groupType.GroupTypePurposeValue.Guid == Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() )
                 {
                     _ddlGroupTypeInheritFrom.SetValue( groupType.InheritedGroupTypeId );
                     _ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
@@ -250,20 +168,6 @@ namespace Rock.Web.UI.Controls
 
                 CreateGroupTypeAttributeControls( groupType, rockContext );
             }
-        }
-
-        /// <summary>
-        /// Gets the checkin label attribute keys.
-        /// </summary>
-        /// <param name="groupTypeAttribute">The group type attribute.</param>
-        /// <returns></returns>
-        public static Dictionary<string, Rock.Web.Cache.AttributeCache> GetCheckinLabelAttributes( Dictionary<string, Rock.Web.Cache.AttributeCache> groupTypeAttribute )
-        {
-            return groupTypeAttribute
-                .Where( a => a.Value.FieldType.Guid.Equals( new Guid( Rock.SystemGuid.FieldType.BINARY_FILE ) ) )
-                .Where( a => a.Value.QualifierValues.ContainsKey( "binaryFileType" ) )
-                .Where( a => a.Value.QualifierValues["binaryFileType"].Value.Equals( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL, StringComparison.OrdinalIgnoreCase ) )
-                .ToDictionary( k => k.Key, v => v.Value );
         }
 
         /// <summary>
@@ -279,7 +183,7 @@ namespace Rock.Web.UI.Controls
 
             _tbGroupTypeName = new DataTextBox();
             _tbGroupTypeName.ID = this.ID + "_tbGroupTypeName";
-            _tbGroupTypeName.Label = "Check-in Area Name";
+            _tbGroupTypeName.Label = _rowLabel;
 
             // set label when they exit the edit field
             _tbGroupTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblGroupTypeName.ClientID );
@@ -292,7 +196,7 @@ namespace Rock.Web.UI.Controls
 
             _ddlGroupTypeInheritFrom.Items.Add( Rock.Constants.None.ListItem );
             var groupTypeCheckinFilterList = new GroupTypeService( new RockContext() ).Queryable()
-                .Where( a => a.GroupTypePurposeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER ) )
+                //.Where( a => a.GroupTypePurposeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER ) )
                 .OrderBy( a => a.Order ).ThenBy( a => a.Name )
                 .Select( a => new { a.Id, a.Name } ).ToList();
 
@@ -324,42 +228,6 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _ddlPrintTo );
             Controls.Add( _tbGroupTypeName );
             Controls.Add( _phGroupTypeAttributes );
-
-            // Check-in Labels grid
-            CreateCheckinLabelsGrid();
-        }
-
-        /// <summary>
-        /// Creates the checkin labels grid.
-        /// </summary>
-        private void CreateCheckinLabelsGrid()
-        {
-            _gCheckinLabels = new Grid();
-
-            // make the ID static so we can handle Postbacks from the Add and Delete actions
-            _gCheckinLabels.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            _gCheckinLabels.ID = this.ClientID + "_gCheckinLabels";
-            _gCheckinLabels.CssClass = "margin-b-md";
-            _gCheckinLabels.DisplayType = GridDisplayType.Light;
-            _gCheckinLabels.ShowActionRow = true;
-            _gCheckinLabels.RowItemText = "Label";
-            _gCheckinLabels.Actions.ShowAdd = true;
-
-            //// Handle AddClick manually in OnLoad()
-            //// gCheckinLabels.Actions.AddClick += AddCheckinLabel_Click;
-
-            _gCheckinLabels.DataKeyNames = new string[] { "AttributeKey" };
-            _gCheckinLabels.Columns.Add( new BoundField { DataField = "BinaryFileId", Visible = false } );
-            _gCheckinLabels.Columns.Add( new BoundField { DataField = "FileName", HeaderText = "Name" } );
-
-            DeleteField deleteField = new DeleteField();
-
-            //// handle manually in OnLoad()
-            //// deleteField.Click += DeleteCheckinLabel_Click;
-
-            _gCheckinLabels.Columns.Add( deleteField );
-
-            Controls.Add( _gCheckinLabels );
         }
 
         /// <summary>
@@ -382,14 +250,6 @@ namespace Rock.Web.UI.Controls
                 _ddlPrintTo.RenderControl( writer );
 
                 _phGroupTypeAttributes.RenderControl( writer );
-
-                writer.WriteLine( "<h3>Check-in Labels</h3>" );
-                if ( this.CheckinLabels != null )
-                {
-                    _gCheckinLabels.DataSource = this.CheckinLabels;
-                    _gCheckinLabels.DataBind();
-                }
-                _gCheckinLabels.RenderControl( writer );
             }
         }
 
@@ -410,10 +270,6 @@ namespace Rock.Web.UI.Controls
                 {
                     groupType.LoadAttributes( rockContext );
                 }
-
-                // exclude checkin labels
-                List<string> checkinLabelAttributeNames = GetCheckinLabelAttributes( groupType.Attributes ).Select( a => a.Value.Name ).ToList();
-                Rock.Attribute.Helper.AddEditControls( groupType, _phGroupTypeAttributes, true, string.Empty, checkinLabelAttributeNames );
             }
         }
 
@@ -435,41 +291,5 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-
-        /// <summary>
-        /// Handles the Click event of the DeleteCheckinLabel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void DeleteCheckinLabel_Click( object sender, RowEventArgs e )
-        {
-            if ( DeleteCheckinLabelClick != null )
-            {
-                DeleteCheckinLabelClick( sender, e );
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the AddCheckinLabel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void AddCheckinLabel_Click( object sender, EventArgs e )
-        {
-            if ( AddCheckinLabelClick != null )
-            {
-                AddCheckinLabelClick( sender, e );
-            }
-        }
-
-        /// <summary>
-        /// Occurs when [delete checkin label click].
-        /// </summary>
-        public event EventHandler<RowEventArgs> DeleteCheckinLabelClick;
-
-        /// <summary>
-        /// Occurs when [add checkin label click].
-        /// </summary>
-        public event EventHandler AddCheckinLabelClick;
     }
 }

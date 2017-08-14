@@ -201,6 +201,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string GROUPTYPE_PURPOSE_CHECKIN_FILTER = "6BCED84C-69AD-4F5A-9197-5C0F9C02DD34";
 
+        /// <summary>
+        /// Group Type Purpose of Serving Area
+        /// </summary>
+        public const string GROUPTYPE_PURPOSE_SERVING_AREA = "36A554CE-7815-41B9-A435-93F3D52A2828";
+
         #endregion
 
         #region Location Types

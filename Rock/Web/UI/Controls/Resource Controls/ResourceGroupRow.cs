@@ -100,15 +100,8 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             string script = @"
-// group animation
-//$('section.checkin-group').click(function () {
-//    $(this).siblings('div').slideToggle();
-//    $expanded = $(this).children('input.group-expanded');
-//    $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
-//});
-
 // fix so that the Remove button will fire its event, but not the parent event
-$('.checkin-group a.btn-danger').click(function (event) {
+$('.resource-group a.btn-danger').click(function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
@@ -116,15 +109,15 @@ $('.checkin-group a.btn-danger').click(function (event) {
 });
 
 // fix so that the Edit Group button will fire its event, but not the parent event
-$('.checkin-group a.checkin-group-edit-group').click(function (event) {
+$('.resource-group a.resource-group-edit-group').click(function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
     }}
 });
 
-// fix so that the Ad Check-in Group button will fire its event, but not the parent event
-$('.checkin-group a.checkin-group-add-group').click(function (event) {
+// fix so that the Add Resource Group button will fire its event, but not the parent event
+$('.resource-group a.resource-group-add-group').click(function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
@@ -177,7 +170,7 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
 
             _lbAddGroup = new LinkButton();
             _lbAddGroup.ID = this.ID + "_lbAddGroup";
-            _lbAddGroup.CssClass = "btn btn-xs btn-default checkin-group-add-group";
+            _lbAddGroup.CssClass = "btn btn-xs btn-default resource-group-add-group";
             _lbAddGroup.Click += lbAddGroup_Click;
             _lbAddGroup.CausesValidation = false;
             _lbAddGroup.ToolTip = "Add New Group";
@@ -194,19 +187,19 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
             writer.AddAttribute( "data-key", _hfGroupGuid.Value );
             writer.RenderBeginTag( HtmlTextWriterTag.Li );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, string.Format( "checkin-item{0} checkin-group rollover-container {1}", Selected ? " checkin-item-selected" : "", !_group.IsActive ? " is-inactive" : "" ) );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, string.Format( "resource-item{0} resource-group rollover-container {1}", Selected ? " resource-item-selected" : "", !_group.IsActive ? " is-inactive" : "" ) );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ID + "_section" );
             writer.RenderBeginTag( "section" );
 
             // Hidden Field to track expansion
             _hfExpanded.RenderControl( writer );
 
-            writer.WriteLine( "<a class='checkin-group-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( "<a class='checkin-group-expand'><i class='checkin-group-state fa fa-check-circle'></i></a>" );
+            writer.WriteLine( "<a class='resource-group-reorder'><i class='fa fa-bars'></i></a>" );
+            writer.WriteLine( "<a class='resource-group-expand'><i class='resource-group-state fa fa-check-circle'></i></a>" );
 
             _lblGroupRowName.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right checkin-item-actions rollover-item" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right resource-item-actions rollover-item" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( _lbAddGroup != null )
@@ -227,7 +220,7 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
             var groupRows = this.Controls.OfType<ResourceGroupRow>();
             if ( groupRows.Any() )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-list js-checkin-group-list" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "resource-list js-resource-group-list" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Ul );
                 foreach ( var groupRow in groupRows )
                 {

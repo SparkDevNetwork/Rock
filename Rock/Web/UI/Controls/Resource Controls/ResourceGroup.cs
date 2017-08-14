@@ -265,7 +265,7 @@ namespace Rock.Web.UI.Controls
 
             _tbGroupName = new DataTextBox();
             _tbGroupName.ID = this.ID + "_tbGroupName";
-            _tbGroupName.Label = "Check-in Group Name";
+            _tbGroupName.Label = "Group Name";
 
             _cbIsActive = new RockCheckBox();
             _cbIsActive.ID = this.ID + "_cbIsActive";
@@ -288,7 +288,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _phGroupAttributes );
 
             // Locations Grid
-            CreateLocationsGrid();
+            //CreateLocationsGrid();
         }
 
         /// <summary>
@@ -298,7 +298,7 @@ namespace Rock.Web.UI.Controls
         {
             _gLocations = new Grid();
 
-            _gLocations.ID = this.ID + "_gCheckinLabels";
+            _gLocations.ID = this.ID + "_gLocations";
 
             _gLocations.DisplayType = GridDisplayType.Light;
             _gLocations.ShowActionRow = true;
@@ -347,9 +347,9 @@ namespace Rock.Web.UI.Controls
                 _cbIsActive.RenderBaseControl( writer );
                 _phGroupAttributes.RenderControl( writer );
 
-                writer.WriteLine( "<h3>Locations</h3>" );
                 if ( this.Locations != null )
                 {
+                    writer.WriteLine( "<h3>Locations</h3>" );
                     _gLocations.DataSource = this.Locations.OrderBy( l => l.Order ).ThenBy( l => l.FullNamePath ).ToList();
                     _gLocations.DataBind();
                 }
