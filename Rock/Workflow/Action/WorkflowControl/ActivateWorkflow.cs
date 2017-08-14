@@ -24,9 +24,6 @@ using Rock.Model;
 using Rock.Attribute;
 using Rock.Web.Cache;
 
-/// <summary>
-/// 
-/// </summary>
 namespace Rock.Workflow.Action
 {
     /// <summary>

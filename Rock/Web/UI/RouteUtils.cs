@@ -20,23 +20,44 @@ using System.Web.Routing;
 
 namespace Rock.Web.UI
 {
+    /// <summary>
+    /// Route Helper Utility
+    /// </summary>
     public static class RouteUtils
     {
+        /// <summary>
+        /// Gets the route data by URI.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        /// <param name="applicationPath">The application path.</param>
+        /// <returns></returns>
         public static RouteData GetRouteDataByUri( Uri uri, string applicationPath )
         {
             return RouteTable.Routes.GetRouteData( new MyHttpContextBase( uri, applicationPath ) );
         }
 
+        /// <summary>
+        /// Mock Http Context
+        /// </summary>
+        /// <seealso cref="System.Web.HttpContextBase" />
         private class MyHttpContextBase : HttpContextBase
         {
             private readonly HttpRequestBase _request;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="MyHttpContextBase"/> class.
+            /// </summary>
+            /// <param name="uri">The URI.</param>
+            /// <param name="applicationPath">The application path.</param>
             public MyHttpContextBase( Uri uri, string applicationPath ) : base()
             {
                 _request = new MyHttpRequestBase( uri, applicationPath );
             }
 
 
+            /// <summary>
+            /// When overridden in a derived class, gets the <see cref="T:System.Web.HttpRequest" /> object for the current HTTP request.
+            /// </summary>
             public override HttpRequestBase Request
             {
                 get
@@ -45,10 +66,19 @@ namespace Rock.Web.UI
                 }
             }
 
+            /// <summary>
+            /// Mock Http Request
+            /// </summary>
+            /// <seealso cref="System.Web.HttpRequestBase" />
             private class MyHttpRequestBase : HttpRequestBase
             {
                 private readonly string _appRelativePath;
 
+                /// <summary>
+                /// Initializes a new instance of the <see cref="MyHttpRequestBase"/> class.
+                /// </summary>
+                /// <param name="uri">The URI.</param>
+                /// <param name="applicationPath">The application path.</param>
                 public MyHttpRequestBase( Uri uri, string applicationPath ) : base()
                 {
                     if ( applicationPath.IsNullOrWhiteSpace() || uri.AbsolutePath.StartsWith( applicationPath, StringComparison.OrdinalIgnoreCase ))
@@ -61,11 +91,17 @@ namespace Rock.Web.UI
                     }
                 }
 
+                /// <summary>
+                /// When overridden in a derived class, gets the virtual path of the application root and makes it relative by using the tilde (~) notation for the application root (as in "~/page.aspx").
+                /// </summary>
                 public override string AppRelativeCurrentExecutionFilePath
                 {
                     get { return String.Concat( "~", _appRelativePath ); }
                 }
 
+                /// <summary>
+                /// When overridden in a derived class, gets additional path information for a resource that has a URL extension.
+                /// </summary>
                 public override string PathInfo
                 {
                     get { return ""; }
