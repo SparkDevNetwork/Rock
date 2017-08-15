@@ -226,6 +226,9 @@ namespace RockWeb.Blocks.Communication
             }
 
             tbCommunicationName.Text = "DEBUG";
+            tbFromName.Text = "DEBUG";
+            tbEmailSubject.Text = "DEBUG";
+            tbFromAddress.Text = "DEBUG";
             dtpSendDateTime.SelectedDateTime = RockDateTime.Now;
             /**********/
         }
@@ -923,6 +926,21 @@ namespace RockWeb.Blocks.Communication
             ShowConfirmation();
         }
 
+        protected void btnEmailSendTest_Click( object sender, EventArgs e )
+        {
+           // upnlContent.Update();
+        }
+
+        protected void btnEmailPreview_Click( object sender, EventArgs e )
+        {
+            upnlContent.Update();
+
+            ifEmailPreview.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
+            ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
+            pnlEmailPreview.Visible = true;
+            mdEmailPreview.Show();
+        }
+
         #endregion Email Editor
 
         #region Email Summary
@@ -1043,10 +1061,17 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void ShowMobileTextEditor()
         {
-            // TODO: is this the right person and the right time to initialize?
+            // TODO: is this the right person
             InitializeSMSFromSender( this.CurrentPerson );
 
-            // TODO: Init Merge Field Picker?
+            mfpSMSMessage.MergeFields.Clear();
+            mfpSMSMessage.MergeFields.Add( "GlobalAttribute" );
+            mfpSMSMessage.MergeFields.Add( "Rock.Model.Person" );
+
+            var currentPersonSMSNumber = this.CurrentPerson.PhoneNumbers.FirstOrDefault( a => a.IsMessagingEnabled );
+            tbTestSMSNumber.Text = currentPersonSMSNumber != null ? currentPersonSMSNumber.NumberFormatted : string.Empty;
+
+            nbSMSTestResult.Visible = false;
             pnlMobileTextEditor.Visible = true;
         }
 
@@ -1130,6 +1155,10 @@ namespace RockWeb.Blocks.Communication
         protected void btnSMSSendTest_Click( object sender, EventArgs e )
         {
             // TODO
+
+            nbSMSTestResult.Text = string.Format( "Test SMS has been sent to {0}.", tbTestSMSNumber.Text );
+            nbSMSTestResult.Dismissable = true;
+            nbSMSTestResult.Visible = true;
         }
 
         #endregion Mobile Text Editor
@@ -1276,7 +1305,6 @@ namespace RockWeb.Blocks.Communication
                 qryRecipients = communication.GetRecipientsQry( rockContext );
             }
 
-
             // Add any new recipients
             HashSet<int> communicationPersonIdHash = new HashSet<int>( qryRecipients.Select( a => a.PersonAlias.PersonId ) );
             foreach ( var recipientPersonId in recipientPersonIds )
@@ -1310,9 +1338,11 @@ namespace RockWeb.Blocks.Communication
             communication.ReplyToEmail = tbReplyToAddress.Text;
             communication.CCEmails = tbCCList.Text;
             communication.BCCEmails = tbBCCList.Text;
-            
-            // TODO: Remove any deleted Attachments
-            // TODO: Add any new attachments
+
+            communication.AttachmentBinaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+
+            // TODO: Remove any deleted Attachments??
+            // TODO: Add any new attachments??
 
             communication.Subject = tbEmailSubject.Text;
             communication.Message = hfEmailEditorHtml.Value;
@@ -1331,16 +1361,21 @@ namespace RockWeb.Blocks.Communication
 
             rockContext.SaveChanges();
 
+            nbSendCommunication.NotificationBoxType = NotificationBoxType.Success;
+            nbSendCommunication.Text = string.Format( "#TODO: Actually send the communication.  CommunicationId={0}", communication.Id );
+            nbSendCommunication.Dismissable = true;
+            nbSendCommunication.Visible = true;
+
         }
 
         protected void btnSaveAsDraft_Click( object sender, EventArgs e )
         {
-
+            // TODO
         }
 
         protected void btnConfirmationCancel_Click( object sender, EventArgs e )
         {
-
+            // TODO. What should this do?
         }
 
         /// <summary>
