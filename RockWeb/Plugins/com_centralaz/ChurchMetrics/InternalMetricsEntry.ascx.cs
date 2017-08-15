@@ -39,7 +39,8 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
     [Category( "com_centralaz > ChurchMetrics" )]
     [Description( "Block for easily adding/editing metric values for any metric that has partitions of campus and service time." )]
 
-    [CategoryField( "Schedule Category", "The schedule category to use for list of service times.", false, "Rock.Model.Schedule", "", "", true, "", "", 0 )]
+    [CategoryField( "Weekend Schedule Category", "The schedule category to use for list of service times. If this has category has child categories, Rock will search for one that contains the name of the currently selected campus. Otherwise, Rock will use this one.", false, "Rock.Model.Schedule", "", "", false, "", "", 0 )]
+    [CategoryField( "Event Schedule Category", "The schedule category to use for list of event times. If this has category has child categories, Rock will search for one that contains the name of the currently selected campus. Otherwise, Rock will use this one.", false, "Rock.Model.Schedule", "", "", false, "", "", 0 )]
     [IntegerField( "Weeks Back", "The number of weeks back to display in the 'Week of' selection.", false, 8, "", 1 )]
     [IntegerField( "Weeks Ahead", "The number of weeks ahead to display in the 'Week of' selection.", false, 0, "", 2 )]
     [MetricCategoriesField( "Metric Categories", "Select the metric categories to display (note: only metrics in those categories with a campus and scheudle partition will displayed).", true, "", "", 3 )]
@@ -441,38 +442,59 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                 var campus = CampusCache.Read( _selectedCampusId.Value );
                 if ( campus != null )
                 {
-                    var scheduleCategory = CategoryCache.Read( GetAttributeValue( "ScheduleCategory" ).AsGuid() );
+                    var scheduleCategory = CategoryCache.Read( GetAttributeValue( "WeekendScheduleCategory" ).AsGuid() );
                     if ( scheduleCategory != null )
                     {
                         using ( var rockContext = new RockContext() )
                         {
                             if ( scheduleCategory.Categories.Any() )
                             {
-                                var campusCategory = scheduleCategory.Categories.Where( c => c.Name.Contains( campus.Name ) ).FirstOrDefault();
-                                foreach ( var schedule in new ScheduleService( rockContext )
-                                .Queryable().AsNoTracking()
-                                .Where( s =>
-                                    s.CategoryId.HasValue &&
-                                    s.CategoryId.Value == campusCategory.Id )
-                                .OrderBy( s => s.Name ) )
-                                {
-                                    services.Add( schedule );
-                                }
+                                scheduleCategory = scheduleCategory.Categories.Where( c => c.Name.Contains( campus.Name ) ).FirstOrDefault();
                             }
-                            else
-                            {
-                                foreach ( var schedule in new ScheduleService( rockContext )
-                                .Queryable().AsNoTracking()
+
+                            foreach ( var schedule in new ScheduleService( rockContext )
+                               .Queryable().AsNoTracking()
+                               .Where( s =>
+                                   s.CategoryId.HasValue &&
+                                   s.CategoryId.Value == scheduleCategory.Id )
+                                .ToList() // Here we ToList so that we can take advantage of the NextStartDateTime property
                                 .Where( s =>
-                                    s.CategoryId.HasValue &&
-                                    s.CategoryId.Value == scheduleCategory.Id )
-                                .OrderBy( s => s.Name ) )
-                                {
-                                    services.Add( schedule );
-                                }
+                                    s.NextStartDateTime.HasValue &&
+                                    s.NextStartDateTime.Value.DayOfWeek == RockDateTime.Now.DayOfWeek )
+                               .OrderBy( s => s.NextStartDateTime.Value.TimeOfDay ) )
+                            {
+                                services.Add( schedule );
                             }
                         }
                     }
+
+                    var eventScheduleCategory = CategoryCache.Read( GetAttributeValue( "EventScheduleCategory" ).AsGuid() );
+                    if ( eventScheduleCategory != null )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            if ( eventScheduleCategory.Categories.Any() )
+                            {
+                                eventScheduleCategory = eventScheduleCategory.Categories.Where( c => c.Name.Contains( campus.Name ) ).FirstOrDefault();
+                            }
+
+                            foreach ( var schedule in new ScheduleService( rockContext )
+                               .Queryable().AsNoTracking()
+                               .Where( s =>
+                                   s.CategoryId.HasValue &&
+                                   s.CategoryId.Value == eventScheduleCategory.Id )
+                                .ToList() // Here we ToList so that we can take advantage of the NextStartDateTime property
+                                .Where( s =>
+                                    s.NextStartDateTime.HasValue &&
+                                    s.NextStartDateTime.Value.DayOfWeek == RockDateTime.Now.DayOfWeek )
+                               .OrderBy( s => s.NextStartDateTime.Value.TimeOfDay ) )
+                            {
+                                services.Add( schedule );
+                            }
+                        }
+                    }
+
+                    services = services.Distinct().OrderBy( s => s.NextStartDateTime.Value.TimeOfDay ).ToList();
                 }
             }
 
