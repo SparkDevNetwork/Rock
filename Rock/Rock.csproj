@@ -760,6 +760,7 @@
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
+    <Compile Include="Model\InteractionComponent.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
     <Compile Include="Model\MetaLastNameLookup.cs" />
@@ -1137,6 +1138,7 @@
     <Compile Include="Reporting\DataFilter\Person\HasNoteFilter.cs" />
     <Compile Include="Reporting\DataSelect\FormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupAttributeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\GroupFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataTransform\Person\FatherTransform.cs" />

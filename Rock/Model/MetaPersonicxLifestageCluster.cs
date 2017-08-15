@@ -77,7 +77,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the summary of the LifestyleCluster.
         /// </value>
         [DataMember]
-        [MaxLength( 600 )]
+        [MaxLength( 1000 )]
         public string Summary { get; set; }
 
         /// <summary>
