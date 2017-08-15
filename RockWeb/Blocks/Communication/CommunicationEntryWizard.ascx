@@ -167,8 +167,16 @@
 
                 <%-- Email Editor --%>
                 <asp:Panel ID="pnlEmailEditor" runat="server" Visible="false">
+                    <div class="pull-right">
+                        <%-- Put the email send test button in an updatepanel to avoid flicker with the email editor --%>
+                        <asp:UpdatePanel ID="upEmailSendTest" runat="server">
+                            <ContentTemplate>
+                                <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Send Test" OnClick="btnEmailSendTest_Click" />
+                                <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click"  />
+                            </ContentTemplate>
+                        </asp:UpdatePanel>
+                    </div>
                     <h1 class="step-title">Email Editor</h1>
-
                     <div class="emaileditor-wrapper margin-t-md">
                         <section id="emaileditor">
 			                <div id="emaileditor-designer">
@@ -568,10 +576,29 @@
                     
                     <%-- TODO: review css here... --%>
                     <div class="actions margin-t-lg">
-                        <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
-                        <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
+                        <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-saveeditorhtml" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
                     </div>
                     
+                </asp:Panel>
+
+                <asp:Panel ID="pnlEmailPreview" runat="server" Visible="false">
+                    <Rock:ModalDialog ID="mdEmailPreview" runat="server" Title="Email Preview">
+                        <Content>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    ## TODO ## Options for what type of email client to emulate?
+                                </div>
+                                <div class="col-md-6">
+
+                                </div>
+                            </div>
+                            <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview">
+                                <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe js-emailpreview-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
+                            </div>
+                        </Content>
+
+                    </Rock:ModalDialog>
                 </asp:Panel>
 
                 <%-- Email Summary --%>
@@ -647,20 +674,23 @@
                                 <asp:HiddenField ID="hfSMSCharLimit" runat="server" />
                                 <asp:Label ID="lblSMSMessageCount" runat="server" CssClass="badge margin-all-sm pull-right" />
                                 <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required"/>
+                                <Rock:NotificationBox ID="nbSMSTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test SMS has been sent." Visible="false" />
                                 <div class="actions margin-t-sm pull-right">
-                                    <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-sm btn-default" Text="Send Test" OnClick="btnSMSSendTest_Click" />
+                                    <a class="btn btn-sm btn-default js-sms-sendtest" href="#">Send Test</a>
+                                    <div class="js-sms-sendtest-inputs" style="display:none">
+                                        <Rock:RockTextBox ID="tbTestSMSNumber" runat="server" Label="SMS Number" ValidationGroup="vgMobileTextEditorSendTest" Required="true" />
+                                        <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-sm btn-default" Text="Send" CausesValidation="true" ValidationGroup="vgMobileTextEditorSendTest" OnClick="btnSMSSendTest_Click" />
+                                        <a class="btn btn-sm btn-default js-sms-sendtest-cancel" href="#">Cancel</a>
+                                    </div>
                                 </div>
                             </Rock:RockControlWrapper>
                         </div>
                         <div class="col-md-6">
-                            <%-- TODO: This is where the SMS Bubbles thing would probably go --%>
                             <div class="device device-mobile hidden-md" style="width: 435px;">
                                 <div class="sms">
                                     <header><span class="left">Messages</span><h2><asp:Literal ID="lSMSChatPerson" runat="server" Text="Ted Decker" /></h2><span class="right">Contacts</span></header>
                                     <div class="messages-wrapper" style="height: 525px;">
                                       <div class="js-sms-chatoutput message to">
-                                          This is my first text message on ios7 
-                                          This is my first text message on ios7
                                           <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
                                       </div>
                                     </div>
@@ -701,6 +731,7 @@
                     </div>
                     
                     <div class="actions margin-b-lg">
+                        <Rock:NotificationBox ID="nbSendCommunication" runat="server" Visible="false" />
                         <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-primary" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSend_Click" />
                         <asp:LinkButton ID="btnSaveAsDraft" runat="server" Text="Save as Draft" CssClass="btn btn-default" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSaveAsDraft_Click" />
                         <asp:LinkButton ID="btnConfirmationCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" ValidationGroup="vgConfirmation" OnClick="btnConfirmationCancel_Click" />
@@ -724,6 +755,27 @@
                     loadEmailEditor()
                 }
 
+                if ($('#<%=pnlEmailPreview.ClientID%>').length) {
+                    var $emailPreviewIframe = $('.js-emailpreview-iframe');
+
+                    $emailPreviewIframe.height('auto');
+
+                    $emailPreviewIframe.load(function ()
+                    {
+                        new ResizeSensor($('#<%=pnlEmailPreviewContainer.ClientID%>'), function ()
+                        {
+                            $('#<%=ifEmailPreview.ClientID%>', window.parent.document).height($('#<%=pnlEmailPreviewContainer.ClientID%>').height());
+                        });
+
+                        var newHeight = $(this.contentWindow.document).height();
+                        if ($(this).height() != newHeight) {
+                            $(this).height(newHeight);
+                        }
+
+                        $('#<%=pnlEmailPreviewContainer.ClientID%>').height(newHeight);
+                    });
+                }
+
                 $('.js-mediumtype .btn').on('click', function (e)
                 {
                     setActiveButtonGroupButton($(this));
@@ -741,6 +793,19 @@
                 {
                     $('.js-additional-fields').show();
                 }
+
+                $('.js-sms-sendtest').off('click').on('click', function ()
+                {
+                    $(this).hide();
+
+                    $('.js-sms-sendtest-inputs').slideDown();
+                });
+
+                $('.js-sms-sendtest-cancel').off('click').on('click', function ()
+                {
+                    $('.js-sms-sendtest').show();
+                    $('.js-sms-sendtest-inputs').hide();
+                });
                 
                 setSMSBubbleText();
                 $('#<%=tbSMSTextMessage.ClientID %>').off('input').on('input', function ()
@@ -775,10 +840,11 @@
                         });
                 }
 
-                $('#<%=btnEmailEditorNext.ClientID%>').off('click').on('click', function ()
+                // save the editor html (minus the editor components) to a hidden field
+                $('.js-saveeditorhtml').off('click').on('click', function ()
                 {
                     var $editorIframe = $('#<%=ifEmailDesigner.ClientID%>');
-                    var $editorHtml = $editorIframe.contents().find('HTML');
+                    var $editorHtml = $editorIframe.contents().find('HTML').clone();
 
                     // remove all the email editor stuff 
                     $editorHtml.find('.js-emaileditor-addon').remove();
@@ -807,13 +873,18 @@
 
             function loadEmailEditor()
             {
+                var $editorIframe = $('.js-emaileditor-iframe');
+                if ($editorIframe[0].contentWindow.Rock) {
+                    // already loaded (probably because the btnEmailSendTest triggered a postback)
+                    return;
+                }
+
                 // load in editor styles and scripts
                 var cssLink = document.createElement("link")
                 cssLink.className = "js-emaileditor-addon";
                 cssLink.href = '<%=RockPage.ResolveRockUrl("~/Themes/Rock/Styles/email-editor.css", true ) %>';
                 cssLink.rel = "stylesheet";
                 cssLink.type = "text/css";
-                
 
                 var fontAwesomeLink = document.createElement("link")
                 fontAwesomeLink.className = "js-emaileditor-addon";
@@ -831,7 +902,7 @@
                 dragulaLoaderScript.type = "text/javascript";
                 dragulaLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/dragula.min.js", true ) %>';
 
-                var $editorIframe = $('.js-emaileditor-iframe');
+                
 
                 var editorScript = document.createElement("script");
                 editorScript.className = "js-emaileditor-addon";
