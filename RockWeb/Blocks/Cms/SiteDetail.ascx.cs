@@ -453,10 +453,10 @@ namespace RockWeb.Blocks.Cms
                 site.PageHeaderContent = cePageHeaderContent.Text;
 
                 int? existingIconId = null;
-                if ( site.FavIconBinaryFileId != imgImage.BinaryFileId )
+                if ( site.FavIconBinaryFileId != imgSiteIcon.BinaryFileId )
                 {
                     existingIconId = site.FavIconBinaryFileId;
-                    site.FavIconBinaryFileId = imgImage.BinaryFileId;
+                    site.FavIconBinaryFileId = imgSiteIcon.BinaryFileId;
                 }
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
@@ -730,7 +730,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             Guid fileTypeGuid = GetAttributeValue( "DefaultFileType" ).AsGuid();
-            imgImage.BinaryFileTypeGuid = fileTypeGuid;
+            imgSiteIcon.BinaryFileTypeGuid = fileTypeGuid;
 
             // set theme compile button
             if ( !new RockTheme( site.Theme ).AllowsCompile )
@@ -810,7 +810,7 @@ namespace RockWeb.Blocks.Cms
             ddlTheme.Enabled = !site.IsSystem;
             ddlTheme.SetValue( site.Theme );
 
-            imgImage.BinaryFileId = site.FavIconBinaryFileId;
+            imgSiteIcon.BinaryFileId = site.FavIconBinaryFileId;
 
             if ( site.DefaultPageRoute != null )
             {

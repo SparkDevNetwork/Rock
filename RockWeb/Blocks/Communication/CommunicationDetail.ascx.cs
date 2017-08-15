@@ -731,7 +731,7 @@ namespace RockWeb.Blocks.Communication
                 Literal lActivityDetails = e.Row.FindControl( "lActivityDetails" ) as Literal;
                 if (lActivityDetails != null)
                 {
-                    lActivityDetails.Text = interaction.GetInteractionDetails();
+                    lActivityDetails.Text = CommunicationRecipient.GetInteractionDetails( interaction );
                 }
             }
         }

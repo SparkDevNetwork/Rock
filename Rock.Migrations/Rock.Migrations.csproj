@@ -297,6 +297,10 @@
     <Compile Include="Migrations\201707272046132_Presence.Designer.cs">
       <DependentUpon>201707272046132_Presence.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707311527250_AddMetaData.cs" />
+    <Compile Include="Migrations\201707311527250_AddMetaData.Designer.cs">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2669,6 +2673,9 @@
     <EmbeddedResource Include="Migrations\201707272046132_Presence.resx">
       <DependentUpon>201707272046132_Presence.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707311527250_AddMetaData.resx">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4440,6 +4447,21 @@
     </Content>
     <Content Include="Migrations\201707182207536_AttendanceAnalyticsScheduleFilter_Attendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707311527250_FirstNameGender.txt">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707311527250_LastName.txt">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707311527250_NickName.txt">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707311527250_PersonicxCluster.txt">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707311527250_PersonicxGroup.txt">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
