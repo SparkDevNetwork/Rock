@@ -1693,6 +1693,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void ShowRefundDialog()
         {
+            var checkCurrencyTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK ).Id;
+
             int? txnId = hfTransactionId.Value.AsIntegerOrNull();
             if ( txnId.HasValue )
             {
@@ -1703,19 +1705,22 @@ namespace RockWeb.Blocks.Finance
                     if ( txn != null )
                     {
                         var totalAmount = txn.TotalAmount;
-                        var otherAmounts = new FinancialTransactionDetailService( rockContext )
+
+                        if ( txn.FinancialPaymentDetail.CurrencyTypeValueId != checkCurrencyTypeId )
+                        {
+                            var otherAmounts = new FinancialTransactionDetailService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
                                 d.Transaction != null &&
                                 (
-                                    ( 
+                                    (
                                         txn.TransactionCode != null &&
                                         txn.TransactionCode != "" &&
-                                        d.Transaction.TransactionCode == txn.TransactionCode && 
+                                        d.Transaction.TransactionCode == txn.TransactionCode &&
                                         d.TransactionId != txn.Id ) ||
-                                    ( 
+                                    (
                                         d.Transaction.RefundDetails != null &&
-                                        d.Transaction.RefundDetails.OriginalTransactionId == txn.Id 
+                                        d.Transaction.RefundDetails.OriginalTransactionId == txn.Id
                                     )
                                 )
                             )
@@ -1723,7 +1728,8 @@ namespace RockWeb.Blocks.Finance
                             .ToList()
                             .Sum();
 
-                        totalAmount += otherAmounts;
+                            totalAmount += otherAmounts;
+                        }
 
                         tbRefundAmount.Text = ( totalAmount > 0.0m ? totalAmount : 0.0m ).ToString( "N2" );
                         ddlRefundReason.SelectedIndex = -1;
