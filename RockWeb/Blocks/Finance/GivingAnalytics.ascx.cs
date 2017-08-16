@@ -771,11 +771,15 @@ function(item) {
 
             // Collection of async queries to run before assembling date
             var qryTasks = new List<Task>();
+            var taskInfos = new List<TaskInfo>();
 
             // Get the chart data
             var transactionInfoList = new List<TransactionInfo>();
             qryTasks.Add( Task.Run( () =>
             {
+                var ti = new TaskInfo { name = "Get the chart data", start = DateTime.Now };
+                taskInfos.Add( ti );
+
                 transactionInfoList = new List<TransactionInfo>();
 
                 var ds = FinancialTransactionDetailService.GetGivingAnalyticsTransactionData(
@@ -861,6 +865,9 @@ function(item) {
                         transactionInfoList.Add( chartData );
                     }
                 }
+
+                ti.end = DateTime.Now;
+
             } ) );
 
             // If min or max amount values were entered, need to get summary so we know who gave within that range
@@ -869,6 +876,9 @@ function(item) {
             {
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get Summary", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     idsWithValidTotals = new List<string>();
 
                     var dtPersonSummary = FinancialTransactionDetailService.GetGivingAnalyticsPersonSummary(
@@ -887,6 +897,9 @@ function(item) {
                             idsWithValidTotals.Add( row["GivingId"].ToString() );
                         }
                     }
+
+                    ti.end = DateTime.Now;
+
                 } ) );
 
             }
@@ -898,6 +911,9 @@ function(item) {
             {
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get DataView People", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     dataViewGivingIds = new List<string>();
                     var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
                     if ( dataView != null )
@@ -914,6 +930,9 @@ function(item) {
                             .Select( p => p.GivingId );
                         dataViewGivingIds = dataViewPersonIdQry.ToList();
                     }
+
+                    ti.end = DateTime.Now;
+
                 } ) );
             }
 
@@ -1065,11 +1084,15 @@ function(item) {
 
             // Collection of async queries to run before assembling data
             var qryTasks = new List<Task>();
+            var taskInfos = new List<TaskInfo>();
 
             // Get all person summary data
             var personInfoList = new List<PersonInfo>();
             qryTasks.Add( Task.Run( () =>
             {
+                var ti = new TaskInfo { name = "Get all person summary data", start = DateTime.Now };
+                taskInfos.Add( ti );
+
                 var dt = FinancialTransactionDetailService.GetGivingAnalyticsPersonSummary(
                     start, end, minAmount, maxAmount, accountIds, currencyTypeIds, sourceIds )
                     .Tables[0];
@@ -1148,15 +1171,37 @@ function(item) {
                     personInfoList.Add( personInfo );
                 }
 
+                ti.end = DateTime.Now;
+
             } ) );
 
             // Get the account summary values
-            DataTable dtAccountSummary = null;
+            var accountSummaries = new Dictionary<string, Dictionary<int, decimal>>();
             qryTasks.Add( Task.Run( () =>
             {
-                dtAccountSummary = FinancialTransactionDetailService.GetGivingAnalyticsAccountTotals(
+                var ti = new TaskInfo { name = "Get the account summary values", start = DateTime.Now };
+                taskInfos.Add( ti );
+
+                var dt = FinancialTransactionDetailService.GetGivingAnalyticsAccountTotals(
                     start, end, accountIds, currencyTypeIds, sourceIds )
                     .Tables[0];
+                foreach ( DataRow row in dt.Rows )
+                {
+                    if ( !DBNull.Value.Equals( row["GivingId"] ) &&
+                        !DBNull.Value.Equals( row["AccountId"] ) &&
+                        !DBNull.Value.Equals( row["Amount"] ) )
+                    {
+                        string givingId = row["GivingId"].ToString();
+                        int accountId = (int)row["AccountId"];
+                        decimal amount = (decimal)row["Amount"];
+
+                        accountSummaries.AddOrIgnore( givingId, new Dictionary<int, decimal>() );
+                        accountSummaries[givingId].AddOrIgnore( accountId, amount );
+                    }
+                }
+
+                ti.end = DateTime.Now;
+
             } ) );
 
             // Get the first/last ever dates
@@ -1164,6 +1209,9 @@ function(item) {
             var lastEverVals = new Dictionary<string, DateTime>();
             qryTasks.Add( Task.Run( () =>
             {
+                var ti = new TaskInfo { name = "Get the first/last ever dates", start = DateTime.Now };
+                taskInfos.Add( ti );
+
                 var dt = FinancialTransactionDetailService.GetGivingAnalyticsFirstLastEverDates()
                     .Tables[0];
                 foreach ( DataRow row in dt.Rows )
@@ -1181,6 +1229,8 @@ function(item) {
                     }
                 }
 
+                ti.end = DateTime.Now;
+
             } ) );
 
             // If a dataview filter was included, find the people who match that criteria
@@ -1190,6 +1240,9 @@ function(item) {
             {
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Data View Filter", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     dataViewPersonIds = new List<int>();
                     var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
                     if ( dataView != null )
@@ -1206,11 +1259,18 @@ function(item) {
                             .Select( p => p.Id );
                         dataViewPersonIds = dataViewPersonIdQry.ToList();
                     }
+
+                    ti.end = DateTime.Now;
+
                 } ) );
             }
 
+            // Configure Grid
             qryTasks.Add( Task.Run( () =>
             {
+                var ti = new TaskInfo { name = "Configure Grid", start = DateTime.Now };
+                taskInfos.Add( ti );
+
                 // Clear all the existing grid columns
                 var selectField = new SelectField();
                 var oldSelectField = gGiversGifts.ColumnsOfType<SelectField>().FirstOrDefault();
@@ -1349,6 +1409,8 @@ function(item) {
                         SortExpression = "LastEverGift"
                     } );
 
+                ti.end = DateTime.Now;
+
             } ) );
 
             // Wait for all the queries to finish
@@ -1436,6 +1498,13 @@ function(item) {
                 {
                     personInfo.LastEverGift = lastEverVals[personInfo.GivingId];
                 }
+                if ( accountSummaries.ContainsKey( personInfo.GivingId ) )
+                {
+                    foreach( var keyval in accountSummaries[personInfo.GivingId] )
+                    {
+                        personInfo.AccountAmounts.AddOrIgnore( keyval.Key, keyval.Value );
+                    }
+                }
             }
 
             // Check to see if we're only showing first time givers
@@ -1484,24 +1553,6 @@ function(item) {
                     .ToList();
             }
 
-            // Add account summary info
-            foreach ( DataRow row in dtAccountSummary.Rows )
-            {
-                if ( !DBNull.Value.Equals( row["GivingId"] ) &&
-                    !DBNull.Value.Equals( row["AccountId"] ) &&
-                    !DBNull.Value.Equals( row["Amount"] ) )
-                {
-                    string givingId = row["GivingId"].ToString();
-                    int accountId = (int)row["AccountId"];
-                    decimal amount = (decimal)row["Amount"];
-
-                    foreach ( var personInfo in personInfoList.Where( p => p.GivingId == givingId ) )
-                    {
-                        personInfo.AccountAmounts.AddOrIgnore( accountId, amount );
-                    }
-                }
-            }
-
             // Calculate Total
             if ( viewBy == GiversViewBy.Giver )
             {
@@ -1527,14 +1578,14 @@ function(item) {
                         {
                             personInfo.SortAmount = personInfo.AccountAmounts.ContainsKey( accountId.Value ) ?
                                 personInfo.AccountAmounts[accountId.Value] : 0.0M;
-                            if ( gGiversGifts.SortProperty.Direction == SortDirection.Ascending )
-                            {
-                                gGiversGifts.DataSource = personInfoList.OrderBy( p => p.SortAmount ).ToList();
-                            }
-                            else
-                            {
-                                gGiversGifts.DataSource = personInfoList.OrderByDescending( p => p.SortAmount ).ToList();
-                            }
+                        }
+                        if ( gGiversGifts.SortProperty.Direction == SortDirection.Ascending )
+                        {
+                            gGiversGifts.DataSource = personInfoList.OrderBy( p => p.SortAmount ).ToList();
+                        }
+                        else
+                        {
+                            gGiversGifts.DataSource = personInfoList.OrderByDescending( p => p.SortAmount ).ToList();
                         }
                     }
                     else
@@ -1660,6 +1711,25 @@ function(item) {
         }
         #endregion
 
+    }
+
+    public class TaskInfo
+    {
+        public string name { get; set; }
+        public DateTime start { get; set; }
+        public DateTime end { get; set; }
+        public TimeSpan duration
+        {
+            get
+            {
+                return end.Subtract( start );
+            }
+        }
+
+        public override string ToString()
+        {
+            return string.Format( "{0}: {1:c}", name, duration );
+        }
     }
 
     public class PersonInfo
