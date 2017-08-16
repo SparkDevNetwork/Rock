@@ -491,9 +491,14 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var item in this.Items.OfType<ListItem>() )
             {
-                string faChecked = ( this.SelectionStyle == ButtonSelectionStyle.Checkmark ) && ( SelectedValue == item.Value ) ? "fa-check" : string.Empty;
+                string faChecked = string.Empty;
+                if ( this.SelectionStyle == ButtonSelectionStyle.Checkmark )
+                {
+                    faChecked = SelectedValue == item.Value ? "<i class='js-selectionicon fa fa-fw fa-check'></i>" : "<i class='js-selectionicon fa fa-fw'></i>";
+                }
+
                 string html = string.Format(
-                        "<li><a href='#' data-id='{0}'><i class='js-selectionicon fa fa-fw {2}'></i> {1}</a></li>",
+                        "<li><a href='#' data-id='{0}'>{2} {1}</a></li>",
                         item.Value,
                         item.Text,
                         faChecked );
