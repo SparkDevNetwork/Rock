@@ -36,7 +36,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
     [Description( "Block to display the workflow types that user is authorized to view, and the activities that are currently assigned to the user." )]
     [LinkedPage( "Listing Page", "Page used to view all workflows assigned to the current user.", false, "F3FA9EBE-A540-4106-90E5-2DFB2D72BBF0" )]
 
-    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 2 )]
+    [IntegerField( "Cache Duration", "Number of seconds to cache the content per person.", false, 0, "", 2 )]
     public partial class WorkflowAlert : Rock.Web.UI.RockBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -52,10 +52,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
             if ( CurrentPersonAliasId.HasValue )
             {
                 int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
+                string cacheKey = "WorkflowAlertCount:PersonAliasId:" + CurrentPersonAliasId.ToString();
                 int? activeIncompleteWorkflows = null;
                 if ( cacheDuration > 0 )
                 {
-                    activeIncompleteWorkflows = this.GetCacheItem( "WorkflowAlertCount" ) as int?;
+                    activeIncompleteWorkflows = this.GetCacheItem( cacheKey ) as int?;
                 }
 
                 if ( !activeIncompleteWorkflows.HasValue )
@@ -66,7 +67,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
                         activeIncompleteWorkflows = GetActions( rockContext ).Count();
                         if ( cacheDuration > 0 )
                         {
-                            this.AddCacheItem( "WorkflowAlertCount", activeIncompleteWorkflows, cacheDuration );
+                            this.AddCacheItem( cacheKey, activeIncompleteWorkflows, cacheDuration );
                         }
                     }
                 }
