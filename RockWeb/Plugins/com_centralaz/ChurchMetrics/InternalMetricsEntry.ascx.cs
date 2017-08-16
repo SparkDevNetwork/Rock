@@ -135,7 +135,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
 
         protected void rptrSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            switch( e.CommandName )
+            switch ( e.CommandName )
             {
                 case "Campus":
                     _selectedCampusId = e.CommandArgument.ToString().AsIntegerOrNull();
@@ -198,7 +198,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                         var hfMetricIId = item.FindControl( "hfMetricId" ) as HiddenField;
                         var nbMetricValue = item.FindControl( "nbMetricValue" ) as NumberBox;
 
-                        if ( hfMetricIId != null && nbMetricValue != null  )
+                        if ( hfMetricIId != null && nbMetricValue != null )
                         {
                             int metricId = hfMetricIId.ValueAsInt();
                             var metric = new MetricService( rockContext ).Get( metricId );
@@ -275,12 +275,25 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
             _selectedCampusId = bddlCampus.SelectedValueAsInt();
             bddlService.Items.Clear();
 
+            var serviceList = GetServices();
             // Load service times
-            foreach ( var service in GetServices() )
+            if ( serviceList.Any() )
             {
-                bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
+                foreach ( var service in serviceList )
+                {
+                    bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
+                }
+
+                if ( _selectedServiceId.HasValue )
+                {
+                    bddlService.SetValue( _selectedServiceId.Value );
+                }
             }
-            bddlService.SetValue( _selectedServiceId.Value );
+            else
+            {
+                bddlService.Items.Add( new ListItem( "N/A" ) );
+                bddlService.SetValue( "N/A" );
+            }
 
             BindMetrics();
         }
@@ -380,12 +393,25 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
             }
             bddlWeekend.SetValue( _selectedWeekend.Value.ToString( "o" ) );
 
+            var serviceList = GetServices();
             // Load service times
-            foreach( var service in GetServices() )
+            if ( serviceList.Any() )
             {
-                bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
+                foreach ( var service in serviceList )
+                {
+                    bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
+                }
+
+                if ( _selectedServiceId.HasValue )
+                {
+                    bddlService.SetValue( _selectedServiceId.Value );
+                }
             }
-            bddlService.SetValue( _selectedServiceId.Value );
+            else
+            {
+                bddlService.Items.Add( new ListItem( "N/A" ) );
+                bddlService.SetValue( "N/A" );
+            }
         }
 
         /// <summary>
@@ -458,10 +484,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                                    s.CategoryId.HasValue &&
                                    s.CategoryId.Value == scheduleCategory.Id )
                                 .ToList() // Here we ToList so that we can take advantage of the NextStartDateTime property
-                                .Where( s =>
-                                    s.NextStartDateTime.HasValue &&
-                                    s.NextStartDateTime.Value.DayOfWeek == RockDateTime.Now.DayOfWeek )
-                               .OrderBy( s => s.NextStartDateTime.Value.TimeOfDay ) )
+                               .OrderBy( s => s.Name ) )
                             {
                                 services.Add( schedule );
                             }
@@ -484,17 +507,14 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                                    s.CategoryId.HasValue &&
                                    s.CategoryId.Value == eventScheduleCategory.Id )
                                 .ToList() // Here we ToList so that we can take advantage of the NextStartDateTime property
-                                .Where( s =>
-                                    s.NextStartDateTime.HasValue &&
-                                    s.NextStartDateTime.Value.DayOfWeek == RockDateTime.Now.DayOfWeek )
-                               .OrderBy( s => s.NextStartDateTime.Value.TimeOfDay ) )
+                               .OrderBy( s => s.Name ) )
                             {
                                 services.Add( schedule );
                             }
                         }
                     }
 
-                    services = services.Distinct().OrderBy( s => s.NextStartDateTime.Value.TimeOfDay ).ToList();
+                    services = services.Distinct().OrderBy( s => s.Name ).ToList();
                 }
             }
 
@@ -561,7 +581,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                             {
                                 serviceMetric.Value = (int?)metricValue.YValue;
 
-                                if ( !string.IsNullOrWhiteSpace ( metricValue.Note) &&
+                                if ( !string.IsNullOrWhiteSpace( metricValue.Note ) &&
                                     !notes.Contains( metricValue.Note ) )
                                 {
                                     notes.Add( metricValue.Note );
@@ -594,7 +614,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
         {
             CommandName = commandName;
             CommandArg = commandArg;
-            OptionText = optionText;   
+            OptionText = optionText;
         }
     }
 
