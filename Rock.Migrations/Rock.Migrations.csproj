@@ -301,6 +301,10 @@
     <Compile Include="Migrations\201707311527250_AddMetaData.Designer.cs">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201708152332039_PageShortLinkUrl.cs" />
+    <Compile Include="Migrations\201708152332039_PageShortLinkUrl.Designer.cs">
+      <DependentUpon>201708152332039_PageShortLinkUrl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2675,6 +2679,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707311527250_AddMetaData.resx">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708152332039_PageShortLinkUrl.resx">
+      <DependentUpon>201708152332039_PageShortLinkUrl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
