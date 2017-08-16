@@ -834,6 +834,7 @@ namespace RockWeb.Blocks.Cms
                 .ToList();
             BindPageAttributesGrid();
 
+            nbPageViewRetentionPeriodDays.Text = site.PageViewRetentionPeriodDays.HasValue ? site.PageViewRetentionPeriodDays.ToString() : "";
             SetControlsVisiblity();
         }
 
