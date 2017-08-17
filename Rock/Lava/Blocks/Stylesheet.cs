@@ -133,9 +133,9 @@ namespace Rock.Lava.Blocks
                         }
 
                         // ok we have our less stylesheet let's see if it's been cached (less can take ~100ms to compile so let's try not to do that if necessary)
-                        if ( parms.ContainsKey( "cacheduration" ) && parms.ContainsKey( "id" ) )
+                        if ( parms.ContainsKey( "cacheduration" ) )
                         {
-                            var cacheKey = parms["id"];
+                            var cacheKey = stylesheet.GetHashCode().ToString();
                             RockMemoryCache cache = RockMemoryCache.Default;
                             var cachedStylesheet = cache[cacheKey] as string;
 
@@ -148,7 +148,7 @@ namespace Rock.Lava.Blocks
                                 stylesheet = LessWeb.Parse( stylesheet, dotLessConfiguration );
 
                                 // check if we should cache this
-                                if ( parms.ContainsKey( "cacheduration" ) && parms.ContainsKey( "id" ) && stylesheet.IsNotNullOrWhitespace() )
+                                if ( parms.ContainsKey( "cacheduration" ) && stylesheet.IsNotNullOrWhitespace() )
                                 {
                                     int cacheDuration = 0;
                                     Int32.TryParse( parms["cacheduration"], out cacheDuration );
