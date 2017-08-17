@@ -98,7 +98,7 @@
                             <Columns>
                                 <Rock:RockBoundField DataField="AuthRule.DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" HtmlEncode="false" />
                                 <Rock:RockTemplateField>
-                                    <HeaderTemplate>Allow or Deny</HeaderTemplate>
+                                    <HeaderTemplate>Action</HeaderTemplate>
                                     <HeaderStyle HorizontalAlign="Center" />
                                     <ItemStyle Wrap="false" HorizontalAlign="Center" />
                                     <ItemTemplate>
