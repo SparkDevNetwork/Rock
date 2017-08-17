@@ -292,9 +292,22 @@ namespace Rock.Reporting
                     }
 
                     var qryErrors = new List<string>();
-                    dynamic qry = report.GetQueryable( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, databaseTimeoutSeconds ?? 180, out qryErrors );
+                    System.Data.Entity.DbContext reportDbContext;
+                    dynamic qry = report.GetQueryable( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, databaseTimeoutSeconds ?? 180, out qryErrors, out reportDbContext );
                     errors.AddRange( qryErrors );
-                    gReport.SetLinqDataSource( qry );
+
+                    if ( !string.IsNullOrEmpty( report.QueryHint ) && reportDbContext is RockContext)
+                    {
+                        using ( new QueryHintScope( reportDbContext as RockContext, report.QueryHint ) )
+                        {
+                            gReport.SetLinqDataSource( qry );
+                        }
+                    }
+                    else
+                    {
+                        gReport.SetLinqDataSource( qry );
+                    }
+
                     gReport.DataBind();
                 }
                 catch ( Exception ex )
