@@ -57,6 +57,7 @@ namespace RockWeb.Blocks.Event
     [BooleanField( "Enable Debug", "Display the merge fields that are available for lava ( Success Page ).", false, "", 5 )]
     [BooleanField( "Allow InLine Digital Signature Documents", "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline", true, "", 6, "SignInline" )]
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 7 )]
+    [WorkflowTypeField( "Multiple Family Alert Workflow", "Workflow used when a registrant is in multiple families.", false, false, "", "" )]
     public partial class RegistrationEntry : RockBlock
     {
         #region Fields
@@ -1743,6 +1744,8 @@ namespace RockWeb.Blocks.Event
             var documentService = new SignatureDocumentService( rockContext );
 
             // variables to keep track of the family that new people should be added to
+            // NOTE: The "PERSON is at the same address as..." radio button drives these, and
+            // ONLY CONTROLS the family *NEWLY CREATED* people are placed in.
             int? singleFamilyId = null;
             var multipleFamilyGroupIds = new Dictionary<Guid, int>();
 
@@ -1893,8 +1896,10 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
-
+            
             // Make sure there's an actual person associated to registration
+            // by creating a new registrant (person registering, not BEING registered) if
+            // there isn't one.
             if ( !registration.PersonAliasId.HasValue )
             {
                 // If a match was not found, create a new person
@@ -1914,7 +1919,7 @@ namespace RockWeb.Blocks.Event
                     person.RecordStatusValueId = dvcRecordStatus.Id;
                 }
 
-                registrar = SavePerson( rockContext, person, RegistrationState.FamilyGuid, CampusId, null, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
+                registrar = SavePerson( rockContext, person, RegistrationState.FamilyGuid, CampusId, null, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId, null );
                 registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : (int?)null;
 
                 History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registrar.FullName );
@@ -1925,8 +1930,6 @@ namespace RockWeb.Blocks.Event
                 {
                     History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registration.ToString() );
                 }
-
-
             }
 
             // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
@@ -2156,7 +2159,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     // Save the person ( and family if needed )
-                    SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
+                    SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId, registration.Id );
 
                     // Load the person's attributes
                     person.LoadAttributes();
@@ -2424,38 +2427,80 @@ namespace RockWeb.Blocks.Event
             return registration;
 
         }
-
+        
         /// <summary>
         /// Saves the person.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="familyGuid">The family unique identifier.</param>
-        /// <param name="campusId">The campus identifier.</param>
-        /// <param name="location">The location.</param>
-        /// <param name="adultRoleId">The adult role identifier.</param>
-        /// <param name="childRoleId">The child role identifier.</param>
-        /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
-        /// <param name="singleFamilyId">The single family identifier.</param>
-        /// <returns></returns>
         private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId,
-            Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
+            Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId, int? registrationId )
         {
-            int? familyId = null;
+            // This function attempts to do _TWO_ things.
 
+            // First.
+            // *IF* this person was chosen as the "At the same address as..." radio button,
+            // AND there's not *already* a family associated with that radio button,
+            // then this will cause any NEWLY created person after this point to be placed INTO this family.
+
+            // Second.
+            // *IF* the registration template asks for an address, it will update the address of whatever Family THIS person
+            // is in to that address. It's making a mostly-true assumption that a person registering will give us their latest address.
+
+            // Both of these issues breakdown if a person is in multiple families. This can only happen if person.Id > 0 (because a person that doesn't exist yet can't be in two families).
+            // With two families, we have no way of knowing which one to use.
+
+            // Example:
+            // Billy is from a broken home. Mommy is in one family, daddy in another. The child is in two families.
+            // GRANDMA registers little Billy, and puts Grandma's address in the registration.
+            
+            // Now we get here. Which family's address do we update? If Grandma used a new address, we don't know which family to put it on.
+            // If grandma used either Mommy or Daddy's address, there's no need to update.
+
+            // Example Two:
+            // Same as above, but Grandma also registers Billy's new brother Jimmy, who isn't in the system.
+            // Which family should Jimmy be placed in? We don't know.
+
+            // We solve the issues by not making any changes if the person is in two families.
+            
+            // This will result in newly created Jimmy being in his own family, which a person merge will solve.
+            
+            // For the address issue, we will kick off a workflow saying "Billy registered for an event and is in multiple families."
+            // And from there, a human can evaluate whether to put the address used in the registration on either family.
+            int? familyId = null;
+            
             if ( person.Id > 0 )
             {
                 rockContext.SaveChanges();
 
-                // Set the family guid for any other registrants that were selected to be in the same family
-                var family = person.GetFamilies( rockContext ).FirstOrDefault();
-                if ( family != null )
+                // only use this person's family if they're in ONE family.
+                if( person.GetFamilies( rockContext ).Count( ) == 1 )
                 {
-                    familyId = family.Id;
-                    multipleFamilyGroupIds.AddOrIgnore( familyGuid, family.Id );
-                    if ( !singleFamilyId.HasValue )
+                    var family = person.GetFamilies( rockContext ).FirstOrDefault();
+                    if ( family != null )
                     {
-                        singleFamilyId = family.Id;
+                        familyId = family.Id;
+                        multipleFamilyGroupIds.AddOrIgnore( familyGuid, family.Id );
+                        if ( !singleFamilyId.HasValue )
+                        {
+                            singleFamilyId = family.Id;
+                        }
+                    }
+                }
+                // they're in multiple families.
+                else
+                {
+                    // If we have a registration Id and the registration took an address,
+                    // kick off a workflow so a human can decide what to do.
+                    // (Registration Id will only be null if this function was called for the person REGISTERING. And in that case, we don't take an address, so it doesn't matter.)
+                    if( registrationId.HasValue && location != null )
+                    {
+                        // kick off a workflow that alerts staff that this person is in multiple families, so we didn't update their address
+                        Dictionary<string, string> workflowAttribs = new Dictionary<string, string>( );
+
+                        // we hope there's a registration id available. This means we're calling SavePerson on the
+                        // registrant, and can point right to their registration.
+                        workflowAttribs.Add( "RegistrationId", registrationId.Value.ToString( ) );
+
+                        StartWorkflow( "MultipleFamilyAlertWorkflow", person, workflowAttribs, rockContext );
                     }
                 }
             }
@@ -2517,6 +2562,47 @@ namespace RockWeb.Blocks.Event
             }
 
             return new PersonService( rockContext ).Get( person.Id );
+        }
+
+        /// <summary>
+        /// Starts the workflow if one was defined in the block setting.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void StartWorkflow( string workflowName, object entity, Dictionary<string, string> attributes, RockContext rockContext )
+        {
+            WorkflowType workflowType = null;
+            Guid? workflowTypeGuid = GetAttributeValue( workflowName ).AsGuidOrNull();
+
+            if ( workflowTypeGuid.HasValue )
+            {
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                if ( workflowType != null )
+                {
+                    try
+                    {
+                        var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
+
+                        // set optional attributes for the workflow
+                        if( attributes != null )
+                        {
+                            foreach ( KeyValuePair<string, string> kvp in attributes )
+                            {
+                                workflow.SetAttributeValue( kvp.Key, kvp.Value );
+                            }
+                        }
+
+                        List<string> workflowErrors;
+                        new WorkflowService( rockContext ).Process( workflow, entity, out workflowErrors );
+                    }
+                    catch ( Exception ex )
+
+                    {
+                        ExceptionLogService.LogException( ex, this.Context );
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -3149,7 +3235,7 @@ namespace RockWeb.Blocks.Event
                 {
                     max = RegistrationState.SlotsAvailable.Value;
                 }
-
+                
                 if ( max > MinRegistrants )
                 {
                     // If registration allows multiple registrants show the 'How Many' panel
@@ -4024,6 +4110,7 @@ namespace RockWeb.Blocks.Event
                         {
                             cpHomeCampus.SelectedCampusId = fieldValue.ToString().AsIntegerOrNull();
                         }
+
                         break;
                     }
 
