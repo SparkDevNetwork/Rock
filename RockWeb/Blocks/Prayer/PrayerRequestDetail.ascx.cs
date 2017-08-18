@@ -40,8 +40,9 @@ namespace RockWeb.Blocks.Prayer
     [IntegerField( "Expires After (Days)", "Default number of days until the request will expire.", false, 14, "", 0, "ExpireDays" )]
     [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, "DefaultCategory" )]
     [BooleanField( "Set Current Person To Requester", "Will set the current person as the requester. This is useful in self-entry situiations.", false, order: 2 )]
-
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "", 3 )]
+    [BooleanField( "Default Allow Comments Checked", "If true, the Allow Comments checkbox will be pre-checked for all new requests by default.", true, order: 4 )]
+
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -284,7 +285,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( prayerRequest == null )
             {
-                prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = true, AllowComments = true };
+                prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = true, AllowComments = GetAttributeValue( "DefaultAllowCommentsChecked" ).AsBooleanOrNull() ?? true };
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
