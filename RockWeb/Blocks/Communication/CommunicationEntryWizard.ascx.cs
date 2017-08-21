@@ -33,6 +33,7 @@ using Rock.Attribute;
 using System.Text;
 using Rock.Web.UI;
 using Rock.Security;
+using System.Web;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -49,7 +50,9 @@ namespace RockWeb.Blocks.Communication
     [IntegerField( "Character Limit", "Set this to show a character limit countdown for SMS communications. Set to 0 to disable", false, 160, order: 2 )]
 
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 3 )]
-    [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved.", false, 0, "", order: 4 )]
+    [CustomCheckboxListField( "Communication Types", "The communication types that should be available to user to send (If none are selected, all will be available).", "Recipient Preference,Email,SMS", false, order: 4 )]
+    [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved.", false, 300, "", order: 5 )]
+    [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 6 )]
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
         #region Properties
@@ -139,6 +142,12 @@ namespace RockWeb.Blocks.Communication
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
                 communication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+
+                var allowedCommunicationTypes = GetAllowedCommunicationTypes();
+                if ( !allowedCommunicationTypes.Contains( communication.CommunicationType ) )
+                {
+                    communication.CommunicationType = allowedCommunicationTypes.First();
+                }
             }
 
             CommunicationStatus[] editableStatuses = new CommunicationStatus[] { CommunicationStatus.Transient, CommunicationStatus.Draft, CommunicationStatus.Denied };
@@ -220,7 +229,6 @@ namespace RockWeb.Blocks.Communication
             // Email Editor
             hfEmailEditorHtml.Value = communication.Message;
 
-
             /** DEBUG **/
             if ( ddlCommunicationGroupList.Items.Count > 1 )
             {
@@ -268,6 +276,48 @@ namespace RockWeb.Blocks.Communication
             btnMediumRecipientPreference.Attributes["data-val"] = Rock.Model.CommunicationType.RecipientPreference.ConvertToInt().ToString();
             btnMediumEmail.Attributes["data-val"] = Rock.Model.CommunicationType.Email.ConvertToInt().ToString();
             btnMediumSMS.Attributes["data-val"] = Rock.Model.CommunicationType.SMS.ConvertToInt().ToString();
+
+            var allowedCommunicationTypes = GetAllowedCommunicationTypes();
+            btnMediumRecipientPreference.Visible = allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference );
+            btnMediumEmail.Visible = allowedCommunicationTypes.Contains( CommunicationType.Email );
+            btnMediumSMS.Visible = allowedCommunicationTypes.Contains( CommunicationType.SMS );
+
+            // only show the medium type selection if there is a choice
+            rcwMediumType.Visible = allowedCommunicationTypes.Count > 1;
+        }
+
+        /// <summary>
+        /// Loads the communication types that are configured for this block
+        /// </summary>
+        private List<CommunicationType> GetAllowedCommunicationTypes()
+        {
+            var communicationTypes = this.GetAttributeValue( "CommunicationTypes" ).SplitDelimitedValues();
+            var result = new List<CommunicationType>();
+            if ( communicationTypes.Any() )
+            {
+                // Recipient Preference,Email,SMS
+                if ( communicationTypes.Contains( "RecipientPreference" ) )
+                {
+                    result.Add( CommunicationType.RecipientPreference );
+                }
+                if ( communicationTypes.Contains( "Email" ) )
+                {
+                    result.Add( CommunicationType.Email );
+                }
+
+                if (communicationTypes.Contains( "SMS" ))
+                {
+                    result.Add( CommunicationType.SMS );
+                }
+            }
+            else
+            {
+                result.Add( CommunicationType.RecipientPreference );
+                result.Add( CommunicationType.Email );
+                result.Add( CommunicationType.SMS );
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -277,7 +327,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            // TODO
+            this.NavigateToCurrentPageReference();
         }
 
         #endregion
@@ -666,7 +716,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void ShowMediumSelection()
         {
-            pnlMediumSelection.Visible = true;
+           pnlMediumSelection.Visible = true;
         }
 
         /// <summary>
@@ -1202,6 +1252,18 @@ namespace RockWeb.Blocks.Communication
 <p>Now Is the Moment Of Truth</p>
 <p>You are about to send this communication to <strong>{0}</strong> {1}</p>
 ", sendCount, sendCountTerm.PluralizeIf( sendCount != 1 ) );
+
+
+            int maxRecipients = GetAttributeValue( "MaximumRecipients" ).AsIntegerOrNull() ?? int.MaxValue;
+            bool userCanApprove = IsUserAuthorized( "Approve" );
+            if ( sendCount > maxRecipients && !userCanApprove )
+            {
+                btnSend.Text = "Submit";
+            }
+            else
+            {
+                btnSend.Text = "Send";
+            }
         }
 
         /// <summary>
@@ -1231,6 +1293,101 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSend_Click( object sender, EventArgs e )
         {
+            if ( !ValidateSendDateTime() )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            Rock.Model.Communication communication = UpdateCommunication( rockContext );
+
+            int maxRecipients = GetAttributeValue( "MaximumRecipients" ).AsIntegerOrNull() ?? int.MaxValue;
+            bool userCanApprove = IsUserAuthorized( "Approve" );
+            var recipientCount = communication.GetRecipientCount( rockContext );
+            string message = string.Empty;
+            if ( recipientCount > maxRecipients && !userCanApprove )
+            {
+                communication.Status = CommunicationStatus.PendingApproval;
+                message = "Communication has been submitted for approval.";
+            }
+            else
+            {
+                communication.Status = CommunicationStatus.Approved;
+                communication.ReviewedDateTime = RockDateTime.Now;
+                communication.ReviewerPersonAliasId = CurrentPersonAliasId;
+
+                if ( communication.FutureSendDateTime.HasValue &&
+                               communication.FutureSendDateTime > RockDateTime.Now )
+                {
+                    message = string.Format( "Communication will be sent {0}.",
+                        communication.FutureSendDateTime.Value.ToRelativeDateString( 0 ) );
+                }
+                else
+                {
+                    message = "Communication has been queued for sending.";
+                }
+            }
+
+            rockContext.SaveChanges();
+
+            // send approval email if needed (now that we have a communication id)
+            if ( communication.Status == CommunicationStatus.PendingApproval )
+            {
+                var approvalTransaction = new Rock.Transactions.SendCommunicationApprovalEmail();
+                approvalTransaction.CommunicationId = communication.Id;
+                approvalTransaction.ApprovalPageUrl = HttpContext.Current.Request.Url.AbsoluteUri;
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( approvalTransaction );
+            }
+
+            if ( communication.Status == CommunicationStatus.Approved &&
+                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value <= RockDateTime.Now ) )
+            {
+                if ( GetAttributeValue( "SendWhenApproved" ).AsBoolean() )
+                {
+                    var transaction = new Rock.Transactions.SendCommunicationTransaction();
+                    transaction.CommunicationId = communication.Id;
+                    transaction.PersonAlias = CurrentPersonAlias;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
+            }
+
+            nbSendCommunication.NotificationBoxType = NotificationBoxType.Success;
+            nbSendCommunication.Text = string.Format( "(#TODO: Test actually sending the communication) {0}  CommunicationId={1}", message, communication.Id );
+            nbSendCommunication.Dismissable = true;
+            nbSendCommunication.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveAsDraft control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveAsDraft_Click( object sender, EventArgs e )
+        {
+            // TODO
+            if ( !ValidateSendDateTime() )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            Rock.Model.Communication communication = UpdateCommunication( rockContext );
+            communication.Status = CommunicationStatus.Draft;
+            rockContext.SaveChanges();
+            string message = "The communication has been saved";
+
+            nbSendCommunication.NotificationBoxType = NotificationBoxType.Success;
+            nbSendCommunication.Text = string.Format( "(#TODO: Test actually sending the communication) {0}  CommunicationId={1}", message, communication.Id );
+            nbSendCommunication.Dismissable = true;
+            nbSendCommunication.Visible = true;
+        }
+
+        /// <summary>
+        /// Displays a message if the send datetime is not valid, and returns true if send datetime is valid
+        /// </summary>
+        /// <returns></returns>
+        private bool ValidateSendDateTime()
+        {
             if ( dtpSendDateTimeConfirmation.Visible )
             {
                 if ( !dtpSendDateTimeConfirmation.SelectedDateTime.HasValue )
@@ -1238,18 +1395,27 @@ namespace RockWeb.Blocks.Communication
                     nbSendDateTimeWarningConfirmation.NotificationBoxType = NotificationBoxType.Danger;
                     nbSendDateTimeWarningConfirmation.Text = "Send Date Time is required";
                     nbSendDateTimeWarningConfirmation.Visible = true;
-                    return;
+                    return false;
                 }
                 else if ( dtpSendDateTimeConfirmation.SelectedDateTime.Value < RockDateTime.Now )
                 {
                     nbSendDateTimeWarningConfirmation.NotificationBoxType = NotificationBoxType.Danger;
                     nbSendDateTimeWarningConfirmation.Text = "Send Date Time must be immediate or a future date/time";
                     nbSendDateTimeWarningConfirmation.Visible = true;
+                    return false;
                 }
             }
 
-            // TODO
-            var rockContext = new RockContext();
+            return true;
+        }
+
+        /// <summary>
+        /// Updates the communication.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private Rock.Model.Communication UpdateCommunication( RockContext rockContext )
+        {
             var communicationService = new CommunicationService( rockContext );
             var communicationRecipientService = new CommunicationRecipientService( rockContext );
 
@@ -1362,19 +1528,10 @@ namespace RockWeb.Blocks.Communication
                 communication.FutureSendDateTime = dtpSendDateTimeConfirmation.SelectedDateTime;
             }
 
-            rockContext.SaveChanges();
-
-            nbSendCommunication.NotificationBoxType = NotificationBoxType.Success;
-            nbSendCommunication.Text = string.Format( "#TODO: Actually send the communication.  CommunicationId={0}", communication.Id );
-            nbSendCommunication.Dismissable = true;
-            nbSendCommunication.Visible = true;
-
+            return communication;
         }
 
-        protected void btnSaveAsDraft_Click( object sender, EventArgs e )
-        {
-            // TODO
-        }
+        
 
         protected void btnConfirmationCancel_Click( object sender, EventArgs e )
         {

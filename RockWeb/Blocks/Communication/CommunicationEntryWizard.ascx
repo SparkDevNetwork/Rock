@@ -167,16 +167,27 @@
 
                 <%-- Email Editor --%>
                 <asp:Panel ID="pnlEmailEditor" runat="server" Visible="false">
-                    <div class="pull-right">
-                        <%-- Put the email send test button in an updatepanel to avoid flicker with the email editor --%>
-                        <asp:UpdatePanel ID="upEmailSendTest" runat="server">
-                            <ContentTemplate>
-                                <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Send Test" OnClick="btnEmailSendTest_Click" />
-                                <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click" />
-                            </ContentTemplate>
-                        </asp:UpdatePanel>
-                    </div>
+                    
                     <h1 class="step-title">Email Editor</h1>
+                    <div class="row">
+                        <div class="pull-right margin-all-sm">
+                            <%-- Put the email send test and preview button in an updatepanel to avoid flicker with the email editor --%>
+                            <asp:UpdatePanel ID="upEmailSendTest" runat="server">
+                                <ContentTemplate>
+                                    <Rock:NotificationBox ID="mbEmailTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test Email has been sent." Visible="false" />
+                                    <a class="btn btn-sm btn-default js-email-sendtest" href="#">Send Test</a>
+                                    <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click" />
+                                    <div class="js-email-sendtest-inputs" style="display: none">
+                                        <Rock:RockTextBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" />
+                                        <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
+                                        <a class="btn btn-sm btn-default js-email-sendtest-cancel" href="#">Cancel</a>
+                                    </div>
+
+                                    
+                                </ContentTemplate>
+                            </asp:UpdatePanel>
+                        </div>
+                    </div>
                     <div class="emaileditor-wrapper margin-t-md">
                         <section id="emaileditor">
 			                <div id="emaileditor-designer">
@@ -808,6 +819,21 @@
                 {
                     $('.js-additional-fields').show();
                 }
+
+                $('.js-email-sendtest').off('click').on('click', function ()
+                {
+                    $(this).hide();
+                    $('#<%=btnEmailPreview.ClientID%>').hide();
+
+                    $('.js-email-sendtest-inputs').slideDown();
+                });
+
+                $('.js-email-sendtest-cancel').off('click').on('click', function ()
+                {
+                    $('.js-email-sendtest').show();
+                    $('#<%=btnEmailPreview.ClientID%>').show();
+                    $('.js-email-sendtest-inputs').hide();
+                });
 
                 $('.js-sms-sendtest').off('click').on('click', function ()
                 {
