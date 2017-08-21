@@ -67,11 +67,11 @@ namespace Rock.Model
         public int? Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the CategoryId of the <see cref="Rock.Model.Category"/> that this WorkflowType belongs to. 
+        /// Gets or sets the CategoryId of the <see cref="Rock.Model.Category"/> that this Person Bookmark belongs to. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the CategoryId of the <see cref="Rock.Model.Category"/> that the WorkflowType belongs to. 
-        /// If the WorkflowType does not belong to a category, this value will be null.
+        /// A <see cref="System.Int32"/> representing the CategoryId of the <see cref="Rock.Model.Category"/> that the Person Bookmark belongs to. 
+        /// If the Person Bookmark does not belong to a category, this value will be null.
         /// </value>
         [DataMember]
         [IncludeForReporting]
@@ -91,10 +91,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Category"/> that this WorkflowType belongs to.
+        /// Gets or sets the <see cref="Rock.Model.Category"/> that this Person Bookmark belongs to.
         /// </summary>
         /// <value>
-        /// Teh <see cref="Rock.Model.Category"/> that this WorkflowType belongs to.
+        /// Teh <see cref="Rock.Model.Category"/> that this Person Bookmark belongs to.
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
