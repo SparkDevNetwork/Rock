@@ -113,6 +113,9 @@ namespace RockWeb.Blocks.Communication
             {
                 ShowDetail( PageParameter( "CommunicationId" ).AsInteger() );
             }
+
+            // set the email preview visible = false on every load so that it doesn't stick around after previewing then navigating
+            pnlEmailPreview.Visible = false;
         }
 
         /// <summary>
@@ -262,7 +265,7 @@ namespace RockWeb.Blocks.Communication
 
             UpdateRecipientFromListCount();
 
-            btnMediumUserPreference.Attributes["data-val"] = Rock.Model.CommunicationType.UserPreference.ConvertToInt().ToString();
+            btnMediumRecipientPreference.Attributes["data-val"] = Rock.Model.CommunicationType.RecipientPreference.ConvertToInt().ToString();
             btnMediumEmail.Attributes["data-val"] = Rock.Model.CommunicationType.Email.ConvertToInt().ToString();
             btnMediumSMS.Attributes["data-val"] = Rock.Model.CommunicationType.SMS.ConvertToInt().ToString();
         }
@@ -711,7 +714,7 @@ namespace RockWeb.Blocks.Communication
             pnlMediumSelection.Visible = false;
 
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
             {
                 ShowTemplateSelection();
             }
@@ -871,7 +874,7 @@ namespace RockWeb.Blocks.Communication
 
             // The next page should be ShowEmailSummary since this is the Select Email Template Page, but just in case...
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
             {
                 ShowEmailSummary();
             }
@@ -903,7 +906,7 @@ namespace RockWeb.Blocks.Communication
         {
             pnlEmailEditor.Visible = false;
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.UserPreference )
+            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.RecipientPreference )
             {
                 ShowMobileTextEditor();
             }
@@ -933,7 +936,7 @@ namespace RockWeb.Blocks.Communication
 
         protected void btnEmailPreview_Click( object sender, EventArgs e )
         {
-            upnlContent.Update();
+            upnlEmailPreview.Update();
 
             ifEmailPreview.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
             ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
@@ -991,7 +994,7 @@ namespace RockWeb.Blocks.Communication
             pnlEmailSummary.Visible = false;
 
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.UserPreference )
+            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.RecipientPreference )
             {
                 ShowMobileTextEditor();
             }
@@ -1085,7 +1088,7 @@ namespace RockWeb.Blocks.Communication
             pnlMobileTextEditor.Visible = false;
 
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
             {
                 ShowEmailSummary();
             }
@@ -1104,7 +1107,7 @@ namespace RockWeb.Blocks.Communication
         {
             pnlMobileTextEditor.Visible = false;
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
             {
                 ShowEmailEditor();
             }
@@ -1211,7 +1214,7 @@ namespace RockWeb.Blocks.Communication
             pnlConfirmation.Visible = false;
 
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.UserPreference )
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
             {
                 ShowEmailEditor();
             }

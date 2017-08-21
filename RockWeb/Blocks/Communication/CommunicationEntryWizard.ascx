@@ -102,14 +102,14 @@
                             <div class="js-mediumtype">
                                 <Rock:HiddenFieldWithClass ID="hfMediumType" CssClass="js-hidden-selected" runat="server" />
                                 <div class="btn-group">
-                                    <a id="btnMediumUserPreference" runat="server" class="btn btn-info btn-sm active js-medium-userpreference" data-val="0" >User Preference</a>
+                                    <a id="btnMediumRecipientPreference" runat="server" class="btn btn-info btn-sm active js-medium-recipientpreference" data-val="0" >Recipient Preference</a>
                                     <a id="btnMediumEmail" runat="server" class="btn btn-default btn-sm" data-val="1" >Email</a>
                                     <a id="btnMediumSMS" runat="server" class="btn btn-default btn-sm" data-val="2" >SMS</a>
                                 </div>
                             </div>
                         </div>
 
-                        <Rock:NotificationBox ID="nbUserPreferenceInfo" runat="server" CssClass="margin-t-md js-medium-userpreference-notification" NotificationBoxType="Info" Title="Heads Up!" Text="Selecting 'User Preference' will require adding content for all active mediums." />
+                        <Rock:NotificationBox ID="nbRecipientPreferenceInfo" runat="server" CssClass="margin-t-md js-medium-recipientpreference-notification" NotificationBoxType="Info" Title="Heads Up!" Text="Selecting 'Recipient Preference' will require adding content for all active mediums." />
                     </Rock:RockControlWrapper>
 
                     <div class="row margin-b-md">
@@ -172,7 +172,7 @@
                         <asp:UpdatePanel ID="upEmailSendTest" runat="server">
                             <ContentTemplate>
                                 <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Send Test" OnClick="btnEmailSendTest_Click" />
-                                <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click"  />
+                                <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click" />
                             </ContentTemplate>
                         </asp:UpdatePanel>
                     </div>
@@ -582,24 +582,29 @@
                     
                 </asp:Panel>
 
-                <asp:Panel ID="pnlEmailPreview" runat="server" Visible="false">
-                    <Rock:ModalDialog ID="mdEmailPreview" runat="server" Title="Email Preview">
-                        <Content>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    ## TODO ## Options for what type of email client to emulate?
-                                </div>
-                                <div class="col-md-6">
+                <asp:UpdatePanel ID="upnlEmailPreview" runat="server" UpdateMode="Conditional" >
+                    <ContentTemplate>
+                        <asp:Panel ID="pnlEmailPreview" runat="server" Visible="false">
+                            <Rock:ModalDialog ID="mdEmailPreview" runat="server" Title="Email Preview">
+                                <Content>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            ## TODO ## Options for what type of email client to emulate?
+                                        </div>
+                                        <div class="col-md-6">
 
-                                </div>
-                            </div>
-                            <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview">
-                                <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe js-emailpreview-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
-                            </div>
-                        </Content>
+                                        </div>
+                                    </div>
+                                    <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview">
+                                        <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe js-emailpreview-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
+                                    </div>
+                                </Content>
 
-                    </Rock:ModalDialog>
-                </asp:Panel>
+                            </Rock:ModalDialog>
+                        </asp:Panel>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+                
 
                 <%-- Email Summary --%>
                 <asp:Panel ID="pnlEmailSummary" runat="server" Visible="false">
@@ -758,6 +763,11 @@
                 if ($('#<%=pnlEmailPreview.ClientID%>').length) {
                     var $emailPreviewIframe = $('.js-emailpreview-iframe');
 
+                    var $previewModal = $emailPreviewIframe.closest('.modal-content');
+
+                    // set opacity to 0 to hide flicker when loading
+                    $previewModal.fadeTo(0, 0);
+
                     $emailPreviewIframe.height('auto');
 
                     $emailPreviewIframe.load(function ()
@@ -773,6 +783,11 @@
                         }
 
                         $('#<%=pnlEmailPreviewContainer.ClientID%>').height(newHeight);
+                        
+                        if ($previewModal.is(':visible')) {
+                            // set opacity back to 1 now that it is loaded and sized
+                            $previewModal.fadeTo(0, 1);
+                        }
                     });
                 }
 
@@ -916,6 +931,8 @@
                     });
                 };
 
+                $('#<%=pnlEmailEditor.ClientID%>').fadeTo(0, 0);
+
                 $editorIframe.load(function ()
                 {
                     frames['emaileditor-iframe'].document.head.appendChild(jqueryLoaderScript);
@@ -930,6 +947,7 @@
                     var editorMarkup = $('#editor-controls').contents();
 
                     $(contents).find('body').prepend(editorMarkup);
+                    $('#<%=pnlEmailEditor.ClientID%>').fadeTo(0, 1);
                 });
 
                 if ($editorIframe.length) {
@@ -1042,10 +1060,10 @@
 			    $activeBtn.siblings('.btn').removeClass('active').removeClass('btn-info').addClass('btn-default')
 			    $activeBtn.closest('.btn-group').siblings('.js-hidden-selected').val($activeBtn.data('val'));
 
-			    if ($('.js-medium-userpreference').hasClass('active')) {
-			        $('.js-medium-userpreference-notification').show();
+			    if ($('.js-medium-recipientpreference').hasClass('active')) {
+			        $('.js-medium-recipientpreference-notification').show();
 			    } else {
-			        $('.js-medium-userpreference-notification').hide();
+			        $('.js-medium-recipientpreference-notification').hide();
 			    }
 			}
 
