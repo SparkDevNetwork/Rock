@@ -269,9 +269,30 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ToCssClass( string input )
         {
-            return input == null
-                ? input
-                : input.ToLower().Replace( " ", "-" );
+            // list from: https://mathiasbynens.be/notes/css-escapes
+            Regex ex = new Regex( @"[&*!""#$%'()+,.\/:;<=>?@\[\]\^`{\|}~\s]");
+
+            if (input == null )
+            {
+                return input;
+            }
+
+            // replace unsupported characters
+            input = ex.Replace( input, "-" ).ToLower();
+
+            // remove duplicate instances of dashes (cleanliness is next to... well... it's good)
+            input = Regex.Replace( input, "-+", "-" );
+
+            // ensure the class name is valid (starts with a letter or - or _ and is at least 2 characters
+            // if not add a x- to correct it and note that it is non-stanard
+
+            ex = new Regex( "-?[_a-zA-Z]+[_a-zA-Z0-9-]*");
+            if ( !ex.IsMatch( input ) )
+            {
+                input = "-x-" + input;
+            }
+            
+            return input;
         }
 
         /// <summary>
