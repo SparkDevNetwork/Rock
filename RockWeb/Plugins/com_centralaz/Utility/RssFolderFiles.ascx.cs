@@ -46,7 +46,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
     [Category( "com_centralaz > Utility" )]
     [Description( "Creates an RSS feed of the items in the requested folder.  For use with RiseVision." )]
     [TextField( "Base Content Folder", "The base content folder (under the ~/Content folder) where the requested folders are found.", true, @"External Site\CampusAnnouncements" )]
-    [MemoField( "RSS Template", "Don't change this unless you know what you're doing.", true, @"{% assign timezone = 'Now' | Date:'zzz' | Replace:':','' -%}
+    [MemoField( "RSS Template", "Don't change this unless you know what you're doing.", false, @"{% assign timezone = 'Now' | Date:'zzz' | Replace:':','' -%}
 <?xml version='1.0' encoding='utf-8'?>
 <rss version='2.0' xmlns:atom='http://www.w3.org/2005/Atom'>
 
@@ -61,18 +61,10 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 {% for item in Items -%}
     <item>
         <title>{{ item.Title }}</title>
-        <guid>{{ Channel.ItemUrl }}/{{ item.Title }}</guid>
-        <link>{{ item.Permalink }}</link>
-        <enclosure type='{{ item.EnclosureContentType }}' url='{{ item.Permalink }}' length='0' />
+        <guid isPermaLink='false'>{{ Channel.ItemUrl | Replace:' ','%20'  }}/{{ item.Title | Replace:' ','%20' }}</guid>
+        <link>{{ item.Permalink | Replace:' ','%20' }}</link>
+        <enclosure type='{{ item.EnclosureContentType }}' url='{{ item.Permalink | Replace:' ','%20' }}' length='0' />
         <pubDate>{{ item.StartDateTime | Date:'ddd, dd MMM yyyy HH:mm:00' }} {{ timezone }}</pubDate>
-        <description></description>
-         <media:group>
-            <media:content url='{{ item.EnclosureUrl }}' type='{{ item.EnclosureContentType }}' medium='image' />
-            <media:credit></media:credit>
-            <media:description type='plain' />
-            <media:keywords />
-            <media:title type='plain'></media:title>
-         </media:group>
     </item>
 {% endfor -%}
 
