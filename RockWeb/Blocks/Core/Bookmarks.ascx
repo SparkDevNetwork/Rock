@@ -166,7 +166,9 @@
         scrollControl.tinyscrollbar_update('relative');
     }
 
-   
+    function clearBookmarkCache() {
+        sessionStorage.clear();
+    }
 
     function iconClick() {
 

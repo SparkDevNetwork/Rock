@@ -148,6 +148,10 @@ namespace RockWeb.Blocks.Core
             rockContext.SaveChanges();
 
             SetAddMode( false );
+            string script = @"
+            clearBookmarkCache();
+            bookmarkTree();";
+            ScriptManager.RegisterStartupScript( btnCancel, btnCancel.GetType(), "myScript", script, true );
         }
 
         /// <summary>
