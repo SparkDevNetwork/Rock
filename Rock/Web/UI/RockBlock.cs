@@ -752,9 +752,12 @@ namespace Rock.Web.UI
         {
             var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
-            foreach ( var qryParam in additionalQueryParameters )
+            if ( additionalQueryParameters != null )
             {
-                pageReference.QueryString[qryParam.Key] = qryParam.Value;
+                foreach ( var qryParam in additionalQueryParameters )
+                {
+                    pageReference.QueryString[qryParam.Key] = qryParam.Value;
+                }
             }
 
             return NavigateToPage( pageReference );
