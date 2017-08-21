@@ -1158,7 +1158,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 if ( workPhone != null )
                 {
                     reservation.AdministrativeContactPhone = workPhone.NumberFormatted;
-                    reservation.EventContactPhone = workPhone.NumberFormatted;
                 }
                 else
                 {
@@ -1168,7 +1167,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     if ( mobilePhone != null )
                     {
                         reservation.AdministrativeContactPhone = mobilePhone.NumberFormatted;
-                        reservation.EventContactPhone = mobilePhone.NumberFormatted;
                     }
                 }
 
@@ -1321,7 +1319,28 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 {
                     pnlEditApprovalState.Visible = false;
                     pnlReadApprovalState.Visible = true;
-                    lApprovalState.Text = reservation.ApprovalState.ConvertToString();
+                    lApprovalState.Text = hlStatus.Text = reservation.ApprovalState.ConvertToString();
+                    switch ( reservation.ApprovalState )
+                    {
+                        case ReservationApprovalState.Approved:
+                            hlStatus.LabelType = LabelType.Success;
+                            break;
+                        case ReservationApprovalState.Denied:
+                            hlStatus.LabelType = LabelType.Danger;
+                            break;
+                        case ReservationApprovalState.PendingReview:
+                            hlStatus.LabelType = LabelType.Warning;
+                            break;
+                        case ReservationApprovalState.Unapproved:
+                            hlStatus.LabelType = LabelType.Warning;
+                            break;
+                        case ReservationApprovalState.ChangesNeeded:
+                            hlStatus.LabelType = LabelType.Info;
+                            break;
+                        default:
+                            hlStatus.LabelType = LabelType.Default;
+                            break;
+                    }
                 }
             }
 
@@ -1640,7 +1659,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
             }
 
-            if ( reservation.ApprovalState == ReservationApprovalState.Unapproved || reservation.ApprovalState == ReservationApprovalState.PendingReview )
+            if ( reservation.ApprovalState == ReservationApprovalState.Unapproved || reservation.ApprovalState == ReservationApprovalState.PendingReview || reservation.ApprovalState == ReservationApprovalState.ChangesNeeded )
             {
                 if ( reservation.ReservationLocations.All( rl => rl.ApprovalState == ReservationLocationApprovalState.Approved ) && reservation.ReservationResources.All( rr => rr.ApprovalState == ReservationResourceApprovalState.Approved ) )
                 {
