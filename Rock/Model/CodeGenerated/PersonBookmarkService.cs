@@ -25,7 +25,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Following item, out string errorMessage )
+        public bool CanDelete( PersonBookmark item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -38,7 +38,7 @@ namespace Rock.Model
     public static partial class PersonBookmarkExtensionMethods
     {
         /// <summary>
-        /// Clones this Following object to a new Following object
+        /// Clones this PersonBookmark object to a new PersonBookmark object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
@@ -58,7 +58,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another Following object to this Following object
+        /// Copies the properties from another PersonBookmark object to this PersonBookmark object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
