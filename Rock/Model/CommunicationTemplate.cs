@@ -288,7 +288,7 @@ namespace Rock.Model
                     var component = serviceEntry.Value.Value;
                     if ( component.IsActive &&
                         ( this.CommunicationType == component.CommunicationType ||
-                         this.CommunicationType == CommunicationType.UserPreference ) )
+                         this.CommunicationType == CommunicationType.RecipientPreference ) )
                     {
                         mediums.Add( component );
                     }

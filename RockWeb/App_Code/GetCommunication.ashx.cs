@@ -132,7 +132,7 @@ namespace RockWeb
         {
             var sb = new StringBuilder();
 
-            if ( communication.CommunicationType == CommunicationType.Email || communication.CommunicationType == CommunicationType.UserPreference )
+            if ( communication.CommunicationType == CommunicationType.Email || communication.CommunicationType == CommunicationType.RecipientPreference )
             {
                 string body = communication.Message.ResolveMergeFields( mergeFields, communication.EnabledLavaCommands );
                 body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
