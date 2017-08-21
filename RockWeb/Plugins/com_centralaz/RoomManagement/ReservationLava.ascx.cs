@@ -66,7 +66,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
     [TextField( "Font Awesome Ttf", "URL to the FontAwesome ttf to use for checkmarks in the printed report", true, "~/Assets/Fonts/FontAwesome/fontawesome-webfont.ttf", "", 0 )]
 
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 14 )]
-
     public partial class ReservationLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -116,6 +115,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             base.OnInit( e );
 
             _firstDayOfWeek = GetAttributeValue( "StartofWeekDay" ).ConvertToEnum<DayOfWeek>();
+
+            lVersionText.Text = com.centralaz.RoomManagement.VersionInfo.GetPluginProductVersionNumber();
 
             CampusPanelOpen = GetAttributeValue( "CampusFilterDisplayMode" ) == "3";
             CampusPanelClosed = GetAttributeValue( "CampusFilterDisplayMode" ) == "4";

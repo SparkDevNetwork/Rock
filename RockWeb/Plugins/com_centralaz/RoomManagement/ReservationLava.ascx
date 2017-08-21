@@ -105,6 +105,7 @@
                 <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Select Range" />
                 <asp:LinkButton ID="lbDateRangeRefresh" runat="server" CssClass="btn btn-default btn-sm" Text="Refresh" OnClick="lbDateRangeRefresh_Click" />
 
+                <small class="text-muted">v<asp:Literal ID="lVersionText" runat ="server"></asp:Literal></small>
             </asp:Panel>
 
             <asp:Panel ID="pnlList" CssClass="col-md-9" runat="server">

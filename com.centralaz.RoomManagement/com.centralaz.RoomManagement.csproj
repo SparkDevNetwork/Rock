@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -23,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -118,6 +120,7 @@
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="SystemGuid\Group.cs" />
     <Compile Include="Transactions\ReservationChangeTransaction.cs" />
+    <Compile Include="VersionInfo.cs" />
     <Compile Include="Web\Cache\ReservationMinistryCache.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ReservationPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ScheduledLocationItemPicker.cs" />
@@ -160,6 +163,8 @@
   <PropertyGroup>
     <BuildDir>builds</BuildDir>
   </PropertyGroup>
+  <Target Name="BeforeBuild" DependsOnTargets="UpdateAssemblyVersion">
+  </Target>
   <Target Name="AfterBuild" DependsOnTargets="BuildPackageZip">
   </Target>
   <!-- Clean old stuff -->
@@ -194,11 +199,10 @@
       <ZipFiles Include="$(BuildDir)\tmp\**" />
     </ItemGroup>
     <!-- 
-    	When creating a new version of this project, update the Build number 
-    	(and Major and Minor if needed) in the .version file to be the correct version.
-    	The revision number will always be automatic.
+    	We're not incrementing here (only reading the version) because it should have already
+      been incremented during the BeforeBuild tasks.
     -->
-    <Version VersionFile="builds\.version" BuildType="None" RevisionType="Increment">
+    <Version VersionFile="builds\.version" BuildType="None" RevisionType="None">
       <Output TaskParameter="Major" PropertyName="Major" />
       <Output TaskParameter="Minor" PropertyName="Minor" />
       <Output TaskParameter="Build" PropertyName="Build" />
@@ -217,5 +221,30 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
+  </Target>
+  <Target Name="UpdateAssemblyVersion" Condition="'$(Configuration)' == 'Release'">
+    <!-- 
+    	When creating a new version of this project, update the Build number 
+    	(and Major and Minor if needed) in the .version file to be the correct version.
+    	The revision number will always be automatic.
+    -->
+    <!-- 
+      We'll increment the version number only during the "BeforeBuild" and then use this
+      new version number during the "AfterBuild" step for the zip and plugin packaging. 
+    -->
+    <Version VersionFile="builds\.version" BuildType="None" RevisionType="Increment">
+      <Output TaskParameter="Major" PropertyName="Major" />
+      <Output TaskParameter="Minor" PropertyName="Minor" />
+      <Output TaskParameter="Build" PropertyName="Build" />
+      <Output TaskParameter="Revision" PropertyName="Revision" />
+    </Version>
+    <ItemGroup>
+      <!--<AssemblyFile Include="Properties\AssemblyInfo.cs" />-->
+      <RegexTransform Include="Properties\AssemblyInfo.cs">
+        <Find>(?&lt;major&gt;\d+)\.(?&lt;minor&gt;\d+)\.\d+\.(?&lt;revision&gt;\d+)</Find>
+        <ReplaceWith>$(Major).$(Minor).$(Build).$(Revision)</ReplaceWith>
+      </RegexTransform>
+    </ItemGroup>
+    <RegexTransform Items="@(RegexTransform)" />
   </Target>
 </Project>
