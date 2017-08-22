@@ -41,7 +41,25 @@ namespace Rock.Web.UI.Controls
 
         protected string _rowLabel;
 
-        //protected bool Enable
+        /// <summary>
+        /// Gets or sets a value indicating whether to enable checkin options.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if enabled or not set; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableCheckinOptions
+        {
+            get
+            {
+                bool? b = ViewState["EnableCheckinOptions"] as bool?;
+                return ( b == null ) ? true : b.Value;
+            }
+
+            set
+            {
+                ViewState["EnableCheckinOptions"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets the group type unique identifier.
@@ -99,7 +117,7 @@ namespace Rock.Web.UI.Controls
 
             if ( Page.IsPostBack )
             {
-                //HandleGridEvents();
+                HandleGridEvents();
             }
         }
 
@@ -117,6 +135,14 @@ namespace Rock.Web.UI.Controls
             ViewState["InheritedGroupTypeId"] = _ddlGroupTypeInheritFrom.SelectedValueAsId();
 
             return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Handles the grid events.
+        /// </summary>
+        private void HandleGridEvents()
+        {
+            EnsureChildControls();
         }
 
         /// <summary>
@@ -158,10 +184,10 @@ namespace Rock.Web.UI.Controls
             {
                 GroupTypeGuid = groupType.Guid;
                 _tbGroupTypeName.Text = groupType.Name;
-                                                                                                  
-                if ( groupType.GroupTypePurposeValue != null && groupType.GroupTypePurposeValue.Guid == Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() )
+                _ddlGroupTypeInheritFrom.SetValue( groupType.InheritedGroupTypeId );
+
+                if ( EnableCheckinOptions )
                 {
-                    _ddlGroupTypeInheritFrom.SetValue( groupType.InheritedGroupTypeId );
                     _ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
                     _ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
                 }
@@ -204,28 +230,45 @@ namespace Rock.Web.UI.Controls
             {
                 _ddlGroupTypeInheritFrom.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
             }
+
             _ddlGroupTypeInheritFrom.AutoPostBack = true;
             _ddlGroupTypeInheritFrom.SelectedIndexChanged += _ddlGroupTypeInheritFrom_SelectedIndexChanged;
-            _ddlAttendanceRule = new RockDropDownList();
-            _ddlAttendanceRule.ID = this.ID + "_ddlAttendanceRule";
-            _ddlAttendanceRule.Label = "Check-in Rule";
-            _ddlAttendanceRule.Help = "The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in.";
-            _ddlAttendanceRule.BindToEnum<Rock.Model.AttendanceRule>();
-
-            _ddlPrintTo = new RockDropDownList();
-            _ddlPrintTo.ID = this.ID + "_ddlPrintTo";
-            _ddlPrintTo.Label = "Print To";
-            _ddlPrintTo.Help = "When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similar setting which takes precedence over this setting.";
-            _ddlPrintTo.Items.Add( new ListItem( "Device Printer", "1" ) );
-            _ddlPrintTo.Items.Add( new ListItem( "Location Printer", "2" ) );
 
             _phGroupTypeAttributes = new PlaceHolder();
             _phGroupTypeAttributes.ID = this.ID + "_phGroupTypeAttributes";
 
+            if ( EnableCheckinOptions )
+            {
+                _ddlAttendanceRule = new RockDropDownList();
+                _ddlAttendanceRule.ID = this.ID + "_ddlAttendanceRule";
+                _ddlAttendanceRule.Label = "Check-in Rule";
+                _ddlAttendanceRule.Help = "The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in.";
+                _ddlAttendanceRule.BindToEnum<Rock.Model.AttendanceRule>();
+
+                _ddlPrintTo = new RockDropDownList();
+                _ddlPrintTo.ID = this.ID + "_ddlPrintTo";
+                _ddlPrintTo.Label = "Print To";
+                _ddlPrintTo.Help = "When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similar setting which takes precedence over this setting.";
+                _ddlPrintTo.Items.Add( new ListItem( "Device Printer", "1" ) );
+                _ddlPrintTo.Items.Add( new ListItem( "Location Printer", "2" ) );
+            }
+            else
+            {
+                _ddlGroupTypeInheritFrom.Visible = false;
+                //_ddlGroupTypeInheritFrom.Enabled = false;
+                _ddlPrintTo.Visible = false;
+                //_ddlPrintTo.Enabled = false;
+            }
+
             Controls.Add( _lblGroupTypeName );
             Controls.Add( _ddlGroupTypeInheritFrom );
-            Controls.Add( _ddlAttendanceRule );
-            Controls.Add( _ddlPrintTo );
+
+            if ( EnableCheckinOptions )
+            {
+                Controls.Add( _ddlAttendanceRule );
+                Controls.Add( _ddlPrintTo );
+            }
+
             Controls.Add( _tbGroupTypeName );
             Controls.Add( _phGroupTypeAttributes );
         }
@@ -246,8 +289,12 @@ namespace Rock.Web.UI.Controls
 
                 _tbGroupTypeName.RenderControl( writer );
                 _ddlGroupTypeInheritFrom.RenderControl( writer );
-                _ddlAttendanceRule.RenderControl( writer );
-                _ddlPrintTo.RenderControl( writer );
+
+                if ( EnableCheckinOptions )
+                {
+                    _ddlAttendanceRule.RenderControl( writer );
+                    _ddlPrintTo.RenderControl( writer );
+                }
 
                 _phGroupTypeAttributes.RenderControl( writer );
             }
@@ -270,6 +317,8 @@ namespace Rock.Web.UI.Controls
                 {
                     groupType.LoadAttributes( rockContext );
                 }
+
+                Rock.Attribute.Helper.AddEditControls( groupType, _phGroupTypeAttributes, true, string.Empty );
             }
         }
 

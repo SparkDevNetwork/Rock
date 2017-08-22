@@ -288,7 +288,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _phGroupAttributes );
 
             // Locations Grid
-            //CreateLocationsGrid();
+            CreateLocationsGrid();
         }
 
         /// <summary>

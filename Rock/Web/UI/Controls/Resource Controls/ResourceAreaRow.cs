@@ -85,17 +85,77 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to enable adding areas.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable adding area]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableAddAreas
+        {
+            get
+            {
+                bool? b = ViewState["EnableAddAreas"] as bool?;
+                return ( b == null ) ? false : b.Value;
+            }
+
+            set
+            {
+                ViewState["EnableAddAreas"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to enable adding groups.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if enabled or not set; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableAddGroups
+        {
+            get
+            {
+                bool? b = ViewState["EnableAddGroups"] as bool?;
+                return ( b == null ) ? true : b.Value;
+            }
+
+            set
+            {
+                ViewState["EnableAddGroups"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to enable checkin options.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if enabled or not set; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableCheckinOptions
+        {
+            get
+            {
+                bool? b = ViewState["EnableCheckinOptions"] as bool?;
+                return ( b == null ) ? true : b.Value;
+            }
+
+            set
+            {
+                ViewState["EnableCheckinOptions"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="ResourceAreaRow"/> is expanded.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if expanded; otherwise, <c>false</c>.
+        ///   <c>true</c> if enabled or not set; otherwise, <c>false</c>.
         /// </value>
         public bool Expanded
         {
             get
             {
                 EnsureChildControls();
-                return _hfExpanded.Value.AsBooleanOrNull() ?? false;
+                return _hfExpanded.Value.AsBooleanOrNull() ?? true;
             }
 
             set
@@ -179,31 +239,38 @@ $('.resource-area a.resource-area-add-group').click(function (event) {
             _hfGroupTypeGuid = new HiddenField();
             _hfGroupTypeGuid.ID = this.ID + "_hfGroupTypeGuid";
 
+            Controls.Add( _hfGroupTypeGuid );
+
             _lblAreaRowName = new Label();
             _lblAreaRowName.ClientIDMode = ClientIDMode.Static;
             _lblAreaRowName.ID = this.ID + "_lblAreaRowName";
 
-            _lbAddArea = new LinkButton();
-            _lbAddArea.ID = this.ID + "_lblbAddArea";
-            _lbAddArea.CssClass = "btn btn-xs btn-default resource-area-add-area";
-            _lbAddArea.Click += lbAddArea_Click;
-            _lbAddArea.CausesValidation = false;
-            _lbAddArea.ToolTip = "Add New Area";
-            _lbAddArea.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-folder-open'></i>" } );
-
-            _lbAddGroup = new LinkButton();
-            _lbAddGroup.ID = this.ID + "_lbAddGroup";
-            _lbAddGroup.CssClass = "btn btn-xs btn-default resource-area-add-group";
-            _lbAddGroup.Click += lbAddGroup_Click;
-            _lbAddGroup.CausesValidation = false;
-            _lbAddGroup.ToolTip = "Add New Group";
-            _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-check-circle'></i>" } );
-
-            Controls.Add( _hfGroupTypeGuid );
             Controls.Add( _lblAreaRowName );
 
-            Controls.Add( _lbAddArea );
-            Controls.Add( _lbAddGroup );
+            if ( EnableAddAreas )
+            {
+                _lbAddArea = new LinkButton();
+                _lbAddArea.ID = this.ID + "_lblbAddArea";
+                _lbAddArea.CssClass = "btn btn-xs btn-default resource-area-add-area";
+                _lbAddArea.Click += lbAddArea_Click;
+                _lbAddArea.CausesValidation = false;
+                _lbAddArea.ToolTip = "Add New Area";
+                _lbAddArea.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-folder-open'></i>" } );
+                Controls.Add( _lbAddArea );
+            }
+
+            if ( EnableAddGroups )
+            {
+                _lbAddGroup = new LinkButton();
+                _lbAddGroup.ID = this.ID + "_lbAddGroup";
+                _lbAddGroup.CssClass = "btn btn-xs btn-default resource-area-add-group";
+                _lbAddGroup.Click += lbAddGroup_Click;
+                _lbAddGroup.CausesValidation = false;
+                _lbAddGroup.ToolTip = "Add New Group";
+                _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-check-circle'></i>" } );
+
+                Controls.Add( _lbAddGroup );
+            }
         }
 
         /// <summary>
@@ -230,9 +297,9 @@ $('.resource-area a.resource-area-add-group').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right resource-item-actions rollover-item" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            _lbAddArea.RenderControl( writer );
+            _lbAddArea?.RenderControl( writer );
             writer.Write( " " );
-            _lbAddGroup.RenderControl( writer );
+            _lbAddGroup?.RenderControl( writer );
 
             writer.RenderEndTag();  // Div
             writer.RenderEndTag();  // Section
