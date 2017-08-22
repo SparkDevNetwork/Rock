@@ -628,7 +628,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             if ( reservationResource == null )
             {
                 reservationResource = new ReservationResource();
-                reservationResource.ApprovalState = ReservationResourceApprovalState.Unapproved;
             }
 
             try
@@ -637,6 +636,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
             catch { }
 
+            reservationResource.ApprovalState = ReservationResourceApprovalState.Unapproved;
             reservationResource.ResourceId = srpResource.SelectedValueAsId().Value;
             reservationResource.Quantity = nbQuantity.Text.AsInteger();
             reservationResource.ReservationId = 0;
@@ -876,7 +876,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             if ( reservationLocation == null )
             {
                 reservationLocation = new ReservationLocation();
-                reservationLocation.ApprovalState = ReservationLocationApprovalState.Unapproved;
             }
 
             try
@@ -885,6 +884,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
             catch { }
 
+            reservationLocation.ApprovalState = ReservationLocationApprovalState.Unapproved;
             reservationLocation.LocationId = slpLocation.SelectedValueAsId().Value;
             reservationLocation.ReservationId = 0;
 
@@ -974,6 +974,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             ReservationLocation reservationLocation = LocationsState.FirstOrDefault( l => l.Guid.Equals( reservationLocationGuid ) );
             if ( reservationLocation != null )
             {
+                reservationLocation.ApprovalState = ReservationLocationApprovalState.Unapproved;
                 slpLocation.SetValue( reservationLocation.LocationId );
                 LoadLocationImage();
             }
@@ -1615,8 +1616,13 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     }
                     else
                     {
+                        reservation.ApprovalState = ReservationApprovalState.Unapproved;
                         groupGuidList.Add( reservationResource.Resource.ApprovalGroup.Guid );
                     }
+                }
+                else if ( reservationResource.ApprovalState == ReservationResourceApprovalState.Denied )
+                {
+                    reservation.ApprovalState = ReservationApprovalState.ChangesNeeded;
                 }
             }
 
@@ -1654,8 +1660,13 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     }
                     else
                     {
+                        reservation.ApprovalState = ReservationApprovalState.Unapproved;
                         groupGuidList.Add( approvalGroupGuid.Value );
                     }
+                }
+                else if ( reservationLocation.ApprovalState == ReservationLocationApprovalState.Denied )
+                {
+                    reservation.ApprovalState = ReservationApprovalState.ChangesNeeded;
                 }
             }
 
