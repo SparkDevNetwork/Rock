@@ -16,24 +16,23 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.ComponentModel;
-using System.IO;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using System.Text;
-using Rock.Web.UI;
 using Rock.Security;
-using System.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -73,10 +72,14 @@ namespace RockWeb.Blocks.Communication
                     recipients = new List<int>();
                     ViewState["IndividualRecipientPersonIds"] = recipients;
                 }
+
                 return recipients;
             }
 
-            set { ViewState["IndividualRecipientPersonIds"] = value; }
+            set
+            {
+                ViewState["IndividualRecipientPersonIds"] = value;
+            }
         }
 
         #endregion
@@ -174,7 +177,7 @@ namespace RockWeb.Blocks.Communication
             ddlCommunicationGroupList.SetValue( communication.ListGroupId );
 
             var segmentDataviewGuids = communication.Segments.SplitDelimitedValues().AsGuidList();
-            if ( segmentDataviewGuids.Any())
+            if ( segmentDataviewGuids.Any() )
             {
                 var segmentDataviewIds = new DataViewService( rockContext ).GetByGuids( segmentDataviewGuids ).Select( a => a.Id ).ToList();
                 cblCommunicationGroupSegments.SetValues( segmentDataviewIds );
@@ -199,7 +202,6 @@ namespace RockWeb.Blocks.Communication
             dtpSendDateTime.SelectedDateTime = communication.FutureSendDateTime;
             tglSendDateTime_CheckedChanged( null, null );
 
-
             // TODO 
             // 1) when editing an existing communication, do we know which template they used?  
             // 2) when editing an existing communication, can they change which template to use? (what do we do on the Select Template page, skip it?)??
@@ -218,7 +220,7 @@ namespace RockWeb.Blocks.Communication
 
             tbEmailSubject.Text = communication.Subject;
 
-            // NOTE: tbEmailPreview will be populated by parsing the Html of the Email/Template
+            //// NOTE: tbEmailPreview will be populated by parsing the Html of the Email/Template
 
             hfAttachedBinaryFileIds.Value = communication.AttachmentBinaryFileIds != null ? communication.AttachmentBinaryFileIds.ToList().AsDelimited( "," ) : string.Empty;
 
@@ -300,12 +302,13 @@ namespace RockWeb.Blocks.Communication
                 {
                     result.Add( CommunicationType.RecipientPreference );
                 }
+
                 if ( communicationTypes.Contains( "Email" ) )
                 {
                     result.Add( CommunicationType.Email );
                 }
 
-                if (communicationTypes.Contains( "SMS" ))
+                if ( communicationTypes.Contains( "SMS" ) )
                 {
                     result.Add( CommunicationType.SMS );
                 }
@@ -389,7 +392,6 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
             }
-
 
             pnlCommunicationGroupSegments.Visible = cblCommunicationGroupSegments.Items.Count > 0;
         }
@@ -563,8 +565,6 @@ namespace RockWeb.Blocks.Communication
                 lRecipientAlertEmail.Text = string.Format( "<span class=\"{0}\">{1}</span>", alertClassEmail, alertMessageEmail );
                 lRecipientAlertSMS.Text = string.Format( "<span class=\"{0}\">{1}</span>", alertClassSMS, alertMessageSMS );
             }
-
-
         }
 
         /// <summary>
@@ -684,7 +684,6 @@ namespace RockWeb.Blocks.Communication
                         }
                         else
                         {
-
                             if ( segmentFilterType == SegmentCriteria.All )
                             {
                                 segmentExpression = Expression.AndAlso( segmentExpression, exp );
@@ -716,7 +715,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void ShowMediumSelection()
         {
-           pnlMediumSelection.Visible = true;
+            pnlMediumSelection.Visible = true;
         }
 
         /// <summary>
@@ -809,10 +808,39 @@ namespace RockWeb.Blocks.Communication
             var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().OrderBy( a => a.Name );
 
             // get list of templates that the current user is authorized to View
-            var templateList = templateQuery.AsNoTracking().ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
+            IEnumerable<CommunicationTemplate> templateList = templateQuery.AsNoTracking().ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
+
+            // limit to v7+ templates
+            templateList = templateList.Where( a => TemplateHasDropzoneDivs( a ) );
 
             rptSelectTemplate.DataSource = templateList;
             rptSelectTemplate.DataBind();
+        }
+
+        /// <summary>
+        /// Determines if the templates the has dropzone divs (which means it is a v7+ compatible template)
+        /// </summary>
+        /// <param name="communicationTemplate">The communication template.</param>
+        /// <returns></returns>
+        private bool TemplateHasDropzoneDivs( CommunicationTemplate communicationTemplate )
+        {
+            string templateHtml;
+            if ( string.IsNullOrEmpty( communicationTemplate.Message ) )
+            {
+                // TODO, shouldn't need to do this after CommunicationTemplateDetails block is fixed up
+                templateHtml = communicationTemplate.MediumData["HtmlMessage"];
+            }
+            else
+            {
+                templateHtml = communicationTemplate.Message;
+            }
+
+            // See if the template supports preview-text
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( templateHtml );
+            var hasDropzones = templateDoc.DocumentNode.Descendants( "div" ).Where( a => a.GetAttributeValue( "class", string.Empty ).Split( new char[] { ' ' } ).Any( c => c == "dropzone" ) ).Any();
+
+            return hasDropzones;
         }
 
         /// <summary>
@@ -838,7 +866,7 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    lTemplateImagePreview.Text = string.Format("<img src='{0}'/>", this.ResolveRockUrl( "~/Assets/Images/communication-template-default.svg"));
+                    lTemplateImagePreview.Text = string.Format( "<img src='{0}'/>", this.ResolveRockUrl( "~/Assets/Images/communication-template-default.svg" ) );
                 }
 
                 lTemplateName.Text = communicationTemplate.Name;
@@ -855,7 +883,6 @@ namespace RockWeb.Blocks.Communication
                     btnSelectTemplate.RemoveCssClass( "template-selected" );
                 }
             }
-
         }
 
         /// <summary>
@@ -979,11 +1006,21 @@ namespace RockWeb.Blocks.Communication
             ShowConfirmation();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnEmailSendTest control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailSendTest_Click( object sender, EventArgs e )
         {
-           // upnlContent.Update();
+            // upnlContent.Update();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnEmailPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailPreview_Click( object sender, EventArgs e )
         {
             upnlEmailPreview.Update();
@@ -1248,11 +1285,12 @@ namespace RockWeb.Blocks.Communication
                 sendCount = this.IndividualRecipientPersonIds.Count();
             }
 
-            lblConfirmationSendHtml.Text = string.Format( @"
-<p>Now Is the Moment Of Truth</p>
+            lblConfirmationSendHtml.Text = string.Format(
+@"<p>Now Is the Moment Of Truth</p>
 <p>You are about to send this communication to <strong>{0}</strong> {1}</p>
-", sendCount, sendCountTerm.PluralizeIf( sendCount != 1 ) );
-
+",
+sendCount,
+sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
             int maxRecipients = GetAttributeValue( "MaximumRecipients" ).AsIntegerOrNull() ?? int.MaxValue;
             bool userCanApprove = IsUserAuthorized( "Approve" );
@@ -1319,7 +1357,8 @@ namespace RockWeb.Blocks.Communication
                 if ( communication.FutureSendDateTime.HasValue &&
                                communication.FutureSendDateTime > RockDateTime.Now )
                 {
-                    message = string.Format( "Communication will be sent {0}.",
+                    message = string.Format(
+                        "Communication will be sent {0}.",
                         communication.FutureSendDateTime.Value.ToRelativeDateString( 0 ) );
                 }
                 else
@@ -1531,8 +1570,11 @@ namespace RockWeb.Blocks.Communication
             return communication;
         }
 
-        
-
+        /// <summary>
+        /// Handles the Click event of the btnConfirmationCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnConfirmationCancel_Click( object sender, EventArgs e )
         {
             // TODO. What should this do?
@@ -1548,8 +1590,6 @@ namespace RockWeb.Blocks.Communication
             nbSendDateTimeWarningConfirmation.Visible = false;
             dtpSendDateTimeConfirmation.Visible = !tglSendDateTimeConfirmation.Checked;
         }
-
-
 
         #endregion
 
