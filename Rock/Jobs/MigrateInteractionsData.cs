@@ -570,30 +570,23 @@ DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-
 			SELECT ForeignGuid
 			FROM InteractionSession where ForeignGuid is not null
 			)
-            AND IPAddress NOT LIKE '%[a-z]%'
-			AND len(IPAddress) <= 15
 ";
 
                 rockContext.Database.CommandTimeout = _commandTimeout;
                 context.UpdateLastStatusMessage( "Migrating Communication Activity to Interaction Components" );
+
+                rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_EntityId_ChannelId' AND object_id = OBJECT_ID('InteractionComponent'))
+BEGIN
+CREATE INDEX [IX_EntityId_ChannelId] ON [dbo].[InteractionComponent] ([EntityId],[ChannelId])
+END
+" );
+
                 _componentsInserted = rockContext.Database.ExecuteSqlCommand( insertCommunicationsAsComponentsSQL );
 
                 rockContext.Database.CommandTimeout = _commandTimeout;
                 context.UpdateLastStatusMessage( "Migrating Communication Activity to Interaction DeviceTypes" );
                 _deviceTypesInserted = rockContext.Database.ExecuteSqlCommand( populateDeviceTypeFromActivityDetail );
-
-                rockContext.Database.ExecuteSqlCommand( @"
-IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_InteractionSessionForeignGuid' AND object_id = OBJECT_ID('InteractionSession'))
-BEGIN
-    CREATE UNIQUE NONCLUSTERED INDEX [IX_InteractionSessionForeignGuid]
-	ON [dbo].[InteractionSession] ([ForeignGuid])
-    where ForeignGuid is not null
-END
-" );
-
-                rockContext.Database.CommandTimeout = _commandTimeout;
-                context.UpdateLastStatusMessage( "Migrating Communication Activity to Interaction Sessions" );
-                _sessionsInserted = rockContext.Database.ExecuteSqlCommand( insertSessions );
 
 
                 // Interaction 
@@ -642,10 +635,23 @@ SELECT --rtrim(ltrim(x.IPAddress)) [IPAddress]
 			) x
 		) x
 	WHERE IPAddress LIKE '%[a-z]%'
-			or len(IPAddress) > 15";
+			or len(IPAddress) > 15)";
 
+                context.UpdateLastStatusMessage( "Cleaning up unconvertable Communication Activity to Interaction Sessions" );
                 rockContext.Database.ExecuteSqlCommand( unconvertableInteractionsSQL );
 
+                rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_InteractionSessionForeignGuid' AND object_id = OBJECT_ID('InteractionSession'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [IX_InteractionSessionForeignGuid]
+	ON [dbo].[InteractionSession] ([ForeignGuid])
+    where ForeignGuid is not null
+END
+" );
+
+                rockContext.Database.CommandTimeout = _commandTimeout;
+                context.UpdateLastStatusMessage( "Migrating Communication Activity to Interaction Sessions" );
+                _sessionsInserted = rockContext.Database.ExecuteSqlCommand( insertSessions );
 
                 int chunkSize = 25000;
                 var populateInteraction = $@"
