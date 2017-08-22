@@ -804,10 +804,10 @@
 
                 $('.js-mediumtype .btn').on('click', function (e)
                 {
-                    setActiveButtonGroupButton($(this));
+                    setActiveMediumTypeButton($(this));
                 });
 
-                setActiveButtonGroupButton($('.js-mediumtype').find("[data-val='" + $('.js-mediumtype .js-hidden-selected').val() + "']"));
+                setActiveMediumTypeButton($('.js-mediumtype').find("[data-val='" + $('.js-mediumtype .js-hidden-selected').val() + "']"));
 
                 $('.js-show-additional-fields').off('click').on('click', function ()
                 {
@@ -1080,7 +1080,7 @@
 			    });
             }
 
-			function setActiveButtonGroupButton($activeBtn)
+            function setActiveMediumTypeButton($activeBtn)
 			{
 			    $activeBtn.addClass('active').addClass('btn-info').removeClass('btn-default');
 			    $activeBtn.siblings('.btn').removeClass('active').removeClass('btn-info').addClass('btn-default')

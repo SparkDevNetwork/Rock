@@ -330,7 +330,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            this.NavigateToCurrentPageReference();
+            this.NavigateToCurrentPageReference( new Dictionary<string, string>() );
         }
 
         #endregion
@@ -862,7 +862,8 @@ namespace RockWeb.Blocks.Communication
 
                 if ( communicationTemplate.ImageFileId.HasValue )
                 {
-                    lTemplateImagePreview.Text = this.GetImageTag( communicationTemplate.ImageFileId, showPlaceholderImage: false );
+                    var imageUrl = string.Format( "~/GetImage.ashx?id={0}", communicationTemplate.ImageFileId );
+                    lTemplateImagePreview.Text = string.Format( "<img src='{0}' width='100%'/>", this.ResolveRockUrl( imageUrl ) );
                 }
                 else
                 {
