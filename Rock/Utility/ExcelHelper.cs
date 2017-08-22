@@ -166,7 +166,7 @@ namespace Rock.Utility
             conditionalFormatting.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
             conditionalFormatting.Style.Fill.BackgroundColor.Color = Color.FromArgb( 240, 240, 240 );
 
-            var table = worksheet.Tables.Add( range, title.Replace( " ", "" ) );
+            var table = worksheet.Tables.Add( range, title.Replace( " ", "" ).Replace( Environment.NewLine, "" ).Replace( "\x0A", "" ) );
 
             // ensure each column in the table has a unique name
             var columnNames = worksheet.Cells[headerRows, 1, headerRows, columns].Select( a => new { OrigColumnName = a.Text, Cell = a } ).ToList();
