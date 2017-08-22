@@ -34,7 +34,18 @@
                         </div>
                         <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" Required="false" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" AutoPostBack="true" />
                         <Rock:RockDropDownList ID="ddlMinistry" runat="server" Label="Ministry" Required="false" />
-                        <Rock:DataTextBox ID="rtbNote" runat="server" Label="Notes" TextMode="MultiLine" Rows="4" MaxLength="2500" SourceTypeName="com.centralaz.RoomManagement.Model.Reservation, com.centralaz.RoomManagement" PropertyName="Note" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:PersonPicker ID="ppEventContact" runat="server" Label="Event Contact" EnableSelfSelection="true" OnSelectPerson="ppEventContact_SelectPerson" Help="The person who will be on-site to manage this reservation." />
+                                <Rock:PhoneNumberBox ID="pnEventContactPhone" runat="server" Label="Event Contact Phone" />
+                                <Rock:EmailBox ID="tbEventContactEmail" runat="server" Label="Event Contact Email" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:PersonPicker ID="ppAdministrativeContact" runat="server" Label="Administrative Contact" EnableSelfSelection="true" OnSelectPerson="ppAdministrativeContact_SelectPerson" Help="The person who set up this reservation." />
+                                <Rock:PhoneNumberBox ID="pnAdministrativeContactPhone" runat="server" Label="Administrative Contact Phone" />
+                                <Rock:EmailBox ID="tbAdministrativeContactEmail" runat="server" Label="Administrative Contact Email" />
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group" id="divStatus" runat="server">
@@ -63,19 +74,6 @@
                     <div class="col-md-6">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:PersonPicker ID="ppEventContact" runat="server" Label="Event Contact" EnableSelfSelection="true" OnSelectPerson="ppEventContact_SelectPerson" Help="The person who will be on-site to manage this reservation." />
-                                <Rock:PhoneNumberBox ID="pnEventContactPhone" runat="server" Label="Event Contact Phone" />
-                                <Rock:EmailBox ID="tbEventContactEmail" runat="server" Label="Event Contact Email" />
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:PersonPicker ID="ppAdministrativeContact" runat="server" Label="Administrative Contact" EnableSelfSelection="true" OnSelectPerson="ppAdministrativeContact_SelectPerson" Help="The person who set up this reservation." />
-                                <Rock:PhoneNumberBox ID="pnAdministrativeContactPhone" runat="server" Label="Administrative Contact Phone" />
-                                <Rock:EmailBox ID="tbAdministrativeContactEmail" runat="server" Label="Administrative Contact Email" />
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
                                 <Rock:NumberBox ID="nbSetupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="How many minutes to set up?" OnTextChanged="nbSetupTime_TextChanged" Help="The number of minutes it will take to set up the event." RequiredErrorMessage="You must supply a number for setup time (even if 0 minutes) as this will effect when others can reserve the same location/resource." />
                             </div>
                             <div class="col-md-6">
@@ -92,6 +90,8 @@
                             </div>
 
                         </div>
+
+                        <Rock:DataTextBox ID="rtbNote" runat="server" Label="Notes" TextMode="MultiLine" Rows="4" MaxLength="2500" SourceTypeName="com.centralaz.RoomManagement.Model.Reservation, com.centralaz.RoomManagement" PropertyName="Note" />
 
                         <Rock:PanelWidget ID="wpLocations" runat="server" Title="Locations">
                             <div class="grid">
