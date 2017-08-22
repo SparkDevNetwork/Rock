@@ -45,56 +45,6 @@ namespace RockWeb.Blocks.Communication
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
     public partial class TemplateDetail : RockBlock
     {
-        #region Fields
-
-        private bool _canEdit = false;
-
-        #endregion
-
-        #region Properties
-
-        protected int? CommunicationTemplateId
-        {
-            get { return ViewState["CommunicationTemplateId"] as int?; }
-            set { ViewState["CommunicationTemplateId"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the medium entity type id.
-        /// </summary>
-        /// <value>
-        /// The medium entity type id.
-        /// </value>
-        protected int? MediumEntityTypeId
-        {
-            get { return ViewState["MediumEntityTypeId"] as int?; }
-            set { ViewState["MediumEntityTypeId"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the communication data.
-        /// </summary>
-        /// <value>
-        /// The communication data.
-        /// </value>
-        protected CommunicationDetails CommunicationData
-        {
-            get
-            {
-                var communicationData = ViewState["CommunicationData"] as CommunicationDetails;
-                if ( communicationData == null )
-                {
-                    communicationData = new CommunicationDetails();
-                    ViewState["CommunicationData"] = communicationData;
-                }
-                return communicationData;
-            }
-
-            set { ViewState["CommunicationData"] = value; }
-        }
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -104,8 +54,6 @@ namespace RockWeb.Blocks.Communication
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            _canEdit = IsUserAuthorized( Authorization.EDIT );
         }
 
         /// <summary>
@@ -116,15 +64,10 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnLoad( e );
 
-            if ( Page.IsPostBack )
-            {
-                LoadMediumControl( false );
-            }
-            else
+            if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "TemplateId" ).AsInteger() );
             }
-
         }
 
         /// <summary>
@@ -163,28 +106,6 @@ namespace RockWeb.Blocks.Communication
         #region Events
 
         /// <summary>
-        /// Handles the Click event of the lbMedium control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbMedium_Click( object sender, EventArgs e )
-        {
-            GetMediumData();
-            var linkButton = sender as LinkButton;
-            if ( linkButton != null )
-            {
-                int mediumId = int.MinValue;
-                if ( int.TryParse( linkButton.CommandArgument, out mediumId ) )
-                {
-                    MediumEntityTypeId = mediumId;
-                    BindMediums();
-
-                    LoadMediumControl( true );
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -198,9 +119,10 @@ namespace RockWeb.Blocks.Communication
                 var service = new CommunicationTemplateService( rockContext );
 
                 Rock.Model.CommunicationTemplate template = null;
-                if ( CommunicationTemplateId.HasValue )
+                int? communicationTemplateId = hfCommunicationTemplateId.Value.AsIntegerOrNull();
+                if ( communicationTemplateId.HasValue )
                 {
-                    template = service.Get( CommunicationTemplateId.Value );
+                    template = service.Get( communicationTemplateId.Value );
                 }
 
                 bool newTemplate = false;
@@ -213,14 +135,8 @@ namespace RockWeb.Blocks.Communication
 
                 template.Name = tbName.Text;
                 template.Description = tbDescription.Text;
-
-                var medium = MediumContainer.GetComponentByEntityTypeId( MediumEntityTypeId );
-                if ( medium != null )
-                {
-                    template.CommunicationType = medium.CommunicationType;
-                }
-
-                CommunicationDetails.Copy( CommunicationData, template );
+                template.ImageFileId = imgTemplatePreview.BinaryFileId;
+                template.Message = ceEmailTemplate.Text;
 
                 if ( template != null )
                 {
@@ -228,7 +144,7 @@ namespace RockWeb.Blocks.Communication
                     NavigateToParentPage();
                 }
 
-                if ( newTemplate && !_canEdit )
+                if ( newTemplate && !IsUserAuthorized( Authorization.EDIT ) )
                 {
                     template.MakePrivate( Authorization.VIEW, CurrentPerson );
                     template.MakePrivate( Authorization.EDIT, CurrentPerson );
@@ -261,143 +177,30 @@ namespace RockWeb.Blocks.Communication
 
             if ( !templateId.Equals( 0 ) )
             {
-                template = new CommunicationTemplateService( new RockContext() )
-                    .Queryable()
-                    .Where( c => c.Id == templateId )
-                    .FirstOrDefault();
+                template = new CommunicationTemplateService( new RockContext() ).Get( templateId );
                 if ( template != null )
                 {
                     lTitle.Text = template.Name.FormatAsHtmlTitle();
                 }
             }
 
-            if (template == null)
+            if ( template == null )
             {
-                template = new Rock.Model.CommunicationTemplate();
                 RockPage.PageTitle = "New Communication Template";
                 lTitle.Text = "New Communication Template".FormatAsHtmlTitle();
+                template = new CommunicationTemplate();
             }
 
-            CommunicationTemplateId = template.Id;
+            hfCommunicationTemplateId.Value = templateId.ToString();
 
             tbName.Text = template.Name;
             tbDescription.Text = template.Description;
+            imgTemplatePreview.BinaryFileId = template.ImageFileId;
+            // TODO imgTemplatePreview.BinaryFileTypeGuid = 
 
-            var firstMedium = template.Mediums.FirstOrDefault();
-            if ( firstMedium != null )
-            {
-                MediumEntityTypeId = firstMedium.Id;
-            }
-            BindMediums();
-
-            CommunicationData = new CommunicationDetails();
-            CommunicationDetails.Copy( template, CommunicationData );
-
-            MediumControl control = LoadMediumControl( true );
-
-        }
-
-        /// <summary>
-        /// Binds the mediums.
-        /// </summary>
-        private void BindMediums()
-        {
-            var mediums = new Dictionary<int, string>();
-            foreach ( var item in MediumContainer.Instance.Components.Values )
-            {
-                if ( item.Value.IsActive )
-                {
-                    var entityType = item.Value.EntityType;
-                    mediums.Add( entityType.Id, item.Metadata.ComponentName );
-                    if ( !MediumEntityTypeId.HasValue )
-                    {
-                        MediumEntityTypeId = entityType.Id;
-                    }
-                }
-            }
-
-            rptMediums.DataSource = mediums;
-            rptMediums.DataBind();
-        }
-
-        /// <summary>
-        /// Shows the medium.
-        /// </summary>
-        private MediumControl LoadMediumControl(bool setData)
-        {
-            phContent.Controls.Clear();
-
-            // The component to load control for
-            MediumComponent component = null;
-
-            // Get the current medium type
-            EntityTypeCache entityType = null;
-            if ( MediumEntityTypeId.HasValue )
-            {
-                entityType = EntityTypeCache.Read( MediumEntityTypeId.Value );
-            }
-
-            foreach ( var serviceEntry in MediumContainer.Instance.Components )
-            {
-                var mediumComponent = serviceEntry.Value.Value;
-
-                // Default to first component
-                if ( component == null )
-                {
-                    component = mediumComponent;
-                }
-
-                // If invalid entity type, exit (and use first component found)
-                if ( entityType == null )
-                {
-                    break;
-                }
-                else if ( entityType.Id == mediumComponent.EntityType.Id )
-                {
-                    component = mediumComponent;
-                    break;
-                }
-            }
-
-            if (component != null)
-            {
-                phContent.Controls.Clear();
-                var mediumControl = component.GetControl( false );
-                mediumControl.ID = "commControl";
-                mediumControl.IsTemplate = true;
-                mediumControl.ValidationGroup = btnSave.ValidationGroup;
-                phContent.Controls.Add( mediumControl );
-
-                if ( setData  )
-                {
-                    mediumControl.SetFromCommunication( CommunicationData );
-                }
-                
-                // Set the medium in case it wasn't already set or the previous component type was not found
-                MediumEntityTypeId = component.EntityType.Id;
-
-                return mediumControl;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the medium data.
-        /// </summary>
-        private void GetMediumData()
-        {
-            if ( phContent.Controls.Count == 1 && phContent.Controls[0] is MediumControl )
-            {
-                var mediumControl = phContent.Controls[0] as MediumControl;
-                if ( mediumControl != null )
-                {
-                    mediumControl.UpdateCommunication( CommunicationData );
-                }
-            }
+            ceEmailTemplate.Text = template.Message;
         }
 
         #endregion
-
     }
 }
