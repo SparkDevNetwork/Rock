@@ -1197,8 +1197,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             else
             {
                 pdAuditDetails.SetEntity( reservation, ResolveRockUrl( "~" ) );
-                lRequestedBy.Visible = true;
-                lRequestedBy.Text = reservation.CreatedByPersonName;
             }
 
             sbSchedule.iCalendarContent = string.Empty;

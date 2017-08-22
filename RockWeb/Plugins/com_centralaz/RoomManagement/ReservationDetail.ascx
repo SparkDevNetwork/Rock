@@ -26,7 +26,6 @@
                         <Rock:DataTextBox ID="rtbName" runat="server" Label="Event Name" Required="true" SourceTypeName="com.centralaz.RoomManagement.Model.Reservation, com.centralaz.RoomManagement" PropertyName="Name" />
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockLiteral Label="Setup By" ID="lRequestedBy" runat="server" Visible="false"></Rock:RockLiteral>
                                 <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule">
                                     <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule" />
                                     <asp:Literal ID="lScheduleText" runat="server" />
