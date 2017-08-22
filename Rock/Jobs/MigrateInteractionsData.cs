@@ -510,6 +510,7 @@ DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-
 	DECLARE @ipaddressPatternMailgun_end NVARCHAR(max) = '% using %'
 	DECLARE @ipaddressPatternClickStart NVARCHAR(max) = '% from %[0-9]%.%[0-9]%.%[0-9]%.%[0-9]% using%'
 	DECLARE @ipaddressPatternClickEnd NVARCHAR(max) = '% using %'
+    DECLARE @alreadyInsertedCount INT = (select count(*) from InteractionSession where ForeignGuid is not null)
 
 	-- populate InteractionSession
 	INSERT INTO [InteractionSession] (
@@ -566,10 +567,10 @@ DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-
 		) x
 	INNER JOIN CommunicationRecipientActivity cra ON cra.Id = x.Id
 	LEFT JOIN InteractionDeviceType dt ON dt.DeviceTypeData = rtrim(ltrim(x.DeviceTypeData))
-	WHERE cra.[Guid] NOT IN (
+	WHERE (@alreadyInsertedCount = 0 or cra.[Guid] NOT IN (
 			SELECT ForeignGuid
 			FROM InteractionSession where ForeignGuid is not null
-			)
+			))
 ";
 
                 rockContext.Database.CommandTimeout = _commandTimeout;
