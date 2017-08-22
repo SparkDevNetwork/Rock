@@ -67,6 +67,12 @@ namespace Rock.Utility
                         keywordExpression = ".*";
                     }
 
+                    // Prefix keyword with start-of-string assertion (input needs to start with selected expression)
+                    if ( !keywordExpression.StartsWith( "^") )
+                    {
+                        keywordExpression = $"^{keywordExpression}";
+                    }
+
                     if ( !string.IsNullOrWhiteSpace( keywordExpression ) )
                     {
                         Match match = Regex.Match( message, keywordExpression, RegexOptions.IgnoreCase );
