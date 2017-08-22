@@ -44,6 +44,8 @@
 		{% for reservationSummary in reservationDate %}
 		{% if reservationSummary.ApprovalState == 'Unapproved' %}
 			{% assign rowclasss = 'text-warning' %}
+		{% elseif reservationSummary.ApprovalState == 'Changes Needed' %}
+			{% assign rowclasss = 'text-info' %}
 		{% else %}
 			{% assign rowclasss = '' %}
 		{% endif %}
