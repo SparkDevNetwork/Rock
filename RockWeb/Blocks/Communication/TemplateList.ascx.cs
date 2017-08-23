@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -301,22 +302,22 @@ namespace RockWeb.Blocks.Communication
             CommunicationTemplate communicationTemplate = e.Row.DataItem as CommunicationTemplate;
             if ( lSupports != null && communicationTemplate != null )
             {
-                string html = string.Empty;
-                if (communicationTemplate.SupportsEmailWizard())
+                StringBuilder html = new StringBuilder();
+                if ( communicationTemplate.SupportsEmailWizard() )
                 {
-                    html += "<span class='label label-success' title='This template contains an email template that supports the new communication wizard'>Email Wizard</span>";
+                    html.AppendLine( "<span class='label label-success' title='This template contains an email template that supports the new communication wizard'>Email Wizard</span>" );
                 }
-                else
+                else if (!string.IsNullOrEmpty(communicationTemplate.Message))
                 {
-                    html += "<span class='label label-warning' title='This template does notcontains an email template that supports the new communication wizard'>Legacy Email Template</span>";
-                }
-
-                if (communicationTemplate.Guid == Rock.SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid() || communicationTemplate.HasSMSTemplate())
-                {
-                    html += "<span class='label label-success'>SMS</span>";
+                    html.AppendLine( "<span class='label label-warning' title='This template does not contain an email template that supports the new communication wizard'>Legacy Email Template</span>" );
                 }
 
-                lSupports.Text = html;
+                if ( communicationTemplate.Guid == Rock.SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid() || communicationTemplate.HasSMSTemplate() )
+                {
+                    html.AppendLine( "<span class='label label-success'>SMS</span>" );
+                }
+
+                lSupports.Text = html.ToString();
             }
         }
 
