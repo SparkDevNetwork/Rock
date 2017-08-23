@@ -164,18 +164,32 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                     mvp.MetricPartition.EntityType.Guid == scheduleTypeGuid &&
                     mvp.EntityId != null &&
                     scheduleIdList.Contains( mvp.EntityId.Value ) &&
-                    mvp.MetricValue.Metric.MetricCategories.Any( mc => metricCategoryIdList.Contains( mc.CategoryId ) )
+                    mvp.MetricValue.Metric.MetricCategories.Any( mc => metricCategoryIdList.Contains( mc.CategoryId ) ) &&
+                    mvp.MetricValue.YValue != null
                     )
                     .Max( mvp => mvp.MetricValue.MetricValueDateTime );
                 if ( latestMetricDateTime.HasValue )
                 {
-                    var qryParams = new Dictionary<string, string>();
-                    if ( !String.IsNullOrWhiteSpace( PageParameter( "CampusId" ) ) )
+                    sundayDate = latestMetricDateTime.Value.SundayDate();
+
+                    var mondayDate = sundayDate.Value.AddDays( -6 );
+                    calCalendar.SelectedDates.SelectRange( mondayDate, sundayDate.Value );
+                    calCalendar.VisibleDate = sundayDate.Value;
+
+                    int? campusId = PageParameter( "CampusId" ).AsIntegerOrNull();
+                    string campusName = "All Church";
+                    if ( campusId != null )
                     {
-                        qryParams["CampusId"] = PageParameter( "CampusId" );
+                        campusName = CampusCache.Read( campusId.Value ).Name;
                     }
-                    qryParams["SundayDate"] = latestMetricDateTime.Value.SundayDate().ToShortDateString();
-                    NavigateToCurrentPage( qryParams );
+
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                    mergeFields.Add( "SundayDate", sundayDate );
+                    mergeFields.Add( "MondayDate", mondayDate );
+                    mergeFields.Add( "CampusName", campusName );
+                    mergeFields.Add( "WeekOfYear", sundayDate.Value.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstDay, DayOfWeek.Monday ) );
+                    mergeFields.Add( "WeekOfMonth", sundayDate.Value.GetWeekOfMonth( DayOfWeek.Monday ) );
+                    lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
                 }
                 else
                 {
