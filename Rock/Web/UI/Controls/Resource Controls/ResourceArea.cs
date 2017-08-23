@@ -330,35 +330,28 @@ namespace Rock.Web.UI.Controls
             _phGroupTypeAttributes = new PlaceHolder();
             _phGroupTypeAttributes.ID = this.ID + "_phGroupTypeAttributes";
 
-            if ( EnableCheckinOptions )
-            {
-                _ddlAttendanceRule = new RockDropDownList();
-                _ddlAttendanceRule.ID = this.ID + "_ddlAttendanceRule";
-                _ddlAttendanceRule.Label = "Check-in Rule";
-                _ddlAttendanceRule.Help = "The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in.";
-                _ddlAttendanceRule.BindToEnum<Rock.Model.AttendanceRule>();
-
-                _ddlPrintTo = new RockDropDownList();
-                _ddlPrintTo.ID = this.ID + "_ddlPrintTo";
-                _ddlPrintTo.Label = "Print To";
-                _ddlPrintTo.Help = "When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similar setting which takes precedence over this setting.";
-                _ddlPrintTo.Items.Add( new ListItem( "Device Printer", "1" ) );
-                _ddlPrintTo.Items.Add( new ListItem( "Location Printer", "2" ) );
-            }
+            _ddlAttendanceRule = new RockDropDownList();
+            _ddlAttendanceRule.ID = this.ID + "_ddlAttendanceRule";
+            _ddlAttendanceRule.Label = "Check-in Rule";
+            _ddlAttendanceRule.Help = "The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in.";
+            _ddlAttendanceRule.BindToEnum<Rock.Model.AttendanceRule>();
+            
+            _ddlPrintTo = new RockDropDownList();
+            _ddlPrintTo.ID = this.ID + "_ddlPrintTo";
+            _ddlPrintTo.Label = "Print To";
+            _ddlPrintTo.Help = "When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similar setting which takes precedence over this setting.";
+            _ddlPrintTo.Items.Add( new ListItem( "Device Printer", "1" ) );
+            _ddlPrintTo.Items.Add( new ListItem( "Location Printer", "2" ) );
 
             Controls.Add( _lblGroupTypeName );
             Controls.Add( _ddlGroupTypeInheritFrom );
+            Controls.Add( _ddlAttendanceRule );
+            Controls.Add( _ddlPrintTo );
             Controls.Add( _tbGroupTypeName );
             Controls.Add( _phGroupTypeAttributes );
 
-            if ( EnableCheckinOptions )
-            {
-                Controls.Add( _ddlAttendanceRule );
-                Controls.Add( _ddlPrintTo );
-
-                // Check-in Labels grid
-                CreateCheckinLabelsGrid();
-            }
+            // Check-in Labels grid
+            CreateCheckinLabelsGrid();
         }
 
         /// <summary>
@@ -446,7 +439,7 @@ namespace Rock.Web.UI.Controls
                     groupType.LoadAttributes( rockContext );
                 }
 
-                List<string> checkinLabelAttributeNames = null;
+                var checkinLabelAttributeNames = new List<string>();
                 if ( EnableCheckinOptions )
                 {
                     checkinLabelAttributeNames = GetCheckinLabelAttributes( groupType.Attributes ).Select( a => a.Value.Name ).ToList();
