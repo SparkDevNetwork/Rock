@@ -62,6 +62,16 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if this PageContext is a part of the Rock core system/framework. This property is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if the PageContext is part of the core system/framework, otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool IsSystem { get; set; }
+
+        /// <summary>
         /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the sender of the Communication
         /// </summary>
         /// <value>
@@ -258,7 +268,7 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.PersonAlias"/> that represents the Communication's sender.
         /// </value>
         [DataMember]
-        public virtual PersonAlias SenderPersonAlias { get; set; }
+        public virtual PersonAlias SenderPersonAlias { get; set; } 
 
         /// <summary>
         /// Gets the <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.

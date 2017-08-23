@@ -15,31 +15,26 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Xml.Linq;
-using System.Xml.Xsl;
 
 using Rock;
-using Rock.Attribute;
-using Rock.Communication;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// User control for creating a new communication
+    /// 
     /// </summary>
     [DisplayName( "Template Detail" )]
     [Category( "Communication" )]
@@ -69,6 +64,9 @@ namespace RockWeb.Blocks.Communication
             {
                 ShowDetail( PageParameter( "TemplateId" ).AsInteger() );
             }
+
+            // set the email preview visible = false on every load so that it doesn't stick around after closing the preview
+            pnlEmailPreview.Visible = false;
         }
 
         /// <summary>
@@ -117,13 +115,14 @@ namespace RockWeb.Blocks.Communication
             {
                 var rockContext = new RockContext();
 
-                var service = new CommunicationTemplateService( rockContext );
+                var communicationTemplateService = new CommunicationTemplateService( rockContext );
+                var communicationTemplateAttachmentService = new CommunicationTemplateAttachmentService( rockContext );
 
                 CommunicationTemplate communicationTemplate = null;
                 int? communicationTemplateId = hfCommunicationTemplateId.Value.AsIntegerOrNull();
                 if ( communicationTemplateId.HasValue )
                 {
-                    communicationTemplate = service.Get( communicationTemplateId.Value );
+                    communicationTemplate = communicationTemplateService.Get( communicationTemplateId.Value );
                 }
 
                 bool newTemplate = false;
@@ -131,14 +130,12 @@ namespace RockWeb.Blocks.Communication
                 {
                     newTemplate = true;
                     communicationTemplate = new Rock.Model.CommunicationTemplate();
-                    service.Add( communicationTemplate );
+                    communicationTemplateService.Add( communicationTemplate );
                 }
 
                 communicationTemplate.Name = tbName.Text;
                 communicationTemplate.Description = tbDescription.Text;
                 communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
-
-
 
                 communicationTemplate.FromName = tbFromName.Text;
                 communicationTemplate.FromEmail = tbFromAddress.Text;
@@ -152,6 +149,7 @@ namespace RockWeb.Blocks.Communication
                 foreach ( var attachment in communicationTemplate.Attachments.Where( a => !communicationTemplate.AttachmentBinaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
                 {
                     communicationTemplate.Attachments.Remove( attachment );
+                    communicationTemplateAttachmentService.Delete( attachment );
                 }
 
                 // add any new attachments that were added
@@ -159,9 +157,6 @@ namespace RockWeb.Blocks.Communication
                 {
                     communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId } );
                 }
-
-
-                // TODO communicationTemplate.Attachments.C
 
                 communicationTemplate.Subject = tbEmailSubject.Text;
                 communicationTemplate.Message = ceEmailTemplate.Text;
@@ -224,15 +219,16 @@ namespace RockWeb.Blocks.Communication
 
             LoadDropDowns();
 
+            mfpSMSMessage.MergeFields.Clear();
+            mfpSMSMessage.MergeFields.Add( "GlobalAttribute" );
+            mfpSMSMessage.MergeFields.Add( "Rock.Model.Person" );
+
             hfCommunicationTemplateId.Value = templateId.ToString();
 
             tbName.Text = communicationTemplate.Name;
             tbDescription.Text = communicationTemplate.Description;
             imgTemplatePreview.BinaryFileId = communicationTemplate.ImageFileId;
             // TODO imgTemplatePreview.BinaryFileTypeGuid = 
-
-
-
 
             // Email Fields
             tbFromName.Text = communicationTemplate.FromName;
@@ -245,7 +241,64 @@ namespace RockWeb.Blocks.Communication
             hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( communicationTemplate.ReplyToEmail ) || !string.IsNullOrEmpty( communicationTemplate.CCEmails ) || !string.IsNullOrEmpty( communicationTemplate.BCCEmails ) ).ToTrueFalse().ToLower();
 
             tbEmailSubject.Text = communicationTemplate.Subject;
-            ceEmailTemplate.Text = communicationTemplate.Message;
+
+            nbTemplateHelp.InnerHtml = @"
+<p>An email template needs to be an html doc with some special divs to support the communication wizard.</p>
+<br/>
+<p>The template needs to have at least one div with a 'dropzone' class in the BODY</p> 
+<br/>
+<pre>
+&lt;div class=""dropzone""&gt;
+&lt;/div&gt;
+</pre>
+<br/>
+
+<p>A template also needs to have at least one div with a 'structure-dropzone' class in the BODY to support adding zones</p> 
+<br/>
+<pre>
+&lt;div class=""structure-dropzone""&gt;
+    &lt;div class=""dropzone""&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+</pre>
+<br/>
+
+<p>To have some starter text, include a 'component component-text' div within the 'dropzone' div</p> 
+<br/>
+<pre>
+&lt;div class=""structure-dropzone""&gt;
+    &lt;div class=""dropzone""&gt;
+        &lt;div class=""component component-text"" data-content=""&lt;h1&gt;Hello There!&lt;/h1&gt;"" data-state=""component""&gt;
+            &lt;h1&gt;Hello There!&lt;/h1&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+</pre>
+<br/>
+
+<p>To enable the PREHEADER text, a div with an id of 'preheader-text' needs to be the first div in the BODY</p>
+<br/>
+<pre>
+&lt;!-- HIDDEN PREHEADER TEXT --&gt;
+&lt;div id=""preheader-text"" style=""display: none; font-size: 1px; color: #fefefe; line-height: 1px; font-family: Helvetica, Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;""&gt;
+    Entice the open with some amazing preheader text. Use a little mystery and get those subscribers to read through...
+&lt;/div&gt;
+</pre>
+
+<br/>
+";
+
+
+
+            if ( string.IsNullOrEmpty( communicationTemplate.Message ) && communicationTemplate.MediumData.ContainsKey("HtmlMessage") )
+            {
+                // TODO, shouldn't need to do this after MediumData is migrated
+                ceEmailTemplate.Text = communicationTemplate.MediumData["HtmlMessage"];
+            }
+            else
+            {
+                ceEmailTemplate.Text = communicationTemplate.Message;
+            }
 
             hfAttachedBinaryFileIds.Value = communicationTemplate.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
             UpdateAttachedFiles( false );
@@ -253,6 +306,29 @@ namespace RockWeb.Blocks.Communication
             // SMS Fields
             ddlSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId );
             tbSMSTextMessage.Text = communicationTemplate.SMSMessage;
+
+            if ( communicationTemplate.IsSystem )
+            {
+                nbEditModeMessage.Text = EditModeMessage.System( Rock.Model.CommunicationTemplate.FriendlyTypeName );
+            }
+
+            tbName.ReadOnly = communicationTemplate.IsSystem;
+            //tbDescription.ReadOnly = communicationTemplate.IsSystem;
+            //imgTemplatePreview.Enabled = !communicationTemplate.IsSystem;
+            tbFromName.ReadOnly = communicationTemplate.IsSystem;
+            tbName.ReadOnly = communicationTemplate.IsSystem;
+            tbFromAddress.ReadOnly = communicationTemplate.IsSystem;
+            tbReplyToAddress.ReadOnly = communicationTemplate.IsSystem;
+            tbCCList.ReadOnly = communicationTemplate.IsSystem;
+            tbBCCList.ReadOnly = communicationTemplate.IsSystem;
+            tbEmailSubject.ReadOnly = communicationTemplate.IsSystem;
+            fupAttachments.Visible = !communicationTemplate.IsSystem;
+
+            //ceEmailTemplate.ReadOnly = communicationTemplate.IsSystem;
+
+            mfpSMSMessage.Visible = !communicationTemplate.IsSystem;
+            ddlSMSFrom.Enabled = !communicationTemplate.IsSystem;
+            tbSMSTextMessage.ReadOnly = communicationTemplate.IsSystem;
         }
 
         /// <summary>
@@ -334,6 +410,20 @@ namespace RockWeb.Blocks.Communication
         {
             tbSMSTextMessage.Text += mfpSMSMessage.SelectedMergeField;
             mfpSMSMessage.SetValue( string.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnEmailPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnEmailPreview_Click( object sender, EventArgs e )
+        {
+            upnlEmailPreview.Update();
+
+            ifEmailPreview.Attributes["srcdoc"] = ceEmailTemplate.Text;
+            pnlEmailPreview.Visible = true;
+            mdEmailPreview.Show();
         }
 
         #endregion

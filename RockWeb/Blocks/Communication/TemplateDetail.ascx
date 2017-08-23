@@ -14,6 +14,8 @@
 
                 <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.CommunicationTemplate, Rock" PropertyName="Name" />
@@ -77,11 +79,18 @@
                             </asp:UpdatePanel>
                         </div>
                         <div class="col-md-6">
-                            
                         </div>
                     </div>
 
-                    <Rock:CodeEditor ID="ceEmailTemplate" runat="server" Label="Message Template" EditorHeight="400" EditorMode="Html" />
+
+                    <label class="control-label">Message Template</label>
+
+                    <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>
+                    <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>
+
+                    <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-xs btn-default pull-right" Text="Preview" OnClick="btnEmailPreview_Click" />
+                    <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" />
+
                 </asp:Panel>
 
                 <asp:Panel ID="pnlSMSTemplate" CssClass="js-sms-template" runat="server">
@@ -90,7 +99,7 @@
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlSMSFrom" runat="server" Label="From" Help="The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values)." />
                             <Rock:RockControlWrapper ID="rcwSMSMessage" runat="server" Label="Message" Help="<span class='tip tip-lava'></span>">
-                                <Rock:MergeFieldPicker ID="mfpSMSMessage" runat="server" CssClass="margin-b-sm pull-right" OnSelectItem="mfpMessage_SelectItem"  />
+                                <Rock:MergeFieldPicker ID="mfpSMSMessage" runat="server" CssClass="margin-b-sm pull-right" OnSelectItem="mfpMessage_SelectItem" />
                                 <asp:HiddenField ID="hfSMSCharLimit" runat="server" />
                                 <asp:Label ID="lblSMSMessageCount" runat="server" CssClass="badge margin-all-sm pull-right" />
                                 <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" />
@@ -110,10 +119,63 @@
             </div>
         </div>
 
+        <asp:UpdatePanel ID="upnlEmailPreview" runat="server" UpdateMode="Conditional">
+            <ContentTemplate>
+                <asp:Panel ID="pnlEmailPreview" runat="server" Visible="false">
+                    <Rock:ModalDialog ID="mdEmailPreview" runat="server" Title="Email Preview">
+                        <Content>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <%-- ## TODO ## Options for what type of email client to emulate? --%>
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                            </div>
+                            <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview">
+                                <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe js-emailpreview-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
+                            </div>
+                        </Content>
+
+                    </Rock:ModalDialog>
+                </asp:Panel>
+            </ContentTemplate>
+        </asp:UpdatePanel>
+
         <script>
 
             Sys.Application.add_load(function ()
             {
+                if ($('#<%=pnlEmailPreview.ClientID%>').length) {
+                    var $emailPreviewIframe = $('.js-emailpreview-iframe');
+
+                    var $previewModal = $emailPreviewIframe.closest('.modal-content');
+
+                    // set opacity to 0 to hide flicker when loading
+                    $previewModal.fadeTo(0, 0);
+
+                    $emailPreviewIframe.height('auto');
+
+                    $emailPreviewIframe.load(function ()
+                    {
+                        new ResizeSensor($('#<%=pnlEmailPreviewContainer.ClientID%>'), function ()
+                        {
+                            $('#<%=ifEmailPreview.ClientID%>', window.parent.document).height($('#<%=pnlEmailPreviewContainer.ClientID%>').height());
+                        });
+
+                        var newHeight = $(this.contentWindow.document).height();
+                        if ($(this).height() != newHeight) {
+                            $(this).height(newHeight);
+                        }
+
+                        $('#<%=pnlEmailPreviewContainer.ClientID%>').height(newHeight);
+
+                        if ($previewModal.is(':visible')) {
+                            // set opacity back to 1 now that it is loaded and sized
+                            $previewModal.fadeTo(0, 1);
+                        }
+                    });
+                }
+
                 $('.js-show-additional-fields').off('click').on('click', function ()
                 {
                     $('#<%=hfShowAdditionalFields.ClientID %>').val(!$('.js-addition-fields').is(':visible'));

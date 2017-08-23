@@ -222,7 +222,8 @@ namespace RockWeb.Blocks.Communication
 
             //// NOTE: tbEmailPreview will be populated by parsing the Html of the Email/Template
 
-            hfAttachedBinaryFileIds.Value = communication.AttachmentBinaryFileIds != null ? communication.AttachmentBinaryFileIds.ToList().AsDelimited( "," ) : string.Empty;
+            hfAttachedBinaryFileIds.Value = communication.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
+            UpdateAttachedFiles( false );
 
             // Mobile Text Editor
             ddlSMSFrom.SetValue( communication.SMSFromDefinedValueId );
@@ -286,6 +287,8 @@ namespace RockWeb.Blocks.Communication
 
             // only show the medium type selection if there is a choice
             rcwMediumType.Visible = allowedCommunicationTypes.Count > 1;
+
+            ddlSMSFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), true, true );
         }
 
         /// <summary>
@@ -762,15 +765,7 @@ namespace RockWeb.Blocks.Communication
 
             pnlMediumSelection.Visible = false;
 
-            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
-            {
-                ShowTemplateSelection();
-            }
-            else if ( communicationType == CommunicationType.SMS )
-            {
-                ShowMobileTextEditor();
-            }
+            ShowTemplateSelection();
         }
 
         /// <summary>
@@ -803,7 +798,7 @@ namespace RockWeb.Blocks.Communication
         private void BindTemplatePicker()
         {
             var rockContext = new RockContext();
-            
+
             var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().OrderBy( a => a.Name );
 
             // get list of templates that the current user is authorized to View
@@ -831,7 +826,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptSelectTemplate_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            // TODO more details after Communication Template block is fixed up
             CommunicationTemplate communicationTemplate = e.Item.DataItem as CommunicationTemplate;
 
             if ( communicationTemplate != null )
@@ -878,25 +872,30 @@ namespace RockWeb.Blocks.Communication
 
             var communicationTemplate = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() );
 
-            string templateHtml;
-            if ( string.IsNullOrEmpty( communicationTemplate.Message ) )
-            {
-                // TODO, shouldn't need to do this after CommunicationTemplateDetails block is fixed up
-                templateHtml = communicationTemplate.MediumData["HtmlMessage"];
-            }
-            else
-            {
-                templateHtml = communicationTemplate.Message;
-            }
+            tbFromName.Text = communicationTemplate.FromName;
+            tbFromAddress.Text = communicationTemplate.FromEmail;
 
-            hfEmailEditorHtml.Value = templateHtml;
+            tbReplyToAddress.Text = communicationTemplate.ReplyToEmail;
+            tbCCList.Text = communicationTemplate.CCEmails;
+            tbBCCList.Text = communicationTemplate.BCCEmails;
 
-            // See if the template supports preview-text
-            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
-            templateDoc.LoadHtml( templateHtml );
-            var preheaderTextNode = templateDoc.GetElementbyId( "preheader-text" );
-            tbEmailPreview.Visible = preheaderTextNode != null;
-            tbEmailPreview.Text = preheaderTextNode != null ? preheaderTextNode.InnerHtml : string.Empty;
+            hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( communicationTemplate.ReplyToEmail ) || !string.IsNullOrEmpty( communicationTemplate.CCEmails ) || !string.IsNullOrEmpty( communicationTemplate.BCCEmails ) ).ToTrueFalse().ToLower();
+
+            tbEmailSubject.Text = communicationTemplate.Subject;
+
+            hfEmailEditorHtml.Value = communicationTemplate.Message;
+
+            hfAttachedBinaryFileIds.Value = communicationTemplate.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
+            UpdateAttachedFiles( false );
+
+            // SMS Fields
+            if ( communicationTemplate.SMSFromDefinedValueId.HasValue )
+            {
+                ddlSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId.Value );
+            }
+            
+            tbSMSTextMessage.Text = communicationTemplate.SMSMessage;
+
 
             btnTemplateSelectionNext_Click( sender, e );
         }
@@ -1022,6 +1021,13 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void ShowEmailSummary()
         {
+            // See if the template supports preview-text
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( hfEmailEditorHtml.Value );
+            var preheaderTextNode = templateDoc.GetElementbyId( "preheader-text" );
+            tbEmailPreview.Visible = preheaderTextNode != null;
+            tbEmailPreview.Text = preheaderTextNode != null ? preheaderTextNode.InnerHtml : string.Empty;
+
             pnlEmailSummary.Visible = true;
         }
 
@@ -1080,10 +1086,21 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
         protected void fupAttachments_FileUploaded( object sender, FileUploaderEventArgs e )
         {
+            UpdateAttachedFiles( true );
+        }
+
+        /// <summary>
+        /// Updates the HTML for the Attached Files and optionally adds the file that was just uploaded using the file uploader
+        /// </summary>
+        private void UpdateAttachedFiles( bool addUploadedFile )
+        {
             List<int> attachmentList = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
-            if ( fupAttachments.BinaryFileId.HasValue )
+            if ( addUploadedFile && fupAttachments.BinaryFileId.HasValue )
             {
-                attachmentList.Add( fupAttachments.BinaryFileId.Value );
+                if ( !attachmentList.Contains( fupAttachments.BinaryFileId.Value ) )
+                {
+                    attachmentList.Add( fupAttachments.BinaryFileId.Value );
+                }
             }
 
             hfAttachedBinaryFileIds.Value = attachmentList.AsDelimited( "," );
@@ -1134,7 +1151,10 @@ namespace RockWeb.Blocks.Communication
         private void ShowMobileTextEditor()
         {
             // TODO: is this the right person
-            InitializeSMSFromSender( this.CurrentPerson );
+            if ( !ddlSMSFrom.SelectedValue.AsIntegerOrNull().HasValue )
+            {
+                InitializeSMSFromSender( this.CurrentPerson );
+            }
 
             mfpSMSMessage.MergeFields.Clear();
             mfpSMSMessage.MergeFields.Add( "GlobalAttribute" );
@@ -1163,7 +1183,7 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                ShowMediumSelection();
+                ShowTemplateSelection();
             }
         }
 
@@ -1192,7 +1212,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="sender">The sender.</param>
         public void InitializeSMSFromSender( Person sender )
         {
-            ddlSMSFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), false, true );
+            
             var numbers = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
             if ( numbers != null )
             {
@@ -1385,7 +1405,6 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveAsDraft_Click( object sender, EventArgs e )
         {
-            // TODO
             if ( !ValidateSendDateTime() )
             {
                 return;
@@ -1438,6 +1457,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         private Rock.Model.Communication UpdateCommunication( RockContext rockContext )
         {
             var communicationService = new CommunicationService( rockContext );
+            var communicationAttachmentService = new CommunicationAttachmentService( rockContext );
             var communicationRecipientService = new CommunicationRecipientService( rockContext );
 
             Rock.Model.Communication communication = null;
@@ -1531,8 +1551,18 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
             communication.AttachmentBinaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
 
-            // TODO: Remove any deleted Attachments??
-            // TODO: Add any new attachments??
+            // delete any attachments that are no longer included
+            foreach ( var attachment in communication.Attachments.Where( a => !communication.AttachmentBinaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
+            {
+                communication.Attachments.Remove( attachment );
+                communicationAttachmentService.Delete( attachment );
+            }
+
+            // add any new attachments that were added
+            foreach ( var attachmentBinaryFileId in communication.AttachmentBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
+            {
+                communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId } );
+            }
 
             communication.Subject = tbEmailSubject.Text;
             communication.Message = hfEmailEditorHtml.Value;
