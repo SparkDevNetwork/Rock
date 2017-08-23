@@ -30,7 +30,7 @@ namespace Rock.Model
     {
 
         /// <summary>
-        /// Gets the component by entity identifier.
+        /// Gets the component by entity identifier, and creates it if it doesn't exist
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
@@ -61,7 +61,37 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the component by entity identifier.
+        /// Gets the component by component name, and creates it if it doesn't exist
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public InteractionComponent GetComponentByComponentName( int channelId, string name )
+        {
+            var component = this.Queryable()
+                .FirstOrDefault( c =>
+                    c.ChannelId == channelId &&
+                    c.Name == name );
+            if ( component != null )
+            {
+                component.Name = name;
+            }
+            else
+            {
+                component = new InteractionComponent();
+                component.EntityId = null;
+                component.ChannelId = channelId;
+                component.Name = name;
+                this.Add( component );
+            }
+
+            component.Name = name;
+
+            return component;
+        }
+
+        /// <summary>
+        /// Gets the component by entity identifier, and creates it if it doesn't exist
         /// </summary>
         /// <param name="channelGuid">The channel unique identifier.</param>
         /// <param name="entityId">The entity identifier.</param>

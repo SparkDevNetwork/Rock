@@ -1440,7 +1440,7 @@ namespace Rock.Web.UI
                 FormsAuthentication.SignOut();
                 UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
                 Rock.Security.Authorization.SetAuthCookie( impersonatedByUser.UserName, false, false );
-                Response.Redirect( PersonToken.RemoveRockMagicToken( Request.RawUrl ), false );
+                Response.Redirect( PageReference.BuildUrl( false ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }
         }
@@ -1486,7 +1486,7 @@ namespace Rock.Web.UI
                     // Attempting to use an impersonation token that doesn't exist or is no longer valid, so log them out
                     FormsAuthentication.SignOut();
                     Session["InvalidPersonToken"] = true;
-                    Response.Redirect( PersonToken.RemoveRockMagicToken(Request.RawUrl), false );
+                    Response.Redirect( PageReference.BuildUrl( true ), false );
                     Context.ApplicationInstance.CompleteRequest();
                     return false;
                 }

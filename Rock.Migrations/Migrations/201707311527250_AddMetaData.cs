@@ -39,22 +39,27 @@ namespace Rock.Migrations
             AddForeignKey("dbo.Person", "MetaPersonicxLifestageClusterId", "dbo.MetaPersonicxLifestageCluster", "Id");
             AddForeignKey("dbo.Person", "MetaPersonicxLifestageGroupId", "dbo.MetaPersonicxLifestageGroup", "Id");
 
+            Sql( "DELETE [MetaFirstNameGenderLookup]" );
             ExecuteSqlInsert(
                 "INSERT INTO [MetaFirstNameGenderLookup] ([FirstName],[MaleCount],[FemaleCount],[Country],[Language],[TotalCount],[FemalePercent],[MalePercent],[Guid])",
                 MigrationSQL._201707311527250_FirstNameGender );
 
+            Sql( "DELETE [MetaLastNameLookup]" );
             ExecuteSqlInsert(
                 "INSERT INTO [MetaLastNameLookup] ([LastName],[Count],[Rank],[CountIn100k],[Guid])",
                 MigrationSQL._201707311527250_LastName );
 
+            Sql( "DELETE [MetaNickNameLookup]" );
             ExecuteSqlInsert(
                 "INSERT INTO [MetaNickNameLookup] ([FirstName],[NickName],[Gender],[Count],[Guid])",
                 MigrationSQL._201707311527250_NickName );
 
+            Sql( "DELETE [MetaPersonicxLifestageGroup]" );
             ExecuteSqlInsert(
                 "INSERT INTO [MetaPersonicxLifestageGroup] ([LifestyleGroupCode],[LifestyleGroupName],[Description],[Summary],[PercentUS],[LifeStage],[MaritalStatus],[HomeOwnership],[Children],[Income],[IncomeRank],[Urbanicity], [UrbanicityRank], [NetWorth], [NetworthRank],[DetailsUrl],[Guid])",
                 MigrationSQL._201707311527250_PersonicxGroup );
 
+            Sql( "DELETE [MetaPersonicxLifestageCluster]" );
             ExecuteSqlInsert(
                 "INSERT INTO [MetaPersonicxLifestageCluster] ([LifestyleClusterCode],[LifestyleClusterName],[Description],[Summary],[PercentUS],[LifeStage],[MaritalStatus],[HomeOwnership],[Children],[Income],[IncomeRank],[Urbanicity], [UrbanicityRank], [NetWorth], [NetworthRank],[MetaPersonicxLifestyleGroupId],[DetailsUrl],[Guid])",
                 MigrationSQL._201707311527250_PersonicxCluster );
