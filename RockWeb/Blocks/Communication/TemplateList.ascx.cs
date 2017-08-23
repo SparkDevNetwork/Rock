@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the available communication templates that can used when creating new communications." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class TemplateList : Rock.Web.UI.RockBlock
     {
 
@@ -69,9 +69,10 @@ namespace RockWeb.Blocks.Communication
             // The created by column/filter should only be displayed if user is allowed to approve
             _canEdit = IsUserAuthorized( Authorization.EDIT );
             ppCreatedBy.Visible = _canEdit;
-            gCommunication.Columns[4].Visible = _canEdit;
+            RockBoundField createdByField = gCommunication.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "CreatedByPersonAlias.Person.FullName" );
+            createdByField.Visible = _canEdit;
 
-            SecurityField securityField = gCommunication.Columns[4] as SecurityField;
+            SecurityField securityField = gCommunication.ColumnsOfType<SecurityField>().FirstOrDefault();
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.CommunicationTemplate ) ).Id;
         }
 
@@ -100,7 +101,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Communication Type", ddlType.SelectedValue );
             if ( _canEdit )
             {
                 rFilter.SaveUserPreference( "Created By", ppCreatedBy.PersonId.ToString() );
@@ -123,18 +123,18 @@ namespace RockWeb.Blocks.Communication
                     {
                         if ( !string.IsNullOrWhiteSpace( e.Value ) )
                         {
-                            e.Value = ( (CommunicationType)System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
+                            e.Value = ( ( CommunicationType ) System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
                         }
 
                         break;
                     }
                 case "Created By":
                     {
-                        int personId = 0;
-                        if ( int.TryParse( e.Value, out personId ) && personId != 0 )
+                        int? personId = e.Value.AsIntegerOrNull();
+                        if ( personId.HasValue && personId != 0 )
                         {
                             var personService = new PersonService( new RockContext() );
-                            var person = personService.Get( personId );
+                            var person = personService.Get( personId.Value );
                             if ( person != null )
                             {
                                 e.Value = person.FullName;
@@ -146,7 +146,12 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
-        void Actions_AddClick( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the AddClick event of the Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Actions_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "TemplateId", 0 );
         }
@@ -208,9 +213,11 @@ namespace RockWeb.Blocks.Communication
 
         #region Internal Methods
 
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
         private void BindFilter()
         {
-            ddlType.BindToEnum<CommunicationType>( true );
 
             if ( !Page.IsPostBack )
             {
@@ -219,13 +226,11 @@ namespace RockWeb.Blocks.Communication
                     rFilter.SaveUserPreference( "Created By", string.Empty );
                 }
 
-                ddlType.SetValue( rFilter.GetUserPreference( "Communication Type" ) );
-
-                int personId = 0;
-                if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) )
+                int? personId = rFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();
+                if ( personId.HasValue && personId != 0 )
                 {
                     var personService = new PersonService( new RockContext() );
-                    var person = personService.Get( personId );
+                    var person = personService.Get( personId.Value );
                     if ( person != null )
                     {
                         ppCreatedBy.SetValue( person );
@@ -234,26 +239,23 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
             var communications = new CommunicationTemplateService( new RockContext() )
                 .Queryable( "CreatedByPersonAlias.Person" );
 
-            var communicationType = ddlType.SelectedValueAsEnumOrNull<CommunicationType>();
-            if ( communicationType != null )
-            {
-                communications = communications.Where( c => c.CommunicationType == communicationType );
-            }
-
             if ( _canEdit )
             {
-                int personId = 0;
-                if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) && personId != 0 )
+                int? personId = rFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();
+                if ( personId.HasValue && personId != 0 )
                 {
                     communications = communications
                         .Where( c =>
                             c.CreatedByPersonAlias != null &&
-                            c.CreatedByPersonAlias.PersonId == personId );
+                            c.CreatedByPersonAlias.PersonId == personId.Value );
                 }
             }
 
@@ -286,10 +288,38 @@ namespace RockWeb.Blocks.Communication
 
             gCommunication.DataSource = viewableCommunications;
             gCommunication.DataBind();
+        }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gCommunication control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gCommunication_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            Literal lSupports = e.Row.FindControl( "lSupports" ) as Literal;
+            CommunicationTemplate communicationTemplate = e.Row.DataItem as CommunicationTemplate;
+            if ( lSupports != null && communicationTemplate != null )
+            {
+                string html = string.Empty;
+                if (communicationTemplate.SupportsEmailWizard())
+                {
+                    html += "<span class='label label-success' title='This template contains an email template that supports the new communication wizard'>Email Wizard</span>";
+                }
+                else
+                {
+                    html += "<span class='label label-warning' title='This template does notcontains an email template that supports the new communication wizard'>Legacy Email Template</span>";
+                }
+
+                if (communicationTemplate.Guid == Rock.SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid() || communicationTemplate.HasSMSTemplate())
+                {
+                    html += "<span class='label label-success'>SMS</span>";
+                }
+
+                lSupports.Text = html;
+            }
         }
 
         #endregion
-
     }
 }

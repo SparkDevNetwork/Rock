@@ -7,21 +7,20 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-comment-o"></i> Communication Template List</h1>
+                <h1 class="panel-title"><i class="fa fa-comment-o"></i>&nbsp;Communication Template List</h1>
             </div>
             <div class="panel-body">
 
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server">
                         <Rock:PersonPicker ID="ppCreatedBy" runat="server" Label="Created By" Help="The person who created the template." />
-                        <Rock:RockDropDownList ID="ddlType" runat="server" Label="Communication Type" />
                     </Rock:GridFilter>
 
-                    <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" TooltipField="Description" OnRowSelected="gCommunication_RowSelected">
+                    <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" TooltipField="Description" OnRowSelected="gCommunication_RowSelected" OnRowDataBound="gCommunication_RowDataBound">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" SortExpression="Subject" HeaderText="Name" />
                             <Rock:RockBoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
-                            <Rock:EnumField DataField="CommunicationType" SortExpression="CommunicationType" HeaderText="Type" />
+                            <Rock:RockLiteralField ID="lSupports" HeaderText="Supports" />
                             <Rock:RockBoundField DataField="CreatedByPersonAlias.Person.FullName" SortExpression="CreatedByPersonAlias.Person.FullName" HeaderText="Created By" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gCommunication_Delete" />
@@ -31,8 +30,6 @@
 
             </div>
         </div>
-
-        
 
     </ContentTemplate>
 </asp:UpdatePanel>

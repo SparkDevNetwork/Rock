@@ -803,44 +803,25 @@ namespace RockWeb.Blocks.Communication
         private void BindTemplatePicker()
         {
             var rockContext = new RockContext();
-
-            // TODO: Limit to 'non-legacy' templates
+            
             var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().OrderBy( a => a.Name );
 
             // get list of templates that the current user is authorized to View
             IEnumerable<CommunicationTemplate> templateList = templateQuery.AsNoTracking().ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
 
-            // limit to v7+ templates
-            templateList = templateList.Where( a => TemplateHasDropzoneDivs( a ) );
-
-            rptSelectTemplate.DataSource = templateList;
-            rptSelectTemplate.DataBind();
-        }
-
-        /// <summary>
-        /// Determines if the templates the has dropzone divs (which means it is a v7+ compatible template)
-        /// </summary>
-        /// <param name="communicationTemplate">The communication template.</param>
-        /// <returns></returns>
-        private bool TemplateHasDropzoneDivs( CommunicationTemplate communicationTemplate )
-        {
-            string templateHtml;
-            if ( string.IsNullOrEmpty( communicationTemplate.Message ) )
+            // If this is an Email (or RecipientPreference) communication, limit to templates that support the email wizard
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
+            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
             {
-                // TODO, shouldn't need to do this after CommunicationTemplateDetails block is fixed up
-                templateHtml = communicationTemplate.MediumData["HtmlMessage"];
+                templateList = templateList.Where( a => a.SupportsEmailWizard() );
             }
             else
             {
-                templateHtml = communicationTemplate.Message;
+                templateList = templateList.Where( a => a.HasSMSTemplate() || a.Guid == Rock.SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid() );
             }
 
-            // See if the template supports preview-text
-            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
-            templateDoc.LoadHtml( templateHtml );
-            var hasDropzones = templateDoc.DocumentNode.Descendants( "div" ).Where( a => a.GetAttributeValue( "class", string.Empty ).Split( new char[] { ' ' } ).Any( c => c == "dropzone" ) ).Any();
-
-            return hasDropzones;
+            rptSelectTemplate.DataSource = templateList;
+            rptSelectTemplate.DataBind();
         }
 
         /// <summary>

@@ -53,16 +53,6 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the communication type value identifier.
-        /// </summary>
-        /// <value>
-        /// The communication type value identifier.
-        /// </value>
-        [Required]
-        [DataMember]
-        public CommunicationType CommunicationType { get; set; }
-
-        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -70,7 +60,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the sender of the Communication
         /// </summary>
@@ -286,9 +276,7 @@ namespace Rock.Model
                 foreach ( var serviceEntry in MediumContainer.Instance.Components )
                 {
                     var component = serviceEntry.Value.Value;
-                    if ( component.IsActive &&
-                        ( this.CommunicationType == component.CommunicationType ||
-                         this.CommunicationType == CommunicationType.RecipientPreference ) )
+                    if ( component.IsActive )
                     {
                         mediums.Add( component );
                     }
@@ -377,7 +365,39 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Subject;
+            return this.Subject ?? base.ToString();
+        }
+
+        /// <summary>
+        /// Returns true if this Communication Template has an Email Template that supports the New Communication Wizard
+        /// </summary>
+        /// <returns></returns>
+        public bool SupportsEmailWizard()
+        {
+            string templateHtml = this.Message;
+            if ( string.IsNullOrWhiteSpace( templateHtml ) )
+            {
+                return false;
+            }
+
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( templateHtml );
+
+            // see if there is at least one 'dropzone' div
+            var hasDropzones = templateDoc.DocumentNode.Descendants( "div" ).Where( a => a.GetAttributeValue( "class", string.Empty ).Split( new char[] { ' ' } ).Any( c => c == "dropzone" ) ).Any();
+
+            return hasDropzones;
+        }
+
+        /// <summary>
+        /// Returns true if this Communication Template has text for an SMS Template
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [has SMS template]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool HasSMSTemplate()
+        {
+            return !string.IsNullOrWhiteSpace( this.SMSMessage );
         }
 
         #endregion
