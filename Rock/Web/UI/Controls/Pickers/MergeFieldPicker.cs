@@ -404,7 +404,17 @@ namespace Rock.Web.UI.Controls
                         else
                         {
                             string partPath = workingParts.Take( workingParts.Count - 1 ).ToList().AsDelimited( "." );
-                            itemString = string.Format( "{{{{ {0} | Attribute:'{1}' }}}}", partPath, workingParts.Last() );
+                            var partItem = workingParts.Last();
+                            if ( type == typeof( Rock.Model.Person ) && partItem == "Campus" )
+                            {
+                                itemString = string.Format( "{{{{ {0} | Campus | Property:'Name' }}}}", partPath );
+                            }
+                            else
+                            {
+                                
+                                itemString = string.Format( "{{{{ {0} | Attribute:'{1}' }}}}", partPath, partItem );
+                            }
+                            
                         }
 
                     }
