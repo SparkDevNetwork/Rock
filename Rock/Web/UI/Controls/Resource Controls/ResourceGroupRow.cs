@@ -71,6 +71,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to enable adding groups.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if enabled or not set; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableAddGroups
+        {
+            get
+            {
+                bool? b = ViewState["EnableAddGroups"] as bool?;
+                return ( b == null ) ? true : b.Value;
+            }
+
+            set
+            {
+                ViewState["EnableAddGroups"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="ResourceGroupRow"/> is expanded.
         /// </summary>
         /// <value>
@@ -168,14 +188,17 @@ $('.resource-group a.resource-group-add-group').click(function (event) {
             _lblGroupRowName.ID = this.ID + "_lblGroupRowName";
             Controls.Add( _lblGroupRowName );
 
-            _lbAddGroup = new LinkButton();
-            _lbAddGroup.ID = this.ID + "_lbAddGroup";
-            _lbAddGroup.CssClass = "btn btn-xs btn-default resource-group-add-group";
-            _lbAddGroup.Click += lbAddGroup_Click;
-            _lbAddGroup.CausesValidation = false;
-            _lbAddGroup.ToolTip = "Add New Group";
-            _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-check-circle'></i>" } );
-            Controls.Add( _lbAddGroup );
+            if ( EnableAddGroups )
+            {
+                _lbAddGroup = new LinkButton();
+                _lbAddGroup.ID = this.ID + "_lbAddGroup";
+                _lbAddGroup.CssClass = "btn btn-xs btn-default resource-group-add-group";
+                _lbAddGroup.Click += lbAddGroup_Click;
+                _lbAddGroup.CausesValidation = false;
+                _lbAddGroup.ToolTip = "Add New Group";
+                _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-check-circle'></i>" } );
+                Controls.Add( _lbAddGroup );
+            }
         }
 
         /// <summary>
