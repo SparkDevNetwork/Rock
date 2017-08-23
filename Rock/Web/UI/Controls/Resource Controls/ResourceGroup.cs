@@ -60,6 +60,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable add locations].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable add locations] or not set; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableAddLocations
+        {
+            get
+            {
+                bool? b = ViewState["EnableAddLocations"] as bool?;
+                return ( b == null ) ? true : b.Value;
+            }
+
+            set
+            {
+                ViewState["EnableAddLocations"] = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -298,7 +318,7 @@ namespace Rock.Web.UI.Controls
         {
             _gLocations = new Grid();
 
-            _gLocations.ID = this.ID + "_gLocations";
+            _gLocations.ID = this.ID + "_gCheckinLabels";
 
             _gLocations.DisplayType = GridDisplayType.Light;
             _gLocations.ShowActionRow = true;
@@ -347,13 +367,17 @@ namespace Rock.Web.UI.Controls
                 _cbIsActive.RenderBaseControl( writer );
                 _phGroupAttributes.RenderControl( writer );
 
-                if ( this.Locations != null )
+                if ( EnableAddLocations )
                 {
                     writer.WriteLine( "<h3>Locations</h3>" );
-                    _gLocations.DataSource = this.Locations.OrderBy( l => l.Order ).ThenBy( l => l.FullNamePath ).ToList();
-                    _gLocations.DataBind();
+                    if ( this.Locations != null )
+                    {   
+                        _gLocations.DataSource = this.Locations.OrderBy( l => l.Order ).ThenBy( l => l.FullNamePath ).ToList();
+                        _gLocations.DataBind();
+                    }
+
+                    _gLocations.RenderControl( writer );
                 }
-                _gLocations.RenderControl( writer );
             }
         }
 
