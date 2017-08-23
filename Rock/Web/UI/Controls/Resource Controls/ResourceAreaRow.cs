@@ -125,26 +125,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to enable checkin options.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if enabled or not set; otherwise, <c>false</c>.
-        /// </value>
-        public bool EnableCheckinOptions
-        {
-            get
-            {
-                bool? b = ViewState["EnableCheckinOptions"] as bool?;
-                return ( b == null ) ? true : b.Value;
-            }
-
-            set
-            {
-                ViewState["EnableCheckinOptions"] = value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="ResourceAreaRow"/> is expanded.
         /// </summary>
         /// <value>
