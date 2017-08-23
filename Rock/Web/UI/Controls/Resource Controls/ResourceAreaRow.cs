@@ -279,7 +279,11 @@ $('.resource-area a.resource-area-add-group').click(function (event) {
 
             _lbAddArea?.RenderControl( writer );
             writer.Write( " " );
-            _lbAddGroup?.RenderControl( writer );
+
+            if ( _lbAddGroup != null )
+            {
+                _lbAddGroup.RenderControl( writer );
+            }
 
             writer.RenderEndTag();  // Div
             writer.RenderEndTag();  // Section
