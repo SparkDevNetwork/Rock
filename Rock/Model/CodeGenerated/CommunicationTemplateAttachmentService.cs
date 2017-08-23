@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Communication Service class
+    /// CommunicationTemplateAttachment Service class
     /// </summary>
-    public partial class CommunicationService : Service<Communication>
+    public partial class CommunicationTemplateAttachmentService : Service<CommunicationTemplateAttachment>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationTemplateAttachmentService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public CommunicationService(RockContext context) : base(context)
+        public CommunicationTemplateAttachmentService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Communication item, out string errorMessage )
+        public bool CanDelete( CommunicationTemplateAttachment item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,68 +58,40 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class CommunicationExtensionMethods
+    public static partial class CommunicationTemplateAttachmentExtensionMethods
     {
         /// <summary>
-        /// Clones this Communication object to a new Communication object
+        /// Clones this CommunicationTemplateAttachment object to a new CommunicationTemplateAttachment object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Communication Clone( this Communication source, bool deepCopy )
+        public static CommunicationTemplateAttachment Clone( this CommunicationTemplateAttachment source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Communication;
+                return source.Clone() as CommunicationTemplateAttachment;
             }
             else
             {
-                var target = new Communication();
+                var target = new CommunicationTemplateAttachment();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Communication object to this Communication object
+        /// Copies the properties from another CommunicationTemplateAttachment object to this CommunicationTemplateAttachment object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Communication target, Communication source )
+        public static void CopyPropertiesFrom( this CommunicationTemplateAttachment target, CommunicationTemplateAttachment source )
         {
             target.Id = source.Id;
-            target.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
-            target.BCCEmails = source.BCCEmails;
-            target.CCEmails = source.CCEmails;
-            target.CommunicationTemplate = source.CommunicationTemplate;
+            target.BinaryFileId = source.BinaryFileId;
             target.CommunicationTemplateId = source.CommunicationTemplateId;
-            target.CommunicationType = source.CommunicationType;
-            target.EnabledLavaCommands = source.EnabledLavaCommands;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.FromEmail = source.FromEmail;
-            target.FromName = source.FromName;
-            target.FutureSendDateTime = source.FutureSendDateTime;
-            target.IsBulkCommunication = source.IsBulkCommunication;
-            target.ListGroupId = source.ListGroupId;
-            target.Message = source.Message;
-            target.MessageMetaData = source.MessageMetaData;
-            target.Name = source.Name;
-            target.PushMessage = source.PushMessage;
-            target.PushSound = source.PushSound;
-            target.PushTitle = source.PushTitle;
-            target.ReplyToEmail = source.ReplyToEmail;
-            target.ReviewedDateTime = source.ReviewedDateTime;
-            target.ReviewerNote = source.ReviewerNote;
-            target.ReviewerPersonAliasId = source.ReviewerPersonAliasId;
-            target.SegmentCriteria = source.SegmentCriteria;
-            target.Segments = source.Segments;
-            target.SenderPersonAliasId = source.SenderPersonAliasId;
-            target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
-            target.SMSMessage = source.SMSMessage;
-            target.Status = source.Status;
-            target.Subject = source.Subject;
-            target.UrlReferrer = source.UrlReferrer;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

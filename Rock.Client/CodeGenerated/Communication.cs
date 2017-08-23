@@ -44,6 +44,12 @@ namespace Rock.Client
         public string CCEmails { get; set; }
 
         /// <summary />
+        public CommunicationTemplate CommunicationTemplate { get; set; }
+
+        /// <summary />
+        public int? CommunicationTemplateId { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.CommunicationType CommunicationType { get; set; }
 
         /// <summary />
@@ -69,12 +75,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? ListGroupId { get; set; }
-
-        /// <summary />
-        public string MediumDataJson { get; set; }
-
-        /// <summary />
-        public int? MediumEntityTypeId { get; set; }
 
         /// <summary />
         public string Message { get; set; }
@@ -132,6 +132,9 @@ namespace Rock.Client
         /// <summary />
         public string Subject { get; set; }
 
+        /// <summary />
+        public string UrlReferrer { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -168,6 +171,8 @@ namespace Rock.Client
             this.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
             this.BCCEmails = source.BCCEmails;
             this.CCEmails = source.CCEmails;
+            this.CommunicationTemplate = source.CommunicationTemplate;
+            this.CommunicationTemplateId = source.CommunicationTemplateId;
             this.CommunicationType = source.CommunicationType;
             this.EnabledLavaCommands = source.EnabledLavaCommands;
             this.ForeignGuid = source.ForeignGuid;
@@ -177,8 +182,6 @@ namespace Rock.Client
             this.FutureSendDateTime = source.FutureSendDateTime;
             this.IsBulkCommunication = source.IsBulkCommunication;
             this.ListGroupId = source.ListGroupId;
-            this.MediumDataJson = source.MediumDataJson;
-            this.MediumEntityTypeId = source.MediumEntityTypeId;
             this.Message = source.Message;
             this.MessageMetaData = source.MessageMetaData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
@@ -197,6 +200,7 @@ namespace Rock.Client
             this.SMSMessage = source.SMSMessage;
             this.Status = source.Status;
             this.Subject = source.Subject;
+            this.UrlReferrer = source.UrlReferrer;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -217,12 +221,6 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<CommunicationAttachment> Attachments { get; set; }
-
-        /// <summary />
-        public Dictionary<string, string> MediumData { get; set; }
-
-        /// <summary />
-        public EntityType MediumEntityType { get; set; }
 
         /// <summary />
         public ICollection<CommunicationRecipient> Recipients { get; set; }

@@ -27,21 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for CommunicationTemplate that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for CommunicationTemplateAttachment that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class CommunicationTemplateEntity
+    public partial class CommunicationTemplateAttachmentEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public string BCCEmails { get; set; }
+        public int BinaryFileId { get; set; }
 
         /// <summary />
-        public string CCEmails { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
+        public int CommunicationTemplateId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -49,55 +46,10 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
-        /// <summary />
-        public string FromEmail { get; set; }
-
-        /// <summary />
-        public string FromName { get; set; }
-
-        /// <summary />
-        public int? ImageFileId { get; set; }
-
-        /// <summary />
-        public string MediumDataJson { get; set; }
-
-        /// <summary />
-        public string Message { get; set; }
-
-        /// <summary />
-        public string MessageMetaData { get; set; }
-
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
-
-        /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public string PushMessage { get; set; }
-
-        /// <summary />
-        public string PushSound { get; set; }
-
-        /// <summary />
-        public string PushTitle { get; set; }
-
-        /// <summary />
-        public string ReplyToEmail { get; set; }
-
-        /// <summary />
-        public int? SenderPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? SMSFromDefinedValueId { get; set; }
-
-        /// <summary />
-        public string SMSMessage { get; set; }
-
-        /// <summary />
-        public string Subject { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -126,33 +78,17 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source CommunicationTemplate object
+        /// Copies the base properties from a source CommunicationTemplateAttachment object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( CommunicationTemplate source )
+        public void CopyPropertiesFrom( CommunicationTemplateAttachment source )
         {
             this.Id = source.Id;
-            this.BCCEmails = source.BCCEmails;
-            this.CCEmails = source.CCEmails;
-            this.Description = source.Description;
+            this.BinaryFileId = source.BinaryFileId;
+            this.CommunicationTemplateId = source.CommunicationTemplateId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.FromEmail = source.FromEmail;
-            this.FromName = source.FromName;
-            this.ImageFileId = source.ImageFileId;
-            this.MediumDataJson = source.MediumDataJson;
-            this.Message = source.Message;
-            this.MessageMetaData = source.MessageMetaData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
-            this.PushMessage = source.PushMessage;
-            this.PushSound = source.PushSound;
-            this.PushTitle = source.PushTitle;
-            this.ReplyToEmail = source.ReplyToEmail;
-            this.SenderPersonAliasId = source.SenderPersonAliasId;
-            this.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
-            this.SMSMessage = source.SMSMessage;
-            this.Subject = source.Subject;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -164,22 +100,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for CommunicationTemplate that includes all the fields that are available for GETs. Use this for GETs (use CommunicationTemplateEntity for POST/PUTs)
+    /// Client model for CommunicationTemplateAttachment that includes all the fields that are available for GETs. Use this for GETs (use CommunicationTemplateAttachmentEntity for POST/PUTs)
     /// </summary>
-    public partial class CommunicationTemplate : CommunicationTemplateEntity
+    public partial class CommunicationTemplateAttachment : CommunicationTemplateAttachmentEntity
     {
-        /// <summary />
-        public ICollection<CommunicationTemplateAttachment> Attachments { get; set; }
-
-        /// <summary />
-        public Dictionary<string, string> MediumData { get; set; }
-
-        /// <summary />
-        public PersonAlias SenderPersonAlias { get; set; }
-
-        /// <summary />
-        public DefinedValue SMSFromDefinedValue { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
