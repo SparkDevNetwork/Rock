@@ -32,29 +32,75 @@
                     </div>
                 </div>
 
-
-                <Rock:RockControlWrapper ID="rcwMediumType" runat="server" Label="Select the communication medium that this template supports.">
-                    <div class="controls">
-                        <div class="js-mediumtype">
-                            <Rock:HiddenFieldWithClass ID="hfMediumType" CssClass="js-hidden-selected" runat="server" />
-                            <div class="btn-group">
-                                <a id="btnMediumRecipientPreference" runat="server" class="btn btn-info btn-sm active js-medium-recipientpreference" data-val="0">Recipient Preference</a>
-                                <a id="btnMediumEmail" runat="server" class="btn btn-default btn-sm" data-val="1">Email</a>
-                                <a id="btnMediumSMS" runat="server" class="btn btn-default btn-sm" data-val="2">SMS</a>
+                <asp:Panel ID="pnlEmailTemplate" CssClass="js-email-template" runat="server">
+                    <h2>Email</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbFromAddress" runat="server" Label="From Address" />
+                            <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
+                            <div class="pull-right">
+                                <a href="#" class="btn btn-xs btn-link js-show-additional-fields">Show Additional Fields</a>
                             </div>
                         </div>
                     </div>
-                </Rock:RockControlWrapper>
 
-                <asp:Panel ID="pnlEmailTemplate" CssClass="js-email-template" runat="server">
-                    <h2>Email</h2>
-                    <Rock:CodeEditor ID="ceEmailTemplate" runat="server" Label="Message Template" EditorHeight="600" EditorMode="Html"  />
+                    <asp:Panel ID="pnlEmailSummaryAdditionalFields" runat="server" CssClass="js-additional-fields" Style="display: none">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbReplyToAddress" runat="server" Label="Reply To Address" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbCCList" runat="server" Label="CC List" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbBCCList" runat="server" Label="BCC List" />
+                            </div>
+                        </div>
+                    </asp:Panel>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbEmailSubject" runat="server" Label="Email Subject" />
+                            <asp:UpdatePanel ID="upFileAttachments" runat="server">
+                                <ContentTemplate>
+                                    <asp:HiddenField ID="hfAttachedBinaryFileIds" runat="server" />
+                                    <Rock:FileUploader ID="fupAttachments" runat="server" Label="Attachments" OnFileUploaded="fupAttachments_FileUploaded" />
+                                    <asp:Literal ID="lAttachmentListHtml" runat="server" />
+                                </ContentTemplate>
+                            </asp:UpdatePanel>
+                        </div>
+                        <div class="col-md-6">
+                            
+                        </div>
+                    </div>
+
+                    <Rock:CodeEditor ID="ceEmailTemplate" runat="server" Label="Message Template" EditorHeight="400" EditorMode="Html" />
                 </asp:Panel>
 
                 <asp:Panel ID="pnlSMSTemplate" CssClass="js-sms-template" runat="server">
                     <h2>SMS</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlSMSFrom" runat="server" Label="From" Help="The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values)." />
+                            <Rock:RockControlWrapper ID="rcwSMSMessage" runat="server" Label="Message" Help="<span class='tip tip-lava'></span>">
+                                <Rock:MergeFieldPicker ID="mfpSMSMessage" runat="server" CssClass="margin-b-sm pull-right" OnSelectItem="mfpMessage_SelectItem"  />
+                                <asp:HiddenField ID="hfSMSCharLimit" runat="server" />
+                                <asp:Label ID="lblSMSMessageCount" runat="server" CssClass="badge margin-all-sm pull-right" />
+                                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" />
+                                <Rock:NotificationBox ID="nbSMSTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test SMS has been sent." Visible="false" />
+                            </Rock:RockControlWrapper>
+                        </div>
+                        <div class="col-md-6">
+                        </div>
+                    </div>
                 </asp:Panel>
-
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
@@ -65,38 +111,33 @@
         </div>
 
         <script>
+
             Sys.Application.add_load(function ()
             {
-                $('.js-mediumtype .btn').on('click', function (e)
+                $('.js-show-additional-fields').off('click').on('click', function ()
                 {
-                    setActiveMediumTypeButton($(this));
+                    $('#<%=hfShowAdditionalFields.ClientID %>').val(!$('.js-addition-fields').is(':visible'));
+                    $('.js-additional-fields').slideToggle();
                 });
 
-                setActiveMediumTypeButton($('.js-mediumtype').find("[data-val='" + $('.js-mediumtype .js-hidden-selected').val() + "']"));
+                if ($('#<%=hfShowAdditionalFields.ClientID %>').val() == "true") {
+                    $('.js-additional-fields').show();
+                }
             });
 
-            function setActiveMediumTypeButton($activeBtn)
+            function removeAttachment(source, hf, fileId)
             {
-                $activeBtn.addClass('active').addClass('btn-info').removeClass('btn-default');
-                $activeBtn.siblings('.btn').removeClass('active').removeClass('btn-info').addClass('btn-default')
-                $activeBtn.closest('.btn-group').siblings('.js-hidden-selected').val($activeBtn.data('val'));
+                // Get the attachment list
+                var $hf = $('#' + hf);
+                var fileIds = $hf.val().split(',');
 
-                $pnlEmail = $('#<%=pnlEmailTemplate.ClientID%>');
-                $pnlSMS = $('#<%=pnlSMSTemplate.ClientID%>');
+                // Remove the selected attachment 
+                var removeAt = $.inArray(fileId, fileIds);
+                fileIds.splice(removeAt, 1);
+                $hf.val(fileIds.join());
 
-                if ($('#<%=btnMediumEmail.ClientID%>').hasClass('active') || $('.js-medium-recipientpreference').hasClass('active')) {
-                    $pnlEmail.show();
-                }
-                else {
-                    $pnlEmail.hide();
-                }
-
-                if ($('#<%=btnMediumSMS.ClientID%>').hasClass('active') || $('.js-medium-recipientpreference').hasClass('active')) {
-                    $pnlSMS.show();
-                }
-                else {
-                    $pnlSMS.hide();
-                }
+                // Remove parent <li>
+                $(source).closest($('li')).remove();
             }
         </script>
 
