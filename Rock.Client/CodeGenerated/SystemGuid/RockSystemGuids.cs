@@ -37,6 +37,7 @@ namespace Rock.Client.SystemGuid
         public const string GLOBAL_ENABLED_LAVA_COMMANDS = "933CFB7D-C9E1-BDAE-40AD-231002A91626";
         public const string GROUP_AGE_RANGE = "43511B8F-71D9-423A-85BF-D1CD08C1998E";
         public const string GROUP_BIRTHDATE_RANGE = "F1A43EAB-D682-403F-A05E-CCFFBF879F32";
+        public const string GROUP_COMMUNICATION_SEGMENTS = "73A53BC1-2178-46A1-8413-C7A4DD49F0B4";
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
         public const string PERSON_ERA_CURRENTLY_AN_ERA = "CE5739C5-2156-E2AB-48E5-1337C38B935E";
         public const string PERSON_ERA_END_DATE = "4711D67E-7526-9582-4A8E-1CD7BBE1B3A2";
@@ -85,6 +86,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Category
     {
+        public const string DATAVIEW_COMMUNICATION_SEGMENTS = "FF7081F8-7223-43D4-BE28-CB030DC4E13B";
         public const string DEFINEDTYPE_CMS = "6B1B3106-B7F5-BBA2-4F81-8300F21F6661";
         public const string HISTORY_EVENT_REGISTRATION = "813DF1A5-ADBD-481C-AC1D-884F0FA7AE77";
         public const string HISTORY_FINANCIAL_BATCH = "AF6A8CFF-F24F-4AA8-B126-94B6903961C0";
@@ -104,6 +106,13 @@ namespace Rock.Client.SystemGuid
         public const string SCHEDULE_METRICS = "5A794741-5444-43F0-90D7-48E47276D426";
         public const string SCHEDULE_SERVICE_TIMES = "4FECC91B-83F9-4269-AE03-A006F401C47E";
         public const string SYSTEM_EMAIL_WORKFLOW = "C7B9B5F1-9D90-485F-93E4-5D7D81EC2B12";
+    }
+
+    /// <summary>
+    /// </summary>
+    public class Communication
+    {
+        public const string COMMUNICATION_TEMPLATE_BLANK = "A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A";
     }
 
     /// <summary>
@@ -321,12 +330,14 @@ namespace Rock.Client.SystemGuid
         public const string CATEGORY = "309460EF-0CC5-41C6-9161-B3837BA3D374";
         public const string CODE_EDITOR = "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5";
         public const string COLOR = "D747E6AE-C383-4E22-8846-71518E3DD06F";
+        public const string COMMUNICATION_PREFERENCE_TYPE = "507C28F2-8BC0-4909-A4FE-9C2B1149E2B2";
         public const string COMMUNICATION_TEMPLATE = "C3B37465-DCAF-4C8C-930C-9A9B5D066CA9";
         public const string COMPARISON = "3C742B81-3C55-48B8-A7CD-E7762EA5BB91";
         public const string COMPONENT = "A7486B0E-4CA2-4E00-A987-5544C7DABA76";
         public const string COMPONENTS = "039E2E97-3682-4B29-8748-7132287A2059";
         public const string CONTENT_CHANNEL = "D835A0EC-C8DB-483A-A37C-E8FB6E956C3D";
         public const string CURRENCY = "3EE69CBC-35CE-4496-88CC-8327A447603F";
+        public const string DATAVIEWS = "F739BF5D-3FDC-45EC-A03C-1AE7C47E3883";
         public const string DATE = "6B6AA175-4758-453F-8D83-FCD8044B5F36";
         public const string DATE_RANGE = "9C7D431C-875C-4792-9E76-93F3A32BB850";
         public const string DATE_TIME = "FE95430C-322D-4B67-9C77-DFD1D4408725";

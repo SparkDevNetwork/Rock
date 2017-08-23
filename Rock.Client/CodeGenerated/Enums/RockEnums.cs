@@ -121,7 +121,7 @@ namespace Rock.Client.Enums
     /// </summary>
     public enum CommunicationType
     {
-        UserPreference = 0x0,
+        RecipientPreference = 0x0,
         Email = 0x1,
         SMS = 0x2,
         PushNotification = 0x3,
