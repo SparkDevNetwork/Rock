@@ -497,50 +497,51 @@ namespace RockWeb.Blocks.Communication
             ValidateFutureDelayDateTime();
             if ( Page.IsValid && CurrentPersonAliasId.HasValue && cvDelayDateTime.IsValid )
             {
-
                 // Get existing or new communication record
-                var rockContext = new RockContext();
-                var communication = UpdateCommunication( rockContext );
-
+                var communication = UpdateCommunication( new RockContext() );
                 if ( communication != null )
                 {
-                    // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-                    var testCommunication = communication.Clone( false );
-                    testCommunication.Id = 0;
-                    testCommunication.Guid = Guid.Empty;
-                    testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
-                    testCommunication.ForeignGuid = null;
-                    testCommunication.ForeignId = null;
-                    testCommunication.ForeignKey = null;
-
-                    testCommunication.FutureSendDateTime = null;
-                    testCommunication.Status = CommunicationStatus.Approved;
-                    testCommunication.ReviewedDateTime = RockDateTime.Now;
-                    testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
-
-                    var testRecipient = new CommunicationRecipient();
-                    if ( communication.GetRecipientCount( rockContext ) > 0 )
+                    using ( var rockContext = new RockContext() )
                     {
-                        var recipient = communication.GetRecipientsQry( rockContext ).FirstOrDefault();
-                        testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
+                        // Using a new context (so that changes in the UpdateCommunication() are not persisted )
+                        var testCommunication = communication.Clone( false );
+                        testCommunication.Id = 0;
+                        testCommunication.Guid = Guid.Empty;
+                        testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+                        testCommunication.ForeignGuid = null;
+                        testCommunication.ForeignId = null;
+                        testCommunication.ForeignKey = null;
+
+                        testCommunication.FutureSendDateTime = null;
+                        testCommunication.Status = CommunicationStatus.Approved;
+                        testCommunication.ReviewedDateTime = RockDateTime.Now;
+                        testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
+
+                        var testRecipient = new CommunicationRecipient();
+                        if ( communication.GetRecipientCount( rockContext ) > 0 )
+                        {
+                            var recipient = communication.GetRecipientsQry( rockContext ).FirstOrDefault();
+                            testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
+                        }
+
+                        testRecipient.Status = CommunicationRecipientStatus.Pending;
+                        testRecipient.PersonAliasId = CurrentPersonAliasId.Value;
+                        testRecipient.MediumEntityTypeId = MediumEntityTypeId;
+                        testCommunication.Recipients.Add( testRecipient );
+
+                        var communicationService = new CommunicationService( rockContext );
+                        communicationService.Add( testCommunication );
+                        rockContext.SaveChanges();
+
+                        foreach ( var medium in testCommunication.Mediums )
+                        {
+                            medium.Send( testCommunication );
+                        }
+
+                        communicationService.Delete( testCommunication );
+                        rockContext.SaveChanges();
                     }
-
-                    testRecipient.Status = CommunicationRecipientStatus.Pending;
-                    testRecipient.PersonAliasId = CurrentPersonAliasId.Value;
-                    testCommunication.Recipients.Add( testRecipient );
-
-                    var communicationService = new CommunicationService( rockContext );
-                    communicationService.Add( testCommunication );
-                    rockContext.SaveChanges();
-
-                    foreach( var medium in testCommunication.Mediums )
-                    {
-                        medium.Send( testCommunication );
-                    }
-
-                    communicationService.Delete( testCommunication );
-                    rockContext.SaveChanges();
-
+                    
                     nbTestResult.Visible = true;
                 }
             }
@@ -758,9 +759,9 @@ namespace RockWeb.Blocks.Communication
             CommunicationId = communication.Id;
 
             var firstMedium = communication.Mediums.FirstOrDefault();
-            if ( firstMedium != null )
+            if ( firstMedium != null && firstMedium.EntityType != null )
             {
-                MediumEntityTypeId = firstMedium.Id;
+                MediumEntityTypeId = firstMedium.EntityType.Id;
             }
             BindMediums();
 
@@ -779,19 +780,16 @@ namespace RockWeb.Blocks.Communication
                     template = new CommunicationTemplateService( new RockContext() ).Queryable().Where( t => t.Guid == guid ).FirstOrDefault();
                 }
 
-                if ( template != null && template.CommunicationType == communication.CommunicationType )
+                foreach ( ListItem item in ddlTemplate.Items )
                 {
-                    foreach ( ListItem item in ddlTemplate.Items )
+                    if ( item.Value == template.Id.ToString() )
                     {
-                        if ( item.Value == template.Id.ToString() )
-                        {
-                            item.Selected = true;
-                            GetTemplateData( template.Id, false );
-                        }
-                        else
-                        {
-                            item.Selected = false;
-                        }
+                        item.Selected = true;
+                        GetTemplateData( template.Id, false );
+                    }
+                    else
+                    {
+                        item.Selected = false;
                     }
                 }
             }
@@ -836,6 +834,10 @@ namespace RockWeb.Blocks.Communication
 
             divMediums.Visible = mediums.Count() > 1;
 
+            if ( !MediumEntityTypeId.HasValue || MediumEntityTypeId.Value == 0 && mediums.Any() )
+            {
+                MediumEntityTypeId = mediums.First().Key;
+            }
             rptMediums.DataSource = mediums;
             rptMediums.DataBind();
         }
@@ -855,7 +857,6 @@ namespace RockWeb.Blocks.Communication
                 if ( medium != null )
                 {
                     foreach ( var template in new CommunicationTemplateService( new RockContext() ).Queryable()
-                        .Where( t => t.CommunicationType == medium.CommunicationType )
                         .OrderBy( t => t.Name ) )
                     {
                         if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -1159,7 +1160,7 @@ namespace RockWeb.Blocks.Communication
             Rock.Model.Communication communication = null;
             IQueryable<CommunicationRecipient> qryRecipients = null;
 
-            if ( CommunicationId.HasValue )
+            if ( CommunicationId.HasValue && CommunicationId.Value != 0 )
             {
                 communication = communicationService.Get( CommunicationId.Value );
             }
@@ -1224,6 +1225,7 @@ namespace RockWeb.Blocks.Communication
                 communication.CommunicationType = medium.CommunicationType;
             }
 
+            GetMediumData();
             CommunicationDetails.Copy( CommunicationData, communication );
 
             DateTime? futureSendDate = dtpFutureSend.SelectedDateTime;
