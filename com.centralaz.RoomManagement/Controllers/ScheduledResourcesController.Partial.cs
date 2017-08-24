@@ -166,7 +166,7 @@ namespace Rock.Rest.Controllers
 
                             var scheduledCategoryItem = new ScheduledCategoryItem();
                             scheduledCategoryItem.Id = categorizedItem.Id.ToString();
-                            scheduledCategoryItem.Name = String.Format( "{0} ({1})", categorizedItem.Name, availableQuantity );
+                            scheduledCategoryItem.Name = String.Format( "{0} ({1}) [{2}]", categorizedItem.Name, availableQuantity, categorizedItem.Campus.Name );
                             scheduledCategoryItem.IsCategory = false;
                             scheduledCategoryItem.IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ) as string ?? defaultIconCssClass;
                             scheduledCategoryItem.IconSmallUrl = string.Empty;
