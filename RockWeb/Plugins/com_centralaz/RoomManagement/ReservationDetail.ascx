@@ -25,13 +25,20 @@
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="rtbName" runat="server" Label="Event Name" Required="true" SourceTypeName="com.centralaz.RoomManagement.Model.Reservation, com.centralaz.RoomManagement" PropertyName="Name" />
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule">
                                     <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule" />
                                     <asp:Literal ID="lScheduleText" runat="server" />
                                 </Rock:RockControlWrapper>
                             </div>
+                            <div class="col-md-4">
+                                <Rock:NumberBox ID="nbSetupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="How many minutes to set up?" OnTextChanged="nbSetupTime_TextChanged" Help="The number of minutes it will take to set up the event." RequiredErrorMessage="You must supply a number for setup time (even if 0 minutes) as this will effect when others can reserve the same location/resource." />
+                            </div>
+                            <div class="col-md-4">
+                                <Rock:NumberBox ID="nbCleanupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="How many minutes to clean up?" OnTextChanged="nbCleanupTime_TextChanged" Help="The number of minutes it will take to clean up the event." RequiredErrorMessage="You must supply a number for cleanup time (even if 0 minutes) as this will effect when others can reserve the same location/resource." />
+                            </div>
                         </div>
+
                         <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" Required="false" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" AutoPostBack="true" />
                         <Rock:RockDropDownList ID="ddlMinistry" runat="server" Label="Ministry" Required="false" />
                         <div class="row">
@@ -72,27 +79,6 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:NumberBox ID="nbSetupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="How many minutes to set up?" OnTextChanged="nbSetupTime_TextChanged" Help="The number of minutes it will take to set up the event." RequiredErrorMessage="You must supply a number for setup time (even if 0 minutes) as this will effect when others can reserve the same location/resource." />
-                            </div>
-                            <div class="col-md-6">
-                                <Rock:NumberBox ID="nbCleanupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="How many minutes to clean up?" OnTextChanged="nbCleanupTime_TextChanged" Help="The number of minutes it will take to clean up the event." RequiredErrorMessage="You must supply a number for cleanup time (even if 0 minutes) as this will effect when others can reserve the same location/resource." />
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-3">
-                                <Rock:NumberBox ID="nbAttending" runat="server" NumberType="Integer" MinimumValue="0" Label="Number Attending" Required="false" />
-                            </div>
-                            <div class="col-md-3">
-                                <Rock:FileUploader ID="fuSetupPhoto" runat="server" Label="Setup Photo" Help="If you'd like a special setup for your event, please upload a photo or diagram here." />
-                            </div>
-
-                        </div>
-
-                        <Rock:DataTextBox ID="rtbNote" runat="server" Label="Notes" TextMode="MultiLine" Rows="4" MaxLength="2500" SourceTypeName="com.centralaz.RoomManagement.Model.Reservation, com.centralaz.RoomManagement" PropertyName="Note" />
-
                         <Rock:PanelWidget ID="wpLocations" runat="server" Title="Locations">
                             <div class="grid">
                                 <Rock:ModalAlert ID="maLocationGridWarning" runat="server" />
@@ -108,6 +94,7 @@
                                 </Rock:Grid>
                             </div>
                         </Rock:PanelWidget>
+
                         <Rock:PanelWidget ID="wpResources" runat="server" Title="Resources">
                             <div class="grid">
                                 <Rock:ModalAlert ID="maResourceGridWarning" runat="server" />
@@ -127,6 +114,17 @@
                                 </Rock:Grid>
                             </div>
                         </Rock:PanelWidget>
+
+                        <Rock:DataTextBox ID="rtbNote" runat="server" Label="Notes" TextMode="MultiLine" Rows="4" MaxLength="2500" SourceTypeName="com.centralaz.RoomManagement.Model.Reservation, com.centralaz.RoomManagement" PropertyName="Note" />
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <Rock:NumberBox ID="nbAttending" runat="server" NumberType="Integer" MinimumValue="0" Label="Number Attending" Required="false" />
+                            </div>
+                            <div class="col-md-3">
+                                <Rock:FileUploader ID="fuSetupPhoto" runat="server" Label="Setup Photo" Help="If you'd like a special setup for your event, please upload a photo or diagram here." />
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="actions">
