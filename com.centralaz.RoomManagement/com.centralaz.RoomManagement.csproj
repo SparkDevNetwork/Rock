@@ -90,6 +90,7 @@
     <Compile Include="Field\Types\ReservationApprovalStateFieldType.cs" />
     <Compile Include="Field\Types\ReservationFieldType.cs" />
     <Compile Include="Jobs\FireWorkflowFromReservationInDateRange.cs" />
+    <Compile Include="Migrations\012_NotificationJobAttributes.cs" />
     <Compile Include="Migrations\011_NewBlockSettings.cs" />
     <Compile Include="Migrations\010_ColumnChanges.cs" />
     <Compile Include="Migrations\009_NotificationSystemEmail.cs" />
