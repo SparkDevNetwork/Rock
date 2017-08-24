@@ -1,7 +1,14 @@
 ﻿var RockPasteFromWord = function (context) {
     var ui = $.summernote.ui;
 
-    $(context.layoutInfo.note).on('summernote.paste', function (we, e) {
+    // set a maximumImageFileSize to prevent images from getting pasted and triggering a summernote image upload from the clipboard (only seems to happen on Edge)
+    context.options.maximumImageFileSize = 1;
+
+    // remove the summernote clipboard keydown handler since this can cause problems on FF and IE, and we are handling it here anyways
+    $(context.layoutInfo.note).off('summernote.keydown');
+  
+    $(context.layoutInfo.note).on('summernote.paste', function (we, e)
+    {
         // catch the paste event and do either the rockpastetext or rockpastefromword if we can figure out if they are pasting from word
         var ua = window.navigator.userAgent;
         var msie = ua.indexOf("MSIE ");
@@ -90,9 +97,32 @@
         context.invoke('editor.restoreRange');
         var pastedContent = $dialog.find('.js-paste-area').html();
 
+        var imgBase64 = /.*src=\"data:image\/([a-zA-Z]*);base64,([^\"]*)\"/g;
+        
+        if (imgBase64.test(pastedContent)) {
+          // don't allow pasting content with base64 image data
+          pastedContent = "";
+        }
+
+        // some browsers might just paste the data:image portion of the pasted base64 image
+        var imgBase64FF = /.*data:image\/([a-zA-Z]*);base64,([^\"]*)/g;
+        if (imgBase64FF.test(pastedContent)) {
+          // don't allow pasting content with base64 image data
+          pastedContent = "";
+        }
+
+        // if copying from Word into Edge, the html might be a giant glob of stuff but with a StartFragment/EndFragment section that we can grab
+        var wordPastedFragment = /<!--StartFragment-->*[\s\S]*<!--EndFragment-->/g
+        if (!!navigator.userAgent.match(/Edge\/\d+/) && wordPastedFragment.test(pastedContent))
+        {
+          pastedContent = pastedContent.match(wordPastedFragment)[0];
+        }
+
         var cleaned = cleanText(pastedContent).trim();
         var cleaned = cleanParagraphs(cleaned);
-        context.invoke('editor.pasteHTML', cleaned);
+        if (cleaned && cleaned != '') {
+          context.invoke('editor.pasteHTML', cleaned);
+        }
     });
 
     function doPasteFromWord(pasteEvent, mimeType) {
