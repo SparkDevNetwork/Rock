@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using Rock.Model;
 using Rock.Plugin;
+using Rock;
 
 namespace com.centralaz.RoomManagement.Migrations
 {
@@ -240,15 +242,7 @@ return reservation.Schedule.GetCalenderEvent().Duration.Hours + "" hrs "" + rese
             RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.ServiceJob", "46A03F59-55D3-4ACE-ADD5-B4642225DD20", "Class", "com.centralaz.RoomManagement.Jobs.FireWorkflowFromReservationInDateRange", "Workflow Type", "The workflow type to fire for eligible reservations.  The type MUST have a 'ReservationId' attribute that will be set by this job.", 0, @"", "E14B7BA0-77D8-4553-B2E0-070FF3ECA34E", "WorkflowType" );
 
             RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.ServiceJob", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Class", "com.centralaz.RoomManagement.Jobs.FireWorkflowFromReservationInDateRange", "Reservation Statuses", "The reservation statuses to filter by", 0, @"", "49D7EDB4-E2FB-4081-B4D5-43D8217BF105", "Status" );
-
-            RockMigrationHelper.AddAttributeValue( "8F3BEC15-A076-4C07-8047-D85C319F8DBF", 32, @"Upcoming|1|Day||", "8F3BEC15-A076-4C07-8047-D85C319F8DBF" ); // Reservation Reminder: Date Range
-
-            RockMigrationHelper.AddAttributeValue( "3E394836-2175-4C5B-9247-063BCB6CD6D2", 32, @"True", "3E394836-2175-4C5B-9247-063BCB6CD6D2" ); // Reservation Reminder: Include only reservations that start in date range
-
-            RockMigrationHelper.AddAttributeValue( "E14B7BA0-77D8-4553-B2E0-070FF3ECA34E", 32, @"a219357d-4992-415e-bf5f-33c242bb3bd2", "E14B7BA0-77D8-4553-B2E0-070FF3ECA34E" ); // Reservation Reminder: Workflow Type
-
-            RockMigrationHelper.AddAttributeValue( "49D7EDB4-E2FB-4081-B4D5-43D8217BF105", 32, @"2", "49D7EDB4-E2FB-4081-B4D5-43D8217BF105" ); // Reservation Reminder: Reservation Statuses
-
+         
             #endregion
         }
 
