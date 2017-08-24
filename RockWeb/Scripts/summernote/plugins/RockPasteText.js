@@ -21,7 +21,9 @@
         context.invoke('editor.restoreRange');
         var text = $dialog.find('.js-paste-area').text();
 
-        context.invoke('editor.insertText', text);
+        if (text && text != "") {
+          context.invoke('editor.insertText', text);
+        }
     });
 
     function doPasteText(pasteEvent) {
