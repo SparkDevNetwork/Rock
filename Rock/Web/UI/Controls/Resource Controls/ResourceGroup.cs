@@ -459,20 +459,20 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// An event args class used for reordering a check-in group's locations
+    /// An event args class used for reordering a resource group's locations
     /// </summary>
     public class ResourceGroupEventArg : EventArgs
     {
         /// <summary>
-        /// Gets or sets the check-in group unique identifier.
+        /// Gets or sets the resource group unique identifier.
         /// </summary>
         /// <value>
-        /// The check-in group's unique identifier.
+        /// The resource group's unique identifier.
         /// </value>
         public Guid GroupGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the check-in group location id.
+        /// Gets or sets the resource group location id.
         /// </summary>
         /// <value>
         /// The location id.
