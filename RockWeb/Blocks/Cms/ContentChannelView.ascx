@@ -28,7 +28,7 @@
 
                             <div class="row">
                                 <div class="col-md-5">
-                                    <Rock:RockDropDownList ID="ddlChannel" runat="server" Label="Channel"
+                                    <Rock:RockDropDownList ID="ddlChannel" runat="server" Required="true" Label="Channel"
                                         DataTextField="Name" DataValueField="Guid" AutoPostBack="true" OnSelectedIndexChanged="ddlChannel_SelectedIndexChanged"
                                         Help="The channel to display items from." />
                                 </div>
