@@ -46,7 +46,7 @@
                     <ItemTemplate>
                         <asp:Literal ID="lConnectionTypeName" runat="server" />
                         <div class="list-as-blocks clearfix">    
-                            <ul>
+                            <ul class="has-count">
                                 <asp:Repeater ID="rptConnectionOpportunities" runat="server" OnItemCommand="rptConnectionOpportunities_ItemCommand">
                                     <ItemTemplate>
                                         <li class='<%# SelectedOpportunityId.HasValue && (int)Eval("Id") == SelectedOpportunityId.Value ? "active" : "" %> block-status'>
