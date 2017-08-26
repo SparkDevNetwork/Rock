@@ -1399,6 +1399,10 @@
     <Compile Include="Web\UI\Controls\Pickers\DataViewsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Resource Controls\ResourceArea.cs" />
+    <Compile Include="Web\UI\Controls\Resource Controls\ResourceAreaRow.cs" />
+    <Compile Include="Web\UI\Controls\Resource Controls\ResourceGroup.cs" />
+    <Compile Include="Web\UI\Controls\Resource Controls\ResourceGroupRow.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />

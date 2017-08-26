@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 
 namespace Rock.SystemGuid
 {
@@ -152,13 +151,13 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The financial source of Kiosk
         /// </summary>
-        public const string FINANCIAL_SOURCE_TYPE_KIOSK	= "260EEA80-821A-4F79-973F-49DF79C955F7";
-        
+        public const string FINANCIAL_SOURCE_TYPE_KIOSK = "260EEA80-821A-4F79-973F-49DF79C955F7";
+
         /// <summary>
         /// The financial source of Mobile Application
         /// </summary>
-        public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION	= "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
-        
+        public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION = "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
+
         /// <summary>
         /// The financial source of On-site Collection
         /// </summary>
@@ -201,6 +200,11 @@ namespace Rock.SystemGuid
         /// Group Type Purpose of Check-in Filter
         /// </summary>
         public const string GROUPTYPE_PURPOSE_CHECKIN_FILTER = "6BCED84C-69AD-4F5A-9197-5C0F9C02DD34";
+
+        /// <summary>
+        /// Group Type Purpose of Serving Area
+        /// </summary>
+        public const string GROUPTYPE_PURPOSE_SERVING_AREA = "36A554CE-7815-41B9-A435-93F3D52A2828";
 
         #endregion
 
@@ -351,12 +355,12 @@ namespace Rock.SystemGuid
         #region Person Record Status Reason
 
         /// <summary>
-        /// Inactive record status reason of Deceased 
+        /// Inactive record status reason of Deceased
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_DECEASED = "05D35BC4-5816-4210-965F-1BF44F35A16A";
 
         /// <summary>
-        /// Inactive record status reason of No Activity 
+        /// Inactive record status reason of No Activity
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_NO_ACTIVITY = "64014FE6-943D-4ACF-8014-FED9F9169AE8";
 
@@ -458,7 +462,7 @@ namespace Rock.SystemGuid
         /// Flot Chart Style
         /// </summary>
         public const string CHART_STYLE_FLOT = "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC";
-        
+
         /// <summary>
         /// Rock Chart Style
         /// </summary>
@@ -476,6 +480,7 @@ namespace Rock.SystemGuid
         #endregion
 
         #region Benevolence
+
         /// <summary>
         /// Benevolence Pending
         /// </summary>
@@ -490,6 +495,7 @@ namespace Rock.SystemGuid
         /// Benevolence Denied
         /// </summary>
         public const string BENEVOLENCE_DENIED = "3720671E-DA48-405F-A6D5-5E2D47436F9A";
+
         #endregion
 
         #region Interactions
@@ -501,7 +507,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Interaction Channel Type: UrlShortener
-        /// </summary>        
+        /// </summary>
         public const string INTERACTIONCHANNELTYPE_URLSHORTENER = "371066D5-C5F9-4783-88C8-D9AC8DC67468";
 
         /// <summary>
@@ -520,6 +526,5 @@ namespace Rock.SystemGuid
         public const string INTERACTIONCHANNELTYPE_WIFI_PRESENCE = "338CB800-C556-46CD-849D-8AE58FC7CB0E";
 
         #endregion
-
     }
 }
