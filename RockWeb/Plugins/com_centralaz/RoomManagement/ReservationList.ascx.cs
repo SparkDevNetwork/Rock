@@ -352,7 +352,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             var today = RockDateTime.Today;
             var filterStartDateTime = dtpStartDateTime.SelectedDateTime ?? today;
             var filterEndDateTime = dtpEndDateTime.SelectedDateTime ?? today.AddMonths( 1 );
-            var reservationSummaryList = reservationService.GetReservationSummaries( qry, filterStartDateTime, filterEndDateTime );
+            var reservationSummaryList = reservationService.GetReservationSummaries( qry, filterStartDateTime, filterEndDateTime, false );
 
             // Bind to Grid
             gReservations.DataSource = reservationSummaryList.Select( r => new

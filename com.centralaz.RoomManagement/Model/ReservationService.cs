@@ -41,11 +41,14 @@ namespace com.centralaz.RoomManagement.Model
         /// <param name="filterStartDateTime">The filter start date time.</param>
         /// <param name="filterEndDateTime">The filter end date time.</param>
         /// <returns></returns>
-        public List<ReservationSummary> GetReservationSummaries( IQueryable<Reservation> qry, DateTime filterStartDateTime, DateTime filterEndDateTime )
+        public List<ReservationSummary> GetReservationSummaries( IQueryable<Reservation> qry, DateTime filterStartDateTime, DateTime filterEndDateTime , bool roundToDay = false)
         {
             var qryStartDateTime = filterStartDateTime.AddMonths( -1 );
             var qryEndDateTime = filterEndDateTime.AddMonths( 1 );
-            filterEndDateTime = filterEndDateTime.AddDays( 1 ).AddMilliseconds( -1 );
+            if ( roundToDay )
+            {
+                filterEndDateTime = filterEndDateTime.AddDays( 1 ).AddMilliseconds( -1 );
+            }
 
             var reservations = qry.ToList();
             var reservationsWithDates = reservations

@@ -232,7 +232,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             var filterStartDateTime = today;
             var filterEndDateTime = today;
 
-            var reservationSummaryList = reservationService.GetReservationSummaries( qry, filterStartDateTime, filterEndDateTime );
+            var reservationSummaryList = reservationService.GetReservationSummaries( qry, filterStartDateTime, filterEndDateTime, true );
             return reservationSummaryList;
         }
 
