@@ -1129,6 +1129,7 @@
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialPledgeDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialTransactionDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InUserLoginFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\LocationFilter.cs" />
