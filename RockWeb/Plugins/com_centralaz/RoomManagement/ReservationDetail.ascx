@@ -25,16 +25,16 @@
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="rtbName" runat="server" Label="Event Name" Required="true" SourceTypeName="com.centralaz.RoomManagement.Model.Reservation, com.centralaz.RoomManagement" PropertyName="Name" />
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule">
                                     <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule" />
                                     <asp:Literal ID="lScheduleText" runat="server" />
                                 </Rock:RockControlWrapper>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <Rock:NumberBox ID="nbSetupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="How many minutes to set up?" OnTextChanged="nbSetupTime_TextChanged" Help="The number of minutes it will take to set up the event." RequiredErrorMessage="You must supply a number for setup time (even if 0 minutes) as this will effect when others can reserve the same location/resource." />
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <Rock:NumberBox ID="nbCleanupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="How many minutes to clean up?" OnTextChanged="nbCleanupTime_TextChanged" Help="The number of minutes it will take to clean up the event." RequiredErrorMessage="You must supply a number for cleanup time (even if 0 minutes) as this will effect when others can reserve the same location/resource." />
                             </div>
                         </div>
