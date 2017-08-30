@@ -279,6 +279,7 @@ namespace RockWeb.Blocks.Prayer
                     ShowEditDetails( prayerRequest );
                 }
             }
+
         }
 
         /// <summary>
@@ -339,7 +340,17 @@ namespace RockWeb.Blocks.Prayer
 
             pnlDetails.Visible = true;
 
-            catpCategory.SetValue( prayerRequest.Category );
+            var prayRequestCategory = prayerRequest.Category;
+            if ( prayRequestCategory == null )
+            {
+                var defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuidOrNull();
+                if ( defaultCategoryGuid.HasValue )
+                {
+                    prayRequestCategory = new CategoryService( new RockContext() ).Get( defaultCategoryGuid.Value );
+
+                }
+            }
+            catpCategory.SetValue( prayRequestCategory );
 
             tbFirstName.Text = prayerRequest.FirstName;
             tbLastName.Text = prayerRequest.LastName;
@@ -528,16 +539,7 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequest.ExpirationDate = dpExpirationDate.SelectedDate;
             }
 
-            // If no category was selected, then use the default category if there is one.
-            int? categoryId = catpCategory.SelectedValueAsInt();
-            Guid defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuid();
-            if ( categoryId == null && !defaultCategoryGuid.IsEmpty() )
-            {
-                var category = new CategoryService( rockContext ).Get( defaultCategoryGuid );
-                categoryId = category.Id;
-            }
-
-            prayerRequest.CategoryId = categoryId;
+            prayerRequest.CategoryId = catpCategory.SelectedValueAsInt();
 
             // Now record all the bits...
             prayerRequest.IsApproved = hfApprovedStatus.Value.AsBoolean();
