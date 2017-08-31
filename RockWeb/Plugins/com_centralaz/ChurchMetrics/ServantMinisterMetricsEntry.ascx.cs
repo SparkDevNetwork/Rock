@@ -31,6 +31,7 @@ using Rock.Attribute;
 using System.Data.Entity;
 using System.Web.Security;
 using Rock.Security;
+using System.Text;
 
 namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
 {
@@ -189,6 +190,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
             int? scheduleId = bddlService.SelectedValueAsInt();
             DateTime? weekend = bddlWeekend.SelectedValue.AsDateTime();
 
+            StringBuilder sb = new StringBuilder();
             if ( campusId.HasValue && scheduleId.HasValue && weekend.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -199,11 +201,13 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                     foreach ( RepeaterItem item in rptrMetric.Items )
                     {
                         var hfMetricIId = item.FindControl( "hfMetricId" ) as HiddenField;
+                        var hfModifiedDateTime = item.FindControl( "hfModifiedDateTime" ) as HiddenField;
                         var nbMetricValue = item.FindControl( "nbMetricValue" ) as NumberBox;
 
                         if ( hfMetricIId != null && nbMetricValue != null )
                         {
                             int metricId = hfMetricIId.ValueAsInt();
+                            DateTime? modifiedDateTime = hfModifiedDateTime.Value.AsDateTime();
                             var metric = new MetricService( rockContext ).Get( metricId );
 
                             if ( metric != null )
@@ -238,10 +242,25 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                                     scheduleValuePartition.MetricPartitionId = schedulePartitionId;
                                     scheduleValuePartition.EntityId = scheduleId.Value;
                                     metricValue.MetricValuePartitions.Add( scheduleValuePartition );
-                                }
 
-                                metricValue.YValue = nbMetricValue.Text.AsDecimalOrNull();
-                                metricValue.Note = tbNote.Text;
+                                    metricValue.YValue = nbMetricValue.Text.AsDecimalOrNull();
+                                    metricValue.Note = tbNote.Text;
+                                }
+                                else
+                                {
+                                    if ( nbMetricValue.Text.AsDecimalOrNull() != metricValue.YValue )
+                                    {
+                                        if ( modifiedDateTime.ToString() == metricValue.ModifiedDateTime.ToString() || metricValue.YValue == null )
+                                        {
+                                            metricValue.YValue = nbMetricValue.Text.AsDecimalOrNull();
+                                            metricValue.Note = tbNote.Text;
+                                        }
+                                        else
+                                        {
+                                            sb.AppendFormat( "<li>{0}, last updated by {1}</li>", metric.Title, metricValue.ModifiedByPersonName );
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -252,6 +271,12 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                 nbMetricsSaved.Text = string.Format( "Your metrics for the {0} service on {1} at the {2} Campus have been saved.",
                     bddlService.SelectedItem.Text, bddlWeekend.SelectedItem.Text, bddlCampus.SelectedItem.Text );
                 nbMetricsSaved.Visible = true;
+
+                if ( sb.ToString().IsNotNullOrWhitespace() )
+                {
+                    nbMetricsSkipped.Text = string.Format( "The following metrics were not saved, due to another user saving a more recent version:</br><ul>{0}</ul>", sb.ToString() );
+                    nbMetricsSkipped.Visible = true;
+                }
 
                 BindMetrics();
 
@@ -620,6 +645,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                             if ( metricValue != null )
                             {
                                 serviceMetric.Value = (int?)metricValue.YValue;
+                                serviceMetric.ModifiedDateTime = metricValue.ModifiedDateTime;
 
                                 if ( !string.IsNullOrWhiteSpace( metricValue.Note ) &&
                                     !notes.Contains( metricValue.Note ) )
@@ -710,6 +736,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
         public int Id { get; set; }
         public string Name { get; set; }
         public int? Value { get; set; }
+        public DateTime? ModifiedDateTime { get; set; }
 
         public ServiceMetric( int id, string name )
         {

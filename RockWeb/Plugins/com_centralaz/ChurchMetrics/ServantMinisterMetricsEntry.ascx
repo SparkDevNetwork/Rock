@@ -32,11 +32,13 @@
                     <br />
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                     <Rock:NotificationBox ID="nbMetricsSaved" runat="server" Text="Metric Values Have Been Updated" NotificationBoxType="Success" Visible="false" />
+                    <Rock:NotificationBox ID="nbMetricsSkipped" runat="server" NotificationBoxType="Warning" Visible="false" />
 
                     <div class="form-horizontal label-xs">
                         <asp:Repeater ID="rptrMetric" runat="server" OnItemDataBound="rptrMetric_ItemDataBound">
                             <ItemTemplate>
                                 <asp:HiddenField ID="hfMetricId" runat="server" Value='<%# Eval("Id") %>' />
+                                <asp:HiddenField ID="hfModifiedDateTime" runat="server" Value='<%# Eval("ModifiedDateTime") %>' />
                                 <div class="row">
                                     <div class="col-xs-3" style="text-align: right">
                                         <asp:Label ID="lMetricTitle" runat="server" Text='<%# Eval( "Name") %>' />
