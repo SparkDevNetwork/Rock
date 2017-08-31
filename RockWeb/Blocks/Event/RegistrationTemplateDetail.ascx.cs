@@ -39,7 +39,8 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registration Template Detail" )]
     [Category( "Event" )]
     [Description( "Displays the details of the given registration template." )]
-
+    [BooleanField( "Add Staff Edit Permissions", "When a new template is created, Staff & Staff Like Workers security role will be added to Edit permissions", true)]
+    
     [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 
@@ -1125,7 +1126,7 @@ namespace RockWeb.Blocks.Event
                 AttributeCache.FlushEntityAttributes();
 
                 // If this is a new template, give the current user and the Registration Administrators role administrative 
-                // rights to this template, and staff, and staff like roles edit rights
+                // rights to this template.  
                 if ( newTemplate )
                 {
                     RegistrationTemplate.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
@@ -1133,11 +1134,16 @@ namespace RockWeb.Blocks.Event
                     var registrationAdmins = groupService.Get( Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS.AsGuid() );
                     RegistrationTemplate.AllowSecurityRole( Authorization.ADMINISTRATE, registrationAdmins, rockContext );
 
-                    var staffLikeUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS.AsGuid() );
-                    RegistrationTemplate.AllowSecurityRole( Authorization.EDIT, staffLikeUsers, rockContext );
+                    // Add staff and staff like workers to edit permissions if attribute value is set to true
+                    if ( GetAttributeValue( "AddStaffEditPermissions" ).AsBoolean() )
+                    {
+                        var staffLikeUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS.AsGuid() );
+                        RegistrationTemplate.AllowSecurityRole( Authorization.EDIT, staffLikeUsers, rockContext );
 
-                    var staffUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS.AsGuid() );
-                    RegistrationTemplate.AllowSecurityRole( Authorization.EDIT, staffUsers, rockContext );
+                        var staffUsers = groupService.Get( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS.AsGuid() );
+                        RegistrationTemplate.AllowSecurityRole( Authorization.EDIT, staffUsers, rockContext );
+                    }
+
                 }
 
                 var qryParams = new Dictionary<string, string>();
