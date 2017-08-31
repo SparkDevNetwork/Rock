@@ -50,31 +50,12 @@
                 <h1 class="panel-title"><i class="fa fa-upload"></i>&nbsp;Bulk Import Tool</h1>
             </div>
             <div class="panel-body">
-                <Rock:RockTextBox ID="tbForeignSystemKey" runat="server" Required="true" Label="Foreign System Key" Help="The Key used to uniquely identify the source system" />
+                <Rock:RockTextBox ID="tbForeignSystemKey" runat="server" Required="true" Label="Foreign System Key" Help="The Key used to uniquely identify the source system. For example, use the domain of the the source system's website: 'somechurch.ccbchurch.com'. Click 'Check Foreign System Key' to see what keys have already been used or to see if the key has already been used." />
                 <asp:LinkButton ID="btnCheckForeignSystemKey" runat="server" CssClass="btn btn-xs btn-action margin-b-md" Text="Check Foreign System Key" CausesValidation="false" OnClick="btnCheckForeignSystemKey_Click" />
                 <Rock:NotificationBox ID="nbCheckForeignSystemKey" runat="server" CssClass="margin-b-md" NotificationBoxType="Warning" Visible="false" Dismissable="true" />
 
                 <Rock:FileUploader ID="fupSlingshotFile" runat="server" Label="Select Slingshot File" IsBinaryFile="false" RootFolder="~/App_Data/SlingshotFiles" DisplayMode="DropZone" OnFileUploaded="fupSlingshotFile_FileUploaded" OnFileRemoved="fupSlingshotFile_FileRemoved" />
                 <asp:Literal ID="lSlingshotFileInfo" runat="server" Text="" />
-
-
-                <asp:Panel ID="pnlProgress" runat="server" CssClass="js-messageContainer" Style="display: none">
-                    <strong>Progress</strong><br />
-                    <div class="alert alert-info">
-                        <asp:Label ID="lProgressMessage" CssClass="js-progressMessage" runat="server" />
-                    </div>
-
-                    <strong>Details</strong><br />
-                    <div class="alert alert-info">
-                        <pre><asp:Label ID="lProgressResults" CssClass="js-progressResults" runat="server" /></pre>
-                    </div>
-                </asp:Panel>
-
-
-                <asp:Panel ID="pnlActions" runat="server" CssClass="actions" Visible="false">
-                    <asp:LinkButton ID="btnImport" runat="server" CssClass="btn btn-primary" Text="Import" OnClick="btnImport_Click" />
-                    <asp:LinkButton ID="btnImportPhotos" runat="server" CssClass="btn btn-primary" Text="Import Photos" OnClick="btnImportPhotos_Click" />
-                </asp:Panel>
 
                 <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
                     <Rock:RockControlWrapper ID="rcwImportOptions" runat="server" Label="Import Options">
@@ -161,6 +142,23 @@ order by Gt.Id, Gt.Name, g.Name
                     </Rock:RockControlWrapper>
 
                 </Rock:PanelWidget>
+
+                <asp:Panel ID="pnlProgress" runat="server" CssClass="js-messageContainer" Style="display: none">
+                    <strong>Progress</strong><br />
+                    <div class="alert alert-info">
+                        <asp:Label ID="lProgressMessage" CssClass="js-progressMessage" runat="server" />
+                    </div>
+
+                    <strong>Details</strong><br />
+                    <div class="alert alert-info">
+                        <pre><asp:Label ID="lProgressResults" CssClass="js-progressResults" runat="server" /></pre>
+                    </div>
+                </asp:Panel>
+
+                <asp:Panel ID="pnlActions" runat="server" CssClass="actions" Visible="false">
+                    <asp:LinkButton ID="btnImport" runat="server" CssClass="btn btn-primary" Text="Import" OnClick="btnImport_Click" />
+                    <asp:LinkButton ID="btnImportPhotos" runat="server" CssClass="btn btn-primary" Text="Import Photos" OnClick="btnImportPhotos_Click" />
+                </asp:Panel>
             </div>
 
         </asp:Panel>

@@ -221,7 +221,7 @@ namespace Rock.Model
                             interaction.Operation,
                             interaction.InteractionDateTime.ToShortDateString(),
                             interaction.InteractionDateTime.ToShortTimeString(),
-                            interaction.GetInteractionDetails() );
+                            GetInteractionDetails( interaction ) );
                     }
 
                     return sb.ToString();
@@ -254,7 +254,7 @@ namespace Rock.Model
                             interaction.Operation,
                             interaction.InteractionDateTime.ToShortDateString(),
                             interaction.InteractionDateTime.ToShortTimeString(),
-                            interaction.GetInteractionDetails() );
+                            GetInteractionDetails( interaction ) );
                     }
 
                     sb.Append( "</ul>" );
@@ -335,11 +335,31 @@ namespace Rock.Model
 
         #endregion
 
-        #region Private Methods
-
-        #endregion
-
         #region Static Methods
+
+        /// <summary>
+        /// Gets the interaction details.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetInteractionDetails( Interaction interaction )
+        {
+            string interactionDetails = string.Empty;
+            string deviceTypeDetails = $"{interaction.InteractionSession.DeviceType.OperatingSystem} {interaction.InteractionSession.DeviceType.DeviceTypeData} {interaction.InteractionSession.DeviceType.Application} {interaction.InteractionSession.DeviceType.ClientType}";
+            if ( interaction.Operation == "Opened" )
+            {
+                interactionDetails = $"Opened from {interaction.InteractionSession.IpAddress} using {deviceTypeDetails}";
+            }
+            else if ( interaction.Operation == "Click" )
+            {
+                interactionDetails = $"Clicked the address {interaction.InteractionData} from {interaction.InteractionSession.IpAddress} using {deviceTypeDetails}";
+            }
+            else
+            {
+                interactionDetails = $"{interaction.Operation} using {deviceTypeDetails}";
+            }
+
+            return interactionDetails;
+        }
 
         #endregion
 

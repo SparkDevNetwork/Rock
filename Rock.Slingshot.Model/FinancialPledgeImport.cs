@@ -74,5 +74,21 @@ namespace Rock.Slingshot.Model
         /// A <see cref="System.DateTime"/> representing the end date of the pledge period.
         /// </value>
         public DateTime EndDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the created date time.
+        /// </summary>
+        /// <value>
+        /// The created date time.
+        /// </value>
+        public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the modified date time.
+        /// </summary>
+        /// <value>
+        /// The modified date time.
+        /// </value>
+        public DateTime? ModifiedDateTime { get; set; }
     }
 }

@@ -177,6 +177,7 @@ namespace RockWeb.Blocks.BulkImport
         protected void btnCheckForeignSystemKey_Click( object sender, EventArgs e )
         {
             nbCheckForeignSystemKey.Visible = false;
+            nbCheckForeignSystemKey.Text = string.Empty;
             if ( !string.IsNullOrEmpty( tbForeignSystemKey.Text ) )
             {
                 var tableList = Rock.Slingshot.BulkImporter.TablesThatHaveForeignSystemKey( tbForeignSystemKey.Text );
@@ -195,16 +196,30 @@ namespace RockWeb.Blocks.BulkImport
                 nbCheckForeignSystemKey.Details = tableList.AsDelimited( "<br />" );
                 nbCheckForeignSystemKey.Visible = true;
             }
+
+            var foreignSystemKeyList = BulkImporter.UsedForeignSystemKeys();
+
+            if ( nbCheckForeignSystemKey.Text == string.Empty )
+            {
+                nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Default;
+            }
             else
             {
-                var foreignSystemKeyList = BulkImporter.UsedForeignSystemKeys();
-                if ( foreignSystemKeyList.Any() )
-                {
-                    nbCheckForeignSystemKey.Text = "The following ForeignSystemKeys have been used from previous imports:<br /><br />" + foreignSystemKeyList.AsDelimited( "<br />" );
-                    nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Default;
-                    nbCheckForeignSystemKey.Visible = true;
-                }
+                nbCheckForeignSystemKey.Text += "<br /><br />";
             }
+
+            if ( foreignSystemKeyList.Any() )
+            {
+                nbCheckForeignSystemKey.Text += "The following ForeignSystemKeys have been used from previous imports:<br /><br />" + foreignSystemKeyList.AsDelimited( "<br />" );
+            }
+            else
+            {
+                nbCheckForeignSystemKey.Text += "No ForeignSystemKeys have been used from previous imports";
+            }
+
+            nbCheckForeignSystemKey.Text += "<br />";
+
+            nbCheckForeignSystemKey.Visible = true;
         }
 
         /// <summary>
@@ -273,6 +288,7 @@ namespace RockWeb.Blocks.BulkImport
                 {
                     foreach ( var exception in t.Exception.InnerExceptions )
                     {
+                        LogException( exception );
                         _importer.Exceptions.Add( exception.GetBaseException() );
                     }
 

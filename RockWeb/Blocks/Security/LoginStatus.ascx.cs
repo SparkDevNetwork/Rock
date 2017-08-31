@@ -198,10 +198,8 @@ namespace RockWeb.Blocks.Security
                 var currentPage = Rock.Web.Cache.PageCache.Read( RockPage.PageId );
                 if ( currentPage != null && currentPage.IsAuthorized(Authorization.VIEW, null))
                 {
-                    string url = CurrentPageReference.BuildUrl();
-
-                    string cleanUrl = PersonToken.RemoveRockMagicToken( url );
-                    Response.Redirect( cleanUrl );
+                    string url = CurrentPageReference.BuildUrl( true );
+                    Response.Redirect( url );
                     Context.ApplicationInstance.CompleteRequest();
                 }
                 else

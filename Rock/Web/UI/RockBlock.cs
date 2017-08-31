@@ -718,7 +718,7 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Navigates to current page.
+        /// Navigates to current page id
         /// </summary>
         /// <param name="queryString">The query string.</param>
         /// <returns></returns>
@@ -731,6 +731,23 @@ namespace Rock.Web.UI
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Navigates to current page reference including current page parameters and query parameters, with an option to specify additional query parameters
+        /// </summary>
+        /// <param name="additionalQueryParameters">The additional query parameters.</param>
+        /// <returns></returns>
+        public bool NavigateToCurrentPageReference( Dictionary<string, string> additionalQueryParameters = null)
+        {
+            var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
+            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
+            foreach ( var qryParam in additionalQueryParameters )
+            {
+                pageReference.QueryString[qryParam.Key] = qryParam.Value;
+            }
+
+            return NavigateToPage( pageReference );
         }
 
         /// <summary>
