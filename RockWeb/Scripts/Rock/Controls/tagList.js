@@ -13,6 +13,7 @@
                 this.entityQualifierValue = options.entityQualifierValue;
                 this.preventTagCreation = options.preventTagCreation;
                 this.delaySave = options.delaySave;
+                this.categoryIds = options.categoryIds;
             },
             exports;
 
@@ -155,6 +156,9 @@
             }
             if (this.entityQualifierValue) {
                 autoCompleteUrlSuffix += '/' + this.entityQualifierValue;
+            }
+            if (this.categoryIds) {
+                autoCompleteUrlSuffix += '?categoryIds=' + this.categoryIds;
             }
 
             $('ul.ui-autocomplete').css({ 'width': '300px' });
