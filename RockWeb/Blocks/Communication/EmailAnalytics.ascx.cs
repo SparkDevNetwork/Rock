@@ -52,13 +52,10 @@ namespace RockWeb.Blocks.Communication
 
             // TODO: Should we have this local in our repo, and should we think about getting rid of flot?
             RockPage.AddScriptLink( "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js", false );
-            RockPage.AddScriptLink( "/Scripts/moment.min.js", true );
 
-             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-             this.BlockUpdated += Block_BlockUpdated;
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
-
-            var date = RockDateTime.Now.ToString( "o" );
         }
 
         /// <summary>
@@ -138,6 +135,16 @@ namespace RockWeb.Blocks.Communication
                 lTitle.Text = "Email Analytics";
             }
 
+            // TODO
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gMostPopularLinks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gMostPopularLinks_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
             // TODO
         }
 
