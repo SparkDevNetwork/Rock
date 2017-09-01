@@ -255,8 +255,11 @@ namespace Rock.Model
             }
             else if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
             {
-                string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( this.Group ) );
-                string warningFormattedSql = this.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( this.Group ) );
+                // if requirement set on GroupType, this.Group is null
+                var targetGroup = this.Group ?? new GroupService( rockContext ).Get( groupId );
+
+                string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup ) );
+                string warningFormattedSql = this.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup ) );
                 try
                 {
                     var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
