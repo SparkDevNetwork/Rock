@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -27,7 +26,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Group" )]
     [Table( "GroupRequirement" )]
@@ -277,16 +276,16 @@ namespace Rock.Model
                         }
 
                         var result = personQry.Select( a => a.Id ).ToList().Select( a => new PersonGroupRequirementStatus
-                            {
-                                PersonId = a,
-                                GroupRequirement = this,
-                                MeetsGroupRequirement = personIds.Contains( a )
+                        {
+                            PersonId = a,
+                            GroupRequirement = this,
+                            MeetsGroupRequirement = personIds.Contains( a )
                                     ? ( ( warningPersonIds != null && warningPersonIds.Contains( a ) )
                                         ? MeetsGroupRequirement.MeetsWithWarning
                                         : MeetsGroupRequirement.Meets
                                         )
                                     : MeetsGroupRequirement.NotMet,
-                            } );
+                        } );
 
                         return result;
                     }
@@ -316,7 +315,7 @@ namespace Rock.Model
                     {
                         PersonId = a.Id,
                         GroupRequirement = this,
-                        MeetsGroupRequirement = groupMemberRequirementQry.Any( r => r.GroupMember.PersonId == a.Id) ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet
+                        MeetsGroupRequirement = groupMemberRequirementQry.Any( r => r.GroupMember.PersonId == a.Id ) ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet
                     } );
 
                 return result;
@@ -336,7 +335,7 @@ namespace Rock.Model
         [Obsolete( "Use PersonMeetsGroupRequirement(personId, groupId, groupRoleId) instead " )]
         public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int? groupRoleId )
         {
-            if (this.GroupId.HasValue)
+            if ( this.GroupId.HasValue )
             {
                 return PersonMeetsGroupRequirement( personId, this.GroupId.Value, groupRoleId );
             }
@@ -345,7 +344,6 @@ namespace Rock.Model
                 // the new method needs to be used if this is a GroupTypeId GroupRequirement
                 throw new NotSupportedException();
             }
-            
         }
 
         /// <summary>
@@ -410,11 +408,11 @@ namespace Rock.Model
             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
             var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.PersonId == personId && a.GroupId == groupId
-                && ( 
-                    ( groupRequirement.GroupId.HasValue && groupRequirement.GroupId == a.GroupId ) 
+                && (
+                    ( groupRequirement.GroupId.HasValue && groupRequirement.GroupId == a.GroupId )
                     ||
                     ( groupRequirement.GroupTypeId.HasValue && groupRequirement.GroupTypeId == a.Group.GroupTypeId )
-                   ));
+                   ) );
 
             if ( this.GroupRoleId != null )
             {
@@ -469,7 +467,7 @@ namespace Rock.Model
     #region enum
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum MeetsGroupRequirement
     {
@@ -504,7 +502,7 @@ namespace Rock.Model
     #region GroupRequirement classes
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class PersonGroupRequirementStatus : GroupRequirementStatus
     {
@@ -518,7 +516,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class GroupRequirementStatus
     {
@@ -571,7 +569,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class GroupRequirementConfiguration : EntityTypeConfiguration<GroupRequirement>
     {
@@ -581,7 +579,7 @@ namespace Rock.Model
         public GroupRequirementConfiguration()
         {
             // NOTE: would be nice if this would cascade delete, but doing so results in a "may cause cycles or multiple cascade paths" error
-            this.HasOptional( a => a.Group ).WithMany( g => g.GroupRequirements).HasForeignKey( a => a.GroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.Group ).WithMany( g => g.GroupRequirements ).HasForeignKey( a => a.GroupId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.GroupType ).WithMany( gt => gt.GroupRequirements ).HasForeignKey( a => a.GroupTypeId ).WillCascadeOnDelete( false );
 
             this.HasRequired( a => a.GroupRequirementType ).WithMany().HasForeignKey( a => a.GroupRequirementTypeId ).WillCascadeOnDelete( true );
