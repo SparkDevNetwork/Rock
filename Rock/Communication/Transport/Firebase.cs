@@ -92,7 +92,7 @@ namespace Rock.Communication.Transport
                             int personAlias = recipient.PersonAliasId;
 
                             List<string> devices = service.Queryable()
-                                .Where( p => p.PersonAliasId == personAlias && p.NotificationsEnabled )
+                                .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId == personAlias && p.NotificationsEnabled )
                                 .Select( p => p.DeviceRegistrationId )
                                 .ToList();
 
