@@ -50,8 +50,9 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            // TODO: Should we have this local in our repo, and should we think about getting rid of flot?
-            RockPage.AddScriptLink( "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js", false );
+            // NOTE: moment needs to be loaded before chartjs
+            RockPage.AddScriptLink( "/Scripts/moment.min.js", true );
+            RockPage.AddScriptLink( "/Scripts/Chartjs/Chart.min.js", true );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -136,7 +137,76 @@ namespace RockWeb.Blocks.Communication
             }
 
             // TODO
+            var interactionChannelCommunication = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
+            var interactionQuery = new InteractionService( rockContext ).Queryable().Where( a => a.InteractionComponent.ChannelId == interactionChannelCommunication.Id );
+            if ( communicationId.HasValue )
+            {
+                interactionQuery = interactionQuery.Where( a => a.InteractionComponent.EntityId == communicationId.Value );
+            }
+            else if (communicationListGroupId.HasValue)
+            {
+                var communicationIdList = new CommunicationService( rockContext ).Queryable().Where( a => a.ListGroupId == communicationListGroupId ).Select( a => a.Id );
+                interactionQuery = interactionQuery.Where( a => communicationIdList.Contains( a.InteractionComponent.EntityId.Value ) );
+            }
+            
+            var interactionsList = interactionQuery
+                .Select( a => new
+                {
+                    a.InteractionDateTime,
+                    a.Operation
+                } )
+                .ToList();
+
+            List<SummaryInfo> interactionsSummary = new List<SummaryInfo>();
+            int maxXTicks = 2000;
+            TimeSpan? roundTimeSpan = null;
+            if ( interactionsList.Count > maxXTicks )
+            {
+                roundTimeSpan = new TimeSpan( ( interactionsList.Max( a => a.InteractionDateTime ).Ticks - interactionsList.Min( a => a.InteractionDateTime ).Ticks ) / maxXTicks );
+                if (roundTimeSpan.Value.TotalDays > 1)
+                {
+                    roundTimeSpan = roundTimeSpan.Value.Round( TimeSpan.FromDays( 1 ) );
+                }
+                else
+                {
+                    roundTimeSpan = roundTimeSpan.Value.Round( TimeSpan.FromHours( 1 ) );
+                    if ( roundTimeSpan.Value.TotalMinutes == 0 )
+                    {
+                        roundTimeSpan = TimeSpan.FromMinutes( 1 );
+                    }
+                }
+                
+            }
+
+            interactionsSummary = interactionsList
+                .Select( a => new
+                {
+                    InteractionSummaryDateTime = roundTimeSpan.HasValue ? a.InteractionDateTime.Round( roundTimeSpan.Value ) : a.InteractionDateTime,
+                    a.Operation
+                } )
+                .GroupBy( a => a.InteractionSummaryDateTime )
+                .Select( x => new SummaryInfo
+                {
+                    SummaryDateTime = x.Key,
+                    ClickCounts = x.Count( xx => xx.Operation == "Click" ),
+                    OpenCounts = x.Count( xx => xx.Operation == "Opened" )
+                } ).OrderBy( a => a.SummaryDateTime ).ToList();
+
+            this.ChartDataLabelsJSON = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
+            this.ChartDataClicksJSON = interactionsSummary.Select( a => a.ClickCounts ).ToList().ToJson();
+            this.ChartDataOpensJSON = interactionsSummary.Select( a => a.OpenCounts ).ToList().ToJson();
         }
+
+        public class SummaryInfo
+        {
+            public DateTime SummaryDateTime { get; set; }
+            public int ClickCounts { get; set; }
+            public int OpenCounts { get; set; }
+        }
+
+        public string ChartDataLabelsJSON { get; set; }
+        public object ChartDataClicksJSON { get; private set; }
+        public object ChartDataOpensJSON { get; private set; }
 
         /// <summary>
         /// Handles the RowDataBound event of the gMostPopularLinks control.
