@@ -140,32 +140,23 @@
                     "#d8e1ea"
                 ]
 
+                debugger
+                var chartDataLabels = <%=this.ChartDataLabelsJSON%>;
+                var chartDataClicks = <%=this.ChartDataClicksJSON%>;
+                var chartDataOpens = <%=this.ChartDataOpensJSON%>;
+
                 // Main Linechart
                 var linechartCtx = $('#<%=openClicksLineChartCanvas.ClientID%>')[0].getContext('2d');
                 var clicksLineChart = new Chart(linechartCtx, {
                     type: 'line',
                     data: {
-                        labels: [
-                            new Date('2017-07-30T13:16:18.9843825-07:00'),
-                            new Date('2017-08-01T13:16:18.9843825-07:00'),
-                            new Date('2017-08-02T13:16:18.9843825-07:00'),
-                            new Date('2017-08-03T13:16:18.9843825-07:00'),
-                            new Date('2017-08-04T13:16:18.9843825-07:00'),
-                            new Date('2017-08-05T13:16:18.9843825-07:00'),
-                        ],
+                        labels: chartDataLabels,
                         datasets: [{
                             type: 'line',
                             label: 'Opens',
                             backgroundColor: chartSeriesColors[0],
                             borderColor: chartSeriesColors[0],
-                            data: [
-                                110,
-                                240,
-                                350,
-                                190,
-                                150,
-                                440
-                            ],
+                            data: chartDataOpens,
                             fill: false
                         },
                         {
@@ -173,14 +164,7 @@
                             label: 'Clicks',
                             backgroundColor: chartSeriesColors[1],
                             borderColor: chartSeriesColors[1],
-                            data: [
-                                100,
-                                200,
-                                300,
-                                100,
-                                50,
-                                400
-                            ],
+                            data: chartDataClicks,
                             fill: false
                         },
                         {
@@ -188,14 +172,7 @@
                             label: 'Unopened',
                             backgroundColor: chartSeriesColors[2],
                             borderColor: chartSeriesColors[2],
-                            data: [
-                                10,
-                                20,
-                                30,
-                                10,
-                                5,
-                                40
-                            ],
+                            data: [],
                             fill: false
                         }],
                     },
@@ -205,6 +182,7 @@
                                 type: 'time',
                                 time: {
                                     unit: 'day',
+                                    //round: 'week',
                                 }
                             }]
                         }
