@@ -341,7 +341,11 @@ namespace RockWeb.Blocks.Communication
                     if ( Person != null )
                     {
                         var HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
-                            .Where( pd => pd.PersonAliasId == Person.PrimaryAliasId && pd.NotificationsEnabled ).Any();
+                            .Where( pd => 
+                                pd.PersonAliasId.HasValue && 
+                                pd.PersonAliasId == Person.PrimaryAliasId && 
+                                pd.NotificationsEnabled )
+                            .Any();
                         Recipients.Add( new Recipient( Person, Person.PhoneNumbers.Any( a => a.IsMessagingEnabled ), HasPersonalDevice, CommunicationRecipientStatus.Pending ) );
                         ShowAllRecipients = true;
                     }
@@ -721,7 +725,7 @@ namespace RockWeb.Blocks.Communication
                         PersonHasSMS = a.PersonAlias.Person.PhoneNumbers.Any( p => p.IsMessagingEnabled ),
                         HasPersonalDevice = (
                              personalDeviceService
-                                 .Where( pd => pd.PersonAliasId == a.PersonAliasId )
+                                 .Where( pd => pd.PersonAliasId.HasValue && pd.PersonAliasId == a.PersonAliasId )
                                  .Any( pd => pd.NotificationsEnabled )
                          ),
                         a.Status,
@@ -748,7 +752,7 @@ namespace RockWeb.Blocks.Communication
                     if ( person != null )
                     {
                         var HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
-                            .Where( pd => pd.PersonAliasId == person.PrimaryAliasId && pd.NotificationsEnabled ).Any();
+                            .Where( pd => pd.PersonAliasId.HasValue && pd.PersonAliasId == person.PrimaryAliasId && pd.NotificationsEnabled ).Any();
                         Recipients.Add( new Recipient( person, person.PhoneNumbers.Any( p => p.IsMessagingEnabled ), HasPersonalDevice, CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
                     }
                 }
