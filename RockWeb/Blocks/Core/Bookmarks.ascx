@@ -122,6 +122,30 @@
 
         $('.pnlTreeviewContent')
             .on('rockTree:selected', function (e, id) {
+                var $node = $('[data-id="' + id + '"]'),
+                    isCategory = $node.attr('data-iscategory') === 'true';
+
+                var locationUrl = null;
+                if (!isCategory) {
+                    $.ajax({
+                        type: 'GET',
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        url: Rock.settings.get('baseUrl') + 'api/PersonBookmarks/' + id,
+                        success: function (getData, status, xhr) {
+                            if (getData) {
+                                if (getData.Url) {
+                                    window.location = getData.Url;
+                                }
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            alert(status + ' [' + error + ']: ' + xhr.responseText);
+                        }
+                    });
+
+                   
+                }
 
             })
             .on('rockTree:rendered', function () {
@@ -177,17 +201,16 @@
             popup_content.slideToggle(function () {
                 bookmarkTree();
             });
-            
+
         }
         else {
             var rockData = $('.pnlTreeviewContent').data('rockTree');
-            if (!rockData)
-            {
+            if (!rockData) {
                 return true;
             }
-                popup_content.slideUp(function () {
-                    scrollbCategory.tinyscrollbar();
-                });
+            popup_content.slideUp(function () {
+                scrollbCategory.tinyscrollbar();
+            });
         }
         return false;
     }
