@@ -34,9 +34,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Create Short Link" )]
 
-    [WorkflowTextOrAttribute( "Site Id or Guid", "Site", 
-        "The site to use for the generated short url. The site's first configured domain will be used for the short link's host name. <span class='tip tip-lava'></span>", 
-        true, "", "", 0, "Site", new string[] { "Rock.Field.Types.SiteFieldType" } )]
+    [SiteField("Site", "The site to use for the generated short url", true, "", "", 0, "Site", true )]
     [WorkflowTextOrAttribute( "Token", "Token",
         "The token to use for the short link. This is the unique value that will be appended to the site's domain to make the link unique. If left blank, a random token will be generated. <span class='tip tip-lava'></span>", 
         false, "", "", 1, "Token", new string[] { "Rock.Field.Types.TextFieldType" } )]
@@ -67,11 +65,11 @@ namespace Rock.Workflow.Action
             var mergeFields = GetMergeFields( action );
 
             // Get the site
-            string siteValue = GetAttributeValue( action, "Site", true ).ResolveMergeFields( mergeFields );
-            SiteCache site = SiteCache.Read( siteValue.AsGuid() ) ?? SiteCache.Read( siteValue.AsInteger() );
+            int siteId = GetAttributeValue( action, "Site", true ).AsInteger();
+            SiteCache site = SiteCache.Read( siteId );
             if ( site == null )
             {
-                errorMessages.Add( string.Format( "Site could not be found for selected value ('{0}')!", siteValue ) );
+                errorMessages.Add( string.Format( "Invalid Site Value" ) );
                 return false;
             }
 

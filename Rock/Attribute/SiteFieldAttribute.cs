@@ -27,19 +27,24 @@ namespace Rock.Attribute
     /// </summary>
     public class SiteFieldAttribute : FieldAttribute
     {
+        private const string SHORTENING_SITES_ONLY = "shorteningSitesOnly";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SiteFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultSiteId">The default site id.</param>
+        /// <param name="defaultSiteId">The default site identifier.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public SiteFieldAttribute( string name = "Site", string description = "", bool required = true, string defaultSiteId = "", string category = "", int order = 0, string key = null )
+        /// <param name="shorteningSitesOnly">if set to <c>true</c> [shortening sites only].</param>
+        public SiteFieldAttribute( string name = "Site", string description = "", bool required = true, string defaultSiteId = "", string category = "", int order = 0, string key = null, bool shorteningSitesOnly = false )
             : base( name, description, required, defaultSiteId, category, order, key, typeof( Rock.Field.Types.SiteFieldType ).FullName )
         {
+            var htmlConfig = new Field.ConfigurationValue( shorteningSitesOnly.ToString() );
+            FieldConfigurationValues.Add( SHORTENING_SITES_ONLY, htmlConfig );
         }
     }
 }

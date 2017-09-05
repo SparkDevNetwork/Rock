@@ -963,6 +963,7 @@ function(item) {
 
             // Collection of async queries to run before assembling data
             var qryTasks = new List<Task>();
+            var taskInfos = new List<TaskInfo>();
 
             DataTable dtAttendeeLastAttendance = null;
             DataTable dtAttendees = null;
@@ -975,6 +976,9 @@ function(item) {
                 // whith attendance that matches the selected criteria.
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get Attendee Dates", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     DataTable dtAttendeeDates = AttendanceService.GetAttendanceAnalyticsAttendeeDates(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
@@ -1003,20 +1007,35 @@ function(item) {
                             result.AttendanceSummary.Add( summaryDate );
                         }
                     }
+
+                    ti.end = DateTime.Now;
+
                 } ) );
 
                 // Call the stored procedure to get the last attendance
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get Last Attendance", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     dtAttendeeLastAttendance = AttendanceService.GetAttendanceAnalyticsAttendeeLastAttendance(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
+
+                    ti.end = DateTime.Now;
+
                 } ) );
 
                 // Call the stored procedure to get the names/demographic info for attendess
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get Name/Demographic Data", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     dtAttendees = AttendanceService.GetAttendanceAnalyticsAttendees(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren ).Tables[0];
+
+                    ti.end = DateTime.Now;
+
                 } ) );
 
                 // If checking for missed attendance, get the people who missed that number of dates during the missed date range
@@ -1026,6 +1045,9 @@ function(item) {
                 {
                     qryTasks.Add( Task.Run( () =>
                     {
+                        var ti = new TaskInfo { name = "Get Missed Attendee Dates", start = DateTime.Now };
+                        taskInfos.Add( ti );
+
                         personIdsWhoDidNotMiss = new List<int>();
 
                         DataTable dtAttendeeDatesMissed = AttendanceService.GetAttendanceAnalyticsAttendeeDates(
@@ -1067,20 +1089,32 @@ function(item) {
                             .Where( m => missedPossibleCount - m.Value.AttendanceSummary.Count < attendedMissedCount.Value )
                             .Select( m => m.Key )
                             .ToList();
+
+                        ti.end = DateTime.Now;
+
                     } ) );
                 }
 
                 // Call the stored procedure to get the first five dates that any person attended this group type
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get First Five Dates", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     dtAttendeeFirstDates = AttendanceService.GetAttendanceAnalyticsAttendeeFirstDates(
                         groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
+
+                    ti.end = DateTime.Now;
+
                 } ) );
             }
             else
             {
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get Non-Attendees", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     DataSet ds = AttendanceService.GetAttendanceAnalyticsNonAttendees(
                         groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren );
 
@@ -1134,6 +1168,9 @@ function(item) {
 
                         allResults.Add( result );
                     }
+
+                    ti.end = DateTime.Now;
+
                 } ) );
             }
 
@@ -1141,6 +1178,9 @@ function(item) {
             List<int> dataViewPersonIds = null;
             qryTasks.Add( Task.Run( () =>
             {
+                var ti = new TaskInfo { name = "Get DataView People", start = DateTime.Now };
+                taskInfos.Add( ti );
+
                 var dataViewId = dvpDataView.SelectedValueAsInt();
                 if ( dataViewId.HasValue )
                 {
@@ -1161,6 +1201,9 @@ function(item) {
                         dataViewPersonIds = dataViewPersonIdQry.ToList();
                     }
                 }
+
+                ti.end = DateTime.Now;
+
             } ) );
 
             // Wait for all the queries to finish
@@ -2259,6 +2302,26 @@ function(item) {
 
             public string LocationName { get; set; }
         }
+
+        public class TaskInfo
+        {
+            public string name { get; set; }
+            public DateTime start { get; set; }
+            public DateTime end { get; set; }
+            public TimeSpan duration
+            {
+                get
+                {
+                    return end.Subtract( start );
+                }
+            }
+
+            public override string ToString()
+            {
+                return string.Format( "{0}: {1:c}", name, duration );
+            }
+        }
+
 
         protected void cbShowInactive_CheckedChanged( object sender, EventArgs e )
         {

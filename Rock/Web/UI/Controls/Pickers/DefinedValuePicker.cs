@@ -82,7 +82,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 var dt = DefinedTypeCache.Read( picker.DefinedTypeId.Value );
-                if ( dt.DefinedValues.Any() )
+                if ( dt != null && dt.DefinedValues.Any() )
                 {
                     foreach ( var definedValue in dt.DefinedValues.OrderBy( v => v.Order ).ThenBy( v => v.Value ) )
                     {

@@ -3,6 +3,24 @@
 // currently used in admin screens
 // --------------------------------------------------
 
+/*.my-connection-opportunities .block-status a {
+  position: relative;
+}
+
+
+
+.my-connection-opportunities .block-status a::before {
+  
+}
+
+
+.my-connection-opportunities .block-status a:hover::before {
+  border-bottom: 45px solid @listasblocks-rollover-bg;
+  --border-right: 20px solid @listasblocks-bg;
+}*/
+
+
+
 .block-title {
   margin: 0;
 }
@@ -38,10 +56,10 @@
         background-color: @listasblocks-bg;
         border-radius: @border-radius-base;
         -webkit-transition: background-color 200ms linear;
-           -moz-transition: background-color 200ms linear;
-            -ms-transition: background-color 200ms linear;
-             -o-transition: background-color 200ms linear;
-                transition: background-color 200ms linear;
+        -moz-transition: background-color 200ms linear;
+        -ms-transition: background-color 200ms linear;
+        -o-transition: background-color 200ms linear;
+        transition: background-color 200ms linear;
 
         i {
           margin-top: 6px;
@@ -85,8 +103,39 @@
       }
 
       &.inactive-item {
-          opacity: .5;
+        opacity: .5;
       }
+    }
+  }
+
+  &.has-count {
+
+    a {
+      position: relative;
+    }
+
+    a:before {
+      border-bottom: 45px solid transparent;
+      border-right: 45px solid @listasblocks-border-color;
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 0;
+      -webkit-transition: border-right-color 200ms linear;
+      -moz-transition: border-right-color 200ms linear;
+      -ms-transition: border-right-color 200ms linear;
+      -o-transition: border-right-color 200ms linear;
+      transition: border-right-color 200ms linear;
+    }
+
+    .item-count {
+      position: absolute;
+      top: 5px;
+      right: 1px;
+      color: #fff;
+      width: 25px;
+      display: block;
+      font-size: 12px;
     }
   }
 
