@@ -301,6 +301,22 @@
     <Compile Include="Migrations\201707311527250_AddMetaData.Designer.cs">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201708152332039_PageShortLinkUrl.cs" />
+    <Compile Include="Migrations\201708152332039_PageShortLinkUrl.Designer.cs">
+      <DependentUpon>201708152332039_PageShortLinkUrl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708160014458_VerifySecurityBlockPage.cs" />
+    <Compile Include="Migrations\201708160014458_VerifySecurityBlockPage.Designer.cs">
+      <DependentUpon>201708160014458_VerifySecurityBlockPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708162105164_AnalyticsPerformance.cs" />
+    <Compile Include="Migrations\201708162105164_AnalyticsPerformance.Designer.cs">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708162351472_ReportQueryHints.cs" />
+    <Compile Include="Migrations\201708162351472_ReportQueryHints.Designer.cs">
+      <DependentUpon>201708162351472_ReportQueryHints.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2676,6 +2692,18 @@
     <EmbeddedResource Include="Migrations\201707311527250_AddMetaData.resx">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708152332039_PageShortLinkUrl.resx">
+      <DependentUpon>201708152332039_PageShortLinkUrl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708160014458_VerifySecurityBlockPage.resx">
+      <DependentUpon>201708160014458_VerifySecurityBlockPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708162105164_AnalyticsPerformance.resx">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708162351472_ReportQueryHints.resx">
+      <DependentUpon>201708162351472_ReportQueryHints.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4462,6 +4490,33 @@
     </Content>
     <Content Include="Migrations\201707311527250_PersonicxGroup.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AccountTotals.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AttendeeDates.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AttendeeFirstDates.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AttendeeLastAttendance.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_Attendees.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_Indexes.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_NonAttendees.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_PersonSummary.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_TransactionData.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
