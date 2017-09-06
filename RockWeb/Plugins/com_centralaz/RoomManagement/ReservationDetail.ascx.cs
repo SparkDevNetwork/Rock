@@ -1072,14 +1072,20 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
         protected void gLocations_RowDataBound( object sender, GridViewRowEventArgs e )
         {
+            Guid? approvalGroupGuid = null;
+
             var reservationLocation = e.Row.DataItem as ReservationLocation;
             if ( reservationLocation != null )
             {
                 var canApprove = false;
 
                 var location = reservationLocation.Location;
-                location.LoadAttributes();
-                var approvalGroupGuid = location.GetAttributeValue( "ApprovalGroup" ).AsGuidOrNull();
+                // bug fix:
+                if ( location != null )
+                {
+                    location.LoadAttributes();
+                    approvalGroupGuid = location.GetAttributeValue( "ApprovalGroup" ).AsGuidOrNull();
+                }
 
                 if ( approvalGroupGuid != null )
                 {
@@ -1176,6 +1182,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     ReservationLocation reservationLocation = new ReservationLocation();
                     reservationLocation.LocationId = PageParameter( "LocationId" ).AsInteger();
                     reservationLocation.ApprovalState = ReservationLocationApprovalState.Unapproved;
+
+                    // set the campus based on the location that was passed in:
+                    var location = new LocationService( new RockContext() ).Get( reservationLocation.LocationId );
+                    if ( location != null )
+                    {
+                        reservation.CampusId = location.CampusId;
+                    }
+
                     reservation.ReservationLocations.Add( reservationLocation );
 
                     // Add any attached resources...
@@ -1188,6 +1202,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     reservationResource.ResourceId = PageParameter( "ResourceId" ).AsInteger();
                     reservationResource.Quantity = 1;
                     reservationResource.ApprovalState = ReservationResourceApprovalState.Unapproved;
+
+                    // set the campus based on the resource that was passed in:
+                    var resource = new ResourceService( new RockContext() ).Get( reservationResource.ResourceId );
+                    if ( resource != null )
+                    {
+                        reservation.CampusId = resource.CampusId;
+                    }
+
                     reservation.ReservationResources.Add( reservationResource );
 
                     // Add any attached locations...
@@ -1472,6 +1494,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 foreach ( var resource in attachedResources )
                 {
+                    // bug fix:
+                    if ( ! resource.LocationId.HasValue )
+                    {
+                        continue;
+                    }
+
                     ReservationLocation reservationLocation = new ReservationLocation();
                     reservationLocation.LocationId = resource.LocationId.Value;
                     reservationLocation.ApprovalState = ReservationLocationApprovalState.Unapproved;
