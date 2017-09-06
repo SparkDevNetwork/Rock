@@ -136,53 +136,62 @@ namespace RockWeb.Blocks.Communication
                 lTitle.Text = "Email Analytics";
             }
 
-            // TODO
             var interactionChannelCommunication = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
             var interactionQuery = new InteractionService( rockContext ).Queryable().Where( a => a.InteractionComponent.ChannelId == interactionChannelCommunication.Id );
+            List<int> communicationIdList = null;
             if ( communicationId.HasValue )
             {
-                interactionQuery = interactionQuery.Where( a => a.InteractionComponent.EntityId == communicationId.Value );
+                communicationIdList = new List<int>();
+                communicationIdList.Add( communicationId.Value );
             }
-            else if (communicationListGroupId.HasValue)
+            else if ( communicationListGroupId.HasValue )
             {
-                var communicationIdList = new CommunicationService( rockContext ).Queryable().Where( a => a.ListGroupId == communicationListGroupId ).Select( a => a.Id );
+                communicationIdList = new CommunicationService( rockContext ).Queryable().Where( a => a.ListGroupId == communicationListGroupId ).Select( a => a.Id ).ToList();
+            }
+
+            if ( communicationIdList != null )
+            {
                 interactionQuery = interactionQuery.Where( a => communicationIdList.Contains( a.InteractionComponent.EntityId.Value ) );
             }
-            
+
             var interactionsList = interactionQuery
                 .Select( a => new
                 {
                     a.InteractionDateTime,
-                    a.Operation
+                    a.Operation,
+                    CommunicationRecipientId = a.EntityId
                 } )
                 .ToList();
 
             List<SummaryInfo> interactionsSummary = new List<SummaryInfo>();
-            int maxXTicks = 2000;
-            TimeSpan? roundTimeSpan = null;
-            if ( interactionsList.Count > maxXTicks )
+
+            var firstDateTime = interactionsList.Min( a => a.InteractionDateTime );
+            var lastDateTime = interactionsList.Max( a => a.InteractionDateTime );
+            var weeksCount = ( lastDateTime - firstDateTime ).TotalDays / 7;
+            TimeSpan roundTimeSpan;
+
+            if ( weeksCount > 26 )
             {
-                roundTimeSpan = new TimeSpan( ( interactionsList.Max( a => a.InteractionDateTime ).Ticks - interactionsList.Min( a => a.InteractionDateTime ).Ticks ) / maxXTicks );
-                if (roundTimeSpan.Value.TotalDays > 1)
-                {
-                    roundTimeSpan = roundTimeSpan.Value.Round( TimeSpan.FromDays( 1 ) );
-                }
-                else
-                {
-                    roundTimeSpan = roundTimeSpan.Value.Round( TimeSpan.FromHours( 1 ) );
-                    if ( roundTimeSpan.Value.TotalMinutes == 0 )
-                    {
-                        roundTimeSpan = TimeSpan.FromMinutes( 1 );
-                    }
-                }
-                
+                // if there is more than 26 weeks worth, summarize by week
+                roundTimeSpan = TimeSpan.FromDays( 7 );
+            }
+            else if ( weeksCount > 3 )
+            {
+                // if there is more than 3 weeks worth, summarize by day
+                roundTimeSpan = TimeSpan.FromDays( 1 );
+            }
+            else
+            {
+                // if there is less than 3 weeks worth, summarize by hour
+                roundTimeSpan = TimeSpan.FromHours( 1 );
             }
 
-            interactionsSummary = interactionsList
+            interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId, a.Operation } )
                 .Select( a => new
                 {
-                    InteractionSummaryDateTime = roundTimeSpan.HasValue ? a.InteractionDateTime.Round( roundTimeSpan.Value ) : a.InteractionDateTime,
-                    a.Operation
+                    InteractionSummaryDateTime = a.Min( b => b.InteractionDateTime ).Round( roundTimeSpan ),
+                    a.Key.CommunicationRecipientId,
+                    a.Key.Operation
                 } )
                 .GroupBy( a => a.InteractionSummaryDateTime )
                 .Select( x => new SummaryInfo
@@ -192,11 +201,77 @@ namespace RockWeb.Blocks.Communication
                     OpenCounts = x.Count( xx => xx.Operation == "Opened" )
                 } ).OrderBy( a => a.SummaryDateTime ).ToList();
 
-            this.ChartDataLabelsJSON = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
-            this.ChartDataClicksJSON = interactionsSummary.Select( a => a.ClickCounts ).ToList().ToJson();
-            this.ChartDataOpensJSON = interactionsSummary.Select( a => a.OpenCounts ).ToList().ToJson();
+            this.LineChartDataLabelsJSON = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
+            this.LineChartDataClicksJSON = interactionsSummary.Select( a => a.ClickCounts ).ToList().ToJson();
+
+            List<int> openCountsList = interactionsSummary.Select( a => a.OpenCounts ).ToList();
+            this.LineChartDataOpensJSON = openCountsList.ToJson();
+
+
+            int? totalRecipientCount = null;
+
+            if ( communicationIdList != null )
+            {
+                totalRecipientCount = new CommunicationRecipientService( rockContext ).Queryable().Where( a => communicationIdList.Contains( a.CommunicationId ) ).Count();
+            }
+
+            List<int> unopenedCountsList = new List<int>();
+            if ( totalRecipientCount.HasValue )
+            {
+                int unopenedRemaining = totalRecipientCount.Value;
+                foreach ( var openCounts in openCountsList )
+                {
+                    unopenedRemaining = unopenedRemaining - openCounts;
+
+                    // NOTE: just in case we have more recipients activity then there are recipient records, don't let it go negative
+                    unopenedCountsList.Add( Math.Max( unopenedRemaining, 0 ) );
+                }
+            }
+
+            this.LineChartDataUnOpenedJSON = unopenedCountsList.ToJson();
+
+            int totalOpens = interactionsList.Where( a => a.Operation == "Opened" ).Count();
+            int totalClicks = interactionsList.Where( a => a.Operation == "Click" ).Count();
+
+
+            // Unique Opens is the number of times a Recipient opened at least once
+            int uniqueOpens = interactionsList.Where( a => a.Operation == "Opened" ).GroupBy( a => a.CommunicationRecipientId ).Count();
+
+            // Unique Clicks is the number of times a Recipient clicked at least once in an email
+            int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" ).GroupBy( a => a.CommunicationRecipientId ).Count();
+
+            lUniqueOpens.Text = uniqueOpens.ToString();
+            lTotalOpens.Text = totalOpens.ToString();
+            lTotalClicks.Text = totalClicks.ToString();
+            if ( uniqueOpens > 0 )
+            {
+                lClickThroughRate.Text = string.Format( "{0:P2}", ( ( decimal ) uniqueClicks / uniqueOpens ) );
+            }
+            else
+            {
+                lClickThroughRate.Text = "n/a";
+            }
+
+            var openClicksUnopenedDataList = new List<int>();
+            openClicksUnopenedDataList.Add( uniqueOpens );
+            openClicksUnopenedDataList.Add( uniqueClicks );
+
+            if ( totalRecipientCount.HasValue )
+            {
+                // NOTE: just in case we have more recipients activity then there are recipient records, don't let it go negative
+                openClicksUnopenedDataList.Add( Math.Max(totalRecipientCount.Value - uniqueOpens, 0) );
+            }
+            else
+            {
+                openClicksUnopenedDataList.Add( 0 );
+            }
+
+            this.PieChartDataOpenClicksJSON = openClicksUnopenedDataList.ToJson();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public class SummaryInfo
         {
             public DateTime SummaryDateTime { get; set; }
@@ -204,9 +279,12 @@ namespace RockWeb.Blocks.Communication
             public int OpenCounts { get; set; }
         }
 
-        public string ChartDataLabelsJSON { get; set; }
-        public object ChartDataClicksJSON { get; private set; }
-        public object ChartDataOpensJSON { get; private set; }
+        public string LineChartDataLabelsJSON { get; set; }
+        public string LineChartDataOpensJSON { get; set; }
+        public string LineChartDataClicksJSON { get; set; }
+        public string LineChartDataUnOpenedJSON { get; set; }
+
+        public string PieChartDataOpenClicksJSON { get; set; }
 
         /// <summary>
         /// Handles the RowDataBound event of the gMostPopularLinks control.
