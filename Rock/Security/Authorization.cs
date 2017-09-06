@@ -748,6 +748,18 @@ namespace Rock.Security
             System.Web.HttpContext.Current.Response.Cookies.Add( httpCookie );
         }
 
+        /// <summary>
+        /// Checks to see if a person is authorized for entity
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public static bool? AuthorizedForEntity( ISecured entity, string action, Rock.Model.Person person )
+        {
+            return ItemAuthorized( entity, action, person, true, false );
+        }
+
         #endregion
 
         #region Private Methods
