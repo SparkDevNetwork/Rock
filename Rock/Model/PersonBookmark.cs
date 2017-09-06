@@ -123,6 +123,23 @@ namespace Rock.Model
             return this.Name;
         }
 
+        /// <summary>
+        /// Determines whether the specified action is authorized.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            if ( ( PersonAlias != null && person != null &&
+                PersonAlias.PersonId == person.Id ) || PersonAlias == null )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         #endregion
     }
 
