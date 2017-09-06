@@ -58,7 +58,19 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = _commandTimeout;
                 _pageViewsTotal = rockContext.Database.SqlQuery<int>( "SELECT COUNT(*) FROM PageView" ).First();
+
+
+                rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_InteractionForeignGuid' AND object_id = OBJECT_ID('Interaction'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [IX_InteractionForeignGuid]
+	ON [dbo].[Interaction] ([ForeignGuid])
+    where ForeignGuid is not null
+END
+" );
+
                 _communicationRecipientActivityTotal = rockContext.Database.SqlQuery<int>( @"SELECT COUNT(*)
 FROM CommunicationRecipientActivity
 WHERE [Guid] NOT IN (
@@ -235,9 +247,36 @@ WHERE Id NOT IN (
 
                 // Clean up unused PageViewSession data in chunks
                 // delete the indexes so they don't have to be updated as the rows are deleted
-                rockContext.Database.ExecuteSqlCommand( "DROP INDEX IF EXISTS [IX_Guid] ON [dbo].[PageViewSession]" );
-                rockContext.Database.ExecuteSqlCommand( "DROP INDEX IF EXISTS [IX_PageViewUserAgentId] ON [dbo].[PageViewSession]" );
-                rockContext.Database.ExecuteSqlCommand( "DROP INDEX IF EXISTS [IX_SessionId] ON [dbo].[PageViewSession]" );
+                rockContext.Database.ExecuteSqlCommand( @"
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_Guid'
+			AND object_id = OBJECT_ID('PageViewSession')
+		)
+BEGIN
+	DROP INDEX [IX_Guid] ON [dbo].[PageViewSession]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_PageViewUserAgentId'
+			AND object_id = OBJECT_ID('PageViewSession')
+		)
+BEGIN
+	DROP INDEX [IX_PageViewUserAgentId] ON [dbo].[PageViewSession]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_SessionId'
+			AND object_id = OBJECT_ID('PageViewSession')
+		)
+BEGIN
+	DROP INDEX [IX_SessionId] ON [dbo].[PageViewSession]
+END" );
 
                 int unUsedSessionsTotal = rockContext.Database.SqlQuery<int>( @"SELECT COUNT(*) FROM PageViewSession where Id not in ( select distinct PageViewSessionId from PageView )" ).First();
                 int unUsedSessionsDeleted = 0;
@@ -300,11 +339,57 @@ END
                 // move PageView data in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
 
                 // delete the indexes so they don't have to be updated as the rows are deleted
-                rockContext.Database.ExecuteSqlCommand( "DROP INDEX IF EXISTS [IX_DateTimeViewed] ON [dbo].[PageView]" );
-                rockContext.Database.ExecuteSqlCommand( "DROP INDEX IF EXISTS [IX_PageId] ON [dbo].[PageView]" );
-                rockContext.Database.ExecuteSqlCommand( "DROP INDEX IF EXISTS [IX_PageViewSessionId] ON [dbo].[PageView]" );
-                rockContext.Database.ExecuteSqlCommand( "DROP INDEX IF EXISTS [IX_PersonAliasId] ON [dbo].[PageView]" );
-                rockContext.Database.ExecuteSqlCommand( "DROP INDEX IF EXISTS [IX_SiteId] ON [dbo].[PageView]" );
+                rockContext.Database.ExecuteSqlCommand( @"
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_DateTimeViewed'
+			AND object_id = OBJECT_ID('PageView')
+		)
+BEGIN
+	DROP INDEX [IX_DateTimeViewed] ON [dbo].[PageView]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_PageId'
+			AND object_id = OBJECT_ID('PageView')
+		)
+BEGIN
+	DROP INDEX IX_PageId ON [dbo].[PageView]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_PageViewSessionId'
+			AND object_id = OBJECT_ID('PageView')
+		)
+BEGIN
+	DROP INDEX IX_PageViewSessionId ON [dbo].[PageView]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_PersonAliasId'
+			AND object_id = OBJECT_ID('PageView')
+		)
+BEGIN
+	DROP INDEX IX_PersonAliasId ON [dbo].[PageView]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_SiteId'
+			AND object_id = OBJECT_ID('PageView')
+		)
+BEGIN
+	DROP INDEX IX_SiteId ON [dbo].[PageView]
+END
+" );
 
                 keepMoving = true;
 
