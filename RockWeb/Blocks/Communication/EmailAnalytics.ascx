@@ -140,23 +140,24 @@
                     "#d8e1ea"
                 ]
 
-                debugger
-                var chartDataLabels = <%=this.ChartDataLabelsJSON%>;
-                var chartDataClicks = <%=this.ChartDataClicksJSON%>;
-                var chartDataOpens = <%=this.ChartDataOpensJSON%>;
-
                 // Main Linechart
+                var lineChartDataLabels = <%=this.LineChartDataLabelsJSON%>;
+                var lineChartDataOpens = <%=this.LineChartDataOpensJSON%>;
+                var lineChartDataClicks = <%=this.LineChartDataClicksJSON%>;
+                var lineChartDataUnopened = <%=this.LineChartDataUnOpenedJSON%>;
+
                 var linechartCtx = $('#<%=openClicksLineChartCanvas.ClientID%>')[0].getContext('2d');
                 var clicksLineChart = new Chart(linechartCtx, {
                     type: 'line',
                     data: {
-                        labels: chartDataLabels,
+                        labels: lineChartDataLabels,
                         datasets: [{
                             type: 'line',
                             label: 'Opens',
                             backgroundColor: chartSeriesColors[0],
                             borderColor: chartSeriesColors[0],
-                            data: chartDataOpens,
+                            data: lineChartDataOpens,
+                            spanGaps: true,
                             fill: false
                         },
                         {
@@ -164,7 +165,8 @@
                             label: 'Clicks',
                             backgroundColor: chartSeriesColors[1],
                             borderColor: chartSeriesColors[1],
-                            data: chartDataClicks,
+                            data: lineChartDataClicks,
+                            spanGaps: true,
                             fill: false
                         },
                         {
@@ -172,7 +174,8 @@
                             label: 'Unopened',
                             backgroundColor: chartSeriesColors[2],
                             borderColor: chartSeriesColors[2],
-                            data: [],
+                            data: lineChartDataUnopened,
+                            spanGaps: true,
                             fill: false
                         }],
                     },
@@ -182,16 +185,15 @@
                                 type: 'time',
                                 time: {
                                     unit: 'day',
-                                    //round: 'week',
                                 }
                             }]
                         }
                     }
-
-
                 });
 
                 // ClicksOpens Pie Chart
+                var pieChartDataOpenClicks = <%=this.PieChartDataOpenClicksJSON%>;
+
                 var opensClicksPieChartCanvasCtx = $('#<%=opensClicksPieChartCanvas.ClientID%>')[0].getContext('2d');
                 var opensClicksPieChart = new Chart(opensClicksPieChartCanvasCtx, {
                     type: 'pie',
@@ -208,11 +210,7 @@
                         ],
                         datasets: [{
                             type: 'pie',
-                            data: [
-                                200,
-                                110,
-                                450
-                            ],
+                            data: pieChartDataOpenClicks,
                             backgroundColor: [
                                 chartSeriesColors[0],
                                 chartSeriesColors[1],
