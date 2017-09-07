@@ -813,6 +813,7 @@
                 {
                     $('#<%=hfShowAdditionalFields.ClientID %>').val(!$('.js-addition-fields').is(':visible'));
                     $('.js-additional-fields').slideToggle();
+                    return false;
                 });
 
                 if ($('#<%=hfShowAdditionalFields.ClientID %>').val() == "true")
@@ -826,6 +827,7 @@
                     $('#<%=btnEmailPreview.ClientID%>').hide();
 
                     $('.js-email-sendtest-inputs').slideDown();
+                    return false;
                 });
 
                 $('.js-email-sendtest-cancel').off('click').on('click', function ()
@@ -833,6 +835,7 @@
                     $('.js-email-sendtest').show();
                     $('#<%=btnEmailPreview.ClientID%>').show();
                     $('.js-email-sendtest-inputs').hide();
+                    return false;
                 });
 
                 $('.js-sms-sendtest').off('click').on('click', function ()
@@ -840,12 +843,14 @@
                     $(this).hide();
 
                     $('.js-sms-sendtest-inputs').slideDown();
+                    return false;
                 });
 
                 $('.js-sms-sendtest-cancel').off('click').on('click', function ()
                 {
                     $('.js-sms-sendtest').show();
                     $('.js-sms-sendtest-inputs').hide();
+                    return false;
                 });
                 
                 setSMSBubbleText();
@@ -860,6 +865,7 @@
                     $('.js-confirmation-senddatetime-alert').slideUp();
                     $('.js-confirmation-datetime').slideDown();
                     $('#<%=hfShowConfirmationDateTime.ClientID %>').val("true");
+                    return false;
                 });
                 
                 // Ensure the visibility of of Send Date controls on the confirmation page if they clicked 'edit' and are navigating back and forth to it
