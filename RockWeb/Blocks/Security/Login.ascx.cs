@@ -393,9 +393,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
-
-            var personDictionary = userLogin.Person.ToLiquid() as Dictionary<string, object>;
-            mergeFields.Add( "Person", personDictionary );
+            mergeFields.Add( "Person", userLogin.Person );
             mergeFields.Add( "User", userLogin );
 
             var recipients = new List<RecipientData>();

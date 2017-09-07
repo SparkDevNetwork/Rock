@@ -10,6 +10,9 @@ namespace Rock.SystemGuid
 
 namespace Rock.SystemGuid
 {
+    /// <summary>
+    /// System Communication Guids
+    /// </summary>
     public class Communication
     {
         /// <summary>

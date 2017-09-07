@@ -178,26 +178,8 @@ namespace Rock.Model
         /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
         /// </value>
         [DataMember]
-        [Obsolete("MediumDataJson is no longer used.")]
-        public string MediumDataJson
-        {
-            get
-            {
-                return MediumData.ToJson();
-            }
-
-            set
-            {
-                if ( string.IsNullOrWhiteSpace( value ) )
-                {
-                    MediumData = new Dictionary<string, string>();
-                }
-                else
-                {
-                    MediumData = JsonConvert.DeserializeObject<Dictionary<string, string>>( value );
-                }
-            }
-        }
+        [Obsolete( "MediumDataJson is no longer used." )]
+        public string MediumDataJson { get; set; }
 
         /// <summary>
         /// Gets or sets a Json string containing any additional merge fields for the Communication.
@@ -206,18 +188,7 @@ namespace Rock.Model
         /// A Json formatted <see cref="System.String"/> that contains any additional merge fields for the Communication.
         /// </value>
         [DataMember]
-        public string AdditionalMergeFieldsJson
-        {
-            get
-            {
-                return AdditionalMergeFields.ToJson();
-            }
-
-            set
-            {
-                AdditionalMergeFields = value.FromJsonOrNull<List<string>>() ?? new List<string>();
-            }
-        }
+        public string AdditionalMergeFieldsJson { get; set; }
 
         /// <summary>
         /// Gets or sets the enabled lava commands.
@@ -448,13 +419,53 @@ namespace Rock.Model
         /// A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of key value pairs that contain medium specific data.
         /// </value>
         [DataMember]
-        [Obsolete("MediumData is no longer used. Communication now has specific properties for medium data.")]
+        [Obsolete( "MediumData is no longer used. Communication now has specific properties for medium data." )]
         public virtual Dictionary<string, string> MediumData
         {
-            get { return _mediumData; }
-            set { _mediumData = value; }
+            get
+            {
+                // Get the MediumData from the new property values. This is provided due to the fact that there may be Lava that is 
+                // referencing the "MediumData" property of a communication.
+
+                var mediumData = new Dictionary<string, string>();
+
+                switch ( CommunicationType )
+                {
+                    case CommunicationType.SMS:
+                        {
+                            mediumData.AddIfNotBlank( "FromValue", SMSFromDefinedValueId.Value.ToString() );
+                            mediumData.AddIfNotBlank( "Subject", Subject );
+                            mediumData.AddIfNotBlank( "Message", SMSMessage );
+                            break;
+                        }
+
+                    case CommunicationType.PushNotification:
+                        {
+                            mediumData.AddIfNotBlank( "Title", PushTitle );
+                            mediumData.AddIfNotBlank( "Message", PushMessage );
+                            mediumData.AddIfNotBlank( "Sound", PushSound );
+                            break;
+                        }
+
+                    default:
+                        {
+                            mediumData.AddIfNotBlank( "FromName", FromName );
+                            mediumData.AddIfNotBlank( "FromAddress", FromEmail );
+                            mediumData.AddIfNotBlank( "ReplyTo", ReplyToEmail );
+                            mediumData.AddIfNotBlank( "CC", CCEmails );
+                            mediumData.AddIfNotBlank( "BCC", BCCEmails );
+                            mediumData.AddIfNotBlank( "Subject", Subject );
+                            mediumData.AddIfNotBlank( "HtmlMessage", Message );
+                            mediumData.AddIfNotBlank( "Attachments", AttachmentBinaryFileIds.ToList().AsDelimited( "," ) );
+                            break;
+                        }
+                }
+
+                return mediumData;
+            }
+
+            set {}
         }
-        private Dictionary<string, string> _mediumData = new Dictionary<string, string>();
 
         /// <summary>
         /// Gets or sets the additional merge field list. When a communication is created
@@ -488,7 +499,13 @@ namespace Rock.Model
         /// The attachment binary file ids
         /// </value>
         [NotMapped]
-        public virtual IEnumerable<int> AttachmentBinaryFileIds { get; set; }
+        public virtual IEnumerable<int> AttachmentBinaryFileIds
+        {
+            get
+            {
+                return this.Attachments.Select( a => a.BinaryFileId ).ToList();
+            }
+        }
 
         /// <summary>
         /// /// Gets or sets the Communication Template that was used to compose this communication
@@ -507,7 +524,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> containing the key associated with the value to retrieve. </param>
         /// <returns>A <see cref="System.String"/> representing the value that is linked with the specified key.</returns>
-        [Obsolete("MediumData is no longer used")]
+        [Obsolete( "MediumData is no longer used" )]
         public string GetMediumDataValue( string key )
         {
             if ( MediumData.ContainsKey( key ) )
@@ -568,34 +585,6 @@ namespace Rock.Model
         public IQueryable<CommunicationRecipient> GetRecipientsQry( RockContext rockContext )
         {
             return new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id );
-        }
-
-        /// <summary>
-        /// Sets from template.
-        /// </summary>
-        /// <param name="template">The template.</param>
-        public void SetFromTemplate( CommunicationTemplate template )
-        {
-            this.FromEmail = template.FromEmail;
-            this.FromName = template.FromName;
-            this.ReplyToEmail = template.ReplyToEmail;
-
-            if ( this.Subject.IsNullOrWhiteSpace() && template.Subject.IsNotNullOrWhitespace() )
-            {
-                this.Subject = template.Subject;
-            }
-
-            this.BCCEmails = template.BCCEmails;
-            this.CCEmails = template.CCEmails;
-            this.Message = template.Message;
-            this.MessageMetaData = template.MessageMetaData;
-
-            this.SMSFromDefinedValueId = template.SMSFromDefinedValueId;
-            this.SMSMessage = template.SMSMessage;
-
-            this.PushMessage = template.PushMessage;
-            this.PushSound = template.PushSound;
-            this.PushTitle = template.PushTitle;
         }
 
         /// <summary>

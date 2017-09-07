@@ -149,39 +149,43 @@ namespace RockWeb.Blocks.Crm
 
                 if ( communication != null && CurrentPersonAliasId.HasValue )
                 {
-                    // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-                    var testCommunication = communication.Clone( false );
-                    testCommunication.Id = 0;
-                    testCommunication.Guid = Guid.Empty;
-                    testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
-                    testCommunication.ForeignGuid = null;
-                    testCommunication.ForeignId = null;
-                    testCommunication.ForeignKey = null;
-
-                    testCommunication.FutureSendDateTime = null;
-                    testCommunication.Status = CommunicationStatus.Approved;
-                    testCommunication.ReviewedDateTime = RockDateTime.Now;
-                    testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId.Value;
-
-                    var testRecipient = new CommunicationRecipient();
-                    if ( communication.Recipients.Any() )
+                    using ( var rockContext = new RockContext() )
                     {
-                        var recipient = communication.Recipients.FirstOrDefault();
-                        testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
+
+                        // Using a new context (so that changes in the UpdateCommunication() are not persisted )
+                        var testCommunication = communication.Clone( false );
+                        testCommunication.Id = 0;
+                        testCommunication.Guid = Guid.Empty;
+                        testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+                        testCommunication.ForeignGuid = null;
+                        testCommunication.ForeignId = null;
+                        testCommunication.ForeignKey = null;
+
+                        testCommunication.FutureSendDateTime = null;
+                        testCommunication.Status = CommunicationStatus.Approved;
+                        testCommunication.ReviewedDateTime = RockDateTime.Now;
+                        testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId.Value;
+
+                        var testRecipient = new CommunicationRecipient();
+                        if ( communication.Recipients.Any() )
+                        {
+                            var recipient = communication.Recipients.FirstOrDefault();
+                            testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
+                        }
+                        testRecipient.Status = CommunicationRecipientStatus.Pending;
+                        testRecipient.PersonAliasId = CurrentPersonAliasId.Value;
+                        testRecipient.MediumEntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id;
+                        testCommunication.Recipients.Add( testRecipient );
+
+                        var communicationService = new CommunicationService( rockContext );
+                        communicationService.Add( testCommunication );
+                        rockContext.SaveChanges();
+
+                        Communication.Send( testCommunication );
+
+                        communicationService.Delete( testCommunication );
+                        rockContext.SaveChanges();
                     }
-                    testRecipient.Status = CommunicationRecipientStatus.Pending;
-                    testRecipient.PersonAliasId = CurrentPersonAliasId.Value;
-                    testCommunication.Recipients.Add( testRecipient );
-
-                    var rockContext = new RockContext();
-                    var communicationService = new CommunicationService( rockContext );
-                    communicationService.Add( testCommunication );
-                    rockContext.SaveChanges();
-
-                    Communication.Send( testCommunication );
-
-                    communicationService.Delete( testCommunication );
-                    rockContext.SaveChanges();
 
                     nbTestResult.Visible = true;
                 }
@@ -391,12 +395,15 @@ namespace RockWeb.Blocks.Crm
                 // add each person as a recipient to the communication
                 if ( peopleIds != null )
                 {
+                    var emailMediumTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id;
+
                     foreach ( var personId in peopleIds )
                     {
                         if ( !communication.Recipients.Any( r => r.PersonAlias.PersonId == personId ) )
                         {
                             var communicationRecipient = new CommunicationRecipient();
                             communicationRecipient.PersonAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( personId );
+                            communicationRecipient.MediumEntityTypeId = emailMediumTypeId;
                             communication.Recipients.Add( communicationRecipient );
                         }
                     }

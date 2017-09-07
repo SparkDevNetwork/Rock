@@ -42,7 +42,6 @@ namespace Rock.Web.UI.Controls.Communication
         private EmailBox ebBccAddress;
         private RockTextBox tbSubject;
         private HtmlEditor htmlMessage;
-        private RockTextBox tbTextMessage;
         private HiddenField hfAttachments;
         private FileUploader fuAttachments;
 
@@ -79,24 +78,24 @@ namespace Rock.Web.UI.Controls.Communication
         /// Sets control values from a communication record.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        public override void SetFromCommunication( ICommunicationDetails communication )
+        public override void SetFromCommunication( CommunicationDetails communication )
         {
             EnsureChildControls();
             tbFromName.Text = communication.FromName;
             ebFromAddress.Text = communication.FromEmail;
             ebReplyToAddress.Text = communication.ReplyToEmail;
+            ebCcAddress.Text = communication.CCEmails;
+            ebBccAddress.Text = communication.BCCEmails;
             tbSubject.Text = communication.Subject;
             htmlMessage.Text = communication.Message;
             hfAttachments.Value = communication.AttachmentBinaryFileIds != null ? communication.AttachmentBinaryFileIds.ToList().AsDelimited( "," ) : string.Empty;
-            ebCcAddress.Text = communication.CCEmails;
-            ebBccAddress.Text = communication.BCCEmails;
         }
 
         /// <summary>
         /// Updates the a communication record from control values.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        public override void UpdateCommunication( ICommunicationDetails communication )
+        public override void UpdateCommunication( CommunicationDetails communication )
         {
             EnsureChildControls();
             communication.FromName = tbFromName.Text;
@@ -211,14 +210,6 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.Label = "Message";
             htmlMessage.Height = 600;
             Controls.Add( htmlMessage );
-
-            tbTextMessage = new RockTextBox();
-            tbTextMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );
-            tbTextMessage.Label = "Message (Text Version)";
-            tbTextMessage.TextMode = TextBoxMode.MultiLine;
-            tbTextMessage.Rows = 5;
-            tbTextMessage.CssClass = "span12";
-            Controls.Add( tbTextMessage );
 
             hfAttachments = new HiddenField();
             hfAttachments.ID = string.Format( "hfAttachments_{0}", this.ID );
@@ -389,10 +380,6 @@ namespace Rock.Web.UI.Controls.Communication
             }
             htmlMessage.RenderControl( writer );
 
-            if ( !UseSimpleMode )
-            {
-                tbTextMessage.RenderControl( writer );
-            }
             writer.RenderEndTag();
             writer.RenderEndTag();
 

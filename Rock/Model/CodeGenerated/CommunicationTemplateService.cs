@@ -102,7 +102,7 @@ namespace Rock.Model
             target.FromEmail = source.FromEmail;
             target.FromName = source.FromName;
             target.ImageFileId = source.ImageFileId;
-            target.MediumDataJson = source.MediumDataJson;
+            target.IsSystem = source.IsSystem;
             target.Message = source.Message;
             target.MessageMetaData = source.MessageMetaData;
             target.Name = source.Name;

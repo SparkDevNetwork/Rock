@@ -85,6 +85,11 @@ namespace Rock.Communication
             MergeFields = mergeFields;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecipientData"/> class.
+        /// </summary>
+        /// <param name="recipient">The recipient.</param>
+        /// <param name="mergeFields">The merge fields.</param>
         public RecipientData( CommunicationRecipient recipient, Dictionary<string, object> mergeFields )
         {
             var person = recipient?.PersonAlias?.Person;

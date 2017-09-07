@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls.Communication
         /// Sets control values from a communication record.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        public override void SetFromCommunication( ICommunicationDetails communication )
+        public override void SetFromCommunication( CommunicationDetails communication )
         {
             EnsureChildControls();
             tbTitle.Text = communication.PushTitle;
@@ -56,7 +56,7 @@ namespace Rock.Web.UI.Controls.Communication
         /// Updates the a communication record from control values.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        public override void UpdateCommunication( ICommunicationDetails communication )
+        public override void UpdateCommunication( CommunicationDetails communication )
         {
             EnsureChildControls();
             communication.PushTitle = tbTitle.Text;

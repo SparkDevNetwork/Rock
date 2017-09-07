@@ -104,6 +104,8 @@ namespace Rock.Communication.Transport
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
+        /// <param name="mediumEntityTypeId">The medium entity type identifier.</param>
+        /// <param name="mediumAttributes">The medium attributes.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         public override void Send( Model.Communication communication, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes )
         {
@@ -172,9 +174,9 @@ namespace Rock.Communication.Transport
                                         // Create merge field dictionary
                                         var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
 
-                                        var message = ResolveText( communication.PushMessage, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
-                                        var title = ResolveText( communication.PushTitle, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
-                                        var sound = ResolveText( communication.PushSound, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                                        var message = ResolveText( communication.PushMessage, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+                                        var title = ResolveText( communication.PushTitle, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+                                        var sound = ResolveText( communication.PushSound, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
 
                                         var notification = new Message
                                         {

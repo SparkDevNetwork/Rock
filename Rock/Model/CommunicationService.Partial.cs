@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Rock.Communication;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -153,5 +153,6 @@ namespace Rock.Model
                         ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && ( includeFuture || c.FutureSendDateTime.Value.CompareTo( nowDate ) <= 0 ) )
                     ) );
         }
+
     }
 }

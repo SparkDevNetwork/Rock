@@ -39,6 +39,12 @@ namespace Rock.Communication.Medium
     {
         const int TOKEN_REUSE_DURATION = 30; // number of days between token reuse
 
+        /// <summary>
+        /// Gets the type of the communication.
+        /// </summary>
+        /// <value>
+        /// The type of the communication.
+        /// </value>
         public override CommunicationType CommunicationType { get { return CommunicationType.SMS; } }
 
         /// <summary>
@@ -138,7 +144,7 @@ namespace Rock.Communication.Medium
         /// <param name="fromPersonName">Name of from person.</param>
         /// <param name="toPersonAliasId">To person alias identifier.</param>
         /// <param name="message">The message to send.</param>
-        /// <param name="transportPhone">The transport phone.</param>
+        /// <param name="fromPhone">From phone.</param>
         /// <param name="responseCode">The reponseCode to use for tracking the conversation.</param>
         /// <param name="rockContext">A context to use for database calls.</param>
         private void CreateCommunication( int fromPersonAliasId, string fromPersonName, int toPersonAliasId, string message, DefinedValueCache fromPhone, string responseCode, Rock.Data.RockContext rockContext )

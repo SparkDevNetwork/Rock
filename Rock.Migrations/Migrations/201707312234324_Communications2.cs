@@ -129,6 +129,18 @@ namespace Rock.Migrations
             AddForeignKey("dbo.Communication", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
             AddForeignKey("dbo.CommunicationRecipient", "MediumEntityTypeId", "dbo.EntityType", "Id");
             AddForeignKey("dbo.CommunicationTemplate", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
+
+            Sql( @"
+    UPDATE C 
+        SET [CommunicationType] = CASE E.[Name]
+            WHEN 'Rock.Communication.Medium.Email' THEN 1
+            WHEN 'Rock.Communication.Medium.Sms' THEN 2
+            WHEN 'Rock.Communication.Medium.PushNotification' THEN 3
+        END
+    FROM [Communication] C
+    INNER JOIN [EntityType] E ON E.[Id] = C.[MediumEntityTypeId]
+" );
+
             DropColumn("dbo.Communication", "MediumEntityTypeId");
             DropColumn("dbo.CommunicationTemplate", "MediumEntityTypeId");
                         
