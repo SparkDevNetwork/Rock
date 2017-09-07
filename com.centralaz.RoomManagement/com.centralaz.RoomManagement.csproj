@@ -90,6 +90,7 @@
     <Compile Include="Field\Types\ReservationApprovalStateFieldType.cs" />
     <Compile Include="Field\Types\ReservationFieldType.cs" />
     <Compile Include="Jobs\FireWorkflowFromReservationInDateRange.cs" />
+    <Compile Include="Migrations\013_QuestionsAndAnswers.cs" />
     <Compile Include="Migrations\012_NotificationJobAttributes.cs" />
     <Compile Include="Migrations\011_NewBlockSettings.cs" />
     <Compile Include="Migrations\010_ColumnChanges.cs" />
@@ -112,6 +113,10 @@
     <Compile Include="Model\ReservationResource.cs" />
     <Compile Include="Model\ReservationLocationService.cs" />
     <Compile Include="Model\ReservationResourceService.cs" />
+    <Compile Include="Model\Answer.cs" />
+    <Compile Include="Model\Question.cs" />
+    <Compile Include="Model\AnswerService.cs" />
+    <Compile Include="Model\QuestionService.cs" />
     <Compile Include="Model\ResourceService.cs" />
     <Compile Include="Model\Resource.cs" />
     <Compile Include="Model\Reservation.cs" />
