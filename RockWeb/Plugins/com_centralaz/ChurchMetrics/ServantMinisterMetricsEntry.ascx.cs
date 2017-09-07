@@ -418,7 +418,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
             var date = RockDateTime.Today.SundayDate();
             bddlWeekend.Items.Add( new ListItem( "Sunday " + date.ToShortDateString(), date.ToString( "o" ) ) );
             bddlWeekend.SetValue( date.ToString( "o" ) );
-            lWeekend.Text = bddlWeekend.SelectedItem.Text;
+            lWeekend.Text = String.Format( "Week of {0} - {1}", date.AddDays( -6 ).ToShortDateString(), date.ToShortDateString() );
 
             var serviceList = GetServices();
             // Load service times
