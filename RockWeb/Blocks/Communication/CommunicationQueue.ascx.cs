@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Communication
             {
                 // Because the RockCheckBoxList does not handle postback event correctly, check to see if it was selected
                 // and update values manually.
-                if (Request.Form["__EVENTTARGET"] == cblType.UniqueID )
+                if (Request.Form["__EVENTTARGET"].StartsWith( cblType.UniqueID ) )
                 {
                     for ( int i = 0; i < cblType.Items.Count; i++ )
                     {
@@ -149,27 +149,12 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void SetFilter()
         {
-            BindMediums();
+            cblType.BindToEnum<CommunicationType>();
             string typeValues = GetBlockUserPreference( "CommunicationType" );
 
             cblType.SetValues( typeValues.SplitDelimitedValues().AsIntegerList() );
             cbPendingApproval.Checked = GetBlockUserPreference( "PendingApproval" ).AsBooleanOrNull() ?? false;
             cbFutureComm.Checked = GetBlockUserPreference( "FutureCommunication" ).AsBooleanOrNull() ?? false;
-        }
-
-        /// <summary>
-        /// Binds the mediums.
-        /// </summary>
-        private void BindMediums()
-        {
-            foreach ( var item in MediumContainer.Instance.Components.Values )
-            {
-                if ( item.Value.IsActive )
-                {
-                    var entityType = item.Value.EntityType;
-                    cblType.Items.Add( new ListItem( item.Metadata.ComponentName, entityType.Id.ToString() ) );
-                }
-            }
         }
 
         /// <summary>
@@ -223,7 +208,7 @@ namespace RockWeb.Blocks.Communication
 
             SetBlockUserPreference( "FutureCommunication", cbFutureComm.Checked ? "True" : string.Empty );
             SetBlockUserPreference( "PendingApproval", cbPendingApproval.Checked ? "True" : string.Empty );
-            SetBlockUserPreference( "Medium", cblType.SelectedValues.AsDelimited( ";" ) );
+            SetBlockUserPreference( "CommunicationType", cblType.SelectedValues.AsDelimited( "," ) );
 
         }
 

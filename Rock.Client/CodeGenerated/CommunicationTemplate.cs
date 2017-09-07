@@ -59,7 +59,7 @@ namespace Rock.Client
         public int? ImageFileId { get; set; }
 
         /// <summary />
-        public string MediumDataJson { get; set; }
+        public bool IsSystem { get; set; }
 
         /// <summary />
         public string Message { get; set; }
@@ -140,7 +140,7 @@ namespace Rock.Client
             this.FromEmail = source.FromEmail;
             this.FromName = source.FromName;
             this.ImageFileId = source.ImageFileId;
-            this.MediumDataJson = source.MediumDataJson;
+            this.IsSystem = source.IsSystem;
             this.Message = source.Message;
             this.MessageMetaData = source.MessageMetaData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
@@ -170,9 +170,6 @@ namespace Rock.Client
     {
         /// <summary />
         public ICollection<CommunicationTemplateAttachment> Attachments { get; set; }
-
-        /// <summary />
-        public Dictionary<string, string> MediumData { get; set; }
 
         /// <summary />
         public PersonAlias SenderPersonAlias { get; set; }

@@ -143,17 +143,17 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.CCEmails = tbCCList.Text;
                 communicationTemplate.BCCEmails = tbBCCList.Text;
 
-                communicationTemplate.AttachmentBinaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+                var binaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
 
                 // delete any attachments that are no longer included
-                foreach ( var attachment in communicationTemplate.Attachments.Where( a => !communicationTemplate.AttachmentBinaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
+                foreach ( var attachment in communicationTemplate.Attachments.Where( a => !binaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
                 {
                     communicationTemplate.Attachments.Remove( attachment );
                     communicationTemplateAttachmentService.Delete( attachment );
                 }
 
                 // add any new attachments that were added
-                foreach ( var attachmentBinaryFileId in communicationTemplate.AttachmentBinaryFileIds.Where( a => !communicationTemplate.Attachments.Any( x => x.BinaryFileId == a ) ) )
+                foreach ( var attachmentBinaryFileId in binaryFileIds.Where( a => !communicationTemplate.Attachments.Any( x => x.BinaryFileId == a ) ) )
                 {
                     communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId } );
                 }
@@ -288,17 +288,7 @@ namespace RockWeb.Blocks.Communication
 <br/>
 ";
 
-
-
-            if ( string.IsNullOrEmpty( communicationTemplate.Message ) && communicationTemplate.MediumData.ContainsKey("HtmlMessage") )
-            {
-                // TODO, shouldn't need to do this after MediumData is migrated
-                ceEmailTemplate.Text = communicationTemplate.MediumData["HtmlMessage"];
-            }
-            else
-            {
-                ceEmailTemplate.Text = communicationTemplate.Message;
-            }
+            ceEmailTemplate.Text = communicationTemplate.Message;
 
             hfAttachedBinaryFileIds.Value = communicationTemplate.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
             UpdateAttachedFiles( false );

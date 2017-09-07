@@ -108,6 +108,12 @@ namespace Rock.Communication
         /// </value>
         public Dictionary<string, string> MessageMetaData { get; set; } = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Gets or sets the email attachments.
+        /// </summary>
+        /// <value>
+        /// The email attachments.
+        /// </value>
         public List<Attachment> EmailAttachments { get; set; } = new List<Attachment>();
 
         /// <summary>
@@ -131,7 +137,6 @@ namespace Rock.Communication
         /// Initializes a new instance of the <see cref="RockEmailMessage" /> class.
         /// </summary>
         /// <param name="systemEmailGuid">The system email unique identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
         public RockEmailMessage( Guid systemEmailGuid ) : this()
         {
             using ( var rockContext = new RockContext() )

@@ -34,15 +34,21 @@ namespace Rock.Communication.Medium
 
     [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 <a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person.UrlEncodedKey }}'>Unsubscribe</a>", "", 2 )]
-    [CodeEditorField( "Default Plain Text", "The text to display for email clients that do not support html content.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
+    [CodeEditorField( "Non-HTML Content", "The text to display for email clients that do not support html content.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 Unfortunately, you cannot view the contents of this email as it contains formatting that is not supported 
 by your email client.  
 
 You can view an online version of this email here: 
 {{ 'Global' | Attribute:'PublicApplicationRoot' }}GetCommunication.ashx?c={{ Communication.Id }}&p={{ Person.UrlEncodedKey }}
-", "", 3 )]
+", "", 3, "DefaultPlainText" )]
     public class Email : MediumComponent
     {
+        /// <summary>
+        /// Gets the type of the communication.
+        /// </summary>
+        /// <value>
+        /// The type of the communication.
+        /// </value>
         public override CommunicationType CommunicationType { get { return CommunicationType.Email; } }
 
         /// <summary>

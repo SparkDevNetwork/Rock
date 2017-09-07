@@ -25,7 +25,7 @@ namespace Rock.Field.Types
     public class CommunicationPreferenceFieldType : EnumFieldType<CommunicationType>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationTypeFieldType"/> class.
+        /// Initializes a new instance of the <see cref="CommunicationType" /> class.
         /// </summary>
         public CommunicationPreferenceFieldType() : base( new CommunicationType[] { CommunicationType.Email, CommunicationType.SMS } )
         {

@@ -767,25 +767,34 @@ namespace RockWeb.Blocks.Communication
 
             CommunicationData = new CommunicationDetails();
             CommunicationDetails.Copy( communication, CommunicationData );
+            CommunicationData.AttachmentBinaryFileIds = communication.AttachmentBinaryFileIds;
 
-            if ( communication.Status == CommunicationStatus.Transient && !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultTemplate" ) ) )
+            var template = communication.CommunicationTemplate;
+
+            if ( template == null && !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultTemplate" ) ) )
             {
-                var template = new CommunicationTemplateService( new RockContext() ).Get( GetAttributeValue( "DefaultTemplate" ).AsGuid() );
+                template = new CommunicationTemplateService( new RockContext() ).Get( GetAttributeValue( "DefaultTemplate" ).AsGuid() );
+            }
 
-                // If a template guid was passed in, it overrides any default template.
-                string templateGuid = PageParameter( "templateGuid" );
-                if ( !string.IsNullOrEmpty( templateGuid ) )
-                {
-                    var guid = new Guid( templateGuid );
-                    template = new CommunicationTemplateService( new RockContext() ).Queryable().Where( t => t.Guid == guid ).FirstOrDefault();
-                }
+            // If a template guid was passed in, it overrides any default template.
+            string templateGuid = PageParameter( "templateGuid" );
+            if ( !string.IsNullOrEmpty( templateGuid ) )
+            {
+                var guid = new Guid( templateGuid );
+                template = new CommunicationTemplateService( new RockContext() ).Queryable().Where( t => t.Guid == guid ).FirstOrDefault();
+            }
 
+            if ( template != null )
+            {
                 foreach ( ListItem item in ddlTemplate.Items )
                 {
                     if ( item.Value == template.Id.ToString() )
                     {
                         item.Selected = true;
-                        GetTemplateData( template.Id, false );
+                        if ( communication.Status == CommunicationStatus.Transient )
+                        {
+                            GetTemplateData( template.Id, false );
+                        }
                     }
                     else
                     {
@@ -1080,6 +1089,7 @@ namespace RockWeb.Blocks.Communication
             if ( template != null )
             {
                 CommunicationDetails.Copy( template, CommunicationData );
+                CommunicationData.AttachmentBinaryFileIds = template.AttachmentBinaryFileIds;
                 if ( loadControl )
                 {
                     LoadMediumControl( true );
@@ -1155,7 +1165,8 @@ namespace RockWeb.Blocks.Communication
         private Rock.Model.Communication UpdateCommunication( RockContext rockContext )
         {
             var communicationService = new CommunicationService( rockContext );
-            var recipientService = new CommunicationRecipientService( rockContext );
+            var communicationAttachmentService = new CommunicationAttachmentService( rockContext );
+            var communicationRecipientService = new CommunicationRecipientService( rockContext );
 
             Rock.Model.Communication communication = null;
             IQueryable<CommunicationRecipient> qryRecipients = null;
@@ -1180,7 +1191,7 @@ namespace RockWeb.Blocks.Communication
                     if ( !personIdHash.Contains( item.PersonId ) )
                     {
                         var recipient = qryRecipients.Where( a => a.Id == item.Id ).FirstOrDefault();
-                        recipientService.Delete( recipient );
+                        communicationRecipientService.Delete( recipient );
                         communication.Recipients.Remove( recipient );
                     }
                 }
@@ -1218,15 +1229,35 @@ namespace RockWeb.Blocks.Communication
             }
 
             communication.IsBulkCommunication = cbBulk.Checked;
-
             var medium = MediumContainer.GetComponentByEntityTypeId( MediumEntityTypeId );
             if ( medium != null )
             {
                 communication.CommunicationType = medium.CommunicationType;
             }
 
+            communication.CommunicationTemplateId = ddlTemplate.SelectedValue.AsIntegerOrNull();
+
             GetMediumData();
+
+            foreach( var recipient in communication.Recipients )
+            {
+                recipient.MediumEntityTypeId = MediumEntityTypeId;
+            }
+
             CommunicationDetails.Copy( CommunicationData, communication );
+
+            // delete any attachments that are no longer included
+            foreach ( var attachment in communication.Attachments.Where( a => !CommunicationData.AttachmentBinaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
+            {
+                communication.Attachments.Remove( attachment );
+                communicationAttachmentService.Delete( attachment );
+            }
+
+            // add any new attachments that were added
+            foreach ( var attachmentBinaryFileId in CommunicationData.AttachmentBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
+            {
+                communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId } );
+            }
 
             DateTime? futureSendDate = dtpFutureSend.SelectedDateTime;
             if ( futureSendDate.HasValue && futureSendDate.Value.CompareTo( RockDateTime.Now ) > 0 )

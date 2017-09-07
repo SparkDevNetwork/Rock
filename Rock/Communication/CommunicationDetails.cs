@@ -16,14 +16,28 @@
 //
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Communication
 {
+    /// <summary>
+    /// Helper class used to edit communications
+    /// </summary>
+    /// <seealso cref="Rock.Communication.ICommunicationDetails" />
     [Serializable]
     public class CommunicationDetails: ICommunicationDetails
     {
+        /// <summary>
+        /// Gets or sets a list of binary file ids
+        /// </summary>
+        /// <value>
+        /// The attachment binary file ids
+        /// </value>
+        public IEnumerable<int> AttachmentBinaryFileIds { get; set; }
+
         #region Email Fields
 
         /// <summary>
@@ -139,13 +153,10 @@ namespace Rock.Communication
         public string PushSound { get; set; }
 
         /// <summary>
-        /// Gets or sets a list of binary file ids
+        /// Copies the specified source.
         /// </summary>
-        /// <value>
-        /// The attachment binary file ids
-        /// </value>
-        public IEnumerable<int> AttachmentBinaryFileIds { get; set; }
-
+        /// <param name="source">The source.</param>
+        /// <param name="target">The target.</param>
         public static void Copy( ICommunicationDetails source, ICommunicationDetails target )
         {
             target.FromName = source.FromName;
@@ -166,5 +177,6 @@ namespace Rock.Communication
         }
 
         #endregion
+
     }
 }

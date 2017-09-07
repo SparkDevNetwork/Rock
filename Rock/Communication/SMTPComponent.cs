@@ -193,14 +193,14 @@ namespace Rock.Communication.Transport
 
                             // To
                             message.To.Add( new MailAddress( 
-                                recipientData.To.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ),
-                                recipientData.Name.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) ) );
+                                recipientData.To.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ),
+                                recipientData.Name.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) ) );
 
                             // cc
                             foreach( string cc in emailMessage.CCEmails.Where( e => e != "" ) )
                             {
                                 // Resolve any possible merge fields in the cc address
-                                string ccRecipient = cc.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
+                                string ccRecipient = cc.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
                                 message.CC.Add( new MailAddress( ccRecipient ) );
                             }
 
@@ -208,15 +208,15 @@ namespace Rock.Communication.Transport
                             foreach ( string bcc in emailMessage.BCCEmails.Where( e => e != "" ) )
                             {
                                 // Resolve any possible merge fields in the cc address
-                                string bccRecipient = bcc.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
+                                string bccRecipient = bcc.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
                                 message.Bcc.Add( new MailAddress( bccRecipient ) );
                             }
 
                             // Subject
-                            string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, mergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
+                            string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
 
                             // Body
-                            string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, mergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
+                            string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
                             body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
 
                             message.Subject = subject;
@@ -386,12 +386,12 @@ namespace Rock.Communication.Transport
                                         }
 
                                         // Subject
-                                        message.Subject = ResolveText( communication.Subject, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                                        message.Subject = ResolveText( communication.Subject, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
 
                                         // Plain text
                                         if ( mediumAttributes.ContainsKey( "DefaultPlainText" ) )
                                         {
-                                            string plainText = ResolveText( mediumAttributes["DefaultPlainText"], currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                                            string plainText = ResolveText( mediumAttributes["DefaultPlainText"], currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
                                             if ( !string.IsNullOrWhiteSpace( plainText ) )
                                             {
                                                 AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainText, new System.Net.Mime.ContentType( MediaTypeNames.Text.Plain ) );
@@ -404,9 +404,9 @@ namespace Rock.Communication.Transport
                                         string htmlBody = communication.Message;
                                         if ( communication.IsBulkCommunication && mediumAttributes.ContainsKey( "UnsubscribeHTML" ) )
                                         {
-                                            string unsubscribeHtml = ResolveText( mediumAttributes["UnsubscribeHTML"], currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                                            string unsubscribeHtml = ResolveText( mediumAttributes["UnsubscribeHTML"], currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
                                             mergeObjects.AddOrReplace( "UnsubscribeOption", unsubscribeHtml );
-                                            htmlBody = ResolveText( htmlBody, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                                            htmlBody = ResolveText( htmlBody, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
 
                                             // Resolve special syntax needed if option was included in global attribute
                                             if ( Regex.IsMatch( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]" ) )
@@ -422,7 +422,7 @@ namespace Rock.Communication.Transport
                                         }
                                         else
                                         {
-                                            htmlBody = ResolveText( htmlBody, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                                            htmlBody = ResolveText( htmlBody, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
                                             htmlBody = Regex.Replace( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
                                         }
 

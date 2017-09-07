@@ -42,13 +42,13 @@ namespace Rock.Web.UI.Controls.Communication
         /// Sets control values from a communication record.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        public abstract void SetFromCommunication( ICommunicationDetails communication );
+        public abstract void SetFromCommunication( CommunicationDetails communication );
 
         /// <summary>
         /// Updates the a communication record from control values.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        public abstract void UpdateCommunication( ICommunicationDetails communication );
+        public abstract void UpdateCommunication( CommunicationDetails communication );
 
         /// <summary>
         /// On new communication, initializes controls from sender values

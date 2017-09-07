@@ -16,8 +16,7 @@
                         <Rock:RockCheckBox ID="cbPendingApproval" runat="server" Label="Show Communications Pending Approval" AutoPostBack="true" OnCheckedChanged="cbFilter_Changed" />
                     </div>
                     <div class="col-sm-4">
-                        <Rock:RockCheckBoxList ID="cblType"  runat="server" Label="Communication Type" RepeatDirection="Horizontal" AutoPostBack="true" >
-                        </Rock:RockCheckBoxList>
+                        <Rock:RockCheckBoxList ID="cblType"  runat="server" Label="Communication Type" RepeatDirection="Horizontal" AutoPostBack="true" />
                     </div>
                 </div>
 

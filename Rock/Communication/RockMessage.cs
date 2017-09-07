@@ -113,6 +113,9 @@ namespace Rock.Communication
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockMessage"/> class.
+        /// </summary>
         public RockMessage()
         {
             CreateCommunicationRecord = true;

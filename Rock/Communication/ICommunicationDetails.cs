@@ -20,8 +20,20 @@ using Rock.Model;
 
 namespace Rock.Communication
 {
+    /// <summary>
+    /// Interface for communications/templates
+    /// </summary>
     public interface ICommunicationDetails
     {
+
+        /// <summary>
+        /// Gets or sets a list of binary file ids
+        /// </summary>
+        /// <value>
+        /// The attachment binary file ids
+        /// </value>
+        IEnumerable<int> AttachmentBinaryFileIds { get; }
+
         #region Email Fields
 
         /// <summary>
@@ -136,14 +148,7 @@ namespace Rock.Communication
         /// </value>
         string PushSound { get; set; }
 
-        /// <summary>
-        /// Gets or sets a list of binary file ids
-        /// </summary>
-        /// <value>
-        /// The attachment binary file ids
-        /// </value>
-        IEnumerable<int> AttachmentBinaryFileIds { get; set; }
-
         #endregion
+
     }
 }

@@ -97,6 +97,16 @@ namespace Rock.Communication
             return valid;
         }
 
+        /// <summary>
+        /// Resolves the text.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="enabledLavaCommands">The enabled lava commands.</param>
+        /// <param name="mergeFields">The merge fields.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <returns></returns>
         public virtual string ResolveText( string content, Person person, string enabledLavaCommands, Dictionary<string, object> mergeFields, string appRoot = "", string themeRoot = "" )
         {
             string value = content.ResolveMergeFields( mergeFields, person, enabledLavaCommands );
