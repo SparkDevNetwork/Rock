@@ -180,6 +180,7 @@
                 {
                     $('#<%=hfShowAdditionalFields.ClientID %>').val(!$('.js-addition-fields').is(':visible'));
                     $('.js-additional-fields').slideToggle();
+                    return false;
                 });
 
                 if ($('#<%=hfShowAdditionalFields.ClientID %>').val() == "true") {
