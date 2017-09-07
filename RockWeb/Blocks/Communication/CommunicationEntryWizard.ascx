@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CommunicationEntryWizard.ascx.cs" Inherits="RockWeb.Blocks.Communication.CommunicationEntryWizard" %>
+<%@ Register src="CommunicationDetail.ascx" TagName="communicationDetail" TagPrefix="cd" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server" ChildrenAsTriggers="true" UpdateMode="Conditional">
     <ContentTemplate>
@@ -103,11 +104,14 @@
                                 <Rock:HiddenFieldWithClass ID="hfMediumType" CssClass="js-hidden-selected" runat="server" />
                                 <div class="btn-group">
                                     <a id="btnMediumRecipientPreference" runat="server" class="btn btn-info btn-sm active js-medium-recipientpreference" data-val="0" >Recipient Preference</a>
-                                    <a id="btnMediumEmail" runat="server" class="btn btn-default btn-sm" data-val="1" >Email</a>
-                                    <a id="btnMediumSMS" runat="server" class="btn btn-default btn-sm" data-val="2" >SMS</a>
+                                    <a id="btnMediumEmail" runat="server" class="btn btn-default btn-sm js-medium-email" data-val="1" >Email</a>
+                                    <a id="btnMediumSMS" runat="server" class="btn btn-default btn-sm js-medium-sms" data-val="2" >SMS</a>
                                 </div>
                             </div>
                         </div>
+
+                        <Rock:NotificationBox ID="nbInvalidEmailTransport" runat="server" CssClass="margin-t-md js-invalidemailtransport-notification" NotificationBoxType="Warning" Dismissable="true" Title="Warning" />
+                        <Rock:NotificationBox ID="nbInvalidSMSTransport" runat="server" CssClass="margin-t-md js-invalidsmstransport-notification" NotificationBoxType="Warning" Dismissable="true" Title="Warning" />
 
                         <Rock:NotificationBox ID="nbRecipientPreferenceInfo" runat="server" CssClass="margin-t-md js-medium-recipientpreference-notification" NotificationBoxType="Info" Title="Heads Up!" Text="Selecting 'Recipient Preference' will require adding content for all active mediums." />
                     </Rock:RockControlWrapper>
@@ -628,7 +632,7 @@
                             <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbFromAddress" runat="server" Label="From Address" Required="true" ValidationGroup="vgEmailSummary"/>
+                            <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" ValidationGroup="vgEmailSummary"/>
                             <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
                             <div class="pull-right">
                                 <a href="#" class="btn btn-xs btn-link js-show-additional-fields" >Show Additional Fields</a>
@@ -639,7 +643,7 @@
                     <asp:Panel ID="pnlEmailSummaryAdditionalFields" runat="server" CssClass="js-additional-fields" style="display:none">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbReplyToAddress" runat="server" Label="Reply To Address" />
+                                <Rock:EmailBox ID="ebReplyToAddress" runat="server" Label="Reply To Address" />
                             </div>
                             <div class="col-md-6">
                                 
@@ -647,17 +651,17 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbCCList" runat="server" Label="CC List" />
+                                <Rock:EmailBox ID="ebCCList" runat="server" Label="CC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbBCCList" runat="server" Label="BCC List" />
+                                <Rock:EmailBox ID="ebBCCList" runat="server" Label="BCC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be blind copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
                             </div>
                         </div>
                     </asp:Panel>
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbEmailSubject" runat="server" Label="Email Subject" Required="true" ValidationGroup="vgEmailSummary" />
+                            <Rock:RockTextBox ID="tbEmailSubject" runat="server" Label="Email Subject" Help="<span class='tip tip-lava'></span>" Required="true" ValidationGroup="vgEmailSummary" />
                             <asp:UpdatePanel ID="upFileAttachments" runat="server">
                                 <ContentTemplate>
                                     <asp:HiddenField ID="hfAttachedBinaryFileIds" runat="server" />
@@ -747,7 +751,6 @@
                     </div>
                     
                     <div class="actions margin-b-lg">
-                        <Rock:NotificationBox ID="nbSendCommunication" runat="server" Visible="false" />
                         <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-primary" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSend_Click" />
                         <asp:LinkButton ID="btnSaveAsDraft" runat="server" Text="Save as Draft" CssClass="btn btn-default" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSaveAsDraft_Click" />
                         <asp:LinkButton ID="btnConfirmationCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" ValidationGroup="vgConfirmation" OnClick="btnConfirmationCancel_Click" />
@@ -756,6 +759,13 @@
                     <div class="actions">
                         <asp:LinkButton ID="btnConfirmationPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnConfirmationPrevious_Click" />
                     </div>
+                </asp:Panel>
+
+                <%-- Result --%>
+                <asp:Panel ID="pnlResult" runat="server" Visible="false" CssClass="js-pnl-result">
+                    <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
+                    <br />
+                    <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />
                 </asp:Panel>
 
             </div>
@@ -1087,16 +1097,32 @@
             }
 
             function setActiveMediumTypeButton($activeBtn)
-			{
-			    $activeBtn.addClass('active').addClass('btn-info').removeClass('btn-default');
-			    $activeBtn.siblings('.btn').removeClass('active').removeClass('btn-info').addClass('btn-default')
-			    $activeBtn.closest('.btn-group').siblings('.js-hidden-selected').val($activeBtn.data('val'));
+            {
+                $activeBtn.addClass('active').addClass('btn-info').removeClass('btn-default');
+                $activeBtn.siblings('.btn').removeClass('active').removeClass('btn-info').addClass('btn-default')
+                $activeBtn.closest('.btn-group').siblings('.js-hidden-selected').val($activeBtn.data('val'));
 
-			    if ($('.js-medium-recipientpreference').hasClass('active')) {
-			        $('.js-medium-recipientpreference-notification').show();
-			    } else {
-			        $('.js-medium-recipientpreference-notification').hide();
-			    }
+                if ($('.js-medium-recipientpreference').hasClass('active')) {
+
+                    $('.js-medium-recipientpreference-notification').show();
+                } else {
+                    $('.js-medium-recipientpreference-notification').hide();
+                }
+
+                // if email or sms transports are invalid, notifications will be rendered, but only show them based on the selected medium type
+                if ($('.js-medium-recipientpreference').hasClass('active') || $('.js-medium-email').hasClass('active')) {
+                    $('.js-invalidemailtransport-notification').show();
+                }
+                else {
+                    $('.js-invalidemailtransport-notification').hide();
+                }
+
+                if ($('.js-medium-recipientpreference').hasClass('active') || $('.js-medium-sms').hasClass('active')) {
+                    $('.js-invalidsmstransport-notification').show();
+                }
+                else {
+                    $('.js-invalidsmstransport-notification').hide();
+                }
 			}
 
         </script>
