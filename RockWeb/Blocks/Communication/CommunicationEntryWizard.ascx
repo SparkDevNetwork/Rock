@@ -4,6 +4,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server" ChildrenAsTriggers="true" UpdateMode="Conditional">
     <ContentTemplate>
         <asp:HiddenField ID="hfCommunicationId" runat="server" />
+        <asp:HiddenField ID="hfNavigationHistoryInstance" runat="server" Value="" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
@@ -16,7 +17,7 @@
             <div class="panel-body">
 
                 <%-- Recipient Selection --%>
-                <asp:Panel ID="pnlRecipientSelection" runat="server" Visible="true">
+                <asp:Panel ID="pnlRecipientSelection" CssClass="js-navigation-panel" runat="server" Visible="true">
                     <h1 class="step-title">Recipient Selection</h1>
 
                     <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgRecipientSelection" CssClass="alert alert-danger" />
@@ -86,7 +87,7 @@
                 </asp:Panel>
 
                 <%-- Medium Selection --%>
-                <asp:Panel ID="pnlMediumSelection" runat="server" Visible="false" >
+                <asp:Panel ID="pnlMediumSelection" CssClass="js-navigation-panel" runat="server" Visible="false" >
                     <h1 class="step-title">Medium Selection</h1>
                     <asp:ValidationSummary ID="vsMediumSelection" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgMediumSelection" CssClass="alert alert-danger" />
                     <div class="row">
@@ -136,7 +137,7 @@
                 </asp:Panel>
 
                 <%-- Template Selection --%>
-                <asp:Panel ID="pnlTemplateSelection" runat="server" Visible="false">
+                <asp:Panel ID="pnlTemplateSelection" CssClass="js-navigation-panel" runat="server" Visible="false">
                     <h1 class="step-title">Email Template</h1>
                     <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
                     <div class="row margin-t-lg template-selection">
@@ -170,7 +171,7 @@
                 <asp:HiddenField ID="hfEmailEditorHtml_dvrm" runat="server" Value="True" />
 
                 <%-- Email Editor --%>
-                <asp:Panel ID="pnlEmailEditor" runat="server" Visible="false">
+                <asp:Panel ID="pnlEmailEditor" CssClass="js-navigation-panel" runat="server" Visible="false">
                     
                     <h1 class="step-title">Email Editor</h1>
                     <div class="row">
@@ -622,7 +623,7 @@
                 
 
                 <%-- Email Summary --%>
-                <asp:Panel ID="pnlEmailSummary" runat="server" Visible="false">
+                <asp:Panel ID="pnlEmailSummary" CssClass="js-navigation-panel" runat="server" Visible="false">
                     <h1 class="step-title">Email Summary</h1>
 
                     <asp:ValidationSummary ID="vsEmailSummary" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgEmailSummary" CssClass="alert alert-danger" />
@@ -682,7 +683,7 @@
                 </asp:Panel>
 
                 <%-- Mobile Text Editor --%>
-                <asp:Panel ID="pnlMobileTextEditor" runat="server" Visible="false">
+                <asp:Panel ID="pnlMobileTextEditor" CssClass="js-navigation-panel" runat="server" Visible="false">
                     <h1 class="step-title">Mobile Text Editor</h1>
 
                     <asp:ValidationSummary ID="vsMobileTextEditor" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgMobileTextEditor" CssClass="alert alert-danger" />
@@ -726,7 +727,7 @@
                 </asp:Panel>
 
                 <%-- Confirmation --%>
-                <asp:Panel ID="pnlConfirmation" runat="server" Visible="false">
+                <asp:Panel ID="pnlConfirmation" CssClass="js-navigation-panel" runat="server" Visible="false">
                     <h1 class="step-title">Confirmation</h1>
                     <div class="alert alert-info js-confirmation-senddatetime-alert">
                         <asp:Label ID="lConfirmationSendDateTimeHtml" runat="server" />
@@ -762,7 +763,7 @@
                 </asp:Panel>
 
                 <%-- Result --%>
-                <asp:Panel ID="pnlResult" runat="server" Visible="false" CssClass="js-pnl-result">
+                <asp:Panel ID="pnlResult" CssClass="js-navigation-panel" runat="server" Visible="false">
                     <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
                     <br />
                     <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />

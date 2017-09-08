@@ -115,13 +115,76 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnLoad( e );
 
+            // register navigation event to enable support for the back button
+            var scriptManager = ScriptManager.GetCurrent( Page );
+            scriptManager.Navigate += scriptManager_Navigate;
+
             if ( !Page.IsPostBack )
             {
+                hfNavigationHistoryInstance.Value = Guid.NewGuid().ToString();
                 ShowDetail( PageParameter( "CommunicationId" ).AsInteger() );
             }
 
             // set the email preview visible = false on every load so that it doesn't stick around after previewing then navigating
             pnlEmailPreview.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the Navigate event of the scriptManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
+        private void scriptManager_Navigate( object sender, HistoryEventArgs e )
+        {
+            var navigationPanelId = e.State["navigationPanelId"];
+            var navigationHistoryInstance = e.State["navigationHistoryInstance"];
+            Panel navigationPanel = null;
+
+            if ( navigationHistoryInstance == null & navigationPanelId == null )
+            {
+                // if scriptManager_Navigate was called with no state, that is probably a navigation to the first step
+                navigationHistoryInstance = hfNavigationHistoryInstance.Value;
+                navigationPanelId = pnlRecipientSelection.ID;
+            }
+
+            if ( navigationPanelId != null )
+            {
+                navigationPanel = this.FindControl( navigationPanelId ) as Panel;
+            }
+
+            if ( navigationHistoryInstance == hfNavigationHistoryInstance.Value && navigationPanel != null )
+            {
+                if (navigationPanel == pnlConfirmation )
+                {
+                    // if navigating history is pnlConfirmation, the communication has already been submitted, so reload the page with the communicationId (if known)
+                    Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                    if ( hfCommunicationId.Value != "0" )
+                    {     
+                        qryParams.Add( "CommunicationId", hfCommunicationId.Value );
+                    }
+                    this.NavigateToCurrentPageReference( qryParams );
+                }
+
+                var navigationPanels = this.ControlsOfTypeRecursive<Panel>().Where( a => a.CssClass.Contains( "js-navigation-panel" ) );
+                foreach ( var pnl in navigationPanels )
+                {
+                    pnl.Visible = false;
+                }
+
+                navigationPanel.Visible = true;
+                if ( navigationPanel == pnlTemplateSelection )
+                {
+                    BindTemplatePicker();
+                }
+
+                // upnlContent has UpdateMode = Conditional, so we have to update manually
+                upnlContent.Update();
+            }
+            else
+            {
+                // mismatch navigation hash, so just reload the without the history hash
+                this.NavigateToCurrentPageReference( new Dictionary<string, string>() );
+            }
         }
 
         /// <summary>
@@ -201,7 +264,7 @@ namespace RockWeb.Blocks.Communication
             tglSendDateTime.Checked = !communication.FutureSendDateTime.HasValue;
             dtpSendDateTime.SelectedDateTime = communication.FutureSendDateTime;
             tglSendDateTime_CheckedChanged( null, null );
-            
+
             hfSelectedCommunicationTemplateId.Value = communication.CommunicationTemplateId.ToString();
 
             // Email Summary fields
@@ -333,6 +396,16 @@ namespace RockWeb.Blocks.Communication
             this.NavigateToCurrentPageReference( new Dictionary<string, string>() );
         }
 
+        /// <summary>
+        /// Sets the navigation history.
+        /// </summary>
+        /// <param name="currentPanel">The panel that should be navigated to when this history point is loaded
+        private void SetNavigationHistory( Panel navigateToPanel )
+        {
+            this.AddHistory( "navigationPanelId", navigateToPanel.ID );
+            this.AddHistory( "navigationHistoryInstance", hfNavigationHistoryInstance.Value );
+        }
+
         #endregion
 
         #region Recipient Selection
@@ -343,6 +416,7 @@ namespace RockWeb.Blocks.Communication
         private void ShowRecipientSelection()
         {
             pnlRecipientSelection.Visible = true;
+            SetNavigationHistory( pnlRecipientSelection );
         }
 
         /// <summary>
@@ -716,10 +790,11 @@ namespace RockWeb.Blocks.Communication
         private void ShowMediumSelection()
         {
             pnlMediumSelection.Visible = true;
+            SetNavigationHistory( pnlMediumSelection );
 
             // Render warnings for any inactive transports (Javascript will hide and show based on Medium Selection)
             var mediumsWithActiveTransports = Rock.Communication.MediumContainer.Instance.Components.Select( a => a.Value.Value ).Where( x => x.Transport != null && x.Transport.IsActive );
-            if (!mediumsWithActiveTransports.Any(a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid()))
+            if ( !mediumsWithActiveTransports.Any( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ) )
             {
                 nbInvalidEmailTransport.Text = "The Email medium does not have an active transport configured. Email communications will not be delivered until the transport is configured correctly.";
                 nbInvalidEmailTransport.Visible = true;
@@ -808,6 +883,8 @@ namespace RockWeb.Blocks.Communication
         private void ShowTemplateSelection()
         {
             pnlTemplateSelection.Visible = true;
+            nbTemplateSelectionWarning.Visible = false;
+            SetNavigationHistory( pnlTemplateSelection );
             BindTemplatePicker();
         }
 
@@ -941,6 +1018,7 @@ namespace RockWeb.Blocks.Communication
             {
                 nbTemplateSelectionWarning.Text = "Please select a template.";
                 nbTemplateSelectionWarning.Visible = true;
+                BindTemplatePicker();
                 return;
             }
 
@@ -971,6 +1049,7 @@ namespace RockWeb.Blocks.Communication
         {
             ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
             pnlEmailEditor.Visible = true;
+            SetNavigationHistory( pnlEmailEditor );
         }
 
         /// <summary>
@@ -1047,6 +1126,7 @@ namespace RockWeb.Blocks.Communication
             tbEmailPreview.Text = preheaderTextNode != null ? preheaderTextNode.InnerHtml : string.Empty;
 
             pnlEmailSummary.Visible = true;
+            SetNavigationHistory( pnlEmailSummary );
         }
 
         /// <summary>
@@ -1182,6 +1262,7 @@ namespace RockWeb.Blocks.Communication
 
             nbSMSTestResult.Visible = false;
             pnlMobileTextEditor.Visible = true;
+            SetNavigationHistory( pnlMobileTextEditor );
         }
 
         /// <summary>
@@ -1279,6 +1360,8 @@ namespace RockWeb.Blocks.Communication
         private void ShowConfirmation()
         {
             pnlConfirmation.Visible = true;
+            SetNavigationHistory( pnlConfirmation );
+
             string sendDateTimeText = string.Empty;
             if ( tglSendDateTimeConfirmation.Checked )
             {
@@ -1442,6 +1525,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         /// <param name="communication">The communication.</param>
         private void ShowResult( string message, Rock.Model.Communication communication )
         {
+            SetNavigationHistory( pnlResult );
             pnlConfirmation.Visible = false;
             pnlResult.Visible = true;
 
