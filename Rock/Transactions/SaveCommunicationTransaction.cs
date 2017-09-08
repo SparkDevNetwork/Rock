@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -83,6 +84,7 @@ namespace Rock.Transactions
         /// <value>
         /// The text message.
         /// </value>
+        [Obsolete("Text Message property is no longer supported for emails")]
         public string TextMessage { get; set; }
 
         /// <summary>
@@ -169,7 +171,7 @@ namespace Rock.Transactions
                 int? senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
 
                 new CommunicationService( rockContext ).CreateEmailCommunication(
-                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, TextMessage, BulkCommunication,
+                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication,
                     RecipientStatus, senderPersonAliasId );
                 rockContext.SaveChanges();
             }

@@ -144,25 +144,25 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Gets or sets the medium data.
+        /// Gets or sets the communication data.
         /// </summary>
         /// <value>
-        /// The medium data.
+        /// The communication data.
         /// </value>
-        protected Dictionary<string, string> MediumData
+        protected CommunicationDetails CommunicationData
         {
             get
             {
-                var mediumData = ViewState["MediumData"] as Dictionary<string, string>;
-                if ( mediumData == null )
+                var communicationData = ViewState["CommunicationData"] as CommunicationDetails;
+                if ( communicationData == null )
                 {
-                    mediumData = new Dictionary<string, string>();
-                    ViewState["MediumData"] = mediumData;
+                    communicationData = new CommunicationDetails();
+                    ViewState["CommunicationData"] = communicationData;
                 }
-                return mediumData;
+                return communicationData;
             }
 
-            set { ViewState["MediumData"] = value; }
+            set { ViewState["CommunicationData"] = value; }
         }
 
         /// <summary>
@@ -402,7 +402,6 @@ namespace RockWeb.Blocks.Communication
                                         if ( recipient.EmailPreference == EmailPreference.NoMassEmails )
                                         {
                                             textClass = "js-no-bulk-email";
-                                            var mediumData = MediumData;
                                             if ( cbBulk.Checked )
                                             {
                                                 // This is a bulk email and user does not want bulk emails
@@ -506,14 +505,13 @@ namespace RockWeb.Blocks.Communication
                 if ( communication != null )
                 {
                     // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-                    var testCommunication = new Rock.Model.Communication();
-                    testCommunication.SenderPersonAliasId = communication.SenderPersonAliasId;
-                    testCommunication.Subject = communication.Subject;
-                    testCommunication.IsBulkCommunication = communication.IsBulkCommunication;
-                    testCommunication.MediumEntityTypeId = communication.MediumEntityTypeId;
-                    testCommunication.MediumDataJson = communication.MediumDataJson;
-                    testCommunication.AdditionalMergeFieldsJson = communication.AdditionalMergeFieldsJson;
+                    var testCommunication = communication.Clone( false );
+                    testCommunication.Id = 0;
+                    testCommunication.Guid = Guid.Empty;
                     testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+                    testCommunication.ForeignGuid = null;
+                    testCommunication.ForeignId = null;
+                    testCommunication.ForeignKey = null;
 
                     testCommunication.FutureSendDateTime = null;
                     testCommunication.Status = CommunicationStatus.Approved;
@@ -535,8 +533,7 @@ namespace RockWeb.Blocks.Communication
                     communicationService.Add( testCommunication );
                     rockContext.SaveChanges();
 
-                    var medium = testCommunication.Medium;
-                    if ( medium != null )
+                    foreach( var medium in testCommunication.Mediums )
                     {
                         medium.Send( testCommunication );
                     }
@@ -760,11 +757,15 @@ namespace RockWeb.Blocks.Communication
 
             CommunicationId = communication.Id;
 
-            MediumEntityTypeId = communication.MediumEntityTypeId;
+            var firstMedium = communication.Mediums.FirstOrDefault();
+            if ( firstMedium != null )
+            {
+                MediumEntityTypeId = firstMedium.Id;
+            }
             BindMediums();
 
-            MediumData = communication.MediumData;
-            MediumData.AddOrReplace( "Subject", communication.Subject );
+            CommunicationData = new CommunicationDetails();
+            CommunicationDetails.Copy( communication, CommunicationData );
 
             if ( communication.Status == CommunicationStatus.Transient && !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultTemplate" ) ) )
             {
@@ -778,7 +779,7 @@ namespace RockWeb.Blocks.Communication
                     template = new CommunicationTemplateService( new RockContext() ).Queryable().Where( t => t.Guid == guid ).FirstOrDefault();
                 }
 
-                if ( template != null && template.MediumEntityTypeId == MediumEntityTypeId )
+                if ( template != null && template.CommunicationType == communication.CommunicationType )
                 {
                     foreach ( ListItem item in ddlTemplate.Items )
                     {
@@ -850,16 +851,20 @@ namespace RockWeb.Blocks.Communication
 
             if ( MediumEntityTypeId.HasValue )
             {
-                foreach ( var template in new CommunicationTemplateService( new RockContext() ).Queryable()
-                    .Where( t => t.MediumEntityTypeId == MediumEntityTypeId.Value )
-                    .OrderBy( t => t.Name ) )
+                var medium = MediumContainer.GetComponentByEntityTypeId( MediumEntityTypeId );
+                if ( medium != null )
                 {
-                    if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    foreach ( var template in new CommunicationTemplateService( new RockContext() ).Queryable()
+                        .Where( t => t.CommunicationType == medium.CommunicationType )
+                        .OrderBy( t => t.Name ) )
                     {
-                        visible = true;
-                        var li = new ListItem( template.Name, template.Id.ToString() );
-                        li.Selected = template.Id.ToString() == prevSelection;
-                        ddlTemplate.Items.Add( li );
+                        if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            visible = true;
+                            var li = new ListItem( template.Name, template.Id.ToString() );
+                            li.Selected = template.Id.ToString() == prevSelection;
+                            ddlTemplate.Items.Add( li );
+                        }
                     }
                 }
             }
@@ -999,7 +1004,7 @@ namespace RockWeb.Blocks.Communication
 
                 if ( setData )
                 {
-                    mediumControl.MediumData = MediumData;
+                    mediumControl.SetFromCommunication( CommunicationData );
                 }
 
                 // Set the medium in case it wasn't already set or the previous component type was not found
@@ -1015,7 +1020,7 @@ namespace RockWeb.Blocks.Communication
                     nbInvalidTransport.Visible = false;
                 }
 
-                cbBulk.Visible = _fullMode && component.SupportsBulkCommunication;
+                cbBulk.Visible = _fullMode;
 
                 return mediumControl;
             }
@@ -1064,17 +1069,7 @@ namespace RockWeb.Blocks.Communication
                     mediumControl.InitializeFromSender( CurrentPerson );
                 }
 
-                foreach ( var dataItem in mediumControl.MediumData )
-                {
-                    if ( MediumData.ContainsKey( dataItem.Key ) )
-                    {
-                        MediumData[dataItem.Key] = dataItem.Value;
-                    }
-                    else
-                    {
-                        MediumData.Add( dataItem.Key, dataItem.Value );
-                    }
-                }
+                mediumControl.UpdateCommunication( CommunicationData );
             }
         }
 
@@ -1083,28 +1078,7 @@ namespace RockWeb.Blocks.Communication
             var template = new CommunicationTemplateService( new RockContext() ).Get( templateId );
             if ( template != null )
             {
-                var mediumData = template.MediumData;
-                if ( !mediumData.ContainsKey( "Subject" ) )
-                {
-                    mediumData.Add( "Subject", template.Subject );
-                }
-
-                foreach ( var dataItem in mediumData )
-                {
-                    // Also check Subject so that empty subject values not set in template are cleared. (Fixes #1393)
-                    if ( !string.IsNullOrWhiteSpace( dataItem.Value ) || dataItem.Key == "Subject" )
-                    {
-                        if ( MediumData.ContainsKey( dataItem.Key ) )
-                        {
-                            MediumData[dataItem.Key] = dataItem.Value;
-                        }
-                        else
-                        {
-                            MediumData.Add( dataItem.Key, dataItem.Value );
-                        }
-                    }
-                }
-
+                CommunicationDetails.Copy( template, CommunicationData );
                 if ( loadControl )
                 {
                     LoadMediumControl( true );
@@ -1244,22 +1218,13 @@ namespace RockWeb.Blocks.Communication
 
             communication.IsBulkCommunication = cbBulk.Checked;
 
-            communication.MediumEntityTypeId = MediumEntityTypeId;
-            communication.MediumData.Clear();
-            GetMediumData();
-            foreach ( var keyVal in MediumData )
+            var medium = MediumContainer.GetComponentByEntityTypeId( MediumEntityTypeId );
+            if ( medium != null )
             {
-                if ( !string.IsNullOrEmpty( keyVal.Value ) )
-                {
-                    communication.MediumData.Add( keyVal.Key, keyVal.Value );
-                }
+                communication.CommunicationType = medium.CommunicationType;
             }
 
-            if ( communication.MediumData.ContainsKey( "Subject" ) )
-            {
-                communication.Subject = communication.MediumData["Subject"];
-                communication.MediumData.Remove( "Subject" );
-            }
+            CommunicationDetails.Copy( CommunicationData, communication );
 
             DateTime? futureSendDate = dtpFutureSend.SelectedDateTime;
             if ( futureSendDate.HasValue && futureSendDate.Value.CompareTo( RockDateTime.Now ) > 0 )

@@ -37,12 +37,22 @@ namespace Rock.Field.Types
         /// <summary>
         /// Initializes a new instance of the <see cref="EnumFieldType{T}"/> class.
         /// </summary>
-        public EnumFieldType()
+        public EnumFieldType() : this( null )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnumFieldType{T}"/> class.
+        /// </summary>
+        public EnumFieldType( T[] includedEnums )
         {
             EnumValues = new Dictionary<int, string>();
-            foreach ( var value in Enum.GetValues( typeof(T) ) )
+            foreach ( var value in Enum.GetValues( typeof( T ) ) )
             {
-                EnumValues.Add( (int)value, value.ToString().SplitCase() );
+                if ( includedEnums == null || includedEnums.Contains( ( T ) value ) )
+                {
+                    EnumValues.Add( ( int ) value, value.ToString().SplitCase() );
+                }
             }
         }
 

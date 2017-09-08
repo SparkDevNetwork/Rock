@@ -88,14 +88,26 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this CommunicationTemplate target, CommunicationTemplate source )
         {
             target.Id = source.Id;
+            target.BCCEmails = source.BCCEmails;
+            target.CCEmails = source.CCEmails;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.FromEmail = source.FromEmail;
+            target.FromName = source.FromName;
+            target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
+            target.ImageFileId = source.ImageFileId;
             target.MediumDataJson = source.MediumDataJson;
-            target.MediumEntityTypeId = source.MediumEntityTypeId;
+            target.Message = source.Message;
+            target.MessageMetaData = source.MessageMetaData;
             target.Name = source.Name;
+            target.PushMessage = source.PushMessage;
+            target.PushSound = source.PushSound;
+            target.ReplyToEmail = source.ReplyToEmail;
             target.SenderPersonAliasId = source.SenderPersonAliasId;
+            target.SMSMessage = source.SMSMessage;
             target.Subject = source.Subject;
+            target.PushTitle = source.PushTitle;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

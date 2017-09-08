@@ -36,7 +36,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "CommunicationTemplate" )]
     [DataContract]
-    public partial class CommunicationTemplate : Model<CommunicationTemplate>
+    public partial class CommunicationTemplate : Model<CommunicationTemplate>, ICommunicationDetails
     {
 
         #region Entity Properties
@@ -51,6 +51,16 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication type value identifier.
+        /// </summary>
+        /// <value>
+        /// The communication type value identifier.
+        /// </value>
+        [Required]
+        [DataMember]
+        public CommunicationType CommunicationType { get; set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -71,23 +81,13 @@ namespace Rock.Model
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Subject of the Communication
+        /// Gets or sets the image file identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> that represents the Subject of the communication.
+        /// The image file identifier.
         /// </value>
         [DataMember]
-        [MaxLength( 100 )]
-        public string Subject { get; set; }
-
-        /// <summary>
-        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Medium that is being used for this Communication.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Medium that is being used for this Communication. 
-        /// </value>
-        [DataMember]
-        public int? MediumEntityTypeId { get; set; }
+        public int? ImageFileId { get; set; }
 
         /// <summary>
         /// Gets or sets a Json formatted string containing the Medium specific data.
@@ -108,9 +108,158 @@ namespace Rock.Model
             }
         }
 
+        #region Email Fields
+
+        /// <summary>
+        /// Gets or sets the name of the Communication
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the name of the communication.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets from name.
+        /// </summary>
+        /// <value>
+        /// From name.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string FromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets from email.
+        /// </summary>
+        /// <value>
+        /// From email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string FromEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reply to email.
+        /// </summary>
+        /// <value>
+        /// The reply to email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ReplyToEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cc emails.
+        /// </summary>
+        /// <value>
+        /// The cc emails.
+        /// </value>
+        [DataMember]
+        public string CCEmails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the BCC emails.
+        /// </summary>
+        /// <value>
+        /// The BCC emails.
+        /// </value>
+        [DataMember]
+        public string BCCEmails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message meta data.
+        /// </summary>
+        /// <value>
+        /// The message meta data.
+        /// </value>
+        [DataMember]
+        public string MessageMetaData { get; set; }
+
+        #endregion
+
+        #region SMS Properties
+
+        /// <summary>
+        /// Gets or sets from number.
+        /// </summary>
+        /// <value>
+        /// From number.
+        /// </value>
+        [DataMember]
+        public int? SMSFromDefinedValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string SMSMessage { get; set; }
+
+        #endregion
+
+        #region Push Notification Properties
+
+        /// <summary>
+        /// Gets or sets from number.
+        /// </summary>
+        /// <value>
+        /// From number.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string PushTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string PushMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets from number.
+        /// </summary>
+        /// <value>
+        /// From number.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string PushSound { get; set; }
+
+        #endregion
+
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the attachments.
+        /// </summary>
+        /// <value>
+        /// The attachments.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<CommunicationTemplateAttachment> Attachments
+        {
+            get { return _attachments ?? ( _attachments = new Collection<CommunicationTemplateAttachment>() ); }
+            set { _attachments = value; }
+        }
+        private ICollection<CommunicationTemplateAttachment> _attachments;
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the Communication's sender.
@@ -122,45 +271,30 @@ namespace Rock.Model
         public virtual PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the communications Medium that is being used by this Communication.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.EntityType"/> of the communications Medium that is being used by this Communication.
-        /// </value>
-        [DataMember]
-        public virtual EntityType MediumEntityType { get; set; }
-
-        /// <summary>
         /// Gets the <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
         /// </value>
-        public virtual MediumComponent Medium
+        [NotMapped]
+        public virtual List<MediumComponent> Mediums
         {
             get
             {
-                if ( this.MediumEntityType != null || this.MediumEntityTypeId.HasValue )
+                var mediums = new List<MediumComponent>();
+
+                foreach ( var serviceEntry in MediumContainer.Instance.Components )
                 {
-                    foreach ( var serviceEntry in MediumContainer.Instance.Components )
+                    var component = serviceEntry.Value.Value;
+                    if ( component.IsActive &&
+                        ( this.CommunicationType == component.CommunicationType ||
+                         this.CommunicationType == CommunicationType.UserPreference ) )
                     {
-                        var component = serviceEntry.Value.Value;
-
-                        if ( this.MediumEntityTypeId.HasValue &&
-                            this.MediumEntityTypeId == component.EntityType.Id )
-                        {
-                            return component;
-                        }
-
-                        string componentName = component.GetType().FullName;
-                        if ( this.MediumEntityType != null &&
-                            this.MediumEntityType.Name == componentName)
-                        {
-                            return component;
-                        }
+                        mediums.Add( component );
                     }
                 }
-                return null;
+
+                return mediums;
             }
         }
 
@@ -177,6 +311,25 @@ namespace Rock.Model
             set { _mediumData = value; }
         }
         private Dictionary<string, string> _mediumData = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Gets or sets the SMS from defined value.
+        /// </summary>
+        /// <value>
+        /// The SMS from defined value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue SMSFromDefinedValue { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets a list of binary file ids
+        /// </summary>
+        /// <value>
+        /// The attachment binary file ids
+        /// </value>
+        [NotMapped]
+        public virtual IEnumerable<int> AttachmentBinaryFileIds { get; set; }
 
         #endregion
 
@@ -252,7 +405,7 @@ namespace Rock.Model
         public CommunicationTemplateConfiguration()
         {
             this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
-            this.HasOptional( c => c.MediumEntityType ).WithMany().HasForeignKey( c => c.MediumEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.SMSFromDefinedValue ).WithMany().HasForeignKey( c => c.SMSFromDefinedValueId ).WillCascadeOnDelete( false );
         }
     }
 

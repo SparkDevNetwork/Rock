@@ -34,14 +34,7 @@ namespace Rock.Rest.Controllers
         public virtual void Send( int id )
         {
             var communication = GetById( id );
-            if ( communication != null )
-            {
-                var medium = communication.Medium;
-                if ( medium != null && medium.IsActive )
-                {
-                    medium.Send( communication );
-                }
-            }
+            Rock.Model.Communication.Send( communication );
         }
     }
 }

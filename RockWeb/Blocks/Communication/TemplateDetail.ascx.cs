@@ -72,25 +72,25 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Gets or sets the medium data.
+        /// Gets or sets the communication data.
         /// </summary>
         /// <value>
-        /// The medium data.
+        /// The communication data.
         /// </value>
-        protected Dictionary<string, string> MediumData
+        protected CommunicationDetails CommunicationData
         {
-            get 
+            get
             {
-                var mediumData = ViewState["MediumData"] as Dictionary<string, string>;
-                if ( mediumData == null )
+                var communicationData = ViewState["CommunicationData"] as CommunicationDetails;
+                if ( communicationData == null )
                 {
-                    mediumData = new Dictionary<string, string>();
-                    ViewState["MediumData"] = mediumData;
+                    communicationData = new CommunicationDetails();
+                    ViewState["CommunicationData"] = communicationData;
                 }
-                return mediumData;
+                return communicationData;
             }
 
-            set { ViewState["MediumData"] = value; }
+            set { ViewState["CommunicationData"] = value; }
         }
 
         #endregion
@@ -213,27 +213,14 @@ namespace RockWeb.Blocks.Communication
 
                 template.Name = tbName.Text;
                 template.Description = tbDescription.Text;
-                template.MediumEntityTypeId = MediumEntityTypeId;
 
-                template.MediumData.Clear();
-                GetMediumData();
-                foreach(var keyVal in MediumData)
+                var medium = MediumContainer.GetComponentByEntityTypeId( MediumEntityTypeId );
+                if ( medium != null )
                 {
-                    if (!string.IsNullOrEmpty(keyVal.Value))
-                    {
-                        template.MediumData.Add(keyVal.Key, keyVal.Value);
-                    }
+                    template.CommunicationType = medium.CommunicationType;
                 }
 
-                if ( template.MediumData.ContainsKey( "Subject" ) )
-                {
-                    template.Subject = template.MediumData["Subject"];
-                    template.MediumData.Remove( "Subject" );
-                }
-                else
-                {
-                    template.Subject = string.Empty;
-                }
+                CommunicationDetails.Copy( CommunicationData, template );
 
                 if ( template != null )
                 {
@@ -296,11 +283,15 @@ namespace RockWeb.Blocks.Communication
             tbName.Text = template.Name;
             tbDescription.Text = template.Description;
 
-            MediumEntityTypeId = template.MediumEntityTypeId;
+            var firstMedium = template.Mediums.FirstOrDefault();
+            if ( firstMedium != null )
+            {
+                MediumEntityTypeId = firstMedium.Id;
+            }
             BindMediums();
 
-            MediumData = template.MediumData;
-            MediumData.Add( "Subject", template.Subject );
+            CommunicationData = new CommunicationDetails();
+            CommunicationDetails.Copy( template, CommunicationData );
 
             MediumControl control = LoadMediumControl( true );
 
@@ -379,7 +370,7 @@ namespace RockWeb.Blocks.Communication
 
                 if ( setData  )
                 {
-                    mediumControl.MediumData = MediumData;
+                    mediumControl.SetFromCommunication( CommunicationData );
                 }
                 
                 // Set the medium in case it wasn't already set or the previous component type was not found
@@ -398,17 +389,10 @@ namespace RockWeb.Blocks.Communication
         {
             if ( phContent.Controls.Count == 1 && phContent.Controls[0] is MediumControl )
             {
-                var mediumData = ( (MediumControl)phContent.Controls[0] ).MediumData;
-                foreach ( var dataItem in mediumData )
+                var mediumControl = phContent.Controls[0] as MediumControl;
+                if ( mediumControl != null )
                 {
-                    if ( MediumData.ContainsKey( dataItem.Key ) )
-                    {
-                        MediumData[dataItem.Key] = dataItem.Value;
-                    }
-                    else
-                    {
-                        MediumData.Add( dataItem.Key, dataItem.Value );
-                    }
+                    mediumControl.UpdateCommunication( CommunicationData );
                 }
             }
         }
