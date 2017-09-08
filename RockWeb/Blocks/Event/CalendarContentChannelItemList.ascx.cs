@@ -272,28 +272,17 @@ namespace RockWeb.Blocks.Event
                 {
                     bool includeTime = item.ContentChannelType.IncludeTime;
                     string title = item.Title;
-                    DateTime? startDate = null;
-                    DateTime? endDate = null;
                     string startDateText = null;
                     string endDateText = null;
 
                     if ( item.ContentChannelType.DateRangeType == ContentChannelDateType.SingleDate )
                     {
-                        startDate = item.StartDateTime;
+                        startDateText = item.StartDateTime.ToShortDateString();
                     }
                     else if ( item.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
                     {
-                        startDate = item.StartDateTime;
-                        endDate = item.ExpireDateTime;
-                    }
-
-                    if ( startDate.HasValue )
-                    {
-                        startDateText = includeTime ? startDate.Value.ToString() : startDate.Value.ToShortDateString();
-                    }
-                    if ( endDate.HasValue )
-                    {
-                        endDateText = includeTime ? endDate.Value.ToString() : endDate.Value.ToShortDateString();
+                        startDateText = item.StartDateTime.ToShortDateString();
+                        endDateText = item.ExpireDateTime.HasValue ? item.ExpireDateTime.Value.ToShortDateString() : null;
                     }
 
                     if ( endDateText != null )
