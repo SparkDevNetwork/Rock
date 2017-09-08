@@ -178,7 +178,7 @@ TransactionAcountDetails: [
         private string _ccSavedAccountFreqSupported = "both";
         private string _achSavedAccountFreqSupported = "both";
         protected bool FluidLayout = false;
-        private List<FinancialAccount> _parameterAccounts = new List<FinancialAccount>();
+        private List<ParameterAccount> _parameterAccounts = new List<ParameterAccount>();
         private bool _allowAccountsInUrl = false;
         private bool _onlyPublicAccountsInUrl = true;
         private int _accountCampusContextFilter = -1;
@@ -360,22 +360,34 @@ TransactionAcountDetails: [
                     if ( !string.IsNullOrWhiteSpace( PageParameter( "AccountIds" ) ) )
                     {
                         var accountIds = Server.UrlDecode( PageParameter( "AccountIds" ) );
+                        var financialAccountService = new FinancialAccountService( rockContext );
 
-                        List<int> accountParameter = new List<int>();
                         accountParameterType = "invalid";
 
-                        foreach ( int accountId in accountIds.Split( ',' ).AsIntegerList() )
+                        foreach ( string account in accountIds.Split( ',' ) )
                         {
-                            accountParameter.Add( accountId );
+                            var parameterAccount = new ParameterAccount();
+                            var accountValues = account.Split( '^' );
+                            var accountId = accountValues[0].AsInteger();
+
+                            parameterAccount.Account = financialAccountService.Queryable()
+                                .Where( a =>
+                                    a.Id == accountId &&
+                                    a.IsActive &&
+                                    ( _onlyPublicAccountsInUrl ? ( a.IsPublic ?? false ) : true ) &&
+                                    ( a.StartDate == null || a.StartDate <= RockDateTime.Today ) &&
+                                    ( a.EndDate == null || a.EndDate >= RockDateTime.Today ) )
+                                    .FirstOrDefault();
+
+                            if ( parameterAccount.Account != null )
+                            {
+                                parameterAccount.Amount = accountValues.Length >= 2 ? accountValues[1].AsDecimal() : 0;
+                                parameterAccount.Enabled = accountValues.Length >= 3 ? accountValues[2].AsBoolean( true ) : true;
+
+                                _parameterAccounts.Add( parameterAccount );
+                            }
                         }
 
-                        _parameterAccounts = new FinancialAccountService( rockContext ).Queryable()
-                            .Where( a =>
-                            accountParameter.Contains( a.Id ) &&
-                            a.IsActive &&
-                            ( _onlyPublicAccountsInUrl ? ( a.IsPublic ?? false ) : true ) &&
-                            ( a.StartDate == null || a.StartDate <= RockDateTime.Today ) &&
-                            ( a.EndDate == null || a.EndDate >= RockDateTime.Today ) ).ToList();
                         if ( _parameterAccounts.Count > 0 )
                         {
                             accountParameterType = "valid";
@@ -384,14 +396,36 @@ TransactionAcountDetails: [
 
                     if ( !string.IsNullOrWhiteSpace( PageParameter( "AccountGlCodes" ) ) )
                     {
-                        List<string> glAccountParameter = PageParameter( "AccountGlCodes" ).Split( ',' ).ToList();
-                        _parameterAccounts.AddRange( new FinancialAccountService( rockContext ).Queryable()
-                            .Where( a =>
-                            glAccountParameter.Contains( a.GlCode ) &&
-                            a.IsActive &&
-                            ( _onlyPublicAccountsInUrl ? ( a.IsPublic ?? false ) : true ) &&
-                            ( a.StartDate == null || a.StartDate <= RockDateTime.Today ) &&
-                            ( a.EndDate == null || a.EndDate >= RockDateTime.Today ) ).ToList() );
+                        var accountCodes = Server.UrlDecode( PageParameter( "AccountGlCodes" ) );
+                        var financialAccountService = new FinancialAccountService( rockContext );
+
+                        Dictionary<string, decimal> glAccountParameter = new Dictionary<string, decimal>();
+                        accountParameterType = "invalid";
+
+                        foreach ( string account in accountCodes.Split( ',' ) )
+                        {
+                            var parameterAccount = new ParameterAccount();
+                            var accountValues = account.Split( '^' );
+                            var accountGlCode = accountValues[0];
+
+                            parameterAccount.Account = financialAccountService.Queryable()
+                                .Where( a =>
+                                    a.GlCode == accountGlCode &&
+                                    a.IsActive &&
+                                    ( _onlyPublicAccountsInUrl ? ( a.IsPublic ?? false ) : true ) &&
+                                    ( a.StartDate == null || a.StartDate <= RockDateTime.Today ) &&
+                                    ( a.EndDate == null || a.EndDate >= RockDateTime.Today ) )
+                                    .FirstOrDefault();
+
+                            if ( parameterAccount.Account != null )
+                            {
+                                parameterAccount.Amount = accountValues.Length >= 2 ? accountValues[1].AsDecimal() : 0;
+                                parameterAccount.Enabled = accountValues.Length >= 3 ? accountValues[2].AsBoolean( true ) : true;
+
+                                _parameterAccounts.Add( parameterAccount );
+                            }
+                        }
+
                         if ( _parameterAccounts.Count > 0 )
                         {
                             accountParameterType = "valid";
@@ -1037,6 +1071,21 @@ TransactionAcountDetails: [
 
                     btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
                     dtpStartDate.SelectedDate = RockDateTime.Today;
+
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( "Frequency" ) ) )
+                    {
+                        var frequencyValues = PageParameter( "Frequency" ).Split( new char[] { '^' } );
+                        if ( btnFrequency.Items.FindByValue( frequencyValues[0] ) != null )
+                        {
+                            btnFrequency.SelectedValue = frequencyValues[0];
+                            if ( frequencyValues.Length >= 2 && frequencyValues[1].AsBoolean( true ) == false )
+                            {
+                                btnFrequency.Visible = false;
+                                txtFrequency.Visible = true;
+                                txtFrequency.Text = btnFrequency.SelectedItem.Text;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1325,7 +1374,7 @@ TransactionAcountDetails: [
             {
                 foreach ( var acct in _parameterAccounts )
                 {
-                    var accountItem = new AccountItem( acct.Id, acct.Order, acct.Name, acct.CampusId, acct.PublicName );
+                    var accountItem = new AccountItem( acct.Account.Id, acct.Account.Order, acct.Account.Name, acct.Account.CampusId, acct.Account.PublicName, acct.Amount, acct.Enabled );
                     SelectedAccounts.Add( accountItem );
                 }
             }
@@ -3249,6 +3298,8 @@ TransactionAcountDetails: [
         {
             var accountItem = e.Item.DataItem as AccountItem;
             CurrencyBox txtAccountAmount = e.Item.FindControl( "txtAccountAmount" ) as CurrencyBox;
+            RockLiteral txtAccountAmountLiteral = e.Item.FindControl( "txtAccountAmountLiteral" ) as RockLiteral;
+
             if ( accountItem != null && txtAccountAmount != null )
             {
                 string accountHeaderTemplate = this.GetAttributeValue( "AccountHeaderTemplate" );
@@ -3256,8 +3307,20 @@ TransactionAcountDetails: [
                 var account = new FinancialAccountService( new RockContext() ).Get( accountItem.Id );
                 mergeFields.Add( "Account", account );
                 txtAccountAmount.Label = accountHeaderTemplate.ResolveMergeFields( mergeFields );
-
+                
                 txtAccountAmount.Text = accountItem.Amount.ToString( "N2" );
+
+                if ( !accountItem.Enabled )
+                {
+                    txtAccountAmountLiteral.Visible = true;
+                    txtAccountAmountLiteral.Label = txtAccountAmount.Label;
+                    txtAccountAmountLiteral.Text = string.Format( "${0}", txtAccountAmount.Text );
+
+                    // Javascript  needs the textbox, so disable it and hide it with CSS.
+                    txtAccountAmount.Label = string.Empty;
+                    txtAccountAmount.Enabled = false;
+                    txtAccountAmount.AddCssClass( "hidden" );
+                }
             }
         }
 
@@ -3282,6 +3345,8 @@ TransactionAcountDetails: [
 
             public decimal Amount { get; set; }
 
+            public bool Enabled { get; set; }
+
             public string PublicName { get; set; }
 
             public string AmountFormatted
@@ -3299,7 +3364,27 @@ TransactionAcountDetails: [
                 Name = name;
                 CampusId = campusId;
                 PublicName = publicName;
+                Enabled = true;
             }
+
+            public AccountItem( int id, int order, string name, int? campusId, string publicName, decimal amount, bool enabled )
+                : this( id, order, name, campusId, publicName )
+            {
+                Amount = amount;
+                Enabled = enabled;
+            }
+        }
+
+        /// <summary>
+        /// Helper object for data passed via the request string.
+        /// </summary>
+        protected class ParameterAccount
+        {
+            public FinancialAccount Account { get; set; }
+
+            public decimal Amount { get; set; }
+
+            public bool Enabled { get; set; }
         }
 
         #endregion
