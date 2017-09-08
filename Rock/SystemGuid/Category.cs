@@ -19,10 +19,18 @@ using System;
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// System file types.
+    /// System Categories
     /// </summary>
     public class Category
     {
+        #region Dataview Categories
+
+        /// <summary>
+        /// Communication Segments Dataview Category Guid
+        /// </summary>
+        public const string DATAVIEW_COMMUNICATION_SEGMENTS = "FF7081F8-7223-43D4-BE28-CB030DC4E13B";
+
+        #endregion DataView Categories
 
         #region Defined Type Categories
         /// <summary>

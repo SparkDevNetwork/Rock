@@ -128,6 +128,7 @@
     <Compile Include="Binders\NakedBodyParameterBinding.cs" />
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SiteUrlMapsController.cs" />
     <Compile Include="Controllers\CommunicationsController.Partial.cs" />
     <Compile Include="Controllers\AttributesController.Partial.cs" />

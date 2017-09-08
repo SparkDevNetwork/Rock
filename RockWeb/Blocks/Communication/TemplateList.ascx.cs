@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Medium", cpMedium.SelectedValue );
+            rFilter.SaveUserPreference( "Communication Type", ddlType.SelectedValue );
             if ( _canEdit )
             {
                 rFilter.SaveUserPreference( "Created By", ppCreatedBy.PersonId.ToString() );
@@ -119,12 +119,11 @@ namespace RockWeb.Blocks.Communication
         {
             switch ( e.Key )
             {
-                case "Medium":
+                case "Communication Type":
                     {
-                        var entity = EntityTypeCache.Read( e.Value.AsGuid() );
-                        if ( entity != null )
+                        if ( !string.IsNullOrWhiteSpace( e.Value ) )
                         {
-                            e.Value = entity.FriendlyName;
+                            e.Value = ( (CommunicationType)System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
                         }
 
                         break;
@@ -211,10 +210,7 @@ namespace RockWeb.Blocks.Communication
 
         private void BindFilter()
         {
-            if ( cpMedium.Items[0].Value != string.Empty )
-            {
-                cpMedium.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-            }
+            ddlType.BindToEnum<CommunicationType>( true );
 
             if ( !Page.IsPostBack )
             {
@@ -223,7 +219,7 @@ namespace RockWeb.Blocks.Communication
                     rFilter.SaveUserPreference( "Created By", string.Empty );
                 }
 
-                cpMedium.SelectedValue = rFilter.GetUserPreference( "Medium" );
+                ddlType.SetValue( rFilter.GetUserPreference( "Communication Type" ) );
 
                 int personId = 0;
                 if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) )
@@ -241,15 +237,12 @@ namespace RockWeb.Blocks.Communication
         private void BindGrid()
         {
             var communications = new CommunicationTemplateService( new RockContext() )
-                .Queryable( "MediumEntityType,CreatedByPersonAlias.Person" );
+                .Queryable( "CreatedByPersonAlias.Person" );
 
-            Guid entityTypeGuid = Guid.Empty;
-            if ( Guid.TryParse( rFilter.GetUserPreference( "Medium" ), out entityTypeGuid ) )
+            var communicationType = ddlType.SelectedValueAsEnumOrNull<CommunicationType>();
+            if ( communicationType != null )
             {
-                communications = communications
-                    .Where( c =>
-                        c.MediumEntityType != null &&
-                        c.MediumEntityType.Guid.Equals( entityTypeGuid ) );
+                communications = communications.Where( c => c.CommunicationType == communicationType );
             }
 
             if ( _canEdit )

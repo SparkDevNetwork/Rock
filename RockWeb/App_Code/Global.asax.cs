@@ -998,7 +998,9 @@ namespace RockWeb
 
                             if ( recipients.Any() )
                             {
-                                Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients, string.Empty, string.Empty, false );
+                                var message = new RockEmailMessage( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid() );
+                                message.SetRecipients( recipients );
+                                message.Send();
                             }
                         }
                     }

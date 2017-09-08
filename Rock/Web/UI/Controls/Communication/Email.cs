@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 
@@ -75,42 +76,37 @@ namespace Rock.Web.UI.Controls.Communication
         }
 
         /// <summary>
-        /// Gets or sets the medium data.
+        /// Sets control values from a communication record.
         /// </summary>
-        /// <value>
-        /// The medium data.
-        /// </value>
-        public override Dictionary<string, string> MediumData
+        /// <param name="communication">The communication.</param>
+        public override void SetFromCommunication( ICommunicationDetails communication )
         {
-            get
-            {
-                EnsureChildControls();
-                var data = new Dictionary<string, string>();
-                data.Add( "FromName", tbFromName.Text );
-                data.Add( "FromAddress", ebFromAddress.Text );
-                data.Add( "ReplyTo", ebReplyToAddress.Text );
-                data.Add( "Subject", tbSubject.Text );
-                data.Add( "HtmlMessage", htmlMessage.Text );
-                data.Add( "TextMessage", tbTextMessage.Text );
-                data.Add( "Attachments", hfAttachments.Value );
-                data.Add( "CC", ebCcAddress.Text );
-                data.Add( "BCC", ebBccAddress.Text );
-                return data;
-            }
+            EnsureChildControls();
+            tbFromName.Text = communication.FromName;
+            ebFromAddress.Text = communication.FromEmail;
+            ebReplyToAddress.Text = communication.ReplyToEmail;
+            tbSubject.Text = communication.Subject;
+            htmlMessage.Text = communication.Message;
+            hfAttachments.Value = communication.AttachmentBinaryFileIds != null ? communication.AttachmentBinaryFileIds.ToList().AsDelimited( "," ) : string.Empty;
+            ebCcAddress.Text = communication.CCEmails;
+            ebBccAddress.Text = communication.BCCEmails;
+        }
 
-            set
-            {
-                EnsureChildControls();
-                tbFromName.Text = GetDataValue( value, "FromName" );
-                ebFromAddress.Text = GetDataValue( value, "FromAddress" );
-                ebReplyToAddress.Text = GetDataValue( value, "ReplyTo" );
-                tbSubject.Text = GetDataValue( value, "Subject" ); ;
-                htmlMessage.Text = GetDataValue( value, "HtmlMessage" );
-                tbTextMessage.Text = GetDataValue( value, "TextMessage" );
-                hfAttachments.Value = GetDataValue( value, "Attachments" );
-                ebCcAddress.Text = GetDataValue( value, "CC" );
-                ebBccAddress.Text = GetDataValue( value, "BCC" );
-            }
+        /// <summary>
+        /// Updates the a communication record from control values.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        public override void UpdateCommunication( ICommunicationDetails communication )
+        {
+            EnsureChildControls();
+            communication.FromName = tbFromName.Text;
+            communication.FromEmail = ebFromAddress.Text;
+            communication.ReplyToEmail = ebReplyToAddress.Text;
+            communication.Subject = tbSubject.Text;
+            communication.Message = htmlMessage.Text;
+            communication.AttachmentBinaryFileIds = hfAttachments.Value.SplitDelimitedValues().AsIntegerList();
+            communication.CCEmails = ebCcAddress.Text;
+            communication.BCCEmails = ebBccAddress.Text;
         }
 
         /// <summary>

@@ -257,8 +257,6 @@ namespace Rock.Jobs
                     }
 
                     // send notificatons
-                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-
                     var possibleRecipients = new PersonService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( p => personSubscriptions.Keys.Contains( p.Id ) )
@@ -319,12 +317,14 @@ namespace Rock.Jobs
                                     if ( personEventTypeNotices.Any() )
                                     {
                                         // Send the notice
-                                        var recipients = new List<RecipientData>();
                                         var mergeFields = new Dictionary<string, object>();
                                         mergeFields.Add( "Person", person );
                                         mergeFields.Add( "EventTypes", personEventTypeNotices.OrderBy( e => e.EventType.Order ).ToList() );
-                                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
-                                        Email.Send( systemEmailGuid.Value, recipients, appRoot );
+
+                                        var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
+                                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                        emailMessage.Send();
+
                                         followingEventsSent++;
                                     }
                                 }
