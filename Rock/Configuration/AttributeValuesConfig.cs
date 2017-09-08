@@ -16,7 +16,7 @@
 //
 using System.Configuration;
 
-namespace RockWeb
+namespace Rock.Configuration
 {
     /// <summary>
     /// Attribute Value Collection

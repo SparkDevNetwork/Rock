@@ -17,7 +17,7 @@
 using System;
 using System.Configuration;
 
-namespace RockWeb
+namespace Rock.Configuration
 {
     /// <summary>
     /// Read RockConfig section from Web.Config

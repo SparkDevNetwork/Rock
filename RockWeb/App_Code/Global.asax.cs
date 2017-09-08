@@ -39,6 +39,7 @@ using Quartz.Impl.Matchers;
 
 using Rock;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
@@ -731,29 +732,29 @@ namespace RockWeb
                 {
                     AttributeService attributeService = new AttributeService( rockContext );
                     AttributeValueService attributeValueService = new AttributeValueService( rockContext );
-                    var existingAttribute = attributeService.Get( attributeValueConfig.EntityTypeId.AsInteger(),
+                    var attribute = attributeService.Get( attributeValueConfig.EntityTypeId.AsInteger(),
                                            attributeValueConfig.EntityTypeQualifierColumm,
                                            attributeValueConfig.EntityTypeQualifierValue,
                                            attributeValueConfig.AttributeKey );
-                    if ( existingAttribute == null )
+                    if ( attribute == null )
                     {
-                        existingAttribute = new Rock.Model.Attribute();
-                        existingAttribute.FieldTypeId = FieldTypeCache.Read( new Guid( Rock.SystemGuid.FieldType.TEXT ) ).Id;
-                        existingAttribute.EntityTypeQualifierColumn = attributeValueConfig.EntityTypeQualifierColumm;
-                        existingAttribute.EntityTypeQualifierValue = attributeValueConfig.EntityTypeQualifierValue;
-                        existingAttribute.Key = attributeValueConfig.AttributeKey;
-                        existingAttribute.Name = attributeValueConfig.AttributeKey.SplitCase();
-                        attributeService.Add( existingAttribute );
+                        attribute = new Rock.Model.Attribute();
+                        attribute.FieldTypeId = FieldTypeCache.Read( new Guid( Rock.SystemGuid.FieldType.TEXT ) ).Id;
+                        attribute.EntityTypeQualifierColumn = attributeValueConfig.EntityTypeQualifierColumm;
+                        attribute.EntityTypeQualifierValue = attributeValueConfig.EntityTypeQualifierValue;
+                        attribute.Key = attributeValueConfig.AttributeKey;
+                        attribute.Name = attributeValueConfig.AttributeKey.SplitCase();
+                        attributeService.Add( attribute );
                         rockContext.SaveChanges();
                     }
 
 
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( existingAttribute.Id, attributeValueConfig.EntityId.AsInteger() );
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, attributeValueConfig.EntityId.AsInteger() );
                     if ( attributeValue == null && !string.IsNullOrWhiteSpace( attributeValueConfig.Value ) )
                     {
 
                         attributeValue = new Rock.Model.AttributeValue();
-                        attributeValue.AttributeId = existingAttribute.Id;
+                        attributeValue.AttributeId = attribute.Id;
                         attributeValue.EntityId = attributeValueConfig.EntityId.AsInteger();
                         attributeValueService.Add( attributeValue );
                     }
