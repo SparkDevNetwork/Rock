@@ -1260,6 +1260,11 @@ namespace RockWeb.Blocks.Communication
             var currentPersonSMSNumber = this.CurrentPerson.PhoneNumbers.FirstOrDefault( a => a.IsMessagingEnabled );
             tbTestSMSNumber.Text = currentPersonSMSNumber != null ? currentPersonSMSNumber.NumberFormatted : string.Empty;
 
+            // make the PersonId of the First Recipient available to Javascript so that we can do some Lava processing using REST and Javascript
+            var rockContext = new RockContext();
+            Rock.Model.Communication communication = UpdateCommunication( rockContext );
+            hfSMSSampleRecipientPersonId.Value = communication.Recipients.First().PersonAlias.PersonId.ToString();
+
             nbSMSTestResult.Visible = false;
             pnlMobileTextEditor.Visible = true;
             SetNavigationHistory( pnlMobileTextEditor );

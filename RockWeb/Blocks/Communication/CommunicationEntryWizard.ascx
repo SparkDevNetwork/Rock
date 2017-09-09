@@ -685,6 +685,7 @@
                 <%-- Mobile Text Editor --%>
                 <asp:Panel ID="pnlMobileTextEditor" CssClass="js-navigation-panel" runat="server" Visible="false">
                     <h1 class="step-title">Mobile Text Editor</h1>
+                    <asp:HiddenField ID="hfSMSSampleRecipientPersonId" runat="server" />
 
                     <asp:ValidationSummary ID="vsMobileTextEditor" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgMobileTextEditor" CssClass="alert alert-danger" />
                     <div class="row">
@@ -863,12 +864,17 @@
                     $('.js-sms-sendtest-inputs').hide();
                     return false;
                 });
-                
-                setSMSBubbleText();
-                $('#<%=tbSMSTextMessage.ClientID %>').off('input').on('input', function ()
-                {
+
+                var $smsTextMessage = $('#<%=tbSMSTextMessage.ClientID %>');
+
+                if ($smsTextMessage.length) {
+
                     setSMSBubbleText();
-                });
+                    $smsTextMessage.off('input').on('input', function ()
+                    {
+                        setSMSBubbleText();
+                    });
+                }
 
                 // Show the Send Date controls on the confirmation page if they click 'edit'
                 $('.js-show-confirmation-datetime').off('click').on('click', function ()
@@ -1082,19 +1088,36 @@
 			function setSMSBubbleText()
 			{
 			    var updatedText = $('#<%=tbSMSTextMessage.ClientID %>').val();
-			    $('.js-sms-chatoutput').html(updatedText);
 
 			    if (updatedText) {
 			        $('.js-sms-chatoutput').show();
+			        
+			        if (/.*\{.*\}.*/.test(updatedText))
+			        {
+			            // add lava that will assign the Person mergeField if there are merge fields in the text
+			            var lavaTemplate = '{% assign Person = ' + $('#<%=hfSMSSampleRecipientPersonId.ClientID%>').val() + ' | PersonById %}\r\n\r\n';
+                        lavaTemplate += updatedText;
+
+			            $.post('<%=this.ResolveUrl("~/api/Lava/RenderTemplate")%>', lavaTemplate, function (data)
+			            {
+			                if (data.startsWith('Error resolving Lava merge fields:')) {
+			                    $('.js-sms-chatoutput').html(updatedText);
+			                }
+			                else {
+			                    $('.js-sms-chatoutput').html(data);
+			                }
+			            }).fail(function (a, b, c)
+			            {
+			                $('.js-sms-chatoutput').html(updatedText);
+			            })
+			        }
+			        else {
+			            $('.js-sms-chatoutput').html(updatedText);
+			        }
 			    }
 			    else {
 			        $('.js-sms-chatoutput').hide();
 			    }
-
-			    $.post('<%=this.ResolveUrl("~/api/Lava/RenderTemplate")%>', updatedText, function (data)
-			    {
-			        $('.js-sms-chatoutput').html(data);
-			    });
             }
 
             function setActiveMediumTypeButton($activeBtn)
