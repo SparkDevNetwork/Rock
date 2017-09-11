@@ -104,7 +104,7 @@
                         <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" />
                     </div>
 
-                    <Rock:NotificationBox ID="nbTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test communication has been sent." Visible="false" />
+                    <Rock:NotificationBox ID="nbTestResult" CssClass="margin-t-md" runat="server" Visible="false" />
 
                 </asp:Panel>
 

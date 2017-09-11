@@ -696,7 +696,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbEmail.Text = Person.Email;
             cbIsEmailActive.Checked = Person.IsEmailActive;
             rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString( false );
-            rblCommunicationPreference.SetValue( (int)Person.CommunicationPreference );
+            rblCommunicationPreference.SetValue( Person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
 
             ddlRecordStatus.SetValue( Person.RecordStatusValueId );
             lRecordStatusReadOnly.Text = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValue.Value : string.Empty;
