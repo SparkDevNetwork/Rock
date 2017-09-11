@@ -47,7 +47,6 @@
   border-radius: @border-radius-base;
   .box-shadow(0 6px 12px rgba(0,0,0,.175));
   background-clip: padding-box;
-
   // Aligns the dropdown menu to right
   //
   // Deprecated as of 3.1.0 in favor of `.dropdown-menu-[dir]`
@@ -55,12 +54,10 @@
     right: 0;
     left: auto;
   }
-
   // Dividers (basically an hr) within the dropdown
   .divider {
     .nav-divider(@dropdown-divider-bg);
   }
-
   // Links within the dropdown menu
   > li > a {
     display: block;
@@ -70,6 +67,14 @@
     line-height: @line-height-base;
     color: @dropdown-link-color;
     white-space: nowrap; // prevent links from randomly breaking onto new lines
+  }
+
+  .dropdown-actions {
+    padding: 10px;
+    margin: 10px 0 -5px 0;
+    background-color: @picker-action-bg;
+    border-top: 1px solid darken(@picker-action-bg, 10%);
+    border-radius: 0 0 @border-radius-base @border-radius-base;
   }
 }
 
