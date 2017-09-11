@@ -304,7 +304,7 @@ namespace Rock.Communication.Transport
             message.Title = mediumData.GetValueOrNull( "Title" ) ?? string.Empty;
             message.Message = mediumData.GetValueOrNull( "Message" ) ?? string.Empty;
             message.Sound = mediumData.GetValueOrNull( "Sound" ) ?? string.Empty;
-            message.Recipients.AddRange( recipients );
+            message.SetRecipients( recipients );
             message.SendSeperatelyToEachRecipient = false;
             message.ThemeRoot = themeRoot;
             message.AppRoot = appRoot;

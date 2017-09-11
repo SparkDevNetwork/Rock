@@ -115,7 +115,7 @@ namespace Rock.Jobs
                         string messageBody = $"{emailHeader} {errorMessage} <p><small>This message was generated from the Rock Database Maintenance Job</small></p>s {emailFooter}";
 
                         var emailMessage = new RockEmailMessage();
-                        emailMessage.Recipients = alertEmail.Split( ',' ).ToList(); 
+                        emailMessage.SetRecipients( alertEmail.Split( ',' ).ToList() );
                         emailMessage.Subject = "Rock: Database Integrity Check Error";
                         emailMessage.Message = messageBody;
                         emailMessage.Send();

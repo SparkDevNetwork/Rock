@@ -283,7 +283,7 @@ namespace Rock.Communication.Transport
         {
             var message = new RockSMSMessage();
             message.FromNumber = DefinedValueCache.Read( ( mediumData.GetValueOrNull( "FromValue" ) ?? string.Empty ).AsInteger() );
-            message.Recipients = recipients;
+            message.SetRecipients( recipients );
             message.ThemeRoot = themeRoot;
             message.AppRoot = appRoot;
 
@@ -314,7 +314,7 @@ namespace Rock.Communication.Transport
                     .Where( v => v.Value == from )
                     .FirstOrDefault();
             }
-            message.Recipients = recipients;
+            message.SetRecipients( recipients );
             message.ThemeRoot = themeRoot;
             message.AppRoot = appRoot;
 
