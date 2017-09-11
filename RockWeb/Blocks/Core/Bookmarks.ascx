@@ -6,56 +6,54 @@
     <div id="liDropdown" runat="server">
 
         <asp:LinkButton ID="lIcon" runat="server" OnClick="btnCancel_Click" OnClientClick="return iconClick();" data-toggle="popover" data-placement="bottom" class="bookmark-popover">
-            <i class="fa fa-bookmark-o fa-2x" aria-hidden="true"></i>
+            <ul class="navbar-top-links"><li><i class="fa fa-bookmark-o fa-2x" aria-hidden="true"></i></li></ul>
         </asp:LinkButton>
+        
         <div class="row js-categorytreeview popovercontent dropdown-menu">
             <asp:UpdatePanel ID="upCategoryTree" runat="server">
                 <ContentTemplate>
                     <div class="panel-body">
-                        <div class="col-md-12">
-                            <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
-                            <asp:Panel ID="pnlBookmarkList" runat="server">
-                                <h4><strong>Bookmarks</strong></h4>
-                                <div class="treeview-scroll scroll-container scroll-container-vertical treeview-bookmark">
-                                    <div class="scrollbar">
-                                        <div class="track">
-                                            <div class="thumb">
-                                                <div class="end"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="viewport">
-                                        <div class="overview">
-                                            <div class="treeview-frame">
-                                                <asp:Panel class="pnlTreeviewContent" runat="server">
-                                                </asp:Panel>
-                                            </div>
+                        <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
+                        <asp:Panel ID="pnlBookmarkList" runat="server">
+                            <h4 class="margin-t-none"><strong>Bookmarks</strong></h4>
+                            <div class="treeview-scroll scroll-container scroll-container-vertical treeview-bookmark">
+                                <div class="scrollbar">
+                                    <div class="track">
+                                        <div class="thumb">
+                                            <div class="end"></div>
                                         </div>
                                     </div>
                                 </div>
-                            </asp:Panel>
-                            <asp:Panel ID="pnlBookmarkDetail" runat="server">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <Rock:DataTextBox ID="tbName" runat="server"
-                                            SourceTypeName="Rock.Model.PersonBookmark, Rock" PropertyName="Name" />
-                                    </div>
-                                    <div class="col-md-12">
-                                        <Rock:RockTextBox ID="tbUrl" runat="server" Label="URL" Required="true" RequiredErrorMessage="A URL is Required" />
-                                    </div>
-                                    <div class="col-md-12">
-                                        <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" EntityTypeName="Rock.Model.PersonBookmark" />
+                                <div class="viewport">
+                                    <div class="overview">
+                                        <div class="treeview-frame">
+                                            <asp:Panel class="pnlTreeviewContent" runat="server">
+                                            </asp:Panel>
+                                        </div>
                                     </div>
                                 </div>
-                            </asp:Panel>
-                            <div class="actions">
-                                <asp:LinkButton ID="btnAdd" runat="server" Text="Add" CssClass="btn btn-xs btn-default	" OnClick="btnAdd_Click" />
-                                <asp:LinkButton ID="btnManage" runat="server" Text="Manage" CssClass="btn btn-xs btn-default" OnClick="btnManage_Click" />
-                                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-xs btn-default" OnClick="btnSave_Click" />
-                                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-xs btn-link popover-cancel" OnClick="btnCancel_Click" CausesValidation="false" />
                             </div>
-
-                        </div>
+                        </asp:Panel>
+                        <asp:Panel ID="pnlBookmarkDetail" runat="server">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:DataTextBox ID="tbName" runat="server"
+                                        SourceTypeName="Rock.Model.PersonBookmark, Rock" PropertyName="Name" />
+                                </div>
+                                <div class="col-md-12">
+                                    <Rock:RockTextBox ID="tbUrl" runat="server" Label="URL" Required="true" RequiredErrorMessage="A URL is Required" />
+                                </div>
+                                <div class="col-md-12">
+                                    <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" EntityTypeName="Rock.Model.PersonBookmark" />
+                                </div>
+                            </div>
+                        </asp:Panel>
+                    </div>
+                    <div class="dropdown-actions">
+                        <asp:LinkButton ID="btnAdd" runat="server" Text="Add" CssClass="btn btn-xs btn-primary" OnClick="btnAdd_Click" />
+                        <asp:LinkButton ID="btnManage" runat="server" Text="Manage" CssClass="btn btn-xs btn-default" OnClick="btnManage_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-xs btn-default" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-xs btn-link popover-cancel" OnClick="btnCancel_Click" CausesValidation="false" />
                     </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
