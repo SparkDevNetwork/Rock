@@ -304,17 +304,20 @@ namespace RockWeb.Blocks.Cms
                 for ( int i = 0; i < Request.Files.Count; i++ )
                 {
                     var uploadedFile = Request.Files[i];
+                    if ( uploadedFile.ContentLength > 0 && uploadedFile.FileName.IsNotNullOrWhitespace() )
+                    {
+                        var binaryFile = new BinaryFile();
+                        binaryFileService.Add( binaryFile );
+                        binaryFile.BinaryFileTypeId = binaryFileType.Id;
+                        binaryFile.IsTemporary = false;
+                        binaryFile.MimeType = uploadedFile.ContentType;
+                        binaryFile.FileSize = uploadedFile.ContentLength;
+                        binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+                        binaryFile.ContentStream = uploadedFile.InputStream;
+                        rockContext.SaveChanges();
 
-                    var binaryFile = new BinaryFile();
-                    binaryFile.BinaryFileTypeId = binaryFileType.Id;
-                    binaryFile.IsTemporary = false;
-                    binaryFile.MimeType = uploadedFile.ContentType;
-                    binaryFile.FileSize = uploadedFile.ContentLength;
-                    binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
-                    binaryFile.ContentStream = uploadedFile.InputStream;
-                    rockContext.SaveChanges();
-
-                    message.Attachments.Add( binaryFileService.Get( binaryFile.Id ) );
+                        message.Attachments.Add( binaryFileService.Get( binaryFile.Id ) );
+                    }
                 }
 
                 mergeFields.Add( "AttachmentCount", message.Attachments.Count );

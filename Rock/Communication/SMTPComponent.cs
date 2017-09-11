@@ -222,19 +222,27 @@ namespace Rock.Communication.Transport
                             message.Subject = subject;
                             message.Body = body;
 
-                            // Recreate the attachments
-                            message.Attachments.Clear();
-                            if ( emailMessage.Attachments.Any() )
+                            using ( var rockContext = new RockContext() )
                             {
-                                foreach ( var attachment in emailMessage.Attachments )
+                                // Recreate the attachments
+                                message.Attachments.Clear();
+                                if ( emailMessage.Attachments.Any() )
                                 {
-                                    message.Attachments.Add( new Attachment( attachment.ContentStream, attachment.FileName ) );
+                                    var binaryFileService = new BinaryFileService( rockContext );
+                                    foreach ( var binaryFileId in emailMessage.Attachments.Where( a => a != null ).Select( a => a.Id ) )
+                                    {
+                                        var attachment = binaryFileService.Get( binaryFileId );
+                                        if ( attachment != null )
+                                        {
+                                            message.Attachments.Add( new Attachment( attachment.ContentStream, attachment.FileName ) );
+                                        }
+                                    }
                                 }
+
+                                AddAdditionalHeaders( message, emailMessage.MessageMetaData );
+
+                                smtpClient.Send( message );
                             }
-
-                            AddAdditionalHeaders( message, emailMessage.MessageMetaData );
-
-                            smtpClient.Send( message );
 
                             if ( emailMessage.CreateCommunicationRecord )
                             {
