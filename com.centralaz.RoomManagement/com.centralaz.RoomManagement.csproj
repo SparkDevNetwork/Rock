@@ -233,7 +233,7 @@
       We'll increment the version number only during the "BeforeBuild" and then use this
       new version number during the "AfterBuild" step for the zip and plugin packaging. 
     -->
-    <Version VersionFile="builds\.version" BuildType="None" RevisionType="Increment">
+    <Version VersionFile="builds\.version" BuildType="Increment" RevisionType="None">
       <Output TaskParameter="Major" PropertyName="Major" />
       <Output TaskParameter="Minor" PropertyName="Minor" />
       <Output TaskParameter="Build" PropertyName="Build" />
