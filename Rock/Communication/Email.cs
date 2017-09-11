@@ -96,7 +96,7 @@ namespace Rock.Communication
                 var emailMessage = new RockEmailMessage();
                 emailMessage.FromEmail = GlobalAttributesCache.Value( "OrganizationEmail" );
                 emailMessage.Subject = subject;
-                emailMessage.Recipients = recipients;
+                emailMessage.SetRecipients( recipients );
                 emailMessage.Message = message;
                 emailMessage.ThemeRoot = themeRoot;
                 emailMessage.AppRoot = appRoot;
@@ -182,7 +182,7 @@ namespace Rock.Communication
             emailMessage.FromEmail = fromEmail;
             emailMessage.FromName = fromName;
             emailMessage.Subject = subject;
-            emailMessage.Recipients = recipients;
+            emailMessage.SetRecipients( recipients );
             emailMessage.Message = message;
             emailMessage.ThemeRoot = themeRoot;
             emailMessage.AppRoot = appRoot;

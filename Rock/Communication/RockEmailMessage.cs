@@ -155,7 +155,7 @@ namespace Rock.Communication
             {
                 this.FromEmail = systemEmail.From;
                 this.FromName = systemEmail.FromName;
-                this.Recipients.AddRange( systemEmail.To.SplitDelimitedValues().ToList() );
+                this.SetRecipients( systemEmail.To );
                 this.CCEmails = systemEmail.Cc.SplitDelimitedValues().ToList();
                 this.BCCEmails = systemEmail.Bcc.SplitDelimitedValues().ToList();
                 this.Subject = systemEmail.Subject;

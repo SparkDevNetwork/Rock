@@ -72,8 +72,6 @@ namespace Rock.Transactions
 
                     if ( approvers != null )
                     {
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-
                         string fromName = Rock.Web.Cache.GlobalAttributesCache.Value("OrganizationName");
                         string fromEmail = Rock.Web.Cache.GlobalAttributesCache.Value( "OrganizationEmail" );
                         string subject = "Pending Communication Requires Approval";
@@ -137,7 +135,7 @@ namespace Rock.Transactions
                                                     ApprovalPageUrl);
 
                             var emailMessage = new RockEmailMessage();
-                            emailMessage.Recipients.Add( approver.Person.Email );
+                            emailMessage.AddRecipient( approver.Person.Email );
                             emailMessage.FromEmail = fromEmail;
                             emailMessage.FromName = fromName;
                             emailMessage.Subject = subject;

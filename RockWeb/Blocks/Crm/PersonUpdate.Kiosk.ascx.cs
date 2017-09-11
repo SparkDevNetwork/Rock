@@ -351,10 +351,14 @@ namespace RockWeb.Blocks.Crm
             {
                 var receiptEmail = new SystemEmailService( rockContext ).Get( new Guid( GetAttributeValue( "UpdateEmail" ) ) );
 
-                if ( receiptEmail != null )
+                if ( receiptEmail != null && receiptEmail.To.IsNotNullOrWhitespace() )
                 {
                     var errorMessages = new List<string>();
                     var message = new RockEmailMessage( receiptEmail );
+                    foreach ( var recipient in message.GetRecipientData() )
+                    {
+                        recipient.MergeFields = mergeFields;
+                    }
                     message.Send( out errorMessages );
                 }
             }

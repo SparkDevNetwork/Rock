@@ -92,28 +92,6 @@ namespace Rock.Communication
         public List<BinaryFile> Attachments { get; set; } = new List<BinaryFile>();
 
         /// <summary>
-        /// Gets or sets the recipients.
-        /// </summary>
-        /// <value>
-        /// The recipients.
-        /// </value>
-        public List<string> Recipients
-        {
-            get
-            {
-                return _recipients.Select( r => r.To ).ToList();
-            }
-            set
-            {
-                _recipients = new List<RecipientData>();
-                if ( value != null )
-                {
-                    value.ForEach( r => _recipients.Add( new RecipientData( r ) ) );
-                }
-            }
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="RockMessage"/> class.
         /// </summary>
         public RockMessage()
@@ -132,10 +110,40 @@ namespace Rock.Communication
         /// <summary>
         /// Adds the recipient.
         /// </summary>
+        /// <param name="to">To.</param>
+        public void AddRecipient( string to )
+        {
+            if ( to.IsNotNullOrWhitespace() )
+            {
+                _recipients.Add( new RecipientData( to ) );
+            }
+        }
+
+        /// <summary>
+        /// Adds the recipient.
+        /// </summary>
         /// <param name="recipient">The recipient.</param>
         public void AddRecipient( RecipientData recipient )
         {
             _recipients.Add( recipient );
+        }
+
+        /// <summary>
+        /// Sets the recipients.
+        /// </summary>
+        /// <param name="toEmails">To emails.</param>
+        public void SetRecipients( string toEmails )
+        {
+            SetRecipients( toEmails.SplitDelimitedValues().ToList() );
+        }
+
+        /// <summary>
+        /// Sets the recipients.
+        /// </summary>
+        /// <param name="toEmails">To emails.</param>
+        public void SetRecipients( List<string> toEmails )
+        {
+            toEmails.ForEach( to => AddRecipient( to ) );
         }
 
         /// <summary>

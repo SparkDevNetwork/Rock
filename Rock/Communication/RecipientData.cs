@@ -82,7 +82,7 @@ namespace Rock.Communication
         public RecipientData( string to, Dictionary<string, object> mergeFields )
             : this( to )
         {
-            MergeFields = mergeFields;
+            MergeFields = mergeFields != null ? mergeFields : new Dictionary<string, object>();
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Rock.Communication
             To = person?.Email;
             Name = person?.FullName;
 
-            MergeFields = mergeFields;
+            MergeFields = mergeFields != null ? mergeFields : new Dictionary<string, object>();
         }
     }
 }

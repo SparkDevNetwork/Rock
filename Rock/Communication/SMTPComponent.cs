@@ -639,7 +639,7 @@ namespace Rock.Communication.Transport
             message.FromEmail = template.From;
             message.FromName = template.FromName;
             message.SetRecipients( recipients );
-            message.Recipients.AddRange( template.To.SplitDelimitedValues().ToList() );
+            template.To.SplitDelimitedValues().ToList().ForEach( to => message.AddRecipient( to ) );
             message.CCEmails = template.Cc.SplitDelimitedValues().ToList();
             message.BCCEmails = template.Bcc.SplitDelimitedValues().ToList();
             message.Subject = template.Subject;
@@ -695,7 +695,7 @@ namespace Rock.Communication.Transport
             var message = new RockEmailMessage();
             message.FromEmail = mediumData.GetValueOrNull( "From" ) ?? string.Empty;
             message.ReplyToEmail = mediumData.GetValueOrNull( "ReplyTo" ) ?? string.Empty;
-            message.Recipients = recipients;
+            message.SetRecipients( recipients );
             message.Subject = mediumData.GetValueOrNull( "Subject" ) ?? string.Empty;
             message.Message = mediumData.GetValueOrNull( "Body" ) ?? string.Empty;
             message.ThemeRoot = themeRoot;
@@ -774,7 +774,7 @@ namespace Rock.Communication.Transport
             var message = new RockEmailMessage();
             message.FromEmail = from;
             message.FromName = fromName;
-            message.Recipients = recipients;
+            message.SetRecipients( recipients );
             message.Subject = subject;
             message.Message = body;
             message.ThemeRoot = themeRoot;
