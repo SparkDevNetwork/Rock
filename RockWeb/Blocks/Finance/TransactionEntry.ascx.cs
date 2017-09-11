@@ -121,7 +121,7 @@ CurrencyType: {
   'ForeignGuid': null,
   'ForeignKey': null
 }
-TransactionAcountDetails: [
+TransactionAccountDetails: [
   {
     'Id': 1,
     'Order': 0,
