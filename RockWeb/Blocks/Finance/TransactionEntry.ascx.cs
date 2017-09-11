@@ -151,8 +151,8 @@ TransactionAcountDetails: [
 
     #region Advanced Block Attributes
 
-    [BooleanField( "Allow Accounts In URL", "Should the option to display accounts via URL param be enabled.  Valid URL Param are AccountIds=1,2,3 or AccountGlCodes=40100,40110", false, "Advanced", 1 )]
-    [BooleanField( "Only Public Accounts In URL", "Should the accounts via URL only display Accounts which are public", true, "Advanced", 2 )]
+    [BooleanField( "Allow Account Options In URL", "Set to true to allow account options to be set via URL. To simply set allowed accounts, the allowed accounts can be specified as a comma-delimited list of AccountIds or AccountGlCodes. Example: ?AccountIds=1,2,3 or ?AccountGlCodes=40100,40110. The default amount for each account and whether it is editable can also be specified. Example:?AccountIds=1^50.00^false,2^25.50^false,3^35.00^true or ?AccountGlCodes=40100^50.00^false,40110^42.25^true", false, "Advanced", key: "AllowAccountsInURL", order:1 )]
+    [BooleanField( "Only Public Accounts In URL", "Set to true if using the 'Allow Account Options In Url' option to prevent non-public accounts to be specified.", true, "Advanced", 2 )]
     [CodeEditorField( "Invalid Account Message", "Display this text (HTML) as an error alert if an invalid 'account' or 'glaccount' is passed through the URL.",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "Advanced", 3 )]
     [CustomDropdownListField( "Account Campus Context", "Should any context be applied to the Account List", "-1^No Account Campus Context Filter Applied,0^Only Accounts with Current Campus Context,1^Accounts with No Campus and Current Campus Context", false, "-1", "Advanced", 4 )]
