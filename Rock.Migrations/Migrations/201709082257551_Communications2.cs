@@ -32,8 +32,16 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateFieldType( "Data Views", "", "Rock", "Rock.Field.Types.DataViewsFieldType", "F739BF5D-3FDC-45EC-A03C-1AE7C47E3883" );
             RockMigrationHelper.UpdateFieldType( "Communication Preference", "", "Rock", "Rock.Field.Types.CommunicationPreferenceFieldType", "507C28F2-8BC0-4909-A4FE-9C2B1149E2B2" );
 
-            DropForeignKey("dbo.Communication", "ChannelEntityTypeId", "dbo.EntityType");
-            DropForeignKey("dbo.CommunicationTemplate", "ChannelEntityTypeId", "dbo.EntityType");
+            DropForeignKey( "dbo.Communication", "MediumEntityTypeId", "dbo.EntityType");
+            Sql( @"
+IF object_id(N'[dbo].[FK_dbo.Communication_dbo.EntityType_ChannelEntityTypeId]', N'F') IS NOT NULL
+    ALTER TABLE [dbo].[Communication] DROP CONSTRAINT [FK_dbo.Communication_dbo.EntityType_ChannelEntityTypeId]
+" );
+            DropForeignKey("dbo.CommunicationTemplate", "MediumEntityTypeId", "dbo.EntityType");
+            Sql( @"
+IF object_id(N'[dbo].[FK_dbo.CommunicationTemplate_dbo.EntityType_ChannelEntityTypeId]', N'F') IS NOT NULL
+    ALTER TABLE [dbo].[CommunicationTemplate] DROP CONSTRAINT [FK_dbo.CommunicationTemplate_dbo.EntityType_ChannelEntityTypeId]
+" );
             DropIndex("dbo.Communication", new[] { "MediumEntityTypeId" });
             DropIndex("dbo.CommunicationTemplate", new[] { "MediumEntityTypeId" });
             CreateTable(
@@ -90,6 +98,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
             
+            AddColumn("dbo.Person", "CommunicationPreference", c => c.Int(nullable: false));
             AddColumn("dbo.CommunicationRecipient", "MediumEntityTypeId", c => c.Int());
             AddColumn("dbo.Communication", "Name", c => c.String(maxLength: 100));
             AddColumn("dbo.Communication", "CommunicationType", c => c.Int(nullable: false));
@@ -97,6 +106,7 @@ namespace Rock.Migrations
             AddColumn("dbo.Communication", "ListGroupId", c => c.Int());
             AddColumn("dbo.Communication", "Segments", c => c.String());
             AddColumn("dbo.Communication", "SegmentCriteria", c => c.Int(nullable: false));
+            AddColumn("dbo.Communication", "CommunicationTemplateId", c => c.Int());
             AddColumn("dbo.Communication", "FromName", c => c.String(maxLength: 100));
             AddColumn("dbo.Communication", "FromEmail", c => c.String(maxLength: 100));
             AddColumn("dbo.Communication", "ReplyToEmail", c => c.String(maxLength: 100));
@@ -109,7 +119,7 @@ namespace Rock.Migrations
             AddColumn("dbo.Communication", "PushTitle", c => c.String(maxLength: 100));
             AddColumn("dbo.Communication", "PushMessage", c => c.String());
             AddColumn("dbo.Communication", "PushSound", c => c.String(maxLength: 100));
-            AddColumn("dbo.CommunicationTemplate", "CommunicationType", c => c.Int(nullable: false));
+            AddColumn("dbo.CommunicationTemplate", "IsSystem", c => c.Boolean(nullable: false));
             AddColumn("dbo.CommunicationTemplate", "ImageFileId", c => c.Int());
             AddColumn("dbo.CommunicationTemplate", "FromName", c => c.String(maxLength: 100));
             AddColumn("dbo.CommunicationTemplate", "FromEmail", c => c.String(maxLength: 100));
@@ -124,11 +134,17 @@ namespace Rock.Migrations
             AddColumn("dbo.CommunicationTemplate", "PushMessage", c => c.String());
             AddColumn("dbo.CommunicationTemplate", "PushSound", c => c.String(maxLength: 100));
             CreateIndex("dbo.CommunicationRecipient", "MediumEntityTypeId");
+            CreateIndex("dbo.Communication", "CommunicationTemplateId");
             CreateIndex("dbo.Communication", "SMSFromDefinedValueId");
             CreateIndex("dbo.CommunicationTemplate", "SMSFromDefinedValueId");
+            AddForeignKey("dbo.CommunicationTemplate", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
             AddForeignKey("dbo.Communication", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
             AddForeignKey("dbo.CommunicationRecipient", "MediumEntityTypeId", "dbo.EntityType", "Id");
-            AddForeignKey("dbo.CommunicationTemplate", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
+
+            // AddForeignKey("dbo.Communication", "CommunicationTemplateId", "dbo.CommunicationTemplate", "Id");
+            // Instead of AddForeignKey, do it manually so it can be a ON DELETE SET NULL
+            Sql( @"ALTER TABLE dbo.Communication ADD CONSTRAINT [FK_dbo.Communication_dbo.CommunicationTemplate_CommunicationTemplateId] 
+                    FOREIGN KEY (CommunicationTemplateId) REFERENCES dbo.CommunicationTemplate (Id) ON DELETE SET NULL" );
 
             Sql( @"
     UPDATE C 
@@ -141,9 +157,11 @@ namespace Rock.Migrations
     INNER JOIN [EntityType] E ON E.[Id] = C.[MediumEntityTypeId]
 " );
 
-            DropColumn("dbo.Communication", "MediumEntityTypeId");
+            DropColumn( "dbo.Communication", "MediumEntityTypeId");
             DropColumn("dbo.CommunicationTemplate", "MediumEntityTypeId");
-                        
+
+            Sql( MigrationSQL._201709082257551_Communications2_AddCommunicationTemplates );
+
             // group type
             RockMigrationHelper.AddGroupType( "Communication List", "For groups used by Rock's communication tools for storing lists of people to communicate to.", "List", "Recipient", false, true, false, "fa fa-bullhorn", 0, null, 0, null, "D1D95777-FFA3-CBB3-4A6D-658706DAED33" );
             RockMigrationHelper.AddGroupTypeRole( "D1D95777-FFA3-CBB3-4A6D-658706DAED33", "Recipient", "", 0, null, null, "9D85AB4E-59BC-B48A-494A-5684BA41578E", true, false, true );
@@ -430,6 +448,12 @@ VALUES(0,'Under 35','A filter to help refine a communications recipient list to 
 END
 " );
 
+            // Job for Migrating Interaction Data
+            Sql( @"
+    INSERT INTO [dbo].[ServiceJob] ( [IsSystem], [IsActive], [Name], [Description], [Class], [CronExpression], [NotificationStatus] ,[Guid] )
+    VALUES ( 0, 1, 'Convert communication medium data', 'Converts communication medium data to field values.', 
+        'Rock.Jobs.MigrateCommunicationMediumData', '0 0 3 1/1 * ? *', 3, 'E7C54AAB-451E-4E89-8083-CF398D37416E')" );
+
         }
 
         /// <summary>
@@ -489,15 +513,17 @@ END
             RockMigrationHelper.DeletePage( "002C9991-523A-478C-B19B-E9DF2B977481" ); //  Page: Communication Lists, Layout: Full Width, Site: Rock RMS
             RockMigrationHelper.DeletePage( "307570FD-9472-48D5-A67F-80B2056C5308" ); //  Page: Communication List Categories, Layout: Full Width, Site: Rock RMS
 
+
             AddColumn( "dbo.CommunicationTemplate", "MediumEntityTypeId", c => c.Int());
             AddColumn("dbo.Communication", "MediumEntityTypeId", c => c.Int());
+            DropForeignKey("dbo.CommunicationRecipient", "MediumEntityTypeId", "dbo.EntityType");
+            DropForeignKey("dbo.Communication", "SMSFromDefinedValueId", "dbo.DefinedValue");
+            DropForeignKey("dbo.Communication", "CommunicationTemplateId", "dbo.CommunicationTemplate");
             DropForeignKey("dbo.CommunicationTemplate", "SMSFromDefinedValueId", "dbo.DefinedValue");
             DropForeignKey("dbo.CommunicationTemplateAttachment", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.CommunicationTemplateAttachment", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.CommunicationTemplateAttachment", "CommunicationTemplateId", "dbo.CommunicationTemplate");
             DropForeignKey("dbo.CommunicationTemplateAttachment", "BinaryFileId", "dbo.BinaryFile");
-            DropForeignKey("dbo.CommunicationRecipient", "MediumEntityTypeId", "dbo.EntityType");
-            DropForeignKey("dbo.Communication", "SMSFromDefinedValueId", "dbo.DefinedValue");
             DropForeignKey("dbo.CommunicationAttachment", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.CommunicationAttachment", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.CommunicationAttachment", "CommunicationId", "dbo.Communication");
@@ -514,6 +540,7 @@ END
             DropIndex("dbo.CommunicationAttachment", new[] { "CommunicationId" });
             DropIndex("dbo.CommunicationAttachment", new[] { "BinaryFileId" });
             DropIndex("dbo.Communication", new[] { "SMSFromDefinedValueId" });
+            DropIndex("dbo.Communication", new[] { "CommunicationTemplateId" });
             DropIndex("dbo.CommunicationRecipient", new[] { "MediumEntityTypeId" });
             DropColumn("dbo.CommunicationTemplate", "PushSound");
             DropColumn("dbo.CommunicationTemplate", "PushMessage");
@@ -528,7 +555,7 @@ END
             DropColumn("dbo.CommunicationTemplate", "FromEmail");
             DropColumn("dbo.CommunicationTemplate", "FromName");
             DropColumn("dbo.CommunicationTemplate", "ImageFileId");
-            DropColumn("dbo.CommunicationTemplate", "CommunicationType");
+            DropColumn("dbo.CommunicationTemplate", "IsSystem");
             DropColumn("dbo.Communication", "PushSound");
             DropColumn("dbo.Communication", "PushMessage");
             DropColumn("dbo.Communication", "PushTitle");
@@ -541,6 +568,7 @@ END
             DropColumn("dbo.Communication", "ReplyToEmail");
             DropColumn("dbo.Communication", "FromEmail");
             DropColumn("dbo.Communication", "FromName");
+            DropColumn("dbo.Communication", "CommunicationTemplateId");
             DropColumn("dbo.Communication", "SegmentCriteria");
             DropColumn("dbo.Communication", "Segments");
             DropColumn("dbo.Communication", "ListGroupId");
@@ -548,6 +576,7 @@ END
             DropColumn("dbo.Communication", "CommunicationType");
             DropColumn("dbo.Communication", "Name");
             DropColumn("dbo.CommunicationRecipient", "MediumEntityTypeId");
+            DropColumn("dbo.Person", "CommunicationPreference");
             DropTable("dbo.CommunicationTemplateAttachment");
             DropTable("dbo.CommunicationAttachment");
             CreateIndex("dbo.CommunicationTemplate", "MediumEntityTypeId");

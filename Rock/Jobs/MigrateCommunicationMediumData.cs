@@ -30,7 +30,8 @@ namespace Rock.Jobs
 #pragma warning disable
 
     /// <summary>
-    /// 
+    /// This job is used to convert a communication's MediumDataJson to the actual fields that were added in v7. Once all the values have been 
+    /// converted, this job will delete itself.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
