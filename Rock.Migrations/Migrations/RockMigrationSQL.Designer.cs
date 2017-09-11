@@ -3217,7 +3217,7 @@ namespace Rock.Migrations.Migrations {
         ///INCLUDE ([TransactionId],[Amount])
         ///GO
         ///
-        ///CREATE NONCLUSTERED INDEX [IX_TransactionDateTime_Source_Person_Details]
+        ///CREATE NONCLUSTERED INDEX [IX_TransactionDateTime_SourceType_AuthorizedPerson_PaymentDetails]
         ///ON [dbo].[FinancialTransaction] ([TransactionDateTime])
         ///INCLUDE ([Id],[SourceTypeValueId],[AuthorizedPersonAliasId],[FinancialPaymentDetailId])
         ///GO.
@@ -3263,10 +3263,10 @@ namespace Rock.Migrations.Migrations {
         ///	&lt;/summary&gt;
         ///&lt;/doc&gt;
         ///*/
-        ///ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
         ///	  @StartDate datetime = NULL
         ///	, @EndDate datetime = NULL
-        ///	, @MinAmount decimal(18,2) = NULL        /// [rest of string was truncated]&quot;;.
+        ///	, @MinAmount decimal(18,2) = NULL [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201708162105164_AnalyticsPerformance_PersonSummary {
             get {
@@ -3294,6 +3294,39 @@ namespace Rock.Migrations.Migrations {
         public static string _201708162105164_AnalyticsPerformance_TransactionData {
             get {
                 return ResourceManager.GetString("_201708162105164_AnalyticsPerformance_TransactionData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /* Create the System &apos;Blank&apos; communication template */
+        ///DELETE
+        ///FROM CommunicationTemplate
+        ///WHERE [Guid] = &apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///
+        ///INSERT INTO [dbo].[CommunicationTemplate] (
+        ///	[Name]
+        ///	,[Description]
+        ///	,[IsSystem]
+        ///	,[Subject]
+        ///	,[MediumDataJson]
+        ///	,[Guid]
+        ///	,[Message]
+        ///	)
+        ///VALUES (
+        ///	&apos;Blank&apos;
+        ///	,&apos;A template without predefined content that can be used to create email and SMS communications&apos;
+        ///	,1
+        ///	,&apos;&apos;
+        ///	,&apos;{}&apos;
+        ///	,&apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///	,
+        ///	&apos;&lt;html&gt;
+        ///&lt;head&gt;
+        ///&lt;title&gt;A Respons [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709082257551_Communications2_AddCommunicationTemplates {
+            get {
+                return ResourceManager.GetString("_201709082257551_Communications2_AddCommunicationTemplates", resourceCulture);
             }
         }
     }
