@@ -177,7 +177,7 @@ namespace Rock.Communication.Transport
                                             // Create merge field dictionary
                                             var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
 
-                                            string message = ResolveText( communication.Message, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+                                            string message = ResolveText( communication.SMSMessage, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
 
                                             string twilioNumber = phoneNumber.Number;
                                             if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )

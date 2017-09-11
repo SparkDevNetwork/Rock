@@ -33,6 +33,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -538,11 +539,26 @@ namespace RockWeb.Blocks.Communication
                             medium.Send( testCommunication );
                         }
 
+                        testRecipient = new CommunicationRecipientService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( r => r.CommunicationId == testCommunication.Id )
+                            .FirstOrDefault();
+
+                        if ( testRecipient != null && testRecipient.Status == CommunicationRecipientStatus.Failed && testRecipient.PersonAlias != null && testRecipient.PersonAlias.Person != null )
+                        {
+                            nbTestResult.NotificationBoxType = NotificationBoxType.Danger;
+                            nbTestResult.Text = string.Format( "Test communication to <strong>{0}</strong> failed: {1}.", testRecipient.PersonAlias.Person.FullName, testRecipient.StatusNote );
+                        }
+                        else
+                        {
+                            nbTestResult.NotificationBoxType = NotificationBoxType.Success;
+                            nbTestResult.Text = "Test communication has been sent.";
+                        }
+                        nbTestResult.Visible = true;
+
                         communicationService.Delete( testCommunication );
                         rockContext.SaveChanges();
                     }
-                    
-                    nbTestResult.Visible = true;
                 }
             }
         }
