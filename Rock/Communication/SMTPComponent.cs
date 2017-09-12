@@ -133,7 +133,7 @@ namespace Rock.Communication.Transport
             {
 
                 // From - if none is set, use the one in the Organization's GlobalAttributes.
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                var globalAttributes = GlobalAttributesCache.Read();
                 string fromAddress = emailMessage.FromEmail;
                 if ( string.IsNullOrWhiteSpace( fromAddress ) )
                 {
@@ -150,7 +150,12 @@ namespace Rock.Communication.Transport
                     return false;
                 }
 
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, rockMessage.CurrentPerson );
+                // Common Merge Field
+                var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, rockMessage.CurrentPerson );
+                foreach ( var mergeField in rockMessage.AdditionalMergeFields )
+                {
+                    mergeFields.AddOrReplace( mergeField.Key, mergeField.Value );
+                }
 
                 // Resolve any possible merge fields in the from address
                 fromAddress = fromAddress.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );

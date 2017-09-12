@@ -58,7 +58,12 @@ namespace Rock.Communication.Transport
                 string serverKey = GetAttributeValue( "ServerKey" );
                 var sender = new Sender( serverKey );
 
+                // Common Merge Field
                 var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, rockMessage.CurrentPerson );
+                foreach ( var mergeField in rockMessage.AdditionalMergeFields )
+                {
+                    mergeFields.AddOrReplace( mergeField.Key, mergeField.Value );
+                }
 
                 var recipients = rockMessage.GetRecipientData();
 

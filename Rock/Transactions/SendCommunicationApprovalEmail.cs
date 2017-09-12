@@ -68,9 +68,14 @@ namespace Rock.Transactions
                 if ( communication != null && communication.Status == CommunicationStatus.PendingApproval )
                 {
                     // get notification group
-                    var approvers = new GroupService( rockContext ).Get(SystemGuid.Group.GROUP_COMMUNICATION_APPROVERS.AsGuid());
+                    var groupGuid = SystemGuid.Group.GROUP_COMMUNICATION_APPROVERS.AsGuid();
+                    var approvers = new GroupMemberService( rockContext ).Queryable()
+                        .Where( m =>
+                            m.Group.Guid == groupGuid &&
+                            m.GroupMemberStatus == GroupMemberStatus.Active )
+                        .ToList();
 
-                    if ( approvers != null )
+                    if ( approvers.Any() )
                     {
                         string fromName = Rock.Web.Cache.GlobalAttributesCache.Value("OrganizationName");
                         string fromEmail = Rock.Web.Cache.GlobalAttributesCache.Value( "OrganizationEmail" );
@@ -104,9 +109,8 @@ namespace Rock.Transactions
                         {
                             ApprovalPageUrl = string.Format( "{0}Communication/{1}", Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" ), communication.Id );
                         }
-                        
 
-                        foreach ( var approver in approvers.Members )
+                        foreach ( var approver in approvers )
                         {
                             string message = string.Format( @"
                                     {{{{ 'Global' | Attribute:'EmailHeader' }}}}

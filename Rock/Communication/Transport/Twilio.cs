@@ -68,7 +68,12 @@ namespace Rock.Communication.Transport
                 string authToken = GetAttributeValue( "Token" );
                 TwilioClient.Init( accountSid, authToken );
 
+                // Common Merge Field
                 var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, rockMessage.CurrentPerson );
+                foreach ( var mergeField in rockMessage.AdditionalMergeFields )
+                {
+                    mergeFields.AddOrReplace( mergeField.Key, mergeField.Value );
+                }
 
                 foreach ( var recipientData in rockMessage.GetRecipientData() )
                 {

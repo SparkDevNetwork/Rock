@@ -108,6 +108,7 @@ namespace Rock.Jobs
                             mergeObjects.Add( "RegistrationInstance", registration.RegistrationInstance );
 
                             var emailMessage = new RockEmailMessage();
+                            emailMessage.AdditionalMergeFields = mergeObjects;
                             emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeObjects ) );
                             emailMessage.FromEmail = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail;
                             emailMessage.FromName = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject;

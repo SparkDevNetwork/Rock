@@ -255,6 +255,7 @@ namespace RockWeb.Blocks.Event
                         var mergeObjects = GetMergeObjects( registration );
 
                         var emailMessage = new RockEmailMessage();
+                        emailMessage.AdditionalMergeFields = mergeObjects;
                         emailMessage.FromEmail = tbFromEmail.Text;
                         emailMessage.FromName = tbFromName.Text;
                         emailMessage.Subject = tbFromSubject.Text;

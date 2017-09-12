@@ -76,6 +76,14 @@ namespace Rock.Communication
         public string EnabledLavaCommands { get; set; }
 
         /// <summary>
+        /// Gets or sets any additional merge fields.
+        /// </summary>
+        /// <value>
+        /// The merge fields.
+        /// </value>
+        public Dictionary<string, object> AdditionalMergeFields { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
         /// Gets or sets a value indicating whether the message should be sent seperately to each recipient. If merge fields are used, this is required.
         /// </summary>
         /// <value>
@@ -245,19 +253,24 @@ namespace Rock.Communication
 
             try
             {
-                var mediumEntity = EntityTypeCache.Read( MediumEntityTypeId );
-                if ( mediumEntity != null )
+                if ( this._recipients.Any() )
                 {
-                    var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                    if ( medium != null )
+                    var mediumEntity = EntityTypeCache.Read( MediumEntityTypeId );
+                    if ( mediumEntity != null )
                     {
-                        medium.Send( this, out errorMessages );
-                        return errorMessages.Any();
+                        var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                        if ( medium != null )
+                        {
+                            medium.Send( this, out errorMessages );
+                            return errorMessages.Any();
+                        }
                     }
+
+                    errorMessages.Add( "Could not find valid Medium" );
+                    return false;
                 }
 
-                errorMessages.Add( "Could not find valid Medium" );
-                return false;
+                return true;
             }
             catch ( Exception ex )
             {
