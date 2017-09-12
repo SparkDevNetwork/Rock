@@ -150,6 +150,8 @@ If you want to read about using Rock or developing plugins for Rock, the [Rock D
 * Remember these [Committing Your Code standards](https://github.com/SparkDevNetwork/Rock/wiki/Committing-Your-Code)
 * Use a tool like [GhostDoc](http://submain.com/download/ghostdoc/) to *help* document your methods.
 * Try a tool like [CodeMaid](http://www.codemaid.net/) (free, in the Visual Studio store). It will auto-align your code, add brackets to single-line if statements, remove unnecessary whitespace and more.
+* Should your pull request require a migration, please exclude the migration from the Rock.Migration project, but submit it in your
+pull request. Please add a note to your pull request that provides a heads up that a migration file is present. 
 
 ## Styleguides
 
