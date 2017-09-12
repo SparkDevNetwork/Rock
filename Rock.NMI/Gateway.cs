@@ -307,7 +307,7 @@ namespace Rock.NMI
                     // cc payment
                     var curType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
                     transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
-                    transaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber;
+                    transaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
                     string mmyy = result.GetValueOrNull( "billing_cc-exp" );
                     if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
@@ -321,7 +321,7 @@ namespace Rock.NMI
                     // ach payment
                     var curType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
                     transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
-                    transaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account_number" );
+                    transaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account_number" ).Masked( true );
                 }
 
                 transaction.AdditionalLavaFields = new Dictionary<string,object>();
@@ -533,7 +533,7 @@ namespace Rock.NMI
                     // cc payment
                     var curType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
                     scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
-                    scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber;
+                    scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
                     string mmyy = result.GetValueOrNull( "billing_cc-exp" );
                     if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
@@ -547,7 +547,7 @@ namespace Rock.NMI
                     // ach payment
                     var curType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
                     scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
-                    scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account_number" );
+                    scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account_number" ).Masked( true );
                 }
 
                 GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
