@@ -55,10 +55,10 @@
       setMargins: function ()
       {
         Rock.controls.emailEditor.$currentTextComponent
-                .css('margin-top', parseFloat($('#component-text-margin-top').val()) + 'px')
-                .css('margin-left', parseFloat($('#component-text-margin-left').val()) + 'px')
-                .css('margin-right', parseFloat($('#component-text-margin-right').val()) + 'px')
-                .css('margin-bottom', parseFloat($('#component-text-margin-bottom').val()) + 'px');
+                .css('margin-top', Rock.controls.util.getValueAsPixels($('#component-text-margin-top').val()))
+                .css('margin-left', Rock.controls.util.getValueAsPixels($('#component-text-margin-left').val()))
+                .css('margin-right', Rock.controls.util.getValueAsPixels($('#component-text-margin-right').val()))
+                .css('margin-bottom', Rock.controls.util.getValueAsPixels($('#component-text-margin-bottom').val()));
       },
       updateTextComponent: function (el, contents)
       {

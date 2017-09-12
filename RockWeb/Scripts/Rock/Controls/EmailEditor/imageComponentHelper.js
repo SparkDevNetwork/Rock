@@ -85,10 +85,10 @@
       setMargins: function ()
       {
         Rock.controls.emailEditor.$currentImageComponent
-                .css('margin-top', parseFloat($('#component-image-margin-top').val()) + 'px')
-                .css('margin-left', parseFloat($('#component-image-margin-left').val()) + 'px')
-                .css('margin-right', parseFloat($('#component-image-margin-right').val()) + 'px')
-                .css('margin-bottom', parseFloat($('#component-image-margin-bottom').val()) + 'px');
+                .css('margin-top', Rock.controls.util.getValueAsPixels($('#component-image-margin-top').val()))
+                .css('margin-left', Rock.controls.util.getValueAsPixels($('#component-image-margin-left').val()))
+                .css('margin-right', Rock.controls.util.getValueAsPixels($('#component-image-margin-right').val()))
+                .css('margin-bottom', Rock.controls.util.getValueAsPixels($('#component-image-margin-bottom').val()));
       },
       setImageFromData: function (data)
       {
