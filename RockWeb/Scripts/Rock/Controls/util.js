@@ -19,6 +19,17 @@
                 } else if (typeof google == 'object' && typeof google.maps == 'object') {
                     this.googleMapsIsLoaded();
                 }
+            },
+            // parses the value as a float and adds a 'px' suffix if successful
+            getValueAsPixels: function (a)
+            {
+              var floatValue = parseFloat(a)
+              if (floatValue) {
+                return floatValue + 'px'
+              }
+              else {
+                return null;
+              }
             }
         };
 

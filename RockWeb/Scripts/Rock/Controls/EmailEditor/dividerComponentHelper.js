@@ -51,9 +51,9 @@
       {
         var $hr = Rock.controls.emailEditor.$currentDividerComponent.find('hr');
 
-        $hr.css('margin-top', parseFloat($('#component-divider-margin-top').val()) + 'px')
-          .css('margin-bottom', parseFloat($('#component-divider-margin-bottom').val()) + 'px')
-          .css('height', parseFloat($('#component-divider-height').val()) + 'px')
+        $hr.css('margin-top', Rock.controls.emailEditor.getValueAsPixels($('#component-divider-margin-top').val()))
+          .css('margin-bottom', Rock.controls.util.getValueAsPixels($('#component-divider-margin-bottom').val()))
+          .css('height', Rock.controls.util.getValueAsPixels($('#component-divider-height').val()))
       }
     }
 

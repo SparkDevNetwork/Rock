@@ -36,10 +36,10 @@
       setMargins: function ()
       {
         Rock.controls.emailEditor.$currentCodeComponent
-                .css('margin-top', parseFloat($('#component-code-margin-top').val()) + 'px')
-                .css('margin-left', parseFloat($('#component-code-margin-left').val()) + 'px')
-                .css('margin-right', parseFloat($('#component-code-margin-right').val()) + 'px')
-                .css('margin-bottom', parseFloat($('#component-code-margin-bottom').val()) + 'px');
+                .css('margin-top', Rock.controls.util.getValueAsPixels($('#component-code-margin-top').val()))
+                .css('margin-left', Rock.controls.util.getValueAsPixels($('#component-code-margin-left').val()))
+                .css('margin-right', Rock.controls.util.getValueAsPixels($('#component-code-margin-right').val()))
+                .css('margin-bottom', Rock.controls.util.getValueAsPixels($('#component-code-margin-bottom').val()));
       },
       updateCodeComponent: function (el, contents)
       {
