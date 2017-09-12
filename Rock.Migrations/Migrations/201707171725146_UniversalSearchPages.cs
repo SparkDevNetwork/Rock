@@ -121,7 +121,7 @@ ELSE
             // Attrib Value for Block:Universal Search, Attribute:Use Custom Results Page: Universal Search, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue("309A2477-9A5B-4FD4-A722-735F87861A05","45F64F50-A41C-4247-B0FF-655520B6AC97",@"False");
             // Attrib Value for Block:Universal Search, Attribute:Search Type Page: Universal Search, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue("309A2477-9A5B-4FD4-A722-735F87861A05","152FA041-3DA7-4BA4-A2D5-87BFA1618536",@"0");
+            RockMigrationHelper.AddBlockAttributeValue("309A2477-9A5B-4FD4-A722-735F87861A05","152FA041-3DA7-4BA4-A2D5-87BFA1618536",@"2");
             // Attrib Value for Block:Universal Search, Attribute:Search Input Post-HTML Page: Universal Search, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue("309A2477-9A5B-4FD4-A722-735F87861A05","8F8CDF58-C491-4DB7-AE41-2AC91AE77270",@"");
             // Attrib Value for Block:Universal Search, Attribute:Show Filters Page: Universal Search, Site: Rock RMS              
