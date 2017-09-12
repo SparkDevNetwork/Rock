@@ -471,10 +471,10 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( "id", this.ClientID.ToString() );
-            writer.AddAttribute( "class", "toggle-container" );
+            writer.AddAttribute( "class", "toggle-container " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "btn-group btn-toggle " + this.CssClass );
+            writer.AddAttribute( "class", "btn-group btn-toggle" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _btnOn.Attributes["class"] = "btn btn-default js-toggle-on " + this.ButtonSizeCssClass;
