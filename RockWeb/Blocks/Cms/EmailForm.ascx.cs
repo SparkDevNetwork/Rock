@@ -278,7 +278,7 @@ namespace RockWeb.Blocks.Cms
                 message.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
 
                 // create merge objects
-                var mergeFields =  Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                var mergeFields = new Dictionary<string, object>();
 
                 // create merge object for fields
                 Regex rgxRockControls = new Regex( @"^ctl\d*\$.*" );

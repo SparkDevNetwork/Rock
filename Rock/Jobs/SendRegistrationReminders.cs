@@ -80,6 +80,7 @@ namespace Rock.Jobs
                         mergeFields.Add( "Registration", registration );
 
                         var emailMessage = new RockEmailMessage();
+                        emailMessage.AdditionalMergeFields = mergeFields;
                         emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeFields ) );
                         emailMessage.FromEmail = template.ReminderFromEmail;
                         emailMessage.FromName = template.ReminderFromName;

@@ -112,7 +112,7 @@ namespace Rock.Jobs
                         var globalAttributes = GlobalAttributesCache.Read();
                         string emailHeader = globalAttributes.GetValue( "EmailHeader" );
                         string emailFooter = globalAttributes.GetValue( "EmailFooter" );
-                        string messageBody = $"{emailHeader} {errorMessage} <p><small>This message was generated from the Rock Database Maintenance Job</small></p>s {emailFooter}";
+                        string messageBody = $"{emailHeader} {errorMessage} <p><small>This message was generated from the Rock Database Maintenance Job</small></p>{emailFooter}";
 
                         var emailMessage = new RockEmailMessage();
                         emailMessage.SetRecipients( alertEmail.Split( ',' ).ToList() );

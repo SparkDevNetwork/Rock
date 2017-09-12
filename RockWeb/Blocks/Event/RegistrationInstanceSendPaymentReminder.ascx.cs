@@ -157,6 +157,7 @@ namespace RockWeb.Blocks.Event
                                 mergeObjects.Add( "RegistrationInstance", _registrationInstance );
 
                                 var emailMessage = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
+                                emailMessage.AdditionalMergeFields = mergeObjects;
                                 emailMessage.FromEmail = txtFromEmail.Text;
                                 emailMessage.FromName = txtFromName.Text;
                                 emailMessage.Subject = txtFromSubject.Text;

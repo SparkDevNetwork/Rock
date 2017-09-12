@@ -118,6 +118,7 @@ namespace Rock.Transactions
                     if ( recipients.Any() )
                     {
                         var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemEmail.REGISTRATION_NOTIFICATION.AsGuid() );
+                        emailMessage.AdditionalMergeFields = mergeFields;
                         recipients.ToList().ForEach( r => emailMessage.AddRecipient( new RecipientData( r.Key, r.Value ) ) );
                         emailMessage.AppRoot = AppRoot;
                         emailMessage.ThemeRoot = ThemeRoot;
