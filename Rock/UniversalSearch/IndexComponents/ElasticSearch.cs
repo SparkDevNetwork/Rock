@@ -316,7 +316,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="size">The size.</param>
         /// <param name="from">From.</param>
         /// <returns></returns>
-        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null, SearchFieldCriteria fieldCriteria = null, int? size = null, int? from = null )
+        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria fieldCriteria = null, int? size = null, int? from = null )
         {
             long totalResultsAvailable = 0;
             return Search( query, searchType, entities, fieldCriteria, size, from, out totalResultsAvailable );
