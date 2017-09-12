@@ -159,9 +159,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 }
                 BuildMap();
             }
-
-            lbRegister.Attributes.Add( "onclick", "return jumpToControl()" );
-            lbEmail.Attributes.Add( "onclick", "return jumpToControl()" );
         }
 
         #endregion
@@ -353,17 +350,17 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                     pnlSignup.Visible = false;
 
                     pnlResult.Visible = true;
-                    tbResultEmail.Text = tbEmail.Text;
-                    tbResultFirstName.Text = tbFirstName.Text;
-                    pnResultHome.Text = pnHome.Text;
-                    tbResultLastName.Text = tbLastName.Text;
+                    lResultFirstName.Text = tbFirstName.Text;
+                    lResultLastName.Text = tbLastName.Text;
+                    lResultEmail.Text = tbEmail.Text;
+                    lResultHome.Text = pnHome.Text;
                     if ( secondPerson != null )
                     {
                         pnlSecondResult.Visible = true;
-                        tbSecondResultEmail.Text = tbSecondEmail.Text;
-                        tbSecondResultFirstName.Text = tbSecondFirstName.Text;
-                        pnSecondResultHome.Text = pnSecondHome.Text;
-                        tbSecondResultLastName.Text = tbSecondLastName.Text;
+                        lSecondResultFirstName.Text = tbSecondFirstName.Text;
+                        lSecondResultLastName.Text = tbSecondLastName.Text;
+                        lSecondResultEmail.Text = tbSecondEmail.Text;
+                        lSecondResultHome.Text = pnSecondHome.Text;
                     }
                 }
             }

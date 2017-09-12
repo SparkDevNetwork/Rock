@@ -13,26 +13,23 @@
         </script>
         <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false" CssClass="lifegroupdetail-noticebox" NotificationBoxType="Danger" />
         <asp:Panel ID="pnlView" runat="server" Visible="true">
+
             <div class="row lifegroupdetail-groupname">
                 <h2>
                     <asp:Literal ID="lGroupName" runat="server" />
                 </h2>
             </div>
+
             <div class="row">
-                <div class="lifegroupdetail-backdiv pull-left">
+                <div class="col-md-6 lifegroupdetail-backdiv pull-left">
                     <asp:LinkButton ID="lbGoBack" runat="server" Text="Back" OnClick="lbGoBack_Click" />
                 </div>
-                <div class="lifegroupdetail-registerdiv row text-center">
-                    <asp:LinkButton ID="lbRegister" runat="server" Text="Sign up!" CssClass="btn btn-primary" OnClick="lbRegister_Click" CausesValidation="false" />
-                </div>
-                <div class="lifegroupdetail-emailleaderdiv row text-center">
-                    <asp:LinkButton ID="lbEmail" runat="server" Text="Email" OnClick="lbEmail_Click" CausesValidation="false" Visible="false" />
-                </div>
-                <asp:Panel ID="pnlLogin" runat="server" CssClass="lifegroupdetail-loginbutton">
+                <asp:Panel ID="pnlLogin" runat="server" CssClass="col-md-6 lifegroupdetail-loginbutton text-right">
                     <asp:LinkButton ID='lbLogin' runat='server' Text='Sign in' OnClick='lbLogin_Click' CausesValidation="false" />
                     to autocomplete forms. 
                 </asp:Panel>
             </div>
+
             <asp:Literal ID="lOutput" runat="server" />
             <asp:Literal ID="lDebug" Visible="false" runat="server" />
         </asp:Panel>
@@ -128,33 +125,34 @@
             </h3>
             </center>
             <div class="col-md-6 col-md-offset-3">
-                <asp:Panel runat="server" CssClass="lifegroupdetail-firstpersonresult">
-                    <div class="row">
-                        <Rock:RockTextBox ID="tbResultFirstName" runat="server" Enabled="false"></Rock:RockTextBox>
+                <asp:Panel runat="server">
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title padding-all-sm">Your information</h3>
+                        </div>
+                        <div class="panel-body">
+                        <asp:Literal ID="lResultFirstName" runat="server"></asp:Literal>
+                        <asp:Literal ID="lResultLastName" runat="server"></asp:Literal><br />
+                        <asp:Literal ID="lResultEmail" runat="server"></asp:Literal><br />
+                        <asp:Literal ID="lResultHome" runat="server"></asp:Literal>
+                        </div>
                     </div>
-                    <div class="row">
-                        <Rock:RockTextBox ID="tbResultLastName" runat="server" Enabled="false"></Rock:RockTextBox>
-                    </div>
-                    <div class="row">
-                        <Rock:EmailBox ID="tbResultEmail" runat="server" Enabled="false"></Rock:EmailBox>
-                    </div>
-                    <div class="row">
-                        <Rock:PhoneNumberBox ID="pnResultHome" runat="server" Enabled="false" />
-                    </div>
+
                 </asp:Panel>
                 <br />
-                <asp:Panel ID="pnlSecondResult" runat="server" Visible="false" CssClass="lifegroupdetail-secondpersonresult">
-                    <div class="row">
-                        <Rock:RockTextBox ID="tbSecondResultFirstName" runat="server" Enabled="false"></Rock:RockTextBox>
-                    </div>
-                    <div class="row">
-                        <Rock:RockTextBox ID="tbSecondResultLastName" runat="server" Enabled="false"></Rock:RockTextBox>
-                    </div>
-                    <div class="row">
-                        <Rock:EmailBox ID="tbSecondResultEmail" runat="server" Enabled="false"></Rock:EmailBox>
-                    </div>
-                    <div class="row">
-                        <Rock:PhoneNumberBox ID="pnSecondResultHome" runat="server" Enabled="false" />
+
+                <asp:Panel ID="pnlSecondResult" runat="server" Visible="false">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title padding-all-sm">Others information</h3>
+                        </div>
+                        <div class="panel-body">
+                        <asp:Literal ID="lSecondResultFirstName" runat="server"></asp:Literal>
+                        <asp:Literal ID="lSecondResultLastName" runat="server"></asp:Literal><br />
+                        <asp:Literal ID="lSecondResultEmail" runat="server"></asp:Literal><br />
+                        <asp:Literal ID="lSecondResultHome" runat="server"></asp:Literal>
+                        </div>
                     </div>
                 </asp:Panel>
             </div>
