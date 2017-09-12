@@ -74,7 +74,7 @@ namespace Rock.Financial
         /// </summary>
         public override string MaskedNumber
         {
-            get { return BankAccountNumber.Masked(); }
+            get { return BankAccountNumber.Masked( true ); }
         }
 
         /// <summary>
