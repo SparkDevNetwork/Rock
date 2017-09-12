@@ -28,9 +28,9 @@
                             <Rock:RockBoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
                             <Rock:EnumField DataField="Status" SortExpression="Status" HeaderText="Status" />
                             <Rock:RockBoundField DataField="PendingRecipients" HeaderText="Pending Recipients" />
-                            <asp:TemplateField HeaderText="Type" SortExpression="MediumName">
+                            <asp:TemplateField HeaderText="Type" SortExpression="CommunicationType">
                                 <ItemTemplate>
-                                    <span class='label label-<%# Eval("MediumLabel") %>'><%# Eval("MediumName") %></span>
+                                    <span class='label label-<%# Eval("MediumLabel") %>'><%# ((Rock.Model.CommunicationType)Eval("CommunicationType")).ToString() %></span>
                                 </ItemTemplate>
                             </asp:TemplateField>
                         </Columns>
