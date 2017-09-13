@@ -39,6 +39,7 @@ using Quartz.Impl.Matchers;
 
 using Rock;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
@@ -176,6 +177,7 @@ namespace RockWeb
 
                     // Preload the commonly used objects
                     stopwatch.Restart();
+                    LoadComponenetData( rockContext );
                     LoadCacheObjects( rockContext );
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
@@ -716,6 +718,54 @@ namespace RockWeb
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Loads the Component Data from Web.config.
+        /// </summary>
+        private void LoadComponenetData( RockContext rockContext )
+        {
+            var rockConfig = RockConfig.Config;
+            if ( rockConfig.AttributeValues.Count > 0 )
+            {
+                foreach ( AttributeValueConfig attributeValueConfig in rockConfig.AttributeValues )
+                {
+                    AttributeService attributeService = new AttributeService( rockContext );
+                    AttributeValueService attributeValueService = new AttributeValueService( rockContext );
+                    var attribute = attributeService.Get( attributeValueConfig.EntityTypeId.AsInteger(),
+                                           attributeValueConfig.EntityTypeQualifierColumm,
+                                           attributeValueConfig.EntityTypeQualifierValue,
+                                           attributeValueConfig.AttributeKey );
+                    if ( attribute == null )
+                    {
+                        attribute = new Rock.Model.Attribute();
+                        attribute.FieldTypeId = FieldTypeCache.Read( new Guid( Rock.SystemGuid.FieldType.TEXT ) ).Id;
+                        attribute.EntityTypeQualifierColumn = attributeValueConfig.EntityTypeQualifierColumm;
+                        attribute.EntityTypeQualifierValue = attributeValueConfig.EntityTypeQualifierValue;
+                        attribute.Key = attributeValueConfig.AttributeKey;
+                        attribute.Name = attributeValueConfig.AttributeKey.SplitCase();
+                        attributeService.Add( attribute );
+                        rockContext.SaveChanges();
+                    }
+
+
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, attributeValueConfig.EntityId.AsInteger() );
+                    if ( attributeValue == null && !string.IsNullOrWhiteSpace( attributeValueConfig.Value ) )
+                    {
+
+                        attributeValue = new Rock.Model.AttributeValue();
+                        attributeValue.AttributeId = attribute.Id;
+                        attributeValue.EntityId = attributeValueConfig.EntityId.AsInteger();
+                        attributeValueService.Add( attributeValue );
+                    }
+                    if ( attributeValue.Value != attributeValueConfig.Value )
+                    {
+                        attributeValue.Value = attributeValueConfig.Value;
+                        rockContext.SaveChanges();
+                    }
+
+                }
+            }
         }
 
         /// <summary>
