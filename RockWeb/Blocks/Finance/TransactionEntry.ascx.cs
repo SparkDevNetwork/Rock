@@ -145,13 +145,13 @@ TransactionAccountDetails: [
     [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
     [BooleanField( "Enable Business Giving", "Should the option to give as as a business be displayed", true, "", 31 )]
     [BooleanField( "Enable Anonymous Giving", "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.", false, "", 32 )]
-    [TextField( "Anonymous Giving Tooltip", "The tooltip for the 'Give Anonymously' checkbox.", false, "", order:33 )]
+    [TextField( "Anonymous Giving Tooltip", "The tooltip for the 'Give Anonymously' checkbox.", false, "", order: 33 )]
 
     #endregion
 
     #region Advanced Block Attributes
 
-    [BooleanField( "Allow Account Options In URL", "Set to true to allow account options to be set via URL. To simply set allowed accounts, the allowed accounts can be specified as a comma-delimited list of AccountIds or AccountGlCodes. Example: ?AccountIds=1,2,3 or ?AccountGlCodes=40100,40110. The default amount for each account and whether it is editable can also be specified. Example:?AccountIds=1^50.00^false,2^25.50^false,3^35.00^true or ?AccountGlCodes=40100^50.00^false,40110^42.25^true", false, "Advanced", key: "AllowAccountsInURL", order:1 )]
+    [BooleanField( "Allow Account Options In URL", "Set to true to allow account options to be set via URL. To simply set allowed accounts, the allowed accounts can be specified as a comma-delimited list of AccountIds or AccountGlCodes. Example: ?AccountIds=1,2,3 or ?AccountGlCodes=40100,40110. The default amount for each account and whether it is editable can also be specified. Example:?AccountIds=1^50.00^false,2^25.50^false,3^35.00^true or ?AccountGlCodes=40100^50.00^false,40110^42.25^true", false, "Advanced", key: "AllowAccountsInURL", order: 1 )]
     [BooleanField( "Only Public Accounts In URL", "Set to true if using the 'Allow Account Options In Url' option to prevent non-public accounts to be specified.", true, "Advanced", 2 )]
     [CodeEditorField( "Invalid Account Message", "Display this text (HTML) as an error alert if an invalid 'account' or 'glaccount' is passed through the URL.",
         CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "Advanced", 3 )]
@@ -457,10 +457,10 @@ TransactionAccountDetails: [
             }
 
             var testGatewayGuid = Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY.AsGuid();
-            if ((_ccGatewayComponent != null && _ccGatewayComponent.TypeGuid == testGatewayGuid) ||
-                (_achGatewayComponent != null && _achGatewayComponent.TypeGuid== testGatewayGuid))
+            if ( ( _ccGatewayComponent != null && _ccGatewayComponent.TypeGuid == testGatewayGuid ) ||
+                ( _achGatewayComponent != null && _achGatewayComponent.TypeGuid == testGatewayGuid ) )
             {
-                ShowMessage(NotificationBoxType.Warning, "Testing", "You are using the Test Financial Gateway. No actual amounts will be charged to your card or bank account.");
+                ShowMessage( NotificationBoxType.Warning, "Testing", "You are using the Test Financial Gateway. No actual amounts will be charged to your card or bank account." );
             }
 
             // Check if this is a transfer and that the person is the authorized person on the transaction
@@ -497,7 +497,7 @@ TransactionAccountDetails: [
                 SetPage( 1 );
 
                 // If an invalid PersonToken was specified, hide everything except for the error message
-                if (nbInvalidPersonWarning.Visible)
+                if ( nbInvalidPersonWarning.Visible )
                 {
                     pnlSelection.Visible = false;
                 }
@@ -1127,10 +1127,10 @@ TransactionAccountDetails: [
         private FinancialGateway GetGateway( RockContext rockContext, string attributeName )
         {
             var financialGatewayService = new FinancialGatewayService( rockContext );
-            Guid? ccGatewayGuid = GetAttributeValue( attributeName ).AsGuidOrNull();
-            if ( ccGatewayGuid.HasValue )
+            Guid? gatewayGuid = GetAttributeValue( attributeName ).AsGuidOrNull();
+            if ( gatewayGuid.HasValue )
             {
-                return financialGatewayService.Get( ccGatewayGuid.Value );
+                return financialGatewayService.Get( gatewayGuid.Value );
             }
             return null;
         }
@@ -1249,7 +1249,7 @@ TransactionAccountDetails: [
                         .Where( a => a.TransactionDetails.Any( d => d.EntityTypeId.HasValue && d.EntityTypeId == transactionEntityTypeId && d.EntityId == transactionEntity.Id ) )
                         .ToList();
 
-                    var transactionEntityTransactionsTotal = transactionEntityTransactions.SelectMany( d => d.TransactionDetails ).Sum( d => (decimal?)d.Amount );
+                    var transactionEntityTransactionsTotal = transactionEntityTransactions.SelectMany( d => d.TransactionDetails ).Sum( d => ( decimal? ) d.Amount );
                     mergeFields.Add( "TransactionEntityTransactions", transactionEntityTransactions );
                     mergeFields.Add( "TransactionEntityTransactionsTotal", transactionEntityTransactionsTotal );
                 }
@@ -3314,7 +3314,7 @@ TransactionAccountDetails: [
                 var account = new FinancialAccountService( new RockContext() ).Get( accountItem.Id );
                 mergeFields.Add( "Account", account );
                 txtAccountAmount.Label = accountHeaderTemplate.ResolveMergeFields( mergeFields );
-                
+
                 txtAccountAmount.Text = accountItem.Amount.ToString( "N2" );
 
                 if ( !accountItem.Enabled )
