@@ -3329,5 +3329,53 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201709082257551_Communications2_AddCommunicationTemplates", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF EXISTS (
+        ///        SELECT *
+        ///        FROM [sysobjects]
+        ///        WHERE [id] = OBJECT_ID(N&apos;[dbo].[spAnalytics_ETL_Attendance]&apos;)
+        ///            AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1
+        ///        )
+        ///    DROP PROCEDURE [dbo].spAnalytics_ETL_Attendance
+        ///GO
+        ///
+        ///-- EXECUTE [dbo].[spAnalytics_ETL_Attendance] 
+        ///CREATE PROCEDURE [dbo].spAnalytics_ETL_Attendance
+        ///AS
+        ///BEGIN
+        ///    DECLARE @MinDateTime DATETIME = DATEFROMPARTS(1900, 1, 1)
+        ///        ,@EtlDateTime DATETIME = SysDateTime();
+        ///
+        ///    -- insert records into [[An [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709131136468_spAnalytics_ETL_Attendance {
+            get {
+                return ResourceManager.GetString("_201709131136468_spAnalytics_ETL_Attendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF EXISTS (
+        ///        SELECT *
+        ///        FROM [sysobjects]
+        ///        WHERE [id] = OBJECT_ID(N&apos;[dbo].[spAnalytics_ETL_FinancialTransaction]&apos;)
+        ///            AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1
+        ///        )
+        ///    DROP PROCEDURE [dbo].spAnalytics_ETL_FinancialTransaction
+        ///GO
+        ///
+        ///-- truncate table [AnalyticsSourceFinancialTransaction]
+        ///-- EXECUTE [dbo].[spAnalytics_ETL_FinancialTransaction] 
+        ///CREATE PROCEDURE [dbo].[spAnalytics_ETL_FinancialTransaction]
+        ///AS
+        ///BEGIN
+        ///    DECLARE @MinDateTime DATETIME = DATEFROMPA [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709131136468_spAnalytics_ETL_FinancialTransaction {
+            get {
+                return ResourceManager.GetString("_201709131136468_spAnalytics_ETL_FinancialTransaction", resourceCulture);
+            }
+        }
     }
 }

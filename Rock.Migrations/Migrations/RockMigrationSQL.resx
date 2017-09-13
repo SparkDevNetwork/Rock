@@ -538,4 +538,10 @@
   <data name="_201709082257551_Communications2_AddCommunicationTemplates" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201709082257551_communications2_addcommunicationtemplates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201709131136468_spAnalytics_ETL_Attendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709131136468_spanalytics_etl_attendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201709131136468_spAnalytics_ETL_FinancialTransaction" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709131136468_spanalytics_etl_financialtransaction.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
