@@ -44,9 +44,6 @@ namespace Rock.Client
         public string CCEmails { get; set; }
 
         /// <summary />
-        public CommunicationTemplate CommunicationTemplate { get; set; }
-
-        /// <summary />
         public int? CommunicationTemplateId { get; set; }
 
         /// <summary />
@@ -171,7 +168,6 @@ namespace Rock.Client
             this.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
             this.BCCEmails = source.BCCEmails;
             this.CCEmails = source.CCEmails;
-            this.CommunicationTemplate = source.CommunicationTemplate;
             this.CommunicationTemplateId = source.CommunicationTemplateId;
             this.CommunicationType = source.CommunicationType;
             this.EnabledLavaCommands = source.EnabledLavaCommands;
@@ -221,6 +217,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<CommunicationAttachment> Attachments { get; set; }
+
+        /// <summary />
+        public CommunicationTemplate CommunicationTemplate { get; set; }
 
         /// <summary />
         public ICollection<CommunicationRecipient> Recipients { get; set; }

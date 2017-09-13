@@ -513,7 +513,8 @@ namespace Rock.Model
         /// <value>
         /// The communication template.
         /// </value>
-        public CommunicationTemplate CommunicationTemplate { get; set; }
+        [DataMember]
+        public virtual CommunicationTemplate CommunicationTemplate { get; set; }
 
         #endregion
 
