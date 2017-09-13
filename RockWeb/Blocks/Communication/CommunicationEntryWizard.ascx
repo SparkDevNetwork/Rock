@@ -138,7 +138,7 @@
 
                 <%-- Template Selection --%>
                 <asp:Panel ID="pnlTemplateSelection" CssClass="js-navigation-panel" runat="server" Visible="false">
-                    <h1 class="step-title">Email Template</h1>
+                    <h1 class="step-title">Communication Template</h1>
                     <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
                     <div class="row margin-t-lg template-selection">
                         <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
@@ -179,7 +179,7 @@
                             <%-- Put the email send test and preview button in an updatepanel to avoid flicker with the email editor --%>
                             <asp:UpdatePanel ID="upEmailSendTest" runat="server">
                                 <ContentTemplate>
-                                    <Rock:NotificationBox ID="mbEmailTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test Email has been sent." Visible="false" />
+                                    <Rock:NotificationBox ID="nbEmailTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test Email has been sent." Visible="false" Dismissable="true" />
                                     <a class="btn btn-sm btn-default js-email-sendtest" href="#">Send Test</a>
                                     <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click" />
                                     <div class="js-email-sendtest-inputs" style="display: none">
@@ -535,8 +535,8 @@
 					                </div>
 
                                     <div class="js-propertypanel-actions actions" style="display:none">
-                                        <a href="#" class="btn btn-primary" onclick="clearPropertyPane(event)">Complete</a>
-                                        <a href="#" class="btn btn-link" onclick="deleteCurrentComponent()">Delete</a>
+                                        <a href="#" class="btn btn-primary" onclick="clearPropertyPane(event); return false;">Complete</a>
+                                        <a href="#" class="btn btn-link" onclick="deleteCurrentComponent(); return false;">Delete</a>
                                     </div>
 				                </div>
 
@@ -605,7 +605,7 @@
                                 <Content>
                                     <div class="row">
                                         <div class="col-md-6">
-                                            ## TODO ## Options for what type of email client to emulate?
+                                            <!-- ## TODO ## Options for what type of email client to emulate? -->
                                         </div>
                                         <div class="col-md-6">
 
@@ -1085,6 +1085,35 @@
 			    Rock.controls.emailEditor.imageComponentHelper.handleImageUpdate(e, data);
 			}
 
+			// debouncing function from John Hann
+			// http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
+			var debounceLavaRender = function (func, threshold, execAsap)
+			{
+			    var timeout;
+
+			    return function debounced()
+			    {
+			        var obj = this, args = arguments;
+			        function delayed()
+			        {
+			            if (!execAsap)
+			                func.apply(obj, args);
+			            timeout = null;
+			        };
+
+			        if (timeout) {
+			            clearTimeout(timeout);
+			        }
+			        else if (execAsap)
+			            func.apply(obj, args);
+
+			        timeout = setTimeout(delayed, threshold || 250);
+			    };
+			}
+
+            // debounce Timeout for rendering SMS using Lava
+			var smsBubbleTextLavaTimeout;
+
 			function setSMSBubbleText()
 			{
 			    var updatedText = $('#<%=tbSMSTextMessage.ClientID %>').val();
@@ -1092,24 +1121,31 @@
 			    if (updatedText) {
 			        $('.js-sms-chatoutput').show();
 			        
+			        // only send to api/Lava/RenderTemplate if it has lava fields in it
 			        if (/.*\{.*\}.*/.test(updatedText))
 			        {
 			            // add lava that will assign the Person mergeField if there are merge fields in the text
-			            var lavaTemplate = '{% assign Person = ' + $('#<%=hfSMSSampleRecipientPersonId.ClientID%>').val() + ' | PersonById %}\r\n\r\n';
-                        lavaTemplate += updatedText;
+			            var additionalMergeObjects = '15|Person|' + $('#<%=hfSMSSampleRecipientPersonId.ClientID%>').val();
 
-			            $.post('<%=this.ResolveUrl("~/api/Lava/RenderTemplate")%>', lavaTemplate, function (data)
+			            if (smsBubbleTextLavaTimeout) {
+			                clearTimeout(smsBubbleTextLavaTimeout);
+			            }
+
+			            smsBubbleTextLavaTimeout = setTimeout(function ()
 			            {
-			                if (data.startsWith('Error resolving Lava merge fields:')) {
+			                $.post('<%=this.ResolveUrl("~/api/Lava/RenderTemplate")%>' + '?additionalMergeObjects=' + additionalMergeObjects, updatedText, function (data)
+			                {
+			                    if (data.startsWith('Error resolving Lava merge fields:')) {
+			                        $('.js-sms-chatoutput').html(updatedText);
+			                    }
+			                    else {
+			                        $('.js-sms-chatoutput').html(data);
+			                    }
+			                }).fail(function (a, b, c)
+			                {
 			                    $('.js-sms-chatoutput').html(updatedText);
-			                }
-			                else {
-			                    $('.js-sms-chatoutput').html(data);
-			                }
-			            }).fail(function (a, b, c)
-			            {
-			                $('.js-sms-chatoutput').html(updatedText);
-			            })
+			                })
+			            }, 100);
 			        }
 			        else {
 			            $('.js-sms-chatoutput').html(updatedText);

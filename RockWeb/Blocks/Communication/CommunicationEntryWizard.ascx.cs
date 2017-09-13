@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Communication
 
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
-    [BinaryFileTypeField( "Binary File Type", "The FileType to use for images that are added to the email using the image component", true, Rock.SystemGuid.BinaryFiletype.DEFAULT, order: 1 )]
+    [BinaryFileTypeField( "Binary File Type", "The FileType to use for images that are added to the email using the image component", true, Rock.SystemGuid.BinaryFiletype.COMMUNICATION_IMAGE, order: 1 )]
     [IntegerField( "Character Limit", "Set this to show a character limit countdown for SMS communications. Set to 0 to disable", false, 160, order: 2 )]
 
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 3 )]
@@ -154,12 +154,12 @@ namespace RockWeb.Blocks.Communication
 
             if ( navigationHistoryInstance == hfNavigationHistoryInstance.Value && navigationPanel != null )
             {
-                if (navigationPanel == pnlConfirmation )
+                if ( navigationPanel == pnlConfirmation )
                 {
                     // if navigating history is pnlConfirmation, the communication has already been submitted, so reload the page with the communicationId (if known)
                     Dictionary<string, string> qryParams = new Dictionary<string, string>();
                     if ( hfCommunicationId.Value != "0" )
-                    {     
+                    {
                         qryParams.Add( "CommunicationId", hfCommunicationId.Value );
                     }
                     this.NavigateToCurrentPageReference( qryParams );
@@ -1047,6 +1047,8 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void ShowEmailEditor()
         {
+            tbTestEmailAddress.Text = this.CurrentPerson.Email;
+
             ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
             pnlEmailEditor.Visible = true;
             SetNavigationHistory( pnlEmailEditor );
@@ -1091,7 +1093,136 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailSendTest_Click( object sender, EventArgs e )
         {
-            // upnlContent.Update();
+            SendTestCommunication( EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id, nbEmailTestResult);
+
+            // make sure the email designer keeps the html source that was there
+            ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
+
+            // upnlContent has UpdateMode = Conditional, so we have to update manually
+            upnlContent.Update();
+        }
+
+        /// <summary>
+        /// Sends the test communication.
+        /// </summary>
+        /// <param name="mediumEntityTypeId">The medium entity type identifier.</param>
+        private void SendTestCommunication( int mediumEntityTypeId, NotificationBox nbResult )
+        {
+            if ( !ValidateSendDateTime() )
+            {
+                return;
+            }
+
+            Rock.Model.Communication communication = UpdateCommunication( new RockContext() );
+
+            if ( communication != null )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    // Using a new context (so that changes in the UpdateCommunication() are not persisted )
+                    int? testPersonId = null;
+                    try
+                    {
+                        var testCommunication = communication.Clone( false );
+                        testCommunication.Id = 0;
+                        testCommunication.Guid = Guid.Empty;
+                        testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+                        testCommunication.ForeignGuid = null;
+                        testCommunication.ForeignId = null;
+                        testCommunication.ForeignKey = null;
+
+                        testCommunication.FutureSendDateTime = null;
+                        testCommunication.Status = CommunicationStatus.Approved;
+                        testCommunication.ReviewedDateTime = RockDateTime.Now;
+                        testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
+
+                        // for the test email, just use the current person as the recipient, but copy/paste the AdditionalMergeValuesJson to our test recipient so it has the same as the real recipients
+                        var testRecipient = new CommunicationRecipient();
+                        if ( communication.GetRecipientCount( rockContext ) > 0 )
+                        {
+                            var recipient = communication.GetRecipientsQry( rockContext ).FirstOrDefault();
+                            testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
+                        }
+
+                        testRecipient.Status = CommunicationRecipientStatus.Pending;
+                        testRecipient.PersonAliasId = CurrentPersonAliasId.Value;
+
+                        var testPerson = CurrentPerson.Clone( false );
+                        testPerson.Id = 0;
+                        testPerson.Guid = Guid.NewGuid();
+                        if ( mediumEntityTypeId == EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id )
+                        {
+                            testPerson.Email = tbTestEmailAddress.Text;
+                        }
+                        else if ( mediumEntityTypeId == EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id )
+                        {
+                            testPerson.PhoneNumbers = new List<Rock.Model.PhoneNumber>();
+                            testPerson.PhoneNumbers.Add( new PhoneNumber { IsMessagingEnabled = true, Number = tbTestSMSNumber.Text } );
+                        }
+                        testPerson.ForeignGuid = null;
+                        testPerson.ForeignId = null;
+                        testPerson.ForeignKey = null;
+                        var personService = new PersonService( rockContext );
+                        personService.Add( testPerson );
+                        rockContext.SaveChanges();
+                        testPersonId = testPerson.Id;
+                        testPerson = personService.Get( testPersonId.Value );
+                        testRecipient.PersonAliasId = testPerson.PrimaryAliasId.Value;
+
+                        testRecipient.MediumEntityTypeId = mediumEntityTypeId;
+
+                        testCommunication.Recipients.Add( testRecipient );
+
+                        var communicationService = new CommunicationService( rockContext );
+                        communicationService.Add( testCommunication );
+                        rockContext.SaveChanges();
+
+                        foreach ( var medium in testCommunication.Mediums )
+                        {
+                            medium.Send( testCommunication );
+                        }
+
+                        testRecipient = new CommunicationRecipientService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( r => r.CommunicationId == testCommunication.Id )
+                            .FirstOrDefault();
+
+                        if ( testRecipient != null && testRecipient.Status == CommunicationRecipientStatus.Failed && testRecipient.PersonAlias != null && testRecipient.PersonAlias.Person != null )
+                        {
+                            nbResult.NotificationBoxType = NotificationBoxType.Danger;
+                            nbResult.Text = string.Format( "Test communication to <strong>{0}</strong> failed: {1}.", testRecipient.PersonAlias.Person.FullName, testRecipient.StatusNote );
+                        }
+                        else
+                        {
+                            nbResult.NotificationBoxType = NotificationBoxType.Success;
+                            nbResult.Text = "Test communication has been sent.";
+                        }
+
+                        nbResult.Visible = true;
+
+                        communicationService.Delete( testCommunication );
+                        rockContext.SaveChanges();
+                    }
+                    finally
+                    {
+                        // make sure we delete the Person record we created to send the test email
+                        using ( var deleteRockContext = new RockContext() )
+                        {
+                            if ( testPersonId.HasValue )
+                            {
+                                var personToDeleteService = new PersonService( deleteRockContext );
+                                var personAliasToDeleteService = new PersonAliasService( deleteRockContext );
+                                var personToDelete = personToDeleteService.Get( testPersonId.Value );
+                                personAliasToDeleteService.DeleteRange( personToDelete.Aliases );
+                                personToDelete.Aliases = null;
+                                personToDeleteService.Delete( personToDelete );
+                                deleteRockContext.SaveChanges();
+                            }
+                        }
+                    }
+                    
+                }
+            }
         }
 
         /// <summary>
@@ -1348,11 +1479,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSMSSendTest_Click( object sender, EventArgs e )
         {
-            // TODO
-
-            nbSMSTestResult.Text = string.Format( "Test SMS has been sent to {0}.", tbTestSMSNumber.Text );
-            nbSMSTestResult.Dismissable = true;
-            nbSMSTestResult.Visible = true;
+            SendTestCommunication( EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id, nbSMSTestResult );
         }
 
         #endregion Mobile Text Editor
