@@ -149,7 +149,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             RockCheckBox cbUseAnalytics = new RockCheckBox();
             cbUseAnalytics.ID = parentControl.ID + "_cbUseAnalytics";
-            cbUseAnalytics.Label = "Use Analytics Data";
+            cbUseAnalytics.Label = "Use Analytics Models";
             cbUseAnalytics.CssClass = "js-use-analytics";
             cbUseAnalytics.Help = "Using Analytics Data is MUCH faster than querying real-time data, but it may not include data that has been added or updated in the last 24 hours.";
             parentControl.Controls.Add( cbUseAnalytics );

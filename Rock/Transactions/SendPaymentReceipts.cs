@@ -129,12 +129,9 @@ namespace Rock.Transactions
                             mergeFields.Add( "TransactionEntity", transactionEntityList.First() );
                         }
 
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-
-                        var recipients = new List<RecipientData>();
-                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
-
-                        Email.Send( SystemEmailGuid, recipients, appRoot );
+                        var emailMessage = new RockEmailMessage( SystemEmailGuid );
+                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                        emailMessage.Send();
                     }
                 }
             }

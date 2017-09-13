@@ -227,5 +227,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
 
+        /// <summary>
+        /// The guid for the Test Financial Gateway entity type
+        /// </summary>
+        public const string FINANCIAL_GATEWAY_TEST_GATEWAY = "C22B0247-7C9F-411B-A1F5-0051FCBAC199";
     }
 }

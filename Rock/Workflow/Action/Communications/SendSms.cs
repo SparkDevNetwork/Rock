@@ -207,35 +207,11 @@ namespace Rock.Workflow.Action
             // Send the message
             if ( recipients.Any() && !string.IsNullOrWhiteSpace( message ) )
             {
-                var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid(), rockContext );
-                if ( mediumEntity != null )
-                {
-                    var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                    if ( medium != null && medium.IsActive )
-                    {
-                        var transport = medium.Transport;
-                        if ( transport != null && transport.IsActive )
-                        {
-                            var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-
-                            foreach ( var recipient in recipients )
-                            {
-                                var recipientMergeFields = new Dictionary<string, object>( mergeFields );
-                                foreach ( var mergeField in recipient.MergeFields )
-                                {
-                                    recipientMergeFields.Add( mergeField.Key, mergeField.Value );
-                                }
-                                var mediumData = new Dictionary<string, string>();
-                                mediumData.Add( "FromValue", fromId.Value.ToString() );
-                                mediumData.Add( "Message", message.ResolveMergeFields( recipientMergeFields ) );
-
-                                var number = new List<string> { recipient.To };
-
-                                transport.Send( mediumData, number, appRoot, string.Empty );
-                            }
-                        }
-                    }
-                }
+                var smsMessage = new RockSMSMessage();
+                smsMessage.SetRecipients( recipients );
+                smsMessage.FromNumber = DefinedValueCache.Read( fromId.Value );
+                smsMessage.Message = message;
+                smsMessage.Send();
             }
 
             return true;

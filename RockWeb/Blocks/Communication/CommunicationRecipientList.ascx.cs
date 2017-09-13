@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Communication
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Subject", tbSubject.Text );
-            rFilter.SaveUserPreference( "Medium", cpMedium.SelectedValue );
+            rFilter.SaveUserPreference( "Communication Type", ddlType.SelectedValue );
             rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             int personId = ppSender.PersonId ?? 0;
             rFilter.SaveUserPreference( "Created By", personId.ToString() );
@@ -129,12 +129,11 @@ namespace RockWeb.Blocks.Communication
         {
             switch ( e.Key )
             {
-                case "Medium":
+                case "Communication Type":
                     {
-                        var entity = EntityTypeCache.Read( e.Value.AsGuid() );
-                        if ( entity != null )
+                        if ( !string.IsNullOrWhiteSpace( e.Value ) )
                         {
-                            e.Value = entity.FriendlyName;
+                            e.Value = ( (CommunicationType)System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
                         }
 
                         break;
@@ -236,12 +235,8 @@ namespace RockWeb.Blocks.Communication
         {
             tbSubject.Text = rFilter.GetUserPreference( "Subject" );
 
-            if ( cpMedium.Items[0].Value != string.Empty )
-            {
-                cpMedium.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-            }
-
-            cpMedium.SelectedValue = rFilter.GetUserPreference( "Medium" );
+            ddlType.BindToEnum<CommunicationType>( true );
+            ddlType.SetValue( rFilter.GetUserPreference( "Communication Type" ) );
 
             ddlStatus.BindToEnum<CommunicationStatus>( true, new CommunicationStatus[] { CommunicationStatus.Transient } );
             ddlStatus.SelectedValue = rFilter.GetUserPreference( "Status" );
@@ -285,10 +280,10 @@ namespace RockWeb.Blocks.Communication
                 qryCommunications = qryCommunications.Where( c => c.Subject.Contains( subject ) );
             }
 
-            Guid? entityTypeGuid = cpMedium.SelectedValue.AsGuidOrNull();
-            if ( entityTypeGuid.HasValue )
+            var communicationType = ddlType.SelectedValueAsEnumOrNull<CommunicationType>();
+            if ( communicationType != null )
             {
-                qryCommunications = qryCommunications.Where( c => c.MediumEntityType != null && c.MediumEntityType.Guid.Equals( entityTypeGuid.Value ) );
+                qryCommunications = qryCommunications.Where( c => c.CommunicationType == communicationType );
             }
 
             var communicationStatus = ddlStatus.SelectedValue.ConvertToEnumOrNull<CommunicationStatus>();
@@ -321,7 +316,10 @@ namespace RockWeb.Blocks.Communication
             string content = tbContent.Text;
             if ( !string.IsNullOrWhiteSpace( content ) )
             {
-                qryCommunications = qryCommunications.Where( c => c.MediumDataJson.Contains( content ) );
+                qryCommunications = qryCommunications.Where( c =>
+                    c.Message.Contains( content ) ||
+                    c.SMSMessage.Contains( content ) ||
+                    c.PushMessage.Contains( content ) );
             }
 
             var sortProperty = gCommunication.SortProperty;
@@ -335,7 +333,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             gCommunication.EntityTypeId = EntityTypeCache.Read<Rock.Model.Communication>().Id;
-            gCommunication.SetLinqDataSource( qryCommunications.Include(a => a.MediumEntityType).AsNoTracking() );
+            gCommunication.SetLinqDataSource( qryCommunications.AsNoTracking() );
             gCommunication.DataBind();
         }
 

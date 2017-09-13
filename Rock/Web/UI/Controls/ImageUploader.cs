@@ -387,7 +387,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the done function client script.
+        /// The optional javascript to run in the image uploader's doneFunction
         /// </summary>
         /// <value>
         /// The done function client script.
@@ -408,6 +408,31 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["DoneFunctionClientScript"] = value;
+            }
+        }
+
+        /// <summary>
+        /// The optional javascript to run when the image is removed
+        /// </summary>
+        /// <value>
+        /// The delete function client script.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The optional javascript to run when the image is removed" )
+        ]
+        public string DeleteFunctionClientScript
+        {
+            get
+            {
+                return ViewState["DeleteFunctionClientScript"] as string;
+            }
+
+            set
+            {
+                ViewState["DeleteFunctionClientScript"] = value;
             }
         }
 
@@ -433,6 +458,31 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["ThumbnailWidth"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the thumbnail width.
+        /// </summary>
+        /// <value>
+        /// The width of the thumbnail.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "Determines if the image should be stored with the 'Temporary' flag." )
+        ]
+        public bool UploadAsTemporary
+        {
+            get
+            {
+                return ViewState["UploadAsTemporary"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["UploadAsTemporary"] = value;
             }
         }
 
@@ -648,7 +698,11 @@ Rock.controls.imageUploader.initialize({{
         {10}
     }},
     postbackRemovedScript: '{12}',
-    maxUploadBytes: {13}
+    maxUploadBytes: {13},
+    isTemporary: '{14}',
+    deleteFunction: function(e, data) {{
+        {15}
+    }}
 }});",
                 _fileUpload.ClientID, // {0}
                 this.BinaryFileId, // {1}
@@ -663,7 +717,9 @@ Rock.controls.imageUploader.initialize({{
                 this.DoneFunctionClientScript, // {10}
                 this.NoPictureUrl, // {11}
                 postBackRemovedScript, // {12}
-                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" // {13} 
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null", // {13} 
+                this.UploadAsTemporary ? "T" : "F", // {14}
+                this.DeleteFunctionClientScript // {15}
                 ); 
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ClientID, script, true );
         }

@@ -21,3 +21,6 @@ _Provide us some screenshots if your pull request either alters existing UI or p
 
 # Documentation
 _If your change effects the UI or needs to be documented in one of the existing [user guides](http://www.rockrms.com/Learn/Documentation), please provide the brief write-up here:_
+
+# Migrations
+Should your pull request require a migration, please exclude the migration from the Rock.Migration project, but submit it in your pull request. Please add a note to your pull request that provides a heads up that a migration file is present.

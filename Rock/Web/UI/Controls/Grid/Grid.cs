@@ -757,15 +757,20 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-
+            var divClasses = new List<string>();
             if ( this.EnableResponsiveTable )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
+                divClasses.Add( "table-responsive" );
             }
 
             if ( DisplayType == GridDisplayType.Light )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-no-border" );
+                divClasses.Add( "table-no-border" );
+            }
+
+            if ( divClasses.Any() )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, divClasses.AsDelimited( " " ) );
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1310,7 +1315,7 @@ namespace Rock.Web.UI.Controls
 
                     if ( rockPage.Request != null && rockPage.Request.Url != null )
                     {
-                        communication.MediumData.AddOrReplace( "UrlReferrer", rockPage.Request.Url.AbsoluteUri );
+                        communication.UrlReferrer = rockPage.Request.Url.AbsoluteUri;
                     }
 
                     communicationService.Add( communication );
@@ -1336,18 +1341,24 @@ namespace Rock.Web.UI.Controls
                         chunkedPersonIds = personIds.Skip( skipCount ).Take( 1000 );
                     }
 
+                    // NOTE: Set CreatedDateTime, ModifiedDateTime, etc manually set we are using BulkInsert
+                    var currentDateTime = RockDateTime.Now;
+                    var currentPersonAliasId = rockPage.CurrentPersonAliasId;
+
                     var communicationRecipientList = primaryAliasList.Select( a => new Rock.Model.CommunicationRecipient
                     {
                         CommunicationId = communication.Id,
                         PersonAliasId = a.Id,
-                        AdditionalMergeValues = recipients[a.PersonId]
-                    } );
+                        AdditionalMergeValues = recipients[a.PersonId],
+                        CreatedByPersonAliasId = currentPersonAliasId,
+                        ModifiedByPersonAliasId = currentPersonAliasId,
+                        CreatedDateTime = currentDateTime,
+                        ModifiedDateTime = currentDateTime
+                    } ).ToList();
 
+                    // BulkInsert to quickly insert the CommunicationRecipient records. Note: This is much faster, but will bypass EF and Rock processing.
                     var communicationRecipientRockContext = new RockContext();
-
-                    var communicationRecipientService = new Rock.Model.CommunicationRecipientService( communicationRecipientRockContext );
-                    communicationRecipientService.AddRange( communicationRecipientList );
-                    communicationRecipientRockContext.SaveChanges();
+                    communicationRecipientRockContext.BulkInsert( communicationRecipientList );
 
                     // Get the URL to communication page
                     string url = CommunicationPageRoute;
@@ -2345,6 +2356,7 @@ namespace Rock.Web.UI.Controls
                 var entitySet = new Rock.Model.EntitySet();
                 entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read<Rock.Model.Person>().Id;
                 entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+                List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
 
                 foreach ( var key in keys )
                 {
@@ -2352,7 +2364,7 @@ namespace Rock.Web.UI.Controls
                     {
                         var item = new Rock.Model.EntitySetItem();
                         item.EntityId = ( int ) key.Key;
-                        entitySet.Items.Add( item );
+                        entitySetItems.Add( item );
                     }
                     catch
                     {
@@ -2360,12 +2372,19 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                if ( entitySet.Items.Any() )
+                if ( entitySetItems.Any() )
                 {
                     var rockContext = new RockContext();
                     var service = new Rock.Model.EntitySetService( rockContext );
                     service.Add( entitySet );
                     rockContext.SaveChanges();
+                    entitySetItems.ForEach( a =>
+                    {
+                        a.EntitySetId = entitySet.Id;
+                    } );
+
+                    rockContext.BulkInsert( entitySetItems );
+
                     return entitySet.Id;
                 }
             }
@@ -2464,6 +2483,7 @@ namespace Rock.Web.UI.Controls
             DataColumn dataKeyColumn = this.DataSourceAsDataTable.Columns.OfType<DataColumn>().FirstOrDefault( a => a.ColumnName == dataKeyField );
 
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+            List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
 
             int itemOrder = 0;
             foreach ( DataRowView row in this.DataSourceAsDataTable.DefaultView )
@@ -2490,7 +2510,7 @@ namespace Rock.Web.UI.Controls
                         item.AdditionalMergeValues.Add( col.ColumnName, row[col.ColumnName] );
                     }
 
-                    entitySet.Items.Add( item );
+                    entitySetItems.Add( item );
                 }
                 catch
                 {
@@ -2498,12 +2518,20 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            if ( entitySet.Items.Any() )
+            if ( entitySetItems.Any() )
             {
                 var rockContext = new RockContext();
                 var service = new Rock.Model.EntitySetService( rockContext );
                 service.Add( entitySet );
                 rockContext.SaveChanges();
+
+                entitySetItems.ForEach( a =>
+                {
+                    a.EntitySetId = entitySet.Id;
+                } );
+
+                rockContext.BulkInsert( entitySetItems );
+
                 return entitySet.Id;
             }
 

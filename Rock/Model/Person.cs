@@ -387,6 +387,15 @@ namespace Rock.Model
         public EmailPreference EmailPreference { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication preference.
+        /// </summary>
+        /// <value>
+        /// The communication preference.
+        /// </value>
+        [DataMember]
+        public CommunicationType CommunicationPreference { get; set; }
+
+        /// <summary>
         /// Gets or sets notes about why a person profile needs to be reviewed
         /// </summary>
         /// <value>
@@ -457,6 +466,7 @@ namespace Rock.Model
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
             _aliases = new Collection<PersonAlias>();
+            CommunicationPreference = CommunicationType.Email;
         }
 
         #endregion
@@ -1571,6 +1581,12 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
+            if ( entry.State == EntityState.Deleted )
+            {
+                // If PersonRecord is getting deleted, don't do any of the presavechanges
+                return;
+            }
+
             var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
             var deceased = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
 

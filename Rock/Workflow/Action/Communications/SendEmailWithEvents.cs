@@ -255,7 +255,8 @@ namespace Rock.Workflow.Action
             string body = GetAttributeValue( action, "Body" );
             bool createCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
 
-            string from = string.Empty;
+            string fromEmail = string.Empty;
+            string fromName = string.Empty;
             Guid? fromGuid = fromValue.AsGuidOrNull();
             if ( fromGuid.HasValue )
             {
@@ -276,20 +277,21 @@ namespace Rock.Workflow.Action
                                     .FirstOrDefault();
                                 if ( person != null && !string.IsNullOrWhiteSpace( person.Email ) )
                                 {
-                                    from = string.Format("{0} <{1}>", person.FullName, person.Email);
+                                    fromEmail = person.Email;
+                                    fromName = person.FullName;
                                 }
                             }
                         }
                         else
                         {
-                            from = fromAttributeValue;
+                            fromEmail = fromAttributeValue;
                         }
                     }
                 }
             }
             else
             {
-                from = fromValue;
+                fromEmail = fromValue;
             }
 
             var metaData = new Dictionary<string, string>();
@@ -308,7 +310,7 @@ namespace Rock.Workflow.Action
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    Send( toValue, from, subject, body, mergeFields, rockContext, createCommunicationRecord, metaData );
+                                    Send( toValue, fromEmail, fromName, subject, body, mergeFields, rockContext, createCommunicationRecord, metaData );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -340,7 +342,7 @@ namespace Rock.Workflow.Action
                                         {
                                             var personDict = new Dictionary<string, object>( mergeFields );
                                             personDict.Add( "Person", person );
-                                            Send( person.Email, from, subject, body, personDict, rockContext, createCommunicationRecord, metaData );
+                                            Send( person.Email, fromEmail, fromName, subject, body, personDict, rockContext, createCommunicationRecord, metaData );
                                         }
                                     }
                                     break;
@@ -351,42 +353,25 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                Send( to.ResolveMergeFields( mergeFields ), from, subject, body, mergeFields, rockContext, createCommunicationRecord, metaData );
+                Send( to.ResolveMergeFields( mergeFields ), fromEmail, fromName, subject, body, mergeFields, rockContext, createCommunicationRecord, metaData );
             }
         }
 
-        private void Send( string recipients, string from, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext, bool createCommunicationRecord,
+        private void Send( string recipients, string fromEmail, string fromName, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext, bool createCommunicationRecord,
             Dictionary<string, string> metaData )
         {
-            var recipientList = recipients.SplitDelimitedValues().ToList();
-             
-            var mediumData = new Dictionary<string, string>();
-            mediumData.Add( "From", from.ResolveMergeFields( mergeFields ) );
-            mediumData.Add( "Subject", subject.ResolveMergeFields( mergeFields ) );
-            mediumData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body.ResolveMergeFields( mergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
-
-            var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), rockContext );
-            if ( mediumEntity != null )
+            var emailMessage = new RockEmailMessage();
+            foreach ( string recipient in recipients.SplitDelimitedValues().ToList() )
             {
-                var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                if ( medium != null && medium.IsActive )
-                {
-                    var transport = medium.Transport;
-                    if ( transport != null && transport.IsActive )
-                    {
-                        var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-
-                        if ( transport is Rock.Communication.Transport.SMTPComponent )
-                        {
-                            ( (Rock.Communication.Transport.SMTPComponent)transport ).Send( mediumData, recipientList, appRoot, string.Empty, createCommunicationRecord, metaData );
-                        }
-                        else
-                        {
-                            transport.Send( mediumData, recipientList, appRoot, string.Empty );
-                        }
-                    }
-                }
+                emailMessage.AddRecipient( new RecipientData( recipient, mergeFields ) );
             }
+            emailMessage.FromEmail = fromEmail;
+            emailMessage.FromName = fromName;
+            emailMessage.Subject = subject;
+            emailMessage.Message = body;
+            emailMessage.CreateCommunicationRecord = createCommunicationRecord;
+            emailMessage.MessageMetaData = metaData;
+            emailMessage.Send();
         }
 
         /// <summary>

@@ -317,9 +317,13 @@
     <Compile Include="Migrations\201708162351472_ReportQueryHints.Designer.cs">
       <DependentUpon>201708162351472_ReportQueryHints.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201709011804477_ContentChannelItemCategoryTags.cs" />
-    <Compile Include="Migrations\201709011804477_ContentChannelItemCategoryTags.Designer.cs">
-      <DependentUpon>201709011804477_ContentChannelItemCategoryTags.cs</DependentUpon>
+    <Compile Include="Migrations\201709082257551_Communications2.cs" />
+    <Compile Include="Migrations\201709082257551_Communications2.Designer.cs">
+      <DependentUpon>201709082257551_Communications2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201709131136468_SafeSenderUpdate.cs" />
+    <Compile Include="Migrations\201709131136468_SafeSenderUpdate.Designer.cs">
+      <DependentUpon>201709131136468_SafeSenderUpdate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -2708,8 +2712,11 @@
     <EmbeddedResource Include="Migrations\201708162351472_ReportQueryHints.resx">
       <DependentUpon>201708162351472_ReportQueryHints.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201709011804477_ContentChannelItemCategoryTags.resx">
-      <DependentUpon>201709011804477_ContentChannelItemCategoryTags.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201709082257551_Communications2.resx">
+      <DependentUpon>201709082257551_Communications2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201709131136468_SafeSenderUpdate.resx">
+      <DependentUpon>201709131136468_SafeSenderUpdate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -4524,6 +4531,15 @@
     </Content>
     <Content Include="Migrations\201708162105164_AnalyticsPerformance_TransactionData.sql">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201709082257551_Communications2_AddCommunicationTemplates.sql">
+      <DependentUpon>201709082257551_Communications2.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201709131136468_spAnalytics_ETL_Attendance.sql">
+      <DependentUpon>201709131136468_SafeSenderUpdate.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201709131136468_spAnalytics_ETL_FinancialTransaction.sql">
+      <DependentUpon>201709131136468_SafeSenderUpdate.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />

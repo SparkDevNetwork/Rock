@@ -415,6 +415,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
                     person.EmailPreference = newEmailPreference;
 
+                    var newCommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
+                    History.EvaluateChange( changes, "Communication Preference", person.CommunicationPreference, newCommunicationPreference );
+                    person.CommunicationPreference = newCommunicationPreference;
+
                     int? newGivingGroupId = ddlGivingGroup.SelectedValueAsId();
                     if ( person.GivingGroupId != newGivingGroupId )
                     {
@@ -692,6 +696,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbEmail.Text = Person.Email;
             cbIsEmailActive.Checked = Person.IsEmailActive;
             rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString( false );
+            rblCommunicationPreference.SetValue( Person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
 
             ddlRecordStatus.SetValue( Person.RecordStatusValueId );
             lRecordStatusReadOnly.Text = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValue.Value : string.Empty;

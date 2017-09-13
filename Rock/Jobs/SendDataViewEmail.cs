@@ -60,7 +60,7 @@ namespace Rock.Jobs
             var emailTemplateGuid = dataMap.GetString( "SystemEmail" ).AsGuidOrNull();
             var dataViewGuid = dataMap.GetString( "DataView" ).AsGuidOrNull();
 
-            if( dataViewGuid != null && emailTemplateGuid != null )
+            if( dataViewGuid != null && emailTemplateGuid.HasValue )
             {
                 var rockContext = new RockContext();
                 var dataView = new DataViewService( rockContext ).Get( (Guid)dataViewGuid );
@@ -108,8 +108,10 @@ namespace Rock.Jobs
                     }
                 }
 
-                var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-                Email.Send( (Guid)emailTemplateGuid, recipients, appRoot );
+                var emailMessage = new RockEmailMessage( emailTemplateGuid.Value );
+                emailMessage.SetRecipients( recipients );
+                emailMessage.Send();
+
                 context.Result = string.Format( "{0} emails sent", recipients.Count() );
             }
         }

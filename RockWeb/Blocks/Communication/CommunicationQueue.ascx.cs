@@ -69,18 +69,18 @@ namespace RockWeb.Blocks.Communication
             {
                 // Because the RockCheckBoxList does not handle postback event correctly, check to see if it was selected
                 // and update values manually.
-                if (Request.Form["__EVENTTARGET"] == cblMedium.UniqueID )
+                if (Request.Form["__EVENTTARGET"].StartsWith( cblType.UniqueID ) )
                 {
-                    for ( int i = 0; i < cblMedium.Items.Count; i++ )
+                    for ( int i = 0; i < cblType.Items.Count; i++ )
                     {
-                        string value = Request.Form[cblMedium.UniqueID + "$" + i.ToString()];
+                        string value = Request.Form[cblType.UniqueID + "$" + i.ToString()];
                         if ( value != null )
                         {
-                            cblMedium.Items[i].Selected = true;
+                            cblType.Items[i].Selected = true;
                         }
                         else
                         {
-                            cblMedium.Items[i].Selected = false;
+                            cblType.Items[i].Selected = false;
                         }
                     }
 
@@ -112,9 +112,9 @@ namespace RockWeb.Blocks.Communication
         {
             switch ( e.Key )
             {
-                case "Medium":
+                case "Communication Type":
                     {
-                        e.Value = ResolveValues( e.Value, cblMedium );
+                        e.Value = ResolveValues( e.Value, cblType );
                         break;
                     }
             }
@@ -149,27 +149,12 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void SetFilter()
         {
-            BindMediums();
-            string mediumValues = GetBlockUserPreference( "Medium" );
+            cblType.BindToEnum<CommunicationType>();
+            string typeValues = GetBlockUserPreference( "CommunicationType" );
 
-            cblMedium.SetValues( mediumValues.SplitDelimitedValues().AsIntegerList() );
+            cblType.SetValues( typeValues.SplitDelimitedValues().AsIntegerList() );
             cbPendingApproval.Checked = GetBlockUserPreference( "PendingApproval" ).AsBooleanOrNull() ?? false;
             cbFutureComm.Checked = GetBlockUserPreference( "FutureCommunication" ).AsBooleanOrNull() ?? false;
-        }
-
-        /// <summary>
-        /// Binds the mediums.
-        /// </summary>
-        private void BindMediums()
-        {
-            foreach ( var item in MediumContainer.Instance.Components.Values )
-            {
-                if ( item.Value.IsActive )
-                {
-                    var entityType = item.Value.EntityType;
-                    cblMedium.Items.Add( new ListItem( item.Metadata.ComponentName, entityType.Id.ToString() ) );
-                }
-            }
         }
 
         /// <summary>
@@ -187,19 +172,19 @@ namespace RockWeb.Blocks.Communication
             var communications = new CommunicationService( rockContext )
                 .GetQueued( expirationDays, delayMins, cbFutureComm.Checked, cbPendingApproval.Checked );
 
-            var mediumEntityTypeIds = cblMedium.SelectedValues.AsIntegerList();
-
-            if ( mediumEntityTypeIds.Any() )
+            var types = new List<CommunicationType>();
+            cblType.SelectedValues.ForEach( v => types.Add( v.ConvertToEnum<CommunicationType>() ) );
+            if ( types.Any() )
             {
-                communications = communications.Where( c => c.MediumEntityTypeId.HasValue && mediumEntityTypeIds.Contains( c.MediumEntityTypeId.Value ) );
+                communications = communications.Where( c => types.Contains( c.CommunicationType ) );
             }
 
             var queryable = communications
                 .Select( c => new
                 {
                     Id = c.Id,
-                    MediumName = c.MediumEntityTypeId.HasValue ? c.MediumEntityType.FriendlyName : null,
-                    Mediumlabel = c.MediumEntityTypeId.HasValue && c.MediumEntityType.FriendlyName == "SMS" ? "success" : "info",
+                    CommunicationType = c.CommunicationType,
+                    Mediumlabel = c.CommunicationType == CommunicationType.SMS ? "success" : "info",
                     Subject = c.Subject,
                     SendDateTime = c.FutureSendDateTime.HasValue && c.FutureSendDateTime > c.CreatedDateTime ? c.FutureSendDateTime : c.CreatedDateTime,
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
@@ -223,7 +208,7 @@ namespace RockWeb.Blocks.Communication
 
             SetBlockUserPreference( "FutureCommunication", cbFutureComm.Checked ? "True" : string.Empty );
             SetBlockUserPreference( "PendingApproval", cbPendingApproval.Checked ? "True" : string.Empty );
-            SetBlockUserPreference( "Medium", cblMedium.SelectedValues.AsDelimited( ";" ) );
+            SetBlockUserPreference( "CommunicationType", cblType.SelectedValues.AsDelimited( "," ) );
 
         }
 
