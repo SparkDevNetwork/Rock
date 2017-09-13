@@ -727,7 +727,7 @@ namespace RockWeb.Blocks.Communication
             if ( communication != null )
             {
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
-                lTitle.Text = ( communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
+                lTitle.Text = ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
                 var context = new RockContext();
                 var personalDeviceService = new PersonalDeviceService( context ).Queryable();
                 var recipientList = new CommunicationRecipientService( context )
