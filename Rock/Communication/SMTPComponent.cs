@@ -490,6 +490,7 @@ namespace Rock.Communication.Transport
 
                                     catch ( Exception ex )
                                     {
+                                        ExceptionLogService.LogException( ex );
                                         recipient.Status = CommunicationRecipientStatus.Failed;
                                         recipient.StatusNote = "Exception: " + ex.Message;
                                     }
