@@ -91,7 +91,6 @@ namespace Rock.Model
             target.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
             target.BCCEmails = source.BCCEmails;
             target.CCEmails = source.CCEmails;
-            target.CommunicationTemplate = source.CommunicationTemplate;
             target.CommunicationTemplateId = source.CommunicationTemplateId;
             target.CommunicationType = source.CommunicationType;
             target.EnabledLavaCommands = source.EnabledLavaCommands;
