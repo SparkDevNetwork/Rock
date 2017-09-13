@@ -476,6 +476,9 @@
     <Compile Include="Communication\Transport\Firebase.cs" />
     <Compile Include="Communication\Transport\SMTP.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
+    <Compile Include="Configuration\AttributeValueConfig.cs" />
+    <Compile Include="Configuration\AttributeValuesConfig.cs" />
+    <Compile Include="Configuration\RockConfig.cs" />
     <Compile Include="Constants\DisplayStrings.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\BoundFieldTypeAttribute.cs" />
