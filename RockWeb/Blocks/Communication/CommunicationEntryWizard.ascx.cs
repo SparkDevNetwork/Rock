@@ -162,6 +162,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         qryParams.Add( "CommunicationId", hfCommunicationId.Value );
                     }
+
                     this.NavigateToCurrentPageReference( qryParams );
                 }
 
@@ -291,20 +292,6 @@ namespace RockWeb.Blocks.Communication
 
             // Email Editor
             hfEmailEditorHtml.Value = communication.Message;
-
-            /** DEBUG **/
-            if ( ddlCommunicationGroupList.Items.Count > 1 )
-            {
-                ddlCommunicationGroupList.SelectedValue = ddlCommunicationGroupList.Items[1].Value;
-                ddlCommunicationGroupList_SelectedIndexChanged( null, null );
-            }
-
-            tbCommunicationName.Text = "DEBUG";
-            tbFromName.Text = "DEBUG";
-            tbEmailSubject.Text = "DEBUG";
-            ebFromAddress.Text = "DEBUG@debug.com";
-            dtpSendDateTime.SelectedDateTime = RockDateTime.Now;
-            /**********/
         }
 
         /// <summary>
@@ -850,6 +837,8 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
+            lTitle.Text = tbCommunicationName.Text.FormatAsHtmlTitle();
+
             // set the confirmation send datetime controls to what we pick here
             tglSendDateTimeConfirmation.Checked = tglSendDateTime.Checked;
             tglSendDateTimeConfirmation_CheckedChanged( null, null );
@@ -1093,7 +1082,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailSendTest_Click( object sender, EventArgs e )
         {
-            SendTestCommunication( EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id, nbEmailTestResult);
+            SendTestCommunication( EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id, nbEmailTestResult );
 
             // make sure the email designer keeps the html source that was there
             ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
@@ -1159,6 +1148,7 @@ namespace RockWeb.Blocks.Communication
                             testPerson.PhoneNumbers = new List<Rock.Model.PhoneNumber>();
                             testPerson.PhoneNumbers.Add( new PhoneNumber { IsMessagingEnabled = true, Number = tbTestSMSNumber.Text } );
                         }
+
                         testPerson.ForeignGuid = null;
                         testPerson.ForeignId = null;
                         testPerson.ForeignKey = null;
@@ -1220,7 +1210,6 @@ namespace RockWeb.Blocks.Communication
                             }
                         }
                     }
-                    
                 }
             }
         }
@@ -1779,6 +1768,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 }
             }
 
+            communication.Name = tbCommunicationName.Text;
             communication.IsBulkCommunication = tglBulkCommunication.Checked;
             communication.CommunicationType = ( CommunicationType ) hfMediumType.Value.AsInteger();
             communication.ListGroupId = ddlCommunicationGroupList.SelectedValue.AsIntegerOrNull();
@@ -1892,16 +1882,6 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         }
 
         /// <summary>
-        /// Handles the Click event of the btnConfirmationCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnConfirmationCancel_Click( object sender, EventArgs e )
-        {
-            // TODO. What should this do?
-        }
-
-        /// <summary>
         /// Handles the CheckedChanged event of the tglSendDateTimeConfirmation control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1914,9 +1894,48 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
         #endregion
 
-        #region Methods
+        /// <summary>
+        /// Handles the Click event of the btnUseSimpleEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnUseSimpleEditor_Click( object sender, EventArgs e )
+        {
+            // Get the URL to communication page
+            string url;
 
-        #endregion
+            int communicationId = hfCommunicationId.Value.AsInteger();
 
+            var pageRef = this.RockPage.Site.CommunicationPageReference;
+            if ( pageRef.PageId > 0 )
+            {
+                if ( communicationId > 0 )
+                {
+                    pageRef.Parameters.AddOrReplace( "CommunicationId", communicationId.ToString() );
+                }
+
+                url = pageRef.BuildUrl();
+            }
+            else
+            {
+                if ( communicationId > 0 )
+                {
+                    url = "~/Communication/{0}";
+                }
+                else
+                {
+                    url = "~/Communication";
+                }
+            }
+
+
+            if ( url.Contains( "{0}" ) )
+            {
+                url = string.Format( url, communicationId );
+            }
+
+            Page.Response.Redirect( url, false );
+            Context.ApplicationInstance.CompleteRequest();
+        }
     }
 }
