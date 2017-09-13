@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class ContentChannelItemCategoryTags : Rock.Migrations.RockMigration
+    public partial class ContentChannelTags : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
