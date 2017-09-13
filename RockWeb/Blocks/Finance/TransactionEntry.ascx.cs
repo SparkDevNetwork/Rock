@@ -456,6 +456,13 @@ TransactionAccountDetails: [
                 return;
             }
 
+            var testGatewayGuid = Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY.AsGuid();
+            if ((_ccGatewayComponent != null && _ccGatewayComponent.TypeGuid == testGatewayGuid) ||
+                (_achGatewayComponent != null && _achGatewayComponent.TypeGuid== testGatewayGuid))
+            {
+                ShowMessage(NotificationBoxType.Warning, "Testing", "You are using the Test Financial Gateway. No actual amounts will be charged to your card or bank account.");
+            }
+
             // Check if this is a transfer and that the person is the authorized person on the transaction
             if ( !string.IsNullOrWhiteSpace( PageParameter( "transfer" ) ) && !string.IsNullOrWhiteSpace( PageParameter( "ScheduledTransactionId" ) ) )
             {
