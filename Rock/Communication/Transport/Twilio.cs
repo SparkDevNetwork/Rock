@@ -159,7 +159,7 @@ namespace Rock.Communication.Transport
                         var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
                         var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), communicationRockContext ).Id;
 
-                        string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
+                        string callbackUrl = publicAppRoot + "Webhooks/Twilio.ashx";
 
                         bool recipientFound = true;
                         while ( recipientFound )
