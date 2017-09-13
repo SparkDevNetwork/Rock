@@ -214,7 +214,7 @@ Rock.controls.tagList.initialize({{
                     string.IsNullOrWhiteSpace( EntityQualifierValue ) ? string.Empty : EntityQualifierValue,
                     ( !AllowNewTags ).ToString().ToLower(),
                     DelaySave.ToString().ToLower(),
-                    CategoryIds.Count > 0 ? string.Join( ",", CategoryIds ) : string.Empty );
+                    CategoryIds.AsDelimited( "," ) );
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "tag_picker_" + this.ID, script, true );
             }
         }

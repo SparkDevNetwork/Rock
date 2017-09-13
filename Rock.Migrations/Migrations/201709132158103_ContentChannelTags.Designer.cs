@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class ContentChannelItemCategoryTags : IMigrationMetadata
+    public sealed partial class ContentChannelTags : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(ContentChannelItemCategoryTags));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(ContentChannelTags));
         
         string IMigrationMetadata.Id
         {
-            get { return "201709011804477_ContentChannelItemCategoryTags"; }
+            get { return "201709132158103_ContentChannelTags"; }
         }
         
         string IMigrationMetadata.Source

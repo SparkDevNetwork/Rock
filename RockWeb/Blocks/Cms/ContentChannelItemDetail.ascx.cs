@@ -700,9 +700,9 @@ namespace RockWeb.Blocks.Cms
             taglTags.EntityTypeId = EntityTypeCache.Read( typeof( ContentChannelItem ) ).Id;
             taglTags.AllowNewTags = false;
             taglTags.DelaySave = true;
-            if ( contentItem.ContentChannel != null && !string.IsNullOrEmpty( contentItem.ContentChannel.ItemTagCategories ) )
+            if ( contentItem.ContentChannel != null && contentItem.ContentChannel.ItemTagCategories.IsNotNullOrWhitespace() )
             {
-                var categoryIds = contentItem.ContentChannel.ItemTagCategories.Split( ',' ).AsIntegerList();
+                var categoryIds = contentItem.ContentChannel.ItemTagCategories.SplitDelimitedValues().AsIntegerList();
                 var categoryGuids = new CategoryService( new RockContext() )
                                 .GetByIds( categoryIds )
                                 .Select( a => a.Guid )

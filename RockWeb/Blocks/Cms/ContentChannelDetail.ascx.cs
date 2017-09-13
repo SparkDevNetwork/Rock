@@ -324,7 +324,7 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.ItemUrl = tbItemUrl.Text;
                 contentChannel.TimeToLive = nbTimetoLive.Text.AsIntegerOrNull();
                 contentChannel.ItemUrl = tbContentChannelItemPublishingPoint.Text;
-                contentChannel.ItemTagCategories = cbEnableTag.Checked ? string.Join( ",", cpCategory.SelectedValues ) : string.Empty;
+                contentChannel.ItemTagCategories = cbEnableTag.Checked ? cpCategory.SelectedValues.ToList().AsDelimited( "," ) : string.Empty;
 
                 contentChannel.ChildContentChannels = new List<ContentChannel>();
                 contentChannel.ChildContentChannels.Clear();
@@ -744,13 +744,13 @@ namespace RockWeb.Blocks.Cms
                 cbChildItemsManuallyOrdered.Checked = contentChannel.ChildItemsManuallyOrdered;
                 cbEnableRss.Checked = contentChannel.EnableRss;
                 tbContentChannelItemPublishingPoint.Text = contentChannel.ItemUrl;
-                cbEnableTag.Checked = !string.IsNullOrEmpty( contentChannel.ItemTagCategories );
+                cbEnableTag.Checked = contentChannel.ItemTagCategories.IsNotNullOrWhitespace();
 
                 divRss.Attributes["style"] = cbEnableRss.Checked ? "display:block" : "display:none";
                 divTag.Attributes["style"] = cbEnableTag.Checked ? "display:block" : "display:none";
-                if ( !string.IsNullOrEmpty( contentChannel.ItemTagCategories ) )
+                if ( contentChannel.ItemTagCategories.IsNotNullOrWhitespace() )
                 {
-                    cpCategory.SetValues( contentChannel.ItemTagCategories.Split( ',' ).AsIntegerList() );
+                    cpCategory.SetValues( contentChannel.ItemTagCategories.SplitDelimitedValues().AsIntegerList() );
                 }
 
                 tbChannelUrl.Text = contentChannel.ChannelUrl;
