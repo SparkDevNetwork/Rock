@@ -11,7 +11,7 @@
                 <h1 class="panel-title"><i class="fa fa-comment"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
 
                 <div class="panel-labels">
-                    <div class="label label-default"><a href="#">Use Legacy Editor</a></div>
+                    <div class="label label-default"><asp:LinkButton ID="btnUseSimpleEditor" runat="server" Text="Use Simple Editor" OnClick="btnUseSimpleEditor_Click" /></div>
                 </div>
             </div>
             <div class="panel-body">
@@ -755,7 +755,6 @@
                     <div class="actions margin-b-lg">
                         <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-primary" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSend_Click" />
                         <asp:LinkButton ID="btnSaveAsDraft" runat="server" Text="Save as Draft" CssClass="btn btn-default" CausesValidation="true" ValidationGroup="vgConfirmation" OnClick="btnSaveAsDraft_Click" />
-                        <asp:LinkButton ID="btnConfirmationCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" ValidationGroup="vgConfirmation" OnClick="btnConfirmationCancel_Click" />
                     </div>
                     
                     <div class="actions">
