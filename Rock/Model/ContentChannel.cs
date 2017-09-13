@@ -170,6 +170,16 @@ namespace Rock.Model
         [DataMember]
         public bool IsIndexEnabled { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Content Channel Item Tag Categories.
+        /// </summary>
+        /// <value>
+        /// The Content Channel Item Tag Categories.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string ItemTagCategories { get; set; }
+
         #endregion
 
         #region Virtual Properties
