@@ -100,12 +100,12 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                         {
                             if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
                             {
-                                LoginUser( userName, redirectUrlSetting, true );
+                                CheckConfirmationAndLockedOut( userName, redirectUrlSetting, true );
                                 break;
                             }
                             else
                             {
-                                LoginUser( userName, returnUrl, true );
+                                CheckConfirmationAndLockedOut( userName, returnUrl, true );
                                 break;
                             }
                         }
@@ -175,42 +175,17 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             if ( Page.IsValid )
             {
                 var rockContext = new RockContext();
-                var userLoginService = new UserLoginService(rockContext);
+                var userLoginService = new UserLoginService( rockContext );
                 var userLogin = userLoginService.GetByUserName( tbUserName.Text );
-                if ( userLogin != null && userLogin.EntityType != null)
+                if ( userLogin != null && userLogin.EntityType != null )
                 {
-                    var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
-                    if (component != null && component.IsActive && !component.RequiresRemoteAuthentication)
+                    var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
+                    if ( component != null && component.IsActive && !component.RequiresRemoteAuthentication )
                     {
                         if ( component.Authenticate( userLogin, tbPassword.Text ) )
                         {
-                            if ( ( userLogin.IsConfirmed ?? true ) && !(userLogin.IsLockedOut ?? false ) )
-                            {
-                                string returnUrl = Request.QueryString["returnurl"];
-                                LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
-                            }
-                            else
-                            {
-                                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-
-                                if ( userLogin.IsLockedOut ?? false )
-                                {
-                                    lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
-
-                                    pnlLogin.Visible = false;
-                                    pnlLockedOut.Visible = true;
-                                }
-                                else
-                                {
-                                    SendConfirmation( userLogin );
-
-                                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
-
-                                    pnlLogin.Visible = false;
-                                    pnlConfirmation.Visible = true;
-                                }
-                            }
-
+                            CheckConfirmationAndLockedOut( userLogin.UserName, Request.QueryString["returnurl"],
+                                cbRememberMe.Checked, userLoginService );
                             return;
                         }
                     }
@@ -219,16 +194,58 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
 
             string helpUrl = string.Empty;
 
-            if (!string.IsNullOrWhiteSpace(GetAttributeValue("HelpPage")))
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "HelpPage" ) ) )
             {
-                helpUrl = LinkedPageUrl("HelpPage");
+                helpUrl = LinkedPageUrl( "HelpPage" );
             }
             else
             {
-                helpUrl = ResolveRockUrl("~/ForgotUserName");
+                helpUrl = ResolveRockUrl( "~/ForgotUserName" );
             }
-                
-            DisplayError( string.Format("Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{0}'>recover your account information</a>?", helpUrl) );
+
+			DisplayError( string.Format("Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{0}'>recover your account information</a>?", helpUrl) );
+		}
+
+        /// <summary>
+        /// Checks if a userLogin is locked out or needs confirmation, and handles those events
+        /// </summary>
+        /// <param name="userName">The username to use to lookup a login</param>
+        /// <param name="returnUrl">Where to redirect next</param>
+        /// <param name="rememberMe">True for external auth, the checkbox for internal auth</param>
+        /// <param name="userLoginService">The UserLoginService, should be null for external auth but we reuse a previous service for internal logins</param>
+        private void CheckConfirmationAndLockedOut( string userName, string returnUrl, bool rememberMe, UserLoginService userLoginService = null )
+        {
+            if ( userLoginService == null )
+            {
+                userLoginService = new UserLoginService( new RockContext() );
+            }
+
+            var userLogin = userLoginService.GetByUserName( userName );
+            if ( ( userLogin.IsConfirmed ?? true ) && !( userLogin.IsLockedOut ?? false ) )
+            {
+                LoginUser( userName, returnUrl, rememberMe );
+            }
+            else
+            {
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
+
+                if ( userLogin.IsLockedOut ?? false )
+                {
+                    lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
+
+                    pnlLogin.Visible = false;
+                    pnlLockedOut.Visible = true;
+                }
+                else
+                {
+                    SendConfirmation( userLogin );
+
+                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
+
+                    pnlLogin.Visible = false;
+                    pnlConfirmation.Visible = true;
+                }
+            }
         }
 
         /// <summary>
@@ -242,12 +259,12 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
         {
             if ( sender is LinkButton )
             {
-                LinkButton lb = (LinkButton)sender;
+                LinkButton lb = ( LinkButton ) sender;
 
                 foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
                 {
                     var component = serviceEntry.Value.Value;
-                    if (component.IsActive && component.RequiresRemoteAuthentication)
+                    if ( component.IsActive && component.RequiresRemoteAuthentication )
                     {
                         string loginTypeName = component.GetType().Name;
                         if ( lb.ID == "lb" + loginTypeName + "Login" )
@@ -261,7 +278,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                             }
                             else
                             {
-                                DisplayError( string.Format("ERROR: {0} does not have a remote login URL", loginTypeName ));
+                                DisplayError( string.Format( "ERROR: {0} does not have a remote login URL", loginTypeName ) );
                             }
                         }
                     }
@@ -281,7 +298,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "NewAccountPage" ) ) )
             {
                 var parms = new Dictionary<string, string>();
-                
+
                 if ( !string.IsNullOrWhiteSpace( returnUrl ) )
                 {
                     parms.Add( "returnurl", returnUrl );
@@ -296,7 +313,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                 if ( !string.IsNullOrWhiteSpace( returnUrl ) )
                 {
                     url += "?returnurl=" + returnUrl;
-                } 
+                }
 
                 Response.Redirect( url, false );
                 Context.ApplicationInstance.CompleteRequest();
@@ -348,17 +365,17 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
 
             UserLoginService.UpdateLastLogin( userName );
 
-            Rock.Security.Authorization.SetAuthCookie( userName, rememberMe, false );
+            Authorization.SetAuthCookie( userName, rememberMe, false );
 
-            if (!string.IsNullOrWhiteSpace(returnUrl))
+            if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
                 string redirectUrl = Server.UrlDecode( returnUrl );
                 Response.Redirect( redirectUrl );
                 Context.ApplicationInstance.CompleteRequest();
             }
-            else if (!string.IsNullOrWhiteSpace(redirectUrlSetting))
+            else if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
             {
-                Response.Redirect(redirectUrlSetting);
+                Response.Redirect( redirectUrlSetting );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else
