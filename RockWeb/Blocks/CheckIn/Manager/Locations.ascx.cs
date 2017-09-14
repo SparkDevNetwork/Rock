@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [LinkedPage( "Person Page", "The page used to display a selected person's details.", order: 2 )]
     [LinkedPage( "Area Select Page", "The page to redirect user to if area has not be configured or selected.", order: 3 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 4, defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
+    [BooleanField( "Search By Code", "A flag indicating if security codes should also be evaluated in the search box results.", order: 5 )]
     public partial class Locations : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -287,7 +288,107 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 // Do the person search
                 bool reversed = false;
-                var results = new PersonService( rockContext )
+                var results = new List<PersonResult>();
+
+                if ( GetAttributeValue( "SearchByCode" ).AsBoolean() )
+                {
+                    // Search by Code
+                    var activeSchedules = new List<int>();
+                    foreach ( var schedule in new ScheduleService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
+                    {
+                        if ( schedule.IsScheduleOrCheckInActive )
+                        {
+                            activeSchedules.Add( schedule.Id );
+                        }
+                    }
+
+                    var dayStart = RockDateTime.Today;
+                    var now = RockDateTime.Now;
+                    var attendees = new AttendanceService( rockContext )
+                        .Queryable( "Group,PersonAlias.Person,Schedule,AttendanceCode" )
+                        .AsNoTracking()
+                        .Where( a =>
+                            a.StartDateTime > dayStart &&
+                            a.StartDateTime < now &&
+                            !a.EndDateTime.HasValue &&
+                            a.LocationId.HasValue &&
+                            a.ScheduleId.HasValue &&
+                            activeSchedules.Contains( a.ScheduleId.Value ) &&
+                            a.AttendanceCode.Code.Equals( tbSearch.Text, StringComparison.CurrentCultureIgnoreCase ) )
+                        .ToList();
+
+                    int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
+
+                    var personResults = new List<PersonResult>();
+                    foreach ( var personId in attendees
+                        .OrderBy( a => a.PersonAlias.Person.NickName )
+                        .ThenBy( a => a.PersonAlias.Person.LastName )
+                        .Select( a => a.PersonAlias.PersonId )
+                        .Distinct() )
+                    {
+                        var matchingAttendees = attendees
+                            .Where( a => a.PersonAlias.PersonId == personId )
+                            .ToList();
+
+                        if ( !scheduleId.HasValue || matchingAttendees.Any( a => a.ScheduleId == scheduleId.Value && a.AttendanceCode != null ) )
+                        {
+                            if ( matchingAttendees.Any() )
+                            {
+                                var personList = new List<Rock.Model.Person>();
+                                var person = matchingAttendees.First().PersonAlias.Person;
+                                personList.Add( ( Rock.Model.Person ) person );
+
+                                results.AddRange(
+                                    personList.GroupJoin(
+                                        attendanceQry,
+                                        p => p.Id,
+                                        a => a.Id,
+                                        ( p, a ) => a
+                                            .Select( c =>
+                                                new PersonResult
+                                                {
+                                                    Id = p.Id,
+                                                    Guid = p.Guid,
+                                                    Name = ( reversed ?
+                                                        p.LastName + ", " + p.NickName :
+                                                        p.NickName + " " + p.LastName ),
+                                                    PhotoId = p.PhotoId,
+                                                    Age = p.Age.ToString() ?? "",
+                                                    LastCheckin = c.LastCheckin,
+                                                    CheckedInNow = currentAttendeeIds.Contains( p.Id ),
+                                                    ScheduleGroupNames = c.ScheduleGroupNames
+                                                } )
+                                            .DefaultIfEmpty(
+                                                new PersonResult
+                                                {
+                                                    Id = p.Id,
+                                                    Guid = p.Guid,
+                                                    Name = ( reversed ?
+                                                        p.LastName + ", " + p.NickName :
+                                                        p.NickName + " " + p.LastName ),
+                                                    PhotoId = p.PhotoId,
+                                                    Age = p.Age.ToString() ?? "",
+                                                    LastCheckin = null,
+                                                    CheckedInNow = false,
+                                                    ScheduleGroupNames = ""
+                                                } ) )
+                                                .SelectMany( a => a )
+                                    .Distinct()
+                                    .OrderByDescending( a => a.CheckedInNow )
+                                    .ThenByDescending( a => a.LastCheckin )
+                                    .ThenBy( a => a.Name )
+                                    .ToList()
+                                );
+                            }
+                        }
+                    }
+                }
+
+                // Search by Full name
+                results.AddRange(
+                    new PersonService( rockContext )
                     .GetByFullName( tbSearch.Text, false, false, false, out reversed )
                     .ToList()
                     .GroupJoin(
@@ -328,7 +429,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     .OrderByDescending( a => a.CheckedInNow )
                     .ThenByDescending( a => a.LastCheckin )
                     .ThenBy( a => a.Name )
-                    .ToList();
+                    .ToList()
+                );
 
                 pnlNavHeading.Attributes["onClick"] = upnlContent.GetPostBackEventReference( CurrentNavPath );
                 lNavHeading.Text = "Back";
