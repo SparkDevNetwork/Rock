@@ -220,7 +220,7 @@
         <script src="<%= RockPage.ResolveRockUrl( "~/Plugins/church_ccv/Finance/scripts/main.js", true ) %>"></script>
         <script src="<%= RockPage.ResolveRockUrl( "~/Plugins/church_ccv/Finance/scripts/location-detection.js", true ) %>"></script>
 
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCj2sJQbEBvz626mHM3dMHoO2H6HrWP6_M&libraries=places&callback=initAutocomplete" async defer></script>
+        <script src="<%=this.GetGoogleMapsUrl( ) %>" async defer></script>
 
         <script>
             Sys.Application.add_load(function() {
