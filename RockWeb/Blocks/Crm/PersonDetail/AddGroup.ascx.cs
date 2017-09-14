@@ -654,6 +654,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         contactInfoRow.CellPhoneNumber = PhoneNumber.FormattedNumber( cellPhoneNumber.CountryCode, cellPhoneNumber.Number );
                         contactInfoRow.CellPhoneCountryCode = cellPhoneNumber.CountryCode;
+                        contactInfoRow.IsMessagingEnabled = cellPhoneNumber.IsMessagingEnabled;
                     }
                     else
                     {
