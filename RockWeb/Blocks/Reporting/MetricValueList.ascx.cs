@@ -581,6 +581,9 @@ namespace RockWeb.Blocks.Reporting
             if ( metricId > 0 )
             {
                 var metric = new MetricService( new RockContext() ).Get( metricId );
+
+                this.Visible = UserCanEdit || metric == null || metric.IsAuthorized( Authorization.VIEW, CurrentPerson );
+
                 if ( UserCanEdit || ( metric != null && metric.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
                 {
                     // Block Security and special attributes (RockPage takes care of View)
