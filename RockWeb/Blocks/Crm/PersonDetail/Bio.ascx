@@ -23,6 +23,7 @@
                         <ul class="dropdown-menu dropdown-menu-right">
                             <asp:Literal ID="lActions" runat="server" />
                             <li><asp:LinkButton ID="lbImpersonate" runat="server" Visible="false" OnClick="lbImpersonate_Click"><i class='fa-fw fa fa-unlock'></i>&nbsp;Impersonate</asp:LinkButton></li>
+                            <li><asp:HyperLink ID="hlVCard" runat="server"><i class='fa fa-address-card'></i>&nbsp;Download vCard</asp:HyperLink></li>
                         </ul>
                     </li>
                 </ul>
@@ -39,7 +40,7 @@
                     <ul class="social-icons list-unstyled margin-t-sm">
                         <asp:Repeater ID="rptSocial" runat="server">
                             <ItemTemplate>
-                                <li class='icon icon-<%# Eval("name").ToString().ToLower() %>'><a href='<%# Eval("url") %>' target="_blank"><i class='<%# Eval("icon") %>'></i></a></li>
+                                <li class='icon icon-<%# Eval("Name").ToString().ToLower() %>'><a href='<%# Eval("Url") %>' target="_blank"><i class='<%# Eval("IconCssClass") %>'></i></a></li>
                             </ItemTemplate>
                         </asp:Repeater>
                     </ul>

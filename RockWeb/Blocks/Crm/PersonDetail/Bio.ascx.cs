@@ -162,6 +162,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
                     }
 
+                    hlVCard.NavigateUrl = ResolveRockUrl( string.Format( "~/GetVCard.ashx?Person={0}", Person.Id ) );
+
                     var socialCategoryGuid = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL.AsGuid();
                     if ( !socialCategoryGuid.IsEmpty() )
                     {
