@@ -58,67 +58,33 @@
                         </Rock:Grid>
                     </div>
                 </div>
-                <h3>Most Popular Links</h3>
-                <table class="grid-table table table-bordered table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>Link</th>
-                            <th>Uniques</th>
-                            <th>CTR</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <p>http://mychurch.com/this/is/a/test</p>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" aria-valuenow="100"
-                                        aria-valuemin="0" aria-valuemax="100" style="width: 100%">
-                                        <span class="sr-only">100%</span>
-                                    </div>
-                                </div>
-                            </td>
 
-                            <td>1985</td>
-                            <td>20.7</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <p>http://mychurch.com/this/is/a/test2</p>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" aria-valuenow="70"
-                                        aria-valuemin="0" aria-valuemax="100" style="width: 70%">
-                                        <span class="sr-only">70%</span>
-                                    </div>
+                <asp:Panel ID="pnlMostPopularLinks" runat="server">
+                    <h3>Most Popular Links</h3>
+                    <div class="row">
+                        <div class="col-md-6">Url</div>
+                        <div class="col-md-3">Uniques</div>
+                        <div class="col-md-3">CTR</div>
+                    </div>
+                    <asp:Repeater ID="rptMostPopularLinks" runat="server" OnItemDataBound="rptMostPopularLinks_ItemDataBound">
+                        <ItemTemplate>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p>
+                                        <asp:Literal ID="lUrl" runat="server" />
+                                    </p>
+                                    <asp:Literal ID="lUrlProgressHTML" runat="server" />
                                 </div>
-                            </td>
-
-                            <td>1285</td>
-                            <td>15.7</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <p>http://mychurch.com/this/is/a/test3</p>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" aria-valuenow="70"
-                                        aria-valuemin="0" aria-valuemax="100" style="width: 70%">
-                                        <span class="sr-only">70%</span>
-                                    </div>
+                                <div class="col-md-3">
+                                    <asp:Literal ID="lUniquesCount" runat="server" />
                                 </div>
-                            </td>
-
-                            <td>1285</td>
-                            <td>15.7</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <Rock:Grid ID="gMostPopularLinks" runat="server" DisplayType="Light" OnRowDataBound="gMostPopularLinks_RowDataBound">
-                    <Columns>
-                        <Rock:RockLiteralField ID="lLink" HeaderText="Link" />
-                        <Rock:RockBoundField DataField="Uniques" HeaderText="Uniques" />
-                        <Rock:RockBoundField DataField="CTR" HeaderText="CTR" />
-                    </Columns>
-                </Rock:Grid>
+                                <div class="col-md-3">
+                                    <asp:Literal ID="lCTRPercent" runat="server" />
+                                </div>
+                            </div>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </asp:Panel>
 
             </div>
         </div>
@@ -139,6 +105,17 @@
                     "#c6d2df",
                     "#d8e1ea"
                 ]
+
+                var getSeriesColors = function(numberOfColors) {
+
+                    var result = chartSeriesColors;
+                    while (result.length < numberOfColors)
+                    {
+                        result = result.concat(chartSeriesColors);
+                    }
+
+                    return result;
+                };
 
                 // Main Linechart
                 var lineChartDataLabels = <%=this.LineChartDataLabelsJSON%>;
@@ -185,6 +162,7 @@
                                 type: 'time',
                                 time: {
                                     unit: 'day',
+                                    tooltipFormat: '<%=this.LineChartTimeFormat%>',
                                 }
                             }]
                         }
@@ -211,16 +189,15 @@
                         datasets: [{
                             type: 'pie',
                             data: pieChartDataOpenClicks,
-                            backgroundColor: [
-                                chartSeriesColors[0],
-                                chartSeriesColors[1],
-                                chartSeriesColors[2],
-                            ]
+                            backgroundColor: getSeriesColors(pieChartDataOpenClicks.length),
                         }],
                     }
                 });
 
                 // Clients Doughnut Chart
+                var pieChartDataClientCounts = <%=this.PieChartDataClientCountsJSON%>;
+                var pieChartDataClientLabels = <%=this.PieChartDataClientLabelsJSON%>;
+
                 var clientsDoughnutChartCanvasCtx = $('#<%=clientsDoughnutChartCanvas.ClientID%>')[0].getContext('2d');
                 var clientsDoughnutChart = new Chart(clientsDoughnutChartCanvasCtx, {
                     type: 'doughnut',
@@ -231,23 +208,11 @@
                         cutoutPercentage: 80
                     },
                     data: {
-                        labels: [
-                            'Mobile',
-                            'Desktop',
-                            'Web'
-                        ],
+                        labels: pieChartDataClientLabels,
                         datasets: [{
                             type: 'doughnut',
-                            data: [
-                                23,
-                                54,
-                                23
-                            ],
-                            backgroundColor: [
-                                chartSeriesColors[0],
-                                chartSeriesColors[1],
-                                chartSeriesColors[2],
-                            ]
+                            data: pieChartDataClientCounts,
+                            backgroundColor:getSeriesColors(pieChartDataClientCounts.length)
                         }],
                     }
                 });
