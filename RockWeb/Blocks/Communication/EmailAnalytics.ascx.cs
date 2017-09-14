@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Communication
 
             // NOTE: moment needs to be loaded before chartjs
             RockPage.AddScriptLink( "/Scripts/moment.min.js", true );
-            RockPage.AddScriptLink( "/Scripts/Chartjs/Chart.min.js", true );
+            RockPage.AddScriptLink( "/Scripts/Chartjs/Chart.js", true );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Communication
                 var communication = new CommunicationService( rockContext ).Get( communicationId.Value );
                 if ( communication != null )
                 {
-                    lTitle.Text = "Email Analytics: " + communication.Name;
+                    lTitle.Text = "Email Analytics: " + (communication.Name ?? communication.Subject);
                 }
                 else
                 {
@@ -164,26 +164,32 @@ namespace RockWeb.Blocks.Communication
                 .ToList();
 
             List<SummaryInfo> interactionsSummary = new List<SummaryInfo>();
+            TimeSpan roundTimeSpan = TimeSpan.FromDays( 1 );
 
-            var firstDateTime = interactionsList.Min( a => a.InteractionDateTime );
-            var lastDateTime = interactionsList.Max( a => a.InteractionDateTime );
-            var weeksCount = ( lastDateTime - firstDateTime ).TotalDays / 7;
-            TimeSpan roundTimeSpan;
+            this.LineChartTimeFormat = "LL";
 
-            if ( weeksCount > 26 )
+            if ( interactionsList.Any() )
             {
-                // if there is more than 26 weeks worth, summarize by week
-                roundTimeSpan = TimeSpan.FromDays( 7 );
-            }
-            else if ( weeksCount > 3 )
-            {
-                // if there is more than 3 weeks worth, summarize by day
-                roundTimeSpan = TimeSpan.FromDays( 1 );
-            }
-            else
-            {
-                // if there is less than 3 weeks worth, summarize by hour
-                roundTimeSpan = TimeSpan.FromHours( 1 );
+                var firstDateTime = interactionsList.Min( a => a.InteractionDateTime );
+                var lastDateTime = interactionsList.Max( a => a.InteractionDateTime );
+                var weeksCount = ( lastDateTime - firstDateTime ).TotalDays / 7;
+
+                if ( weeksCount > 26 )
+                {
+                    // if there is more than 26 weeks worth, summarize by week
+                    roundTimeSpan = TimeSpan.FromDays( 7 );
+                }
+                else if ( weeksCount > 3 )
+                {
+                    // if there is more than 3 weeks worth, summarize by day
+                    roundTimeSpan = TimeSpan.FromDays( 1 );
+                }
+                else
+                {
+                    // if there is less than 3 weeks worth, summarize by hour
+                    roundTimeSpan = TimeSpan.FromHours( 1 );
+                    this.LineChartTimeFormat = "LLLL";
+                }
             }
 
             interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId, a.Operation } )
@@ -230,9 +236,10 @@ namespace RockWeb.Blocks.Communication
 
             this.LineChartDataUnOpenedJSON = unopenedCountsList.ToJson();
 
+            /* Opens/Clicks Pie Chart */
+
             int totalOpens = interactionsList.Where( a => a.Operation == "Opened" ).Count();
             int totalClicks = interactionsList.Where( a => a.Operation == "Click" ).Count();
-
 
             // Unique Opens is the number of times a Recipient opened at least once
             int uniqueOpens = interactionsList.Where( a => a.Operation == "Opened" ).GroupBy( a => a.CommunicationRecipientId ).Count();
@@ -267,6 +274,48 @@ namespace RockWeb.Blocks.Communication
             }
 
             this.PieChartDataOpenClicksJSON = openClicksUnopenedDataList.ToJson();
+
+
+            /* Clients-In-Use Pie Chart*/
+            var clientsUsage = interactionQuery
+                //.Where(a => a.InteractionSessionId.HasValue && a.InteractionSession.DeviceTypeId.HasValue && !string.IsNullOrEmpty(a.InteractionSession.DeviceType.ClientType) )
+                .GroupBy( a => a.InteractionSession.DeviceType.ClientType ).Select( a => new
+            {
+                ClientType = a.Key,
+                ClientCount = a.Count()
+            } ).OrderByDescending(a => a.ClientCount).ToList();
+
+            this.PieChartDataClientLabelsJSON = clientsUsage.Select( a => string.IsNullOrEmpty(a.ClientType) ? "Unknown" : a.ClientType ).ToList().ToJson();
+            this.PieChartDataClientCountsJSON = clientsUsage.Select( a => a.ClientCount ).ToList().ToJson();
+
+            /* Most Popular Links from Clicks*/
+            var topClicks = interactionQuery.Where( a => !string.IsNullOrEmpty( a.InteractionData ) ).GroupBy( a => a.InteractionData ).Select( a => new
+            {
+                LinkUrl = a.Key,
+
+                // EntityId is CommunicationRecipientId
+                UniqueClickCount = a.GroupBy(x => x.EntityId).Count()
+            } ).OrderByDescending( a => a.UniqueClickCount ).Take( 100 ).ToList();
+
+            if ( topClicks.Any() )
+            {
+                int topLinkCount = topClicks.Max( a => a.UniqueClickCount );
+                var mostPopularLinksData = topClicks.Select( a => new TopLinksInfo
+                {
+                    PercentOfTop = ( decimal ) a.UniqueClickCount * 100 / topLinkCount,
+                    Url = a.LinkUrl,
+                    UniquesCount = a.UniqueClickCount,
+                    CTRPercent = "TODO"
+                } ).ToList();
+
+                rptMostPopularLinks.DataSource = mostPopularLinksData;
+                rptMostPopularLinks.DataBind();
+                pnlMostPopularLinks.Visible = true;
+            }
+            else
+            {
+                pnlMostPopularLinks.Visible = false;
+            }
         }
 
         /// <summary>
@@ -279,21 +328,60 @@ namespace RockWeb.Blocks.Communication
             public int OpenCounts { get; set; }
         }
 
+        public class TopLinksInfo
+        {
+            public decimal PercentOfTop { get; set; }
+            public string Url { get; set; }
+            public int UniquesCount { get; set; }
+            public string CTRPercent { get; set; }
+        }
+
         public string LineChartDataLabelsJSON { get; set; }
         public string LineChartDataOpensJSON { get; set; }
         public string LineChartDataClicksJSON { get; set; }
         public string LineChartDataUnOpenedJSON { get; set; }
 
+        /// <summary>
+        /// Gets or sets the line chart time format. see http://momentjs.com/docs/#/displaying/format/
+        /// </summary>
+        /// <value>
+        /// The line chart time format.
+        /// </value>
+        public string LineChartTimeFormat { get; set; }
+
         public string PieChartDataOpenClicksJSON { get; set; }
 
+        public string PieChartDataClientLabelsJSON { get; set; }
+        public string PieChartDataClientCountsJSON { get; set; }
+
         /// <summary>
-        /// Handles the RowDataBound event of the gMostPopularLinks control.
+        /// Handles the ItemDataBound event of the rptMostPopularLinks control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gMostPopularLinks_RowDataBound( object sender, GridViewRowEventArgs e )
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptMostPopularLinks_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            // TODO
+            // todo
+            TopLinksInfo topLinksInfo = e.Item.DataItem as TopLinksInfo;
+            if ( topLinksInfo != null )
+            {
+                Literal lUrl = e.Item.FindControl( "lUrl" ) as Literal;
+                lUrl.Text = topLinksInfo.Url;
+
+                Literal lUrlProgressHTML = e.Item.FindControl( "lUrlProgressHTML" ) as Literal;
+                lUrlProgressHTML.Text = string.Format( @"
+<div class='progress'>
+    <div class='progress-bar' role='progressbar' aria-valuenow='{0}'
+        aria-valuemin='0' aria-valuemax='100' style='width: {0}%'>
+        <span class='sr-only'>{0}%</span>
+    </div>
+</div>", Math.Round( topLinksInfo.PercentOfTop, 2 ) );
+
+                Literal lUniquesCount = e.Item.FindControl( "lUniquesCount" ) as Literal;
+                lUniquesCount.Text = topLinksInfo.UniquesCount.ToString();
+
+                Literal lCTRPercent = e.Item.FindControl( "lCTRPercent" ) as Literal;
+            }
         }
 
         #endregion
