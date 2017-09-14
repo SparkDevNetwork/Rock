@@ -253,29 +253,5 @@ namespace Rock.Lava.Blocks
             }
             return parms;
         }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        private class DataRowDrop : DotLiquid.Drop
-        {
-            private readonly DataRow _dataRow;
-
-            public DataRowDrop( DataRow dataRow )
-            {
-                _dataRow = dataRow;
-            }
-
-            public override object BeforeMethod( string method )
-            {
-                if ( _dataRow.Table.Columns.Contains( method ) )
-                {
-                    return _dataRow[method];
-                }
-
-                return null;
-            }
-        }
     }
 }
