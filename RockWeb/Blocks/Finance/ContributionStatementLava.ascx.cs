@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Finance
 
 {% if pledgeCount > 0 %}
     <hr style=""opacity: .5;"" />
-    <h4 class=""margin-t-md margin-b-md"">Pledges</h4>
+    <h4 class=""margin-t-md margin-b-md"">Pledges <small>(as of {{ StatementEndDate | Date:'M/dd/yyyy' }})</small></h4>
  
     {% for pledge in Pledges %}
         <div class=""row"">
@@ -375,7 +375,7 @@ namespace RockWeb.Blocks.Finance
             // pledge information
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
                                 .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains(p.PersonAliasId.Value)
-                                    && ( p.StartDate.Year == statementYear || p.EndDate.Year == statementYear ) )
+                                    && p.StartDate.Year <= statementYear && p.EndDate.Year >= statementYear )
                                 .GroupBy( p => p.Account )
                                 .Select( g => new PledgeSummary
                                 {
@@ -392,6 +392,18 @@ namespace RockWeb.Blocks.Finance
             foreach ( var pledge in pledges )
             {
                 var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddDays( 1 );
+                var statementYearEnd = new DateTime( statementYear + 1, 1, 1 );
+
+                if ( adjustedPedgeEndDate > statementYearEnd )
+                {
+                    adjustedPedgeEndDate = statementYearEnd;
+                }
+
+                if ( adjustedPedgeEndDate > RockDateTime.Now )
+                {
+                    adjustedPedgeEndDate = RockDateTime.Now;
+                }
+
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
                                             .Where( t =>
                                                  t.AccountId == pledge.AccountId
