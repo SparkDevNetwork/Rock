@@ -39,13 +39,7 @@ namespace com.centralaz.RoomManagement.Model
         public int? LocationId { get; set; }
 
         [DataMember]
-        public int Order { get; set; }      
-
-        [DataMember]
-        public string QuestionText { get; set; }
-
-        [DataMember]
-        public int AnswerFieldTypeId { get; set; }
+        public int AttributeId { get; set; }
 
         #endregion
 
@@ -55,7 +49,7 @@ namespace com.centralaz.RoomManagement.Model
 
         public virtual Location Location { get; set; }
 
-        public virtual FieldType AnswerFieldType { get; set; }
+        public virtual Rock.Model.Attribute Attribute { get; set; }
 
         #endregion
 
@@ -68,12 +62,12 @@ namespace com.centralaz.RoomManagement.Model
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="QuestionConfiguration"/> class.
-        /// </summary>
+        /// </summary> 
         public QuestionConfiguration()
         {
             this.HasOptional( r => r.Resource ).WithMany().HasForeignKey( r => r.ResourceId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.Location ).WithMany().HasForeignKey( r => r.LocationId ).WillCascadeOnDelete( false );
-            this.HasRequired( r => r.AnswerFieldType ).WithMany().HasForeignKey( r => r.AnswerFieldTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( r => r.Attribute ).WithMany().HasForeignKey( r => r.AttributeId ).WillCascadeOnDelete( true );
 
             // IMPORTANT!!
             this.HasEntitySetName( "Question" );
