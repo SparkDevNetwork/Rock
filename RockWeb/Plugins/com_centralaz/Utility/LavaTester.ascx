@@ -28,7 +28,8 @@
                         <div class="col-md-12">
                             <div class="row">
                                 <div class="col-md-3"><Rock:WorkflowTypePicker ID="wfpWorkflowType" runat="server" Label="Workflow Type" OnSelectItem="wfpWorkflowType_SelectItem" /></div>
-                                <div class="col-md-9"><Rock:DataDropDownList ID="ddlWorkflows" runat="server" Label="Workflow (instances)" Help="The item you choose will be set to a Lava object called 'Workflow'." SourceTypeName="Rock.Model.Workflow, Rock" DataTextField="Name" DataValueField="Id" PropertyName="Name" Visible="false" OnSelectedIndexChanged="ddlWorkflows_SelectedIndexChanged" AutoPostBack="true" /></div>
+                                <div class="col-md-4"><Rock:DataDropDownList ID="ddlWorkflows" runat="server" Label="Workflow (instances)" Help="The item you choose will be set to a Lava object called 'Workflow'." SourceTypeName="Rock.Model.Workflow, Rock" DataTextField="Name" DataValueField="Id" PropertyName="Name" Visible="false" OnSelectedIndexChanged="ddlWorkflows_SelectedIndexChanged" AutoPostBack="true" /></div>
+                                <div class="col-md-4"><Rock:DataDropDownList ID="ddlWorkflowActivities" runat="server" Label="Activity" Help="The item you choose will be set to a Lava object called 'Activity'." SourceTypeName="Rock.Model.WorkflowActivity, Rock" DataTextField="Name" DataValueField="Id" PropertyName="Name" Visible="false" OnSelectedIndexChanged="ddlWorkflowActivities_SelectedIndexChanged" AutoPostBack="true" /></div>
                             </div>
                         </div>
                     </div>
@@ -62,6 +63,16 @@
                                 <asp:ListItem Text="empty save slot 8" Value="7"></asp:ListItem>
                                 <asp:ListItem Text="empty save slot 9" Value="8"></asp:ListItem>
                                 <asp:ListItem Text="empty save slot 10" Value="9"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 11" Value="10"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 12" Value="11"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 13" Value="12"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 14" Value="13"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 15" Value="14"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 16" Value="15"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 17" Value="16"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 18" Value="17"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 19" Value="18"></asp:ListItem>
+                                <asp:ListItem Text="empty save slot 20" Value="19"></asp:ListItem>
                             </asp:DropDownList>
                         </div>
                         <div class="col-md-1">
