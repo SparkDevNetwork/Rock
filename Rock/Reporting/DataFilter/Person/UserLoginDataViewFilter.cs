@@ -206,7 +206,7 @@ function() {
             filterControl.Controls.Add( ddlDataView );
 
             // Populate the Data View Picker
-            int entityTypeId = EntityTypeCache.Read( typeof( UserLogin ) ).Id;
+            int entityTypeId = EntityTypeCache.Read( typeof( Model.UserLogin ) ).Id;
             ddlDataView.EntityTypeId = entityTypeId;
 
             return new Control[] { ddlDataView };
