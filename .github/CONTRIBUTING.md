@@ -143,7 +143,13 @@ Unsure where to begin contributing to Rock? You can start by looking through the
 If you want to read about using Rock or developing plugins for Rock, the [Rock Documentation](https://www.rockrms.com/Learn/Documentation) and  [Developer Guides](https://www.rockrms.com/Developer) are free and available online.
 
 ### Pull Requests
+The Rock Community loves Pull Requests! In an effort to 'row in the same direction' and minimize wasted development time
+on your part and review time on ours, we have implemented the following guidelines for PRs:
+1. If you are submitting a PR for a logged Issue / Enchancement request please reference it in your commit (Fixes #1234 or Closes #2445)
+2. If your PR is for an enchancment that has not been discussed and approved by the core team please get that approval BEFORE submitting
+the request. In fact, this approval should be recieved before writing the code to limit rework on your part. This will ensure that all code is working into the same vision and direction of the core project.
 
+#### Keep In Mind The Following
 * When making changes keep the changes simple (i.e. don't refactor boldly) otherwise the git diff will obscure your change and make it difficult to quickly see the actual change.
 * Include screenshots and animated GIFs in your pull request whenever possible.
 * Follow the [ASPX](#c-and-aspx-styleguide), [C#](#c-and-aspx-styleguide), [CSS](#css-styleguide), [JavaScript](#javascript-styleguide), and [SQL](#sql-styleguide) styleguides.
