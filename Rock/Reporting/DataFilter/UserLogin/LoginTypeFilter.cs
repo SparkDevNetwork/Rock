@@ -27,7 +27,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Reporting.DataFilter.Person
+namespace Rock.Reporting.DataFilter.UserLogin
 {
     /// <summary>
     /// 
