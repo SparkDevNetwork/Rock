@@ -410,17 +410,69 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             {
                 SetUserPreference( _USER_PREF_WORKFLOWTYPE, workflowTypeId.Value.ToStringSafe() );
                 BindWorkflowsUsingWorkflowType( workflowTypeId.Value, setUserPreference: true );
+                BindWorkflowActivitiesUsingWorkflowInstance( ddlWorkflows.SelectedValueAsInt() ?? -1, setUserPreference: true );
             }
             else
             {
                 ddlWorkflows.SetValue( "-1" );
                 ddlWorkflows.SelectedIndex = -1;
-                ddlWorkflows.Visible = false;
-                ddlWorkflowActivities.Visible = false;
                 ddlWorkflows.Items.Clear();
+                ddlWorkflows.Visible = false;
+
+                ddlWorkflowActivities.SetValue( "-1" );
+                ddlWorkflowActivities.SelectedIndex = -1;
+                ddlWorkflowActivities.Items.Clear();
+                ddlWorkflowActivities.Visible = false;
+
                 SetUserPreference( _USER_PREF_WORKFLOWTYPE, string.Empty );
                 SetUserPreference( _USER_PREF_WORKFLOW, string.Empty );
+                SetUserPreference( _USER_PREF_WORKFLOW_ACTIVITY, string.Empty );
             }
+
+            litOutput.Text = string.Empty;
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlWorkflows_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int? workflowId = ddlWorkflows.SelectedValueAsInt();
+            if ( workflowId.HasValue )
+            {
+                RockContext rockContext = new RockContext();
+                WorkflowService workflowService = new WorkflowService( rockContext );
+                mergeFields.Add( "Workflow", workflowService.Get( ddlWorkflows.SelectedValueAsInt() ?? -1 ) );
+
+                SetUserPreference( _USER_PREF_WORKFLOW, ddlWorkflows.SelectedValue );
+                BindWorkflowActivitiesUsingWorkflowInstance( workflowId, setUserPreference: true );
+            }
+            else
+            {
+                ddlWorkflowActivities.SetValue( "-1" );
+                ddlWorkflowActivities.SelectedIndex = -1;
+                ddlWorkflowActivities.Visible = false;
+                ddlWorkflowActivities.Items.Clear();
+                SetUserPreference( _USER_PREF_WORKFLOWTYPE, string.Empty );
+                SetUserPreference( _USER_PREF_WORKFLOW, string.Empty );
+                SetUserPreference( _USER_PREF_WORKFLOW_ACTIVITY, string.Empty );
+            }
+
+            litOutput.Text = string.Empty;
+        }
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlWorkflowActivities control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlWorkflowActivities_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            WorkflowActivityService workflowActivityService = new WorkflowActivityService( rockContext );
+            mergeFields.Add( "Activity", workflowActivityService.Get( ddlWorkflowActivities.SelectedValueAsInt() ?? -1 ) );
+            SetUserPreference( _USER_PREF_WORKFLOW_ACTIVITY, ddlWorkflowActivities.SelectedValue );
 
             litOutput.Text = string.Empty;
         }
@@ -471,23 +523,21 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             {
                 var workflowActivityService = new WorkflowActivityService( rockContext );
 
-                var list = workflowActivityService.Queryable().AsNoTracking().Where( a => a.WorkflowId == workflowId.Value ).ToList();//.Where( a => a.IsActive == true ).ToList();
-                //ddlWorkflowActivities.DataSource = list;
+                var list = workflowActivityService.Queryable().AsNoTracking().Where( a => a.WorkflowId == workflowId.Value ).ToList();
 
                 ddlWorkflowActivities.DataSource = list.Select( a => new
                 {
                     Id = a.Id,
                     ActivityTypeName = a.ActivityType.Name,
-                    Name = string.Format( "{0} {1}", a.ActivityType.Name, a.CompletedDateTime != null ? "(" + a.CompletedDateTime.Value.ToString("MM/dd/yy hh:mm tt") + ")" : "" ),
+                    Name = string.Format( "{0} {1}", a.ActivityType.Name, a.CompletedDateTime != null ? a.CompletedDateTime.Value.ToString("(MM/dd/yy hh:mm tt)") : "" ),
                     ActivityTypeId = a.ActivityTypeId,
                     CompletedDateTime = a.CompletedDateTime,
                     IsActive = a.IsActive
                 } );
 
-                Regex re = new Regex(@"\(\d\d/\d\d/\d\d \d\d:\d\d");
-
-
                 ddlWorkflowActivities.DataBind();
+
+                Regex re = new Regex(@"\(\d\d/\d\d/\d\d \d\d:\d\d");
                 foreach ( ListItem item in ddlWorkflowActivities.Items )
                 {
                     if ( re.IsMatch( item.Text ) )
@@ -615,53 +665,6 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                     litOutput.Text = string.Empty;
                 }
             }
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlWorkflows control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlWorkflows_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            int? workflowId = ddlWorkflows.SelectedValueAsInt();
-            if ( workflowId.HasValue )
-            {
-                RockContext rockContext = new RockContext();
-                WorkflowService workflowService = new WorkflowService( rockContext );
-                mergeFields.Add( "Workflow", workflowService.Get( ddlWorkflows.SelectedValueAsInt() ?? -1 ) );
-
-                SetUserPreference( _USER_PREF_WORKFLOW, ddlWorkflows.SelectedValue );
-                BindWorkflowActivitiesUsingWorkflowInstance( workflowId, setUserPreference: true );
-            }
-            else
-            {
-                ddlWorkflowActivities.SetValue( "-1" );
-                ddlWorkflowActivities.SelectedIndex = -1;
-                ddlWorkflowActivities.Visible = false;
-                ddlWorkflowActivities.Items.Clear();
-                SetUserPreference( _USER_PREF_WORKFLOWTYPE, string.Empty );
-                SetUserPreference( _USER_PREF_WORKFLOW, string.Empty );
-                SetUserPreference( _USER_PREF_WORKFLOW_ACTIVITY, string.Empty );
-            }
-
-            litOutput.Text = string.Empty;
-        }
-
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlWorkflowActivities control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlWorkflowActivities_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            RockContext rockContext = new RockContext();
-            WorkflowActivityService workflowActivityService = new WorkflowActivityService( rockContext );
-            mergeFields.Add( "Activity", workflowActivityService.Get( ddlWorkflowActivities.SelectedValueAsInt() ?? -1 ) );
-            SetUserPreference( _USER_PREF_WORKFLOW_ACTIVITY, ddlWorkflowActivities.SelectedValue );
-            
-            litOutput.Text = string.Empty;
         }
 
         /// <summary>

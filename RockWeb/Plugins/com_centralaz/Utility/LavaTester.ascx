@@ -29,7 +29,7 @@
                             <div class="row">
                                 <div class="col-md-3"><Rock:WorkflowTypePicker ID="wfpWorkflowType" runat="server" Label="Workflow Type" OnSelectItem="wfpWorkflowType_SelectItem" /></div>
                                 <div class="col-md-4"><Rock:DataDropDownList ID="ddlWorkflows" runat="server" Label="Workflow (instances)" Help="The item you choose will be set to a Lava object called 'Workflow'." SourceTypeName="Rock.Model.Workflow, Rock" DataTextField="Name" DataValueField="Id" PropertyName="Name" Visible="false" OnSelectedIndexChanged="ddlWorkflows_SelectedIndexChanged" AutoPostBack="true" /></div>
-                                <div class="col-md-4"><Rock:DataDropDownList ID="ddlWorkflowActivities" runat="server" Label="Activity" Help="The item you choose will be set to a Lava object called 'Activity'." SourceTypeName="Rock.Model.WorkflowActivity, Rock" DataTextField="Name" DataValueField="Id" PropertyName="Name" Visible="false" OnSelectedIndexChanged="ddlWorkflowActivities_SelectedIndexChanged" AutoPostBack="true" /></div>
+                                <div class="col-md-4"><Rock:DataDropDownList ID="ddlWorkflowActivities" runat="server" Label="Activity" Help="The item you choose will be set to a Lava object called 'Activity'." SourceTypeName="Rock.Model.WorkflowActivity, Rock" DataTextField="Name" DataValueField="Id" PropertyName="Id" Visible="false" OnSelectedIndexChanged="ddlWorkflowActivities_SelectedIndexChanged" AutoPostBack="true" CausesValidation="false" /></div>
                             </div>
                         </div>
                     </div>
