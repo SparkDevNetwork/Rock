@@ -328,15 +328,18 @@ namespace Rock.Model
                 return isAuthorized.Value;
             }
 
-            foreach ( var metricCategory in this.MetricCategories )
+            if ( this.MetricCategories != null )
             {
-                if ( metricCategory.Category.IsAuthorized( action, person ) )
+                foreach ( var metricCategory in this.MetricCategories )
                 {
-                    return true;
+                    if ( metricCategory.Category.IsAuthorized( action, person ) )
+                    {
+                        return true;
+                    }
                 }
             }
 
-            return false;
+            return base.IsAuthorized(action, person);
         }
 
         #endregion
