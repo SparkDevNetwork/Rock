@@ -164,6 +164,27 @@ namespace Rock.Model
             return this.TotalAmount.ToStringSafe();
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result && TotalAmount<0 )
+                {
+                    this.ValidationResults.Add( new ValidationResult( "Total Amount can't be negative." ) );
+                    return false;
+                }
+
+                return result;
+            }
+        }
+
         #endregion
 
     }
