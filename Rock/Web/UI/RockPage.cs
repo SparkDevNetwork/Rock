@@ -616,6 +616,7 @@ namespace Rock.Web.UI
             var stopwatchInitEvents = Stopwatch.StartNew();
             bool showDebugTimings = this.PageParameter( "ShowDebugTimings" ).AsBoolean();
             bool canAdministratePage = false;
+            bool canEditPage = false;
 
             if ( showDebugTimings )
             {
@@ -969,8 +970,9 @@ namespace Rock.Web.UI
 
                     Page.Trace.Warn( "Checking if user can administer" );
                     canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                    canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
-                    if ( !canAdministratePage )
+                    if ( !canAdministratePage && !canEditPage )
                     {
                         // if the current user is impersonated by an Admin, then show the admin bar
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
@@ -978,6 +980,7 @@ namespace Rock.Web.UI
                         if ( impersonatedByUser != null && currentUserIsImpersonated )
                         {
                             canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, impersonatedByUser.Person );
+                            canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, impersonatedByUser.Person );
                         }
                     }
 
@@ -1203,7 +1206,7 @@ namespace Rock.Web.UI
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlockOnPage ) )
+                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlockOnPage || canEditPage ) )
                     {
                         // Add the page admin script
                         AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin", false );
@@ -1222,7 +1225,7 @@ namespace Rock.Web.UI
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
                         if ( canAdministratePage && currentUserIsImpersonated && impersonatedByUser != null)
                         {
-                             HtmlGenericControl impersonatedByUserDiv = new HtmlGenericControl( "span" );
+                            HtmlGenericControl impersonatedByUserDiv = new HtmlGenericControl( "span" );
                             impersonatedByUserDiv.AddCssClass( "label label-default margin-l-md" );
                             _btnRestoreImpersonatedByUser = new LinkButton();
                             _btnRestoreImpersonatedByUser.ID = "_btnRestoreImpersonatedByUser";
@@ -1248,7 +1251,7 @@ namespace Rock.Web.UI
                         aBlockConfig.Controls.Add( iBlockConfig );
                         iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
 
-                        if ( canAdministratePage )
+                        if ( canEditPage || canAdministratePage)
                         {
                             // RockPage Properties
                             HtmlGenericControl aPageProperties = new HtmlGenericControl( "a" );
@@ -1262,7 +1265,10 @@ namespace Rock.Web.UI
                             HtmlGenericControl iPageProperties = new HtmlGenericControl( "i" );
                             aPageProperties.Controls.Add( iPageProperties );
                             iPageProperties.Attributes.Add( "class", "fa fa-cog" );
+                        }
 
+                        if ( canAdministratePage )
+                        {
                             // Child Pages
                             HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aChildPages );
