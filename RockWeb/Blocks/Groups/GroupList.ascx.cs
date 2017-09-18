@@ -582,6 +582,8 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     groupList = qry
+                        .AsEnumerable()
+                        .Where( gm => gm.Group.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                         .Select( m => new GroupListRowInfo
                         {
                             Id = m.Group.Id,
@@ -598,6 +600,7 @@ namespace RockWeb.Blocks.Groups
                             IsActiveOrder = ( m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ) ? 1 : 2 ),
                             MemberCount = 0
                         } )
+                        .AsQueryable()
                         .Sort( sortProperty )
                         .ToList();
                 }
@@ -623,6 +626,8 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 groupList = qryGroups
+                    .AsEnumerable()
+                    .Where(g => g.IsAuthorized(Rock.Security.Authorization.VIEW, CurrentPerson))
                     .Select( g => new GroupListRowInfo
                     {
                         Id = g.Id,
@@ -639,6 +644,7 @@ namespace RockWeb.Blocks.Groups
                         DateAdded = DateTime.MinValue,
                         MemberCount = g.Members.Count()
                     } )
+                    .AsQueryable()
                     .Sort( sortProperty )
                     .ToList();
             }

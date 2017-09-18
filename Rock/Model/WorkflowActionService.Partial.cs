@@ -57,19 +57,26 @@ namespace Rock.Model
         /// <returns></returns>
         public List<WorkflowAction> GetActiveForms( Person person )
         {
-            // Get all of the active form actions with an activity that assigned to the current user
-            var formActionsQry = GetActiveForms().Where( a =>
-                        ( a.Activity.AssignedPersonAliasId.HasValue && a.Activity.AssignedPersonAlias.PersonId == person.Id ) ||
-                        ( a.Activity.AssignedGroupId.HasValue && a.Activity.AssignedGroup.Members.Any( m => m.PersonId == person.Id ) )
-                 );
+            // fetch all the person's alias ids to avoid a join that might be costly
+            var personAliasIds = person.Aliases.Select( a => a.Id ).ToList();
+
+            // Get all of the active activities that are assigned to the specified person
+            var assignedActiveActivityIdList = new WorkflowActivityService( this.Context as RockContext ).Queryable()
+                .Where( a => a.ActivatedDateTime.HasValue && !a.CompletedDateTime.HasValue )
+                .Where( a =>
+                 ( a.AssignedPersonAliasId.HasValue && personAliasIds.Contains( a.AssignedPersonAliasId.Value ) ) ||
+                         ( a.AssignedGroupId.HasValue && a.AssignedGroup.Members.Any( m => m.PersonId == person.Id ) ) ).Select( a => a.Id ).ToList();
+
+            // Get all of the active form actions with an activity that assigned to the specified person
+            var formActionsQry = GetActiveForms().Where( a => assignedActiveActivityIdList.Contains( a.ActivityId ) );
 
             // Check security for the action's activity type and workflow type
             var workflowTypeIds = new Dictionary<int, bool>();
             var activityTypeIds = new Dictionary<int, bool>();
 
-            var result = formActionsQry.Include( a => a.ActionType.ActivityType.WorkflowType ).Include( a => a.Activity.Workflow ).ToList();
+            var result = formActionsQry.Include( a => a.Activity.Workflow ).ToList();
 
-            var assignedActivityTypes = result.Select( a => a.ActionType.ActivityType ).Distinct().ToList();
+            var assignedActivityTypes = result.Select( a => a.ActionTypeCache.ActivityType ).Distinct().ToList();
 
             foreach ( var assignedActivityType in assignedActivityTypes )
             {

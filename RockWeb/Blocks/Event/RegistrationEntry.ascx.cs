@@ -1537,15 +1537,15 @@ namespace RockWeb.Blocks.Event
                     string ccNum = rgx.Replace( txtCreditCard.Text, "" );
                     if ( string.IsNullOrWhiteSpace( ccNum ) )
                     {
-                        validationErrors.Add( "Credit Card # is required" );
+                        validationErrors.Add( "Card Number is required" );
                     }
                     if ( !mypExpiration.SelectedDate.HasValue )
                     {
-                        validationErrors.Add( "Credit Card Expiration Date is required" );
+                        validationErrors.Add( "Card Expiration Date is required" );
                     }
                     if ( string.IsNullOrWhiteSpace( txtCVV.Text ) )
                     {
-                        validationErrors.Add( "Credit Card Security Code is required" );
+                        validationErrors.Add( "Card Security Code is required" );
                     }
                     if ( acBillingAddress.Visible && (
                         string.IsNullOrWhiteSpace( acBillingAddress.Street1 ) ||
@@ -2644,16 +2644,20 @@ namespace RockWeb.Blocks.Event
                             var noteText = new StringBuilder();
                             noteText.AppendFormat( "Registered for {0}", RegistrationInstanceState.Name );
 
+                            string registrarFullName = string.Empty;
+
                             if ( registrar != null && registrar.Id != registrant.Id )
                             {
-                                noteText.AppendFormat( " by {0}", registrar.FullName );
+                                registrarFullName = string.Format( " by {0}", registrar.FullName );
                                 registrantNames.Add( registrant.FullName );
                             }
 
                             if ( registrar != null && ( RegistrationState.FirstName != registrar.NickName || RegistrationState.LastName != registrar.LastName ) )
                             {
-                                noteText.AppendFormat( " by {0}", RegistrationState.FirstName + " " + RegistrationState.LastName );
+                                registrarFullName = string.Format( " by {0}", RegistrationState.FirstName + " " + RegistrationState.LastName );
                             }
+
+                            noteText.Append( registrarFullName );
 
                             if ( noteText.Length > 0 )
                             {

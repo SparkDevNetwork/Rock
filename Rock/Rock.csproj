@@ -531,6 +531,7 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\InteractionChannelFieldType.cs" />
     <Compile Include="Field\Types\DataViewsFieldType.cs" />
     <Compile Include="Field\Types\LavaFieldType.cs" />
     <Compile Include="Field\Types\AccountFieldType.cs" />
@@ -696,6 +697,7 @@
     <Compile Include="Lava\Blocks\RockEntity.cs" />
     <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
     <Compile Include="Lava\Blocks\Search.cs" />
+    <Compile Include="Lava\Blocks\Stylesheet.cs" />
     <Compile Include="Lava\Blocks\WebRequest.cs" />
     <Compile Include="Lava\Blocks\Sql.cs" />
     <Compile Include="Lava\Blocks\WorkflowActivate.cs" />
@@ -744,13 +746,25 @@
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
     <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
     <Compile Include="Model\CodeGenerated\LavaShortcodeService.cs" />
+    <Compile Include="Model\CodeGenerated\MetaFirstNameGenderLookupService.cs" />
+    <Compile Include="Model\CodeGenerated\MetaLastNameLookupService.cs" />
+    <Compile Include="Model\CodeGenerated\MetaNickNameLookupService.cs" />
+    <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageClusterService.cs" />
+    <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageGroupService.cs" />
     <Compile Include="Model\CodeGenerated\PersonalDeviceService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
-    <Compile Include="Model\CodeGenerated\SiteUrlMapService.cs" />
+    <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
+    <Compile Include="Model\InteractionComponent.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
+    <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
+    <Compile Include="Model\MetaLastNameLookup.cs" />
+    <Compile Include="Model\MetaNickNameLookup.cs" />
+    <Compile Include="Model\MetaPersonicxLifestageCluster.cs" />
+    <Compile Include="Model\MetaPersonicxLifestageGroup.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
@@ -1069,12 +1083,15 @@
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\PersonalDevice.cs" />
     <Compile Include="Model\PersonAlias.cs" />
+    <Compile Include="Model\PersonalDeviceService.Partial.cs" />
     <Compile Include="Model\PersonAliasService.Partial.cs" />
     <Compile Include="Model\PersonBadge.cs" />
     <Compile Include="Model\PersonBadgeService.partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
+    <Compile Include="Model\PersonToken.cs" />
+    <Compile Include="Model\PersonTokenService.Partial.cs" />
     <Compile Include="Model\PersonViewed.cs" />
     <Compile Include="Model\PersonViewedService.Partial.cs" />
     <Compile Include="Model\PhoneNumber.cs" />
@@ -1105,7 +1122,7 @@
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
-    <Compile Include="Model\SiteUrlMapService.Partial.cs" />
+    <Compile Include="Model\PageShortLinkService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
@@ -1119,6 +1136,7 @@
     <Compile Include="Reporting\DataFilter\Person\HasNoteFilter.cs" />
     <Compile Include="Reporting\DataSelect\FormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupAttributeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\GroupFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataTransform\Person\FatherTransform.cs" />
@@ -1161,7 +1179,7 @@
     <Compile Include="Model\SignatureDocumentTemplate.cs" />
     <Compile Include="Model\SignatureDocumentTemplateService.Partial.cs" />
     <Compile Include="Model\Site.cs" />
-    <Compile Include="Model\SiteUrlMap.cs" />
+    <Compile Include="Model\PageShortLink.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
     <Compile Include="Model\SystemEmail.cs" />
@@ -1221,11 +1239,14 @@
     <Compile Include="Plugin\HotFixes\018_RestrictGroupRegistrationGroupTypes.cs" />
     <Compile Include="Plugin\HotFixes\024_PrayerRequestAttributes.cs" />
     <Compile Include="Plugin\HotFixes\030_MyConnectionOpportunitiesLava.cs" />
+    <Compile Include="Plugin\HotFixes\031_AttendanceAnalyticsGivingId.cs" />
+    <Compile Include="Plugin\HotFixes\032_MigrationRollupsForV6_9.cs" />
     <Compile Include="Plugin\HotFixes\029_BatchDetailReopenBatchSecurity.cs" />
     <Compile Include="Plugin\HotFixes\025_PersonGivingEnvelopeAttribute.cs" />
     <Compile Include="Plugin\HotFixes\026_PersonEditConnectionRecordStatus.cs" />
     <Compile Include="Plugin\HotFixes\027_AddCheckinFeatures.cs" />
     <Compile Include="Plugin\HotFixes\028_CheckinTextSettings.cs" />
+    <Compile Include="Plugin\HotFixes\033_ConnectionOpportunityCounts.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1364,6 +1385,7 @@
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
+    <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Web\Cache\ContentChannelCache.cs" />
     <Compile Include="Web\Cache\LavaShortcodeCache.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
@@ -1790,6 +1812,7 @@
     <Compile Include="Web\UI\RockPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Web\UI\RouteUtils.cs" />
     <Compile Include="Web\UI\Validation\DataAnnotationValidator.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Web\Utilities\RockUpdateHelper.cs" />
@@ -1866,6 +1889,8 @@
     <Compile Include="Workflow\Action\People\PersonTagAdd.cs" />
     <Compile Include="Workflow\Action\People\PersonTagRemove.cs" />
     <Compile Include="Workflow\Action\People\SetPersonAttribute.cs" />
+    <Compile Include="Workflow\Action\Utility\InteractionAdd.cs" />
+    <Compile Include="Workflow\Action\Utility\CreateShortLink.cs" />
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />

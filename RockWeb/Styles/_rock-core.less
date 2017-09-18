@@ -30,6 +30,7 @@
 @import "_grid.less";
 
 @import "_blocks-cms.less";
+@import "_blocks-connections.less";
 @import "_blocks-security.less";
 @import "_blocks-reporting.less";
 @import "_blocks-core.less";
@@ -92,7 +93,7 @@ iframe {
 
 // get dropdowns to display above the admin bar
 .dropdown-menu {
-    z-index: 1050;
+  z-index: 1050;
 }
 
 .navigation-tip {
@@ -107,8 +108,8 @@ iframe {
 }
 
 .alert-warning .navigation-tip {
-    background-color: lighten(@state-warning-text, 10%);
-    color: @state-warning-bg;
+  color: @state-warning-bg;
+  background-color: lighten(@state-warning-text, 10%);
 }
 
 // context help
@@ -316,8 +317,8 @@ th[align=center] {
     }
 
     .panel-toggle {
-        margin-top: -2px;
-        margin-bottom: -2px;
+      margin-top: -2px;
+      margin-bottom: -2px;
     }
 
     .panel-options {
@@ -340,9 +341,9 @@ th[align=center] {
       margin-top: -2px;
 
       .panel-text {
-          font-size: 12px;
-          float: left;
-          margin-top: 5px;
+        float: left;
+        margin-top: 5px;
+        font-size: 12px;
       }
     }
 
@@ -673,9 +674,9 @@ th[align=center] {
     border-bottom: @alert-info-link-border-bottom;
   }
 
-    a.help {
-      border-bottom: 0;
-    }
+  a.help {
+    border-bottom: 0;
+  }
 }
 
 .alert-warning {

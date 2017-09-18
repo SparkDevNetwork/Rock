@@ -35,7 +35,7 @@ namespace Rock.Transactions
         /// <value>
         /// Page Id.
         /// </value>
-        public int? SiteUrlMapId { get; set; }
+        public int? PageShortLinkId { get; set; }
 
         /// <summary>
         /// Gets or sets the token.
@@ -103,6 +103,8 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
+            if ( PageShortLinkId.HasValue )
+            { 
             using ( var rockContext = new RockContext() )
             {
                 var userAgent = (this.UserAgent ?? string.Empty).Trim();
@@ -111,86 +113,51 @@ namespace Rock.Transactions
                     userAgent = userAgent.Substring( 0, 450 ); // trim super long useragents to fit in pageViewUserAgent.UserAgent
                 }
 
-                int? personAliasId = null;
-                if ( UserName.IsNotNullOrWhitespace() )
-                {
-                    var currentUser = new UserLoginService( rockContext ).GetByUserName( UserName );
-                    personAliasId = currentUser?.Person?.PrimaryAlias?.Id;
-                }
-
                 // get user agent info
                 var clientType = InteractionDeviceType.GetClientType( userAgent );
 
-                // don't log visits from crawlers
-                if ( clientType != "Crawler" )
-                {
-                    InteractionChannelService interactionChannelService = new InteractionChannelService( rockContext );
-                    InteractionComponentService interactionComponentService = new InteractionComponentService( rockContext );
-                    InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
-                    InteractionSessionService interactionSessionService = new InteractionSessionService( rockContext );
-                    InteractionService interactionService = new InteractionService( rockContext );
-
-                    ClientInfo client = uaParser.Parse( userAgent );
-                    var clientOs = client.OS.ToString();
-                    var clientBrowser = client.UserAgent.ToString();
-
-                    // lookup the interactionDeviceType, and create it if it doesn't exist
-                    var interactionDeviceType = interactionService.GetInteractionDeviceType( clientBrowser, clientOs, clientType, userAgent );
-
-                    // lookup interactionSession, and create it if it doesn't exist
-                    InteractionSession interactionSession = interactionService.GetInteractionSession( this.SessionId.AsGuidOrNull(), this.IPAddress, interactionDeviceType.Id );
-
-                    int componentEntityTypeId = EntityTypeCache.Read<Rock.Model.SiteUrlMap>().Id;
-                    
-                    // lookup the interaction channel, and create it if it doesn't exist
-                    int channelMediumTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER.AsGuid() ).Id;
-
-                    // check that the Site Url Map exists as a channel
-                    var interactionChannel = interactionChannelService.Queryable()
-                        .Where( a => a.ChannelTypeMediumValueId == channelMediumTypeValueId )
-                        .FirstOrDefault();
-
-                    if ( interactionChannel == null )
+                    // don't log visits from crawlers
+                    if ( clientType != "Crawler" )
                     {
-                        interactionChannel = new InteractionChannel();
-                        interactionChannel.Name = "UrlShortener";
-                        interactionChannel.ChannelTypeMediumValueId = channelMediumTypeValueId;
-                        interactionChannel.ComponentEntityTypeId = componentEntityTypeId;
-                        interactionChannelService.Add( interactionChannel );
+                        // lookup the interaction channel, and create it if it doesn't exist
+                        int channelMediumTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER.AsGuid() ).Id;
+                        InteractionChannelService interactionChannelService = new InteractionChannelService( rockContext );
+                        var interactionChannel = interactionChannelService.Queryable()
+                            .Where( a => a.ChannelTypeMediumValueId == channelMediumTypeValueId )
+                            .FirstOrDefault();
+                        if ( interactionChannel == null )
+                        {
+                            interactionChannel = new InteractionChannel();
+                            interactionChannel.Name = "UrlShortener";
+                            interactionChannel.ChannelTypeMediumValueId = channelMediumTypeValueId;
+                            interactionChannel.ComponentEntityTypeId = EntityTypeCache.Read<Rock.Model.PageShortLink>().Id; ;
+                            interactionChannelService.Add( interactionChannel );
+                            rockContext.SaveChanges();
+                        }
+
+                        // check that the page exists as a component
+                        var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannel.Id, PageShortLinkId.Value, Token );
                         rockContext.SaveChanges();
+
+                        // Add the interaction
+                        if ( interactionComponent != null )
+                        {
+                            int? personAliasId = null;
+                            if ( UserName.IsNotNullOrWhitespace() )
+                            {
+                                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserName );
+                                personAliasId = currentUser?.Person?.PrimaryAlias?.Id;
+                            }
+
+                            ClientInfo client = uaParser.Parse( userAgent );
+                            var clientOs = client.OS.ToString();
+                            var clientBrowser = client.UserAgent.ToString();
+
+                            new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", Url, personAliasId, DateViewed,
+                                clientBrowser, clientOs, clientType, userAgent, IPAddress );
+                            rockContext.SaveChanges();
+                        }
                     }
-
-                    // check that the page exists as a component
-                    var interactionComponent = interactionComponentService.Queryable()
-                        .Where( a => 
-                            a.EntityId == SiteUrlMapId && 
-                            a.ChannelId == interactionChannel.Id )
-                        .FirstOrDefault();
-                    if ( interactionComponent == null )
-                    {
-                        interactionComponent = new InteractionComponent();
-                        interactionComponent.Name = Token;
-                        interactionComponent.EntityId = SiteUrlMapId;
-                        interactionComponent.ChannelId = interactionChannel.Id;
-                        interactionComponentService.Add( interactionComponent );
-                        rockContext.SaveChanges();
-                    }
-                                      
-                    // add the interaction
-                    Interaction interaction = new Interaction();
-                    interactionService.Add( interaction );
-
-                    // obfuscate rock magic token
-                    Regex rgx = new Regex( @"rckipid=([^&]*)" );
-                    string cleanUrl = rgx.Replace( this.Url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
-
-                    interaction.InteractionData = cleanUrl;
-                    interaction.Operation = "View";
-                    interaction.PersonAliasId = personAliasId;
-                    interaction.InteractionDateTime = this.DateViewed;
-                    interaction.InteractionSessionId = interactionSession != null ? interactionSession.Id : (int?)null;
-                    interaction.InteractionComponentId = interactionComponent.Id;
-                    rockContext.SaveChanges();
                 }
             }
         }

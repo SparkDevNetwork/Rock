@@ -24,6 +24,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -56,7 +57,7 @@ namespace RockWeb.Blocks.Core
             _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
-
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Tag ) ).Id;
         }
 
         /// <summary>
@@ -199,10 +200,17 @@ namespace RockWeb.Blocks.Core
                 }
                 tag.Name = name;
                 tag.Description = tbDescription.Text;
-                tag.OwnerPersonAliasId = ownerPersonAliasId;
-                tag.EntityTypeId = entityTypeId;
-                tag.EntityTypeQualifierColumn = qualifierCol;
-                tag.EntityTypeQualifierValue = qualifierVal;
+                tag.IsActive = cbIsActive.Checked;
+
+                if ( _canConfigure )
+                {
+                    tag.OwnerPersonAliasId = ownerPersonAliasId;
+                    tag.CategoryId = cpCategory.SelectedValueAsInt();
+                    tag.EntityTypeId = entityTypeId;
+                    tag.EntityTypeQualifierColumn = qualifierCol;
+                    tag.EntityTypeQualifierValue = qualifierVal;
+                }
+
                 rockContext.SaveChanges();
 
                 var qryParams = new Dictionary<string, string>();
@@ -303,40 +311,43 @@ namespace RockWeb.Blocks.Core
                 pdAuditDetails.Visible = false;
             }
 
-            pnlDetails.Visible = true;
-            hfId.Value = tag.Id.ToString();
-
-            bool readOnly = false;
-
-            if ( !_canConfigure && ( tag.OwnerPersonAlias == null || tag.OwnerPersonAlias.PersonId != CurrentPersonId ) )
+            if ( _canConfigure || tag.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Tag.FriendlyTypeName );
-            }
+                pnlDetails.Visible = true;
+                hfId.Value = tag.Id.ToString();
 
-            if ( tag.IsSystem )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Group.FriendlyTypeName );
-            }
+                bool readOnly = false;
 
-            if ( readOnly )
-            {
-                btnEdit.Visible = false;
-                btnDelete.Visible = false;
-                ShowReadonlyDetails( tag );
-            }
-            else
-            {
-                btnEdit.Visible = true;
-                btnDelete.Visible = true;
-                if ( tag.Id > 0 )
+                if ( !_canConfigure && !tag.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Tag.FriendlyTypeName );
+                }
+
+                if ( tag.IsSystem )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Group.FriendlyTypeName );
+                }
+
+                if ( readOnly )
+                {
+                    btnEdit.Visible = false;
+                    btnDelete.Visible = false;
                     ShowReadonlyDetails( tag );
                 }
                 else
                 {
-                    ShowEditDetails( tag );
+                    btnEdit.Visible = true;
+                    btnDelete.Visible = true;
+                    if ( tag.Id > 0 )
+                    {
+                        ShowReadonlyDetails( tag );
+                    }
+                    else
+                    {
+                        ShowEditDetails( tag );
+                    }
                 }
             }
         }
@@ -347,14 +358,15 @@ namespace RockWeb.Blocks.Core
         /// <param name="tag">The tag.</param>
         private void ShowEditDetails( Tag tag )
         {
-
             if ( tag.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( Tag.FriendlyTypeName ).FormatAsHtmlTitle();
+                hlStatus.Visible = false;
             }
             else
             {
                 lReadOnlyTitle.Text = tag.Name.FormatAsHtmlTitle();
+                SetLabel( tag );
             }
 
             SetEditMode( true );
@@ -372,14 +384,16 @@ namespace RockWeb.Blocks.Core
                 ppOwner.SetValue( null );
             }
 
+            cpCategory.SetValue( tag.CategoryId );
+
+            cbIsActive.Checked = tag.IsActive;
             ddlEntityType.Items.Clear();
             new EntityTypeService( new RockContext() ).GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
             ddlEntityType.SelectedValue = tag.EntityTypeId.ToString();
             tbEntityTypeQualifierColumn.Text = tag.EntityTypeQualifierColumn;
             tbEntityTypeQualifierValue.Text = tag.EntityTypeQualifierValue;
 
-            rblScope.Visible = _canConfigure;
-            ppOwner.Visible = _canConfigure;
+            pnlAdvanced.Visible = _canConfigure;
         }
 
         /// <summary>
@@ -390,8 +404,28 @@ namespace RockWeb.Blocks.Core
         {
             SetEditMode( false );
             lReadOnlyTitle.Text = tag.Name.FormatAsHtmlTitle();
+
+            SetLabel( tag );
+
             lDescription.Text = tag.Description;
             hlEntityType.Text = tag.EntityType.FriendlyName;
+
+            btnSecurity.Visible = tag.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            btnSecurity.EntityId = tag.Id;
+        }
+
+        private void SetLabel( Tag tag )
+        {
+            if ( tag.IsActive )
+            {
+                hlStatus.Text = "Active";
+                hlStatus.LabelType = LabelType.Success;
+            }
+            else
+            {
+                hlStatus.Text = "Inactive";
+                hlStatus.LabelType = LabelType.Danger;
+            }
         }
 
         #endregion

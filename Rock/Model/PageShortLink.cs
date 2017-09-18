@@ -29,17 +29,17 @@ namespace Rock.Model
     /// Used to map a site and token to a specific url 
     /// </summary>
     [RockDomain( "CMS" )]
-    [Table( "SiteUrlMap" )]
+    [Table( "PageShortLink" )]
     [DataContract]
-    public partial class SiteUrlMap : Model<SiteUrlMap>
+    public partial class PageShortLink : Model<PageShortLink>
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this SiteUrlMap references. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this PageShortLink references. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Site"/> that this SiteUrlMap references.
+        /// An <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Site"/> that this PageShortLink references.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -63,7 +63,6 @@ namespace Rock.Model
         /// The URL.
         /// </value>
         [Required]
-        [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
         public string Url { get; set; }
 
@@ -72,10 +71,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Site"/> that is associated with this SiteUrlMap.
+        /// Gets or sets the <see cref="Rock.Model.Site"/> that is associated with this PageShortLink.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Site"/> that this SiteUrlMap is associated with.
+        /// The <see cref="Rock.Model.Site"/> that this PageShortLink is associated with.
         /// </value>
         [LavaInclude]
         public virtual Site Site { get; set; }
@@ -127,12 +126,12 @@ namespace Rock.Model
     /// <summary>
     /// Site UrlMap Configuration class.
     /// </summary>
-    public partial class SiteUrlMapConfiguration : EntityTypeConfiguration<SiteUrlMap>
+    public partial class PageShortLinkConfiguration : EntityTypeConfiguration<PageShortLink>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SiteUrlMapConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="PageShortLinkConfiguration"/> class.
         /// </summary>
-        public SiteUrlMapConfiguration()
+        public PageShortLinkConfiguration()
         {
             this.HasRequired( p => p.Site ).WithMany().HasForeignKey( p => p.SiteId ).WillCascadeOnDelete(true);
         }

@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Cms
                 item.LoadAttributes();
 
                 phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup );
+                Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup, 2 );
 
                 ShowDialog();
             }

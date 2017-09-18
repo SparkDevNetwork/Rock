@@ -88,6 +88,13 @@ namespace RockWeb.Blocks.Core
             LavaShortcode lavaShortcode;
             var rockContext = new RockContext();
             var lavaShortCodeService = new LavaShortcodeService( rockContext );
+
+            if ( lavaShortCodeService.Queryable().Any( a => a.TagName == tbTagName.Text ) && hfOriginalTagName.Value != tbTagName.Text )
+            {
+                Page.ModelState.AddModelError( "DuplicateTag", "Tag with the same name is already in use." );
+                return;
+            }
+
             int lavaShortCode = hfLavaShortcodeId.ValueAsInt();
 
             if ( lavaShortCode == 0 )

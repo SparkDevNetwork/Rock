@@ -43,6 +43,15 @@ BEGIN
 	SET @EndDate = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000107', 112 ), @EndDate ) % 7 ), @EndDate ), '2100-01-01' )
     IF @EndDate < @StartDate SET @EndDate = DATEADD( day, 6 + DATEDIFF( day, @EndDate, @StartDate ), @EndDate )
 
+	DECLARE @CampusTbl TABLE ( [Id] int )
+	INSERT INTO @CampusTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@CampusIds,'') )
+
+	DECLARE @ScheduleTbl TABLE ( [Id] int )
+	INSERT INTO @ScheduleTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@ScheduleIds,'') )
+
+	DECLARE @GroupTbl TABLE ( [Id] int )
+	INSERT INTO @GroupTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@GroupIds,'') )
+
 	-- Get all the attendees
     IF @IncludeChildrenWithParents = 0 AND @IncludeParentsWithChild = 0
     BEGIN
@@ -53,6 +62,7 @@ BEGIN
 		    P.[NickName],
 		    P.[LastName],
 		    P.[Email],
+            P.[GivingId],
 		    P.[BirthDate],
             P.[ConnectionStatusValueId]
 	    FROM (
@@ -63,16 +73,18 @@ BEGIN
 					A.[CampusId],
 					A.[ScheduleId]
  				FROM [Attendance] A
-				WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
-				AND [StartDateTime] BETWEEN @StartDate AND @EndDate
+				INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+				WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 				AND [DidAttend] = 1
 			) A
             INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
-			WHERE ( 
-				( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
-				( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
-			)
-			AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
+			LEFT OUTER JOIN @CampusTbl [C] ON [C].[id] = [A].[CampusId]
+			LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [A].[ScheduleId]
+		    WHERE ( 
+			    ( @CampusIds IS NULL OR [C].[Id] IS NOT NULL ) OR  
+			    ( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
+		    )
+		    AND ( @ScheduleIds IS NULL OR [S].[Id] IS NOT NULL  )
 	    ) [Attendee]
 	    INNER JOIN [Person] P 
 			ON P.[Id] = [Attendee].[PersonId]
@@ -89,17 +101,19 @@ BEGIN
 
             -- Child attended, also include their parents
 	        SELECT	
-		        C.[Id],
-		        C.[NickName],
-		        C.[LastName],
-		        C.[Email],
-		        C.[BirthDate],
+                C.[Id],
+                C.[NickName],
+                C.[LastName],
+                C.[Email],
+                C.[GivingId],
+                C.[BirthDate],
                 C.[ConnectionStatusValueId],
-		        A.[Id] AS [ParentId],
-		        A.[NickName] AS [ParentNickName],
-		        A.[LastName] AS [ParentLastName],
-		        A.[Email] AS [ParentEmail],
-		        A.[BirthDate] AS [ParentBirthDate]
+                A.[Id] AS [ParentId],
+                A.[NickName] AS [ParentNickName],
+                A.[LastName] AS [ParentLastName],
+                A.[Email] AS [ParentEmail],
+                A.[GivingId] as [ParentGivingId],
+                A.[BirthDate] AS [ParentBirthDate]
 	        FROM (
 				SELECT DISTINCT PA.[PersonId]
 				FROM (
@@ -108,16 +122,18 @@ BEGIN
 						A.[CampusId],
 						A.[ScheduleId]
  					FROM [Attendance] A
-					WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
-					AND [StartDateTime] BETWEEN @StartDate AND @EndDate
+					INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+					WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 					AND [DidAttend] = 1
 				) A
 				INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
+				LEFT OUTER JOIN @CampusTbl [C] ON [C].[id] = [A].[CampusId]
+				LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [A].[ScheduleId]
 				WHERE ( 
-					( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
+					( @CampusIds IS NULL OR [C].[Id] IS NOT NULL ) OR  
 					( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
 				)
-				AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
+				AND ( @ScheduleIds IS NULL OR [S].[Id] IS NOT NULL  )
 	        ) [Attendee]
 	        INNER JOIN [Person] C 
 				ON C.[Id] = [Attendee].[PersonId]
@@ -137,17 +153,19 @@ BEGIN
 
             -- Parents attended, include their children
 	        SELECT	
-		        A.[Id],
-		        A.[NickName],
-		        A.[LastName],
-		        A.[Email],
-		        A.[BirthDate],
+                A.[Id],
+                A.[NickName],
+                A.[LastName],
+                A.[Email],
+                A.[GivingId],
+                A.[BirthDate],
                 A.[ConnectionStatusValueId],
-		        C.[Id] AS [ChildId],
-		        C.[NickName] AS [ChildNickName],
-		        C.[LastName] AS [ChildLastName],
-		        C.[Email] AS [ChildEmail],
-		        C.[BirthDate] AS [ChildBirthDate]
+                C.[Id] AS [ChildId],
+                C.[NickName] AS [ChildNickName],
+                C.[LastName] AS [ChildLastName],
+                C.[Email] AS [ChildEmail],
+                C.[GivingId] as [ChildGivingId],
+                C.[BirthDate] AS [ChildBirthDate]
 	        FROM (
 				SELECT DISTINCT PA.[PersonId]
 				FROM (
@@ -156,16 +174,18 @@ BEGIN
 						A.[CampusId],
 						A.[ScheduleId]
  					FROM [Attendance] A
-					WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
-					AND [StartDateTime] BETWEEN @StartDate AND @EndDate
+					INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+					WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 					AND [DidAttend] = 1
 				) A
 				INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
+				LEFT OUTER JOIN @CampusTbl [C] ON [C].[id] = [A].[CampusId]
+				LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [A].[ScheduleId]
 				WHERE ( 
-					( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
+					( @CampusIds IS NULL OR [C].[Id] IS NOT NULL ) OR  
 					( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
 				)
-				AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
+				AND ( @ScheduleIds IS NULL OR [S].[Id] IS NOT NULL  )
 	        ) [Attendee]
 	        INNER JOIN [Person] A 
 				ON A.[Id] = [Attendee].[PersonId]

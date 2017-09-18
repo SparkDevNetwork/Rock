@@ -156,6 +156,11 @@
     <Compile Include="CodeGenerated\Location.cs" />
     <Compile Include="CodeGenerated\LoginParameters.cs" />
     <Compile Include="CodeGenerated\MergeTemplate.cs" />
+    <Compile Include="CodeGenerated\MetaFirstNameGenderLookup.cs" />
+    <Compile Include="CodeGenerated\MetaLastNameLookup.cs" />
+    <Compile Include="CodeGenerated\MetaNickNameLookup.cs" />
+    <Compile Include="CodeGenerated\MetaPersonicxLifestageCluster.cs" />
+    <Compile Include="CodeGenerated\MetaPersonicxLifestageGroup.cs" />
     <Compile Include="CodeGenerated\Metaphone.cs" />
     <Compile Include="CodeGenerated\Metric.cs" />
     <Compile Include="CodeGenerated\MetricCategory.cs" />
@@ -169,12 +174,14 @@
     <Compile Include="CodeGenerated\Page.cs" />
     <Compile Include="CodeGenerated\PageContext.cs" />
     <Compile Include="CodeGenerated\PageRoute.cs" />
+    <Compile Include="CodeGenerated\PageShortLink.cs" />
     <Compile Include="CodeGenerated\Person.cs" />
     <Compile Include="CodeGenerated\PersonalDevice.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
     <Compile Include="CodeGenerated\PersonBadge.cs" />
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="CodeGenerated\PersonToken.cs" />
     <Compile Include="CodeGenerated\PersonViewed.cs" />
     <Compile Include="CodeGenerated\PhoneNumber.cs" />
     <Compile Include="CodeGenerated\PluginMigration.cs" />
@@ -200,7 +207,6 @@
     <Compile Include="CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="CodeGenerated\Site.cs" />
     <Compile Include="CodeGenerated\SiteDomain.cs" />
-    <Compile Include="CodeGenerated\SiteUrlMap.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
     <Compile Include="CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="CodeGenerated\Tag.cs" />

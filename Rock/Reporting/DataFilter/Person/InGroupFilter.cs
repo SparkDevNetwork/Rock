@@ -132,12 +132,13 @@ namespace Rock.Reporting.DataFilter.Person
 
                 var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
 
-                SlidingDateRangePicker fakeSlidingDateRangePicker = null;
-
                 bool includeChildGroups = false;
                 bool includeChildGroupsPlusDescendants = false;
                 bool includeChildGroupsIncludeSelected = false;
                 bool includeInactiveGroups = false;
+                string addedOnDateRangeText = null;
+                string firstAttendanceDateRangeText = null;
+                string lastAttendanceDateRangeText = null;
                 if ( selectionValues.Length >= 3 )
                 {
                     includeChildGroups = selectionValues[2].AsBooleanOrNull() ?? false;
@@ -154,10 +155,17 @@ namespace Rock.Reporting.DataFilter.Person
 
                     if ( selectionValues.Length >= 8 )
                     {
-                        fakeSlidingDateRangePicker = new SlidingDateRangePicker();
+                        // convert comma delimited to pipe then get date range text
+                        addedOnDateRangeText = SlidingDateRangePicker.FormatDelimitedValues( selectionValues[7].Replace( ',', '|' ) );
+                    }
 
-                        // convert comma delimited to pipe
-                        fakeSlidingDateRangePicker.DelimitedValues = selectionValues[7].Replace( ',', '|' );
+                    if ( selectionValues.Length >= 10 )
+                    {
+                        // convert comma delimited to pipe then get date range text
+                        firstAttendanceDateRangeText = SlidingDateRangePicker.FormatDelimitedValues( selectionValues[8].Replace( ',', '|' ) );
+
+                        // convert comma delimited to pipe then get date range text
+                        lastAttendanceDateRangeText = SlidingDateRangePicker.FormatDelimitedValues( selectionValues[9].Replace( ',', '|' ) );
                     }
                 }
 
@@ -190,7 +198,6 @@ namespace Rock.Reporting.DataFilter.Person
                         {
                             result += ", not including selected groups";
                         }
-
                     }
 
                     if ( groupTypeRoles.Count() > 0 )
@@ -203,9 +210,19 @@ namespace Rock.Reporting.DataFilter.Person
                         result += string.Format( ", with member status: {0}", groupMemberStatus.ConvertToString() );
                     }
 
-                    if ( fakeSlidingDateRangePicker != null )
+                    if ( !string.IsNullOrEmpty( addedOnDateRangeText ) )
                     {
-                        result += string.Format( ", added to group in Date Range: {0}", SlidingDateRangePicker.FormatDelimitedValues( fakeSlidingDateRangePicker.DelimitedValues ) );
+                        result += string.Format( ", added to group in Date Range: {0}", addedOnDateRangeText );
+                    }
+
+                    if ( !string.IsNullOrEmpty( firstAttendanceDateRangeText ) )
+                    {
+                        result += string.Format( ", first attendance to group in Date Range: {0}", firstAttendanceDateRangeText );
+                    }
+
+                    if ( !string.IsNullOrEmpty( lastAttendanceDateRangeText ) )
+                    {
+                        result += string.Format( ", last attendance to  group in Date Range: {0}", lastAttendanceDateRangeText );
                     }
                 }
             }
@@ -313,12 +330,26 @@ namespace Rock.Reporting.DataFilter.Person
 
             SlidingDateRangePicker addedOnDateRangePicker = new SlidingDateRangePicker();
             addedOnDateRangePicker.ID = pwAdvanced.ID + "_addedOnDateRangePicker";
-            addedOnDateRangePicker.AddCssClass( "js-sliding-date-range" );
+            addedOnDateRangePicker.AddCssClass( "js-dateadded-sliding-date-range" );
             addedOnDateRangePicker.Label = "Date Added:";
             addedOnDateRangePicker.Help = "Select the date range that the person was added to the group. Leaving this blank will not restrict results to a date range.";
             pwAdvanced.Controls.Add( addedOnDateRangePicker );
 
-            return new Control[9] { gp, cbChildGroups, cbIncludeSelectedGroup, cbChildGroupsPlusDescendants, cblRole, ddlGroupMemberStatus, cbIncludeInactiveGroups, addedOnDateRangePicker, pwAdvanced };
+            SlidingDateRangePicker firstAttendanceDateRangePicker = new SlidingDateRangePicker();
+            firstAttendanceDateRangePicker.ID = filterControl.ID + "_firstAttendanceDateRangePicker";
+            firstAttendanceDateRangePicker.AddCssClass( "js-firstattendance-sliding-date-range" );
+            firstAttendanceDateRangePicker.Label = "First Attendance";
+            firstAttendanceDateRangePicker.Help = "The date range of the first attendance using the 'Sunday Date' of each attendance";
+            pwAdvanced.Controls.Add( firstAttendanceDateRangePicker );
+
+            SlidingDateRangePicker lastAttendanceDateRangePicker = new SlidingDateRangePicker();
+            lastAttendanceDateRangePicker.ID = filterControl.ID + "_lastAttendanceDateRangePicker";
+            lastAttendanceDateRangePicker.AddCssClass( "js-lastattendance-sliding-date-range" );
+            lastAttendanceDateRangePicker.Label = "Last Attendance";
+            lastAttendanceDateRangePicker.Help = "The date range of the last attendance using the 'Sunday Date' of each attendance";
+            pwAdvanced.Controls.Add( lastAttendanceDateRangePicker );
+
+            return new Control[11] { gp, cbChildGroups, cbIncludeSelectedGroup, cbChildGroupsPlusDescendants, cblRole, ddlGroupMemberStatus, cbIncludeInactiveGroups, addedOnDateRangePicker, pwAdvanced, firstAttendanceDateRangePicker, lastAttendanceDateRangePicker };
         }
 
         /// <summary>
@@ -481,15 +512,16 @@ namespace Rock.Reporting.DataFilter.Person
             RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
             RockCheckBox cbInactiveGroups = controls[6] as RockCheckBox;
             SlidingDateRangePicker addedOnDateRangePicker = controls[7] as SlidingDateRangePicker;
+            SlidingDateRangePicker firstAttendanceDateRangePicker = controls[9] as SlidingDateRangePicker;
+            SlidingDateRangePicker lastAttendanceDateRangePicker = controls[10] as SlidingDateRangePicker;
 
             List<int> groupIdList = groupPicker.SelectedValues.AsIntegerList();
             var groupGuids = new GroupService( new RockContext() ).GetByIds( groupIdList ).Select( a => a.Guid ).Distinct().ToList();
 
-            // convert pipe to comma delimited
-            var delimitedValues = addedOnDateRangePicker.DelimitedValues.Replace( "|", "," );
+            //// NOTE: convert slidingdaterange delimitedvalues from pipe to comma delimited
 
             return string.Format(
-                "{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}",
+                "{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}",
                 groupGuids.AsDelimited( "," ),
                 cblRoles.SelectedValues.AsDelimited( "," ),
                 cbChildGroups.Checked.ToString(),
@@ -497,7 +529,9 @@ namespace Rock.Reporting.DataFilter.Person
                 cbIncludeSelectedGroup.Checked.ToString(),
                 cbChildGroupsPlusDescendants.Checked.ToString(),
                 cbIncludeInactiveGroups.Checked.ToString(),
-                delimitedValues );
+                addedOnDateRangePicker.DelimitedValues.Replace( "|", "," ),
+                firstAttendanceDateRangePicker.DelimitedValues.Replace( "|", "," ),
+                lastAttendanceDateRangePicker.DelimitedValues.Replace( "|", "," ) );
         }
 
         /// <summary>
@@ -521,6 +555,8 @@ namespace Rock.Reporting.DataFilter.Person
             RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
             RockCheckBox cbIncludeInactive = controls[6] as RockCheckBox;
             SlidingDateRangePicker addedOnDateRangePicker = controls[7] as SlidingDateRangePicker;
+            SlidingDateRangePicker firstAttendanceDateRangePicker = controls[9] as SlidingDateRangePicker;
+            SlidingDateRangePicker lastAttendanceDateRangePicker = controls[10] as SlidingDateRangePicker;
 
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
@@ -581,6 +617,15 @@ namespace Rock.Reporting.DataFilter.Person
                     // convert comma delimited to pipe
                     addedOnDateRangePicker.DelimitedValues = selectionValues[7].Replace( ',', '|' );
                 }
+
+                if ( selectionValues.Length >= 10 )
+                {
+                    // convert comma delimited to pipe
+                    firstAttendanceDateRangePicker.DelimitedValues = selectionValues[8].Replace( ',', '|' );
+
+                    // convert comma delimited to pipe
+                    lastAttendanceDateRangePicker.DelimitedValues = selectionValues[9].Replace( ',', '|' );
+                }
             }
         }
 
@@ -595,11 +640,12 @@ namespace Rock.Reporting.DataFilter.Person
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             string[] selectionValues = selection.Split( '|' );
+            var rockContext = ( RockContext ) serviceInstance.Context;
             if ( selectionValues.Length >= 2 )
             {
-                GroupMemberService groupMemberService = new GroupMemberService( (RockContext)serviceInstance.Context );
+                GroupMemberService groupMemberService = new GroupMemberService( rockContext );
                 List<Guid> groupGuids = selectionValues[0].Split( ',' ).AsGuidList();
-                var groupService = new GroupService( (RockContext)serviceInstance.Context );
+                var groupService = new GroupService( rockContext );
                 var groupIds = groupService.GetByGuids( groupGuids ).Select( a => a.Id ).Distinct().ToList();
 
                 bool includeChildGroups = false;
@@ -625,7 +671,7 @@ namespace Rock.Reporting.DataFilter.Person
 
                 if ( selectionValues.Length >= 7 )
                 {
-                    includeInactiveGroups = selectionValues[6].AsBooleanOrNull() ?? true; ;
+                    includeInactiveGroups = selectionValues[6].AsBooleanOrNull() ?? true;
                 }
                 else
                 {
@@ -641,9 +687,10 @@ namespace Rock.Reporting.DataFilter.Person
 
                 var groupMemberServiceQry = groupMemberService.Queryable();
 
+                List<int> childGroupIds = new List<int>();
+
                 if ( includeChildGroups )
                 {
-                    List<int> childGroupIds = new List<int>();
                     foreach ( var groupId in groupIds )
                     {
                         if ( includeChildGroupsPlusDescendants )
@@ -692,14 +739,14 @@ namespace Rock.Reporting.DataFilter.Person
                 var groupRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => n.AsGuid() ).ToList();
                 if ( groupRoleGuids.Count() > 0 )
                 {
-                    var groupRoleIds = new GroupTypeRoleService( (RockContext)serviceInstance.Context ).Queryable().Where( a => groupRoleGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
+                    var groupRoleIds = new GroupTypeRoleService( ( RockContext ) serviceInstance.Context ).Queryable().Where( a => groupRoleGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
                     groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleIds.Contains( xx.GroupRoleId ) );
                 }
 
                 if ( selectionValues.Length >= 8 )
                 {
-                    string slidingDelimitedValues = selectionValues[7].Replace( ',', '|' );
-                    DateRange dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( slidingDelimitedValues );
+                    string addedOnSlidingDelimitedValues = selectionValues[7].Replace( ',', '|' );
+                    DateRange dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( addedOnSlidingDelimitedValues );
                     if ( dateRange.Start.HasValue )
                     {
                         groupMemberServiceQry = groupMemberServiceQry.Where( xx => xx.DateTimeAdded >= dateRange.Start.Value );
@@ -711,8 +758,108 @@ namespace Rock.Reporting.DataFilter.Person
                     }
                 }
 
-                var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
-                    .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
+                IQueryable<PersonIdFirstAttendance> firstAttendanceDateQry = null;
+                IQueryable<PersonIdLastAttendance> lastAttendanceDateQry = null;
+
+                if ( selectionValues.Length >= 10 )
+                {
+                    List<int> attendanceGroupIds = null;
+                    if ( includeChildGroups )
+                    {
+                        if ( includeChildGroupsIncludeSelected )
+                        {
+                            attendanceGroupIds = new List<int>();
+                            attendanceGroupIds.AddRange( groupIds );
+                            attendanceGroupIds.AddRange( childGroupIds );
+                        }
+                        else
+                        {
+                            attendanceGroupIds = childGroupIds;
+                        }
+                    }
+                    else
+                    {
+                        attendanceGroupIds = groupIds;
+                    }
+
+                    var groupAttendanceQuery = new AttendanceService( rockContext ).Queryable().Where( a => a.DidAttend == true && a.GroupId.HasValue && attendanceGroupIds.Contains( a.GroupId.Value ) );
+
+                    string firstAttendanceSlidingDelimitedValues = selectionValues[8].Replace( ',', '|' );
+                    DateRange firstAttendanceDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( firstAttendanceSlidingDelimitedValues );
+
+                    if ( firstAttendanceDateRange.Start.HasValue || firstAttendanceDateRange.End.HasValue )
+                    {
+                        firstAttendanceDateQry = groupAttendanceQuery
+                            .GroupBy( xx => xx.PersonAlias.PersonId )
+                            .Select( ss => new PersonIdFirstAttendance
+                            {
+                                PersonId = ss.Key,
+                                FirstAttendanceSundayDate = ss.Min( a => a.SundayDate )
+                            } );
+
+                        if ( firstAttendanceDateRange.Start.HasValue )
+                        {
+                            firstAttendanceDateQry = firstAttendanceDateQry.Where( xx => xx.FirstAttendanceSundayDate >= firstAttendanceDateRange.Start.Value );
+                        }
+
+                        if ( firstAttendanceDateRange.End.HasValue )
+                        {
+                            firstAttendanceDateQry = firstAttendanceDateQry.Where( xx => xx.FirstAttendanceSundayDate < firstAttendanceDateRange.End.Value );
+                        }
+                    }
+
+                    string lastAttendanceSlidingDelimitedValues = selectionValues[9].Replace( ',', '|' );
+                    DateRange lastAttendanceDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( lastAttendanceSlidingDelimitedValues );
+
+                    if ( lastAttendanceDateRange.Start.HasValue || lastAttendanceDateRange.End.HasValue )
+                    {
+                        lastAttendanceDateQry = groupAttendanceQuery
+                            .GroupBy( xx => xx.PersonAlias.PersonId )
+                            .Select( ss => new PersonIdLastAttendance
+                            {
+                                PersonId = ss.Key,
+                                LastAttendanceSundayDate = ss.Max( a => a.SundayDate )
+                            } );
+
+                        if ( lastAttendanceDateRange.Start.HasValue )
+                        {
+                            lastAttendanceDateQry = lastAttendanceDateQry.Where( xx => xx.LastAttendanceSundayDate >= lastAttendanceDateRange.Start.Value );
+                        }
+
+                        if ( lastAttendanceDateRange.End.HasValue )
+                        {
+                            lastAttendanceDateQry = lastAttendanceDateQry.Where( xx => xx.LastAttendanceSundayDate < lastAttendanceDateRange.End.Value );
+                        }
+                    }
+                }
+
+                IQueryable<Rock.Model.Person> qry = null;
+                if ( lastAttendanceDateQry == null && firstAttendanceDateQry == null )
+                {
+                    qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
+                        .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
+                }
+                else
+                {
+                    if ( firstAttendanceDateQry != null && lastAttendanceDateQry != null )
+                    {
+                        qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
+                            .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) 
+                                && firstAttendanceDateQry.Any( aa => aa.PersonId == p.Id ) && lastAttendanceDateQry.Any( bb => bb.PersonId == p.Id ) );
+                    }
+                    else if ( firstAttendanceDateQry != null )
+                    {
+                        qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
+                            .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) 
+                                && firstAttendanceDateQry.Any( aa => aa.PersonId == p.Id ) );
+                    }
+                    else if ( lastAttendanceDateQry != null )
+                    {
+                        qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
+                            .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id )
+                                && lastAttendanceDateQry.Any( aa => aa.PersonId == p.Id ) );
+                    }
+                }
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
 
@@ -720,6 +867,50 @@ namespace Rock.Reporting.DataFilter.Person
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class PersonIdFirstAttendance
+        {
+            /// <summary>
+            /// Gets or sets the person identifier.
+            /// </summary>
+            /// <value>
+            /// The person identifier.
+            /// </value>
+            public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the first attendance sunday date.
+            /// </summary>
+            /// <value>
+            /// The first attendance sunday date.
+            /// </value>
+            public DateTime FirstAttendanceSundayDate { get; set; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class PersonIdLastAttendance
+        {
+            /// <summary>
+            /// Gets or sets the person identifier.
+            /// </summary>
+            /// <value>
+            /// The person identifier.
+            /// </value>
+            public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the last attendance sunday date.
+            /// </summary>
+            /// <value>
+            /// The last attendance sunday date.
+            /// </value>
+            public DateTime LastAttendanceSundayDate { get; set; }
         }
 
         #endregion

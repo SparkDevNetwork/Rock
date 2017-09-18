@@ -238,7 +238,7 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<PersonalDevice>( Context ).Queryable().Any( a => a.PersonalDeviceTypeId == item.Id ) )
+            if ( new Service<PersonalDevice>( Context ).Queryable().Any( a => a.PersonalDeviceTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PersonalDevice.FriendlyTypeName );
                 return false;

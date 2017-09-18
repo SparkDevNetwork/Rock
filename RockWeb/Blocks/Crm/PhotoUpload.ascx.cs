@@ -174,34 +174,14 @@ namespace RockWeb.Blocks.Crm
         private void BindRepeater()
         {
             var people = new List<Person>();
-            Person targetPerson = null;
 
-            string personKey = PageParameter( "rckipid" );
-            if ( ! string.IsNullOrEmpty( personKey ) )
+            if ( CurrentPerson != null )
             {
-                try
-                {
-                    targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
-                }
-                catch ( Exception ex )
-                {
-                    nbWarning.Visible = true;
-                    LogException( ex );
-                }
-            }
-            else
-            {
-                // otherwise use the currently logged in person
-                targetPerson = CurrentUser.Person;
-            }
-
-            if ( targetPerson != null )
-            {
-                people.Add( targetPerson );
+                people.Add( CurrentPerson );
 
                 if ( GetAttributeValue( "IncludeFamilyMembers" ).AsBoolean() )
                 {
-                    foreach ( var member in targetPerson.GetFamilyMembers( includeSelf: false ).ToList() )
+                    foreach ( var member in CurrentPerson.GetFamilyMembers( includeSelf: false ).ToList() )
                     {
                         people.Add( member.Person );
                     }

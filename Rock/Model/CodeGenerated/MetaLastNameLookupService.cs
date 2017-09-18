@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// SiteUrlMap Service class
+    /// MetaLastNameLookup Service class
     /// </summary>
-    public partial class SiteUrlMapService : Service<SiteUrlMap>
+    public partial class MetaLastNameLookupService : Service<MetaLastNameLookup>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SiteUrlMapService"/> class
+        /// Initializes a new instance of the <see cref="MetaLastNameLookupService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public SiteUrlMapService(RockContext context) : base(context)
+        public MetaLastNameLookupService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( SiteUrlMap item, out string errorMessage )
+        public bool CanDelete( MetaLastNameLookup item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,45 +58,42 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class SiteUrlMapExtensionMethods
+    public static partial class MetaLastNameLookupExtensionMethods
     {
         /// <summary>
-        /// Clones this SiteUrlMap object to a new SiteUrlMap object
+        /// Clones this MetaLastNameLookup object to a new MetaLastNameLookup object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static SiteUrlMap Clone( this SiteUrlMap source, bool deepCopy )
+        public static MetaLastNameLookup Clone( this MetaLastNameLookup source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as SiteUrlMap;
+                return source.Clone() as MetaLastNameLookup;
             }
             else
             {
-                var target = new SiteUrlMap();
+                var target = new MetaLastNameLookup();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another SiteUrlMap object to this SiteUrlMap object
+        /// Copies the properties from another MetaLastNameLookup object to this MetaLastNameLookup object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this SiteUrlMap target, SiteUrlMap source )
+        public static void CopyPropertiesFrom( this MetaLastNameLookup target, MetaLastNameLookup source )
         {
             target.Id = source.Id;
+            target.Count = source.Count;
+            target.CountIn100k = source.CountIn100k;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.SiteId = source.SiteId;
-            target.Token = source.Token;
-            target.Url = source.Url;
-            target.CreatedDateTime = source.CreatedDateTime;
-            target.ModifiedDateTime = source.ModifiedDateTime;
-            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
-            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            target.LastName = source.LastName;
+            target.Rank = source.Rank;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

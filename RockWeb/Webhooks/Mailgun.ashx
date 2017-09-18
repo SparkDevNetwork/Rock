@@ -112,38 +112,18 @@ public class Mailgun : IHttpHandler
                 Guid? communicationRecipientGuid = request.Form["communication_recipient_guid"].Split( ',' )[0].AsGuidOrNull();
                 if ( communicationRecipientGuid.HasValue )
                 {
-                    var communicationRecipientService = new CommunicationRecipientService( rockContext );
-                    var interactionComponentService = new InteractionComponentService( rockContext );
-                    var interactionService = new InteractionService( rockContext );
-
-                    var communicationRecipient = communicationRecipientService.Get( communicationRecipientGuid.Value );
+                    var communicationRecipient = new CommunicationRecipientService( rockContext ).Get( communicationRecipientGuid.Value );
                     if ( communicationRecipient != null && communicationRecipient.Communication != null )
                     {
-
                         int secs = request.Form["timestamp"].AsInteger();
                         DateTime ts = RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc ).AddSeconds( secs ).ToLocalTime() );
 
-                        InteractionComponent interactionComponent = null;
-                        var interactionChannel = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
-                        if ( interactionChannel != null )
-                        {
-                            interactionComponent = interactionComponentService.Queryable()
-                                    .Where( c =>
-                                        c.ChannelId == interactionChannel.Id &&
-                                        c.EntityId == communicationRecipient.CommunicationId )
-                                    .FirstOrDefault();
-                            if ( interactionComponent == null )
-                            {
+                        InteractionComponent interactionComponent = new InteractionComponentService( rockContext )
+                            .GetComponentByEntityId( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid(), 
+                                communicationRecipient.CommunicationId, communicationRecipient.Communication.Subject );
+                        rockContext.SaveChanges();
 
-                                interactionComponent = new InteractionComponent();
-                                interactionComponent.Name = communicationRecipient.Communication.Subject;
-                                interactionComponent.EntityId = communicationRecipient.Communication.Id;
-                                interactionComponent.ChannelId = interactionChannel.Id;
-                                interactionComponentService.Add( interactionComponent );
-                                rockContext.SaveChanges();
-                            }
-                        }
-
+                        var interactionService = new InteractionService( rockContext );
 
                         switch ( eventType )
                         {
@@ -162,37 +142,16 @@ public class Mailgun : IHttpHandler
 
                                 if ( interactionComponent != null )
                                 {
-                                    Interaction openActivity = new Interaction();
-                                    openActivity.InteractionComponentId = interactionComponent.Id;
-                                    openActivity.EntityId = communicationRecipient.Id;
-                                    openActivity.Operation = "Opened";
-                                    openActivity.InteractionDateTime = ts;
-                                    openActivity.PersonAliasId = communicationRecipient.PersonAliasId;
-
-                                    var openInteractionDeviceType = interactionService.GetInteractionDeviceType( request.Form["client-name"], request.Form["client-os"], request.Form["client-type"], request.Form["device-type"] );
-                                    var openInteractionSession = interactionService.GetInteractionSession( null, request.Form["ip"], openInteractionDeviceType.Id );
-
-                                    openActivity.InteractionSessionId = openInteractionSession.Id;
-                                    interactionService.Add( openActivity );
+                                    interactionService.AddInteraction( interactionComponent.Id, communicationRecipient.Id, "Opened", "", communicationRecipient.PersonAliasId, ts,
+                                        request.Form["client-name"], request.Form["client-os"], request.Form["client-type"], request.Form["device-type"], request.Form["ip"] );
                                 }
                                 break;
 
                             case "clicked":
                                 if ( interactionComponent != null )
                                 {
-                                    Interaction clickActivity = new Interaction();
-                                    clickActivity.InteractionComponentId = interactionComponent.Id;
-                                    clickActivity.EntityId = communicationRecipient.Id;
-                                    clickActivity.Operation = "Click";
-                                    clickActivity.InteractionData = request.Form["url"];
-                                    clickActivity.InteractionDateTime = ts;
-                                    clickActivity.PersonAliasId = communicationRecipient.PersonAliasId;
-
-                                    var clickInteractionDeviceType = interactionService.GetInteractionDeviceType( request.Form["client-name"], request.Form["client-os"], request.Form["client-type"], request.Form["device-type"] );
-                                    var clickInteractionSession = interactionService.GetInteractionSession( null, request.Form["ip"], clickInteractionDeviceType.Id );
-
-                                    clickActivity.InteractionSessionId = clickInteractionSession.Id;
-                                    interactionService.Add( clickActivity );
+                                    interactionService.AddInteraction( interactionComponent.Id, communicationRecipient.Id, "Click", request.Form["url"], communicationRecipient.PersonAliasId, ts,
+                                        request.Form["client-name"], request.Form["client-os"], request.Form["client-type"], request.Form["device-type"], request.Form["ip"] );
                                 }
                                 break;
 

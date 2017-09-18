@@ -265,6 +265,58 @@
     <Compile Include="Migrations\201707132057256_UniversalSearchBoostAttrib.Designer.cs">
       <DependentUpon>201707132057256_UniversalSearchBoostAttrib.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707171725146_UniversalSearchPages.cs" />
+    <Compile Include="Migrations\201707171725146_UniversalSearchPages.Designer.cs">
+      <DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707172127488_TagChanges.cs" />
+    <Compile Include="Migrations\201707172127488_TagChanges.Designer.cs">
+      <DependentUpon>201707172127488_TagChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707182207536_PageShortLinks.cs" />
+    <Compile Include="Migrations\201707182207536_PageShortLinks.Designer.cs">
+      <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707191610105_SiteFavIcon.cs" />
+    <Compile Include="Migrations\201707191610105_SiteFavIcon.Designer.cs">
+      <DependentUpon>201707191610105_SiteFavIcon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707192232303_MetaModels.cs" />
+    <Compile Include="Migrations\201707192232303_MetaModels.Designer.cs">
+      <DependentUpon>201707192232303_MetaModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707212034122_PersonToken.cs" />
+    <Compile Include="Migrations\201707212034122_PersonToken.Designer.cs">
+      <DependentUpon>201707212034122_PersonToken.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707241828445_PersonAliasNullableId.cs" />
+    <Compile Include="Migrations\201707241828445_PersonAliasNullableId.Designer.cs">
+      <DependentUpon>201707241828445_PersonAliasNullableId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707272046132_Presence.cs" />
+    <Compile Include="Migrations\201707272046132_Presence.Designer.cs">
+      <DependentUpon>201707272046132_Presence.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707311527250_AddMetaData.cs" />
+    <Compile Include="Migrations\201707311527250_AddMetaData.Designer.cs">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708152332039_PageShortLinkUrl.cs" />
+    <Compile Include="Migrations\201708152332039_PageShortLinkUrl.Designer.cs">
+      <DependentUpon>201708152332039_PageShortLinkUrl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708160014458_VerifySecurityBlockPage.cs" />
+    <Compile Include="Migrations\201708160014458_VerifySecurityBlockPage.Designer.cs">
+      <DependentUpon>201708160014458_VerifySecurityBlockPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708162105164_AnalyticsPerformance.cs" />
+    <Compile Include="Migrations\201708162105164_AnalyticsPerformance.Designer.cs">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708162351472_ReportQueryHints.cs" />
+    <Compile Include="Migrations\201708162351472_ReportQueryHints.Designer.cs">
+      <DependentUpon>201708162351472_ReportQueryHints.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2613,6 +2665,45 @@
     <EmbeddedResource Include="Migrations\201707132057256_UniversalSearchBoostAttrib.resx">
       <DependentUpon>201707132057256_UniversalSearchBoostAttrib.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707171725146_UniversalSearchPages.resx">
+      <DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707172127488_TagChanges.resx">
+      <DependentUpon>201707172127488_TagChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707182207536_PageShortLinks.resx">
+      <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707191610105_SiteFavIcon.resx">
+      <DependentUpon>201707191610105_SiteFavIcon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707192232303_MetaModels.resx">
+      <DependentUpon>201707192232303_MetaModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707212034122_PersonToken.resx">
+      <DependentUpon>201707212034122_PersonToken.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707241828445_PersonAliasNullableId.resx">
+      <DependentUpon>201707241828445_PersonAliasNullableId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707272046132_Presence.resx">
+      <DependentUpon>201707272046132_Presence.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707311527250_AddMetaData.resx">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708152332039_PageShortLinkUrl.resx">
+      <DependentUpon>201708152332039_PageShortLinkUrl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708160014458_VerifySecurityBlockPage.resx">
+      <DependentUpon>201708160014458_VerifySecurityBlockPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708162105164_AnalyticsPerformance.resx">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708162351472_ReportQueryHints.resx">
+      <DependentUpon>201708162351472_ReportQueryHints.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4274,6 +4365,9 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Migrations\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsAttendance.sql">
       <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
     </Content>
@@ -4375,6 +4469,54 @@
     </Content>
     <Content Include="Migrations\201707101648235_CommonBlockTypes_spCore_BinaryFileGet.sql">
       <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707171725146_UniversalSearchPages_spDbaRebuildIndexes.sql">
+      <DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707182207536_AttendanceAnalyticsScheduleFilter_Attendees.sql">
+      <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707311527250_FirstNameGender.txt">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707311527250_LastName.txt">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707311527250_NickName.txt">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707311527250_PersonicxCluster.txt">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707311527250_PersonicxGroup.txt">
+      <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AccountTotals.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AttendeeDates.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AttendeeFirstDates.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AttendeeLastAttendance.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_Attendees.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_Indexes.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_NonAttendees.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_PersonSummary.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201708162105164_AnalyticsPerformance_TransactionData.sql">
+      <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />

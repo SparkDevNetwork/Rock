@@ -721,20 +721,24 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the impersonation parameter.
+        /// Obsolete: Gets the search details
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
-        public string GetImpersonationParameter( int personId )
+        [Obsolete( "Returns incorrect results, will be removed in a future version" )]
+        public string GetImpersonationParameterObsolete( int personId )
         {
+            // NOTE: This route is called GetSearchDetails but really returns an ImpersonationParameter due to a copy/paste bug. 
+            // Marked obsolete but kept around in case anybody was taking advantage of this bug 
+
             string result = string.Empty;
 
             var rockContext = this.Service.Context as Rock.Data.RockContext;
 
-            var person = new PersonService( rockContext ).Get( personId );
+            var person = new PersonService( rockContext ).Queryable().Include( a => a.Aliases ).AsNoTracking().FirstOrDefault( a => a.Id == personId );
 
             if ( person != null )
             {
@@ -742,6 +746,36 @@ namespace Rock.Rest.Controllers
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Creates and stores a new PersonToken for a person using the specified ExpireDateTime, UsageLimit, and Page
+        /// Returns the encrypted URLEncoded Token along with the ImpersonationParameter key in the form of "rckipid={ImpersonationParameter}"
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="expireDateTime">The expire date time.</param>
+        /// <param name="usageLimit">The usage limit.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetImpersonationParameter" )]
+        public string GetImpersonationParameter( int personId, DateTime? expireDateTime = null, int? usageLimit = null, int? pageId = null )
+        {
+            string result = string.Empty;
+
+            var rockContext = this.Service.Context as Rock.Data.RockContext;
+
+            var person = new PersonService( rockContext ).Queryable().Include( a => a.Aliases ).AsNoTracking().FirstOrDefault( a => a.Id == personId );
+
+            if ( person != null )
+            {
+                return person.GetImpersonationParameter( expireDateTime, usageLimit, pageId );
+            }
+            else
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
         }
 
         /// <summary>

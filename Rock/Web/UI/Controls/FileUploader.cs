@@ -311,6 +311,31 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Determines if the file should be stored with the 'Temporary' flag (defaults to true)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [upload as temporary]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "Determines if the file should be stored with the 'Temporary' flag." )
+        ]
+        public bool UploadAsTemporary
+        {
+            get
+            {
+                return ViewState["UploadAsTemporary"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["UploadAsTemporary"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the uploaded content file path.
         /// </summary>
         /// <value>
@@ -326,7 +351,15 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    return this.RootFolder.EnsureTrailingForwardslash() + _hfBinaryFileId.Value;
+                    // When IsBinaryFile=False, _hfBinaryFileId.Value will be the name of the uploaded file (see fileUploader.js)
+                    if ( _hfBinaryFileId.Value == "0" || string.IsNullOrEmpty( _hfBinaryFileId.Value ) )
+                    {
+                        return string.Empty;
+                    }
+                    else
+                    {
+                        return this.RootFolder.EnsureTrailingForwardslash() + _hfBinaryFileId.Value;
+                    }
                 }
             }
         }
@@ -713,7 +746,8 @@ Rock.controls.fileUploader.initialize({{
         {11}
     }},
     postbackRemovedScript: '{12}',
-    maxUploadBytes: {13}
+    maxUploadBytes: {13},
+    isTemporary: '{14}',
 }});",
                 _fileUpload.ClientID, // 0
                 this.BinaryFileId, // 1
@@ -728,7 +762,8 @@ Rock.controls.fileUploader.initialize({{
                 this.SubmitFunctionClientScript, // 10
                 this.DoneFunctionClientScript, // 11
                 postBackRemovedScript, // 12
-                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" ); // 13
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null", // 13
+                this.UploadAsTemporary ? "T" : "F" ); // {14}
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "FileUploaderScript_" + this.ClientID, script, true );
         }
 
@@ -755,7 +790,7 @@ Rock.controls.fileUploader.initialize({{
         /// <summary>
         /// Occurs when a file is uploaded.
         /// </summary>
-        public event EventHandler FileUploaded;
+        public event EventHandler<FileUploaderEventArgs> FileUploaded;
 
         /// <summary>
         /// Occurs when a file is removed.
@@ -770,7 +805,19 @@ Rock.controls.fileUploader.initialize({{
         {
             if ( eventArgument == "FileUploaded" && FileUploaded != null )
             {
-                FileUploaded( this, new EventArgs() );
+                EnsureChildControls();
+                
+                // grab the _hfBinaryFileId value of the Request.Params
+                _hfBinaryFileId.Value = System.Web.HttpContext.Current?.Request?.Params[_hfBinaryFileId.UniqueID];
+
+                if (IsBinaryFile)
+                {
+                    FileUploaded( this, new FileUploaderEventArgs( this.UploadedContentFilePath ));
+                }
+                else
+                {
+                    FileUploaded( this, new FileUploaderEventArgs( this.BinaryFileId ));
+                }
             }
 
             if ( eventArgument == "FileRemoved" )
@@ -778,8 +825,8 @@ Rock.controls.fileUploader.initialize({{
                 if ( FileRemoved != null )
                 {
                     FileRemoved( this, new FileUploaderEventArgs( this.BinaryFileId ) );
-
                 }
+
                 this.BinaryFileId = 0;
             }
         }
@@ -791,12 +838,20 @@ Rock.controls.fileUploader.initialize({{
     public class FileUploaderEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets the field value.
+        /// Gets BinaryFileId of the File (If IsBinaryFile=True)
         /// </summary>
         /// <value>
         /// The field value.
         /// </value>
         public int? BinaryFileId { get; private set; }
+
+        /// <summary>
+        /// Gets the name of the file (If IsBinaryFile=False)
+        /// </summary>
+        /// <value>
+        /// The name of the file.
+        /// </value>
+        public string FileName { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileUploaderEventArgs"/> class.
@@ -805,6 +860,15 @@ Rock.controls.fileUploader.initialize({{
         public FileUploaderEventArgs( int? binaryFileId ) : base()
         {
             BinaryFileId = binaryFileId;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileUploaderEventArgs" /> class.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        public FileUploaderEventArgs( string fileName ) : base()
+        {
+            FileName = fileName;
         }
     }
 }

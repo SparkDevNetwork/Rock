@@ -99,7 +99,7 @@ namespace Rock.Field
                 }
             }
 
-            return items.Any() ? items : null;
+            return items;
         }
     }
 }

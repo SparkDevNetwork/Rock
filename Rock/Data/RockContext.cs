@@ -1147,6 +1147,14 @@ namespace Rock.Data
         public DbSet<PersonViewed> PersonVieweds { get; set; }
 
         /// <summary>
+        /// Gets or sets the person tokens.
+        /// </summary>
+        /// <value>
+        /// The person tokens.
+        /// </value>
+        public DbSet<PersonToken> PersonTokens { get; set; }
+
+        /// <summary>
         /// Gets or sets the Phone Numbers.
         /// </summary>
         /// <value>
@@ -1336,7 +1344,7 @@ namespace Rock.Data
         /// <value>
         /// The site URL maps.
         /// </value>
-        public DbSet<SiteUrlMap> SiteUrlMaps { get; set; }
+        public DbSet<PageShortLink> PageShortLinks { get; set; }
 
         /// <summary>
         /// Gets or sets the system emails.

@@ -11,6 +11,7 @@
                     
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlEntityType" runat="server" LabelType="Type" />
+                        <Rock:HighlightLabel ID="hlStatus" runat="server" />
                     </div>
                 </div>
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -27,7 +28,10 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
-                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                                </div>
                             </div>
                     
                             <div class="row">
@@ -36,7 +40,7 @@
                                 </div>
                             </div>
                     
-                            <div class="row">
+                            <asp:Panel ID="pnlAdvanced" runat="server" CssClass="row">
                                 <div class="col-md-6">
                                     <Rock:RockRadioButtonList ID="rblScope" runat="server" Label="Scope" RepeatDirection="Horizontal"
                                         AutoPostBack="true" OnSelectedIndexChanged="rblScope_SelectedIndexChanged">
@@ -44,13 +48,14 @@
                                         <asp:ListItem Value="Personal" Text="Personal" />
                                     </Rock:RockRadioButtonList>
                                     <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner" />
+                                    <Rock:CategoryPicker ID="cpCategory" runat="server" Required="false" Label="Category" EntityTypeName="Rock.Model.Tag" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList id="ddlEntityType" runat="server" Label="Entity Type" />
                                     <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
                                     <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
                                 </div>
-                            </div>
+                            </asp:Panel>
 
                             <Rock:NotificationBox ID="nbEditError" runat="server" NotificationBoxType="Danger" Visible="false"></Rock:NotificationBox>
 
@@ -73,6 +78,10 @@
                             <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
+                            
+                            <span class="pull-right">
+                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" Title="Secure Group" />
+                            </span>
                         </div>
 
                     </fieldset>

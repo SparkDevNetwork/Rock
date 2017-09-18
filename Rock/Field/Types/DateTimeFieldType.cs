@@ -44,6 +44,7 @@ namespace Rock.Field.Types
             _tbDateFormat.Help = "The format string to use for date (default is system short date and time).";
 
             _ddlDatePickerMode.Visible = false;
+            _nbFutureYearCount.Visible = false;
 
             _cbDisplayCurrent.Help = "Include option to specify value as the current time.";
 
