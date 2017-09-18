@@ -50,7 +50,7 @@ namespace Rock.Jobs
 
             int howMany = dataMap.GetString( "HowMany" ).AsIntegerOrNull() ?? 300000;
 
-            bool anyRemaining = UpdateCommunicationRecords( false, howMany );
+            bool anyRemaining = UpdateCommunicationRecords( true, howMany );
 
             if ( !anyRemaining )
             {
