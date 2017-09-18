@@ -27,11 +27,10 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using OfficeOpenXml;
-using Rock.Data;
-using Rock.Web.Cache;
 using Rock;
+using Rock.Data;
 using Rock.Utility;
-using EntityFramework.Utilities;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -2702,7 +2701,7 @@ namespace Rock.Web.UI.Controls
                      a.EntitySetId = entitySet.Id;
                  } );
 
-                EFBatchOperation.For( rockContext, rockContext.EntitySetItems ).InsertAll( entitySetItems );
+                rockContext.BulkInsert( entitySetItems );
 
                 return entitySet.Id;
             }
