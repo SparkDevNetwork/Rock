@@ -35,7 +35,7 @@ namespace Rock.Jobs
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [IntegerField( "How Many Records", "The number of communication records to process on each run of this job.", false, 300000, "", 0, "HowMany" )]
+    [IntegerField( "How Many Records", "The number of communication records to process on each run of this job.", false, 100000, "", 0, "HowMany" )]
     public class MigrateCommunicationMediumData : IJob
     {
         /// <summary>
