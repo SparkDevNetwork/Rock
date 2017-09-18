@@ -527,9 +527,19 @@ namespace Rock.Web.UI.Controls
                     document.getElementById('{0}').value = $('<div/>').text( ce_{0}.getValue() ).html().replace(/&#39/g,""&apos"");
                     {3}
                 }});
+
+                ce_{0}.setReadOnly({4});
 ";
 
-            string script = string.Format( scriptFormat, this.ClientID, EditorThemeAsString( this.EditorTheme ), EditorModeAsString( this.EditorMode ), this.OnChangeScript );
+            string script = string.Format( 
+                scriptFormat, 
+                this.ClientID,  // {0}
+                EditorThemeAsString( this.EditorTheme ),  // {1}
+                EditorModeAsString( this.EditorMode ),  // {2} 
+                this.OnChangeScript,  // {3}
+                this.ReadOnly.ToTrueFalse().ToLower()  // {4}
+            );
+
             ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ClientID, script, true );
 
             base.RenderControl( writer );
