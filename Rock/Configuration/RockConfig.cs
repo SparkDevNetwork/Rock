@@ -27,6 +27,12 @@ namespace Rock.Configuration
         private static RockConfig config
         = ConfigurationManager.GetSection( "rockConfig" ) as RockConfig;
 
+        /// <summary>
+        /// Gets the configuration.
+        /// </summary>
+        /// <value>
+        /// The configuration.
+        /// </value>
         public static RockConfig Config
         {
             get

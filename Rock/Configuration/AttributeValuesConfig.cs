@@ -23,6 +23,14 @@ namespace Rock.Configuration
     /// </summary>
     public class AttributeValuesConfig : ConfigurationElementCollection
     {
+        /// <summary>
+        /// Gets or sets the <see cref="AttributeValueConfig"/> at the specified index.
+        /// </summary>
+        /// <value>
+        /// The <see cref="AttributeValueConfig"/>.
+        /// </value>
+        /// <param name="index">The index.</param>
+        /// <returns></returns>
         public AttributeValueConfig this[int index]
         {
             get
@@ -39,6 +47,14 @@ namespace Rock.Configuration
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="AttributeValueConfig"/> with the specified response string.
+        /// </summary>
+        /// <value>
+        /// The <see cref="AttributeValueConfig"/>.
+        /// </value>
+        /// <param name="responseString">The response string.</param>
+        /// <returns></returns>
         public new AttributeValueConfig this[string responseString]
         {
             get { return ( AttributeValueConfig ) BaseGet( responseString ); }
@@ -52,11 +68,24 @@ namespace Rock.Configuration
             }
         }
 
+        /// <summary>
+        /// When overridden in a derived class, creates a new <see cref="T:System.Configuration.ConfigurationElement" />.
+        /// </summary>
+        /// <returns>
+        /// A newly created <see cref="T:System.Configuration.ConfigurationElement" />.
+        /// </returns>
         protected override System.Configuration.ConfigurationElement CreateNewElement()
         {
             return new AttributeValueConfig();
         }
 
+        /// <summary>
+        /// Gets the element key for a specified configuration element when overridden in a derived class.
+        /// </summary>
+        /// <param name="element">The <see cref="T:System.Configuration.ConfigurationElement" /> to return the key for.</param>
+        /// <returns>
+        /// An <see cref="T:System.Object" /> that acts as the key for the specified <see cref="T:System.Configuration.ConfigurationElement" />.
+        /// </returns>
         protected override object GetElementKey( System.Configuration.ConfigurationElement element )
         {
             return string.Format("{0}-{1}", ( ( AttributeValueConfig ) element ).AttributeKey, ( ( AttributeValueConfig ) element ).EntityId);
