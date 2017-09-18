@@ -249,7 +249,13 @@ namespace Rock.UniversalSearch.IndexModels
                 personIndex.Suffix = person.SuffixValue.Value;
             }
 
-            personIndex.CampusId = person.GetCampusIds().FirstOrDefault();
+            var campuses = person.GetCampusIds();
+
+            if ( campuses != null && campuses.Count > 0 )
+            {
+                personIndex.CampusId = campuses.FirstOrDefault();
+            }
+
             personIndex.ConnectionStatusValueId = person.ConnectionStatusValueId;
             personIndex.RecordStatusValueId = person.RecordStatusValueId;
             personIndex.PreviousLastNames = string.Join(",", person.GetPreviousNames().Select( n => n.LastName ));
