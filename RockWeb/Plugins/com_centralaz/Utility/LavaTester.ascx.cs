@@ -471,6 +471,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         {
             RockContext rockContext = new RockContext();
             WorkflowActivityService workflowActivityService = new WorkflowActivityService( rockContext );
+            mergeFields.Remove( "Activity" );
             mergeFields.Add( "Activity", workflowActivityService.Get( ddlWorkflowActivities.SelectedValueAsInt() ?? -1 ) );
             SetUserPreference( _USER_PREF_WORKFLOW_ACTIVITY, ddlWorkflowActivities.SelectedValue );
 
@@ -553,6 +554,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                     if ( setUserPreference )
                     {
                         SetUserPreference( _USER_PREF_WORKFLOW_ACTIVITY, list[0].Id.ToStringSafe() );
+                        mergeFields.Remove( "Activity" );
                         mergeFields.Add( "Activity", list[0] );
                     }
                     else
@@ -561,6 +563,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                         if ( activityId != null )
                         {
                             ddlWorkflowActivities.SetValue( activityId );
+                            mergeFields.Remove( "Activity" );
                             mergeFields.Add( "Activity", list.Where( a => a.Id == activityId ).FirstOrDefault() );
                         }
                     }
