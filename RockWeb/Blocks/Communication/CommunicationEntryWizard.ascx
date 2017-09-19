@@ -23,7 +23,7 @@
 
                     <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Danger" />
 
-                    <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="btn-group-justified margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" />
+                    <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" />
                     
                     <asp:Panel ID="pnlRecipientSelectionList" runat="server">
 
@@ -35,9 +35,9 @@
 
                             <Rock:RockRadioButtonList ID="rblCommunicationGroupSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection" AutoPostBack="true" OnSelectedIndexChanged="rblCommunicationGroupSegmentFilterType_SelectedIndexChanged" />
                             
-                            <div class="label label-info">
-                                <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" />
-                            </div>
+                            <asp:Panel ID="pnlRecipientFromListCount" runat="server" CssClass="label label-info">
+                                <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" /> 
+                            </asp:Panel>
                         </asp:Panel>
                     </asp:Panel> 
                     
@@ -48,9 +48,9 @@
                                 <asp:LinkButton ID="btnViewIndividualRecipients" runat="server" CssClass="btn btn-default btn-sm" Text="Show List" CausesValidation="false" OnClick="btnViewIndividualRecipients_Click" />
                                 
                                 <p>
-                                    <div class="label label-info">
+                                    <asp:Panel ID="pnlIndividualRecipientCount" runat="server" CssClass="label label-info">
                                         <asp:Literal ID="lIndividualRecipientCount" runat="server" Text="" />
-                                    </div>
+                                    </asp:Panel>
                                 </p>
                             </div>
                             <div class="col-md-6">
@@ -671,7 +671,7 @@
                             </asp:UpdatePanel>
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbEmailPreview" runat="server" Label="Email Preview" TextMode="MultiLine" Rows="4" />
+                            <Rock:RockTextBox ID="tbEmailPreview" runat="server" Label="Email Preview" TextMode="MultiLine" Rows="4" Help="A short summary of the email which will show in the inbox before the email is opened." />
                         </div>
                     </div>
 
