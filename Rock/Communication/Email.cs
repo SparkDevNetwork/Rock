@@ -188,12 +188,15 @@ namespace Rock.Communication
             emailMessage.AppRoot = appRoot;
             emailMessage.CreateCommunicationRecord = createCommunicationHistory;
 
-            foreach ( var attachment in attachments )
+            if ( attachments != null )
             {
-                var binaryFile = new BinaryFile();
-                binaryFile.ContentStream = attachment.ContentStream;
-                binaryFile.FileName = attachment.Name;
-                emailMessage.Attachments.Add( binaryFile );
+                foreach ( var attachment in attachments )
+                {
+                    var binaryFile = new BinaryFile();
+                    binaryFile.ContentStream = attachment.ContentStream;
+                    binaryFile.FileName = attachment.Name;
+                    emailMessage.Attachments.Add( binaryFile );
+                }
             }
 
             emailMessage.Send( out errorMessages );
