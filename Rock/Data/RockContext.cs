@@ -121,14 +121,14 @@ namespace Rock.Data
         /// The analytics dim attendance locations.
         /// </value>
         public DbSet<AnalyticsDimAttendanceLocation> AnalyticsDimAttendanceLocations { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the analytics dim dates.
+        /// Gets or sets the analytics source dates.
         /// </summary>
         /// <value>
-        /// The analytics dim dates.
+        /// The analytics source dates.
         /// </value>
-        public DbSet<AnalyticsDimDate> AnalyticsDimDates { get; set; }
+        public DbSet<AnalyticsSourceDate> AnalyticsSourceDates { get; set; }
         
         /// <summary>
         /// Gets or sets the analytics dim family currents.

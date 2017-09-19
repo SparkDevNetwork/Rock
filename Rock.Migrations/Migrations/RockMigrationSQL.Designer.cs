@@ -3377,5 +3377,131 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201709131136468_spAnalytics_ETL_FinancialTransaction", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimAttendanceDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].[AnalyticsDimAttendanceDate]
+        ///AS
+        ///SELECT d.DateKey AS [AttendanceDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(fa.AttendanceDateKey)
+        ///        FROM AnalyticsFactAttendance fa
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(fa.AttendanceDateKey)
+        ///        FROM AnalyticsFactAttendance fa
+        ///        )
+        ///.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimAttendanceDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimAttendanceDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyHeadOfHouseholdBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimFamilyHeadOfHouseholdBirthDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].AnalyticsDimFamilyHeadOfHouseholdBirthDate
+        ///AS
+        ///SELECT d.DateKey AS [BirthDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(ph.BirthDateKey)
+        ///        FROM AnalyticsDimFamilyHeadOfHousehold hh
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(ph.BirthDateKey)
+        ///        FROM AnalyticsDimFamilyHeadOfHouse [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialTransactionDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimFinancialTransactionDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].[AnalyticsDimFinancialTransactionDate]
+        ///AS
+        ///SELECT d.DateKey AS [TransactionDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(ft.TransactionDateKey)
+        ///        FROM AnalyticsFactFinancialTransaction ft
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(ft.TransactionDateKey)
+        ///        FROM AnalyticsFactFinancialTrans [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonCurrentBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimPersonCurrentBirthDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].AnalyticsDimPersonCurrentBirthDate
+        ///AS
+        ///SELECT d.DateKey AS [BirthDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(ph.BirthDateKey)
+        ///        FROM AnalyticsDimPersonCurrent pc
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(ph.BirthDateKey)
+        ///        FROM AnalyticsDimPersonCurrent pc
+        ///        )
+        ///.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimPersonCurrentBirthDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimPersonCurrentBirthDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonHistoricalBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimPersonHistoricalBirthDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].AnalyticsDimPersonHistoricalBirthDate
+        ///AS
+        ///SELECT d.DateKey AS [BirthDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(ph.BirthDateKey)
+        ///        FROM AnalyticsDimPersonHistorical ph
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(ph.BirthDateKey)
+        ///        FROM AnalyticsDimPersonHistorical ph
+        ///        )
+        ///.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate", resourceCulture);
+            }
+        }
     }
 }

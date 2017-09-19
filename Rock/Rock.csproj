@@ -737,7 +737,7 @@
     <Compile Include="Model\AnalyticsDimFamilyHeadOfHousehold.cs" />
     <Compile Include="Model\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="Model\AnalyticsDimPersonCurrent.cs" />
-    <Compile Include="Model\AnalyticsDimDate.cs" />
+    <Compile Include="Model\AnalyticsSourceDate.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionType.cs" />
     <Compile Include="Model\AnalyticsFactAttendance.cs" />
     <Compile Include="Model\AnalyticsSourceAttendance.cs" />

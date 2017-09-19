@@ -28,10 +28,10 @@ namespace Rock.Model
     /// see https://www.mssqltips.com/sqlservertip/4054/creating-a-date-dimension-or-calendar-table-in-sql-server/ for some background
     /// </summary>
     [RockDomain( "Reporting" )]
-    [Table( "AnalyticsDimDate" )]
+    [Table( "AnalyticsSourceDate" )]
     [DataContract]
     [HideFromReporting]
-    public class AnalyticsDimDate
+    public class AnalyticsSourceDate
     {
         #region Entity Properties
 
@@ -407,16 +407,17 @@ namespace Rock.Model
         [DataMember]
         public bool ChristmasWeekIndicator { get; set; }
 
-        #endregion 
+        #endregion
 
         /// <summary>
-        /// BulkInserts AnalyticsDimDates (really fast)
+        /// BulkInserts AnalyticsSourceDates (really fast)
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="analyticsDimDates">The analytics dim dates.</param>
-        public static void BulkInsert( Rock.Data.RockContext rockContext, IEnumerable<AnalyticsDimDate> analyticsDimDates )
+        /// <param name="analyticsDimDates">The analytics source dates.</param>
+        public static void BulkInsert( Rock.Data.RockContext rockContext, IEnumerable<AnalyticsSourceDate> analyticsSourceDates )
         {
-            EFBatchOperation.For( rockContext, rockContext.AnalyticsDimDates ).InsertAll( analyticsDimDates );
+            // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly
+            EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceDates ).InsertAll( analyticsSourceDates );
         }
     }
 
