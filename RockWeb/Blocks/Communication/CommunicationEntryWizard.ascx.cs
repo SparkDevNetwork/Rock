@@ -699,13 +699,13 @@ namespace RockWeb.Blocks.Communication
             if ( groupMemberQuery != null )
             {
                 int groupMemberCount = groupMemberQuery.Count();
-                lRecipientFromListCount.Visible = true;
+                pnlRecipientFromListCount.Visible = true;
 
                 lRecipientFromListCount.Text = string.Format( "{0} {1} selected", groupMemberCount, "recipient".PluralizeIf( groupMemberCount != 1 ) );
             }
             else
             {
-                lRecipientFromListCount.Visible = false;
+                pnlRecipientFromListCount.Visible = false;
             }
         }
 
