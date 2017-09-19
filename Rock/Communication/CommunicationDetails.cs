@@ -36,6 +36,7 @@ namespace Rock.Communication
         /// <value>
         /// The attachment binary file ids
         /// </value>
+        [Obsolete( "Use EmailAttachmentBinaryFileIds or SMSAttachmentBinaryFileIds" )]
         public IEnumerable<int> AttachmentBinaryFileIds { get; set; }
 
         #region Email Fields
@@ -104,6 +105,14 @@ namespace Rock.Communication
         /// </value>
         public string MessageMetaData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the email attachment binary file ids.
+        /// </summary>
+        /// <value>
+        /// The email attachment binary file ids.
+        /// </value>
+        public IEnumerable<int> EmailAttachmentBinaryFileIds { get; set; }
+
         #endregion
 
         #region SMS Properties
@@ -123,6 +132,14 @@ namespace Rock.Communication
         /// The message.
         /// </value>
         public string SMSMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SMS attachment binary file ids.
+        /// </summary>
+        /// <value>
+        /// The SMS attachment binary file ids.
+        /// </value>
+        public IEnumerable<int> SMSAttachmentBinaryFileIds { get; set; }
 
         #endregion
 

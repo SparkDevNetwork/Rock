@@ -662,11 +662,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbEmailSubject" runat="server" Label="Email Subject" Help="<span class='tip tip-lava'></span>" Required="true" ValidationGroup="vgEmailSummary" />
-                            <asp:UpdatePanel ID="upFileAttachments" runat="server">
+                            <asp:UpdatePanel ID="upEmailFileAttachments" runat="server">
                                 <ContentTemplate>
-                                    <asp:HiddenField ID="hfAttachedBinaryFileIds" runat="server" />
-                                    <Rock:FileUploader Id="fupAttachments" runat="server" Label="Attachments" OnFileUploaded="fupAttachments_FileUploaded" />
-                                    <asp:Literal ID="lAttachmentListHtml" runat="server" />
+                                    <asp:HiddenField ID="hfEmailAttachedBinaryFileIds" runat="server" />
+                                    <Rock:FileUploader Id="fupEmailAttachments" runat="server" Label="Attachments" OnFileUploaded="fupEmailAttachments_FileUploaded" />
+                                    <asp:Literal ID="lEmailAttachmentListHtml" runat="server" />
                                 </ContentTemplate>
                             </asp:UpdatePanel>
                         </div>
@@ -705,6 +705,7 @@
                                     </div>
                                 </div>
                             </Rock:RockControlWrapper>
+                            <Rock:FileUploader Id="fupMobileAttachment" runat="server" Label="Attachment" OnFileUploaded="fupMobileAttachment_FileUploaded" />
                         </div>
                         <div class="col-md-6">
                             <div class="device device-mobile hidden-md" style="width: 435px;">

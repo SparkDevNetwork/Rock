@@ -347,11 +347,42 @@ namespace Rock.Model
         /// The attachment binary file ids
         /// </value>
         [NotMapped]
+        [Obsolete( "Use EmailAttachmentBinaryFileIds or SMSAttachmentBinaryFileIds" )]
         public virtual IEnumerable<int> AttachmentBinaryFileIds
         {
             get
             {
                 return this.Attachments.Select( a => a.BinaryFileId ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a list of email binary file ids
+        /// </summary>
+        /// <value>
+        /// The attachment binary file ids
+        /// </value>
+        [NotMapped]
+        public virtual IEnumerable<int> EmailAttachmentBinaryFileIds
+        {
+            get
+            {
+                return this.Attachments.Where( a => a.CommunicationType == CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a list of sms binary file ids
+        /// </summary>
+        /// <value>
+        /// The attachment binary file ids
+        /// </value>
+        [NotMapped]
+        public virtual IEnumerable<int> SMSAttachmentBinaryFileIds
+        {
+            get
+            {
+                return this.Attachments.Where(a => a.CommunicationType == CommunicationType.SMS).Select( a => a.BinaryFileId ).ToList();
             }
         }
 

@@ -115,6 +115,7 @@ namespace Rock.Jobs
                             {
                                 var attachment = new CommunicationTemplateAttachment();
                                 attachment.BinaryFile = binaryFile;
+                                attachment.CommunicationType = CommunicationType.Email;
                                 comm.Attachments.Add( attachment );
                             }
                         }
@@ -157,6 +158,7 @@ namespace Rock.Jobs
                             {
                                 var attachment = new CommunicationAttachment();
                                 attachment.BinaryFile = binaryFile;
+                                attachment.CommunicationType = CommunicationType.Email;
                                 comm.Attachments.Add( attachment );
                             }
                         }

@@ -88,7 +88,7 @@ namespace Rock.Web.UI.Controls.Communication
             ebBccAddress.Text = communication.BCCEmails;
             tbSubject.Text = communication.Subject;
             htmlMessage.Text = communication.Message;
-            hfAttachments.Value = communication.AttachmentBinaryFileIds != null ? communication.AttachmentBinaryFileIds.ToList().AsDelimited( "," ) : string.Empty;
+            hfAttachments.Value = communication.EmailAttachmentBinaryFileIds != null ? communication.EmailAttachmentBinaryFileIds.ToList().AsDelimited( "," ) : string.Empty;
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Rock.Web.UI.Controls.Communication
             communication.ReplyToEmail = ebReplyToAddress.Text;
             communication.Subject = tbSubject.Text;
             communication.Message = htmlMessage.Text;
-            communication.AttachmentBinaryFileIds = hfAttachments.Value.SplitDelimitedValues().AsIntegerList();
+            communication.EmailAttachmentBinaryFileIds = hfAttachments.Value.SplitDelimitedValues().AsIntegerList();
             communication.CCEmails = ebCcAddress.Text;
             communication.BCCEmails = ebBccAddress.Text;
         }

@@ -148,10 +148,10 @@ namespace RockWeb
             }
 
             // Attachments
-            if ( communication.Attachments.Any() )
+            if ( communication.Attachments.Where(a => a.CommunicationType == CommunicationType.Email).Any() )
             {
                 sb.Append( "<br/><br/>" );
-                foreach ( var binaryFile in communication.Attachments.Select( a => a.BinaryFile ) )
+                foreach ( var binaryFile in communication.Attachments.Where( a => a.CommunicationType == CommunicationType.Email ).Select( a => a.BinaryFile ) )
                 {
                     sb.AppendFormat( "<a target='_blank' href='{0}'>{1}</a><br/>", binaryFile.Url, binaryFile.FileName );
                 }

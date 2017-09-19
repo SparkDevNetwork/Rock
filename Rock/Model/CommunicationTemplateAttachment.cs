@@ -50,6 +50,15 @@ namespace Rock.Model
         [DataMember]
         public int CommunicationTemplateId { get; set; }
 
+        /// <summary>
+        /// Indicates if the attachment is for SMS recipients or Email recipients
+        /// </summary>
+        /// <value>
+        /// The communication type value identifier.
+        /// </value>
+        [DataMember]
+        public CommunicationType CommunicationType { get; set; }
+
         #endregion
 
         #region Virtual Properties
