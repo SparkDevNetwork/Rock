@@ -37,6 +37,8 @@ using Rock.Security;
 using Rock.Communication;
 using System.Web;
 using System.Data.Entity;
+using System.Web.UI.HtmlControls;
+using com.centralaz.RoomManagement.Attribute;
 
 namespace RockWeb.Plugins.com_centralaz.RoomManagement
 {
@@ -77,7 +79,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 if ( baseResourceRestUrl == null )
                 {
                     srpResource.CampusId = ddlCampus.SelectedValueAsInt();
-                    srpResource.SetExtraRestParams(srpResource.ShowAllResources);
+                    srpResource.SetExtraRestParams( srpResource.ShowAllResources );
 
                     ViewState["BaseResourceRestUrl"] = srpResource.ItemRestUrlExtraParams;
                     baseResourceRestUrl = srpResource.ItemRestUrlExtraParams;
@@ -127,6 +129,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// </value>
         private List<ReservationLocation> LocationsState { get; set; }
 
+        private List<Guid> NewReservationResourceList { get; set; }
+
+        private List<Guid> NewReservationLocationList { get; set; }
+
 
         #endregion
 
@@ -158,6 +164,26 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             else
             {
                 LocationsState = JsonConvert.DeserializeObject<List<ReservationLocation>>( json );
+            }
+
+            json = ViewState["NewReservationResourceList"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                NewReservationResourceList = new List<Guid>();
+            }
+            else
+            {
+                NewReservationResourceList = JsonConvert.DeserializeObject<List<Guid>>( json );
+            }
+
+            json = ViewState["NewReservationLocationList"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                NewReservationLocationList = new List<Guid>();
+            }
+            else
+            {
+                NewReservationLocationList = JsonConvert.DeserializeObject<List<Guid>>( json );
             }
         }
 
@@ -219,6 +245,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 ShowDetail();
             }
+            else
+            {
+                LoadQuestionsAndAnswers( NewReservationLocationList, NewReservationResourceList );
+            }
         }
 
         /// <summary>
@@ -237,6 +267,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             ViewState["ResourcesState"] = JsonConvert.SerializeObject( ResourcesState, Formatting.None, jsonSetting );
             ViewState["LocationsState"] = JsonConvert.SerializeObject( LocationsState, Formatting.None, jsonSetting );
+            ViewState["NewReservationResourceList"] = JsonConvert.SerializeObject( NewReservationResourceList, Formatting.None, jsonSetting );
+            ViewState["NewReservationLocationList"] = JsonConvert.SerializeObject( NewReservationLocationList, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -403,6 +435,33 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 reservation.AdministrativeContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnAdministrativeContactPhone.Number );
                 reservation.AdministrativeContactEmail = tbAdministrativeContactEmail.Text;
 
+                foreach ( var reservationLocation in reservation.ReservationLocations )
+                {
+                    var headControl = phLocationAnswers.FindControl( "cReservationLocation_" + reservationLocation.Guid.ToString() ) as Control;
+                    if ( headControl != null )
+                    {
+                        var phAttributes = headControl.FindControl( "phAttributes_" + reservationLocation.Guid.ToString() ) as PlaceHolder;
+                        if ( phAttributes != null )
+                        {
+                            reservationLocation.LoadAttributes( rockContext );
+                            Rock.Attribute.Helper.GetEditValues( phAttributes, reservationLocation );
+                        }
+                    }
+                }
+
+                foreach ( var reservationResource in reservation.ReservationResources )
+                {
+                    var headControl = phResourceAnswers.FindControl( "cReservationResource_" + reservationResource.Guid.ToString() ) as Control;
+                    if ( headControl != null )
+                    {
+                        var phAttributes = headControl.FindControl( "phAttributes_" + reservationResource.Guid.ToString() ) as PlaceHolder;
+                        if ( phAttributes != null )
+                        {
+                            reservationResource.LoadAttributes( rockContext );
+                            Rock.Attribute.Helper.GetEditValues( phAttributes, reservationResource );
+                        }
+                    }
+                }
 
                 // Check to make sure there's a schedule
                 if ( String.IsNullOrWhiteSpace( lScheduleText.Text ) )
@@ -448,7 +507,21 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     reservationService.Add( reservation );
                 }
 
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+
+                    foreach ( var reservationLocation in reservation.ReservationLocations )
+                    {
+                        reservationLocation.SaveAttributeValues( rockContext );
+                    }
+
+                    foreach ( var reservationResource in reservation.ReservationResources )
+                    {
+                        reservationResource.SaveAttributeValues( rockContext );
+                    }
+
+                } );
 
                 // ..."need to fetch the item using a new service if you need the updated property as a fully hydrated entity"
                 reservation = new ReservationService( new RockContext() ).Get( reservation.Id );
@@ -652,9 +725,11 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
 
             ResourcesState.Add( reservationResource );
+            NewReservationResourceList.Add( reservationResource.Guid );
             BindReservationResourcesGrid();
             dlgReservationResource.Hide();
             hfActiveDialog.Value = string.Empty;
+            LoadQuestionsAndAnswers( NewReservationLocationList, NewReservationResourceList );
         }
 
         /// <summary>
@@ -902,6 +977,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             AddAttachedResources( reservationLocation.LocationId );
 
             LocationsState.Add( reservationLocation );
+            NewReservationLocationList.Add( reservationLocation.Guid );
             BindReservationLocationsGrid();
             dlgReservationLocation.Hide();
             hfActiveDialog.Value = string.Empty;
@@ -909,6 +985,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             // Re load the pickers because changing a location should include/exclude resources attached
             // to locations.
             LoadPickers();
+            LoadQuestionsAndAnswers( NewReservationLocationList, NewReservationResourceList );
         }
 
         /// <summary>
@@ -1277,6 +1354,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 wpResources.Expanded = true;
             }
 
+            NewReservationLocationList = LocationsState.Select( l => l.Guid ).ToList();
+            NewReservationResourceList = ResourcesState.Select( l => l.Guid ).ToList();
+            LoadQuestionsAndAnswers( NewReservationLocationList, NewReservationResourceList );
+
             ddlCampus.Items.Clear();
             ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
 
@@ -1367,6 +1448,69 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             hfApprovalState.Value = reservation.ApprovalState.ConvertToString();
 
+        }
+
+        private void LoadQuestionsAndAnswers( List<Guid> locationList, List<Guid> resourceList )
+        {
+            var rockContext = new RockContext();
+            Hydrate( LocationsState, rockContext );
+            Hydrate( ResourcesState, rockContext );
+
+            phLocationAnswers.Controls.Clear();
+            foreach ( var reservationLocation in LocationsState )
+            {
+                Control childControl = new Control();
+                HiddenField hfReservationLocationGuid = new HiddenField();
+                PlaceHolder phAttributes = new PlaceHolder();
+                var headingTitle = new HtmlGenericControl( "h3" );
+
+                headingTitle.InnerText = reservationLocation.Location.Name;
+                hfReservationLocationGuid.Value = reservationLocation.Guid.ToString();
+
+                childControl.ID = "cReservationLocation_" + reservationLocation.Guid.ToString();
+                hfReservationLocationGuid.ID = "hfReservationLocationGuid_" + reservationLocation.Guid.ToString();
+                phAttributes.ID = "phAttributes_" + reservationLocation.Guid.ToString(); ;
+
+                reservationLocation.LoadReservationLocationAttributes();
+                bool setValue = resourceList.Contains( reservationLocation.Guid );
+                Rock.Attribute.Helper.AddEditControls( reservationLocation, phAttributes, setValue, BlockValidationGroup );
+
+                childControl.Controls.Add( headingTitle );
+                childControl.Controls.Add( hfReservationLocationGuid );
+                childControl.Controls.Add( phAttributes );
+
+                phLocationAnswers.Controls.Add( childControl );
+            }
+
+            phResourceAnswers.Controls.Clear();
+
+            foreach ( var reservationResource in ResourcesState )
+            {
+                Control childControl = new Control();
+                HiddenField hfReservationResourceGuid = new HiddenField();
+                PlaceHolder phAttributes = new PlaceHolder();
+                var headingTitle = new HtmlGenericControl( "h3" );
+
+                headingTitle.InnerText = reservationResource.Resource.Name;
+                hfReservationResourceGuid.Value = reservationResource.Guid.ToString();
+
+                childControl.ID = "cReservationResource_" + reservationResource.Guid.ToString();
+                hfReservationResourceGuid.ID = "hfReservationResourceGuid_" + reservationResource.Guid.ToString(); ;
+                phAttributes.ID = "phAttributes_" + reservationResource.Guid.ToString(); ;
+
+                reservationResource.LoadReservationResourceAttributes();
+                bool setValue = resourceList.Contains( reservationResource.Guid );
+                Rock.Attribute.Helper.AddEditControls( reservationResource, phAttributes, setValue, BlockValidationGroup );
+
+                childControl.Controls.Add( headingTitle );
+                childControl.Controls.Add( hfReservationResourceGuid );
+                childControl.Controls.Add( phAttributes );
+
+                phResourceAnswers.Controls.Add( childControl );
+            }
+
+            NewReservationResourceList = new List<Guid>();
+            NewReservationLocationList = new List<Guid>();
         }
 
         /// <summary>
@@ -1495,7 +1639,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 foreach ( var resource in attachedResources )
                 {
                     // bug fix:
-                    if ( ! resource.LocationId.HasValue )
+                    if ( !resource.LocationId.HasValue )
                     {
                         continue;
                     }
