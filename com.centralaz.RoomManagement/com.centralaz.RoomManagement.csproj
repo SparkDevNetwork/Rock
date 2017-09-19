@@ -82,6 +82,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attribute\Helper.cs" />
     <Compile Include="Attribute\ReservationApprovalStateFieldAttribute.cs" />
     <Compile Include="Attribute\ReservationFieldAttribute.cs" />
     <Compile Include="Controllers\ScheduledLocationsController.Partial.cs" />
