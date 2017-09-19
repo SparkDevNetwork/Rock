@@ -27,9 +27,9 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for AnalyticsDimDate that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for AnalyticsSourceDate that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class AnalyticsDimDateEntity
+    public partial class AnalyticsSourceDateEntity
     {
         /// <summary />
         public int CalendarMonth { get; set; }
@@ -146,10 +146,10 @@ namespace Rock.Client
         public int WeekNumberInMonth { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source AnalyticsDimDate object
+        /// Copies the base properties from a source AnalyticsSourceDate object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( AnalyticsDimDate source )
+        public void CopyPropertiesFrom( AnalyticsSourceDate source )
         {
             this.CalendarMonth = source.CalendarMonth;
             this.CalendarMonthName = source.CalendarMonthName;
@@ -194,9 +194,9 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for AnalyticsDimDate that includes all the fields that are available for GETs. Use this for GETs (use AnalyticsDimDateEntity for POST/PUTs)
+    /// Client model for AnalyticsSourceDate that includes all the fields that are available for GETs. Use this for GETs (use AnalyticsSourceDateEntity for POST/PUTs)
     /// </summary>
-    public partial class AnalyticsDimDate : AnalyticsDimDateEntity
+    public partial class AnalyticsSourceDate : AnalyticsSourceDateEntity
     {
         /// <summary />
         public int DateKey { get; set; }
