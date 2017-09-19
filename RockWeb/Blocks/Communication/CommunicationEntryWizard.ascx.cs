@@ -283,8 +283,8 @@ namespace RockWeb.Blocks.Communication
 
             //// NOTE: tbEmailPreview will be populated by parsing the Html of the Email/Template
 
-            hfAttachedBinaryFileIds.Value = communication.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
-            UpdateAttachedFiles( false );
+            hfEmailAttachedBinaryFileIds.Value = communication.Attachments.Where( a => a.CommunicationType == CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
+            UpdateEmailAttachedFiles( false );
 
             // Mobile Text Editor
             ddlSMSFrom.SetValue( communication.SMSFromDefinedValueId );
@@ -970,8 +970,8 @@ namespace RockWeb.Blocks.Communication
 
             hfEmailEditorHtml.Value = communicationTemplate.Message;
 
-            hfAttachedBinaryFileIds.Value = communicationTemplate.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
-            UpdateAttachedFiles( false );
+            hfEmailAttachedBinaryFileIds.Value = communicationTemplate.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
+            UpdateEmailAttachedFiles( false );
 
             // SMS Fields
             if ( communicationTemplate.SMSFromDefinedValueId.HasValue )
@@ -1298,31 +1298,31 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Handles the FileUploaded event of the fupAttachments control.
+        /// Handles the FileUploaded event of the fupEmailAttachments control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
-        protected void fupAttachments_FileUploaded( object sender, FileUploaderEventArgs e )
+        protected void fupEmailAttachments_FileUploaded( object sender, FileUploaderEventArgs e )
         {
-            UpdateAttachedFiles( true );
+            UpdateEmailAttachedFiles( true );
         }
 
         /// <summary>
         /// Updates the HTML for the Attached Files and optionally adds the file that was just uploaded using the file uploader
         /// </summary>
-        private void UpdateAttachedFiles( bool addUploadedFile )
+        private void UpdateEmailAttachedFiles( bool addUploadedFile )
         {
-            List<int> attachmentList = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
-            if ( addUploadedFile && fupAttachments.BinaryFileId.HasValue )
+            List<int> attachmentList = hfEmailAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+            if ( addUploadedFile && fupEmailAttachments.BinaryFileId.HasValue )
             {
-                if ( !attachmentList.Contains( fupAttachments.BinaryFileId.Value ) )
+                if ( !attachmentList.Contains( fupEmailAttachments.BinaryFileId.Value ) )
                 {
-                    attachmentList.Add( fupAttachments.BinaryFileId.Value );
+                    attachmentList.Add( fupEmailAttachments.BinaryFileId.Value );
                 }
             }
 
-            hfAttachedBinaryFileIds.Value = attachmentList.AsDelimited( "," );
-            fupAttachments.BinaryFileId = null;
+            hfEmailAttachedBinaryFileIds.Value = attachmentList.AsDelimited( "," );
+            fupEmailAttachments.BinaryFileId = null;
 
             // pre-populate dictionary so that the attachments are listed in the order they were added
             Dictionary<int, string> binaryFileAttachments = attachmentList.ToDictionary( k => k, v => string.Empty );
@@ -1349,14 +1349,14 @@ namespace RockWeb.Blocks.Communication
             foreach ( var binaryFileAttachment in binaryFileAttachments )
             {
                 var attachmentUrl = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFileAttachment.Key );
-                var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
+                var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfEmailAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
                 sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank'>{1}</a> <a><i class='fa fa-times' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
             }
 
             sbAttachmentsHtml.AppendLine( "  </ul>" );
             sbAttachmentsHtml.AppendLine( "</div>" );
 
-            lAttachmentListHtml.Text = sbAttachmentsHtml.ToString();
+            lEmailAttachmentListHtml.Text = sbAttachmentsHtml.ToString();
         }
 
         #endregion Email Summary
@@ -1388,6 +1388,16 @@ namespace RockWeb.Blocks.Communication
             nbSMSTestResult.Visible = false;
             pnlMobileTextEditor.Visible = true;
             SetNavigationHistory( pnlMobileTextEditor );
+        }
+
+        /// <summary>
+        /// Handles the FileUploaded event of the fupMobileAttachment control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
+        protected void fupMobileAttachment_FileUploaded( object sender, FileUploaderEventArgs e )
+        {
+
         }
 
         /// <summary>
@@ -1848,19 +1858,31 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             communication.CCEmails = ebCCList.Text;
             communication.BCCEmails = ebBCCList.Text;
 
-            var binaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+            List<int> emailBinaryFileIds = hfEmailAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+            List<int> smsBinaryFileIds = new List<int>();
+
+            if ( fupMobileAttachment.BinaryFileId.HasValue )
+            {
+                smsBinaryFileIds.Add( fupMobileAttachment.BinaryFileId.Value );
+            }
 
             // delete any attachments that are no longer included
-            foreach ( var attachment in communication.Attachments.Where( a => !binaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
+            foreach ( var attachment in communication.Attachments.Where( a => ( !emailBinaryFileIds.Contains( a.BinaryFileId ) && !smsBinaryFileIds.Contains( a.BinaryFileId ) ) ).ToList() )
             {
                 communication.Attachments.Remove( attachment );
                 communicationAttachmentService.Delete( attachment );
             }
 
-            // add any new attachments that were added
-            foreach ( var attachmentBinaryFileId in binaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
+            // add any new email attachments that were added
+            foreach ( var attachmentBinaryFileId in emailBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
             {
-                communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId } );
+                communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.Email } );
+            }
+
+            // add any new SMS attachments that were added
+            foreach ( var attachmentBinaryFileId in smsBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
+            {
+                communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.SMS } );
             }
 
             communication.Subject = tbEmailSubject.Text;
@@ -1937,5 +1959,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             Page.Response.Redirect( url, false );
             Context.ApplicationInstance.CompleteRequest();
         }
+
+
     }
 }
