@@ -616,10 +616,12 @@ namespace RockWeb.Blocks.Connection
             if ( rblState.SelectedValueAsEnum<ConnectionState>() == ConnectionState.FutureFollowUp )
             {
                 dpFollowUp.Visible = true;
+                dpFollowUp.Required = true;
             }
             else
             {
                 dpFollowUp.Visible = false;
+                dpFollowUp.Required = false;
             }
         }
 
