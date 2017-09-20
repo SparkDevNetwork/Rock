@@ -56,7 +56,8 @@ namespace RockWeb.Blocks.Connection
 )]
 
     [CodeEditorField( "Opportunity Summary Template", "Lava Template that can be used to customize what is displayed in each Opportunity Summary. Includes common merge fields plus the OpportunitySummary, ConnectionOpportunity, and its ConnectionRequests.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
-@"<i class='{{ OpportunitySummary.IconCssClass }}'></i>
+@"<span class=""item-count"" title=""There are {{ 'active connection' | ToQuantity:OpportunitySummary.TotalRequests }} in this opportunity."">{{ OpportunitySummary.TotalRequests | Format:'#,###,##0' }}</span>
+<i class='{{ OpportunitySummary.IconCssClass }}'></i>
 <h3>{{ OpportunitySummary.Name }}</h3>
 <div class='status-list'>
     <span class='badge badge-info'>{{ OpportunitySummary.AssignedToYou | Format:'#,###,###' }}</span>
