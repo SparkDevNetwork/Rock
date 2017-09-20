@@ -150,7 +150,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         /// </value>
         public override string ItemRestUrl
         {
-            get { return "~/api/ScheduledLocations/GetChildren/"; }
+            get { return "~/api/com_centralaz/ScheduledLocations/GetChildren/"; }
         }
     }
 }
