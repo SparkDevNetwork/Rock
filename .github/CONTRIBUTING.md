@@ -7,17 +7,22 @@ These are just guidelines, not rules, use your best judgment and feel free to pr
 
 #### Table Of Contents
 
+[I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
+
 [What should I know before I get started?](#what-should-i-know-before-i-get-started)
+
   * [License](#license)
   * [Rock and Plugins](#rock-and-plugins)
 
 [How Can I Contribute?](#how-can-i-contribute)
+
   * [Reporting Bugs](#reporting-bugs)
   * [Suggesting Enhancements](#suggesting-enhancements)
   * [Your First Code Contribution](#your-first-code-contribution)
   * [Pull Requests](#pull-requests)
 
 [Styleguides](#styleguides)
+
   * [Git Commit Messages](#git-commit-messages)
   * [JavaScript Styleguide](#javascript-styleguide)
   * [C# and ASPX Styleguide](#c-and-aspx-styleguide)
@@ -25,8 +30,26 @@ These are just guidelines, not rules, use your best judgment and feel free to pr
   * [SQL Styleguide](#sql-styleguide)
 
 [Additional Notes](#additional-notes)
-  * [Environment and Diagnostics Information](#environment-and-diagnostics-information)
+
   * [Issue and Pull Request Labels](#issue-and-pull-request-labels)
+
+## I don't want to read this whole thing I just have a question!!!
+
+> **Note:** Please don't file an issue to ask a question. You'll get faster results by using the resources below.
+
+Rock has an official [Q&A site](https://www.rockrms.com/Rock/Ask), where the community chimes in with helpful advice and best practices.
+
+* [Ask Rock, Q&A](https://www.rockrms.com/Rock/Ask)
+* [Rock Documentation](https://www.rockrms.com/Learn)
+* [RockU Video Training](https://www.rockrms.com/rocku)
+
+If chat is more your speed, you can join the Rock community on Slack:
+
+* [Join the Rock Conversation on Slack!](https://www.rockrms.com/slack)
+    * Even though Slack is a chat service, sometimes it takes several hours for community members to respond &mdash; please be patient!
+    * Use the `#general` channel for general questions or discussion about Rock
+    * Use the `#troubleshooting` channel for help with specific issues
+    * There are many other channels available, check the channel list
 
 ## What should I know before I get started?
 
@@ -232,14 +255,13 @@ Please open an issue on `SparkDevNetwork/Rock` if you have suggestions for new l
 | `Priority: Critical` | [search][search-rock-repo-label-priority-critical] | [search][search-SparkDevNetwork-org-label-priority-critical] | Affects all production Rock installs in a way that impacts external users, impacts critical features like finances, registrations, etc or is a source for data corruption. |
 | `Priority: High` | [search][search-rock-repo-label-priority-high] | [search][search-SparkDevNetwork-org-label-priority-high] | Affects most production Rock installs in a way that will be noticed. |
 | `Priority: Low` | [search][search-rock-repo-label-priority-low] | [search][search-SparkDevNetwork-org-label-priority-low] | Affects a small number of Rock installations and will not be noticed by most users.|
-| `Priority: Medium` | [search][search-rock-repo-label-priority-medium] | [search][search-SparkDevNetwork-org-label-priority-medium] | Less complex issues which would be good first issues to work on for users who want to contribute to Rock. |
 
 #### Status
 
 | Status Label name | `SparkDevNetwork/Rock` :mag_right: | `SparkDevNetwork`‑org :mag_right: | Description |
 | --- | --- | --- | --- |
 | `Status: Available` | [search][search-rock-repo-label-status-available] | [search][search-SparkDevNetwork-org-label-status-available] | No one has claimed responsibility for resolving this issue. Generally this will be applied to bugs and enhancement issues, but may be applied to others. |
-| `Status: Accepted` | [search][search-rock-repo-label-status-accepted] | [search][search-SparkDevNetwork-org-label-status-accepted] | It's clear what the subject of the issue is about, and what the resolution should be. |
+| `Status: Confirmed` | [search][search-rock-repo-label-status-confirmed] | [search][search-SparkDevNetwork-org-label-status-confirmed] | It's clear what the subject of the issue is about, and what the resolution should be. |
 | `Status: In Progress` | [search][search-rock-repo-label-status-in-progress] | [search][search-SparkDevNetwork-org-label-status-in-progress] | This issue is being worked on, and has someone assigned. |
 | `Status: On Hold` | [search][search-rock-repo-label-status-on-hold] | [search][search-SparkDevNetwork-org-label-status-on-hold] | Similar to blocked, but is assigned to someone. May also be assigned to someone because of their experience, but it's recognized they are unable to process the issue at this time. |
 | `Status: Completed` | [search][search-rock-repo-label-status-completed] | [search][search-SparkDevNetwork-org-label-status-completed] | Nothing further to be done with this issue. Awaiting to be closed by the requestor out of politeness, or can be closed by a project member. |
@@ -264,14 +286,23 @@ Please open an issue on `SparkDevNetwork/Rock` if you have suggestions for new l
 
 | Label name | `SparkDevNetwork/Rock` :mag_right: | `SparkDevNetwork`‑org :mag_right: | Description |
 | --- | --- | --- | --- |
-| `Topic: Performance` | [search][search-rock-repo-label-topic-performance] | [search][search-SparkDevNetwork-org-label-topic-performance] | Related to performance. |
+| `Topic: API` | [search][search-rock-repo-label-topic-api] | [search][search-SparkDevNetwork-org-label-topic-api] | Related to Rock’s public REST APIs. |
+| `Topic: Check-in` | [search][search-rock-repo-label-topic-checkin] | [search][search-SparkDevNetwork-org-label-topic-checkin] | Related to Check-in and Attendance. |
+| `Topic: Communications` | [search][search-rock-repo-label-topic-communications] | [search][search-SparkDevNetwork-org-label-topic-communications] | Related to Rock Communications: Email, SMS, MMS, Push Notifications, etc. |
+| `Topic: Event Registration` | [search][search-rock-repo-label-topic-event-registration] | [search][search-SparkDevNetwork-org-label-topic-event-registration] | Related to Rock Event Registration. |
+| `Topic: External App` | [search][search-rock-repo-label-topic-external-app] | [search][search-SparkDevNetwork-org-label-topic-external-app] | Related to Rock's external apps: Check Scanner, Statement Generator, Job Scheduler Service, and Windows Check-in Client. |
+| `Topic: Finance` | [search][search-rock-repo-label-topic-finance] | [search][search-SparkDevNetwork-org-label-topic-finance] | Related to finance. |
+| `Topic: Lava` | [search][search-rock-repo-label-topic-lava] | [search][search-SparkDevNetwork-org-label-topic-lava] | Related to the Lava templating language. |
+| `Topic: Metrics` | [search][search-rock-repo-label-topic-metrics] | [search][search-SparkDevNetwork-org-label-topic-metrics] | Related to Metrics. |
+| `Topic: Reporting` | [search][search-rock-repo-label-topic-reporting] | [search][search-SparkDevNetwork-org-label-topic-reporting] | Related to Reporting. |
+| `Topic: Rock Internals` | [search][search-rock-repo-label-topic-rock-internals] | [search][search-SparkDevNetwork-org-label-topic-rock-internals] | Related to Rock Internals. |
 | `Topic: Security` | [search][search-rock-repo-label-topic-security] | [search][search-SparkDevNetwork-org-label-topic-security] | Related to security. |
-| `Topic: Lava` | [search][search-rock-repo-label-topic-lava] | [search][search-SparkDevNetwork-org-label-topic-lava] | Related to Lava. |
 | `Topic: UI` | [search][search-rock-repo-label-topic-ui] | [search][search-SparkDevNetwork-org-label-topic-ui] | Related to visual design. |
-| `Topic: AI` | [search][search-rock-repo-label-topic-api] | [search][search-SparkDevNetwork-org-label-topic-api] | Related to Rock’s public APIs. |
+| `Topic: Workflows` | [search][search-rock-repo-label-topic-workflows] | [search][search-SparkDevNetwork-org-label-topic-workflows] | Related to Workflows. |
+| `Topic: Performance` | [search][search-rock-repo-label-topic-performance] | [search][search-SparkDevNetwork-org-label-topic-performance] | Related to performance. |
 | `Topic: uncaught-exception` | [search][search-rock-repo-label-topic-uncaught-exception] | [search][search-SparkDevNetwork-org-label-topic-uncaught-exception] | Issues about uncaught exceptions. |
 | `Topic: Crash` | [search][search-rock-repo-label-topic-crash] | [search][search-SparkDevNetwork-org-label-topic-crash] | Reports of Rock completely crashing. |
-| `Topic: git` | [search][search-rock-repo-label-topic-git] | [search][search-SparkDevNetwork-org-label-topic-git] | Related to Git functionality (e.g. problems with gitignore files or with showing the correct file status). |
+| `Topic: git` | [search][search-rock-repo-label-topic-git] | [search][search-SparkDevNetwork-org-label-topic-git] | Related to Git functionality. |
 
 #### `SparkDevNetwork/Rock` Topic Categories
 
@@ -289,14 +320,12 @@ Please open an issue on `SparkDevNetwork/Rock` if you have suggestions for new l
 [search-SparkDevNetwork-org-label-priority-high]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Priority%3A+High"
 [search-rock-repo-label-priority-low]: https://github.com/SparkDevNetwork/Rock/labels/Priority%3A%20Low
 [search-SparkDevNetwork-org-label-priority-low]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Priority%3A+Low"
-[search-rock-repo-label-priority-medium]: https://github.com/SparkDevNetwork/Rock/labels/Priority%3A%20Medium
-[search-SparkDevNetwork-org-label-priority-medium]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Priority%3A+Medium"
 
 
 [search-rock-repo-label-status-available]: https://github.com/SparkDevNetwork/Rock/labels/Status%3A%20Available
 [search-SparkDevNetwork-org-label-status-available]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Status%3A+Available"
-[search-rock-repo-label-status-accepted]: https://github.com/SparkDevNetwork/Rock/labels/Status%3A%20Accepted
-[search-SparkDevNetwork-org-label-status-accepted]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Status%3A+Accepted"
+[search-rock-repo-label-status-confirmed]: https://github.com/SparkDevNetwork/Rock/labels/Status%3A%20Confirmed
+[search-SparkDevNetwork-org-label-status-confirmed]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Status%3A+Confirmed"
 [search-rock-repo-label-status-in-progress]: https://github.com/SparkDevNetwork/Rock/labels/Status%3A%20In%20Progress
 [search-SparkDevNetwork-org-label-status-in-progress]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Status%3A+In+Progress"
 [search-rock-repo-label-status-on-hold]: https://github.com/SparkDevNetwork/Rock/labels/Status%3A%20On%20Hold
@@ -329,20 +358,50 @@ Please open an issue on `SparkDevNetwork/Rock` if you have suggestions for new l
 [search-SparkDevNetwork-org-label-type-duplicate]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Type%3A%20Duplicate"
 
 
-[search-rock-repo-label-topic-performance]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Performance
-[search-SparkDevNetwork-org-label-topic-performance]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Performance"
-[search-rock-repo-label-topic-security]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Security
-[search-SparkDevNetwork-org-label-topic-security]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Performance"
-[search-rock-repo-label-topic-lava]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Lava
-[search-SparkDevNetwork-org-label-topic-lava]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Lava"
-[search-rock-repo-label-topic-ui]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20UI
-[search-SparkDevNetwork-org-label-topic-ui]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20UI"
 [search-rock-repo-label-topic-api]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20API
 [search-SparkDevNetwork-org-label-topic-api]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20API"
-[search-rock-repo-label-topic-crash]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Crash
-[search-SparkDevNetwork-org-label-topic-crash]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Crash"
+[search-rock-repo-label-topic-checkin]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Check-in
+[search-SparkDevNetwork-org-label-topic-checkin]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Check-in"
+[search-rock-repo-label-topic-communications]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Communications
+[search-SparkDevNetwork-org-label-topic-communications]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Communications"
+
+[search-rock-repo-label-topic-event-registration]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Event%20Registration
+[search-SparkDevNetwork-org-label-topic-event-registration]:https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Event%20Registration" 
+
+[search-rock-repo-label-topic-external-app]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20External%20App
+[search-SparkDevNetwork-org-label-topic-external-app]:https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20External%20App" 
+
+[search-rock-repo-label-topic-finance]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Finance
+[search-SparkDevNetwork-org-label-topic-finance]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Finance"
+
+[search-rock-repo-label-topic-lava]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Lava
+[search-SparkDevNetwork-org-label-topic-lava]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Lava"
+
+[search-rock-repo-label-topic-metrics]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Metrics
+[search-SparkDevNetwork-org-label-topic-metrics]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Metrics"
+
+[search-rock-repo-label-topic-reporting]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Reporting
+[search-SparkDevNetwork-org-label-topic-reporting]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Reporting"
+
+[search-rock-repo-label-topic-rock-internals]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Rock%20Internals
+[search-SparkDevNetwork-org-label-topic-rock-internals]:https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Rock%20Internals" 
+
+[search-rock-repo-label-topic-security]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Security
+[search-SparkDevNetwork-org-label-topic-security]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Security"
+
+[search-rock-repo-label-topic-ui]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20UI
+[search-SparkDevNetwork-org-label-topic-ui]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20UI"
+
+[search-rock-repo-label-topic-workflows]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Workflows
+[search-SparkDevNetwork-org-label-topic-workflows]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Workflows"
+
+[search-rock-repo-label-topic-performance]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Performance
+[search-SparkDevNetwork-org-label-topic-performance]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Performance"
+
 [search-rock-repo-label-topic-uncaught-exception]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Uncaught%20Exception
 [search-SparkDevNetwork-org-label-topic-uncaught-exception]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A20Uncaught%20Exception"
+[search-rock-repo-label-topic-crash]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Crash
+[search-SparkDevNetwork-org-label-topic-crash]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Crash"
 [search-rock-repo-label-topic-git]: https://github.com/SparkDevNetwork/Rock/labels/Topic%3A%20Git
 [search-SparkDevNetwork-org-label-topic-git]: https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3ASparkDevNetwork+label%3A"Topic%3A%20Git"
 
