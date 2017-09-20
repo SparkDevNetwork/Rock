@@ -2684,22 +2684,14 @@ Sys.Application.add_load(function () {
                 string stringHostName = System.Net.Dns.GetHostName();
                 if ( !string.IsNullOrWhiteSpace( stringHostName ) )
                 {
-                    var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
-                    if ( ipHostEntries != null )
+                    try
                     {
-                        try
-                        {
-                            var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
-                            if ( arrIpAddress != null )
-                            {
-                                ipAddress = arrIpAddress.ToString();
-                            }
-                        }
-                        catch
+                        var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
+                        if ( ipHostEntries != null )
                         {
                             try
                             {
-                                var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                                var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
                                 if ( arrIpAddress != null )
                                 {
                                     ipAddress = arrIpAddress.ToString();
@@ -2707,9 +2699,24 @@ Sys.Application.add_load(function () {
                             }
                             catch
                             {
-                                ipAddress = "127.0.0.1";
+                                try
+                                {
+                                    var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                                    if ( arrIpAddress != null )
+                                    {
+                                        ipAddress = arrIpAddress.ToString();
+                                    }
+                                }
+                                catch
+                                {
+                                    ipAddress = "127.0.0.1";
+                                }
                             }
                         }
+                    }
+                    catch ( System.Net.Sockets.SocketException ex )
+                    {
+                        ExceptionLogService.LogException( ex );
                     }
                 }
             }
