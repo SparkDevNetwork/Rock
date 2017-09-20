@@ -333,6 +333,10 @@
     <Compile Include="Migrations\201709191729044_Analytics2.Designer.cs">
       <DependentUpon>201709191729044_Analytics2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201709201525575_PersonBookMark.cs" />
+    <Compile Include="Migrations\201709201525575_PersonBookMark.Designer.cs">
+      <DependentUpon>201709201525575_PersonBookMark.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2731,6 +2735,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201709191729044_Analytics2.resx">
       <DependentUpon>201709191729044_Analytics2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201709201525575_PersonBookMark.resx">
+      <DependentUpon>201709201525575_PersonBookMark.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
