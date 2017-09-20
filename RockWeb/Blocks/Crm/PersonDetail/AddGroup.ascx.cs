@@ -49,14 +49,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField( "Enable Common Last Name", "Autofills the last name field when adding a new group member with the last name of the first group member.", true, order: 3 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 4 )]
     [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 5 )]
-    [BooleanField( "Birthdate", "Require a birthdate for each child", "Don't require", "When Family group type, should Birthdate be required for each child added?", false, "", 6 )]
+    [BooleanField( "Child Birthdate", "Require a birthdate for each child", "Don't require", "When Family group type, should Birthdate be required for each child added?", false, "", 6 )]
     [BooleanField( "Grade", "Require a grade for each child", "Don't require", "When Family group type, should Grade be required for each child added?", false, "", 7 )]
     [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 8 )]
     [BooleanField( "Marital Status Confirmation", "When Family group type, should user be asked to confirm saving an adult without a marital status?", true, "", 9 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "When Family group type, the default marital status for adults in the family.", false, false, "", "", 10 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "When Famiy group type, the marital status to use for children in the family.", false, false, Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 11 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type", "The type of location that address should use", false, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 12 )]
-    [BooleanField( "Phone", "Require a phone number for each adult", "Don't require", "When Family group type, should a phone number be required for each adult added?", false, "", 13 )]
+    [BooleanField( "Adult Phone Number", "Require a phone number for each adult", "Don't require", "When Family group type, should a phone number be required for each adult added?", false, "", 13 )]
     [BooleanField( "SMS", "SMS is enabled by default", "SMS is not enabled by default", "Should SMS be enabled for cell phone numbers by default?", false, "", 14 )]
     [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 15 )]
     [WorkflowTypeField( "Person Workflow(s)", "The workflow(s) to launch for every person added.", true, false, "", "", 16, "PersonWorkflows" )]
@@ -365,7 +365,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( CurrentPageIndex == 0 )
                 {
                     if ( _isFamilyGroupType &&
-                        GetAttributeValue( "Birthdate" ).AsBoolean() &&
+                        GetAttributeValue( "ChildBirthdate" ).AsBoolean() &&
                         GroupMembers.Any( m =>
                             m.GroupRoleId == _childRoleId &&
                             !m.Person.BirthDate.HasValue ) )
@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( CurrentPageIndex == 1 )
                 {
                     if ( _isFamilyGroupType && 
-                        GetAttributeValue("Phone").AsBoolean() && 
+                        GetAttributeValue("AdultPhoneNumber").AsBoolean() && 
                         GroupMembers.Any( m => 
                             m.GroupRoleId != _childRoleId &&
                             !m.Person.PhoneNumbers.Any() ))
