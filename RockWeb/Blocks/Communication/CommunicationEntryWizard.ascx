@@ -956,18 +956,21 @@
                 fontAwesomeLink.type = "text/css";
 
                 var jqueryLoaderScript = document.createElement("script");
+                jqueryLoaderScript.async = false;
                 jqueryLoaderScript.className = "js-emaileditor-addon";
                 jqueryLoaderScript.type = "text/javascript";
                 jqueryLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js", true ) %>';
 
                 var dragulaLoaderScript = document.createElement("script");
+                dragulaLoaderScript.async = false;
+                dragulaLoaderScript.setAttribute('defer', '');
                 dragulaLoaderScript.className = "js-emaileditor-addon";
                 dragulaLoaderScript.type = "text/javascript";
                 dragulaLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/dragula.min.js", true ) %>';
 
-                
-
                 var editorScript = document.createElement("script");
+                editorScript.async = false;
+                editorScript.setAttribute('defer', '');
                 editorScript.className = "js-emaileditor-addon";
                 editorScript.type = "text/javascript";
                 editorScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/email-editor.js", true ) %>';
