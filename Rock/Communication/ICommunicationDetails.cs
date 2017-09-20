@@ -26,16 +26,6 @@ namespace Rock.Communication
     /// </summary>
     public interface ICommunicationDetails
     {
-
-        /// <summary>
-        /// Gets or sets a list of binary file ids
-        /// </summary>
-        /// <value>
-        /// The attachment binary file ids
-        /// </value>
-        [Obsolete( "Use EmailAttachmentBinaryFileIds or SMSAttachmentBinaryFileIds" )]
-        IEnumerable<int> AttachmentBinaryFileIds { get; }
-
         #region Email Fields
 
         /// <summary>

@@ -147,11 +147,12 @@ namespace RockWeb
                 sb.Append( communication.PushMessage.ResolveMergeFields( mergeFields, communication.EnabledLavaCommands ) );
             }
 
-            // Attachments
-            if ( communication.Attachments.Where(a => a.CommunicationType == CommunicationType.Email).Any() )
+            // Email Attachments
+            var emailAttachments = communication.GetAttachments( CommunicationType.Email );
+            if ( emailAttachments.Any() )
             {
                 sb.Append( "<br/><br/>" );
-                foreach ( var binaryFile in communication.Attachments.Where( a => a.CommunicationType == CommunicationType.Email ).Select( a => a.BinaryFile ) )
+                foreach ( var binaryFile in emailAttachments.Select( a => a.BinaryFile ) )
                 {
                     sb.AppendFormat( "<a target='_blank' href='{0}'>{1}</a><br/>", binaryFile.Url, binaryFile.FileName );
                 }

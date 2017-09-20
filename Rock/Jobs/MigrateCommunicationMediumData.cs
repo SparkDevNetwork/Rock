@@ -116,7 +116,7 @@ namespace Rock.Jobs
                                 var attachment = new CommunicationTemplateAttachment();
                                 attachment.BinaryFile = binaryFile;
                                 attachment.CommunicationType = CommunicationType.Email;
-                                comm.Attachments.Add( attachment );
+                                comm.AddAttachment( attachment, CommunicationType.Email );
                             }
                         }
 
@@ -159,7 +159,7 @@ namespace Rock.Jobs
                                 var attachment = new CommunicationAttachment();
                                 attachment.BinaryFile = binaryFile;
                                 attachment.CommunicationType = CommunicationType.Email;
-                                comm.Attachments.Add( attachment );
+                                comm.AddAttachment( attachment, CommunicationType.Email );
                             }
                         }
 
@@ -200,7 +200,7 @@ namespace Rock.Jobs
                     commDetails.CCEmails = ConvertMediumData( mediumData, "CC", commDetails.Message );
                     commDetails.BCCEmails = ConvertMediumData( mediumData, "BCC", commDetails.Message );
                     commDetails.Message = ConvertMediumData( mediumData, "HtmlMessage", commDetails.Message );
-                    attachmentBinaryFileIds = ConvertMediumData( mediumData, "Attachments", commDetails.AttachmentBinaryFileIds.ToList().AsDelimited( "," ) ).SplitDelimitedValues().AsIntegerList();
+                    attachmentBinaryFileIds = ConvertMediumData( mediumData, "Attachments", commDetails.EmailAttachmentBinaryFileIds.ToList().AsDelimited( "," ) ).SplitDelimitedValues().AsIntegerList();
                 }
             }
         }

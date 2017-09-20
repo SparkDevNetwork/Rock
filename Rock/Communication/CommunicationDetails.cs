@@ -30,15 +30,6 @@ namespace Rock.Communication
     [Serializable]
     public class CommunicationDetails: ICommunicationDetails
     {
-        /// <summary>
-        /// Gets or sets a list of binary file ids
-        /// </summary>
-        /// <value>
-        /// The attachment binary file ids
-        /// </value>
-        [Obsolete( "Use EmailAttachmentBinaryFileIds or SMSAttachmentBinaryFileIds" )]
-        public IEnumerable<int> AttachmentBinaryFileIds { get; set; }
-
         #region Email Fields
 
         /// <summary>
