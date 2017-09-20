@@ -283,12 +283,14 @@ namespace RockWeb.Blocks.Communication
 
             //// NOTE: tbEmailPreview will be populated by parsing the Html of the Email/Template
 
-            hfEmailAttachedBinaryFileIds.Value = communication.Attachments.Where( a => a.CommunicationType == CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
+            hfEmailAttachedBinaryFileIds.Value = communication.GetAttachmentBinaryFileIds( CommunicationType.Email ).AsDelimited( "," );
             UpdateEmailAttachedFiles( false );
 
             // Mobile Text Editor
             ddlSMSFrom.SetValue( communication.SMSFromDefinedValueId );
             tbSMSTextMessage.Text = communication.SMSMessage;
+
+            // TODO SMS Attachment(s) 
 
             // Email Editor
             hfEmailEditorHtml.Value = communication.Message;
@@ -970,7 +972,7 @@ namespace RockWeb.Blocks.Communication
 
             hfEmailEditorHtml.Value = communicationTemplate.Message;
 
-            hfEmailAttachedBinaryFileIds.Value = communicationTemplate.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
+            hfEmailAttachedBinaryFileIds.Value = communicationTemplate.GetAttachments(CommunicationType.Email).Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
             UpdateEmailAttachedFiles( false );
 
             // SMS Fields

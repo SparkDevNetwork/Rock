@@ -239,6 +239,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the attachments.
+        /// NOTE: In most cases, you should use GetAttachments( CommunicationType ) instead.
         /// </summary>
         /// <value>
         /// The attachments.
@@ -389,6 +390,29 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Adds the attachment.
+        /// Specify CommunicationType.Email for Email and CommunicationType.SMS for SMS
+        /// </summary>
+        /// <param name="communicationTemplateAttachment">The communication template attachment.</param>
+        /// <param name="communicationType">Type of the communication.</param>
+        public void AddAttachment( CommunicationTemplateAttachment communicationTemplateAttachment, CommunicationType communicationType )
+        {
+            communicationTemplateAttachment.CommunicationType = communicationType;
+            this.Attachments.Add( communicationTemplateAttachment );
+        }
+
+        /// <summary>
+        /// Gets the attachments.
+        /// Specify CommunicationType.Email to get the attachments for Email and CommunicationType.SMS to get the Attachment(s) for SMS
+        /// </summary>
+        /// <param name="communicationType">Type of the communication.</param>
+        /// <returns></returns>
+        public IEnumerable<CommunicationTemplateAttachment> GetAttachments( CommunicationType communicationType )
+        {
+            return this.Attachments.Where( a => a.CommunicationType == communicationType );
+        }
 
         /// <summary>
         /// Returns a medium data value.
