@@ -772,6 +772,7 @@
     <Compile Include="Model\CommunicationTemplateAttachment.cs" />
     <Compile Include="Model\CommunicationAttachment.cs" />
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonBookmarkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Model\InteractionComponent.Partial.cs" />
@@ -1103,6 +1104,7 @@
     <Compile Include="Model\PersonAliasService.Partial.cs" />
     <Compile Include="Model\PersonBadge.cs" />
     <Compile Include="Model\PersonBadgeService.partial.cs" />
+    <Compile Include="Model\PersonBookmark.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
