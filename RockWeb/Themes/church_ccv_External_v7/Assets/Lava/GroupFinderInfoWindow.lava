@@ -10,18 +10,26 @@
 
 <div class="clearfix">
   {% assign familyPicture = Group | Attribute:'FamilyPicture','Url' %}
+  
+  {% comment %} 
+	This is purely for backwards compatibility. Will not be needed after Young Adult groups are moved into regular groups.
+  {% endcomment %}
+  {% assign groupPicture = Group | Attribute:'GroupPicture','Url' %}
+  
   {% if familyPicture != empty %}
     <img class="pull-left margin-r-sm margin-b-sm" src="{{ familyPicture }}&height=180&width=180&mode=crop&scale=both" height="60" width="60"/>
+  {% elseif groupPicture != empty %}
+	<img class="pull-left margin-r-sm margin-b-sm" src="{{ groupPicture }}&height=180&width=180&mode=crop&scale=both" height="60" width="60"/>
   {% endif %}
 
   <div class='margin-b-sm'>
     {% for attribute in Group.AttributeValues %}
       {% if attribute.Value != empty %}
-        {% unless attribute.AttributeName == "Family Picture" %}
-          <strong>{{ attribute.AttributeName }}:</strong>
-          {{ attribute.ValueFormatted }}
-          <br/>
-        {% endunless %}
+        {% if attribute.AttributeName != "Family Picture" and attribute.AttributeName != "Group Picture" %}
+		  <strong>{{ attribute.AttributeName }}:</strong>
+		  {{ attribute.ValueFormatted }}
+		  <br/>
+        {% endif %}
       {% endif %}
     {% endfor %}
   </div>
