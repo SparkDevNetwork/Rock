@@ -705,7 +705,7 @@
                                     </div>
                                 </div>
                             </Rock:RockControlWrapper>
-                            <Rock:FileUploader Id="fupMobileAttachment" runat="server" Label="Attachment" OnFileUploaded="fupMobileAttachment_FileUploaded" />
+                            <Rock:FileUploader Id="fupMobileAttachment" runat="server" Label="Attachment" OnFileUploaded="fupMobileAttachment_FileUploaded" OnFileRemoved="fupMobileAttachment_FileRemoved" />
                         </div>
                         <div class="col-md-6">
                             <div class="device device-mobile hidden-md" style="width: 435px;">
@@ -715,6 +715,7 @@
                                       <div class="js-sms-chatoutput message to">
                                           <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
                                       </div>
+                                        <asp:Image ID="imgSMSImageAttachment" runat="server" CssClass="pull-right margin-r-md" width="50%" />
                                     </div>
                                 </div>
                             </div>
