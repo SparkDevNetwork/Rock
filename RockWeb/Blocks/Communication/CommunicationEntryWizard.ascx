@@ -172,24 +172,31 @@
                 <%-- Email Editor --%>
                 <asp:Panel ID="pnlEmailEditor" CssClass="js-navigation-panel" runat="server" Visible="false">
                     
-                    <h1 class="step-title">Email Editor</h1>
                     <div class="row">
-                        <div class="pull-right margin-all-sm">
+                        <div class="col-sm-8">
+                            <h1 class="step-title">Email Editor</h1>
+                        </div>
+                        <div class="col-sm-4">
+                            
                             <%-- Put the email send test and preview button in an updatepanel to avoid flicker with the email editor --%>
                             <asp:UpdatePanel ID="upEmailSendTest" runat="server">
                                 <ContentTemplate>
-                                    <Rock:NotificationBox ID="nbEmailTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test Email has been sent." Visible="false" Dismissable="true" />
-                                    <a class="btn btn-sm btn-default js-email-sendtest" href="#">Send Test</a>
-                                    <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click" />
+                                    <div class="pull-right margin-all-sm">
+                                        <Rock:NotificationBox ID="nbEmailTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test Email has been sent." Visible="false" Dismissable="true" />
+                                        <a class="btn btn-xs btn-default js-email-sendtest" href="#">Send Test</a>
+                                        <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-xs btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click" />
+                                    </div>
+                                    
                                     <div class="js-email-sendtest-inputs" style="display: none">
                                         <Rock:RockTextBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" />
-                                        <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-sm btn-default js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
-                                        <a class="btn btn-sm btn-default js-email-sendtest-cancel" href="#">Cancel</a>
+                                        <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-xs btn-primary js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
+                                        <a class="btn btn-xs btn-link js-email-sendtest-cancel" href="#">Cancel</a>
                                     </div>
 
                                     
                                 </ContentTemplate>
                             </asp:UpdatePanel>
+                        
                         </div>
                     </div>
                     <div class="emaileditor-wrapper margin-t-md">
@@ -602,12 +609,10 @@
                         <asp:Panel ID="pnlEmailPreview" runat="server" Visible="false">
                             <Rock:ModalDialog ID="mdEmailPreview" runat="server" Title="Email Preview">
                                 <Content>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <!-- ## TODO ## Options for what type of email client to emulate? -->
-                                        </div>
-                                        <div class="col-md-6">
-
+                                    <div class="text-center margin-v-md">
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-default js-preview-desktop"><i class="fa fa-desktop"></i> Desktop</button>
+                                            <button type="button" class="btn btn-default js-preview-mobile"><i class="fa fa-mobile"></i> Mobile</button>
                                         </div>
                                     </div>
                                     <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview">
