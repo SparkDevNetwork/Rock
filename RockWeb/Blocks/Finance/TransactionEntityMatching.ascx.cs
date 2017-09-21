@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Finance
                 if ( _transactionEntityType.Id == EntityTypeCache.GetId<GroupMember>() )
                 {
                     int? groupTypeId = entityTypeQualifierValue;
-                    List<Group> groupsWithMembersList = new GroupService( new RockContext() ).Queryable().Where( a => a.GroupTypeId == groupTypeId.Value && a.Members.Any() ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking().ToList();
+                    List<Group> groupsWithMembersList = new GroupService( new RockContext() ).Queryable().Where( a => a.GroupTypeId == groupTypeId.Value && a.Members.Any() && a.IsActive ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking().ToList();
 
                     foreach ( var ddlGroup in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlGroup_" ) ) )
                     {
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Finance
                 else if ( _transactionEntityType.Id == EntityTypeCache.GetId<Group>() )
                 {
                     int? groupTypeId = entityTypeQualifierValue;
-                    List<Group> groupList = new GroupService( new RockContext() ).Queryable().Where( a => a.GroupTypeId == groupTypeId.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking().ToList();
+                    List<Group> groupList = new GroupService( new RockContext() ).Queryable().Where( a => a.GroupTypeId == groupTypeId.Value && a.IsActive ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking().ToList();
 
                     foreach ( var ddlGroup in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlGroup_" ) ) )
                     {
