@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -52,6 +53,7 @@ namespace RockWeb.Blocks.Communication
     [CustomCheckboxListField( "Communication Types", "The communication types that should be available to user to send (If none are selected, all will be available).", "Recipient Preference,Email,SMS", false, order: 4 )]
     [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved.", false, 300, "", order: 5 )]
     [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 6 )]
+    [IntegerField( "Max SMS Image Width", "The maximum width (in pixels) of an image attached to a mobile communication. If its width is over the max, Rock will automatically resize image to the max width.", false, 600 )]
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
         #region Properties
@@ -290,7 +292,8 @@ namespace RockWeb.Blocks.Communication
             ddlSMSFrom.SetValue( communication.SMSFromDefinedValueId );
             tbSMSTextMessage.Text = communication.SMSMessage;
 
-            // TODO SMS Attachment(s) 
+            fupMobileAttachment.BinaryFileId = communication.GetAttachmentBinaryFileIds( CommunicationType.SMS ).FirstOrDefault();
+            UpdateMobileAttachedFiles( false );
 
             // Email Editor
             hfEmailEditorHtml.Value = communication.Message;
@@ -972,7 +975,7 @@ namespace RockWeb.Blocks.Communication
 
             hfEmailEditorHtml.Value = communicationTemplate.Message;
 
-            hfEmailAttachedBinaryFileIds.Value = communicationTemplate.GetAttachments(CommunicationType.Email).Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
+            hfEmailAttachedBinaryFileIds.Value = communicationTemplate.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
             UpdateEmailAttachedFiles( false );
 
             // SMS Fields
@@ -1126,6 +1129,17 @@ namespace RockWeb.Blocks.Communication
                         testCommunication.Status = CommunicationStatus.Approved;
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
+                        foreach ( var attachment in communication.Attachments )
+                        {
+                            var cloneAttachment = attachment.Clone( false );
+                            cloneAttachment.Id = 0;
+                            cloneAttachment.Guid = Guid.Empty;
+                            cloneAttachment.ForeignGuid = null;
+                            cloneAttachment.ForeignId = null;
+                            cloneAttachment.ForeignKey = null;
+
+                            testCommunication.Attachments.Add( cloneAttachment );
+                        }
 
                         // for the test email, just use the current person as the recipient, but copy/paste the AdditionalMergeValuesJson to our test recipient so it has the same as the real recipients
                         var testRecipient = new CommunicationRecipient();
@@ -1399,7 +1413,101 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
         protected void fupMobileAttachment_FileUploaded( object sender, FileUploaderEventArgs e )
         {
+            UpdateMobileAttachedFiles( true );
+        }
 
+        /// <summary>
+        /// Handles the FileRemoved event of the fupMobileAttachment control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
+        protected void fupMobileAttachment_FileRemoved( object sender, FileUploaderEventArgs e )
+        {
+            // ensure that the binaryfileid is set to null if the file was removed
+            fupMobileAttachment.BinaryFileId = null;
+            UpdateMobileAttachedFiles( true );
+        }
+
+        /// <summary>
+        /// Updates the mobile attached files.
+        /// </summary>
+        /// <param name="resizeImageIfNeeded">if set to <c>true</c> [resize image if needed].</param>
+        protected void UpdateMobileAttachedFiles( bool resizeImageIfNeeded )
+        {
+            if ( !fupMobileAttachment.BinaryFileId.HasValue )
+            {
+                imgSMSImageAttachment.Visible = false;
+                return;
+            }
+
+            var rockContext = new RockContext();
+            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+
+            // load binary file from database
+            var binaryFile = binaryFileService.Get( fupMobileAttachment.BinaryFileId.Value );
+            if ( binaryFile != null )
+            {
+                if ( binaryFile.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap( binaryFile.ContentStream );
+
+                    // intentionally tell imageResizer to ignore the 3200x3200 size limit so that we can crop it first before limiting the size.
+                    var sizingPlugin = ImageResizer.Configuration.Config.Current.Plugins.Get<ImageResizer.Plugins.Basic.SizeLimiting>();
+                    var origLimit = sizingPlugin.Limits.TotalBehavior;
+                    sizingPlugin.Limits.TotalBehavior = ImageResizer.Plugins.Basic.SizeLimits.TotalSizeBehavior.IgnoreLimits;
+
+                    var imageStream = binaryFile.ContentStream;
+
+                    try
+                    {
+
+                        // Make sure Image is no bigger than maxwidth
+                        int maxWidth = this.GetAttributeValue( "MaxSMSImageWidth" ).AsIntegerOrNull() ?? 600;
+                        imageStream.Seek( 0, SeekOrigin.Begin );
+                        System.Drawing.Bitmap croppedBitmap = new System.Drawing.Bitmap( imageStream );
+
+                        if ( ( croppedBitmap.Width > maxWidth ) )
+                        {
+                            string resizeParams = string.Format( "width={0}", maxWidth );
+                            MemoryStream croppedAndResizedStream = new MemoryStream();
+                            ImageResizer.ResizeSettings resizeSettings = new ImageResizer.ResizeSettings( resizeParams );
+                            imageStream.Seek( 0, SeekOrigin.Begin );
+                            ImageResizer.ImageBuilder.Current.Build( imageStream, croppedAndResizedStream, resizeSettings );
+
+                            binaryFile.ContentStream = croppedAndResizedStream;
+
+                            rockContext.SaveChanges();
+                        }
+                    }
+                    finally
+                    {
+                        // set the size limit behavior back to what it was
+                        sizingPlugin.Limits.TotalBehavior = origLimit;
+                    }
+
+                    imgSMSImageAttachment.ImageUrl = string.Format( "~/GetImage.ashx?guid={0}", binaryFile.Guid );
+                    imgSMSImageAttachment.Visible = true;
+                    imgSMSImageAttachment.Width = new Unit( 50, UnitType.Percentage );
+                    upnlContent.Update();
+                }
+                else if ( Rock.Communication.Transport.Twilio.AcceptedMimeTypes.Any( a => binaryFile.MimeType.Equals( a, StringComparison.OrdinalIgnoreCase ) ) )
+                {
+                    // TODO: generic icon(s)??
+                    imgSMSImageAttachment.ImageUrl = "~/Assets/Icons/FileTypes/other.png";
+                    imgSMSImageAttachment.Visible = true;
+                    imgSMSImageAttachment.Width = new Unit( 10, UnitType.Percentage );
+                    upnlContent.Update();
+                }
+                else
+                {
+                    // TODO: deal with unknown/unaccepted mimetypes
+                    imgSMSImageAttachment.ImageUrl = "~/Assets/Icons/FileTypes/other.png";
+                    imgSMSImageAttachment.Visible = true;
+                    imgSMSImageAttachment.Width = new Unit( 10, UnitType.Percentage );
+                    upnlContent.Update();
+                }
+
+            }
         }
 
         /// <summary>
@@ -1961,6 +2069,8 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             Page.Response.Redirect( url, false );
             Context.ApplicationInstance.CompleteRequest();
         }
+
+
 
 
     }
