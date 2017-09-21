@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Communication
                 var communication = new CommunicationService( rockContext ).Get( communicationId.Value );
                 if ( communication != null )
                 {
-                    lTitle.Text = "Email Analytics: " + (communication.Name ?? communication.Subject);
+                    lTitle.Text = "Email Analytics: " + ( communication.Name ?? communication.Subject );
                 }
                 else
                 {
@@ -218,7 +218,8 @@ namespace RockWeb.Blocks.Communication
 
             if ( communicationIdList != null )
             {
-                totalRecipientCount = new CommunicationRecipientService( rockContext ).Queryable().Where( a => communicationIdList.Contains( a.CommunicationId ) ).Count();
+                CommunicationRecipientStatus[] sentStatus = new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Opened, CommunicationRecipientStatus.Delivered };
+                totalRecipientCount = new CommunicationRecipientService( rockContext ).Queryable().Where( a => sentStatus.Contains( a.Status ) && communicationIdList.Contains( a.CommunicationId ) ).Count();
             }
 
             List<int> unopenedCountsList = new List<int>();
@@ -266,7 +267,7 @@ namespace RockWeb.Blocks.Communication
             if ( totalRecipientCount.HasValue )
             {
                 // NOTE: just in case we have more recipients activity then there are recipient records, don't let it go negative
-                openClicksUnopenedDataList.Add( Math.Max(totalRecipientCount.Value - uniqueOpens, 0) );
+                openClicksUnopenedDataList.Add( Math.Max( totalRecipientCount.Value - uniqueOpens, 0 ) );
             }
             else
             {
@@ -280,12 +281,12 @@ namespace RockWeb.Blocks.Communication
             var clientsUsage = interactionQuery
                 //.Where(a => a.InteractionSessionId.HasValue && a.InteractionSession.DeviceTypeId.HasValue && !string.IsNullOrEmpty(a.InteractionSession.DeviceType.ClientType) )
                 .GroupBy( a => a.InteractionSession.DeviceType.ClientType ).Select( a => new
-            {
-                ClientType = a.Key,
-                ClientCount = a.Count()
-            } ).OrderByDescending(a => a.ClientCount).ToList();
+                {
+                    ClientType = a.Key,
+                    ClientCount = a.Count()
+                } ).OrderByDescending( a => a.ClientCount ).ToList();
 
-            this.PieChartDataClientLabelsJSON = clientsUsage.Select( a => string.IsNullOrEmpty(a.ClientType) ? "Unknown" : a.ClientType ).ToList().ToJson();
+            this.PieChartDataClientLabelsJSON = clientsUsage.Select( a => string.IsNullOrEmpty( a.ClientType ) ? "Unknown" : a.ClientType ).ToList().ToJson();
             this.PieChartDataClientCountsJSON = clientsUsage.Select( a => a.ClientCount ).ToList().ToJson();
 
             /* Most Popular Links from Clicks*/
@@ -294,7 +295,7 @@ namespace RockWeb.Blocks.Communication
                 LinkUrl = a.Key,
 
                 // EntityId is CommunicationRecipientId
-                UniqueClickCount = a.GroupBy(x => x.EntityId).Count()
+                UniqueClickCount = a.GroupBy( x => x.EntityId ).Count()
             } ).OrderByDescending( a => a.UniqueClickCount ).Take( 100 ).ToList();
 
             if ( topClicks.Any() )
