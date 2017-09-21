@@ -40,7 +40,6 @@ namespace RockWeb.Blocks.Core
     [EntityTypeField( "Entity Type", "The type of entity to associate category with" )]
     [TextField( "Entity Type Qualifier Property", "", false )]
     [TextField( "Entity Type Qualifier Value", "", false )]
-    [BooleanField( "Make Category Private", "Determines if the current entity is private (Only the current user will have access).", false )]
 
     [CategoryField( "Root Category", "Select the root category to use as a starting point for the parent category picker.", false, required:false, category: "CustomSetting" )]
     [CategoryField( "Exclude Categories", "Select any category that you need to exclude from the parent category picker", true, required:false, category: "CustomSetting" )]
@@ -280,13 +279,6 @@ namespace RockWeb.Blocks.Core
             }
 
             rockContext.SaveChanges();
-
-            if ( GetAttributeValue( "MakeCategoryPrivate" ).AsBoolean() )
-            {
-                category.MakePrivate( Authorization.VIEW, CurrentPerson );
-                category.MakePrivate( Authorization.EDIT, CurrentPerson );
-            }
-
             CategoryCache.Flush( category.Id );
 
             var qryParams = new Dictionary<string, string>();
