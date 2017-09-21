@@ -40,7 +40,10 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Merges two or more person records into one." )]
 
-    [LinkedPage( "Person Detail Page" )]
+    [BooleanField( "Reset Login Confirmation",
+        "When merging people that have different email addresses, should the logins for those people be updated to require a reconfirmation of the selected email address before being able to login? This is typically enabled as a precaution to prevent someone maliciously obtaining another person's login information simply by creating a duplicate account with same name but different login.",
+        true, "", 0 )]
+    [LinkedPage( "Person Detail Page", "The page to navigate to after the merge is completed.", true, "", "", 1 )]
     public partial class PersonMerge : Rock.Web.UI.RockBlock
     {
 
@@ -102,6 +105,13 @@ namespace RockWeb.Blocks.Crm
     }});
 ", hfSelectedColumn.ClientID );
             ScriptManager.RegisterStartupScript( gValues, gValues.GetType(), "primary-person-click", script, true );
+
+            nbSecurityNotice.Text = string.Format( @"Because there are two different emails associated with this merge, and at least one of the 
+records has a login, be sure to proceed with caution. It is possible that the new record was created in an attempt to gain access to the account 
+through the merge process. {0}", GetAttributeValue( "ResetLoginConfirmation" ).AsBoolean() ? 
+        @"While this person will be prompted to reconfirm their login(s) using the email address you select, you may wish to manually confirm the 
+validity of the request before completing this merge." : 
+        @"Because of this, make sure to confirm the validity of the request before completing this merge." );
 
         }
 
@@ -331,7 +341,10 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            bool reconfirmRequired = ( MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 && MergeData.People.Where( p => p.HasLogins ).Any() );
+            bool reconfirmRequired = ( 
+                GetAttributeValue( "ResetLoginConfirmation").AsBoolean() &&
+                MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 && 
+                MergeData.People.Where( p => p.HasLogins ).Any() );
 
             GetValuesSelection();
 
@@ -494,6 +507,25 @@ namespace RockWeb.Blocks.Crm
                         }
                         rockContext.SaveChanges();
 
+                        // If there was more than one email address and user has logins, then set any of the local 
+                        // logins ( database & AD ) to require a reconfirmation
+                        if ( reconfirmRequired )
+                        {
+                            var personIds = MergeData.People.Select( a => a.Id ).ToList();
+                            foreach ( var login in userLoginService.Queryable()
+                                .Where( l => 
+                                    l.PersonId.HasValue &&
+                                    personIds.Contains( l.PersonId.Value ) ) )
+                            {
+                                var component = Rock.Security.AuthenticationContainer.GetComponent( login.EntityType.Name );
+                                if ( component != null && !component.RequiresRemoteAuthentication )
+                                {
+                                    login.IsConfirmed = false;
+                                }
+                            }
+                        }
+                        rockContext.SaveChanges();
+
                         // Delete merged person's family records and any families that would be empty after merge
                         foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
                         {
@@ -501,20 +533,6 @@ namespace RockWeb.Blocks.Crm
                             foreach ( var phoneNumber in phoneNumberService.GetByPersonId( p.Id ) )
                             {
                                 phoneNumberService.Delete( phoneNumber );
-                            }
-
-                            // If there was more than one email address and user has logins, then set any of the local 
-                            // logins ( database & AD ) to require a reconfirmation
-                            if ( reconfirmRequired )
-                            {
-                                foreach ( var login in userLoginService.GetByPersonId( p.Id ) )
-                                {
-                                    var component = Rock.Security.AuthenticationContainer.GetComponent( login.EntityType.Name );
-                                    if ( component != null && !component.RequiresRemoteAuthentication )
-                                    {
-                                        login.IsConfirmed = false;
-                                    }
-                                }
                             }
 
                             rockContext.SaveChanges();
@@ -731,9 +749,11 @@ namespace RockWeb.Blocks.Crm
             if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
             {
                 // If the people have different email addresses and any logins, display security alert box
-                nbSecurityNotice.Visible =
+                bool showAlert = 
                     ( MergeData.People.Select( p => p.Email ).Where( e => e != null && e != "" ).Distinct( StringComparer.CurrentCultureIgnoreCase ).Count() > 1 &&
                     MergeData.People.Where( p => p.HasLogins ).Any() );
+
+                nbSecurityNotice.Visible = showAlert;
 
                 foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
                 {

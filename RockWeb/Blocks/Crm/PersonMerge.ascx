@@ -36,11 +36,7 @@
                         <Rock:Grid ID="gValues" runat="server" EnableResponsiveTable="false" AllowSorting="false" EmptyDataText="No Results" />
                     </div>
 
-                    <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="false" Title="Account Hijack Possible:" Heading="Security Alert"
-                        Text="Because there are two different emails associated with this merge, and at least one of the records has a login, be sure to proceed with caution.
-                    It is possible that the new record was created in an attempt to gain access to the account through the merge process. While this person will be
-                    prompted to reconfirm their logins using the email address you select, you may wish to manually confirm the validity of the request before
-                    completing this merge." />
+                    <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="false" Heading="Security Alert, Account Hijack Possible:" />
 
                     <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible ="false" />
 
