@@ -718,6 +718,10 @@ $(document).ready( function() {{
         }},
 
         callbacks: {{
+            onFocusout: function(a,b,c) {{
+             // try to prevent any summernote popovers hanging out after we've left the summer editor
+             $('.note-popover.popover').hide();
+            }},
            {callbacksOption} 
         }},
 
