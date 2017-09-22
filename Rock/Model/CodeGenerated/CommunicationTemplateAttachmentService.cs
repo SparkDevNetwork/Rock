@@ -90,6 +90,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.BinaryFileId = source.BinaryFileId;
             target.CommunicationTemplateId = source.CommunicationTemplateId;
+            target.CommunicationType = source.CommunicationType;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.CreatedDateTime = source.CreatedDateTime;

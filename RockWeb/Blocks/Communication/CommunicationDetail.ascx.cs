@@ -727,10 +727,11 @@ namespace RockWeb.Blocks.Communication
                         sb.AppendLine( "</div>" );
 
                         sb.AppendLine( "<div class='col-md-6'>" );
-                        if ( communication.Attachments.Any() )
+                        var emailAttachments = communication.GetAttachments( CommunicationType.Email );
+                        if ( emailAttachments.Any() )
                         {
                             sb.Append( "<ul>" );
-                            foreach ( var binaryFile in communication.Attachments.Select( a => a.BinaryFile ).ToList() )
+                            foreach ( var binaryFile in emailAttachments.Select( a => a.BinaryFile ).ToList() )
                             {
                                 sb.AppendFormat( "<li><a target='_blank' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
                                     System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFile.Id, binaryFile.FileName );

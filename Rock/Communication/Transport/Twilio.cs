@@ -161,6 +161,9 @@ namespace Rock.Communication.Transport
 
                         string callbackUrl = publicAppRoot + "Webhooks/Twilio.ashx";
 
+                        var smsAttachmentsBinaryFileIdList = communication.GetAttachmentBinaryFileIds( CommunicationType.SMS );
+                        List<Uri> attachmentMediaUrls = smsAttachmentsBinaryFileIdList.Select( a => new Uri($"{publicAppRoot}GetImage.ashx?id={a}") ).ToList();
+
                         bool recipientFound = true;
                         while ( recipientFound )
                         {
@@ -190,12 +193,19 @@ namespace Rock.Communication.Transport
                                                 twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                             }
 
-                                            var response = MessageResource.Create(
-                                                from: new TwilioTypes.PhoneNumber( fromPhone ),
-                                                to: new TwilioTypes.PhoneNumber( twilioNumber ),
-                                                body: message,
-                                                statusCallback: new System.Uri( callbackUrl )
-                                            );
+                                            CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
+                                            {
+                                                From = new TwilioTypes.PhoneNumber( fromPhone ),
+                                                Body = message,
+                                                StatusCallback = new System.Uri( callbackUrl )
+                                            };
+
+                                            if ( attachmentMediaUrls.Any() )
+                                            {
+                                                createMessageOptions.MediaUrl = attachmentMediaUrls;
+                                            }
+
+                                            var response = MessageResource.Create( createMessageOptions );
 
                                             recipient.Status = CommunicationRecipientStatus.Delivered;
                                             recipient.TransportEntityTypeName = this.GetType().FullName;
@@ -362,6 +372,47 @@ namespace Rock.Communication.Transport
         {
             throw new NotImplementedException();
         }
+
+        #endregion
+
+        #region 
+
+        /// <summary>
+        /// The MIME types for SMS attachments that Rock and Twilio fully support (also see AcceptedMimeTypes )_
+        /// Twilio's supported MimeTypes are from https://www.twilio.com/docs/api/messaging/accepted-mime-types
+        /// </summary>
+        public static List<string> SupportedMimeTypes = new List<string>
+        {
+            "image/jpeg",
+            "image/gif",
+            "image/png",
+        };
+
+        /// <summary>
+        /// The MIME types for SMS attachments that Rock and Twilio support/accept
+        /// Twilio's accepted MimeTypes are from https://www.twilio.com/docs/api/messaging/accepted-mime-types
+        /// Rock supports the following subset of those
+        /// </summary>
+        public static List<string> AcceptedMimeTypes = new List<string>
+        {
+            // These are fully supported by Twilio and will be formatted for delivery on destination devices
+            "image/jpeg",
+            "image/gif",
+            "image/png",
+
+            // These are accepted, but will not be modified for device compatibility
+            "audio/mp4",
+            "audio/mpeg",
+            "video/mp4",
+            "video/quicktime",
+            "video/H264",
+            "image/bmp",
+            "text/vcard",
+            "text/csv",
+            "text/rtf",
+            "text/richtext",
+            "text/calendar"
+        };
 
         #endregion
     }

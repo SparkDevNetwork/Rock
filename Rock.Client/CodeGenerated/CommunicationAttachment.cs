@@ -41,6 +41,9 @@ namespace Rock.Client
         public int CommunicationId { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.CommunicationType CommunicationType { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -86,6 +89,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.BinaryFileId = source.BinaryFileId;
             this.CommunicationId = source.CommunicationId;
+            this.CommunicationType = source.CommunicationType;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

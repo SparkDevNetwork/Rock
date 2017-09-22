@@ -783,7 +783,7 @@ namespace RockWeb.Blocks.Communication
 
             CommunicationData = new CommunicationDetails();
             CommunicationDetails.Copy( communication, CommunicationData );
-            CommunicationData.AttachmentBinaryFileIds = communication.AttachmentBinaryFileIds;
+            CommunicationData.EmailAttachmentBinaryFileIds = communication.EmailAttachmentBinaryFileIds;
 
             var template = communication.CommunicationTemplate;
 
@@ -1105,7 +1105,7 @@ namespace RockWeb.Blocks.Communication
             if ( template != null )
             {
                 CommunicationDetails.Copy( template, CommunicationData );
-                CommunicationData.AttachmentBinaryFileIds = template.AttachmentBinaryFileIds;
+                CommunicationData.EmailAttachmentBinaryFileIds = template.EmailAttachmentBinaryFileIds;
                 if ( loadControl )
                 {
                     LoadMediumControl( true );
@@ -1263,14 +1263,14 @@ namespace RockWeb.Blocks.Communication
             CommunicationDetails.Copy( CommunicationData, communication );
 
             // delete any attachments that are no longer included
-            foreach ( var attachment in communication.Attachments.Where( a => !CommunicationData.AttachmentBinaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
+            foreach ( var attachment in communication.Attachments.Where( a => !CommunicationData.EmailAttachmentBinaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
             {
                 communication.Attachments.Remove( attachment );
                 communicationAttachmentService.Delete( attachment );
             }
 
             // add any new attachments that were added
-            foreach ( var attachmentBinaryFileId in CommunicationData.AttachmentBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
+            foreach ( var attachmentBinaryFileId in CommunicationData.EmailAttachmentBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
             {
                 communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId } );
             }
