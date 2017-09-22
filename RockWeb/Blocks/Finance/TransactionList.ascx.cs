@@ -46,7 +46,8 @@ namespace RockWeb.Blocks.Finance
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transaction types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
     [CustomDropdownListField( "Default Transaction View", "Select whether you want to initially see Transactions or Transaction Details", "Transactions,Transaction Details", false, "Transactions", "", 6 )]
 
-    [LinkedPage( "Batch Page", order: 7 )]
+    [LinkedPage( "Batch Page", required:false, order: 7 )]
+    [BooleanField( "Show Account Summary", "NOTE: This is only when this block is used as a generic transaction list block or as a transaction list block for a batch.", true, order: 8 )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
     {
         private bool _isExporting = false;
@@ -1370,7 +1371,9 @@ namespace RockWeb.Blocks.Finance
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
 
-            if ( _batch == null &&
+            var showAccountSummary = this.GetAttributeValue( "ShowAccountSummary" ).AsBoolean();
+
+            if ( showAccountSummary &&
                 _scheduledTxn == null &&
                 _registration == null &&
                 _person == null &&
