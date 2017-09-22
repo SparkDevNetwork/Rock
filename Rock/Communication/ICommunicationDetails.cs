@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using Rock.Model;
 
@@ -25,15 +26,6 @@ namespace Rock.Communication
     /// </summary>
     public interface ICommunicationDetails
     {
-
-        /// <summary>
-        /// Gets or sets a list of binary file ids
-        /// </summary>
-        /// <value>
-        /// The attachment binary file ids
-        /// </value>
-        IEnumerable<int> AttachmentBinaryFileIds { get; }
-
         #region Email Fields
 
         /// <summary>
@@ -100,6 +92,14 @@ namespace Rock.Communication
         /// </value>
         string MessageMetaData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the email attachment binary file ids.
+        /// </summary>
+        /// <value>
+        /// The email attachment binary file ids.
+        /// </value>
+        IEnumerable<int> EmailAttachmentBinaryFileIds { get; }
+
         #endregion
 
         #region SMS Properties
@@ -147,6 +147,14 @@ namespace Rock.Communication
         /// From number.
         /// </value>
         string PushSound { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SMS attachment binary file ids.
+        /// </summary>
+        /// <value>
+        /// The SMS attachment binary file ids.
+        /// </value>
+        IEnumerable<int> SMSAttachmentBinaryFileIds { get; }
 
         #endregion
 

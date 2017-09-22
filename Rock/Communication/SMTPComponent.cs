@@ -451,7 +451,7 @@ namespace Rock.Communication.Transport
 
                                         // Recreate the attachments
                                         message.Attachments.Clear();
-                                        foreach ( var binaryFile in communication.Attachments.Select( a => a.BinaryFile ) )
+                                        foreach ( var binaryFile in communication.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFile ) )
                                         {
                                             message.Attachments.Add( new Attachment( binaryFile.ContentStream, binaryFile.FileName ) );
                                         }
