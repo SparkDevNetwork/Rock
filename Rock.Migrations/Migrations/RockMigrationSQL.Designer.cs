@@ -3389,12 +3389,12 @@ namespace Rock.Migrations.Migrations {
         ///    ,*
         ///FROM AnalyticsSourceDate d
         ///WHERE d.DateKey &gt;= (
-        ///        SELECT MIN(fa.AttendanceDateKey)
-        ///        FROM AnalyticsFactAttendance fa
+        ///        SELECT MIN(x.AttendanceDateKey)
+        ///        FROM AnalyticsFactAttendance x
         ///        )
         ///    AND d.DateKey &lt;= (
-        ///        SELECT MAX(fa.AttendanceDateKey)
-        ///        FROM AnalyticsFactAttendance fa
+        ///        SELECT MAX(x.AttendanceDateKey)
+        ///        FROM AnalyticsFactAttendance x
         ///        )
         ///.
         /// </summary>
@@ -3415,12 +3415,12 @@ namespace Rock.Migrations.Migrations {
         ///    ,*
         ///FROM AnalyticsSourceDate d
         ///WHERE d.DateKey &gt;= (
-        ///        SELECT MIN(ph.BirthDateKey)
-        ///        FROM AnalyticsDimFamilyHeadOfHousehold hh
+        ///        SELECT MIN(x.BirthDateKey)
+        ///        FROM AnalyticsDimFamilyHeadOfHousehold x
         ///        )
         ///    AND d.DateKey &lt;= (
-        ///        SELECT MAX(ph.BirthDateKey)
-        ///        FROM AnalyticsDimFamilyHeadOfHouse [rest of string was truncated]&quot;;.
+        ///        SELECT MAX(x.BirthDateKey)
+        ///        FROM AnalyticsDimFamilyHeadOfHousehol [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate {
             get {
@@ -3439,12 +3439,12 @@ namespace Rock.Migrations.Migrations {
         ///    ,*
         ///FROM AnalyticsSourceDate d
         ///WHERE d.DateKey &gt;= (
-        ///        SELECT MIN(ft.TransactionDateKey)
-        ///        FROM AnalyticsFactFinancialTransaction ft
+        ///        SELECT MIN(x.TransactionDateKey)
+        ///        FROM AnalyticsFactFinancialTransaction x
         ///        )
         ///    AND d.DateKey &lt;= (
-        ///        SELECT MAX(ft.TransactionDateKey)
-        ///        FROM AnalyticsFactFinancialTrans [rest of string was truncated]&quot;;.
+        ///        SELECT MAX(x.TransactionDateKey)
+        ///        FROM AnalyticsFactFinancialTransact [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate {
             get {
@@ -3463,12 +3463,12 @@ namespace Rock.Migrations.Migrations {
         ///    ,*
         ///FROM AnalyticsSourceDate d
         ///WHERE d.DateKey &gt;= (
-        ///        SELECT MIN(ph.BirthDateKey)
-        ///        FROM AnalyticsDimPersonCurrent pc
+        ///        SELECT MIN(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonCurrent x
         ///        )
         ///    AND d.DateKey &lt;= (
-        ///        SELECT MAX(ph.BirthDateKey)
-        ///        FROM AnalyticsDimPersonCurrent pc
+        ///        SELECT MAX(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonCurrent x
         ///        )
         ///.
         /// </summary>
@@ -3489,18 +3489,63 @@ namespace Rock.Migrations.Migrations {
         ///    ,*
         ///FROM AnalyticsSourceDate d
         ///WHERE d.DateKey &gt;= (
-        ///        SELECT MIN(ph.BirthDateKey)
-        ///        FROM AnalyticsDimPersonHistorical ph
+        ///        SELECT MIN(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonHistorical x
         ///        )
         ///    AND d.DateKey &lt;= (
-        ///        SELECT MAX(ph.BirthDateKey)
-        ///        FROM AnalyticsDimPersonHistorical ph
+        ///        SELECT MAX(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonHistorical x
         ///        )
         ///.
         /// </summary>
         public static string _201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate {
             get {
                 return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /* MP: Create the System &apos;Blank&apos; communication template */
+        ///UPDATE Communication
+        ///SET CommunicationTemplateId = NULL
+        ///WHERE CommunicationTemplateId IN (
+        ///		SELECT Id
+        ///		FROM CommunicationTemplate
+        ///		WHERE [Guid] = &apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///		)
+        ///
+        ///DELETE
+        ///FROM CommunicationTemplate
+        ///WHERE [Guid] = &apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///
+        ///INSERT INTO [dbo].[CommunicationTemplate] (
+        ///	[Name]
+        ///	,[Description]
+        ///	,[IsSystem]
+        ///	,[Subject]
+        ///	,[MediumDataJson]
+        ///	,[Guid]
+        ///	,[Message]
+        ///	)
+        ///VALUES (
+        ///	&apos;B [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709222257442_CommunicationSMSAttachments_AddCommunicationTemplates {
+            get {
+                return ResourceManager.GetString("_201709222257442_CommunicationSMSAttachments_AddCommunicationTemplates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO [LavaShortCode]
+        ///	([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
+        ///	VALUES
+        ///	(&apos;YouTube&apos;,&apos;Creates a responsive YouTube embe&apos;&apos;d from just a simple video id.&apos;,&apos;&lt;p&gt;Embedding a YouTube video is easy, right? Well what if you want it to be responsive (adjust with the size of the window)? Or what about 
+        ///control of what is shown in the player? The YouTube shortcode helps to shorten (see what we did there) the t [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709222257442_CommunicationSMSAttachments_AddLavaShortCodes {
+            get {
+                return ResourceManager.GetString("_201709222257442_CommunicationSMSAttachments_AddLavaShortCodes", resourceCulture);
             }
         }
     }
