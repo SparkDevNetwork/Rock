@@ -292,6 +292,19 @@ namespace RockWeb.Blocks.Communication
 
             // Email Editor
             hfEmailEditorHtml.Value = communication.Message;
+
+            htmlEditor.MergeFields.Clear();
+            htmlEditor.MergeFields.Add( "GlobalAttribute" );
+            htmlEditor.MergeFields.Add( "Rock.Model.Person" );
+            htmlEditor.MergeFields.Add( "Communication.Subject|Subject" );
+            htmlEditor.MergeFields.Add( "Communication.MediumData.FromName|From Name" );
+            htmlEditor.MergeFields.Add( "Communication.MediumData.FromAddress|From Address" );
+            htmlEditor.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
+            htmlEditor.MergeFields.Add( "UnsubscribeOption" );
+            if ( communication.AdditionalMergeFields.Any() )
+            {
+                htmlEditor.MergeFields.AddRange( communication.AdditionalMergeFields );
+            }
         }
 
         /// <summary>
@@ -957,8 +970,24 @@ namespace RockWeb.Blocks.Communication
 
             var communicationTemplate = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() );
 
-            tbFromName.Text = communicationTemplate.FromName;
-            ebFromAddress.Text = communicationTemplate.FromEmail;
+            // If the template does not provide a default From Name and Address use the current person.
+            if ( communicationTemplate.FromName.IsNotNullOrWhitespace() )
+            {
+                tbFromName.Text = communicationTemplate.FromName;
+            }
+            else
+            {
+                tbFromName.Text = CurrentPerson.FullName;
+            }
+
+            if ( communicationTemplate.FromEmail.IsNotNullOrWhitespace() )
+            {
+                ebFromAddress.Text = communicationTemplate.FromEmail;
+            }
+            else
+            {
+                ebFromAddress.Text = CurrentPerson.Email;
+            }
 
             ebReplyToAddress.Text = communicationTemplate.ReplyToEmail;
             ebCCList.Text = communicationTemplate.CCEmails;

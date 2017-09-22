@@ -1025,6 +1025,9 @@
 				// hide all property panels
 				$('.propertypanel').hide();
 
+                // hide any summernote popovers that might be hanging out
+			    $('.note-popover.popover').hide();
+
 				// temp - set text of summernote
 				switch(componentType){
 					case 'text':
@@ -1063,6 +1066,9 @@
 			    $('.propertypanel').hide();
 			    $('.js-propertypanel-actions').hide();
 			    $currentComponent.removeClass('selected');
+
+			    // hide any summernote popovers that might be hanging out
+			    $('.note-popover.popover').hide();
 				
 				if (e != null){
 					e.preventDefault();
