@@ -94,6 +94,11 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
+            // Tell the browsers to not cache. This will help prevent browser using stale communication wizard stuff after navigating away from this page
+            Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
+            Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
+            Page.Response.Cache.SetNoStore();
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );

@@ -63,7 +63,7 @@
                     </asp:Panel>
 
                     <div class="actions margin-t-md">
-                        <asp:LinkButton ID="btnRecipientSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgRecipientSelection" CausesValidation="true" OnClick="btnRecipientSelectionNext_Click" />
+                        <asp:LinkButton ID="btnRecipientSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgRecipientSelection" CausesValidation="true" OnClick="btnRecipientSelectionNext_Click" />
                     </div>
 
                     <%-- Recipient Selection: Individual Recipients Modal --%>
@@ -129,8 +129,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnMediumSelectionPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnMediumSelectionPrevious_Click"  />
-                        <asp:LinkButton ID="btnMediumSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgMediumSelection" CausesValidation="true" OnClick="btnMediumSelectionNext_Click" />
+                        <asp:LinkButton ID="btnMediumSelectionPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnMediumSelectionPrevious_Click"  />
+                        <asp:LinkButton ID="btnMediumSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgMediumSelection" CausesValidation="true" OnClick="btnMediumSelectionNext_Click" />
                     </div>
 
                 </asp:Panel>
@@ -160,8 +160,8 @@
                     </div>
 
                     <div class="actions margin-t-md">
-                        <asp:LinkButton ID="btnTemplateSelectionPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnTemplateSelectionPrevious_Click"  />
-                        <asp:LinkButton ID="btnTemplateSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgTemplateSelection" CausesValidation="true" OnClick="btnTemplateSelectionNext_Click" />
+                        <asp:LinkButton ID="btnTemplateSelectionPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnTemplateSelectionPrevious_Click"  />
+                        <asp:LinkButton ID="btnTemplateSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgTemplateSelection" CausesValidation="true" OnClick="btnTemplateSelectionNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -598,8 +598,8 @@
                     
                     <%-- TODO: review css here... --%>
                     <div class="actions margin-t-lg">
-                        <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-saveeditorhtml" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
-                        <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
+                        <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-saveeditorhtml js-wizard-navigation" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml js-wizard-navigation" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
                     </div>
                     
                 </asp:Panel>
@@ -615,8 +615,8 @@
                                             <button type="button" class="btn btn-default js-preview-mobile"><i class="fa fa-mobile"></i> Mobile</button>
                                         </div>
                                     </div>
-                                    <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview">
-                                        <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe js-emailpreview-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
+                                    <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview center-block">
+                                        <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe js-emailpreview-iframe email-wrapper" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" scrolling="yes"></iframe>
                                     </div>
                                 </Content>
 
@@ -681,8 +681,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEmailSummaryPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnEmailSummaryPrevious_Click" />
-                        <asp:LinkButton ID="btnEmailSummaryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgEmailSummary" CausesValidation="true" OnClick="btnEmailSummaryNext_Click" />
+                        <asp:LinkButton ID="btnEmailSummaryPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnEmailSummaryPrevious_Click" />
+                        <asp:LinkButton ID="btnEmailSummaryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgEmailSummary" CausesValidation="true" OnClick="btnEmailSummaryNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -712,10 +712,10 @@
                             </Rock:RockControlWrapper>
                         </div>
                         <div class="col-md-6">
-                            <div class="device device-mobile hidden-md" style="width: 435px;">
+                            <div class="device device-mobile hidden-md">
                                 <div class="sms">
                                     <header><span class="left">Messages</span><h2><asp:Literal ID="lSMSChatPerson" runat="server" Text="Ted Decker" /></h2><span class="right">Contacts</span></header>
-                                    <div class="messages-wrapper" style="height: 525px;">
+                                    <div class="messages-wrapper">
                                       <div class="js-sms-chatoutput message to">
                                           <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
                                       </div>
@@ -726,8 +726,8 @@
                         </div>
                     </div>
                     <div class="actions margin-t-md">
-                        <asp:LinkButton ID="btnMobileTextEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnMobileTextEditorPrevious_Click" />
-                        <asp:LinkButton ID="btnMobileTextEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgMobileTextEditor" CausesValidation="true" OnClick="btnMobileTextEditorNext_Click" />
+                        <asp:LinkButton ID="btnMobileTextEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnMobileTextEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnMobileTextEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgMobileTextEditor" CausesValidation="true" OnClick="btnMobileTextEditorNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -919,6 +919,42 @@
                     var emailHtmlContent = $editorHtml[0].outerHTML;
 
                     $('#<%=hfEmailEditorHtml.ClientID%>').val(emailHtmlContent);
+                });
+
+                // make sure scroll position is set to top after navigating (so that stuff doesn't roll out of view if navigating from a tall to a short height )
+                $('.js-wizard-navigation').off('click').on('click', function ()
+                {
+                    $('html, body').animate({
+                        scrollTop: $('#<%=upnlContent.ClientID%>')
+                    }, 'fast');
+                });
+
+                // resize the email preview when the Mobile/Desktop modes are clicked
+                $('.js-preview-mobile, .js-preview-desktop').off('click').on('click', function (a, b, c)
+                {
+                    var $emailPreviewIframe = $('.js-emailpreview-iframe');
+
+                    if ($(this).hasClass('js-preview-mobile')) {
+                        var mobileContainerHeight = '525px';
+
+                        $('.js-email-preview').removeClass("device-desktop").addClass("device-mobile");
+                        var mobilePreviewHeight = $('.js-email-preview').height();
+
+                        $emailPreviewIframe.height(mobileContainerHeight);
+                        $('#<%=pnlEmailPreviewContainer.ClientID%>').height(mobileContainerHeight);
+                    }
+                    else {
+                        $('.js-email-preview').removeClass("device-mobile").addClass("device-desktop");
+                        $emailPreviewIframe.height('auto');
+
+                        var emailPreviewIframe = $emailPreviewIframe[0];
+                        var newHeight = $(emailPreviewIframe.contentWindow.document).height();
+                        if ($(emailPreviewIframe).height() != newHeight) {
+                            $(emailPreviewIframe).height(newHeight);
+                        }
+
+                        $('#<%=pnlEmailPreviewContainer.ClientID%>').height(newHeight);
+                    }
                 });
             }
             );
