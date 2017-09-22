@@ -72,6 +72,22 @@ namespace Rock.Model
         public bool IsSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if this is an active communication template. This value is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this schedule is active, otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        [Previewable]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
+
+        /// <summary>
         /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the sender of the Communication
         /// </summary>
         /// <value>
