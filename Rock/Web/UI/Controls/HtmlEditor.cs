@@ -687,6 +687,11 @@ onChange: function(contents, $editable) {{
 
 
             string summernoteInitScript = $@"
+function pageLoad() {{
+  // remove any leftover popovers that summernote might have created and orphaned  
+  $('.note-popover.popover').hide();
+}}
+
 $(document).ready( function() {{
 
     // workaround for https://github.com/summernote/summernote/issues/2017 and/or https://github.com/summernote/summernote/issues/1984
@@ -718,10 +723,6 @@ $(document).ready( function() {{
         }},
 
         callbacks: {{
-            onFocusout: function(a,b,c) {{
-             // try to prevent any summernote popovers hanging out after we've left the summer editor
-             $('.note-popover.popover').hide();
-            }},
            {callbacksOption} 
         }},
 
