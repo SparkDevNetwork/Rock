@@ -705,8 +705,9 @@ $(document).ready( function() {{
 
         popover: {{
           image: [
+            ['custom1', ['rockimagelink']],
             ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
-            ['custom', ['rockimagebrowser']],
+            ['custom2', ['rockimagebrowser']],
             ['float', ['floatLeft', 'floatRight', 'floatNone']],
             ['remove', ['removeMedia']]
           ],
@@ -729,6 +730,7 @@ $(document).ready( function() {{
         buttons: {{
             rockfilebrowser: RockFileBrowser,
             rockimagebrowser: RockImageBrowser, 
+            rockimagelink: RockImageLink, 
             rockmergefield: RockMergeField,
             rockcodeeditor: RockCodeEditor,
             rockpastetext: RockPasteText,
