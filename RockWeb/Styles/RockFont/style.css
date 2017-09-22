@@ -38,9 +38,9 @@ i.rk {
 .rk-four-column:before {
   content: "\e903";
 }
-.rk-right-column:before {
+.rk-left-column:before {
   content: "\e904";
 }
-.rk-left-column:before {
+.rk-right-column:before {
   content: "\e905";
 }
