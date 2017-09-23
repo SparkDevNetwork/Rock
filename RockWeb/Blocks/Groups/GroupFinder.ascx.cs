@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Groups
 </div>
 
 {% if LinkedPages.GroupDetailPage and LinkedPages.GroupDetailPage != '' %}
-    <a class='btn btn-xs btn-action margin-r-sm' href='|{{ LinkedPages.GroupDetailPage }}|?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
+    <a class='btn btn-xs btn-action margin-r-sm' href='{{ LinkedPages.GroupDetailPage }}?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
 {% endif %}
 
 {% if LinkedPages.RegisterPage and LinkedPages.RegisterPage != '' %}
