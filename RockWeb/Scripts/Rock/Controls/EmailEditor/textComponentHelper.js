@@ -20,7 +20,7 @@
         $('#component-text-margin-top,#component-text-margin-left,#component-text-margin-right,#component-text-margin-bottom').on('change', function (e)
         {
           // just keep the numeric portion in case they included alpha chars
-          $(this).val(parseFloat($(this).val()));
+          $(this).val(parseFloat($(this).val()) || '');
 
           self.setMargins();
         });
@@ -40,10 +40,10 @@
         var textEl = $textComponent[0];
 
         $('#component-text-backgroundcolor').colorpicker('setValue', $textComponent.css('backgroundColor'));
-        $('#component-text-margin-top').val(parseFloat(textEl.style['margin-top']));
-        $('#component-text-margin-left').val(parseFloat(textEl.style['margin-left']));
-        $('#component-text-margin-right').val(parseFloat(textEl.style['margin-right']));
-        $('#component-text-margin-bottom').val(parseFloat(textEl.style['margin-bottom']));
+        $('#component-text-margin-top').val(parseFloat(textEl.style['margin-top']) || '');
+        $('#component-text-margin-left').val(parseFloat(textEl.style['margin-left']) || '');
+        $('#component-text-margin-right').val(parseFloat(textEl.style['margin-right']) || '');
+        $('#component-text-margin-bottom').val(parseFloat(textEl.style['margin-bottom']) || '');
 
         $('.js-component-text-lineheight').val(textEl.style['line-height']);
       },
