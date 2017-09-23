@@ -166,7 +166,7 @@ namespace Rock.Communication.Medium
             
             string transportPhone = string.Empty;
 
-            using ( Rock.Data.RockContext rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = new RockContext() )
             {
                 Person toPerson = null;
 
@@ -176,12 +176,12 @@ namespace Rock.Communication.Medium
                                     .OrderBy( p => p.Id ).FirstOrDefault(); // order by person id to get the oldest person to help with duplicate records of the response recipient
 
                 // get recipient from defined value
-                var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
+                var definedType = DefinedTypeCache.Read( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
                 if ( definedType != null )
                 {
                     if ( definedType.DefinedValues != null && definedType.DefinedValues.Any() )
                     {
-                        var matchValue = definedType.DefinedValues.Where( v => v.Value == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
+                        var matchValue = definedType.DefinedValues.Where( v => v.Value.RemoveSpaces() == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
                         if ( matchValue != null )
                         {
                             transportPhone = matchValue.Id.ToString();
@@ -231,7 +231,7 @@ namespace Rock.Communication.Medium
                 }
                 else
                 {
-                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    var globalAttributes = GlobalAttributesCache.Read();
                     string organizationName = globalAttributes.GetValue( "OrganizationName" );
 
                     errorMessage = string.Format( "Could not deliver message. This phone number is not registered in the {0} database.", organizationName );
