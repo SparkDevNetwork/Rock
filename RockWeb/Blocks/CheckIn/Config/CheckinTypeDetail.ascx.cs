@@ -250,7 +250,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeLength", nbCodeAlphaNumericLength.Text );
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeAlphaLength", nbCodeAlphaLength.Text );
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericLength", nbCodeNumericLength.Text );
-                groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericRandom", cbCodeRandom.Checked.ToString());
+                groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericRandom", cbCodeRandom.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_AllowCheckout", cbAllowCheckout.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_AutoSelectDaysBack", nbAutoSelectDaysBack.Text );
                 groupType.SetAttributeValue( "core_checkin_AutoSelectOptions", ddlAutoSelectOptions.SelectedValueAsInt() );
@@ -428,7 +428,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 nbCodeAlphaNumericLength.Text = groupType.GetAttributeValue( "core_checkin_SecurityCodeLength" );
                 nbCodeAlphaLength.Text = groupType.GetAttributeValue( "core_checkin_SecurityCodeAlphaLength" );
                 nbCodeNumericLength.Text = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericLength" );
-                cbCodeRandom.Checked = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericRandom" ).AsBoolean(true);
+                cbCodeRandom.Checked = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericRandom" ).AsBoolean( true );
                 cbAllowCheckout.Checked = groupType.GetAttributeValue( "core_checkin_AllowCheckout" ).AsBoolean( true );
                 nbAutoSelectDaysBack.Text = groupType.GetAttributeValue( "core_checkin_AutoSelectDaysBack" );
                 ddlAutoSelectOptions.SetValue( groupType.GetAttributeValue( "core_checkin_AutoSelectOptions" ) );
@@ -558,7 +558,9 @@ namespace RockWeb.Blocks.CheckIn.Config
                 {
                     rightDetailsDescList.Add( "Search Type", groupType.AttributeValues["core_checkin_SearchType"].ValueFormatted );
                 }
-                if ( groupType.AttributeValues.ContainsKey( "core_checkin_PhoneSearchType" ) )
+                var searchTypeAttributeValueId = groupType.GetAttributeValue( "core_checkin_SearchType" ).AsGuid();
+                if ( groupType.AttributeValues.ContainsKey( "core_checkin_PhoneSearchType" ) &&
+                     searchTypeAttributeValueId != Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() )
                 {
                     rightDetailsDescList.Add( "Phone Number Compare", groupType.AttributeValues["core_checkin_PhoneSearchType"].ValueFormatted );
                 }
