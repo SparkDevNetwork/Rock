@@ -3206,7 +3206,7 @@ namespace RockWeb.Blocks.Event
 
                         var existingPeopleInGroups = new GroupMemberService( rockContext )
                             .Queryable().AsNoTracking()
-                            .Where( m => validGroupIds.Contains( m.GroupId ) )
+                            .Where( m => validGroupIds.Contains( m.GroupId ) && m.Group.IsActive && m.GroupMemberStatus == GroupMemberStatus.Active )
                             .Select( m => m.PersonId )
                             .ToList();
 
