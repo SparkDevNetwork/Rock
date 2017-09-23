@@ -602,7 +602,7 @@ namespace RockWeb.Blocks.Groups
                     // Hide the search button and show the results immediately since there is 
                     // no filter criteria to be entered
                     phFilterControls.Visible = false;
-                    btnSearch.Visible = false;
+                    btnSearch.Visible = GetAttributeValue( "DisplayCampusFilter" ).AsBoolean();
                     pnlResults.Visible = true;
                 }
             }
