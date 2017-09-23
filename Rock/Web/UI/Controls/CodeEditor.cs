@@ -535,6 +535,9 @@ namespace Rock.Web.UI.Controls
                     {3}
                 }});
 
+                // disable warning about block scrolling
+                ce_{0}.$blockScrolling = Infinity;
+
                 ce_{0}.setReadOnly({4});
 ";
 
