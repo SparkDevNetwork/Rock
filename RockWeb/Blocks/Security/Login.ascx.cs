@@ -103,12 +103,12 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                         {
                             if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
                             {
-                                CheckConfirmationAndLockedOut( userName, redirectUrlSetting, true );
+                                CheckUser( userName, redirectUrlSetting, true );
                                 break;
                             }
                             else
                             {
-                                CheckConfirmationAndLockedOut( userName, returnUrl, true );
+                                CheckUser( userName, returnUrl, true );
                                 break;
                             }
                         }
@@ -194,8 +194,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                     {
                         if ( component.Authenticate( userLogin, tbPassword.Text ) )
                         {
-                            CheckConfirmationAndLockedOut( userLogin.UserName, Request.QueryString["returnurl"],
-                                cbRememberMe.Checked, userLoginService );
+                            CheckUser( userLogin, Request.QueryString["returnurl"], cbRememberMe.Checked );
                             return;
                         }
                     }
@@ -219,43 +218,52 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
         }
 
         /// <summary>
+        /// Checks if a username is locked out or needs confirmation, and handles those events
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="returnUrl">The return URL.</param>
+        /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
+        private void CheckUser( string userName, string returnUrl, bool rememberMe )
+        {
+            var userLogin = new UserLoginService( new RockContext() ).GetByUserName( userName );
+            CheckUser( userLogin, returnUrl, rememberMe );
+        }
+
+
+        /// <summary>
         /// Checks if a userLogin is locked out or needs confirmation, and handles those events
         /// </summary>
-        /// <param name="userName">The username to use to lookup a login</param>
+        /// <param name="userLogin">The user login.</param>
         /// <param name="returnUrl">Where to redirect next</param>
         /// <param name="rememberMe">True for external auth, the checkbox for internal auth</param>
-        /// <param name="userLoginService">The UserLoginService, should be null for external auth but we reuse a previous service for internal logins</param>
-        private void CheckConfirmationAndLockedOut( string userName, string returnUrl, bool rememberMe, UserLoginService userLoginService = null )
+        private void CheckUser( UserLogin userLogin, string returnUrl, bool rememberMe )
         {
-            if ( userLoginService == null )
+            if ( userLogin != null )
             {
-                userLoginService = new UserLoginService( new RockContext() );
-            }
-
-            var userLogin = userLoginService.GetByUserName( userName );
-            if ( ( userLogin.IsConfirmed ?? true ) && !( userLogin.IsLockedOut ?? false ) )
-            {
-                LoginUser( userName, returnUrl, rememberMe );
-            }
-            else
-            {
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
-
-                if ( userLogin.IsLockedOut ?? false )
+                if ( ( userLogin.IsConfirmed ?? true ) && !( userLogin.IsLockedOut ?? false ) )
                 {
-                    lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
-
-                    pnlLogin.Visible = false;
-                    pnlLockedOut.Visible = true;
+                    LoginUser( userLogin.UserName, returnUrl, rememberMe );
                 }
                 else
                 {
-                    SendConfirmation( userLogin );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
 
-                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
+                    if ( userLogin.IsLockedOut ?? false )
+                    {
+                        lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
 
-                    pnlLogin.Visible = false;
-                    pnlConfirmation.Visible = true;
+                        pnlLogin.Visible = false;
+                        pnlLockedOut.Visible = true;
+                    }
+                    else
+                    {
+                        SendConfirmation( userLogin );
+
+                        lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
+
+                        pnlLogin.Visible = false;
+                        pnlConfirmation.Visible = true;
+                    }
                 }
             }
         }
