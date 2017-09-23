@@ -154,6 +154,7 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             group.LoadAttributes( rockContext );
+            var opportunityType = DefinedValueCache.Read( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
 
             if ( this.GetAttributeValue( "SetPageTitletoOpportunityTitle" ).AsBoolean() )
             {
@@ -179,6 +180,10 @@ namespace RockWeb.Blocks.Fundraising
 
             // only show the 'Donate to a Partipant' button if there are participants that are taking contribution requests
             btnDonateToParticipant.Visible = groupMembers.Where( a => !a.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean() ).Any();
+            if ( !string.IsNullOrWhiteSpace( opportunityType.GetAttributeValue( "core_DonateButtonText" ) ) )
+            {
+                btnDonateToParticipant.Text = opportunityType.GetAttributeValue( "core_DonateButtonText" );
+            }
 
             RegistrationInstance registrationInstance = null;
             var registrationInstanceId = group.GetAttributeValue( "RegistrationInstance" ).AsIntegerOrNull();
@@ -244,8 +249,6 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             mergeFields.Add( "GroupMember", groupMember );
-
-            var opportunityType = DefinedValueCache.Read( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
 
             // Progress
             if ( groupMember != null && pnlParticipantActions.Visible )
