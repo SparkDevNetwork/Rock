@@ -110,15 +110,15 @@ namespace Rock.Jobs
                     if ( alertEmail.IsNotNullOrWhitespace() )
                     {
                         var globalAttributes = GlobalAttributesCache.Read();
-                        string globalFrom = globalAttributes.GetValue( "OrganizationEmail" );
                         string emailHeader = globalAttributes.GetValue( "EmailHeader" );
                         string emailFooter = globalAttributes.GetValue( "EmailFooter" );
+                        string messageBody = $"{emailHeader} {errorMessage} <p><small>This message was generated from the Rock Database Maintenance Job</small></p>{emailFooter}";
 
-                        List<string> recipients = alertEmail.Split( ',' ).ToList();
-
-                        string messageBody = $"{emailHeader} {errorMessage} <p><small>This message was generated from the Rock Database Maintenance Job</small></p>s {emailFooter}";
-
-                        Email.Send( globalFrom, "Rock: Database Integrity Check Error", recipients, messageBody );
+                        var emailMessage = new RockEmailMessage();
+                        emailMessage.SetRecipients( alertEmail.Split( ',' ).ToList() );
+                        emailMessage.Subject = "Rock: Database Integrity Check Error";
+                        emailMessage.Message = messageBody;
+                        emailMessage.Send();
                     }
                 }
             }

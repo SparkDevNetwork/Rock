@@ -687,6 +687,11 @@ onChange: function(contents, $editable) {{
 
 
             string summernoteInitScript = $@"
+function pageLoad() {{
+  // remove any leftover popovers that summernote might have created and orphaned  
+  $('.note-popover.popover').hide();
+}}
+
 $(document).ready( function() {{
 
     // workaround for https://github.com/summernote/summernote/issues/2017 and/or https://github.com/summernote/summernote/issues/1984
@@ -700,8 +705,9 @@ $(document).ready( function() {{
 
         popover: {{
           image: [
+            ['custom1', ['rockimagelink']],
             ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
-            ['custom', ['rockimagebrowser']],
+            ['custom2', ['rockimagebrowser']],
             ['float', ['floatLeft', 'floatRight', 'floatNone']],
             ['remove', ['removeMedia']]
           ],
@@ -724,6 +730,7 @@ $(document).ready( function() {{
         buttons: {{
             rockfilebrowser: RockFileBrowser,
             rockimagebrowser: RockImageBrowser, 
+            rockimagelink: RockImageLink, 
             rockmergefield: RockMergeField,
             rockcodeeditor: RockCodeEditor,
             rockpastetext: RockPasteText,

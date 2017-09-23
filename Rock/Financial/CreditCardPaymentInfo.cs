@@ -111,7 +111,7 @@ namespace Rock.Financial
         /// </summary>
         public override string MaskedNumber
         {
-            get { return Number.Masked(); }
+            get { return Number.Masked( true ); }
         }
 
         /// <summary>
@@ -129,22 +129,31 @@ namespace Rock.Financial
         {
             get
             {
-                string cc = Number.AsNumeric();
-                foreach ( var dv in DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) ).DefinedValues )
+                return GetCreditCardType( Number.AsNumeric() );
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the credit card based on evaluating the RegExPattern of each credit card type defined value and returning the first match
+        /// </summary>
+        /// <param name="ccNumber">The cc number.</param>
+        /// <returns></returns>
+        public static DefinedValueCache GetCreditCardType( string ccNumber )
+        {
+            foreach ( var dv in DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) ).DefinedValues )
+            {
+                string pattern = dv.GetAttributeValue( "RegExPattern" );
+                if ( !string.IsNullOrWhiteSpace( pattern ) )
                 {
-                    string pattern = dv.GetAttributeValue( "RegExPattern" );
-                    if ( !string.IsNullOrWhiteSpace( pattern ) )
+                    var re = new Regex( pattern );
+                    if ( re.IsMatch( ccNumber ) )
                     {
-                        var re = new Regex( pattern );
-                        if ( re.IsMatch( cc ) )
-                        {
-                            return dv;
-                        }
+                        return dv;
                     }
                 }
-
-                return null;
             }
+
+            return null;
         }
 
     }

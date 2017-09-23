@@ -43,10 +43,11 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
     [GroupTypesField( "Group Types", "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance type's areas will be available.", false, "", "", 0 )]
-    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true, "", 1 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, "", "", 2 )]
-    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false, "", "", 3 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", "", true, false, Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, "", 4 )]
+    [BooleanField( "Show All Groups", "Should all of the available groups be listed individually with checkboxes? If not, a group dropdown will be used instead for selecting the desired groups", true, "", 1)]
+    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true, "", 2 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, "", "", 3 )]
+    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false, "", "", 4 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", "", true, false, Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, "", 5 )]
     public partial class AttendanceAnalytics : RockBlock
     {
         #region Fields
@@ -109,7 +110,7 @@ namespace RockWeb.Blocks.CheckIn
             base.OnLoad( e );
 
             // GroupTypesUI dynamically creates controls, so we need to rebuild it on every OnLoad()
-            BuildGroupTypesUI();
+            BuildGroupTypesUI( false );
 
             var chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
 
@@ -170,7 +171,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            BuildGroupTypesUI();
+            BuildGroupTypesUI( true );
 
             if ( pnlResults.Visible )
             {
@@ -241,7 +242,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <summary>
         /// Builds the group types UI
         /// </summary>
-        private void BuildGroupTypesUI()
+        private void BuildGroupTypesUI( bool clearSelection )
         {
             var groupTypes = this.GetSelectedGroupTypes();
             if ( groupTypes.Any() )
@@ -251,13 +252,70 @@ namespace RockWeb.Blocks.CheckIn
                 // only add each grouptype/group once in case they are a child of multiple parents
                 _addedGroupTypeIds = new List<int>();
                 _addedGroupIds = new List<int>();
-                rptGroupTypes.DataSource = groupTypes.ToList();
-                rptGroupTypes.DataBind();
+
+                var showAllGroups = GetAttributeValue( "ShowAllGroups" ).AsBoolean();
+                if ( showAllGroups )
+                {
+                    rptGroupTypes.DataSource = groupTypes.ToList();
+                    rptGroupTypes.DataBind();
+
+                    pnlGroups.Visible = true;
+                    gpGroups.Visible = false;
+                }
+                else
+                {
+                    gpGroups.IncludedGroupTypeIds = groupTypes.Select( t => t.Id ).ToList();
+                    if ( clearSelection )
+                    {
+                        gpGroups.SetValues( null );
+                        BindSelectedGroups();
+                    }
+
+                    gpGroups.Visible = true;
+
+                    pnlGroups.Visible = false;
+                    gpGroups.Visible = true;
+                }
+
+                dvpDataView.Visible = true;
             }
             else
             {
+                pnlGroups.Visible = false;
+                gpGroups.Visible = false;
+                dvpDataView.Visible = false;
+
                 nbGroupTypeWarning.Text = "Please select a check-in type.";
                 nbGroupTypeWarning.Visible = true;
+            }
+        }
+
+        private void BindSelectedGroups()
+        {
+            var selectedGroupIds = GetSelectedGroupIds();
+            bool showGroupAncestry = GetAttributeValue( "ShowGroupAncestry" ).AsBoolean( true );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupService = new GroupService( rockContext );
+                var groups = groupService.Queryable().AsNoTracking()
+                    .Where( g => selectedGroupIds.Contains( g.Id ) )
+                    .ToList();
+
+                var groupList = new List<string>();
+
+                foreach ( int id in selectedGroupIds )
+                {
+                    var group = groups.FirstOrDefault( g => g.Id == id );
+                    if ( group != null )
+                    {
+                        groupList.Add( showGroupAncestry ? groupService.GroupAncestorPathName( id ) : group.Name );
+                    }
+                }
+
+                rptSelectedGroups.DataSource = groupList;
+                rptSelectedGroups.DataBind();
+                rcwSelectedGroups.Visible = groupList.Any();
             }
         }
 
@@ -513,10 +571,19 @@ function(item) {
         private List<int> GetSelectedGroupIds()
         {
             var selectedGroupIds = new List<int>();
-            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
-            foreach ( var cblGroup in checkboxListControls )
+
+            var showAllGroups = GetAttributeValue( "ShowAllGroups" ).AsBoolean();
+            if ( showAllGroups )
             {
-                selectedGroupIds.AddRange( cblGroup.SelectedValuesAsInt );
+                var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
+                foreach ( var cblGroup in checkboxListControls )
+                {
+                    selectedGroupIds.AddRange( cblGroup.SelectedValuesAsInt );
+                }
+            }
+            else
+            {
+                selectedGroupIds = gpGroups.SelectedValuesAsInt().ToList();
             }
 
             return selectedGroupIds;
@@ -533,7 +600,7 @@ function(item) {
 
             ddlAttendanceType.SelectedGroupTypeId = GetSetting( keyPrefix, "TemplateGroupTypeId" ).AsIntegerOrNull();
             cbIncludeGroupsWithoutSchedule.Checked = this.GetBlockUserPreference( "IncludeGroupsWithoutSchedule" ).AsBooleanOrNull() ?? true;
-            BuildGroupTypesUI();
+            BuildGroupTypesUI( false );
 
             string slidingDateRangeSettings = GetSetting( keyPrefix, "SlidingDateRange" );
             if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
@@ -592,16 +659,25 @@ function(item) {
 
             var groupIdList = GetSetting( keyPrefix, "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
-            // if no groups are selected, default to showing all of them
-            var selectAll = groupIdList.Count == 0;
+            // if no groups are selected, and option to show all groups is configured, default to showing all of them
 
-            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
-            foreach ( var cblGroup in checkboxListControls )
+            var showAllGroups = GetAttributeValue( "ShowAllGroups" ).AsBoolean();
+            if ( showAllGroups )
             {
-                foreach ( ListItem item in cblGroup.Items )
+                var selectAll = groupIdList.Count == 0;
+                var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
+                foreach ( var cblGroup in checkboxListControls )
                 {
-                    item.Selected = selectAll || groupIdList.Contains( item.Value );
+                    foreach ( ListItem item in cblGroup.Items )
+                    {
+                        item.Selected = selectAll || groupIdList.Contains( item.Value );
+                    }
                 }
+            }
+            else
+            {
+                gpGroups.SetValues( groupIdList.AsIntegerList() );
+                BindSelectedGroups();
             }
 
             ShowBy showBy = GetSetting( keyPrefix, "ShowBy" ).ConvertToEnumOrNull<ShowBy>() ?? ShowBy.Chart;
@@ -887,6 +963,7 @@ function(item) {
 
             // Collection of async queries to run before assembling data
             var qryTasks = new List<Task>();
+            var taskInfos = new List<TaskInfo>();
 
             DataTable dtAttendeeLastAttendance = null;
             DataTable dtAttendees = null;
@@ -899,6 +976,9 @@ function(item) {
                 // whith attendance that matches the selected criteria.
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get Attendee Dates", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     DataTable dtAttendeeDates = AttendanceService.GetAttendanceAnalyticsAttendeeDates(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
@@ -927,20 +1007,35 @@ function(item) {
                             result.AttendanceSummary.Add( summaryDate );
                         }
                     }
+
+                    ti.end = DateTime.Now;
+
                 } ) );
 
                 // Call the stored procedure to get the last attendance
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get Last Attendance", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     dtAttendeeLastAttendance = AttendanceService.GetAttendanceAnalyticsAttendeeLastAttendance(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
+
+                    ti.end = DateTime.Now;
+
                 } ) );
 
                 // Call the stored procedure to get the names/demographic info for attendess
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get Name/Demographic Data", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     dtAttendees = AttendanceService.GetAttendanceAnalyticsAttendees(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren ).Tables[0];
+
+                    ti.end = DateTime.Now;
+
                 } ) );
 
                 // If checking for missed attendance, get the people who missed that number of dates during the missed date range
@@ -950,6 +1045,9 @@ function(item) {
                 {
                     qryTasks.Add( Task.Run( () =>
                     {
+                        var ti = new TaskInfo { name = "Get Missed Attendee Dates", start = DateTime.Now };
+                        taskInfos.Add( ti );
+
                         personIdsWhoDidNotMiss = new List<int>();
 
                         DataTable dtAttendeeDatesMissed = AttendanceService.GetAttendanceAnalyticsAttendeeDates(
@@ -991,20 +1089,32 @@ function(item) {
                             .Where( m => missedPossibleCount - m.Value.AttendanceSummary.Count < attendedMissedCount.Value )
                             .Select( m => m.Key )
                             .ToList();
+
+                        ti.end = DateTime.Now;
+
                     } ) );
                 }
 
                 // Call the stored procedure to get the first five dates that any person attended this group type
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get First Five Dates", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     dtAttendeeFirstDates = AttendanceService.GetAttendanceAnalyticsAttendeeFirstDates(
                         groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
+
+                    ti.end = DateTime.Now;
+
                 } ) );
             }
             else
             {
                 qryTasks.Add( Task.Run( () =>
                 {
+                    var ti = new TaskInfo { name = "Get Non-Attendees", start = DateTime.Now };
+                    taskInfos.Add( ti );
+
                     DataSet ds = AttendanceService.GetAttendanceAnalyticsNonAttendees(
                         groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren );
 
@@ -1058,6 +1168,9 @@ function(item) {
 
                         allResults.Add( result );
                     }
+
+                    ti.end = DateTime.Now;
+
                 } ) );
             }
 
@@ -1065,6 +1178,9 @@ function(item) {
             List<int> dataViewPersonIds = null;
             qryTasks.Add( Task.Run( () =>
             {
+                var ti = new TaskInfo { name = "Get DataView People", start = DateTime.Now };
+                taskInfos.Add( ti );
+
                 var dataViewId = dvpDataView.SelectedValueAsInt();
                 if ( dataViewId.HasValue )
                 {
@@ -1085,6 +1201,9 @@ function(item) {
                         dataViewPersonIds = dataViewPersonIdQry.ToList();
                     }
                 }
+
+                ti.end = DateTime.Now;
+
             } ) );
 
             // Wait for all the queries to finish
@@ -2043,7 +2162,7 @@ function(item) {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlCheckinType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            BuildGroupTypesUI();
+            BuildGroupTypesUI( true );
         }
 
         /// <summary>
@@ -2184,10 +2303,30 @@ function(item) {
             public string LocationName { get; set; }
         }
 
+        public class TaskInfo
+        {
+            public string name { get; set; }
+            public DateTime start { get; set; }
+            public DateTime end { get; set; }
+            public TimeSpan duration
+            {
+                get
+                {
+                    return end.Subtract( start );
+                }
+            }
+
+            public override string ToString()
+            {
+                return string.Format( "{0}: {1:c}", name, duration );
+            }
+        }
+
+
         protected void cbShowInactive_CheckedChanged( object sender, EventArgs e )
         {
             SetUserPreference( BlockCache.Guid.ToString() + "_showInactive", cbShowInactive.Checked.ToString() );
-            BuildGroupTypesUI();
+            BuildGroupTypesUI( true );
         }
 
         /// <summary>
@@ -2199,6 +2338,11 @@ function(item) {
         {
             // NOTE: OnLoad already rebuilt the GroupTypes UI with the changed value of cbIncludeGroupsWithoutSchedule , so we just need to set it as a preference
             this.SetBlockUserPreference( "IncludeGroupsWithoutSchedule", cbIncludeGroupsWithoutSchedule.Checked.ToTrueFalse() );
+        }
+
+        protected void gpGroups_SelectItem( object sender, EventArgs e )
+        {
+            BindSelectedGroups();
         }
     }
 }

@@ -68,6 +68,9 @@ namespace Rock.Client
         public bool ItemsManuallyOrdered { get; set; }
 
         /// <summary />
+        public string ItemTagCategories { get; set; }
+
+        /// <summary />
         public string ItemUrl { get; set; }
 
         /// <summary>
@@ -131,6 +134,7 @@ namespace Rock.Client
             this.IconCssClass = source.IconCssClass;
             this.IsIndexEnabled = source.IsIndexEnabled;
             this.ItemsManuallyOrdered = source.ItemsManuallyOrdered;
+            this.ItemTagCategories = source.ItemTagCategories;
             this.ItemUrl = source.ItemUrl;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;

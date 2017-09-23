@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
+using System.Web;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -210,10 +211,49 @@ namespace Rock.Model
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns></returns>
-        public static string ObfuscateRockMagicToken(string url)
+        public static string ObfuscateRockMagicToken( string url )
         {
             // obfuscate rock magic token
-            return rckipidRegEx.Replace( url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+            return ObfuscateRockMagicToken( url, null );
+        }
+
+        /// <summary>
+        /// Obfuscates the rock magic token.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="page">The page.</param>
+        /// <returns></returns>
+        public static string ObfuscateRockMagicToken( string url, System.Web.UI.Page page )
+        {
+            if ( string.IsNullOrWhiteSpace( url ) )
+            {
+                return url;
+            }
+
+            var match = rckipidRegEx.Match( url );
+            if ( match.Success )
+            {
+                return rckipidRegEx.Replace( url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+            }
+
+            var routeData = page?.RouteData;
+            if ( routeData == null )
+            {
+                Uri uri;
+
+                // if this is a valid full url, lookup the route so we can obfuscate any {rckipid} keys in it 
+                if ( Uri.TryCreate( url, UriKind.Absolute, out uri ) )
+                {
+                    routeData = Rock.Web.UI.RouteUtils.GetRouteDataByUri( uri, HttpContext.Current?.Request?.ApplicationPath );
+                }
+            }
+
+            if ( routeData != null && routeData.Values.ContainsKey( "rckipid" ) )
+            {
+                return url.Replace( ( string ) routeData.Values["rckipid"], "XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+            }
+
+            return url;
         }
 
         /// <summary>

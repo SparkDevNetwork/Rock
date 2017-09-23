@@ -115,7 +115,7 @@ namespace Rock.Jobs
                         qry = qry.Where( m => m.GroupRole.Guid == groupRoleFilterGuid.Value );
                     }
 
-                    if ( pendingAge.HasValue )
+                    if ( pendingAge.HasValue && pendingAge.Value > 0 )
                     {
                         var ageDate = RockDateTime.Now.AddDays( pendingAge.Value * -1 );
                         qry = qry.Where( m => m.ModifiedDateTime > ageDate );
@@ -151,7 +151,7 @@ namespace Rock.Jobs
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
                         var recipients = new List<RecipientData>();
-                        foreach ( var leader in groupLeaders )
+                        foreach ( var leader in groupLeaders.Where( l => l.Person != null && l.Person.Email != "" ) )
                         {
                             // create merge object
                             var mergeFields = new Dictionary<string, object>();
@@ -164,8 +164,9 @@ namespace Rock.Jobs
 
                         if ( pendingIndividuals.Count() > 0 )
                         {
-                            Email.Send( systemEmail.Guid, recipients, appRoot );
-                            pendingMembersCount += pendingIndividuals.Count();
+                            var emailMessage = new RockEmailMessage( systemEmail.Guid );
+                            emailMessage.SetRecipients( recipients );
+                            emailMessage.Send();
                             notificationsSent += recipients.Count();
                         }
 

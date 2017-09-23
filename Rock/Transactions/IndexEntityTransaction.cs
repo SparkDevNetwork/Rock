@@ -48,17 +48,21 @@ namespace Rock.Transactions
         public void Execute()
         {
             var entityType = EntityTypeCache.Read( EntityTypeId );
-            Type type = entityType.GetEntityType();
 
-            if ( type != null )
+            if ( entityType != null )
             {
-                object classInstance = Activator.CreateInstance( type, null );
-                MethodInfo indexItemMethod = type.GetMethod( "IndexDocument" );
+                Type type = entityType.GetEntityType();
 
-                if ( classInstance != null && indexItemMethod != null )
+                if ( type != null )
                 {
-                    object[] parameters = { EntityId };
-                    indexItemMethod.Invoke( classInstance, parameters );
+                    object classInstance = Activator.CreateInstance( type, null );
+                    MethodInfo indexItemMethod = type.GetMethod( "IndexDocument" );
+
+                    if ( classInstance != null && indexItemMethod != null )
+                    {
+                        object[] parameters = { EntityId };
+                        indexItemMethod.Invoke( classInstance, parameters );
+                    }
                 }
             }
         }

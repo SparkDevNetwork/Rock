@@ -110,6 +110,7 @@
     </Compile>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaFirstNameGenderLookupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaLastNameLookupsController.cs" />
@@ -117,6 +118,8 @@
     <Compile Include="Controllers\CodeGenerated\MetaPersonicxLifestageClustersController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaPersonicxLifestageGroupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
+    <Compile Include="Controllers\PresenceController.cs" />
+    <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
     <Compile Include="Swagger\RockSwaggerHelper.cs" />
     <Compile Include="Swagger\RockDocumentFilter.cs" />
     <Compile Include="Swagger\RockOperationFilter.cs" />
@@ -126,6 +129,7 @@
     <Compile Include="Binders\NakedBodyParameterBinding.cs" />
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SiteUrlMapsController.cs" />
     <Compile Include="Controllers\CommunicationsController.Partial.cs" />
     <Compile Include="Controllers\AttributesController.Partial.cs" />

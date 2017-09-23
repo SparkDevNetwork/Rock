@@ -88,6 +88,13 @@ namespace RockWeb.Blocks.Core
             LavaShortcode lavaShortcode;
             var rockContext = new RockContext();
             var lavaShortCodeService = new LavaShortcodeService( rockContext );
+
+            if ( lavaShortCodeService.Queryable().Any( a => a.TagName == tbTagName.Text ) && hfOriginalTagName.Value != tbTagName.Text )
+            {
+                Page.ModelState.AddModelError( "DuplicateTag", "Tag with the same name is already in use." );
+                return;
+            }
+
             int lavaShortCode = hfLavaShortcodeId.ValueAsInt();
 
             if ( lavaShortCode == 0 )
@@ -108,7 +115,7 @@ namespace RockWeb.Blocks.Core
             lavaShortcode.TagName = tbTagName.Text;
             lavaShortcode.Markup = ceMarkup.Text;
             lavaShortcode.Parameters = kvlParameters.Value;
-            lavaShortcode.EnabledLavaCommands = lcpLavaCommands.Text;
+            lavaShortcode.EnabledLavaCommands = String.Join(",", lcpLavaCommands.SelectedLavaCommands);
 
             rockContext.SaveChanges();
 
@@ -233,7 +240,7 @@ namespace RockWeb.Blocks.Core
             tbTagName.Text = lavaShortcode.TagName;
             kvlParameters.Value = lavaShortcode.Parameters;
             hfOriginalTagName.Value = lavaShortcode.TagName;
-            lcpLavaCommands.Text = lavaShortcode.EnabledLavaCommands;
+            lcpLavaCommands.SetValues( lavaShortcode.EnabledLavaCommands.Split( ',' ).ToList() );
 
             rblTagType.BindToEnum<TagType>();
             rblTagType.SetValue( ( int ) lavaShortcode.TagType );

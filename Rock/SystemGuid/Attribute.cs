@@ -138,6 +138,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string GROUP_BIRTHDATE_RANGE = "F1A43EAB-D682-403F-A05E-CCFFBF879F32";
 
+        /// <summary>
+        /// Group attribute for GroupType CommunicationList to defined addional dataviews that can be used as communication segments
+        /// </summary>
+        public const string GROUP_COMMUNICATION_SEGMENTS = "73A53BC1-2178-46A1-8413-C7A4DD49F0B4";
+
         #endregion
 
         #region Fundraising Attributes

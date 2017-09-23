@@ -820,6 +820,17 @@ namespace Rock.Web.UI
                     }
                 }
 
+                // Add Favicons
+                if ( Site.FavIconBinaryFileId.HasValue )
+                {
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 192, "shortcut icon" );
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 16 );
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 32 );
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 144 );
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 180 );
+                    AddIconLink( Site.FavIconBinaryFileId.Value, 192 );
+                }
+
                 // check if page should have been loaded via ssl
                 Page.Trace.Warn( "Checking for SSL request" );
                 if ( !Request.IsSecureConnection && (_pageCache.RequiresEncryption || Site.RequiresEncryption) )
@@ -1212,10 +1223,10 @@ namespace Rock.Web.UI
                         if ( canAdministratePage && currentUserIsImpersonated && impersonatedByUser != null)
                         {
                              HtmlGenericControl impersonatedByUserDiv = new HtmlGenericControl( "span" );
-                            impersonatedByUserDiv.AddCssClass( "admin-actions button-bar pull-left" );
+                            impersonatedByUserDiv.AddCssClass( "label label-default margin-l-md" );
                             _btnRestoreImpersonatedByUser = new LinkButton();
                             _btnRestoreImpersonatedByUser.ID = "_btnRestoreImpersonatedByUser";
-                            _btnRestoreImpersonatedByUser.CssClass = "btn";
+                            //_btnRestoreImpersonatedByUser.CssClass = "btn";
                             _btnRestoreImpersonatedByUser.Visible = impersonatedByUser != null;
                             _btnRestoreImpersonatedByUser.Click += _btnRestoreImpersonatedByUser_Click;
                             _btnRestoreImpersonatedByUser.Text = $"<i class='fa-fw fa fa-unlock'></i> "+ $"Restore { impersonatedByUser?.Person?.ToString()}";
@@ -1428,7 +1439,7 @@ namespace Rock.Web.UI
                 FormsAuthentication.SignOut();
                 UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
                 Rock.Security.Authorization.SetAuthCookie( impersonatedByUser.UserName, false, false );
-                Response.Redirect( PersonToken.RemoveRockMagicToken( Request.RawUrl ), false );
+                Response.Redirect( PageReference.BuildUrl( false ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }
         }
@@ -1474,7 +1485,7 @@ namespace Rock.Web.UI
                     // Attempting to use an impersonation token that doesn't exist or is no longer valid, so log them out
                     FormsAuthentication.SignOut();
                     Session["InvalidPersonToken"] = true;
-                    Response.Redirect( PersonToken.RemoveRockMagicToken(Request.RawUrl), false );
+                    Response.Redirect( PageReference.BuildUrl( true ), false );
                     Context.ApplicationInstance.CompleteRequest();
                     return false;
                 }
@@ -1602,7 +1613,7 @@ namespace Rock.Web.UI
                 }
 
                 phLoadStats.Controls.Add( new LiteralControl( string.Format(
-                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-lg js-view-state-stats'></span> <span class='margin-l-lg js-html-size-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
+                    "<span>Page Load Time: {0:N2}s </span><span class='margin-l-md'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-md js-view-state-stats'></span> <span class='margin-l-md js-html-size-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
 
                 if ( !ClientScript.IsStartupScriptRegistered( "rock-js-view-state-size" ) )
                 {
@@ -1757,6 +1768,23 @@ Sys.Application.add_load(function () {
                 LogException( ex );
             }
         }
+
+        /// <summary>
+        /// Adds an icon icon (favicon) link using a binary file id.
+        /// </summary>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="rel">The relative.</param>
+        /// <returns></returns>
+        public void AddIconLink( int binaryFileId, int size, string rel = "apple-touch-icon-precomposed" )
+        {
+            HtmlLink favIcon = new HtmlLink();
+            favIcon.Attributes.Add( "rel", rel );
+            favIcon.Attributes.Add( "sizes", $"{size}x{size}" );
+            favIcon.Attributes.Add( "href", ResolveRockUrl( $"~/GetImage.ashx?id={binaryFileId}&width={size}&height={size}&mode=crop&format=png" ) );
+            AddHtmlLink( favIcon );
+        }
+
 
         #endregion
 
@@ -2656,22 +2684,14 @@ Sys.Application.add_load(function () {
                 string stringHostName = System.Net.Dns.GetHostName();
                 if ( !string.IsNullOrWhiteSpace( stringHostName ) )
                 {
-                    var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
-                    if ( ipHostEntries != null )
+                    try
                     {
-                        try
-                        {
-                            var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
-                            if ( arrIpAddress != null )
-                            {
-                                ipAddress = arrIpAddress.ToString();
-                            }
-                        }
-                        catch
+                        var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
+                        if ( ipHostEntries != null )
                         {
                             try
                             {
-                                var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                                var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
                                 if ( arrIpAddress != null )
                                 {
                                     ipAddress = arrIpAddress.ToString();
@@ -2679,9 +2699,24 @@ Sys.Application.add_load(function () {
                             }
                             catch
                             {
-                                ipAddress = "127.0.0.1";
+                                try
+                                {
+                                    var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                                    if ( arrIpAddress != null )
+                                    {
+                                        ipAddress = arrIpAddress.ToString();
+                                    }
+                                }
+                                catch
+                                {
+                                    ipAddress = "127.0.0.1";
+                                }
                             }
                         }
+                    }
+                    catch ( System.Net.Sockets.SocketException ex )
+                    {
+                        ExceptionLogService.LogException( ex );
                     }
                 }
             }
@@ -2898,7 +2933,6 @@ Sys.Application.add_load(function () {
         public event PageNavigateEventHandler PageNavigate;
 
         #endregion
-
     }
 
     #region Event Argument Classes

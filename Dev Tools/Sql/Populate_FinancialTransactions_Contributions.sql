@@ -13,7 +13,7 @@ declare
   @currencyTypeCash int = (select Id from DefinedValue where Guid = 'F3ADC889-1EE8-4EB6-B3FD-8C10F3C8AF93'),
   @creditCardTypeVisa int = (select Id from DefinedValue where Guid = 'FC66B5F8-634F-4800-A60D-436964D27B64'),
   @sourceTypeValueId int, 
-  @sourceTypeId int = (select top 1 Id from DefinedType where [Guid] = '4F02B41E-AB7D-4345-8A97-3904DDD89B01'), --FINANCIAL_SOURCE_TYPE 
+  @sourceTypeDefinedTypeId int = (select top 1 Id from DefinedType where [Guid] = '4F02B41E-AB7D-4345-8A97-3904DDD89B01'), --FINANCIAL_SOURCE_TYPE 
   @accountId int,
   @batchId int,
   @batchStatusOpen int = 1,
@@ -87,7 +87,7 @@ while @transactionCounter < @maxTransactionCount
           set @authorizedPersonAliasId =  (select top 1 Id from PersonAlias where Id <= rand() * @maxPersonAliasIdForTransactions order by Id desc);
         end
 
-        set @sourceTypeValueId = (select top 1 Id from DefinedValue where DefinedTypeId = @sourceTypeId order by NEWID())
+        set @sourceTypeValueId = (select top 1 Id from DefinedValue where DefinedTypeId = @sourceTypeDefinedTypeId order by NEWID())
 
         --set @checkMicrEncrypted = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
         set @checkMicrHash = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
@@ -122,7 +122,7 @@ while @transactionCounter < @maxTransactionCount
                    ,@transactionNote
                    ,@transactionTypeValueId
 				   ,@financialPaymentDetailId
-                   ,@sourceTypeId
+                   ,@sourceTypeValueId
                    ,@checkMicrEncrypted
                    ,@checkMicrHash
 				   ,@checkMicrParts

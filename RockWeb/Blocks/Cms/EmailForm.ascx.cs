@@ -274,12 +274,14 @@ namespace RockWeb.Blocks.Cms
 
             if ( !isBot )
             {
+                var message = new RockEmailMessage();
+                message.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+
                 // create merge objects
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                var mergeFields = new Dictionary<string, object>();
 
                 // create merge object for fields
                 Regex rgxRockControls = new Regex( @"^ctl\d*\$.*" );
-
                 var formFields = new Dictionary<string, object>();
                 for ( int i = 0; i < Request.Form.Count; i++ )
                 {
@@ -293,37 +295,46 @@ namespace RockWeb.Blocks.Cms
                         formFields.Add( formFieldKey, Request.Form[formFieldKey] );
                     }
                 }
-
                 mergeFields.Add( "FormFields", formFields );
 
                 // get attachments
-                List<Attachment> attachments = new List<Attachment>();
-
+                var rockContext = new RockContext();
+                var binaryFileService = new BinaryFileService( rockContext );
+                var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() );
                 for ( int i = 0; i < Request.Files.Count; i++ )
                 {
-                    HttpPostedFile attachmentFile = Request.Files[i];
+                    var uploadedFile = Request.Files[i];
+                    if ( uploadedFile.ContentLength > 0 && uploadedFile.FileName.IsNotNullOrWhitespace() )
+                    {
+                        var binaryFile = new BinaryFile();
+                        binaryFileService.Add( binaryFile );
+                        binaryFile.BinaryFileTypeId = binaryFileType.Id;
+                        binaryFile.IsTemporary = false;
+                        binaryFile.MimeType = uploadedFile.ContentType;
+                        binaryFile.FileSize = uploadedFile.ContentLength;
+                        binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+                        binaryFile.ContentStream = uploadedFile.InputStream;
+                        rockContext.SaveChanges();
 
-                    string fileName = System.IO.Path.GetFileName( attachmentFile.FileName );
-
-                    Attachment attachment = new Attachment( attachmentFile.InputStream, fileName );
-
-                    attachments.Add( attachment );
+                        message.Attachments.Add( binaryFileService.Get( binaryFile.Id ) );
+                    }
                 }
 
-                mergeFields.Add( "AttachmentCount", attachments.Count );
+                mergeFields.Add( "AttachmentCount", message.Attachments.Count );
 
                 // send email
-                List<string> recipients = GetAttributeValue( "RecipientEmail" ).Split( ',' ).ToList();
-                for ( var i = 0; i < recipients.Count; i++ )
+                foreach ( string recipient in GetAttributeValue( "RecipientEmail" ).Split( ',' ).ToList() )
                 {
-                    recipients[i] = recipients[i].ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+                    message.AddRecipient( new RecipientData( recipient, mergeFields ) );
                 }
-                string message = GetAttributeValue( "MessageBody" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
-                string fromEmail = GetAttributeValue( "FromEmail" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
-                string fromName = GetAttributeValue( "FromName" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
-                string subject = GetAttributeValue( "Subject" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
-
-                Email.Send( fromEmail, fromName, subject, recipients, message, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), attachments, GetAttributeValue( "SaveCommunicationHistory" ).AsBoolean() );
+                message.Message = GetAttributeValue( "MessageBody" );
+                message.FromEmail = GetAttributeValue( "FromEmail" );
+                message.FromName = GetAttributeValue( "FromName" );
+                message.Subject = GetAttributeValue( "Subject" );
+                message.AppRoot = ResolveRockUrl( "~/" );
+                message.ThemeRoot = ResolveRockUrl( "~~/" );
+                message.CreateCommunicationRecord = GetAttributeValue( "SaveCommunicationHistory" ).AsBoolean();
+                message.Send();
 
                 // set response
                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ResponsePage" ) ) )

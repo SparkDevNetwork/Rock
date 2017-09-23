@@ -79,13 +79,14 @@ namespace Rock.Jobs
                         mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
                         mergeFields.Add( "Registration", registration );
 
-                        string from = template.ReminderFromEmail.ResolveMergeFields( mergeFields );
-                        string fromName = template.ReminderFromName.ResolveMergeFields( mergeFields );
-                        string subject = template.ReminderSubject.ResolveMergeFields( mergeFields );
-                        string message = template.ReminderEmailTemplate.ResolveMergeFields( mergeFields );
-
-                        var recipients = new List<string> { registration.ConfirmationEmail };
-                        Email.Send( from, fromName, subject, recipients, message );
+                        var emailMessage = new RockEmailMessage();
+                        emailMessage.AdditionalMergeFields = mergeFields;
+                        emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeFields ) );
+                        emailMessage.FromEmail = template.ReminderFromEmail;
+                        emailMessage.FromName = template.ReminderFromName;
+                        emailMessage.Subject = template.ReminderSubject;
+                        emailMessage.Message = template.ReminderEmailTemplate;
+                        emailMessage.Send();
                     }
 
                     instance.SendReminderDateTime = now;

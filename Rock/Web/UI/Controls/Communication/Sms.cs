@@ -20,7 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Communication;
 using Rock.Field;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -74,29 +74,25 @@ namespace Rock.Web.UI.Controls.Communication
         public int CharacterLimit { get; set; }
 
         /// <summary>
-        /// Gets or sets the medium data.
+        /// Sets control values from a communication record.
         /// </summary>
-        /// <value>
-        /// The medium data.
-        /// </value>
-        public override Dictionary<string, string> MediumData
+        /// <param name="communication">The communication.</param>
+        public override void SetFromCommunication( CommunicationDetails communication )
         {
-            get
-            {
-                EnsureChildControls();
-                var data = new Dictionary<string, string>();
-                data.Add( "FromValue", ddlFrom.SelectedValue );
-                data.Add( "Subject", ddlFrom.SelectedItem != null ? ( "From: " + ddlFrom.SelectedItem.Text ) : string.Empty );
-                data.Add( "Message", tbMessage.Text );
-                return data;
-            }
+            EnsureChildControls();
+            ddlFrom.SetValue( communication.SMSFromDefinedValueId );
+            tbMessage.Text = communication.SMSMessage;
+        }
 
-            set
-            {
-                EnsureChildControls();
-                ddlFrom.SelectedValue = GetDataValue( value, "FromValue" );
-                tbMessage.Text = GetDataValue( value, "Message" );
-            }
+        /// <summary>
+        /// Updates the a communication record from control values.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        public override void UpdateCommunication( CommunicationDetails communication )
+        {
+            EnsureChildControls();
+            communication.SMSFromDefinedValueId = ddlFrom.SelectedValueAsId();
+            communication.SMSMessage = tbMessage.Text;
         }
 
         #endregion

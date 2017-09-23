@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Copy Button", "Copies the group and all of its associated authorization rules", false, "", 10 )]
     [LinkedPage( "Group List Page", "The page to display related Group List.", false, "", "", 11 )]
     [LinkedPage( "Fundraising Progress Page", "The page to display fundraising progress for all its members.", false, "", "", 12 )]
+    [BooleanField( "Show Location Addresses", "Determines if the location address should be shown when viewing the group details.", true, order: 13)]
 
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
@@ -1699,10 +1700,12 @@ namespace RockWeb.Blocks.Groups
                                     var literalcontrol = new Literal()
                                     {
                                         Text = string.Format(
-                                        "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
-                                        groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
-                                        groupMapUrl,
-                                        mapLink ),
+                                        "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a>{3}</div>",
+                                        groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty, // 0
+                                        groupMapUrl, // 1
+                                        mapLink, //2
+                                        groupLocation.Location.GetFullStreetAddress().IsNotNullOrWhitespace() && GetAttributeValue( "ShowLocationAddresses" ).AsBoolean() ? string.Format("<div class='address'>{0}</div>", groupLocation.Location.GetFullStreetAddress() ) : "" // 3
+                                        ), // 2
                                         Mode = LiteralMode.PassThrough
                                     };
                                     phMaps.Controls.Add( literalcontrol );

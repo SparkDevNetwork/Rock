@@ -237,6 +237,93 @@ namespace RockWeb.Blocks.Event
             BindGrids();
         }
 
+        /// <summary>
+        /// Handles the Click event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbtnLinkExisting_Click( object sender, EventArgs e )
+        {
+            LinkButton lb = ( LinkButton ) sender;
+            int contentChannelId = lb.CommandArgument.AsInteger();
+
+            //
+            // Build a list of the existing Content Channel Items that are
+            // not expired yet and not currently linked to this even occurrence.
+            //
+            ddlLinkExistingItems.Items.Clear();
+            ddlLinkExistingItems.Items.Add( new ListItem() );
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelItemService = new ContentChannelItemService( rockContext );
+                DateTime now = RockDateTime.Now;
+
+                var items = contentChannelItemService.Queryable()
+                    .Where( i => i.ContentChannelId == contentChannelId )
+                    .Where( i => !i.ExpireDateTime.HasValue || i.ExpireDateTime.Value >= now )
+                    .Where( i => !i.EventItemOccurrences.Any( o => o.EventItemOccurrenceId == OccurrenceId ) )
+                    .OrderBy( i => i.Title );
+
+                //
+                // Add each item to the list and format the name to be the
+                // title and, conditionally, the start and end date/times.
+                //
+                foreach ( var item in items )
+                {
+                    bool includeTime = item.ContentChannelType.IncludeTime;
+                    string title = item.Title;
+                    string startDateText = null;
+                    string endDateText = null;
+
+                    if ( item.ContentChannelType.DateRangeType == ContentChannelDateType.SingleDate )
+                    {
+                        startDateText = item.StartDateTime.ToShortDateString();
+                    }
+                    else if ( item.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                    {
+                        startDateText = item.StartDateTime.ToShortDateString();
+                        endDateText = item.ExpireDateTime.HasValue ? item.ExpireDateTime.Value.ToShortDateString() : null;
+                    }
+
+                    if ( endDateText != null )
+                    {
+                        title += string.Format( " ({0} - {1})", startDateText, endDateText );
+                    }
+                    else if ( startDateText != null )
+                    {
+                        title += string.Format( " ({0})", startDateText );
+                    }
+
+                    ddlLinkExistingItems.Items.Add( new ListItem( title, item.Id.ToString() ) );
+                }
+            }
+
+            mdlLinkExisting.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the control. Creates a new linkage between
+        /// this event occurrence and the selected content channel item.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdlLinkExisting_SaveClick( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var occurrenceChannelItem = new EventItemOccurrenceChannelItem();
+
+                occurrenceChannelItem.ContentChannelItemId = ddlLinkExistingItems.SelectedValue.AsInteger();
+                occurrenceChannelItem.EventItemOccurrenceId = OccurrenceId.Value;
+                new EventItemOccurrenceChannelItemService( rockContext ).Add( occurrenceChannelItem );
+
+                rockContext.SaveChanges();
+            }
+
+            mdlLinkExisting.Hide();
+            BindGrids();
+        }
+
         #endregion
 
         #region Internal Methods
@@ -292,6 +379,21 @@ namespace RockWeb.Blocks.Event
                     gItems.Actions.AddClick += gItems_Add;
                     gItems.RowSelected += gItems_Edit;
                     gItems.GridRebind += gItems_GridRebind;
+
+                    //
+                    // Add the "Link Existing Item" button.
+                    //
+                    if ( OccurrenceId.HasValue )
+                    {
+                        var lbtnLinkExisting = new LinkButton();
+                        lbtnLinkExisting.Attributes.Add( "title", "Link Existing Item" );
+                        lbtnLinkExisting.CommandArgument = contentChannel.Id.ToString();
+                        lbtnLinkExisting.CssClass = "btn btn-default btn-sm";
+                        lbtnLinkExisting.Click += lbtnLinkExisting_Click;
+                        lbtnLinkExisting.Text = "<i class='fa fa-link'></i>";
+
+                        gItems.Actions.AddCustomActionControl( lbtnLinkExisting );
+                    }
 
                     gItems.Columns.Add( new RockBoundField
                     {
