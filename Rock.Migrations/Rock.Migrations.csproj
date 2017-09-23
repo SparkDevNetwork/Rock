@@ -337,6 +337,10 @@
     <Compile Include="Migrations\201709222257442_CommunicationSMSAttachments.Designer.cs">
       <DependentUpon>201709222257442_CommunicationSMSAttachments.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201709231340508_FixPersonicx.cs" />
+    <Compile Include="Migrations\201709231340508_FixPersonicx.Designer.cs">
+      <DependentUpon>201709231340508_FixPersonicx.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2739,6 +2743,9 @@
     <EmbeddedResource Include="Migrations\201709222257442_CommunicationSMSAttachments.resx">
       <DependentUpon>201709222257442_CommunicationSMSAttachments.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201709231340508_FixPersonicx.resx">
+      <DependentUpon>201709231340508_FixPersonicx.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4582,6 +4589,9 @@
     </Content>
     <Content Include="Migrations\201709222257442_CommunicationSMSAttachments_AddLavaShortCodes.sql">
       <DependentUpon>201709222257442_CommunicationSMSAttachments.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201709231340508_PersonicxCluster.txt">
+      <DependentUpon>201709231340508_FixPersonicx.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
