@@ -45,7 +45,7 @@ namespace Rock.Rest
     public class ApiControllerBase : ApiController
     {
         /// <summary>
-        /// Gets the peron alias.
+        /// Gets the currently logged in Person
         /// </summary>
         /// <returns></returns>
         protected virtual Rock.Model.Person GetPerson()
@@ -61,7 +61,7 @@ namespace Rock.Rest
                 if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
                 {
                     var personService = new Model.PersonService( new RockContext() );
-                    var impersonatedPerson = personService.GetByEncryptedKey( principal.Identity.Name.Substring( 8 ) );
+                    Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( principal.Identity.Name.Substring( 8 ), false, null );
                     if ( impersonatedPerson != null )
                     {
                         return impersonatedPerson;
@@ -85,7 +85,7 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets the person alias.
+        /// Gets the primary person alias of the currently logged in person
         /// </summary>
         /// <returns></returns>
         protected virtual Rock.Model.PersonAlias GetPersonAlias()

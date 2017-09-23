@@ -44,6 +44,8 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Site Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a specific site." )]
+    [BinaryFileTypeField( "Default File Type", "The default file type to use while uploading Favicon", true,
+        Rock.SystemGuid.BinaryFiletype.DEFAULT, "", 0 )]
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -436,6 +438,7 @@ namespace RockWeb.Blocks.Cms
                 site.ErrorPage = tbErrorPage.Text;
                 site.GoogleAnalyticsCode = tbGoogleAnalytics.Text;
                 site.RequiresEncryption = cbRequireEncryption.Checked;
+                site.EnabledForShortening = cbEnableForShortening.Checked;
                 site.EnableMobileRedirect = cbEnableMobileRedirect.Checked;
                 site.MobilePageId = ppMobilePage.PageId;
                 site.ExternalUrl = tbExternalURL.Text;
@@ -448,6 +451,13 @@ namespace RockWeb.Blocks.Cms
                 site.IndexStartingLocation = tbIndexStartingLocation.Text;
 
                 site.PageHeaderContent = cePageHeaderContent.Text;
+
+                int? existingIconId = null;
+                if ( site.FavIconBinaryFileId != imgSiteIcon.BinaryFileId )
+                {
+                    existingIconId = site.FavIconBinaryFileId;
+                    site.FavIconBinaryFileId = imgSiteIcon.BinaryFileId;
+                }
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
                 site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
@@ -490,6 +500,18 @@ namespace RockWeb.Blocks.Cms
                     rockContext.SaveChanges();
 
                     SaveAttributes( new Page().TypeId, "SiteId", site.Id.ToString(), PageAttributesState, rockContext );
+
+                    if ( existingIconId.HasValue )
+                    {
+                        BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                        var binaryFile = binaryFileService.Get( existingIconId.Value );
+                        if ( binaryFile != null )
+                        {
+                            // marked the old images as IsTemporary so they will get cleaned up later
+                            binaryFile.IsTemporary = true;
+                            rockContext.SaveChanges();
+                        }
+                    }
 
                     if ( newSite )
                     {
@@ -707,6 +729,9 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
+            Guid fileTypeGuid = GetAttributeValue( "DefaultFileType" ).AsGuid();
+            imgSiteIcon.BinaryFileTypeGuid = fileTypeGuid;
+
             // set theme compile button
             if ( !new RockTheme( site.Theme ).AllowsCompile )
             {
@@ -785,6 +810,8 @@ namespace RockWeb.Blocks.Cms
             ddlTheme.Enabled = !site.IsSystem;
             ddlTheme.SetValue( site.Theme );
 
+            imgSiteIcon.BinaryFileId = site.FavIconBinaryFileId;
+
             if ( site.DefaultPageRoute != null )
             {
                 ppDefaultPage.SetValue( site.DefaultPageRoute );
@@ -844,6 +871,7 @@ namespace RockWeb.Blocks.Cms
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.OrderBy( d => d.Order ).Select( d => d.Domain ).ToArray() );
             tbGoogleAnalytics.Text = site.GoogleAnalyticsCode;
             cbRequireEncryption.Checked = site.RequiresEncryption;
+            cbEnableForShortening.Checked = site.EnabledForShortening;
 
             cbEnableMobileRedirect.Checked = site.EnableMobileRedirect;
             ppMobilePage.SetValue( site.MobilePage );
@@ -866,12 +894,12 @@ namespace RockWeb.Blocks.Cms
 
             // disable the indexing features if indexing on site is disabled
             var siteEntityType = EntityTypeCache.Read( "Rock.Model.Site" );
-            if (siteEntityType != null && !siteEntityType.IsIndexingEnabled )
+            if ( siteEntityType != null && !siteEntityType.IsIndexingEnabled )
             {
                 cbEnableIndexing.Visible = false;
                 tbIndexStartingLocation.Visible = false;
             }
-
+            
             var attributeService = new AttributeService( new RockContext() );
             var siteIdQualifierValue = site.Id.ToString();
             PageAttributesState = attributeService.GetByEntityTypeId( new Page().TypeId ).AsQueryable()

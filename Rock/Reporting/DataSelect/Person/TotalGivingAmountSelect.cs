@@ -147,9 +147,16 @@ namespace Rock.Reporting.DataSelect.Person
             cbCombineGiving.Help = "Combine individuals in the same giving group when calculating totals and reporting the list of individuals.";
             parentControl.Controls.Add( cbCombineGiving );
 
-            var controls = new Control[5] { comparisonControl, numberBoxAmount, accountPicker, slidingDateRangePicker, cbCombineGiving };
+            RockCheckBox cbUseAnalytics = new RockCheckBox();
+            cbUseAnalytics.ID = parentControl.ID + "_cbUseAnalytics";
+            cbUseAnalytics.Label = "Use Analytics Models";
+            cbUseAnalytics.CssClass = "js-use-analytics";
+            cbUseAnalytics.Help = "Using Analytics Data is MUCH faster than querying real-time data, but it may not include data that has been added or updated in the last 24 hours.";
+            parentControl.Controls.Add( cbUseAnalytics );
 
-            SetSelection( controls, string.Format( "{0}||||||", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+            var controls = new Control[6] { comparisonControl, numberBoxAmount, accountPicker, slidingDateRangePicker, cbCombineGiving, cbUseAnalytics };
+
+            SetSelection( controls, $"{ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString()}|||||||" );
 
             return controls;
         }
@@ -189,9 +196,10 @@ namespace Rock.Reporting.DataSelect.Person
             var delimitedValues = slidingDateRangePicker.DelimitedValues.Replace( "|", "," );
 
             RockCheckBox cbCombineGiving = controls[4] as RockCheckBox;
+            RockCheckBox cbUseAnalytics = controls[5] as RockCheckBox;
 
             // {2} and {3} used to store the DateRange before, but now we using the SlidingDateRangePicker
-            return string.Format( "{0}|{1}|{2}|{3}|{4}|{5}|{6}", comparisonType, amount, string.Empty, string.Empty, accountGuids, cbCombineGiving.Checked, delimitedValues );
+            return $"{comparisonType}|{amount}|||{accountGuids}|{cbCombineGiving.Checked}|{delimitedValues}|{cbUseAnalytics.Checked}";
         }
 
         /// <summary>
@@ -209,6 +217,7 @@ namespace Rock.Reporting.DataSelect.Person
                 var accountPicker = controls[2] as AccountPicker;
                 SlidingDateRangePicker slidingDateRangePicker = controls[3] as SlidingDateRangePicker;
                 var cbCombineGiving = controls[4] as RockCheckBox;
+                var cbUseAnalytics = controls[5] as RockCheckBox;
 
                 comparisonControl.SetValue( selectionValues[0] );
                 decimal? amount = selectionValues[1].AsDecimal();
@@ -250,6 +259,11 @@ namespace Rock.Reporting.DataSelect.Person
                 if ( selectionValues.Length >= 6 )
                 {
                     cbCombineGiving.Checked = selectionValues[5].AsBooleanOrNull() ?? false;
+                }
+
+                if ( selectionValues.Length >= 8 )
+                {
+                    cbUseAnalytics.Checked = selectionValues[7].AsBooleanOrNull() ?? false;
                 }
             }
         }
@@ -307,61 +321,134 @@ namespace Rock.Reporting.DataSelect.Person
                 combineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
             }
 
+            bool useAnalytics = false;
+            if ( selectionValues.Length >= 8 )
+            {
+                useAnalytics = selectionValues[7].AsBooleanOrNull() ?? false;
+            }
+
             int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
-            var financialTransactionQry = new FinancialTransactionDetailService( context ).Queryable()
-                .Where( xx => xx.Transaction.TransactionTypeValueId == transactionTypeContributionId )
-                .Where( xx => xx.Transaction.AuthorizedPersonAliasId.HasValue );
-
-            if ( dateRange.Start.HasValue )
-            {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime >= dateRange.Start.Value );
-            }
-
-            if ( dateRange.End.HasValue )
-            {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime < dateRange.End.Value );
-            }
-
-            bool limitToAccounts = accountIdList.Any();
-            if ( limitToAccounts )
-            {
-                financialTransactionQry = financialTransactionQry.Where( xx => accountIdList.Contains( xx.AccountId ) );
-            }
-
-            if ( comparisonType == ComparisonType.LessThan )
-            {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount < amount );
-            }
-            else if ( comparisonType == ComparisonType.EqualTo )
-            {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount == amount );
-            }
-            else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
-            {
-                financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount >= amount );
-            }
-
             IQueryable<decimal> personTotalAmountQry;
-            if ( combineGiving )
+
+            if ( useAnalytics )
             {
-                //// if combineGiving..
-                // if they aren't in a giving group, sum up transactions amounts by the person
-                // if they are in a giving group, sum up transactions amounts by the persons that are in the person's giving group
-                personTotalAmountQry = new PersonService( context ).Queryable()
-                                .Select( p => financialTransactionQry
-                                .Where( ww =>
-                                    ( !p.GivingGroupId.HasValue && ww.Transaction.AuthorizedPersonAlias.PersonId == p.Id )
-                                    ||
-                                    ( p.GivingGroupId.HasValue && ww.Transaction.AuthorizedPersonAlias.Person.GivingGroupId == p.GivingGroupId ) )
-                                .Sum( aa => aa.Amount ) );
+                var financialTransactionQry = new AnalyticsSourceFinancialTransactionService( context ).Queryable()
+                    .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId )
+                    .Where( xx => xx.AuthorizedPersonAliasId.HasValue );
+                if ( dateRange.Start.HasValue )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime >= dateRange.Start.Value );
+                }
+
+                if ( dateRange.End.HasValue )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => xx.TransactionDateTime < dateRange.End.Value );
+                }
+
+                bool limitToAccounts = accountIdList.Any();
+                if ( limitToAccounts )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => xx.AccountId.HasValue && accountIdList.Contains( xx.AccountId.Value ) );
+                }
+
+                if ( comparisonType == ComparisonType.LessThan )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount < amount );
+                }
+                else if ( comparisonType == ComparisonType.EqualTo )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount == amount );
+                }
+                else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount >= amount );
+                }
+
+                if ( combineGiving )
+                {
+                    var personAmount = new AnalyticsSourcePersonHistoricalService( context ).Queryable()
+                        .Join( financialTransactionQry, p => p.GivingId, f => f.GivingId, ( p, f ) => new
+                        {
+                            p.PersonId,
+                            f.Amount
+                        } );
+
+                    personTotalAmountQry = new PersonService( context ).Queryable()
+                        .Select( p => personAmount
+                            .Where( ww => ww.PersonId == p.Id )
+                            .Sum( ww => ww.Amount ) );
+                }
+                else
+                {
+                    var personAmount = new AnalyticsSourcePersonHistoricalService( context ).Queryable()
+                        .Join( financialTransactionQry, p => p.Id, f => f.AuthorizedPersonKey, ( p, f ) => new
+                        {
+                            p.PersonId,
+                            f.Amount
+                        } );
+
+                    personTotalAmountQry = new PersonService( context ).Queryable()
+                        .Select( p => personAmount
+                            .Where( ww => ww.PersonId == p.Id )
+                            .Sum( ww => ww.Amount ) );
+                }
             }
             else
             {
-                personTotalAmountQry = new PersonService( context ).Queryable()
-                .Select( p => financialTransactionQry
-                .Where( ww => ww.Transaction.AuthorizedPersonAlias.PersonId == p.Id )
-                .Sum( aa => aa.Amount ) );
+                var financialTransactionQry = new FinancialTransactionDetailService( context ).Queryable()
+                    .Where( xx => xx.Transaction.TransactionTypeValueId == transactionTypeContributionId )
+                    .Where( xx => xx.Transaction.AuthorizedPersonAliasId.HasValue );
+
+                if ( dateRange.Start.HasValue )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime >= dateRange.Start.Value );
+                }
+
+                if ( dateRange.End.HasValue )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Transaction.TransactionDateTime < dateRange.End.Value );
+                }
+
+                bool limitToAccounts = accountIdList.Any();
+                if ( limitToAccounts )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => accountIdList.Contains( xx.AccountId ) );
+                }
+
+                if ( comparisonType == ComparisonType.LessThan )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount < amount );
+                }
+                else if ( comparisonType == ComparisonType.EqualTo )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount == amount );
+                }
+                else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
+                {
+                    financialTransactionQry = financialTransactionQry.Where( xx => xx.Amount >= amount );
+                }
+
+                if ( combineGiving )
+                {
+                    //// if combineGiving..
+                    // if they aren't in a giving group, sum up transactions amounts by the person
+                    // if they are in a giving group, sum up transactions amounts by the persons that are in the person's giving group
+                    personTotalAmountQry = new PersonService( context ).Queryable()
+                                    .Select( p => financialTransactionQry
+                                    .Where( ww =>
+                                        ( !p.GivingGroupId.HasValue && ww.Transaction.AuthorizedPersonAlias.PersonId == p.Id )
+                                        ||
+                                        ( p.GivingGroupId.HasValue && ww.Transaction.AuthorizedPersonAlias.Person.GivingGroupId == p.GivingGroupId ) )
+                                    .Sum( aa => aa.Amount ) );
+                }
+                else
+                {
+                    personTotalAmountQry = new PersonService( context ).Queryable()
+                    .Select( p => financialTransactionQry
+                    .Where( ww => ww.Transaction.AuthorizedPersonAlias.PersonId == p.Id )
+                    .Sum( aa => aa.Amount ) );
+                }
             }
 
             var selectExpression = SelectExpressionExtractor.Extract( personTotalAmountQry, entityIdProperty, "p" );

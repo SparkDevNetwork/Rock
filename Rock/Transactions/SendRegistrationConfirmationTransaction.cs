@@ -80,18 +80,22 @@ namespace Rock.Transactions
                     if ( template != null && !string.IsNullOrWhiteSpace( template.ConfirmationEmailTemplate ) )
                     {
                         var currentPersonOverride = ( registration.RegistrationInstance.ContactPersonAlias != null ) ? registration.RegistrationInstance.ContactPersonAlias.Person : null;
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPersonOverride );
 
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPersonOverride );
                         mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
                         mergeFields.Add( "Registration", registration );
 
-                        string from = template.ConfirmationFromEmail.ResolveMergeFields( mergeFields );
-                        string fromName = template.ConfirmationFromName.ResolveMergeFields( mergeFields );
-                        string subject = template.ConfirmationSubject.ResolveMergeFields( mergeFields );
-                        string message = template.ConfirmationEmailTemplate.ResolveMergeFields( mergeFields, currentPersonOverride );
-
-                        var recipients = new List<string> { registration.ConfirmationEmail };
-                        Email.Send( from, fromName, subject, recipients, message, AppRoot, ThemeRoot );
+                        var emailMessage = new RockEmailMessage();
+                        emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeFields ) );
+                        emailMessage.AdditionalMergeFields = mergeFields;
+                        emailMessage.FromEmail = template.ConfirmationFromEmail;
+                        emailMessage.FromName = template.ConfirmationFromName;
+                        emailMessage.Subject = template.ConfirmationSubject;
+                        emailMessage.Message = template.ConfirmationEmailTemplate;
+                        emailMessage.AppRoot = AppRoot;
+                        emailMessage.ThemeRoot = ThemeRoot;
+                        emailMessage.CurrentPerson = currentPersonOverride;
+                        emailMessage.Send();
                     }
                 }
             }

@@ -44,6 +44,7 @@ namespace Rock.UniversalSearch.IndexComponents
     [ExportMetadata( "ComponentName", "Elasticsearch 2.x" )]
 
     [TextField( "Node URL", "The URL of the ElasticSearch node (http://myserver:9200)", true, key: "NodeUrl" )]
+    [IntegerField("Shard Count", "The number of shards to use for each index. More shards support larger databases, but can make the results less accurate. We recommend using 1 unless your database get's very large (> 50GB).", true, 1)]
     public class Elasticsearch : IndexComponent
     {
         /// <summary>
@@ -135,7 +136,7 @@ namespace Rock.UniversalSearch.IndexComponents
                     config.DisableDirectStreaming();
                     _client = new ElasticClient( config );
                 }
-                catch (Exception ex ){}
+                catch {}
             }
         }
 
@@ -225,6 +226,8 @@ namespace Rock.UniversalSearch.IndexComponents
                 // create a new index request
                 var createIndexRequest = new CreateIndexRequest( indexName );
                 createIndexRequest.Mappings = new Mappings();
+                createIndexRequest.Settings = new IndexSettings();
+                createIndexRequest.Settings.NumberOfShards = GetAttributeValue( "ShardCount" ).AsInteger();
 
                 var typeMapping = new TypeMapping();
                 typeMapping.Dynamic = DynamicMapping.Allow;
@@ -316,7 +319,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="size">The size.</param>
         /// <param name="from">From.</param>
         /// <returns></returns>
-        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null, SearchFieldCriteria fieldCriteria = null, int? size = null, int? from = null )
+        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria fieldCriteria = null, int? size = null, int? from = null )
         {
             long totalResultsAvailable = 0;
             return Search( query, searchType, entities, fieldCriteria, size, from, out totalResultsAvailable );
@@ -459,6 +462,8 @@ namespace Rock.UniversalSearch.IndexComponents
                         }
                     case SearchType.Wildcard:
                         {
+                            bool enablePhraseSearch = true;
+
                             if ( !string.IsNullOrWhiteSpace( query ) )
                             {
                                 QueryContainer wildcardQuery = null;
@@ -466,31 +471,46 @@ namespace Rock.UniversalSearch.IndexComponents
                                 // break each search term into a separate query and add the * to the end of each
                                 var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
 
-                                foreach ( var queryTerm in queryTerms )
-                                {
-                                    if ( !string.IsNullOrWhiteSpace( queryTerm ) )
-                                    {
-                                        wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace", Rewrite = RewriteMultiTerm.ScoringBoolean }; // without the rewrite all results come back with the score of 1; analyzer of whitespaces says don't fancy parse things like check-in to 'check' and 'in'
-                                    }
-                                }
-
                                 // special logic to support emails
                                 if ( queryTerms.Count == 1 && query.Contains( "@" ) )
                                 {
                                     wildcardQuery |= new QueryStringQuery { Query = "email:*" + query + "*", Analyzer = "whitespace" };
+                                    enablePhraseSearch = false;
                                 }
-
-                                // special logic to support phone search
-                                if ( query.IsDigitsOnly() )
+                                else
                                 {
-                                    wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
+                                    foreach ( var queryTerm in queryTerms )
+                                    {
+                                        if ( !string.IsNullOrWhiteSpace( queryTerm ) )
+                                        {
+                                            wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace", Rewrite = RewriteMultiTerm.ScoringBoolean }; // without the rewrite all results come back with the score of 1; analyzer of whitespaces says don't fancy parse things like check-in to 'check' and 'in'
+                                        }
+                                    }
+
+                                    // add special logic to help boost last names
+                                    if (queryTerms.Count > 1 )
+                                    {
+                                        QueryContainer nameQuery = null;
+                                        nameQuery &= new QueryStringQuery { Query = "lastName:" + queryTerms.Last() + "*", Analyzer = "whitespace", Boost = 30 };
+                                        nameQuery &= new QueryStringQuery { Query = "firstName:" + queryTerms.First() + "*", Analyzer = "whitespace" };
+                                        wildcardQuery |= nameQuery;
+                                    }
+
+                                    // special logic to support phone search
+                                    if ( query.IsDigitsOnly() )
+                                    {
+                                        wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
+                                    }
                                 }
 
                                 queryContainer &= wildcardQuery;
                             }
 
                             // add a search for all the words as one single search term
-                            queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
+                            if ( enablePhraseSearch )
+                            {
+                                queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
+                            }
 
                             if ( matchQuery != null )
                             {
@@ -508,6 +528,24 @@ namespace Rock.UniversalSearch.IndexComponents
                             }
 
                             searchDescriptor.Query( q => queryContainer );
+
+                            var indexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
+
+                            if ( indexBoost.IsNotNullOrWhitespace() )
+                            {
+                                var boostItems = indexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                                foreach (var boostItem in boostItems )
+                                {
+                                    var boostParms = boostItem.Split( new char[] { '^' } );
+
+                                    if ( boostParms.Length == 2 )
+                                    {
+                                        int boost = 1;
+                                        Int32.TryParse( boostParms[1], out boost );
+                                        searchDescriptor.IndicesBoost( b => b.Add( boostParms[0], boost ) );
+                                    }
+                                }
+                            }
 
                             results = _client.Search<dynamic>( searchDescriptor );
                             break;

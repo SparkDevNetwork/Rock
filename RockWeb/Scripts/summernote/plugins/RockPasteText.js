@@ -3,7 +3,7 @@
 
     var body = '<div class="form-group">' +
                     '<label>' + 'Paste the content below, then press the Insert button to insert the content as plain text' + '</label>' +
-                    '<div contentEditable=true class="note-editor note-frame js-paste-area" style="height: 300px; overflow:hidden;" />' +
+                    '<textarea class="js-paste-area" cols="40" rows="10" style="width:100%" ></textarea>' +
                 '</div>';
     var footer = '<button href="#" class="btn btn-primary js-paste-text-btn" >' + 'Insert' + '</button>';
 
@@ -14,14 +14,30 @@
         footer: footer
     }).render().appendTo($(document.body));
 
-    $dialog.find('.js-paste-text-btn').on('click', { dialog: $dialog }, function (a) {
+    $dialog.find('.js-paste-text-btn').on('click', { dialog: $dialog }, function (a)
+    {
         var $dialog = a.data.dialog;
         ui.hideDialog($dialog);
 
         context.invoke('editor.restoreRange');
-        var text = $dialog.find('.js-paste-area').text();
+        
+        var $pasteArea = $dialog.find('.js-paste-area');
+        var pastedContentAsText = $pasteArea.val();
 
-        context.invoke('editor.insertText', text);
+        // in case they include html tags, just get the text
+        var containsHtmlTags = /<[a-z][\s\S]*>/i.test(pastedContentAsText);
+        if (containsHtmlTags) {
+          pastedContentAsText = $("<div/>").html(pastedContentAsText).text();
+        }
+
+        // now that we have the pastedContent from the div, remove the html from the dom
+        $pasteArea.val('');
+
+        if (pastedContentAsText && pastedContentAsText != "") {
+          // convert newlines to html breaks to help it look the same
+          pastedContentAsText = pastedContentAsText.replace(/(\n)/g, '<br />');
+          context.invoke('editor.pasteHTML', pastedContentAsText);
+        }
     });
 
     function doPasteText(pasteEvent) {

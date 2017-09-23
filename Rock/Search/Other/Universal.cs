@@ -47,7 +47,7 @@ namespace Rock.Search.Other
             get
             {
                 var defaults = new Dictionary<string, string>();
-                defaults.Add( "SearchLabel", "Universal" );
+                defaults.Add( "SearchLabel", "Search" );
                 return defaults;
             }
         }
@@ -75,7 +75,7 @@ namespace Rock.Search.Other
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
 
             // get the search type
-            var searchType = SearchType.ExactMatch;
+            var searchType = SearchType.Wildcard;
 
             if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ) )
             {

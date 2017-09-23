@@ -634,7 +634,7 @@ namespace Rock.Model
             Guid businessGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid();
             Guid ownerGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
 
-            var rockContext = (RockContext)this.Context;
+            var rockContext = ( RockContext ) this.Context;
             return new GroupMemberService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( m =>
@@ -1296,13 +1296,36 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the by encrypted key.
+        /// Special override of Entity.GetByUrlEncodedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
+        /// NOTE: You might want to use GetByImpersonationToken instead to prevent a token from being used that was limited to a specific page
+        /// </summary>
+        /// <param name="encodedKey">The encoded key.</param>
+        /// <returns></returns>
+        public override Person GetByUrlEncodedKey( string encodedKey )
+        {
+            return GetByImpersonationToken( encodedKey, false, null );
+        }
+
+        /// <summary>
+        /// Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
+        /// </summary>
+        /// <param name="impersonationToken">The impersonation token.</param>
+        /// <param name="incrementUsage">if set to <c>true</c> [increment usage].</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        public Person GetByImpersonationToken( string impersonationToken, bool incrementUsage, int? pageId )
+        {
+            return GetByEncryptedKey( impersonationToken, true, incrementUsage, pageId );
+        }
+
+        /// <summary>
+        /// Special override of Entity.GetByEncryptedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>
         /// <returns></returns>
         public override Person GetByEncryptedKey( string encryptedKey )
         {
-            return GetByEncryptedKey( encryptedKey, true );
+            return GetByEncryptedKey( encryptedKey, true, true, null );
         }
 
         /// <summary>
@@ -1313,17 +1336,106 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
         /// </returns>
-        public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
+        [Obsolete( "Use GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId ) instead" )]
+        public Person GetByEncryptedKey( string encryptedKey, bool followMerges)
         {
+            return GetByEncryptedKey( encryptedKey, true, true, null );
+        }
+
+        /// <summary>
+        /// Special override of Entity.GetByEncryptedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
+        /// </summary>
+        /// <param name="encryptedKey">A <see cref="System.String" /> containing an encrypted key value.</param>
+        /// <param name="followMerges">if set to <c>true</c> [follow merges]. (only applies if using PersonTokenLegacyFallback)</param>
+        /// <param name="incrementUsage">if set to <c>true</c> [increment usage].</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
+        /// </returns>
+        public Person GetByEncryptedKey( string encryptedKey, bool followMerges, bool incrementUsage, int? pageId )
+        {
+            // first, see if it exists as a PersonToken
+            using ( var personTokenRockContext = new RockContext() )
+            {
+                var personToken = new PersonTokenService( personTokenRockContext ).GetByImpersonationToken( encryptedKey );
+                if ( personToken != null )
+                {
+                    if ( incrementUsage )
+                    {
+                        personToken.TimesUsed++;
+                        personToken.LastUsedDateTime = RockDateTime.Now;
+                        personTokenRockContext.SaveChanges();
+                    }
+                    if ( personToken.UsageLimit.HasValue )
+                    {
+                        if ( personToken.TimesUsed > personToken.UsageLimit.Value )
+                        {
+                            // over usagelimit, so return null;
+                            return null;
+                        }
+                    }
+
+                    if ( personToken.ExpireDateTime.HasValue )
+                    {
+                        if ( personToken.ExpireDateTime.Value < RockDateTime.Now )
+                        {
+                            // expired, so return null
+                            return null;
+                        }
+                    }
+
+                    if ( personToken.PageId.HasValue && pageId.HasValue )
+                    {
+                        if ( personToken.PageId.Value != pageId.Value )
+                        {
+                            // personkey was for a specific page and this is not that page, so return null
+                            return null;
+                        }
+                    }
+
+                    if ( personToken.PersonAlias != null )
+                    {
+                        // refetch using PersonService using rockContext instead of personTokenRockContext which was used to save the changes to personKey
+                        return this.Get( personToken.PersonAlias.PersonId );
+                    }
+                }
+            }
+
+            bool tokenUseLegacyFallback = GlobalAttributesCache.Read().GetValue( "core.PersonTokenUseLegacyFallback" ).AsBoolean();
+            if ( tokenUseLegacyFallback )
+            {
+                return GetByLegacyEncryptedKey( encryptedKey, followMerges );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Looks up a person using a Pre-V7 PersonToken. 
+        /// </summary>
+        /// <param name="encryptedKey">The encrypted key.</param>
+        /// <param name="followMerges">if set to <c>true</c> [follow merges].</param>
+        /// <returns></returns>
+        internal Person GetByLegacyEncryptedKey( string encryptedKey, bool followMerges )
+        {
+            // it may have been urlencoded, but first try without urldecoding, just in case
             var person = base.GetByEncryptedKey( encryptedKey );
+            if ( person == null )
+            {
+                string key = encryptedKey.Replace( '!', '%' );
+                key = System.Web.HttpUtility.UrlDecode( key );
+                person = base.GetByEncryptedKey( key );
+            }
+
             if ( person != null )
             {
                 return person;
             }
 
+            // NOTE: we only need the followMerges when using PersonTokenUseLegacyFallback since the PersonToken method would already take care of PersonMerge since it is keyed off of PersonAliasId
             if ( followMerges )
             {
-                var personAlias = new PersonAliasService( ( RockContext ) this.Context ).GetByAliasEncryptedKey( encryptedKey );
+                var personAlias = new PersonAliasService( this.Context as RockContext ).GetByAliasEncryptedKey( encryptedKey );
                 if ( personAlias != null )
                 {
                     return personAlias.Person;
@@ -1381,7 +1493,9 @@ namespace Rock.Model
             int adultRoleId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
             int marriedDefinedValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
-            if ( person.MaritalStatusValueId != marriedDefinedValueId || GetFamilyRole( person ).Id != adultRoleId )
+            // Businesses don't have a family role, so check for null before trying to get the Id.
+            var familyRole = GetFamilyRole( person );
+            if ( person.MaritalStatusValueId != marriedDefinedValueId || familyRole == null || familyRole.Id != adultRoleId )
             {
                 return default( TResult );
             }

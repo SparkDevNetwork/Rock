@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "CustomSetting" )]
     [BooleanField( "Query Parameter Filtering", "Determines if block should evaluate the query string parameters for additional filter criteria.", false, "CustomSetting" )]
     [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "CustomSetting" )]
-    [BooleanField("Merge Content", "Should the content data and attribute values be merged using the Lava's template engine.", false, "CustomSetting" )]
+    [BooleanField( "Merge Content", "Should the content data and attribute values be merged using the Lava's template engine.", false, "CustomSetting" )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the channel name or content item.", false, "CustomSetting" )]
     [BooleanField( "Rss Autodiscover", "Determines if a RSS autodiscover link should be added to the page head.", false, "CustomSetting" )]
     [TextField( "Meta Description Attribute", "Attribute to use for storing the description attribute.", false, "", "CustomSetting" )]
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Cms
 
             rockContext.SaveChanges();
 
-            SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited(",") );
+            SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
             SetAttributeValue( "Channel", ddlChannel.SelectedValue );
             SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
             SetAttributeValue( "Template", ceTemplate.Text );
@@ -298,7 +298,7 @@ namespace RockWeb.Blocks.Cms
             filterField.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( filterField );
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
-            
+
             // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
             filterField.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
@@ -634,7 +634,8 @@ $(document).ready(function() {
         {
             Template template = null;
 
-            try {
+            try
+            {
 
                 // only load from the cache if a cacheDuration was specified
                 if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
@@ -653,9 +654,9 @@ $(document).ready(function() {
                     }
                 }
             }
-            catch(Exception ex )
+            catch ( Exception ex )
             {
-                template = Template.Parse( string.Format("Lava error: {0}", ex.Message ) );
+                template = Template.Parse( string.Format( "Lava error: {0}", ex.Message ) );
             }
 
             return template;
@@ -664,7 +665,7 @@ $(document).ready(function() {
         private List<ContentChannelItem> GetContent( List<string> errorMessages )
         {
             List<ContentChannelItem> items = null;
-            
+
             // only load from the cache if a cacheDuration was specified
             if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
             {
@@ -681,7 +682,7 @@ $(document).ready(function() {
                     var rockContext = new RockContext();
                     var service = new ContentChannelItemService( rockContext );
                     var itemType = typeof( Rock.Model.ContentChannelItem );
-                    
+
                     ParameterExpression paramExpression = service.ParameterExpression;
 
                     var contentChannel = new ContentChannelService( rockContext ).Get( channelGuid.Value );
@@ -689,151 +690,147 @@ $(document).ready(function() {
                     {
                         var entityFields = HackEntityFields( contentChannel, rockContext );
 
-                        if ( items == null )
+                        items = new List<ContentChannelItem>();
+
+                        var qry = service
+                            .Queryable( "ContentChannel,ContentChannelType" )
+                            .Where( i => i.ContentChannelId == contentChannel.Id );
+
+                        int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
+                        if ( queryParameterFiltering && itemId.HasValue )
                         {
-                            items = new List<ContentChannelItem>();
+                            qry = qry.Where( i => i.Id == itemId.Value );
+                        }
 
-                            var qry = service.Queryable( "ContentChannel,ContentChannelType" );
-
-                            int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
-                            if ( queryParameterFiltering && itemId.HasValue )
+                        if ( contentChannel.RequiresApproval && !contentChannel.ContentChannelType.DisableStatus )
+                        {
+                            // Check for the configured status and limit query to those
+                            var statuses = new List<ContentChannelItemStatus>();
+                            foreach ( string statusVal in ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                             {
-                                qry = qry.Where( i => i.Id == itemId.Value );
-                            }
-                            else
-                            {
-                                qry = qry.Where( i => i.ContentChannelId == contentChannel.Id );
-
-                                if ( contentChannel.RequiresApproval && !contentChannel.ContentChannelType.DisableStatus)
+                                var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
+                                if ( status != null )
                                 {
-                                    // Check for the configured status and limit query to those
-                                    var statuses = new List<ContentChannelItemStatus>();
-
-                                    foreach ( string statusVal in ( GetAttributeValue( "Status" ) ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                                    {
-                                        var status = statusVal.ConvertToEnumOrNull<ContentChannelItemStatus>();
-                                        if ( status != null )
-                                        {
-                                            statuses.Add( status.Value );
-                                        }
-                                    }
-                                    if ( statuses.Any() )
-                                    {
-                                        qry = qry.Where( i => statuses.Contains( i.Status ) );
-                                    }
-                                }
-
-                                int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
-                                if ( dataFilterId.HasValue )
-                                {
-                                    var dataFilterService = new DataViewFilterService( rockContext );
-                                    var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
-                                    Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, service, paramExpression, errorMessages ) : null;
-
-                                    qry = qry.Where( paramExpression, whereExpression, null );
+                                    statuses.Add( status.Value );
                                 }
                             }
+                            if ( statuses.Any() )
+                            {
+                                qry = qry.Where( i => statuses.Contains( i.Status ) );
+                            }
+                        }
 
-                            // All filtering has been added, now run query and load attributes
-                            foreach ( var item in qry.ToList() )
+                        int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
+                        if ( dataFilterId.HasValue )
+                        {
+                            var dataFilterService = new DataViewFilterService( rockContext );
+                            var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
+                            Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, service, paramExpression, errorMessages ) : null;
+
+                            qry = qry.Where( paramExpression, whereExpression, null );
+                        }
+
+                        // All filtering has been added, now run query, check security and load attributes
+                        foreach ( var item in qry.ToList() )
+                        {
+                            if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             {
                                 item.LoadAttributes( rockContext );
                                 items.Add( item );
                             }
+                        }
 
-                            // Order the items
-                            SortProperty sortProperty = null;
+                        // Order the items
+                        SortProperty sortProperty = null;
 
-                            string orderBy = GetAttributeValue( "Order" );
-                            if ( !string.IsNullOrWhiteSpace( orderBy ) )
+                        string orderBy = GetAttributeValue( "Order" );
+                        if ( !string.IsNullOrWhiteSpace( orderBy ) )
+                        {
+                            var fieldDirection = new List<string>();
+                            foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
                             {
-                                var fieldDirection = new List<string>();
-                                foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
+                                if ( itemPair.Length == 2 && !string.IsNullOrWhiteSpace( itemPair[0] ) )
                                 {
-                                    if ( itemPair.Length == 2 && !string.IsNullOrWhiteSpace( itemPair[0] ) )
+                                    var sortDirection = SortDirection.Ascending;
+                                    if ( !string.IsNullOrWhiteSpace( itemPair[1] ) )
                                     {
-                                        var sortDirection = SortDirection.Ascending;
-                                        if ( !string.IsNullOrWhiteSpace( itemPair[1] ) )
-                                        {
-                                            sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
-                                        }
-                                        fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
+                                        sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
                                     }
+                                    fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
                                 }
+                            }
 
-                                sortProperty = new SortProperty();
-                                sortProperty.Direction = SortDirection.Ascending;
-                                sortProperty.Property = fieldDirection.AsDelimited( "," );
+                            sortProperty = new SortProperty();
+                            sortProperty.Direction = SortDirection.Ascending;
+                            sortProperty.Property = fieldDirection.AsDelimited( "," );
 
-                                string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                            string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-                                var itemQry = items.AsQueryable();
-                                IOrderedQueryable<ContentChannelItem> orderedQry = null;
+                            var itemQry = items.AsQueryable();
+                            IOrderedQueryable<ContentChannelItem> orderedQry = null;
 
-                                for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
+                            for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
+                            {
+                                string column = columns[columnIndex].Trim();
+
+                                var direction = sortProperty.Direction;
+                                if ( column.ToLower().EndsWith( " desc" ) )
                                 {
-                                    string column = columns[columnIndex].Trim();
-
-                                    var direction = sortProperty.Direction;
-                                    if ( column.ToLower().EndsWith( " desc" ) )
-                                    {
-                                        column = column.Left( column.Length - 5 );
-                                        direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
-                                    }
-
-                                    try
-                                    {
-                                        if ( column.StartsWith( "Attribute:" ) )
-                                        {
-                                            string attributeKey = column.Substring( 10 );
-
-                                            if ( direction == SortDirection.Ascending )
-                                            {
-                                                orderedQry = ( columnIndex == 0 ) ?
-                                                    itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
-                                                    orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
-                                            }
-                                            else
-                                            {
-                                                orderedQry = ( columnIndex == 0 ) ?
-                                                    itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
-                                                    orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if ( direction == SortDirection.Ascending )
-                                            {
-                                                orderedQry = ( columnIndex == 0 ) ? itemQry.OrderBy( column ) : orderedQry.ThenBy( column );
-                                            }
-                                            else
-                                            {
-                                                orderedQry = ( columnIndex == 0 ) ? itemQry.OrderByDescending( column ) : orderedQry.ThenByDescending( column );
-                                            }
-                                        }
-                                    }
-                                    catch { }
-
+                                    column = column.Left( column.Length - 5 );
+                                    direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
                                 }
 
                                 try
                                 {
-                                    if ( orderedQry != null )
+                                    if ( column.StartsWith( "Attribute:" ) )
                                     {
-                                        items = orderedQry.ToList();
+                                        string attributeKey = column.Substring( 10 );
+
+                                        if ( direction == SortDirection.Ascending )
+                                        {
+                                            orderedQry = ( columnIndex == 0 ) ?
+                                                itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
+                                                orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
+                                        }
+                                        else
+                                        {
+                                            orderedQry = ( columnIndex == 0 ) ?
+                                                itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
+                                                orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if ( direction == SortDirection.Ascending )
+                                        {
+                                            orderedQry = ( columnIndex == 0 ) ? itemQry.OrderBy( column ) : orderedQry.ThenBy( column );
+                                        }
+                                        else
+                                        {
+                                            orderedQry = ( columnIndex == 0 ) ? itemQry.OrderByDescending( column ) : orderedQry.ThenByDescending( column );
+                                        }
                                     }
                                 }
                                 catch { }
 
                             }
 
-                            if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
+                            try
                             {
-                                var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( ItemCacheDuration.Value ) };
-                                AddCacheItem( CONTENT_CACHE_KEY, items, cacheItemPolicy );
+                                if ( orderedQry != null )
+                                {
+                                    items = orderedQry.ToList();
+                                }
                             }
+                            catch { }
+
                         }
 
+                        if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 && !queryParameterFiltering )
+                        {
+                            var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( ItemCacheDuration.Value ) };
+                            AddCacheItem( CONTENT_CACHE_KEY, items, cacheItemPolicy );
+                        }
 
                         // If items could be filtered by querystring values, check for filters
                         if ( queryParameterFiltering )
@@ -966,10 +963,10 @@ $(document).ready(function() {
                     var itemAttributes = attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
                                             .Where( a => (
                                                     a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                                                    a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() ) 
+                                                    a.EntityTypeQualifierValue.Equals( channel.ContentChannelTypeId.ToString() )
                                                 ) || (
                                                     a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
-                                                    a.EntityTypeQualifierValue.Equals( channel.Id.ToString() ) 
+                                                    a.EntityTypeQualifierValue.Equals( channel.Id.ToString() )
                                                 ) )
                                             .ToList();
 
@@ -1005,7 +1002,7 @@ $(document).ready(function() {
         {
             foreach ( ListItem item in listControl.Items )
             {
-                item.Selected = (item.Value == value);
+                item.Selected = ( item.Value == value );
             }
         }
 
@@ -1029,16 +1026,16 @@ $(document).ready(function() {
                     HttpContext.Current.Items.Remove( Rock.Reporting.EntityHelper.GetCacheKey( entityType ) );
 
                     var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
-                    foreach( var entityField in entityFields
-                        .Where( f => 
+                    foreach ( var entityField in entityFields
+                        .Where( f =>
                             f.FieldKind == Rock.Reporting.FieldKind.Attribute &&
                             f.AttributeGuid.HasValue )
                         .ToList() )
                     {
                         // remove EntityFields that aren't attributes for this ContentChannelType or ChannelChannel (to avoid duplicate Attribute Keys)
                         var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
-                        if ( attribute != null && 
-                            attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" && 
+                        if ( attribute != null &&
+                            attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" &&
                             attribute.EntityTypeQualifierValue.AsInteger() != channel.ContentChannelTypeId )
                         {
                             entityFields.Remove( entityField );
@@ -1133,11 +1130,11 @@ $(document).ready(function() {
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
-                
+
                     parentControl.Controls.Add( filterControl );
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
-                
+
                     // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
                     filterControl.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
                     filterControl.FilteredEntityTypeName = ITEM_TYPE_NAME;
@@ -1318,12 +1315,12 @@ $(document).ready(function() {
             /// <value>
             /// The previous page.
             /// </value>
-            public int PreviousPage 
-            { 
-                get 
+            public int PreviousPage
+            {
+                get
                 {
                     CurrentPage = CurrentPage > TotalPages ? TotalPages : CurrentPage;
-                    return ( CurrentPage > 1 ) ? CurrentPage - 1 : -1; 
+                    return ( CurrentPage > 1 ) ? CurrentPage - 1 : -1;
                 }
             }
 
@@ -1333,9 +1330,9 @@ $(document).ready(function() {
             /// <value>
             /// The next page.
             /// </value>
-            public int NextPage 
-            { 
-                get 
+            public int NextPage
+            {
+                get
                 {
                     CurrentPage = CurrentPage > TotalPages ? TotalPages : CurrentPage;
                     return ( CurrentPage < TotalPages ) ? CurrentPage + 1 : -1;
@@ -1359,7 +1356,7 @@ $(document).ready(function() {
                     else
                     {
                         return Convert.ToInt32( Math.Abs( ItemCount / PageSize ) ) +
-                            ((ItemCount % PageSize) > 0 ? 1 : 0);
+                            ( ( ItemCount % PageSize ) > 0 ? 1 : 0 );
                     }
                 }
             }
@@ -1415,7 +1412,7 @@ $(document).ready(function() {
             /// </summary>
             /// <param name="urlTemplate">The URL template.</param>
             /// <param name="pageNumber">The page number.</param>
-            public PaginationPage( string urlTemplate, int pageNumber)
+            public PaginationPage( string urlTemplate, int pageNumber )
             {
                 UrlTemplate = urlTemplate;
                 PageNumber = pageNumber;
@@ -1437,11 +1434,11 @@ $(document).ready(function() {
             /// <value>
             /// The page URL.
             /// </value>
-            public string PageUrl 
-            { 
+            public string PageUrl
+            {
                 get
                 {
-                    if ( !string.IsNullOrWhiteSpace( UrlTemplate ) && UrlTemplate.Contains( "{0}"))
+                    if ( !string.IsNullOrWhiteSpace( UrlTemplate ) && UrlTemplate.Contains( "{0}" ) )
                     {
                         return string.Format( UrlTemplate, PageNumber );
                     }
@@ -1452,7 +1449,7 @@ $(document).ready(function() {
                 }
             }
 
-        #endregion
+            #endregion
 
         }
     }

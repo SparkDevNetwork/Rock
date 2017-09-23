@@ -21,7 +21,7 @@
                     </div>
                 </div>
 
-                <Rock:HelpBlock ID="hbGenerate" runat="server" Text="This will populate the AnalyticsDimDate table (and associated Views). It will first empty the AnalyticDimDate table if there is already data in it." />
+                <Rock:HelpBlock ID="hbGenerate" runat="server" Text="This will populate the AnalyticsSourceDate table (and associated Views). It will first empty the AnalyticsSourceDate table if there is already data in it." />
                 <div class="actions">
                     <asp:LinkButton ID="btnGenerate" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Generate Dimension" CssClass="btn btn-primary" OnClick="btnGenerate_Click" />
                 </div>

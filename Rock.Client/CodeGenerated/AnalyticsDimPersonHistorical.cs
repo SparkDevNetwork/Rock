@@ -259,7 +259,7 @@ namespace Rock.Client
     public partial class AnalyticsDimPersonHistorical : AnalyticsDimPersonHistoricalEntity
     {
         /// <summary />
-        public AnalyticsDimDate BirthDateDim { get; set; }
+        public AnalyticsSourceDate BirthDateDim { get; set; }
 
     }
 }

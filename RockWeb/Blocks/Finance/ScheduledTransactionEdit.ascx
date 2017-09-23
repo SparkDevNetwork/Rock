@@ -66,7 +66,7 @@
                                     <asp:PlaceHolder ID="phPills" runat="server">
                                         <ul class="nav nav-pills">
                                             <li id="liNone" runat="server"><a href='#<%=divNonePaymentInfo.ClientID%>' data-toggle="pill">No Change</a></li>
-                                            <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">New Credit Card</a></li>
+                                            <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">New Card</a></li>
                                             <li id="liACH" runat="server"><a href='#<%=divACHPaymentInfo.ClientID%>' data-toggle="pill">New Bank Account</a></li>
                                         </ul>
                                     </asp:PlaceHolder>
@@ -85,6 +85,7 @@
                                                     <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false"></Rock:RockTextBox>
                                                     <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false" FormGroupCssClass="required"></Rock:RockTextBox>
                                                     <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="cc-number js-numeric" FormGroupCssClass="required" type="tel" autocomplete="cc-number" />
+
                                                     <ul class="card-logos">
                                                         <li class="card-visa"></li>
                                                         <li class="card-mastercard"></li>
@@ -104,8 +105,8 @@
                                             <fieldset>
                                                 <Rock:RockRadioButtonList ID="rblSavedAch" runat="server" Label=" " CssClass="radio-list" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
                                                 <div id="divNewBank" runat="server" class="radio-content">
-                                                    <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" />
-                                                    <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account #" />
+                                                    <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing Number" />
+                                                    <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account Number" />
                                                     <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">
                                                         <asp:ListItem Text="Checking" Selected="true" />
                                                         <asp:ListItem Text="Savings" />

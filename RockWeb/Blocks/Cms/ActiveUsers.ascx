@@ -10,6 +10,7 @@
         <script>
             Sys.Application.add_load(function () {
                 $('.active-user').tooltip({ 'html': 'true' });
+                $('.js-current-guests .badge').tooltip();
             });
         </script>
     </ContentTemplate>

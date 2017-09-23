@@ -53,6 +53,10 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Event Item Occurrence Page", "The page to display event item occurrence details.", false, "", "", 8 )]
     [LinkedPage( "Content Item Page", "The page to display registration details.", false, "", "", 9 )]
     [BooleanField( "Show Copy Button", "Copies the group and all of its associated authorization rules", false, "", 10 )]
+    [LinkedPage( "Group List Page", "The page to display related Group List.", false, "", "", 11 )]
+    [LinkedPage( "Fundraising Progress Page", "The page to display fundraising progress for all its members.", false, "", "", 12 )]
+    [BooleanField( "Show Location Addresses", "Determines if the location address should be shown when viewing the group details.", true, order: 13)]
+
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -496,7 +500,7 @@ namespace RockWeb.Blocks.Groups
             // add/update any group requirements that were added or changed in the UI (we already removed the ones that were removed above)
             foreach ( var groupRequirementState in GroupRequirementsState )
             {
-                GroupRequirement groupRequirement = group.GetGroupRequirements(rockContext).Where( a => a.GroupId.HasValue ).Where( a => a.Guid == groupRequirementState.Guid ).FirstOrDefault();
+                GroupRequirement groupRequirement = group.GetGroupRequirements( rockContext ).Where( a => a.GroupId.HasValue ).Where( a => a.Guid == groupRequirementState.Guid ).FirstOrDefault();
                 if ( groupRequirement == null )
                 {
                     groupRequirement = new GroupRequirement();
@@ -569,7 +573,7 @@ namespace RockWeb.Blocks.Groups
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
-            
+
             // save sync settings
             group.SyncDataViewId = dvpSyncDataview.SelectedValue.AsIntegerOrNull();
             group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
@@ -821,8 +825,14 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    // Cancelling on Add.  Return to Grid
-                    NavigateToPage( RockPage.Guid, null );
+                    if ( GetAttributeValue( "GroupListPage" ).AsGuid() != Guid.Empty )
+                    {
+                        NavigateToLinkedPage( "GroupListPage" );
+                    }
+                    else
+                    {
+                        NavigateToPage( RockPage.Guid, null );
+                    }
                 }
             }
             else
@@ -1358,7 +1368,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampus.SetValue( group.CampusId );
 
-            GroupRequirementsState = group.GetGroupRequirements( rockContext ).Where(a => a.GroupId.HasValue).ToList();
+            GroupRequirementsState = group.GetGroupRequirements( rockContext ).Where( a => a.GroupId.HasValue ).ToList();
             GroupLocationsState = group.GroupLocations.ToList();
 
             var groupTypeCache = CurrentGroupTypeCache;
@@ -1690,10 +1700,12 @@ namespace RockWeb.Blocks.Groups
                                     var literalcontrol = new Literal()
                                     {
                                         Text = string.Format(
-                                        "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
-                                        groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
-                                        groupMapUrl,
-                                        mapLink ),
+                                        "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a>{3}</div>",
+                                        groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty, // 0
+                                        groupMapUrl, // 1
+                                        mapLink, //2
+                                        groupLocation.Location.GetFullStreetAddress().IsNotNullOrWhitespace() && GetAttributeValue( "ShowLocationAddresses" ).AsBoolean() ? string.Format("<div class='address'>{0}</div>", groupLocation.Location.GetFullStreetAddress() ) : "" // 3
+                                        ), // 2
                                         Mode = LiteralMode.PassThrough
                                     };
                                     phMaps.Controls.Add( literalcontrol );
@@ -1722,6 +1734,20 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlMap.Visible = false;
+            }
+
+            string fundraisingProgressUrl = LinkedPageUrl( "FundraisingProgressPage", pageParams );
+            var groupTypeIdFundraising = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
+            var fundraisingGroupTypeIdList = new GroupTypeService( rockContext ).Queryable().Where( a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising ).Select( a => a.Id ).ToList();
+
+            if ( fundraisingProgressUrl.IsNotNullOrWhitespace() && fundraisingGroupTypeIdList.Contains( group.GroupTypeId ) )
+            {
+                hlFundraisingProgress.NavigateUrl = fundraisingProgressUrl;
+                hlFundraisingProgress.Visible = true;
+            }
+            else
+            {
+                hlFundraisingProgress.Visible = false;
             }
 
             btnSecurity.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );

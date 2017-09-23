@@ -67,10 +67,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the new/current Id of the <see cref="Rock.Model.Person"/>.
         /// </value>
-        [Required]
         [Index( IsUnique = true )]
-        [DataMember( IsRequired = true )]
-        public int AliasPersonId { get; set; }
+        public int? AliasPersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the new <see cref="System.Guid"/> identifier of the <see cref="Rock.Model.Person"/>. This property is required.
@@ -78,9 +76,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Guid"/> representing the new/current Guid identifier of the <see cref="Rock.Model.Person"/>.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public Guid AliasPersonGuid { get; set; }
+        public Guid? AliasPersonGuid { get; set; }
 
         #endregion
 
@@ -115,8 +111,13 @@ namespace Rock.Model
         {
             get
             {
-                string identifier = this.AliasPersonId.ToString() + ">" + this.AliasPersonGuid.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier );
+                if ( this.AliasPersonId.HasValue && this.AliasPersonGuid.HasValue )
+                {
+                    string identifier = this.AliasPersonId.ToString() + ">" + this.AliasPersonGuid.ToString();
+                    return Rock.Security.Encryption.EncryptString( identifier );
+                }
+
+                return null;
             }
         }
 
@@ -162,10 +163,10 @@ namespace Rock.Model
         public PersonAliasConfiguration()
         {
             HasRequired( a => a.Person ).WithMany( p => p.Aliases ).HasForeignKey( a => a.PersonId ).WillCascadeOnDelete( false );
-            
+
             // NOTE: The foreign key is a fake foreign key (not a physical foreign key in the database) 
             // since we want to keep the AliasPersonId even if the associated Person is deleted
-            HasRequired( a => a.AliasPerson ).WithMany().HasForeignKey( a => a.AliasPersonId ).WillCascadeOnDelete( false );
+            HasOptional( a => a.AliasPerson ).WithMany().HasForeignKey( a => a.AliasPersonId ).WillCascadeOnDelete( false );
         }
     }
 

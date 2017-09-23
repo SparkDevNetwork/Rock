@@ -40,6 +40,15 @@ BEGIN
 	SET @EndDate = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000107', 112 ), @EndDate ) % 7 ), @EndDate ), '2100-01-01' )
     IF @EndDate < @StartDate SET @EndDate = DATEADD( day, 6 + DATEDIFF( day, @EndDate, @StartDate ), @EndDate )
 
+	DECLARE @CampusTbl TABLE ( [Id] int )
+	INSERT INTO @CampusTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@CampusIds,'') )
+
+	DECLARE @ScheduleTbl TABLE ( [Id] int )
+	INSERT INTO @ScheduleTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@ScheduleIds,'') )
+
+	DECLARE @GroupTbl TABLE ( [Id] int )
+	INSERT INTO @GroupTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@GroupIds,'') )
+
 	SELECT B.[PersonId], B.[CampusId], B.[GroupId], B.[GroupName], B.[ScheduleId], B.[StartDateTime], B.[LocationId], B.[RoleName], B.[LocationName] 
 	FROM
 	(
@@ -48,6 +57,7 @@ BEGIN
 		FROM [Attendance] A
 		INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
 		INNER JOIN [Group] G ON G.[Id] = A.[GroupId]
+		INNER JOIN @GroupTbl [G2] ON [G2].[Id] = G.[Id]
 		OUTER APPLY (
 			SELECT TOP 1 R.[Name] AS [RoleName]
 			FROM [GroupMember] M 
@@ -60,14 +70,15 @@ BEGIN
 		) R
 		LEFT OUTER JOIN [Location] L
 			ON L.[Id] = A.[LocationId]
-		WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
-		AND [StartDateTime] BETWEEN @StartDate AND @EndDate
+		LEFT OUTER JOIN @CampusTbl [C] ON [C].[id] = [A].[CampusId]
+		LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [A].[ScheduleId]
+		WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 		AND [DidAttend] = 1
 		AND ( 
-			( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
+			( @CampusIds IS NULL OR [C].[Id] IS NOT NULL ) OR  
 			( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
-		)	
-		AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
+		)
+		AND ( @ScheduleIds IS NULL OR [S].[Id] IS NOT NULL  )
 	) B
 	WHERE B.PersonRowNumber = 1
 

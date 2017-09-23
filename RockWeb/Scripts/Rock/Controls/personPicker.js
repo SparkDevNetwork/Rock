@@ -70,31 +70,51 @@
                 });
             });
 
+            var debouncerTimeout;
+
+            // flag indicating the details are currently animating the expand
+            var expanding = false;
+
             // debouncing function from John Hann
             // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
             var debouncePersonPicker = function (func, threshold, execAsap)
             {
-              var timeout;
-
               return function debounced()
               {
                 var obj = this, args = arguments;
+                var e = args[0];
+                if (e.type == 'click') {
+                  execAsap = true;
+                } else {
+                  execAsap = false;
+                }
+
                 function delayed()
                 {
                   if (!execAsap)
                     func.apply(obj, args);
-                  timeout = null;
+                  debouncerTimeout = null;
                 };
 
-                if (timeout) {
-                  clearTimeout(timeout);
+                if (debouncerTimeout) {
+                  clearTimeout(debouncerTimeout);
                 }
-                else if (execAsap)
-                  func.apply(obj, args);
 
-                timeout = setTimeout(delayed, threshold || 250);
+                if (execAsap) {
+                  func.apply(obj, args);
+                }
+
+                debouncerTimeout = setTimeout(delayed, threshold || 500);
               };
             }
+
+            // if the mouse leaves the picker item, clear the debouncer so that isn't show/hide any stuff in the queue
+            $('#' + controlId + ' .picker-select').on('mouseleave', '.picker-select-item', function (e)
+            {
+              if (debouncerTimeout) {
+                clearTimeout(debouncerTimeout);
+              }
+            });
 
             $('#' + controlId + ' .picker-select').on('click mouseenter', '.picker-select-item', debouncePersonPicker(function (e)
             {
@@ -110,15 +130,36 @@
 
                 var selectedPersonId = $selectedItem.attr('data-person-id');
 
+                console.log('expanding:' + expanding);
+
                 if ($itemDetails.is(':visible')) {
                     
-                    if (selectedPersonId == lastSelectedPersonId && e.type == 'click' ) {
-                        // if they are clicking the same person twice in a row, assume that's the one they want to pick
+                  if (selectedPersonId == lastSelectedPersonId && e.type == 'click' && expanding == false ) {
+                        // if they are clicking the same person twice in a row (and the details are done expanding), assume that's the one they want to pick
                         $('#' + controlId + '_btnSelect').get(0).click();
                     } else {
-                        // if it is already visible but isn't the same one twice, just leave it open
+                       
+                       // if it is already visible but isn't the same one twice, just leave it open
                     }
                 }
+
+                // hide other open details
+                $('#' + controlId + ' .picker-select-item-details').filter(':visible').each(function ()
+                {
+                  var $el = $(this),
+                     currentPersonId = $el.closest('.picker-select-item').attr('data-person-id');
+
+                  if (currentPersonId != selectedPersonId) {
+
+                    // The selected details slides up in a weird way if we try to hide details that are open above it, set this to false to see
+                    var onlyHideBelowItems = true;
+
+                    if (!onlyHideBelowItems || ($el.offset().top > $selectedItem.offset().top)) {
+                      $el.hide();
+                      exports.personPickers[controlId].updateScrollbar();
+                    }
+                  }
+                });
 
                 lastSelectedPersonId = selectedPersonId;
 
@@ -133,18 +174,24 @@
 
                         // hide then set the html so that we can get the slideDown effect
                         $itemDetails.stop().hide().html(responseText);
-                        $itemDetails.slideDown(function () {
-                            exports.personPickers[controlId].updateScrollbar();
-                        });
+                        showItemDetails($itemDetails);
 
                         $spinner.stop().fadeOut(200);
                     });
                 } else {
-                    $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
-                        exports.personPickers[controlId].updateScrollbar();
-                    });
+                  showItemDetails($selectedItem.find('.picker-select-item-details:hidden'));
                 }
             }));
+
+            var showItemDetails = function ($itemDetails)
+            {
+              expanding = true;
+              $itemDetails.slideDown(function ()
+              {
+                exports.personPickers[controlId].updateScrollbar();
+                expanding = false;
+              });
+            }
 
             $('#' + controlId).hover(
                 function () {
@@ -235,8 +282,8 @@
 
                         var inactiveWarning = "";
 
-                        if (!item.IsActive) {
-                            inactiveWarning = " <small>(Inactive)</small>";
+                        if (!item.IsActive && item.RecordStatus) {
+                            inactiveWarning = " <small>(" + item.RecordStatus + ")</small>";
                         }
 
                         var $div = $('<div/>').attr('class', 'radio'),

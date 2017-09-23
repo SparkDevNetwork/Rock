@@ -119,6 +119,29 @@ namespace Rock.Model
         [DataMember]
         public int? OwnerPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
+
+        /// <summary>
+        /// Gets or sets the category identifier.
+        /// </summary>
+        /// <value>
+        /// The category identifier.
+        /// </value>
+        [DataMember]
+        public int? CategoryId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -149,7 +172,30 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual ICollection<TaggedItem> TaggedItems { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        [DataMember]
+        public virtual Category Category { get; set; }
+
+        /// <summary>
+        /// Gets the parent security authority of this Tag. Where security is inherited from.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Category != null ? this.Category : base.ParentAuthority;
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -202,6 +248,7 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.OwnerPersonAlias ).WithMany().HasForeignKey( p => p.OwnerPersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.Category ).WithMany().HasForeignKey( t => t.CategoryId ).WillCascadeOnDelete( false );
         }
     }
 

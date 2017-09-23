@@ -26,6 +26,7 @@ using Rock.Data;
 using System.Data.Entity;
 using Rock.Web.Cache;
 using Rock.Field.Types;
+using System.Reflection;
 
 namespace Rock.Jobs
 {
@@ -41,7 +42,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class RockCleanup : IJob
     {
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initilization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -79,7 +80,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ));
+                databaseRowsDeleted.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -88,7 +89,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Old Interaction", CleanupInteractions( dataMap ));
+                databaseRowsDeleted.Add( "Old Interaction", CleanupInteractions( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -134,7 +135,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Temporary Registration", CleanUpTemporaryRegistrations());
+                databaseRowsDeleted.Add( "Temporary Registration", CleanUpTemporaryRegistrations() );
             }
             catch ( Exception ex )
             {
@@ -143,7 +144,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Workflow", CleanUpWorkflows( dataMap ));
+                databaseRowsDeleted.Add( "Workflow", CleanUpWorkflows( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -152,7 +153,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ));
+                databaseRowsDeleted.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -161,11 +162,20 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Orphaned Attribute Value", CleanupOrphanedAttributes( dataMap ));
+                databaseRowsDeleted.Add( "Orphaned Attribute Value", CleanupOrphanedAttributes( dataMap ) );
             }
             catch ( Exception ex )
             {
                 rockCleanupExceptions.Add( new Exception( "Exception in CleanupOrphanedAttributes", ex ) );
+            }
+
+            try
+            {
+                databaseRowsDeleted.Add( "Person Token", CleanupPersonTokens( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupPersonTokens", ex ) );
             }
 
             if ( databaseRowsDeleted.Any( a => a.Value > 0 ) )
@@ -237,7 +247,7 @@ namespace Rock.Jobs
 
                 personRockContext.SaveChanges();
             }
-            
+
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group
             AddMissingRelationshipGroups( GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
@@ -256,7 +266,7 @@ namespace Rock.Jobs
             if ( relationshipGroupType != null )
             {
                 var ownerRoleId = relationshipGroupType.Roles
-                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => (int?)a.Id ).FirstOrDefault();
                 if ( ownerRoleId.HasValue )
                 {
                     var rockContext = new RockContext();
@@ -659,21 +669,53 @@ WHERE ic.ChannelId = @channelId
                 var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value ).ToList().AsGuidList();
 
                 // clean up any orphaned attribute matrices
-                var dayAgo = RockDateTime.Now.AddDays( 0 );
+                var dayAgo = RockDateTime.Now.AddDays( -1 );
                 var orphanedAttributeMatrices = attributeMatrixService.Queryable().Where( a => ( a.CreatedDateTime < dayAgo ) && !usedAttributeMatrices.Contains( a.Guid ) ).ToList();
                 if ( orphanedAttributeMatrices.Any() )
                 {
                     recordsDeleted += orphanedAttributeMatrices.Count;
-                    attributeMatrixItemService.DeleteRange( orphanedAttributeMatrices.SelectMany(a => a.AttributeMatrixItems) );
+                    attributeMatrixItemService.DeleteRange( orphanedAttributeMatrices.SelectMany( a => a.AttributeMatrixItems ) );
                     attributeMatrixService.DeleteRange( orphanedAttributeMatrices );
                     rockContext.SaveChanges();
                 }
             }
 
-            recordsDeleted += CleanupOrphanedAttributeValuesForEntityType<AttributeMatrixItem>();
-            recordsDeleted += CleanupOrphanedAttributeValuesForEntityType<Block>();
+            // clean up other orphaned entity attributes
+            Type rockContextType = typeof( Rock.Data.RockContext );
+            foreach ( var cachedType in EntityTypeCache.All().Where( e => e.IsEntity ) )
+            {
+                Type entityType = cachedType.GetEntityType();
+                if ( entityType != null &&
+                    typeof( IEntity ).IsAssignableFrom( entityType ) &&
+                    typeof( IHasAttributes ).IsAssignableFrom( entityType ) &&
+                    !entityType.Namespace.Equals( "Rock.Rest.Controllers" ) )
+                {
+                    try
+                    {
+                        bool ignore = false;
+                        if ( entityType.Assembly != rockContextType.Assembly )
+                        {
+                            // If the model is from a custom project, verify that it is using RockContext, if not, ignore it since an 
+                            // exception will occur due to the AttributeValue query using RockContext.
+                            var entityContextType = Reflection.SearchAssembly( entityType.Assembly, typeof( System.Data.Entity.DbContext ) );
+                            ignore = ( entityContextType.Any() && !entityContextType.First().Value.Equals( rockContextType ) );
+                        }
 
-            // TODO: More CleanupOrphanedAttributeValuesForEntityType<> can be added
+                        if ( !ignore )
+                        {
+                            var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic )
+                            .First( m => m.Name == "CleanupOrphanedAttributeValuesForEntityType" );
+                            var genericMethod = classMethod.MakeGenericMethod( entityType );
+                            var result = genericMethod.Invoke( this, null ) as int?;
+                            if ( result.HasValue )
+                            {
+                                recordsDeleted += (int)result;
+                            }
+                        }
+                    }
+                    catch { }
+                }
+            }
 
             return recordsDeleted;
         }
@@ -683,7 +725,7 @@ WHERE ic.ChannelId = @channelId
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T:Rock.Data.Entity<T>, IHasAttributes, new()
+        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T : Rock.Data.Entity<T>, IHasAttributes, new()
         {
             int recordsDeleted = 0;
 
@@ -702,6 +744,49 @@ WHERE ic.ChannelId = @channelId
             }
 
             return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Cleanups the person tokens.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns></returns>
+        private int CleanupPersonTokens( JobDataMap dataMap )
+        {
+            int totalRowsDeleted = 0;
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
+
+            // Cleanup PersonTokens records that are expired
+            using ( RockContext rockContext = new RockContext() )
+            {
+                PersonTokenService personTokenService = new PersonTokenService( rockContext );
+
+                // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
+                bool keepDeleting = true;
+                while ( keepDeleting )
+                {
+                    var dbTransaction = rockContext.Database.BeginTransaction();
+                    try
+                    {
+                        string sqlCommand = @"
+DELETE TOP (@batchAmount)
+FROM [PersonToken]
+WHERE ExpireDateTime IS NOT NULL
+	AND ExpireDateTime < GetDate()
+
+";
+                        int rowsDeleted = rockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ) );
+                        keepDeleting = rowsDeleted > 0;
+                        totalRowsDeleted += rowsDeleted;
+                    }
+                    finally
+                    {
+                        dbTransaction.Commit();
+                    }
+                }
+            }
+
+            return totalRowsDeleted;
         }
 
         /// <summary>

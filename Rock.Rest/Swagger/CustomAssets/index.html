@@ -175,6 +175,15 @@
                 {
                     $rockControllerList.append('<li><a href="#" onclick="showUiForController(\'' + value.Name + '\')">' + value.Name + '</a></li>');
                 });
+
+                // if the URL includes a hash to a specific controller, load up the UI for that controller
+                if (window.location.hash) {
+                    var controllerFromHash = window.location.hash.match(/#!\/(.*)\//)[1];
+                    if (controllerFromHash) {
+                        showUiForController(controllerFromHash);
+                    }
+                }
+
             }).fail(function (a)
             {
                 if (a.status == 401)
@@ -198,7 +207,6 @@
 
         function redirectToLoginPage(a)
         {
-            debugger
             var currentUrl = window.location;
             window.location = swashbuckleConfig.rootUrl + '/login?returnUrl=' + encodeURIComponent(currentUrl);
         }

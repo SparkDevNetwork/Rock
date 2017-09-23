@@ -312,6 +312,36 @@ namespace Rock.Model
             return this.Title;
         }
 
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            bool? isAuthorized = Security.Authorization.AuthorizedForEntity( this, action, person );
+            if ( isAuthorized.HasValue )
+            {
+                return isAuthorized.Value;
+            }
+
+            if ( this.MetricCategories != null )
+            {
+                foreach ( var metricCategory in this.MetricCategories )
+                {
+                    if ( metricCategory.Category.IsAuthorized( action, person ) )
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return base.IsAuthorized(action, person);
+        }
+
         #endregion
     }
 

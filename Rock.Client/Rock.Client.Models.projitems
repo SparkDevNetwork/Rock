@@ -12,7 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimDate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyHeadOfHousehold.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyHistorical.cs" />
@@ -24,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsFactAttendance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceAttendance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceDate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
@@ -50,8 +50,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Campus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Category.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Communication.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionActivityType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityCampus.cs" />
@@ -130,6 +132,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Location.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LoginParameters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MergeTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetaFirstNameGenderLookup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetaLastNameLookup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetaNickNameLookup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetaPersonicxLifestageCluster.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetaPersonicxLifestageGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Metaphone.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Metric.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricCategory.cs" />
@@ -143,12 +150,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Page.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageRoute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageShortLink.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Person.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonalDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonAlias.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonBadge.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonViewed.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PhoneNumber.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PluginMigration.cs" />
@@ -174,7 +183,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteDomain.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteUrlMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemEmail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Tag.cs" />

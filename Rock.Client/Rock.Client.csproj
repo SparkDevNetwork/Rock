@@ -38,7 +38,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
-    <Compile Include="CodeGenerated\AnalyticsDimDate.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyHeadOfHousehold.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyHistorical.cs" />
@@ -50,6 +49,7 @@
     <Compile Include="CodeGenerated\AnalyticsFactAttendance.cs" />
     <Compile Include="CodeGenerated\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceAttendance.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceDate.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
@@ -76,8 +76,10 @@
     <Compile Include="CodeGenerated\Campus.cs" />
     <Compile Include="CodeGenerated\Category.cs" />
     <Compile Include="CodeGenerated\Communication.cs" />
+    <Compile Include="CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="CodeGenerated\CommunicationRecipient.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplate.cs" />
+    <Compile Include="CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="CodeGenerated\ConnectionActivityType.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunity.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityCampus.cs" />
@@ -156,6 +158,11 @@
     <Compile Include="CodeGenerated\Location.cs" />
     <Compile Include="CodeGenerated\LoginParameters.cs" />
     <Compile Include="CodeGenerated\MergeTemplate.cs" />
+    <Compile Include="CodeGenerated\MetaFirstNameGenderLookup.cs" />
+    <Compile Include="CodeGenerated\MetaLastNameLookup.cs" />
+    <Compile Include="CodeGenerated\MetaNickNameLookup.cs" />
+    <Compile Include="CodeGenerated\MetaPersonicxLifestageCluster.cs" />
+    <Compile Include="CodeGenerated\MetaPersonicxLifestageGroup.cs" />
     <Compile Include="CodeGenerated\Metaphone.cs" />
     <Compile Include="CodeGenerated\Metric.cs" />
     <Compile Include="CodeGenerated\MetricCategory.cs" />
@@ -169,12 +176,14 @@
     <Compile Include="CodeGenerated\Page.cs" />
     <Compile Include="CodeGenerated\PageContext.cs" />
     <Compile Include="CodeGenerated\PageRoute.cs" />
+    <Compile Include="CodeGenerated\PageShortLink.cs" />
     <Compile Include="CodeGenerated\Person.cs" />
     <Compile Include="CodeGenerated\PersonalDevice.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
     <Compile Include="CodeGenerated\PersonBadge.cs" />
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="CodeGenerated\PersonToken.cs" />
     <Compile Include="CodeGenerated\PersonViewed.cs" />
     <Compile Include="CodeGenerated\PhoneNumber.cs" />
     <Compile Include="CodeGenerated\PluginMigration.cs" />
@@ -200,7 +209,6 @@
     <Compile Include="CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="CodeGenerated\Site.cs" />
     <Compile Include="CodeGenerated\SiteDomain.cs" />
-    <Compile Include="CodeGenerated\SiteUrlMap.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
     <Compile Include="CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="CodeGenerated\Tag.cs" />

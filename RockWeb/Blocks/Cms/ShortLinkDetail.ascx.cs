@@ -30,6 +30,7 @@ using System.IO;
 using System.ComponentModel;
 using Rock.Security;
 using Rock.Attribute;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -83,7 +84,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var shortLink = new SiteUrlMapService( new RockContext() ).Get( int.Parse( hfShortLinkId.Value ) );
+            var shortLink = new PageShortLinkService( new RockContext() ).Get( int.Parse( hfShortLinkId.Value ) );
             ShowEditDetails( shortLink );
         }
 
@@ -96,11 +97,11 @@ namespace RockWeb.Blocks.Crm
         {
             if ( Page.IsValid )
             {
-                SiteUrlMap link = null;
+                PageShortLink link = null;
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var service = new SiteUrlMapService( rockContext );
+                    var service = new PageShortLinkService( rockContext );
 
                     var errors = new List<string>();
 
@@ -112,7 +113,7 @@ namespace RockWeb.Blocks.Crm
 
                     if ( link == null )
                     {
-                        link = new SiteUrlMap();
+                        link = new PageShortLink();
                         service.Add( link );
                     }
 
@@ -180,7 +181,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 // Cancelling on Edit
-                var shortLink = new SiteUrlMapService( new RockContext() ).Get( int.Parse( hfShortLinkId.Value ) );
+                var shortLink = new PageShortLinkService( new RockContext() ).Get( int.Parse( hfShortLinkId.Value ) );
                 ShowReadonlyDetails( shortLink );
             }
         }
@@ -189,7 +190,7 @@ namespace RockWeb.Blocks.Crm
         {
             using ( var rockContext = new RockContext() )
             {
-                var service = new SiteUrlMapService( rockContext );
+                var service = new PageShortLinkService( rockContext );
                 var link = service.Get( hfShortLinkId.ValueAsInt() );
                 if ( link != null )
                 {
@@ -212,17 +213,17 @@ namespace RockWeb.Blocks.Crm
         /// <param name="siteId">The group id.</param>
         public void ShowDetail( int shortLinkId )
         {
-            SiteUrlMap shortLink = null;
+            PageShortLink shortLink = null;
 
             if ( !shortLinkId.Equals( 0 ) )
             {
-                shortLink = new SiteUrlMapService( new RockContext() ).Get( shortLinkId );
+                shortLink = new PageShortLinkService( new RockContext() ).Get( shortLinkId );
                 pdAuditDetails.SetEntity( shortLink, ResolveRockUrl( "~" ) );
             }
 
             if (shortLink == null )
             {
-                shortLink = new SiteUrlMap { Id = 0 };
+                shortLink = new PageShortLink { Id = 0 };
 
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
@@ -236,7 +237,7 @@ namespace RockWeb.Blocks.Crm
             if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Rock.Model.SiteUrlMap.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Rock.Model.PageShortLink.FriendlyTypeName );
             }
 
             if ( readOnly )
@@ -264,7 +265,7 @@ namespace RockWeb.Blocks.Crm
         /// Shows the edit details.
         /// </summary>
         /// <param name="shortLink">The shortLink.</param>
-        private void ShowEditDetails( Rock.Model.SiteUrlMap shortLink )
+        private void ShowEditDetails( Rock.Model.PageShortLink shortLink )
         {
             SetEditMode( true );
 
@@ -279,7 +280,7 @@ namespace RockWeb.Blocks.Crm
         /// Shows the readonly details.
         /// </summary>
         /// <param name="shortLink">The shortLink.</param>
-        private void ShowReadonlyDetails( Rock.Model.SiteUrlMap shortLink )
+        private void ShowReadonlyDetails( Rock.Model.PageShortLink shortLink )
         {
             SetEditMode( false );
 
@@ -289,8 +290,7 @@ namespace RockWeb.Blocks.Crm
             lToken.Text = shortLink.Token;
             lUrl.Text = shortLink.Url;
 
-            var uri = shortLink.Site.DefaultDomainUri;
-            var url = uri != null ? uri.ToString() : Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" );
+            var url = shortLink.Site.DefaultDomainUri.ToString();
             string link = url.EnsureTrailingForwardslash() + shortLink.Token;
 
             btnCopy.Attributes["data-clipboard-text"] = link;
@@ -316,7 +316,13 @@ namespace RockWeb.Blocks.Crm
             ddlSite.Items.Clear();
             using ( var rockContext = new RockContext() )
             {
-                foreach ( SiteCache site in new SiteService( rockContext ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => SiteCache.Read( a ) ) )
+                foreach ( SiteCache site in new SiteService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( s => s.EnabledForShortening )
+                    .OrderBy( s => s.Name )
+                    .Select( a => a.Id )
+                    .ToList()
+                    .Select( a => SiteCache.Read( a ) ) )
                 {
                     ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
                 }

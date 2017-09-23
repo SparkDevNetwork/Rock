@@ -119,6 +119,43 @@ namespace Rock.Web.UI.Controls
             set { ViewState["DelaySave"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether Inactive tags should be displayed
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [Show InActive Tags]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowInActiveTags
+        {
+            get { return ViewState["ShowInActiveTags"] as bool? ?? false; }
+            set { ViewState["ShowInActiveTags"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the collection of CategoryId.
+        /// </summary>
+        /// <value>
+        ///  The Category Ids.
+        /// </value>
+        public List<Guid> CategoryIds
+        {
+            get
+            {
+                var categoryIds = ViewState["CategoryIds"] as List<Guid>;
+                if ( categoryIds == null )
+                {
+                    categoryIds = new List<Guid>();
+                    ViewState["CategoryIds"] = categoryIds;
+                }
+                return categoryIds;
+            }
+
+            set
+            {
+                ViewState["CategoryIds"] = value;
+            }
+        }
+
         #endregion
 
         #region Base Control Methods
@@ -166,7 +203,8 @@ Rock.controls.tagList.initialize({{
     entityQualifierColumn: '{4}',
     entityQualifierValue: '{5}',
     preventTagCreation: {6},
-    delaySave: {7}
+    delaySave: {7},
+    categoryIds: '{8}'
 }});",
                     this.ClientID,
                     EntityTypeId,
@@ -174,9 +212,10 @@ Rock.controls.tagList.initialize({{
                     EntityGuid.ToString(),
                     string.IsNullOrWhiteSpace( EntityQualifierColumn ) ? string.Empty : EntityQualifierColumn,
                     string.IsNullOrWhiteSpace( EntityQualifierValue ) ? string.Empty : EntityQualifierValue,
-                    (!AllowNewTags).ToString().ToLower(),
-                    DelaySave.ToString().ToLower() );
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "tag_picker_" + this.ID, script, true);
+                    ( !AllowNewTags ).ToString().ToLower(),
+                    DelaySave.ToString().ToLower(),
+                    CategoryIds.AsDelimited( "," ) );
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "tag_picker_" + this.ID, script, true );
             }
         }
 
@@ -188,40 +227,68 @@ Rock.controls.tagList.initialize({{
         /// Updates the control with the current tags that exist for the current entity
         /// </summary>
         /// <param name="currentPersonId">The current person identifier.</param>
-        public void GetTagValues(int? currentPersonId)
+        public void GetTagValues( int? currentPersonId )
         {
             var sb = new StringBuilder();
 
             using ( var rockContext = new RockContext() )
             {
+
                 var service = new TaggedItemService( rockContext );
-                foreach ( dynamic item in service.Get(
-                    EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid )
-                    .Select( i => new
-                    {
-                        OwnerId = ( i.Tag.OwnerPersonAlias != null ? i.Tag.OwnerPersonAlias.PersonId : (int?)null ),
-                        Name = i.Tag.Name
-                    } ) )
+                var qry = service.Get(
+                            EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid )
+                            .Where( c => c.Tag.IsActive || ( ShowInActiveTags ) );
+
+                if ( CategoryIds.Count > 0 )
                 {
-                    if ( sb.Length > 0 )
-                        sb.Append( ',' );
-                    sb.Append( item.Name );
-                    if ( currentPersonId.HasValue && item.OwnerId == currentPersonId.Value )
-                        sb.Append( "^personal" );
+                    var categoryIds = new CategoryService( rockContext )
+                        .GetByGuids( CategoryIds )
+                        .Select( a => a.Id )
+                        .ToList();
+                    qry = qry.Where( a => a.Tag.CategoryId.HasValue && categoryIds.Contains( a.Tag.CategoryId.Value ) );
+                }
+
+                var items=qry
+                    .Select( a => a.Tag )
+                    .OrderBy( a => a.Name );
+
+                var person = GetCurrentPerson();
+
+                foreach ( var item in items )
+                {
+                    if ( item.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    {
+                        if ( sb.Length > 0 )
+                            sb.Append( ',' );
+                        sb.Append( item.Name );
+                        if ( currentPersonId.HasValue && item?.OwnerPersonAlias?.PersonId == currentPersonId.Value )
+                            sb.Append( "^personal" );
+                    }
                 }
             }
 
             this.Text = sb.ToString();
         }
 
+        private Person GetCurrentPerson()
+        {
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
+            {
+                return rockPage.CurrentPerson;
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Saves the tag values that user entered for the entity (
         /// </summary>
         /// <param name="personAlias">The person alias.</param>
-        public void SaveTagValues(PersonAlias personAlias)
+        public void SaveTagValues( PersonAlias personAlias )
         {
             int? currentPersonId = null;
-            if (personAlias != null)
+            if ( personAlias != null )
             {
                 currentPersonId = personAlias.PersonId;
             }
@@ -270,7 +337,7 @@ Rock.controls.tagList.initialize({{
 
                 // Delete any tagged items that user removed
                 var names = currentTags.Select( t => t.Name ).ToList();
-                foreach ( var taggedItem in existingTaggedItems)
+                foreach ( var taggedItem in existingTaggedItems )
                 {
                     if ( !names.Contains( taggedItem.Tag.Name, StringComparer.OrdinalIgnoreCase ) )
                     {
@@ -282,7 +349,7 @@ Rock.controls.tagList.initialize({{
 
                 // Add any tagged items that user added
                 names = existingTaggedItems.Select( t => t.Tag.Name ).ToList();
-                foreach ( var tag in currentTags)
+                foreach ( var tag in currentTags )
                 {
                     if ( !names.Contains( tag.Name, StringComparer.OrdinalIgnoreCase ) )
                     {

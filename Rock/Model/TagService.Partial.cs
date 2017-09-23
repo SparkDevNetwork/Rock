@@ -60,14 +60,34 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Tag"/> that matches the provided criteria. If a match is not found, null will be returned.</returns>
         public Tag Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId, string name )
         {
-            return Queryable()
-                .Where( t => t.EntityTypeId == entityTypeId &&
-                    ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" || t.EntityTypeQualifierColumn == entityQualifierColumn ) &&
-                    ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == "" || t.EntityTypeQualifierValue == entityQualifierValue ) &&
-                    ( t.OwnerPersonAlias == null || ( ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId ) ) &&
-                    ( t.Name == name)
-                    )
-                .FirstOrDefault();
+            var tags = Get( entityTypeId, entityQualifierColumn, entityQualifierValue, ownerId )
+                .Where( t => t.Name == name );
+
+            // First look for personal tag
+            if ( ownerId.HasValue )
+            {
+                var personalTag = tags.Where( t => t.OwnerPersonAlias.PersonId == ownerId.Value ).FirstOrDefault();
+                if ( personalTag != null )
+                {
+                    return personalTag;
+                }
+            }
+
+            // Then look for first org tag that they are authorized to see
+            var orgTags = tags.Where( t => t.OwnerPersonAlias == null ).ToList();
+            if ( orgTags.Any() )
+            {
+                Person person = ownerId.HasValue ? new PersonService( (RockContext)this.Context ).Get( ownerId.Value ) : null;
+                foreach ( var tag in orgTags )
+                {
+                    if ( tag.IsAuthorized( Security.Authorization.VIEW, person ) )
+                    {
+                        return tag;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

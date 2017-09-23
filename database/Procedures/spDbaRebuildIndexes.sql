@@ -13,6 +13,8 @@
 	</remarks>
 	<code>
 		EXEC [dbo].[spDbaRebuildIndexes]
+		EXEC [dbo].[spDbaRebuildIndexes] default, default, default, 1
+		EXEC [dbo].[spDbaRebuildIndexes] default, 0, 0, 1
 	</code>
 </doc>
 */
@@ -21,6 +23,7 @@ ALTER PROCEDURE [dbo].[spDbaRebuildIndexes]
 	  @PageCountLimit int = 100
 	, @MinFragmentation int = 10
 	, @MinFragmentationRebuild int = 30
+	, @UseONLINEIndexRebuild bit = 0
 	WITH RECOMPILE
 AS
 
@@ -33,6 +36,13 @@ DECLARE @FragmentationPercent AS varchar(100);
 DECLARE @PageCount AS varchar(100);
 
 DECLARE @MaintenanceCursor AS CURSOR;
+
+DECLARE @CommandOption varchar(100) = 'FILLFACTOR = 80';
+
+IF ( @UseONLINEIndexRebuild = 1 )
+BEGIN
+    SELECT @CommandOption = @CommandOption + ', ONLINE = ON';
+END
 
 DECLARE @SqlCommand AS nvarchar(2000);
 
@@ -64,7 +74,7 @@ BEGIN
  
  
  IF (@FragmentationPercent > @MinFragmentationRebuild)
-	SET @SqlCommand = N'ALTER INDEX [' + @IndexName + N'] ON [' +  @SchemaName + N'].[' + @TableName + '] REBUILD';
+	SET @SqlCommand = N'ALTER INDEX [' + @IndexName + N'] ON [' +  @SchemaName + N'].[' + @TableName + '] REBUILD WITH (' + @CommandOption + ')';
  ELSE
 	SET @SqlCommand = N'ALTER INDEX [' + @IndexName + N'] ON [' +  @SchemaName + N'].[' + @TableName + '] REORGANIZE';
 

@@ -6,12 +6,12 @@ CREATE VIEW [dbo].[AnalyticsDimFinancialTransactionDate]
 AS
 SELECT d.DateKey AS [TransactionDateKey]
     ,*
-FROM AnalyticsDimDate d
+FROM AnalyticsSourceDate d
 WHERE d.DateKey >= (
-        SELECT MIN(ft.TransactionDateKey)
-        FROM AnalyticsFactFinancialTransaction ft
+        SELECT MIN(x.TransactionDateKey)
+        FROM AnalyticsFactFinancialTransaction x
         )
     AND d.DateKey <= (
-        SELECT MAX(ft.TransactionDateKey)
-        FROM AnalyticsFactFinancialTransaction ft
+        SELECT MAX(x.TransactionDateKey)
+        FROM AnalyticsFactFinancialTransaction x
         )

@@ -441,7 +441,7 @@ namespace Rock.Model
         /// The birth date dim.
         /// </value>
         [DataMember]
-        public virtual AnalyticsDimDate BirthDateDim { get; set; }
+        public virtual AnalyticsSourceDate BirthDateDim { get; set; }
 
         #endregion
     }
@@ -459,7 +459,7 @@ namespace Rock.Model
         public AnalyticsDimPersonHistoricalConfiguration()
         {
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier birthdates 
-            // and so that the AnalyticsDimDate can be rebuilt from scratch as needed
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
             this.HasOptional( t => t.BirthDateDim ).WithMany().HasForeignKey( t => t.BirthDateKey ).WillCascadeOnDelete( false );
         }
     }

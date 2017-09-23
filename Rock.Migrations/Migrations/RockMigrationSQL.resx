@@ -484,4 +484,85 @@
   <data name="_201707101648235_CommonBlockTypes_spCore_BinaryFileGet" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201707101648235_commonblocktypes_spcore_binaryfileget.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201707171725146_UniversalSearchPages_spDbaRebuildIndexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707171725146_UniversalSearchPages_spDbaRebuildIndexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201707182207536_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707182207536_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201707182207536_AttendanceAnalyticsScheduleFilter_Attendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707182207536_attendanceanalyticsschedulefilter_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201707311527250_FirstNameGender" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707311527250_firstnamegender.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201707311527250_LastName" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707311527250_lastname.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201707311527250_NickName" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707311527250_nickname.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201707311527250_PersonicxCluster" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707311527250_personicxcluster.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201707311527250_PersonicxGroup" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201707311527250_personicxgroup.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201708162105164_AnalyticsPerformance_AccountTotals" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201708162105164_analyticsperformance_accounttotals.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201708162105164_AnalyticsPerformance_AttendeeDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201708162105164_analyticsperformance_attendeedates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201708162105164_AnalyticsPerformance_AttendeeFirstDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201708162105164_analyticsperformance_attendeefirstdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201708162105164_AnalyticsPerformance_AttendeeLastAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201708162105164_analyticsperformance_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201708162105164_AnalyticsPerformance_Attendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201708162105164_analyticsperformance_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201708162105164_AnalyticsPerformance_Indexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201708162105164_analyticsperformance_indexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201708162105164_AnalyticsPerformance_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201708162105164_analyticsperformance_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201708162105164_AnalyticsPerformance_PersonSummary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201708162105164_analyticsperformance_personsummary.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201708162105164_AnalyticsPerformance_TransactionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201708162105164_analyticsperformance_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201709082257551_Communications2_AddCommunicationTemplates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709082257551_communications2_addcommunicationtemplates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201709131136468_spAnalytics_ETL_Attendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709131136468_spanalytics_etl_attendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201709131136468_spAnalytics_ETL_FinancialTransaction" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709131136468_spanalytics_etl_financialtransaction.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201709191729044_Analytics2_AnalyticsDimAttendanceDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709191729044_analytics2_analyticsdimattendancedate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709191729044_analytics2_analyticsdimfamilyheadofhouseholdbirthdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709191729044_analytics2_analyticsdimfinancialtransactiondate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201709191729044_Analytics2_AnalyticsDimPersonCurrentBirthDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709191729044_analytics2_analyticsdimpersoncurrentbirthdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709191729044_analytics2_analyticsdimpersonhistoricalbirthdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201709222257442_CommunicationSMSAttachments_AddCommunicationTemplates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709222257442_communicationsmsattachments_addcommunicationtemplates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201709222257442_CommunicationSMSAttachments_AddLavaShortCodes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709222257442_communicationsmsattachments_addlavashortcodes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Cms
                     var contentChannel = GetAttributeValue("ContentChannel").AsGuid();
                     ShowDetail(PageParameter("contentItemId").AsInteger(), new ContentChannelService(new RockContext()).Get(GetAttributeValue("ContentChannel").AsGuid()).Id);
                 }
-                
+
             }
             else
             {
@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Cms
                 item.LoadAttributes();
 
                 phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup );
+                Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup, 2 );
 
                 ShowDialog();
             }
@@ -302,6 +302,9 @@ namespace RockWeb.Blocks.Cms
                 {
                     rockContext.SaveChanges();
                     contentItem.SaveAttributeValues( rockContext );
+
+                    taglTags.EntityGuid = contentItem.Guid;
+                    taglTags.SaveTagValues( CurrentPersonAlias );
 
                     int? eventItemOccurrenceId = PageParameter( "EventItemOccurrenceId" ).AsIntegerOrNull();
                     if ( eventItemOccurrenceId.HasValue )
@@ -693,6 +696,25 @@ namespace RockWeb.Blocks.Cms
             hfChannelId.Value = contentChannelId.HasValue ? contentChannelId.Value.ToString() : string.Empty;
 
             ContentChannelItem contentItem = GetContentItem();
+
+            taglTags.EntityTypeId = EntityTypeCache.Read( typeof( ContentChannelItem ) ).Id;
+            taglTags.AllowNewTags = false;
+            taglTags.DelaySave = true;
+            if ( contentItem.ContentChannel != null && contentItem.ContentChannel.ItemTagCategories.IsNotNullOrWhitespace() )
+            {
+                var categoryIds = contentItem.ContentChannel.ItemTagCategories.SplitDelimitedValues().AsIntegerList();
+                var categoryGuids = new CategoryService( new RockContext() )
+                                .GetByIds( categoryIds )
+                                .Select( a => a.Guid )
+                                .ToList();
+                taglTags.CategoryIds = categoryGuids;
+            }
+            else
+            {
+                taglTags.CategoryIds = new List<Guid>() { Guid.Empty };
+            }
+            taglTags.EntityGuid = contentItem.Guid;
+            taglTags.GetTagValues( CurrentPersonId );
 
             pdAuditDetails.SetEntity( contentItem, ResolveRockUrl( "~" ) );
 

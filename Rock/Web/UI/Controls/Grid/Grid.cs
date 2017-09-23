@@ -27,11 +27,10 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using OfficeOpenXml;
-using Rock.Data;
-using Rock.Web.Cache;
 using Rock;
+using Rock.Data;
 using Rock.Utility;
-using EntityFramework.Utilities;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -758,15 +757,20 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-
+            var divClasses = new List<string>();
             if ( this.EnableResponsiveTable )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
+                divClasses.Add( "table-responsive" );
             }
 
             if ( DisplayType == GridDisplayType.Light )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-no-border" );
+                divClasses.Add( "table-no-border" );
+            }
+
+            if ( divClasses.Any() )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, divClasses.AsDelimited( " " ) );
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1311,7 +1315,7 @@ namespace Rock.Web.UI.Controls
 
                     if ( rockPage.Request != null && rockPage.Request.Url != null )
                     {
-                        communication.MediumData.AddOrReplace( "UrlReferrer", rockPage.Request.Url.AbsoluteUri );
+                        communication.UrlReferrer = rockPage.Request.Url.AbsoluteUri;
                     }
 
                     communicationService.Add( communication );
@@ -1337,18 +1341,24 @@ namespace Rock.Web.UI.Controls
                         chunkedPersonIds = personIds.Skip( skipCount ).Take( 1000 );
                     }
 
+                    // NOTE: Set CreatedDateTime, ModifiedDateTime, etc manually set we are using BulkInsert
+                    var currentDateTime = RockDateTime.Now;
+                    var currentPersonAliasId = rockPage.CurrentPersonAliasId;
+
                     var communicationRecipientList = primaryAliasList.Select( a => new Rock.Model.CommunicationRecipient
                     {
                         CommunicationId = communication.Id,
                         PersonAliasId = a.Id,
-                        AdditionalMergeValues = recipients[a.PersonId]
-                    } );
+                        AdditionalMergeValues = recipients[a.PersonId],
+                        CreatedByPersonAliasId = currentPersonAliasId,
+                        ModifiedByPersonAliasId = currentPersonAliasId,
+                        CreatedDateTime = currentDateTime,
+                        ModifiedDateTime = currentDateTime
+                    } ).ToList();
 
+                    // BulkInsert to quickly insert the CommunicationRecipient records. Note: This is much faster, but will bypass EF and Rock processing.
                     var communicationRecipientRockContext = new RockContext();
-
-                    var communicationRecipientService = new Rock.Model.CommunicationRecipientService( communicationRecipientRockContext );
-                    communicationRecipientService.AddRange( communicationRecipientList );
-                    communicationRecipientRockContext.SaveChanges();
+                    communicationRecipientRockContext.BulkInsert( communicationRecipientList );
 
                     // Get the URL to communication page
                     string url = CommunicationPageRoute;
@@ -1560,11 +1570,6 @@ namespace Rock.Web.UI.Controls
                         {
                             worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( col.Value, exportValue );
                         }
-
-                        // Update column formatting based on data
-                        var format = worksheet.Column( columnCounter ).Style.Numberformat.Format;
-
-                        format = ExcelHelper.FinalColumnFormat( exportValue, format );
                     }
                 }
             }
@@ -1595,16 +1600,19 @@ namespace Rock.Web.UI.Controls
                     for ( int i = 0; i < data.Columns.Count; i++ )
                     {
                         var value = rowView.Row[i].ReverseCurrencyFormatting();
-                        ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, i + 1], value );
+                        int columnIndex = i + 1;
+                        ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnIndex], value );
 
                         // Update column formatting based on data
-                        worksheet.Column( i + 1 ).Style.Numberformat.Format = ExcelHelper.FinalColumnFormat( value, worksheet.Column( i + 1 ).Style.Numberformat.Format );
+                        ExcelHelper.FinalizeColumnFormat( worksheet, columnIndex, value );
                     }
                 }
             }
             else
             {
                 var definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
+                Dictionary<PropertyInfo, bool> propIsDefinedValueLookup = new Dictionary<PropertyInfo, bool>();
+                Dictionary<BoundField, PropertyInfo> boundFieldPropLookup = new Dictionary<BoundField, PropertyInfo>();
                 var attributeFields = this.Columns.OfType<AttributeField>().ToList();
                 var lavaFields = new List<LiquidField>();
                 var visibleFields = new Dictionary<int, DataControlField>();
@@ -1636,7 +1644,8 @@ namespace Rock.Web.UI.Controls
                 foreach ( PropertyInfo prop in allprops )
                 {
                     // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
-                    if ( prop.GetGetMethod().IsVirtual && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
+                    var getMethod = prop.GetGetMethod();
+                    if ( getMethod.IsVirtual && !getMethod.IsFinal && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
                     {
                         continue;
                     }
@@ -1661,7 +1670,7 @@ namespace Rock.Web.UI.Controls
                     var boundField = dataField as BoundField;
                     if ( boundField != null )
                     {
-                        var prop = props.FirstOrDefault( p => boundField.DataField == p.Name || boundField.DataField.StartsWith( p.Name + "." ) );
+                        var prop = GetPropertyFromBoundField( props, boundFieldPropLookup, boundField );
                         if ( prop != null )
                         {
                             if ( lavaFields.Any() )
@@ -1762,10 +1771,13 @@ namespace Rock.Web.UI.Controls
                                 var attrib = dataItemWithAttributes.Attributes[attributeField.DataField];
                                 string rawValue = dataItemWithAttributes.GetAttributeValue( attributeField.DataField );
                                 string resultHtml = attrib.FieldType.Field.FormatValue( null, attrib.EntityTypeId, dataItemWithAttributes.Id, rawValue, attrib.QualifierValues, false ).ReverseCurrencyFormatting().ToString();
-                                worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
+                                if ( !string.IsNullOrEmpty( resultHtml ) )
+                                {
+                                    worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
 
-                                // Update column formatting based on data
-                                worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.FinalColumnFormat( resultHtml, worksheet.Column( columnCounter ).Style.Numberformat.Format );
+                                    // Update column formatting based on data
+                                    ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, resultHtml );
+                                }
                             }
                             continue;
                         }
@@ -1774,7 +1786,7 @@ namespace Rock.Web.UI.Controls
                         if ( boundField != null )
                         {
                             var cell = worksheet.Cells[rowCounter, columnCounter];
-                            var prop = props.FirstOrDefault( p => boundField.DataField == p.Name || boundField.DataField.StartsWith( p.Name + "." ) );
+                            var prop = GetPropertyFromBoundField( props, boundFieldPropLookup, boundField );
                             object exportValue = null;
                             if ( prop != null )
                             {
@@ -1790,10 +1802,10 @@ namespace Rock.Web.UI.Controls
                                     propValue = ( dataField as LavaBoundField ).GetFormattedDataValue( propValue );
                                 }
 
-                                var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
-
-                                bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
-                                exportValue = GetExportValue( prop, propValue, isDefinedValue, cell ).ReverseCurrencyFormatting();
+                                if ( propValue != null )
+                                {
+                                    exportValue = GetExportValue( prop, propValue, IsDefinedValue( definedValueFields, propIsDefinedValueLookup, prop ), cell ).ReverseCurrencyFormatting();
+                                }
                             }
                             else if ( boundField is PersonField )
                             {
@@ -1805,7 +1817,7 @@ namespace Rock.Web.UI.Controls
                                 ExcelHelper.SetExcelValue( cell, exportValue );
 
                                 // Update column formatting based on data
-                                worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.FinalColumnFormat( exportValue, worksheet.Column( columnCounter ).Style.Numberformat.Format );
+                                ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, exportValue );
                             }
                             
                             continue;
@@ -1827,10 +1839,15 @@ namespace Rock.Web.UI.Controls
                             }
 
                             string resolvedValue = lavaField.LiquidTemplate.ResolveMergeFields( mergeValues );
-                            worksheet.Cells[rowCounter, columnCounter].Value = resolvedValue.Replace( "~~/", themeRoot ).Replace( "~/", appRoot ).ReverseCurrencyFormatting().ToString();
+                            resolvedValue = resolvedValue.Replace( "~~/", themeRoot ).Replace( "~/", appRoot ).ReverseCurrencyFormatting().ToString();
 
-                            // Update column formatting based on data
-                            worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.FinalColumnFormat( worksheet.Cells[rowCounter, columnCounter].Value, worksheet.Column( columnCounter ).Style.Numberformat.Format );
+                            if ( !string.IsNullOrEmpty( resolvedValue ) )
+                            {
+                                worksheet.Cells[rowCounter, columnCounter].Value = resolvedValue;
+
+                                // Update column formatting based on data
+                                ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, resolvedValue );
+                            }
 
                             continue;
                         }
@@ -1840,17 +1857,15 @@ namespace Rock.Web.UI.Controls
                     {
                         columnCounter++;
                         object propValue = prop.GetValue( item, null );
+                        if ( propValue != null )
+                        {
+                            var cell = worksheet.Cells[rowCounter, columnCounter];
+                            var exportValue = GetExportValue( prop, propValue, IsDefinedValue( definedValueFields, propIsDefinedValueLookup, prop ), cell ).ReverseCurrencyFormatting();
+                            ExcelHelper.SetExcelValue( cell, exportValue );
 
-                        var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
-
-                        bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
-
-                        var cell = worksheet.Cells[rowCounter, columnCounter];
-                        var exportValue = GetExportValue( prop, propValue, isDefinedValue, cell ).ReverseCurrencyFormatting();
-                        ExcelHelper.SetExcelValue( cell, exportValue );
-
-                        // Update column formatting based on data
-                        worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.FinalColumnFormat( exportValue, worksheet.Column( columnCounter ).Style.Numberformat.Format );
+                            // Update column formatting based on data
+                            ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, exportValue );
+                        }
                     }
 
                     dataIndex++;
@@ -1861,6 +1876,46 @@ namespace Rock.Web.UI.Controls
 
             // send the spreadsheet to the browser
             excel.SendToBrowser( this.Page, filename );
+        }
+
+        /// <summary>
+        /// Determines whether [is defined value] [the specified defined value fields].
+        /// </summary>
+        /// <param name="definedValueFields">The defined value fields.</param>
+        /// <param name="propIsDefinedValueLookup">The property is defined value lookup.</param>
+        /// <param name="prop">The property.</param>
+        /// <returns>
+        ///   <c>true</c> if [is defined value] [the specified defined value fields]; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsDefinedValue( List<DefinedValueField> definedValueFields, Dictionary<PropertyInfo, bool> propIsDefinedValueLookup, PropertyInfo prop )
+        {
+            if ( !propIsDefinedValueLookup.ContainsKey( prop ) )
+            {
+                var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
+                bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
+
+                propIsDefinedValueLookup.Add( prop, isDefinedValue );
+            }
+
+            return propIsDefinedValueLookup[prop];
+        }
+
+        /// <summary>
+        /// Gets the property from bound field.
+        /// </summary>
+        /// <param name="props">The props.</param>
+        /// <param name="boundFieldPropLookup">The bound field property lookup.</param>
+        /// <param name="boundField">The bound field.</param>
+        /// <returns></returns>
+        private static PropertyInfo GetPropertyFromBoundField( List<PropertyInfo> props, Dictionary<BoundField, PropertyInfo> boundFieldPropLookup, BoundField boundField )
+        {
+            if ( !boundFieldPropLookup.ContainsKey( boundField ) )
+            {
+                var prop = props.FirstOrDefault( p => boundField.DataField == p.Name || boundField.DataField.StartsWith( p.Name + "." ) );
+                boundFieldPropLookup.Add( boundField, prop );
+            }
+
+            return boundFieldPropLookup[boundField];
         }
 
         /// <summary>
@@ -2075,7 +2130,7 @@ namespace Rock.Web.UI.Controls
             {
                 // limit to non-virtual methods to prevent lazy loading issues
                 var getMethod = property.GetGetMethod();
-                if ( !getMethod.IsVirtual || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
+                if ( !getMethod.IsVirtual || getMethod.IsFinal || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
                 {
                     if ( property.Name != "Id" )
                     {
@@ -2301,6 +2356,7 @@ namespace Rock.Web.UI.Controls
                 var entitySet = new Rock.Model.EntitySet();
                 entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read<Rock.Model.Person>().Id;
                 entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+                List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
 
                 foreach ( var key in keys )
                 {
@@ -2308,7 +2364,7 @@ namespace Rock.Web.UI.Controls
                     {
                         var item = new Rock.Model.EntitySetItem();
                         item.EntityId = ( int ) key.Key;
-                        entitySet.Items.Add( item );
+                        entitySetItems.Add( item );
                     }
                     catch
                     {
@@ -2316,12 +2372,19 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                if ( entitySet.Items.Any() )
+                if ( entitySetItems.Any() )
                 {
                     var rockContext = new RockContext();
                     var service = new Rock.Model.EntitySetService( rockContext );
                     service.Add( entitySet );
                     rockContext.SaveChanges();
+                    entitySetItems.ForEach( a =>
+                    {
+                        a.EntitySetId = entitySet.Id;
+                    } );
+
+                    rockContext.BulkInsert( entitySetItems );
+
                     return entitySet.Id;
                 }
             }
@@ -2420,6 +2483,7 @@ namespace Rock.Web.UI.Controls
             DataColumn dataKeyColumn = this.DataSourceAsDataTable.Columns.OfType<DataColumn>().FirstOrDefault( a => a.ColumnName == dataKeyField );
 
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+            List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
 
             int itemOrder = 0;
             foreach ( DataRowView row in this.DataSourceAsDataTable.DefaultView )
@@ -2446,7 +2510,7 @@ namespace Rock.Web.UI.Controls
                         item.AdditionalMergeValues.Add( col.ColumnName, row[col.ColumnName] );
                     }
 
-                    entitySet.Items.Add( item );
+                    entitySetItems.Add( item );
                 }
                 catch
                 {
@@ -2454,12 +2518,20 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            if ( entitySet.Items.Any() )
+            if ( entitySetItems.Any() )
             {
                 var rockContext = new RockContext();
                 var service = new Rock.Model.EntitySetService( rockContext );
                 service.Add( entitySet );
                 rockContext.SaveChanges();
+
+                entitySetItems.ForEach( a =>
+                {
+                    a.EntitySetId = entitySet.Id;
+                } );
+
+                rockContext.BulkInsert( entitySetItems );
+
                 return entitySet.Id;
             }
 
@@ -2657,7 +2729,7 @@ namespace Rock.Web.UI.Controls
                      a.EntitySetId = entitySet.Id;
                  } );
 
-                EFBatchOperation.For( rockContext, rockContext.EntitySetItems ).InsertAll( entitySetItems );
+                rockContext.BulkInsert( entitySetItems );
 
                 return entitySet.Id;
             }

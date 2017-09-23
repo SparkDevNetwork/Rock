@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Communication;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls.Communication
@@ -33,42 +34,38 @@ namespace Rock.Web.UI.Controls.Communication
         private MergeFieldPicker mfpMessage;
         private RockTextBox tbMessage;
         private RockTextBox tbTitle;
-        private RockCheckBox tbSound;
+        private RockCheckBox cbSound;
 
         #endregion
 
         #region Properties
 
         /// <summary>
-        /// Gets or sets the medium data.
+        /// Sets control values from a communication record.
         /// </summary>
-        /// <value>
-        /// The medium data.
-        /// </value>
-        public override Dictionary<string, string> MediumData
+        /// <param name="communication">The communication.</param>
+        public override void SetFromCommunication( CommunicationDetails communication )
         {
-            get
-            {
-                EnsureChildControls();
-                var data = new Dictionary<string, string>();
-                var sound = tbSound.Checked.ToTrueFalse() == "True" ? "default" : ""; 
-                data.Add( "Title", tbTitle.Text );
-                data.Add( "Message", tbMessage.Text );
-                data.Add( "Sound", sound);
-                return data;
-            }
+            EnsureChildControls();
+            tbTitle.Text = communication.PushTitle;
+            tbMessage.Text = communication.PushMessage;
+            cbSound.Checked = communication.PushSound.IsNotNullOrWhitespace();
+        }
 
-            set
-            {
-                EnsureChildControls();
-                tbMessage.Text = GetDataValue( value, "Message" );
-                tbTitle.Text = GetDataValue( value, "Title" );
-                tbSound.Checked = GetDataValue( value, "Sound" ).AsBoolean();
-            }
+        /// <summary>
+        /// Updates the a communication record from control values.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        public override void UpdateCommunication( CommunicationDetails communication )
+        {
+            EnsureChildControls();
+            communication.PushTitle = tbTitle.Text;
+            communication.PushMessage = tbMessage.Text;
+            communication.PushSound = cbSound.Checked ? "default" : string.Empty;
         }
 
         #endregion
-        
+
         #region CompositeControl Methods
 
         /// <summary>
@@ -87,10 +84,10 @@ namespace Rock.Web.UI.Controls.Communication
             Controls.Add(tbTitle);
 
 
-            tbSound = new RockCheckBox();
-            tbSound.ID = string.Format("tbSound_{0}", this.ID);
-            tbSound.Label = "Should make sound?";
-            Controls.Add(tbSound);
+            cbSound = new RockCheckBox();
+            cbSound.ID = string.Format("cbSound_{0}", this.ID);
+            cbSound.Label = "Should make sound?";
+            Controls.Add(cbSound);
             
             rcwMessage = new RockControlWrapper();
             rcwMessage.ID = string.Format( "rcwMessage_{0}", this.ID );
@@ -134,7 +131,7 @@ namespace Rock.Web.UI.Controls.Communication
                 mfpMessage.ValidationGroup = value;
                 tbMessage.ValidationGroup = value;
                 tbTitle.ValidationGroup = value;
-                tbSound.ValidationGroup = value;
+                cbSound.ValidationGroup = value;
             }
         }
 
@@ -164,7 +161,7 @@ namespace Rock.Web.UI.Controls.Communication
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            tbSound.RenderControl( writer );
+            cbSound.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();

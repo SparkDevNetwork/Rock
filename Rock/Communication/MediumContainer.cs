@@ -63,6 +63,28 @@ namespace Rock.Communication
         {
             return Instance.GetComponentNameByEntity( entityType );
         }
+
+        /// <summary>
+        /// Gets the component by entity type identifier.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <returns></returns>
+        public static MediumComponent GetComponentByEntityTypeId( int? entityTypeId )
+        {
+            if ( entityTypeId.HasValue )
+            {
+                foreach ( var serviceEntry in MediumContainer.Instance.Components )
+                {
+                    var component = serviceEntry.Value.Value;
+                    if ( component.EntityType.Id == entityTypeId )
+                    {
+                        return component;
+                    }
+                }
+            }
+
+            return null;
+        }
         
         /// <summary>
         /// Gets or sets the MEF components.

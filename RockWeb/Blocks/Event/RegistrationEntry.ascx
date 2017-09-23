@@ -239,6 +239,7 @@
                 <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false" ></Rock:RockTextBox>
                 <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false" ></Rock:RockTextBox>
                 <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="cc-num js-numeric" FormGroupCssClass="required" type="tel" autocomplete="cc-number" />
+
                 <ul class="card-logos list-unstyled">
                     <li class="card-visa"></li>
                     <li class="card-mastercard"></li>
