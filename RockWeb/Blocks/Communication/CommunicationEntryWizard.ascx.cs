@@ -307,9 +307,9 @@ namespace RockWeb.Blocks.Communication
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
             htmlEditor.MergeFields.Add( "Rock.Model.Person" );
             htmlEditor.MergeFields.Add( "Communication.Subject|Subject" );
-            htmlEditor.MergeFields.Add( "Communication.MediumData.FromName|From Name" );
-            htmlEditor.MergeFields.Add( "Communication.MediumData.FromAddress|From Address" );
-            htmlEditor.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
+            htmlEditor.MergeFields.Add( "Communication.FromName|From Name" );
+            htmlEditor.MergeFields.Add( "Communication.FromAddress|From Address" );
+            htmlEditor.MergeFields.Add( "Communication.ReplyTo|Reply To" );
             htmlEditor.MergeFields.Add( "UnsubscribeOption" );
             if ( communication.AdditionalMergeFields.Any() )
             {
@@ -1271,10 +1271,30 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailPreview_Click( object sender, EventArgs e )
         {
+            // make sure the ifEmailDesigner srcdoc gets updated from what was in the email editor
+            ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
+
             upnlEmailPreview.Update();
 
-            ifEmailPreview.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
-            ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
+            var rockContext = new RockContext();
+            var communication = UpdateCommunication( rockContext );
+            Person currentPerson;
+            if ( communication.CreatedByPersonAlias != null && communication.CreatedByPersonAlias.Person != null )
+            {
+                currentPerson = communication.CreatedByPersonAlias.Person;
+            }
+            else
+            {
+                currentPerson = this.CurrentPerson;
+            }
+
+            var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
+            var sampleCommunicationRecipient = communication.Recipients.FirstOrDefault();
+            sampleCommunicationRecipient.Communication = communication;
+            var mergeFields = sampleCommunicationRecipient.CommunicationMergeValues( commonMergeFields );
+
+            ifEmailPreview.Attributes["srcdoc"] = hfEmailEditorHtml.Value.ResolveMergeFields( mergeFields );
+            
             pnlEmailPreview.Visible = true;
             mdEmailPreview.Show();
         }

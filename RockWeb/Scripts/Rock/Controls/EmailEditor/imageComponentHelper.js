@@ -24,15 +24,21 @@
 
         $('#component-image-margin-top,#component-image-margin-left,#component-image-margin-right,#component-image-margin-bottom').on('change', function (e)
         {
-          $(this).val(parseFloat($(this).val()));
+          $(this).val(parseFloat($(this).val()) || '');
           self.setMargins();
+        });
+
+        $('#component-image-link').on('blur', function ()
+        {
+          self.setImageWrapAnchor();
         });
       },
       setProperties: function ($imageComponent)
       {
         Rock.controls.emailEditor.$currentImageComponent = $imageComponent;
-        var imageUrl = $imageComponent.find('img').attr('src');
-        var imageCssWidth = $imageComponent.find('img').attr('data-imgcsswidth');
+        var $img = $imageComponent.find('img');
+        var imageUrl = $img.attr('src');
+        var imageCssWidth = $img.attr('data-imgcsswidth');
         var imageAlign = $imageComponent.css('text-align');
 
         var imageWidth = Rock.controls.emailEditor.$currentImageComponent.attr('data-image-width');
@@ -56,10 +62,18 @@
         
         var imageEl = $imageComponent[0];
 
-        $('#component-image-margin-top').val(parseFloat(imageEl.style['margin-top']));
-        $('#component-image-margin-left').val(parseFloat(imageEl.style['margin-left']));
-        $('#component-image-margin-right').val(parseFloat(imageEl.style['margin-right']));
-        $('#component-image-margin-bottom').val(parseFloat(imageEl.style['margin-bottom']));
+        $('#component-image-margin-top').val(parseFloat(imageEl.style['margin-top']) || '');
+        $('#component-image-margin-left').val(parseFloat(imageEl.style['margin-left']) || '');
+        $('#component-image-margin-right').val(parseFloat(imageEl.style['margin-right']) || '');
+        $('#component-image-margin-bottom').val(parseFloat(imageEl.style['margin-bottom']) || '');
+        
+        var $imageLinkInput = $('#component-image-link');
+        if ($img.parent().is('a')) {
+          $imageLinkInput.val($img.parent().attr('href'));
+        }
+        else {
+          $imageLinkInput.val('');
+        }
       },
       handleImageUpdate: function (e, data)
       {
@@ -96,6 +110,26 @@
         Rock.controls.emailEditor.$currentImageComponent.attr('data-image-filename', data ? data.response().result.FileName : null);
 
         Rock.controls.emailEditor.imageComponentHelper.setImageSrc();
+      },
+      setImageWrapAnchor: function ()
+      {
+        var $imageLinkInput = $('#component-image-link');
+        var imageLinkUrl = $imageLinkInput.val();
+        var $img = Rock.controls.emailEditor.$currentImageComponent.find('img');
+        if (imageLinkUrl && imageLinkUrl != '') {
+          if ($img.parent().is('a')) {
+            $img.parent().attr('href', imageLinkUrl);
+          }
+          else {
+            var linkTag = "<a href='" + imageLinkUrl + "'></a>"
+            $img.wrap(linkTag);
+          }
+        }
+        else {
+          if ($img.parent().is('a')) {
+            $img.unwrap();
+          }
+        }
       },
       setImageSrc: function ()
       {

@@ -16,7 +16,7 @@
         $('#component-code-margin-top,#component-code-margin-left,#component-code-margin-right,#component-code-margin-bottom').on('change', function (e)
         {
           // just keep the numeric portion in case they included alpha chars
-          $(this).val(parseFloat($(this).val()));
+          $(this).val(parseFloat($(this).val()) || '');
 
           self.setMargins();
         });
@@ -28,10 +28,10 @@
         aceEditor.setValue($codeComponent.html());
         var codeEl = $codeComponent[0];
 
-        $('#component-code-margin-top').val(parseFloat(codeEl.style['margin-top']));
-        $('#component-code-margin-left').val(parseFloat(codeEl.style['margin-left']));
-        $('#component-code-margin-right').val(parseFloat(codeEl.style['margin-right']));
-        $('#component-code-margin-bottom').val(parseFloat(codeEl.style['margin-bottom']));
+        $('#component-code-margin-top').val(parseFloat(codeEl.style['margin-top']) || '');
+        $('#component-code-margin-left').val(parseFloat(codeEl.style['margin-left']) || '');
+        $('#component-code-margin-right').val(parseFloat(codeEl.style['margin-right']) || '');
+        $('#component-code-margin-bottom').val(parseFloat(codeEl.style['margin-bottom']) || '');
       },
       setMargins: function ()
       {

@@ -347,6 +347,15 @@
 								                </div>
 							                </div>
 						                </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="component-image-link">Link</label>
+                                                    <input type="url" id="component-image-link" class="form-control" />
+                                                </div>
+                                            </div>
+                                        </div>
 					                </div>
 
                                     <!-- Section Properties -->
