@@ -67,6 +67,11 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the Id of the entity that this interaction component is related to.
+        /// For example:
+        ///  if this is a Page View:
+        ///     Interaction.EntityId is the Page.Id of the page that was viewed
+        ///  if this is a Communication Recipient activity:
+        ///     Interaction.EntityId is the CommunicationRecipient.Id that did the click or open
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the entity (object) that this interaction component is related to.
@@ -111,6 +116,15 @@ namespace Rock.Model
         [DataMember]
         public string InteractionData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the personal device identifier.
+        /// </summary>
+        /// <value>
+        /// The personal device identifier.
+        /// </value>
+        [DataMember]
+        public int? PersonalDeviceId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -142,34 +156,14 @@ namespace Rock.Model
         [DataMember]
         public virtual InteractionSession InteractionSession { get; set; }
 
-        #endregion
-
-        #region Public Methods
-
         /// <summary>
-        /// Gets the interaction details.
+        /// Gets or sets the personal device.
         /// </summary>
-        /// <returns></returns>
-        public string GetInteractionDetails()
-        {
-            var interaction = this;
-            string interactionDetails = string.Empty;
-            string deviceTypeDetails = $"{interaction.InteractionSession.DeviceType.OperatingSystem} {interaction.InteractionSession.DeviceType.DeviceTypeData} {interaction.InteractionSession.DeviceType.Application} {interaction.InteractionSession.DeviceType.ClientType}";
-            if ( interaction.Operation == "Opened" )
-            {
-                interactionDetails = $"Opened from {interaction.InteractionSession.IpAddress} using {deviceTypeDetails}";
-            }
-            else if ( interaction.Operation == "Click" )
-            {
-                interactionDetails = $"Clicked the address {interaction.InteractionData} from {interaction.InteractionSession.IpAddress} using {deviceTypeDetails}";
-            }
-            else
-            {
-                interactionDetails = $"{interaction.Operation} using {deviceTypeDetails}"; 
-            }
-
-            return interactionDetails;
-        }
+        /// <value>
+        /// The personal device.
+        /// </value>
+        [LavaInclude]
+        public virtual PersonalDevice PersonalDevice { get; set; }
 
         #endregion
 
@@ -190,6 +184,7 @@ namespace Rock.Model
             this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.InteractionComponent ).WithMany().HasForeignKey( r => r.InteractionComponentId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.InteractionSession ).WithMany( r => r.Interactions ).HasForeignKey( r => r.InteractionSessionId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonalDevice ).WithMany().HasForeignKey( r => r.PersonalDeviceId ).WillCascadeOnDelete( false );
         }
     }
 

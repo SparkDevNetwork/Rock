@@ -162,8 +162,13 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual PersonAlias GetByAliasEncryptedKey( string encryptedKey )
         {
-            string publicKey = Rock.Security.Encryption.DecryptString( encryptedKey );
-            return GetByAliasPublicKey( publicKey );
+            if ( encryptedKey.IsNotNullOrWhitespace() )
+            {
+                string publicKey = Rock.Security.Encryption.DecryptString( encryptedKey );
+                return GetByAliasPublicKey( publicKey );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -182,8 +187,7 @@ namespace Rock.Model
                     Guid guid = new Guid( idParts[1] );
 
                     PersonAlias personAlias = GetByAliasId( id );
-
-                    if ( personAlias != null && personAlias.AliasPersonGuid.CompareTo( guid ) == 0 )
+                    if ( personAlias != null && personAlias.AliasPersonGuid.HasValue && personAlias.AliasPersonGuid.Value.CompareTo( guid ) == 0 )
                     {
                         return personAlias;
                     }

@@ -44,15 +44,26 @@ BEGIN
 
 	DECLARE @PersonIdTbl TABLE ( [Id] INT NOT NULL )
 
+	DECLARE @CampusTbl TABLE ( [Id] int )
+	INSERT INTO @CampusTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@CampusIds,'') )
+
+	DECLARE @ScheduleTbl TABLE ( [Id] int )
+	INSERT INTO @ScheduleTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@ScheduleIds,'') )
+
+	DECLARE @GroupTbl TABLE ( [Id] int )
+	INSERT INTO @GroupTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@GroupIds,'') )
+
+	DECLARE @GroupTypeTbl TABLE ( [Id] int )
+	INSERT INTO @GroupTypeTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@GroupTypeIds,'') )
+
     -- Find all the person ids for people who belong to any of the selected groups and have not attended any group/campus of selected group type
 	INSERT INTO @PersonIdTbl
 	SELECT DISTINCT M.[PersonId]
-	FROM [Group] G 
+	FROM @GroupTbl G
 	INNER JOIN [GroupMember] M
 		ON M.[GroupId] = G.[Id]
 		AND M.[GroupMemberStatus] = 1
-    WHERE G.[Id] IN ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
-	AND M.[PersonId] NOT IN (
+	WHERE M.[PersonId] NOT IN (
 		SELECT DISTINCT PA.[PersonId]
 		FROM (
 			SELECT 
@@ -60,16 +71,18 @@ BEGIN
 				A.[CampusId],
 				A.[ScheduleId]
  			FROM [Attendance] A
-			WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
-			AND [StartDateTime] BETWEEN @StartDate AND @EndDate
+			INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+			WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 			AND [DidAttend] = 1
 		) A
         INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
+		LEFT OUTER JOIN @CampusTbl [C] ON [C].[id] = [A].[CampusId]
+		LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [A].[ScheduleId]
 		WHERE ( 
-			( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
+			( @CampusIds IS NULL OR [C].[Id] IS NOT NULL ) OR  
 			( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
 		)
-		AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
+		AND ( @ScheduleIds IS NULL OR [S].[Id] IS NOT NULL  )
     )
 
 
@@ -86,7 +99,7 @@ BEGIN
 		    P.[BirthDate],
             P.[ConnectionStatusValueId]
 		FROM @PersonIdTbl M
-	    INNER JOIN [Person] P ON P.[Id] = M.[Id]
+	 INNER JOIN [Person] P ON P.[Id] = M.[Id]
 
     END
     ELSE
@@ -174,7 +187,7 @@ BEGIN
         FROM (
             SELECT DISTINCT [StartDate]
 		    FROM [vCheckin_GroupTypeAttendance] A
-		    WHERE A.[GroupTypeId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupTypeIds ) )
+			INNER JOIN @GroupTypeTbl [G] ON [G].[id] = [A].[GroupTypeId]
 		    AND A.[PersonId] = P.[Id]
         ) S
 	) D
@@ -217,18 +230,20 @@ BEGIN
 					A.[LocationId],
 					A.[StartDateTime]
  				FROM [Attendance] A
-				WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
-				AND [StartDateTime] < @StartDate
+				INNER JOIN @GroupTbl G ON G.[Id] = A.[GroupId]
+				WHERE [StartDateTime] < @StartDate
 				AND [DidAttend] = 1
 			) A
 			INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId] 
 			INNER JOIN [Group] G ON G.[Id] = A.[GroupId]
-			AND PA.[PersonId] = P.[Id]
-			AND ( 
-				( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
-				( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
-			)
-			AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
+			LEFT OUTER JOIN @CampusTbl [C] ON [C].[id] = [A].[CampusId]
+			LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [A].[ScheduleId]
+			WHERE PA.[PersonId] = P.[Id]
+		    AND ( 
+			    ( @CampusIds IS NULL OR [C].[Id] IS NOT NULL ) OR  
+			    ( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
+		    )
+		    AND ( @ScheduleIds IS NULL OR [S].[Id] IS NOT NULL  )
 			ORDER BY A.[StartDateTime] DESC
 		) A
 	) PD

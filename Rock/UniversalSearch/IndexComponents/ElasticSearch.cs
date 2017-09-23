@@ -44,6 +44,7 @@ namespace Rock.UniversalSearch.IndexComponents
     [ExportMetadata( "ComponentName", "Elasticsearch 2.x" )]
 
     [TextField( "Node URL", "The URL of the ElasticSearch node (http://myserver:9200)", true, key: "NodeUrl" )]
+    [IntegerField("Shard Count", "The number of shards to use for each index. More shards support larger databases, but can make the results less accurate. We recommend using 1 unless your database get's very large (> 50GB).", true, 1)]
     public class Elasticsearch : IndexComponent
     {
         /// <summary>
@@ -225,6 +226,8 @@ namespace Rock.UniversalSearch.IndexComponents
                 // create a new index request
                 var createIndexRequest = new CreateIndexRequest( indexName );
                 createIndexRequest.Mappings = new Mappings();
+                createIndexRequest.Settings = new IndexSettings();
+                createIndexRequest.Settings.NumberOfShards = GetAttributeValue( "ShardCount" ).AsInteger();
 
                 var typeMapping = new TypeMapping();
                 typeMapping.Dynamic = DynamicMapping.Allow;
@@ -316,7 +319,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="size">The size.</param>
         /// <param name="from">From.</param>
         /// <returns></returns>
-        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null, SearchFieldCriteria fieldCriteria = null, int? size = null, int? from = null )
+        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria fieldCriteria = null, int? size = null, int? from = null )
         {
             long totalResultsAvailable = 0;
             return Search( query, searchType, entities, fieldCriteria, size, from, out totalResultsAvailable );

@@ -49,10 +49,7 @@ namespace Rock.Web.UI.Controls
 
             bool boolValue = value.AsBoolean();
 
-            if ( boolValue )
-                return "<i class=\"fa fa-check\"></i>";
-            else
-                return "";
+            return boolValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
         }
     }
 }

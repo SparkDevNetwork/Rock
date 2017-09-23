@@ -987,15 +987,18 @@ namespace RockWeb.Blocks.Crm
             {
                 AddProperty( "FamilyAttributes", "Family Attributes", 0, string.Empty );
                 var family = person.GetFamily();
-                family.LoadAttributes();
-                foreach ( var attribute in family.Attributes.OrderBy( a => a.Value.Order ) )
+                if ( family != null )
                 {
-                    if ( attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                    family.LoadAttributes();
+                    foreach ( var attribute in family.Attributes.OrderBy( a => a.Value.Order ) )
                     {
-                        string value = family.GetAttributeValue( attribute.Key );
-                        bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
-                        string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
-                        AddProperty( "groupattr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
+                        if ( attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                        {
+                            string value = family.GetAttributeValue( attribute.Key );
+                            bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                            string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
+                            AddProperty( "groupattr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
+                        }
                     }
                 }
             }

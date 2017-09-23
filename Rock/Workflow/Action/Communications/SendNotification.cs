@@ -78,7 +78,7 @@ namespace Rock.Workflow.Action
                                     {
                                         var personAlias = new PersonAliasService( rockContext ).Get(personAliasGuid);
                                         List<string> devices = new PersonalDeviceService(rockContext).Queryable()
-                                            .Where(a => a.PersonAliasId == personAlias.Id && a.NotificationsEnabled)
+                                            .Where(a => a.PersonAliasId.HasValue && a.PersonAliasId == personAlias.Id && a.NotificationsEnabled)
                                             .Select(a => a.DeviceRegistrationId)
                                             .ToList();
 
@@ -134,7 +134,7 @@ namespace Rock.Workflow.Action
                                             .Select( m => m.Person ) )
                                         {
                                             List<string> devices = new PersonalDeviceService(rockContext).Queryable()
-                                                .Where(p => p.PersonAliasId == person.PrimaryAliasId && p.NotificationsEnabled)
+                                                .Where(p => p.PersonAliasId.HasValue && p.PersonAliasId == person.PrimaryAliasId && p.NotificationsEnabled)
                                                 .Select(p => p.DeviceRegistrationId)
                                                 .ToList();
 
@@ -219,37 +219,12 @@ namespace Rock.Workflow.Action
 
             if ( recipients.Any() && !string.IsNullOrWhiteSpace(message) )
             {
-                var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid(), rockContext );
-                if ( mediumEntity != null )
-                {
-                    var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                    if ( medium != null && medium.IsActive )
-                    {
-                        var transport = medium.Transport;
-                        if ( transport != null && transport.IsActive )
-                        {
-                            var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-
-                            foreach ( var recipient in recipients )
-                            {
-                                var recipientMergeFields = new Dictionary<string, object>( mergeFields );
-                                foreach ( var mergeField in recipient.MergeFields )
-                                {
-                                    recipientMergeFields.Add( mergeField.Key, mergeField.Value );
-                                }
-                                var mediumData = new Dictionary<string, string>();
-                                mediumData.Add( "Message", message.ResolveMergeFields( recipientMergeFields ) );
-                                mediumData.Add("Title", title);
-                                mediumData.Add("Sound", sound);
-
-                                char[] splitPoint = { ',' };
-                                List<string> devices = recipient.To.Split(splitPoint).ToList();
-
-                                transport.Send( mediumData, devices, appRoot, string.Empty );
-                            }
-                        }
-                    }
-                }
+                var pushMessage = new RockPushMessage();
+                pushMessage.SetRecipients( recipients );
+                pushMessage.Title = title;
+                pushMessage.Message = message;
+                pushMessage.Sound = sound;
+                pushMessage.Send();
             }
 
             return true;

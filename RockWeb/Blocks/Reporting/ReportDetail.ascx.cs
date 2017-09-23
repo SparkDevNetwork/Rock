@@ -476,6 +476,7 @@ namespace RockWeb.Blocks.Reporting
             report.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             report.DataViewId = ddlDataView.SelectedValueAsInt();
             report.FetchTop = nbFetchTop.Text.AsIntegerOrNull();
+            report.QueryHint = tbQueryHint.Text;
 
             if ( !Page.IsValid )
             {
@@ -1047,6 +1048,7 @@ namespace RockWeb.Blocks.Reporting
             LoadDropdownsForEntityType( etpEntityType.SelectedEntityTypeId );
             ddlDataView.SetValue( report.DataViewId );
             nbFetchTop.Text = report.FetchTop.ToString();
+            tbQueryHint.Text = report.QueryHint;
 
             ReportFieldsDictionary = new List<ReportFieldInfo>();
             RockContext rockContext = new RockContext();

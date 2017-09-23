@@ -115,7 +115,7 @@ namespace Rock.UniversalSearch
         /// <param name="size">The size.</param>
         /// <param name="from">From.</param>
         /// <returns></returns>
-        public abstract List<IndexModelBase> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null, SearchFieldCriteria criteria = null, int? size = null, int? from = null  );
+        public abstract List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria criteria = null, int? size = null, int? from = null  );
 
         /// <summary>
         /// Searches the specified query.

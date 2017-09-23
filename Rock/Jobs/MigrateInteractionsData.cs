@@ -58,7 +58,19 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = _commandTimeout;
                 _pageViewsTotal = rockContext.Database.SqlQuery<int>( "SELECT COUNT(*) FROM PageView" ).First();
+
+
+                rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_InteractionForeignGuid' AND object_id = OBJECT_ID('Interaction'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [IX_InteractionForeignGuid]
+	ON [dbo].[Interaction] ([ForeignGuid])
+    where ForeignGuid is not null
+END
+" );
+
                 _communicationRecipientActivityTotal = rockContext.Database.SqlQuery<int>( @"SELECT COUNT(*)
 FROM CommunicationRecipientActivity
 WHERE [Guid] NOT IN (
@@ -233,7 +245,59 @@ WHERE Id NOT IN (
         )
 ";
 
-                var insertSessions = @"
+                // Clean up unused PageViewSession data in chunks
+                // delete the indexes so they don't have to be updated as the rows are deleted
+                rockContext.Database.ExecuteSqlCommand( @"
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_Guid'
+			AND object_id = OBJECT_ID('PageViewSession')
+		)
+BEGIN
+	DROP INDEX [IX_Guid] ON [dbo].[PageViewSession]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_PageViewUserAgentId'
+			AND object_id = OBJECT_ID('PageViewSession')
+		)
+BEGIN
+	DROP INDEX [IX_PageViewUserAgentId] ON [dbo].[PageViewSession]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_SessionId'
+			AND object_id = OBJECT_ID('PageViewSession')
+		)
+BEGIN
+	DROP INDEX [IX_SessionId] ON [dbo].[PageViewSession]
+END" );
+
+                int unUsedSessionsTotal = rockContext.Database.SqlQuery<int>( @"SELECT COUNT(*) FROM PageViewSession where Id not in ( select distinct PageViewSessionId from PageView )" ).First();
+                int unUsedSessionsDeleted = 0;
+
+                bool keepMoving = true;
+                int chunkSize = 25000;
+                var deleteUnusedSessions = $@"delete top ({chunkSize}) from PageViewSession where Id not in (
+select distinct PageViewSessionId from PageView)";
+                while ( keepMoving )
+                {
+                    int rowsDeleted = rockContext.Database.ExecuteSqlCommand( deleteUnusedSessions );
+                    keepMoving = rowsDeleted > 0;
+                    unUsedSessionsDeleted += rowsDeleted;
+                    if ( unUsedSessionsTotal > 0 )
+                    {
+                        var percentDone = Math.Round( ( decimal ) unUsedSessionsDeleted * 100 / unUsedSessionsTotal, 2 );
+                        context.UpdateLastStatusMessage( $"Cleaning up unused PageViewSession data ({unUsedSessionsDeleted} of {unUsedSessionsTotal}, {percentDone}%) " );
+                    }
+                }
+
+                var insertSessions = $@"
 INSERT INTO [InteractionSession] (
     [DeviceTypeId]
     ,[IpAddress]
@@ -273,7 +337,61 @@ END
                 var interactionCommunicationChannelId = interactionCommunicationChannel.Id;
 
                 // move PageView data in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
-                bool keepMoving = true;
+
+                // delete the indexes so they don't have to be updated as the rows are deleted
+                rockContext.Database.ExecuteSqlCommand( @"
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_DateTimeViewed'
+			AND object_id = OBJECT_ID('PageView')
+		)
+BEGIN
+	DROP INDEX [IX_DateTimeViewed] ON [dbo].[PageView]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_PageId'
+			AND object_id = OBJECT_ID('PageView')
+		)
+BEGIN
+	DROP INDEX IX_PageId ON [dbo].[PageView]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_PageViewSessionId'
+			AND object_id = OBJECT_ID('PageView')
+		)
+BEGIN
+	DROP INDEX IX_PageViewSessionId ON [dbo].[PageView]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_PersonAliasId'
+			AND object_id = OBJECT_ID('PageView')
+		)
+BEGIN
+	DROP INDEX IX_PersonAliasId ON [dbo].[PageView]
+END
+
+IF EXISTS (
+		SELECT *
+		FROM sys.indexes
+		WHERE NAME = 'IX_SiteId'
+			AND object_id = OBJECT_ID('PageView')
+		)
+BEGIN
+	DROP INDEX IX_SiteId ON [dbo].[PageView]
+END
+" );
+
+                keepMoving = true;
 
                 while ( keepMoving )
                 {
@@ -282,7 +400,6 @@ END
                     {
                         // keep track of where to start so that SQL doesn't have to scan the whole table when deleting
                         int insertStartId = interactionService.Queryable().Max( a => (int?)a.Id ) ?? 1;
-                        int chunkSize = 25000;
 
                         rockContext.Database.CommandTimeout = _commandTimeout;
                         int rowsMoved = rockContext.Database.ExecuteSqlCommand( $@"
@@ -478,6 +595,7 @@ DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-
 	DECLARE @ipaddressPatternMailgun_end NVARCHAR(max) = '% using %'
 	DECLARE @ipaddressPatternClickStart NVARCHAR(max) = '% from %[0-9]%.%[0-9]%.%[0-9]%.%[0-9]% using%'
 	DECLARE @ipaddressPatternClickEnd NVARCHAR(max) = '% using %'
+    DECLARE @alreadyInsertedCount INT = (select count(*) from InteractionSession where ForeignGuid is not null)
 
 	-- populate InteractionSession
 	INSERT INTO [InteractionSession] (
@@ -534,25 +652,93 @@ DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-
 		) x
 	INNER JOIN CommunicationRecipientActivity cra ON cra.Id = x.Id
 	LEFT JOIN InteractionDeviceType dt ON dt.DeviceTypeData = rtrim(ltrim(x.DeviceTypeData))
-	WHERE cra.[Guid] NOT IN (
+	WHERE (@alreadyInsertedCount = 0 or cra.[Guid] NOT IN (
 			SELECT ForeignGuid
 			FROM InteractionSession where ForeignGuid is not null
-			)
-            AND IPAddress NOT LIKE '%[a-z]%'
-			AND len(IPAddress) <= 15
+			))
 ";
 
                 rockContext.Database.CommandTimeout = _commandTimeout;
+                context.UpdateLastStatusMessage( "Migrating Communication Activity to Interaction Components" );
+
+                rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_EntityId_ChannelId' AND object_id = OBJECT_ID('InteractionComponent'))
+BEGIN
+CREATE INDEX [IX_EntityId_ChannelId] ON [dbo].[InteractionComponent] ([EntityId],[ChannelId])
+END
+" );
+
                 _componentsInserted = rockContext.Database.ExecuteSqlCommand( insertCommunicationsAsComponentsSQL );
 
                 rockContext.Database.CommandTimeout = _commandTimeout;
+                context.UpdateLastStatusMessage( "Migrating Communication Activity to Interaction DeviceTypes" );
                 _deviceTypesInserted = rockContext.Database.ExecuteSqlCommand( populateDeviceTypeFromActivityDetail );
 
+
+                // Interaction 
+                // Remove any CommunicationRecipientActivity records that can't be converted into Interactions (because an IP Address couldn't be extracted)
+                var unconvertableInteractionsSQL = @"DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-9]%.%[0-9]%)%'
+	DECLARE @ipaddressPatternMailgun NVARCHAR(max) = '%Opened from [0-9]%.%[0-9]%.%[0-9]%.%[0-9]% using %'
+	DECLARE @ipaddressPatternMailgun_start NVARCHAR(max) = '%[0-9]%.%[0-9]%.%[0-9]%.%[0-9]%'
+	DECLARE @ipaddressPatternMailgun_end NVARCHAR(max) = '% using %'
+	DECLARE @ipaddressPatternClickStart NVARCHAR(max) = '% from %[0-9]%.%[0-9]%.%[0-9]%.%[0-9]% using%'
+	DECLARE @ipaddressPatternClickEnd NVARCHAR(max) = '% using %'
+
+DELETE FROM CommunicationRecipientActivity where Id in (    
+SELECT --rtrim(ltrim(x.IPAddress)) [IPAddress]
+		x.Id [cra.Id]
+	FROM (
+		-- get the IP Address and DeviceType from Opens (SendGrid or Mandrill)
+		SELECT replace(replace(substring([ActivityDetail], PATINDEX(@ipaddressPatternSendGridMandrill, [ActivityDetail]), 8000), '(', ''), ')', '') [IPAddress]
+			,[Id]
+		FROM [CommunicationRecipientActivity]
+		WHERE ActivityType = 'Opened'
+			AND [ActivityDetail] NOT LIKE @ipaddressPatternMailgun
+		
+		UNION ALL
+		
+		-- get the IP Address and DeviceType from Opens (Mailgun)
+		SELECT substring(x.Parsed, 0, PATINDEX(@ipaddressPatternMailgun_end, x.Parsed)) [IPAddress]
+			,[Id]
+		FROM (
+			SELECT [Id]
+				,substring([ActivityDetail], PATINDEX(@ipaddressPatternMailgun_start, [ActivityDetail]), 8000) [Parsed]
+			FROM [CommunicationRecipientActivity]
+			WHERE ActivityType = 'Opened'
+				AND [ActivityDetail] LIKE @ipaddressPatternMailgun
+			) x
+		
+		UNION ALL
+		
+		-- get the IP Address and DeviceType from Clicks (all webhooks)
+		SELECT ltrim(rtrim(substring([Parsed], 0, PATINDEX(@ipaddressPatternClickEnd, [Parsed])))) [IPAddress]
+			,Id
+		FROM (
+			SELECT substring(ActivityDetail, PATINDEX(@ipaddressPatternClickStart, [ActivityDetail]) + len(' from '), 8000) [Parsed]
+				,*
+			FROM [CommunicationRecipientActivity]
+			WHERE ActivityType = 'Click'
+			) x
+		) x
+	WHERE IPAddress LIKE '%[a-z]%'
+			or len(IPAddress) > 15)";
+
+                context.UpdateLastStatusMessage( "Cleaning up unconvertable Communication Activity to Interaction Sessions" );
+                rockContext.Database.ExecuteSqlCommand( unconvertableInteractionsSQL );
+
+                rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_InteractionSessionForeignGuid' AND object_id = OBJECT_ID('InteractionSession'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [IX_InteractionSessionForeignGuid]
+	ON [dbo].[InteractionSession] ([ForeignGuid])
+    where ForeignGuid is not null
+END
+" );
+
                 rockContext.Database.CommandTimeout = _commandTimeout;
+                context.UpdateLastStatusMessage( "Migrating Communication Activity to Interaction Sessions" );
                 _sessionsInserted = rockContext.Database.ExecuteSqlCommand( insertSessions );
 
-
-                // Interaction
                 int chunkSize = 25000;
                 var populateInteraction = $@"
 BEGIN

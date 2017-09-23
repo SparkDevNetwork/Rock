@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 using DotLiquid;
 using DotLiquid.Exceptions;
 using Rock.Data;
+using System.Dynamic;
 
 namespace Rock.Lava.Blocks
 {
@@ -86,16 +87,7 @@ namespace Rock.Lava.Blocks
                 {
                     var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, null, null );
 
-                    var dropRows = new List<DataRowDrop>();
-                    if ( results.Tables.Count == 1 )
-                    {
-                        foreach ( DataRow row in results.Tables[0].Rows )
-                        {
-                            dropRows.Add( new DataRowDrop( row ) );
-                        }
-                    }
-
-                    context.Scopes.Last()[parms["return"]] = dropRows;
+                    context.Scopes.Last()[parms["return"]] = results.Tables[0].ToDynamic();
                 }
                 else if (parms["statement"] == "command" )
                 {
@@ -157,28 +149,5 @@ namespace Rock.Lava.Blocks
             return parms;
         }
 
-
-        /// <summary>
-        ///
-        /// </summary>
-        private class DataRowDrop : DotLiquid.Drop
-        {
-            private readonly DataRow _dataRow;
-
-            public DataRowDrop( DataRow dataRow )
-            {
-                _dataRow = dataRow;
-            }
-
-            public override object BeforeMethod( string method )
-            {
-                if ( _dataRow.Table.Columns.Contains( method ) )
-                {
-                    return _dataRow[method];
-                }
-
-                return null;
-            }
-        }
     }
 }

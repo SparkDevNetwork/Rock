@@ -72,7 +72,6 @@ namespace Rock.Jobs
                     groupIds.Contains( gm.GroupId ) &&
                     gm.GroupMemberStatus == GroupMemberStatus.Active )
                     .ToList();
-
                 foreach ( GroupMember groupMember in groupMemberList )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
@@ -83,8 +82,13 @@ namespace Rock.Jobs
                     recipients.Add( new RecipientData( groupMember.Person.Email, mergeFields ) );
                 }
 
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-                Email.Send( emailTemplateGuid, recipients, appRoot );
+                if ( recipients.Any() )
+                {
+                    var emailMessage = new RockEmailMessage( emailTemplateGuid );
+                    emailMessage.SetRecipients( recipients );
+                    emailMessage.Send();
+                }
+
                 context.Result = string.Format( "{0} emails sent", recipients.Count() );
             }
         }

@@ -457,19 +457,28 @@
     <Compile Include="CheckIn\KioskScheduleAttendance.cs" />
     <Compile Include="Communication\BouncedEmail.cs" />
     <Compile Include="Communication\Email.cs" />
+    <Compile Include="Communication\CommunicationDetails.cs" />
     <Compile Include="Communication\IEmailProvider.cs" />
+    <Compile Include="Communication\ICommunicationDetails.cs" />
     <Compile Include="Communication\MediumComponent.cs" />
     <Compile Include="Communication\MediumContainer.cs" />
     <Compile Include="Communication\Medium\Email.cs" />
     <Compile Include="Communication\Medium\PushNotification.cs" />
     <Compile Include="Communication\Medium\Sms.cs" />
     <Compile Include="Communication\RecipientData.cs" />
+    <Compile Include="Communication\RockEmailMessage.cs" />
+    <Compile Include="Communication\RockMessage.cs" />
+    <Compile Include="Communication\RockPushMessage.cs" />
+    <Compile Include="Communication\RockSMSMessage.cs" />
     <Compile Include="Communication\SMTPComponent.cs" />
     <Compile Include="Communication\TransportComponent.cs" />
     <Compile Include="Communication\TransportContainer.cs" />
     <Compile Include="Communication\Transport\Firebase.cs" />
     <Compile Include="Communication\Transport\SMTP.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
+    <Compile Include="Configuration\AttributeValueConfig.cs" />
+    <Compile Include="Configuration\AttributeValuesConfig.cs" />
+    <Compile Include="Configuration\RockConfig.cs" />
     <Compile Include="Constants\DisplayStrings.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\BoundFieldTypeAttribute.cs" />
@@ -531,6 +540,8 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\InteractionChannelFieldType.cs" />
+    <Compile Include="Field\Types\CommunicationPreferenceFieldType.cs" />
     <Compile Include="Field\Types\DataViewsFieldType.cs" />
     <Compile Include="Field\Types\LavaFieldType.cs" />
     <Compile Include="Field\Types\AccountFieldType.cs" />
@@ -660,6 +671,7 @@
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
+    <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
     <Compile Include="Jobs\ProcessAnalyticsDimPerson.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
@@ -696,6 +708,8 @@
     <Compile Include="Lava\Blocks\RockEntity.cs" />
     <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
     <Compile Include="Lava\Blocks\Search.cs" />
+    <Compile Include="Lava\Blocks\Javascript.cs" />
+    <Compile Include="Lava\Blocks\Stylesheet.cs" />
     <Compile Include="Lava\Blocks\WebRequest.cs" />
     <Compile Include="Lava\Blocks\Sql.cs" />
     <Compile Include="Lava\Blocks\WorkflowActivate.cs" />
@@ -723,7 +737,7 @@
     <Compile Include="Model\AnalyticsDimFamilyHeadOfHousehold.cs" />
     <Compile Include="Model\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="Model\AnalyticsDimPersonCurrent.cs" />
-    <Compile Include="Model\AnalyticsDimDate.cs" />
+    <Compile Include="Model\AnalyticsSourceDate.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionType.cs" />
     <Compile Include="Model\AnalyticsFactAttendance.cs" />
     <Compile Include="Model\AnalyticsSourceAttendance.cs" />
@@ -743,6 +757,8 @@
     <Compile Include="Model\CodeGenerated\AnalyticsSourceAttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
     <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationTemplateAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\LavaShortcodeService.cs" />
     <Compile Include="Model\CodeGenerated\MetaFirstNameGenderLookupService.cs" />
     <Compile Include="Model\CodeGenerated\MetaLastNameLookupService.cs" />
@@ -753,9 +769,12 @@
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
+    <Compile Include="Model\CommunicationTemplateAttachment.cs" />
+    <Compile Include="Model\CommunicationAttachment.cs" />
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
+    <Compile Include="Model\InteractionComponent.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
     <Compile Include="Model\MetaLastNameLookup.cs" />
@@ -1080,6 +1099,7 @@
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\PersonalDevice.cs" />
     <Compile Include="Model\PersonAlias.cs" />
+    <Compile Include="Model\PersonalDeviceService.Partial.cs" />
     <Compile Include="Model\PersonAliasService.Partial.cs" />
     <Compile Include="Model\PersonBadge.cs" />
     <Compile Include="Model\PersonBadgeService.partial.cs" />
@@ -1132,6 +1152,7 @@
     <Compile Include="Reporting\DataFilter\Person\HasNoteFilter.cs" />
     <Compile Include="Reporting\DataSelect\FormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupAttributeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\GroupFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataTransform\Person\FatherTransform.cs" />
@@ -1141,6 +1162,7 @@
     <Compile Include="Reporting\DataTransform\Person\SpouseTransform.cs" />
     <Compile Include="Search\Other\Universal.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
+    <Compile Include="SystemGuid\Communication.cs" />
     <Compile Include="SystemGuid\InteractionChannel.cs" />
     <Compile Include="Transactions\DeleteIndexEntityTransaction.cs" />
     <Compile Include="Transactions\IndexEntityTransaction.cs" />
@@ -1235,11 +1257,13 @@
     <Compile Include="Plugin\HotFixes\024_PrayerRequestAttributes.cs" />
     <Compile Include="Plugin\HotFixes\030_MyConnectionOpportunitiesLava.cs" />
     <Compile Include="Plugin\HotFixes\031_AttendanceAnalyticsGivingId.cs" />
+    <Compile Include="Plugin\HotFixes\032_MigrationRollupsForV6_9.cs" />
     <Compile Include="Plugin\HotFixes\029_BatchDetailReopenBatchSecurity.cs" />
     <Compile Include="Plugin\HotFixes\025_PersonGivingEnvelopeAttribute.cs" />
     <Compile Include="Plugin\HotFixes\026_PersonEditConnectionRecordStatus.cs" />
     <Compile Include="Plugin\HotFixes\027_AddCheckinFeatures.cs" />
     <Compile Include="Plugin\HotFixes\028_CheckinTextSettings.cs" />
+    <Compile Include="Plugin\HotFixes\033_ConnectionOpportunityCounts.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1375,9 +1399,11 @@
     <Compile Include="Utility\Async.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExcelHelper.cs" />
+    <Compile Include="Utility\ExtensionMethods\DataTable.cs" />
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
+    <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Web\Cache\ContentChannelCache.cs" />
     <Compile Include="Web\Cache\LavaShortcodeCache.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
@@ -1804,6 +1830,7 @@
     <Compile Include="Web\UI\RockPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Web\UI\RouteUtils.cs" />
     <Compile Include="Web\UI\Validation\DataAnnotationValidator.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Web\Utilities\RockUpdateHelper.cs" />
@@ -1880,6 +1907,7 @@
     <Compile Include="Workflow\Action\People\PersonTagAdd.cs" />
     <Compile Include="Workflow\Action\People\PersonTagRemove.cs" />
     <Compile Include="Workflow\Action\People\SetPersonAttribute.cs" />
+    <Compile Include="Workflow\Action\Utility\InteractionAdd.cs" />
     <Compile Include="Workflow\Action\Utility\CreateShortLink.cs" />
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />

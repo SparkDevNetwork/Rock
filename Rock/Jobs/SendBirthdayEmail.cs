@@ -114,8 +114,10 @@ namespace Rock.Jobs
                 recipients.Add( new RecipientData( person.Email, mergeFields ) );
             }
 
-            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-            Email.Send( systemEmail.Guid, recipients, appRoot );
+            var emailMessage = new RockEmailMessage( systemEmail.Guid );
+            emailMessage.SetRecipients( recipients );
+            emailMessage.Send();
+
             context.Result = string.Format( "{0} birthday emails sent", recipients.Count() );
         }
     }

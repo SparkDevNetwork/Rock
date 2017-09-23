@@ -4,6 +4,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlView" runat="server">
             <asp:HiddenField ID="hfGroupId" runat="server" />
+            <asp:HiddenField ID="hfGroupMemberId" runat="server" />
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title">
@@ -11,26 +12,25 @@
                         <asp:Literal ID="lTitle" runat="server" />
                     </h1>
                 </div>
-                <div class="panel-body">
-                    
-                    <div class="well">
-                        <div class="clearfix">
-                            <b>Total Individual Goals</b>
-                            <p class="pull-right"><strong>$<%=this.GroupContributionTotal%>/$<%=this.GroupIndividualFundraisingGoal%></strong></p>
-                        </div>
+                
+                <asp:Panel ID="pnlHeader" runat="server" class="bg-color padding-t-md padding-l-md padding-r-md padding-b-sm">
+                    <div class="clearfix">
+                        <b>Total Individual Goals</b>
+                        <p class="pull-right"><strong>$<%=this.GroupContributionTotal%>/$<%=this.GroupIndividualFundraisingGoal%></strong></p>
+                    </div>
 
-                         <div class="progress">
-                            <div class="progress-bar progress-bar-<%=this.ProgressCssClass %>" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
-                                <%=this.PercentComplete%>% Complete
-                            </div>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-<%=this.ProgressCssClass %>" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
+                            <%=this.PercentComplete%>% Complete
                         </div>
                     </div>
+                </asp:Panel>
                     
-
+                <ul class="list-group">
                     <asp:Repeater ID="rptFundingProgress" runat="server">
                         <ItemTemplate>
-                            <hr />
-                            <div class="row">
+                            <li class="list-group-item">
+                                <div class="row">
                                 <div class="col-md-12">
                                     <p class="pull-right">$<%#Eval("ContributionTotal") %>/$<%#Eval("IndividualFundraisingGoal") %></p>
 
@@ -45,11 +45,10 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </li>
                         </ItemTemplate>
                     </asp:Repeater>
-
-                </div>
+                </ul>
             </div>
         </asp:Panel>
     </ContentTemplate>

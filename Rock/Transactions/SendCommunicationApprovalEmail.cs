@@ -23,6 +23,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Jobs;
 using Rock.Communication;
+using Rock.Web.Cache;
 
 namespace Rock.Transactions
 {
@@ -67,43 +68,39 @@ namespace Rock.Transactions
                 if ( communication != null && communication.Status == CommunicationStatus.PendingApproval )
                 {
                     // get notification group
-                    var approvers = new GroupService( rockContext ).Get(SystemGuid.Group.GROUP_COMMUNICATION_APPROVERS.AsGuid());
+                    var groupGuid = SystemGuid.Group.GROUP_COMMUNICATION_APPROVERS.AsGuid();
+                    var approvers = new GroupMemberService( rockContext ).Queryable()
+                        .Where( m =>
+                            m.Group.Guid == groupGuid &&
+                            m.GroupMemberStatus == GroupMemberStatus.Active )
+                        .ToList();
 
-                    if ( approvers != null )
+                    if ( approvers.Any() )
                     {
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-
                         string fromName = Rock.Web.Cache.GlobalAttributesCache.Value("OrganizationName");
                         string fromEmail = Rock.Web.Cache.GlobalAttributesCache.Value( "OrganizationEmail" );
                         string subject = "Pending Communication Requires Approval";
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
                         string communicationDetails = string.Empty;
-                        string typeName = string.Empty;
+                        string typeName = communication.CommunicationType.ConvertToString();
 
                         // get custom details by type
-                        switch ( communication.Medium.TypeName )
+                        switch ( communication.CommunicationType )
                         {
-                            case "Rock.Communication.Medium.Email":
-                                string emailFromName = communication.GetMediumDataValue( "FromName" );
-                                string emailFromAddress = communication.GetMediumDataValue( "FromAddress" );
-                                communicationDetails = string.Format( @"
-                                        <strong>From Name:</strong> {0}<br/>
-                                        <strong>From Address:</strong> {1}<br/>
-                                        <strong>Subject:</strong> {2}<br/>"
-                                            , emailFromName
-                                            , emailFromAddress
-                                            , communication.Subject );
-                                typeName = "Email";
+                            case CommunicationType.Email:
+                                communicationDetails = $@"
+                                        <strong>From Name:</strong> {communication.FromName}<br/>
+                                        <strong>From Address:</strong> {communication.FromEmail}<br/>
+                                        <strong>Subject:</strong> {communication.Subject}<br/>";
                                 break;
-                            case "Rock.Communication.Medium.Sms":
-                                int fromValueId = communication.GetMediumDataValue( "FromValue" ).AsInteger();
-                                var fromValue = new DefinedValueService( rockContext ).Get( fromValueId );
-                                typeName = "SMS";
-
-                                if ( fromValue != null )
+                            case CommunicationType.SMS:
+                                if ( communication.SMSFromDefinedValue != null )
                                 {
-                                    communicationDetails = string.Format( "<strong>SMS Number:</strong> {0} ({1})<br/>", fromValue.Description, fromValue.Value );
+                                    communicationDetails = $"<strong>SMS Number:</strong> {communication.SMSFromDefinedValue.Description} ({communication.SMSFromDefinedValue.Value})<br/>";
                                 }
+                                break;
+                            case CommunicationType.PushNotification:
+                                communicationDetails = $"<strong>Title:</strong> {communication.PushTitle}<br/>";
                                 break;
                         }
 
@@ -112,9 +109,8 @@ namespace Rock.Transactions
                         {
                             ApprovalPageUrl = string.Format( "{0}Communication/{1}", Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" ), communication.Id );
                         }
-                        
 
-                        foreach ( var approver in approvers.Members )
+                        foreach ( var approver in approvers )
                         {
                             string message = string.Format( @"
                                     {{{{ 'Global' | Attribute:'EmailHeader' }}}}
@@ -141,11 +137,15 @@ namespace Rock.Transactions
                                                     communicationDetails,
                                                     communication.GetRecipientCount(rockContext),
                                                     ApprovalPageUrl);
-                            
-                            var recipients = new List<string>();
-                            recipients.Add( approver.Person.Email );
 
-                            Email.Send( fromEmail, fromName, subject, recipients, message.ResolveMergeFields( mergeFields ), appRoot, string.Empty, null, false );
+                            var emailMessage = new RockEmailMessage();
+                            emailMessage.AddRecipient( approver.Person.Email );
+                            emailMessage.FromEmail = fromEmail;
+                            emailMessage.FromName = fromName;
+                            emailMessage.Subject = subject;
+                            emailMessage.Message = message;
+                            emailMessage.AppRoot = appRoot;
+                            emailMessage.Send();
                         }
                     }
                 }

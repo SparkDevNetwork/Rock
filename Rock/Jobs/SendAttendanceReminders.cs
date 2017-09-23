@@ -203,9 +203,11 @@ namespace Rock.Jobs
                         var recipients = new List<RecipientData>();
                         recipients.Add( new RecipientData( leader.Person.Email, mergeObjects ) );
 
-                        Email.Send( dataMap.GetString( "SystemEmail" ).AsGuid(), recipients );
-                        attendanceRemindersSent++;
+                        var emailMessage = new RockEmailMessage( dataMap.GetString( "SystemEmail" ).AsGuid() );
+                        emailMessage.SetRecipients( recipients );
+                        emailMessage.Send();
 
+                        attendanceRemindersSent++;
                     }
                 }
             }

@@ -35,10 +35,10 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public Guid AliasPersonGuid { get; set; }
+        public Guid? AliasPersonGuid { get; set; }
 
         /// <summary />
-        public int AliasPersonId { get; set; }
+        public int? AliasPersonId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }

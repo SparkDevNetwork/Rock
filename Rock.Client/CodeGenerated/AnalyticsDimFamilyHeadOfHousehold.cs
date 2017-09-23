@@ -259,7 +259,7 @@ namespace Rock.Client
     public partial class AnalyticsDimFamilyHeadOfHousehold : AnalyticsDimFamilyHeadOfHouseholdEntity
     {
         /// <summary />
-        public AnalyticsDimDate BirthDateDim { get; set; }
+        public AnalyticsSourceDate BirthDateDim { get; set; }
 
     }
 }

@@ -495,6 +495,7 @@ namespace RockWeb.Blocks.Groups
             groupType.ShowInGroupList = cbShowInGroupList.Checked;
             groupType.ShowInNavigation = cbShowInNavigation.Checked;
             groupType.ShowConnectionStatus = cbShowConnectionStatus.Checked;
+            groupType.ShowMaritalStatus = cbShowMaritalStatus.Checked;
             groupType.IconCssClass = tbIconCssClass.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
             groupType.GroupsRequireCampus = cbGroupsRequireCampus.Checked;
@@ -780,6 +781,7 @@ namespace RockWeb.Blocks.Groups
             cbShowInGroupList.Checked = groupType.ShowInGroupList;
             cbShowInNavigation.Checked = groupType.ShowInNavigation;
             cbShowConnectionStatus.Checked = groupType.ShowConnectionStatus;
+            cbShowMaritalStatus.Checked = groupType.ShowMaritalStatus;
             tbIconCssClass.Text = groupType.IconCssClass;
 
             // Locations

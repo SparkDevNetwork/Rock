@@ -257,13 +257,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the transaction date.
+        /// Gets or sets the attendance date.
         /// </summary>
         /// <value>
-        /// The transaction date.
+        /// The attendance date.
         /// </value>
         [DataMember]
-        public virtual AnalyticsDimDate AttendanceDate { get; set; }
+        public virtual AnalyticsSourceDate AttendanceDate { get; set; }
 
         /// <summary>
         /// Gets or sets the location.
@@ -289,8 +289,8 @@ namespace Rock.Model
         /// </summary>
         public AnalyticsSourceAttendanceConfiguration()
         {
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier TransactionDates that aren't in the AnalyticsDimDate table
-            // and so that the AnalyticsDimDate can be rebuilt from scratch as needed
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier TransactionDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
             this.HasRequired( t => t.AttendanceDate ).WithMany().HasForeignKey( t => t.AttendanceDateKey ).WillCascadeOnDelete( false );
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views

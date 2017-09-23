@@ -202,6 +202,15 @@ namespace Rock.Rest.Controllers
                                     }
                                 }
 
+                                if ( type == typeof( Rock.Model.Person ) )
+                                {
+                                    items.Add( new TreeViewItem
+                                    {
+                                        Id = id + "|" + "Campus",
+                                        Name = "Campus"
+                                    } );
+                                }
+
                                 if ( entityType.IsEntity )
                                 {
                                     foreach ( Rock.Model.Attribute attribute in new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id ) )
