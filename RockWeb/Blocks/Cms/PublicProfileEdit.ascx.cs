@@ -48,6 +48,19 @@ namespace RockWeb.Blocks.Cms
 
     public partial class PublicProfileEdit : RockBlock
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the Role Type. Used to help in loading Attribute panel
+        /// </summary>
+        protected int? RoleType
+        {
+            get { return ViewState["RoleType"] as int? ?? null; }
+            set { ViewState["RoleType"] = value; }
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -111,6 +124,10 @@ namespace RockWeb.Blocks.Cms
                                 pnlFamilyAttributes.Visible = false;
                             }
                         }
+                    }
+                    if ( person == null && RoleType != null )
+                    {
+                        DisplayPersonAttributeOnRoleType( RoleType );
                     }
                 }
             }
@@ -735,37 +752,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rblRole_SelectedIndexChanged( object sender, EventArgs e )
         {
-            GroupTypeRoleService groupTypeRoleService = new GroupTypeRoleService( new RockContext() );
-            List<Guid> attributeGuidList = new List<Guid>();
-            var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-            var groupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
             var selectedId = rblRole.SelectedValueAsId();
-            if ( selectedId.HasValue )
-            {
-                if ( groupTypeRoleService.Queryable().Where( gr =>
-                               gr.GroupType.Guid == groupTypeGuid &&
-                               gr.Guid == adultGuid &&
-                               gr.Id == selectedId ).Any() )
-                {
-                    attributeGuidList = GetAttributeValue( "PersonAttributes(adults)" ).SplitDelimitedValues().AsGuidList();
-                    ddlGradePicker.Visible = false;
-                }
-                else
-                {
-                    attributeGuidList = GetAttributeValue( "PersonAttributes(children)" ).SplitDelimitedValues().AsGuidList();
-                    ddlGradePicker.Visible = true;
-                }
-
-                if ( attributeGuidList.Any() )
-                {
-                    pnlPersonAttributes.Visible = true;
-                    DisplayEditAttributes( new Person(), attributeGuidList, phPersonAttributes, pnlPersonAttributes, true );
-                }
-                else
-                {
-                    pnlPersonAttributes.Visible = false;
-                }
-            }
+            DisplayPersonAttributeOnRoleType( selectedId );
+            RoleType = selectedId;
         }
 
         #endregion
@@ -935,6 +924,7 @@ namespace RockWeb.Blocks.Cms
                 var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValueAsId().Value );
                 if ( group != null )
                 {
+                    RoleType = null;
                     hfPersonId.Value = personId.ToString();
                     var person = new Person();
                     if ( personId == 0 )
@@ -1138,6 +1128,46 @@ namespace RockWeb.Blocks.Cms
             }
 
             return attributeGuidList;
+        }
+
+        /// <summary>
+        /// Display Person Attribute on the Basis of Role
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
+        private void DisplayPersonAttributeOnRoleType( int? selectedId )
+        {
+            GroupTypeRoleService groupTypeRoleService = new GroupTypeRoleService( new RockContext() );
+            List<Guid> attributeGuidList = new List<Guid>();
+            var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+            var groupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+
+            if ( selectedId.HasValue )
+            {
+                if ( groupTypeRoleService.Queryable().Where( gr =>
+                               gr.GroupType.Guid == groupTypeGuid &&
+                               gr.Guid == adultGuid &&
+                               gr.Id == selectedId ).Any() )
+                {
+                    attributeGuidList = GetAttributeValue( "PersonAttributes(adults)" ).SplitDelimitedValues().AsGuidList();
+                    ddlGradePicker.Visible = false;
+                }
+                else
+                {
+                    attributeGuidList = GetAttributeValue( "PersonAttributes(children)" ).SplitDelimitedValues().AsGuidList();
+                    ddlGradePicker.Visible = true;
+                }
+
+                if ( attributeGuidList.Any() )
+                {
+                    pnlPersonAttributes.Visible = true;
+                    DisplayEditAttributes( new Person(), attributeGuidList, phPersonAttributes, pnlPersonAttributes, true );
+                }
+                else
+                {
+                    pnlPersonAttributes.Visible = false;
+                }
+            }
         }
 
         /// <summary>
