@@ -40,6 +40,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.PersonFieldType" })]
 
     [Rock.Attribute.GroupAndRoleFieldAttribute( "Group and Role", "Group/Role to add the person to. Leave role blank to use the default role for that group.", "Group", true, key: "GroupAndRole" )]
+    [EnumField( "Group Member Status", "The  status to set the user to in the group.", typeof( GroupMemberStatus ), true )]
     public class AddPersonToGroup : ActionComponent
     {
         /// <summary>
@@ -143,7 +144,7 @@ namespace Rock.Workflow.Action
                 groupMember.PersonId = person.Id;
                 groupMember.GroupId = group.Id;
                 groupMember.GroupRoleId = groupRoleId.Value;
-                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                groupMember.GroupMemberStatus = this.GetAttributeValue( action, "GroupMemberStatus" ).ConvertToEnum<GroupMemberStatus>( GroupMemberStatus.Active );
                 if ( groupMember.IsValidGroupMember( rockContext ) )
                 {
                     groupMemberService.Add( groupMember );
