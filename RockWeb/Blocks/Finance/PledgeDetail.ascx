@@ -31,7 +31,7 @@
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlGroup" runat="server" Visible="false" DataTextField="Name" DataValueField="GroupId" />
                             <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
-                            <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" Required="True" />
+                            <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" MinimumValue="0" Required="True" />
                         </div>
                         <div class="col-md-6">
                             <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" />
