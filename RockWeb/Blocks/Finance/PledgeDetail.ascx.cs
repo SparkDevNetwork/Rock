@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
@@ -45,6 +46,8 @@ namespace RockWeb.Blocks.Finance
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbInvalid.Visible = false;
 
             if ( !IsPostBack )
             {
@@ -97,7 +100,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !pledge.IsValid )
             {
-                // Controls will render the error messages
+                ShowInvalidResults( pledge.ValidationResults );
                 return;
             }
 
@@ -238,6 +241,17 @@ namespace RockWeb.Blocks.Finance
                 }
             }
         }
+
+        /// <summary>
+        /// Shows the invalid results.
+        /// </summary>
+        /// <param name="validationResults">The validation results.</param>
+        private void ShowInvalidResults( List<ValidationResult> validationResults )
+        {
+            nbInvalid.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>", validationResults.AsDelimited( "</li><li>" ) );
+            nbInvalid.Visible = true;
+        }
+
 
     }
 }

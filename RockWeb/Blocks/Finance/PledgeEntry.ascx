@@ -4,6 +4,7 @@
     <ContentTemplate>
 
         <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+        <Rock:NotificationBox ID="nbInvalid" runat="server" NotificationBoxType="Danger" Visible="false" />
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
         <asp:Panel ID="pnlAddPledge" runat="server" CssClass="panel panel-block">
@@ -22,7 +23,7 @@
                     <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email" Required="true" />
 
                     <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
-                    <Rock:CurrencyBox ID="tbTotalAmount" runat="server" Label="Total Pledge Amount" Required="true" />
+                    <Rock:CurrencyBox ID="tbTotalAmount" runat="server" Label="Total Pledge Amount" MinimumValue="0" Required="true" />
                     <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Gift Frequency" />
 
                     <div class="actions">
