@@ -500,6 +500,7 @@ namespace Rock.Web.UI
             var stopwatchInitEvents = Stopwatch.StartNew();
             bool showDebugTimings = this.PageParameter( "ShowDebugTimings" ).AsBoolean();
             bool canAdministratePage = false;
+            bool canEditPage = false;
 
             if ( showDebugTimings )
             {
@@ -846,6 +847,7 @@ namespace Rock.Web.UI
 
                     Page.Trace.Warn( "Checking if user can administer" );
                     canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                    canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                     if ( showDebugTimings )
                     {
@@ -1056,7 +1058,7 @@ namespace Rock.Web.UI
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlockOnPage ) )
+                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlockOnPage || canEditPage ) )
                     {
                         // Add the page admin script
                         AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin", false );
@@ -1084,7 +1086,7 @@ namespace Rock.Web.UI
                         aBlockConfig.Controls.Add( iBlockConfig );
                         iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
 
-                        if ( canAdministratePage )
+                        if ( canEditPage || canAdministratePage)
                         {
                             // RockPage Properties
                             HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
@@ -1098,7 +1100,10 @@ namespace Rock.Web.UI
                             HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                             aAttributes.Controls.Add( iAttributes );
                             iAttributes.Attributes.Add( "class", "fa fa-cog" );
-
+						}
+						
+                        if ( canAdministratePage )
+                        {
                             // Child Pages
                             HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aChildPages );
