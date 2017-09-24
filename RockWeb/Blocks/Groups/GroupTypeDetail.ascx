@@ -41,6 +41,7 @@
                 <div id="pnlEditDetails" runat="server">
 
                     <asp:ValidationSummary ID="valGroupTypeDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:CustomValidator ID="cvGroupType" runat="server" Display="None" />
 
                     <div class="row">
                         <div class="col-md-6">
