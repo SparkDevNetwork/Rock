@@ -491,7 +491,8 @@ namespace RockWeb.Blocks.Groups
 
             if ( !groupType.IsValid )
             {
-                // Controls will render the error messages                    
+                cvGroupType.IsValid = groupType.IsValid;
+                cvGroupType.ErrorMessage = groupType.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
             }
 
