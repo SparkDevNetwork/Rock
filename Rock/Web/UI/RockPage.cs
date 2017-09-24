@@ -1242,14 +1242,17 @@ namespace Rock.Web.UI
                         buttonBar.Attributes.Add( "class", "button-bar" );
 
                         // RockBlock Config
-                        HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
-                        buttonBar.Controls.Add( aBlockConfig );
-                        aBlockConfig.Attributes.Add( "class", "btn block-config" );
-                        aBlockConfig.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showBlockConfig();" );
-                        aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
-                        HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
-                        aBlockConfig.Controls.Add( iBlockConfig );
-                        iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
+                        if ( canAdministratePage || canAdministrateBlockOnPage )
+                        {
+                            HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aBlockConfig );
+                            aBlockConfig.Attributes.Add( "class", "btn block-config" );
+                            aBlockConfig.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showBlockConfig();" );
+                            aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
+                            HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
+                            aBlockConfig.Controls.Add( iBlockConfig );
+                            iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
+                        }
 
                         if ( canEditPage || canAdministratePage)
                         {
