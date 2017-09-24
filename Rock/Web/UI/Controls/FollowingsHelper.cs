@@ -74,7 +74,7 @@ namespace Rock.Web.UI.Controls
                         follower.Id,
                         follower.PrimaryAliasId );
 
-                ScriptManager.RegisterStartupScript( followControl, followControl.GetType(), "following", script, true );
+                ScriptManager.RegisterStartupScript( followControl, followControl.GetType(), followControl.ClientID + "_following", script, true );
             }
         }
     }
