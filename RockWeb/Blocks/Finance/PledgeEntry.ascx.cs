@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
@@ -83,6 +84,8 @@ namespace RockWeb.Blocks.Finance
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbInvalid.Visible = false;
 
             if ( !IsPostBack )
             {
@@ -161,41 +164,48 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            financialPledgeService.Add( financialPledge );
-
-            rockContext.SaveChanges();
-
-            // populate account so that Liquid can access it
-            financialPledge.Account = financialAccount;
-
-            // populate PledgeFrequencyValue so that Liquid can access it
-            financialPledge.PledgeFrequencyValue = definedValueService.Get( financialPledge.PledgeFrequencyValueId ?? 0 );
-
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "Person", person );
-            mergeFields.Add( "FinancialPledge", financialPledge );
-            mergeFields.Add( "PledgeFrequency", pledgeFrequencySelection );
-            mergeFields.Add( "Account", financialAccount );
-            lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeFields );
-
-            // Resolve any dynamic url references
-            string appRoot = ResolveRockUrl( "~/" );
-            string themeRoot = ResolveRockUrl( "~~/" );
-            lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-
-            lReceipt.Visible = true;
-            pnlAddPledge.Visible = false;
-            pnlConfirm.Visible = false;
-
-            // if a ConfirmationEmailTemplate is configured, send an email
-            var confirmationEmailTemplateGuid = GetAttributeValue( "ConfirmationEmailTemplate" ).AsGuidOrNull();
-            if ( confirmationEmailTemplateGuid.HasValue )
+            if ( financialPledge.IsValid )
             {
-                var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid.Value );
-                emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
-                emailMessage.AppRoot = ResolveRockUrl( "~/" );
-                emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
-                emailMessage.Send();
+                financialPledgeService.Add( financialPledge );
+
+                rockContext.SaveChanges();
+
+                // populate account so that Liquid can access it
+                financialPledge.Account = financialAccount;
+
+                // populate PledgeFrequencyValue so that Liquid can access it
+                financialPledge.PledgeFrequencyValue = definedValueService.Get( financialPledge.PledgeFrequencyValueId ?? 0 );
+
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "Person", person );
+                mergeFields.Add( "FinancialPledge", financialPledge );
+                mergeFields.Add( "PledgeFrequency", pledgeFrequencySelection );
+                mergeFields.Add( "Account", financialAccount );
+                lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeFields );
+
+                // Resolve any dynamic url references
+                string appRoot = ResolveRockUrl( "~/" );
+                string themeRoot = ResolveRockUrl( "~~/" );
+                lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                lReceipt.Visible = true;
+                pnlAddPledge.Visible = false;
+                pnlConfirm.Visible = false;
+
+                // if a ConfirmationEmailTemplate is configured, send an email
+                var confirmationEmailTemplateGuid = GetAttributeValue( "ConfirmationEmailTemplate" ).AsGuidOrNull();
+                if ( confirmationEmailTemplateGuid.HasValue )
+                {
+                    var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid.Value );
+                    emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                    emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                    emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                    emailMessage.Send();
+                }
+            }
+            else
+            {
+                ShowInvalidResults( financialPledge.ValidationResults );
             }
         }
 
@@ -372,6 +382,16 @@ namespace RockWeb.Blocks.Finance
             }
 
             return person;
+        }
+
+        /// <summary>
+        /// Shows the invalid results.
+        /// </summary>
+        /// <param name="validationResults">The validation results.</param>
+        private void ShowInvalidResults( List<ValidationResult> validationResults )
+        {
+            nbInvalid.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>", validationResults.AsDelimited( "</li><li>" ) );
+            nbInvalid.Visible = true;
         }
 
         /// <summary>
