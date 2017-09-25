@@ -89,28 +89,64 @@ namespace Rock.Lava.Blocks
             {
                 base.Render( context, twJavascript );
 
-                var javascript = $@"(function(){{
-  {twJavascript.ToString()}
-}})();";
-                if ( parms.ContainsKey("id") )
+                if ( parms["url"].IsNullOrWhiteSpace() )
                 {
-                    var identifier = parms["id"];
-                    if ( identifier.IsNotNullOrWhitespace() )
-                    {
-                        var controlId = "js-" + identifier;
+                    string javascript = "";
 
-                        var scriptControl = page.Header.FindControl( controlId );
-                        if (scriptControl == null )
+                    if ( !parms["disableanonymousfunction"].AsBoolean() )
+                    {
+                        javascript = $@"(function(){{
+  {twJavascript.ToString()}
+}})({parms["references"]});";
+                    }
+                    else
+                    {
+                        javascript = twJavascript.ToString();
+                    }
+
+                    if ( parms.ContainsKey( "id" ) )
+                    {
+                        var identifier = parms["id"];
+                        if ( identifier.IsNotNullOrWhitespace() )
                         {
-                            scriptControl = new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script>{javascript}</script>{Environment.NewLine}" );
-                            scriptControl.ID = controlId;
-                            page.Header.Controls.Add( scriptControl );
+                            var controlId = "js-" + identifier;
+
+                            var scriptControl = page.Header.FindControl( controlId );
+                            if ( scriptControl == null )
+                            {
+                                scriptControl = new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script>{javascript}</script>{Environment.NewLine}" );
+                                scriptControl.ID = controlId;
+                                page.Header.Controls.Add( scriptControl );
+                            }
                         }
+                    }
+                    else
+                    {
+                        page.Header.Controls.Add( new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script>{javascript}</script>{Environment.NewLine}" ) );
                     }
                 }
                 else
                 {
-                    page.Header.Controls.Add( new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script>{javascript}</script>{Environment.NewLine}" ) );
+                    if ( parms.ContainsKey( "id" ) )
+                    {
+                        var identifier = parms["id"];
+                        if ( identifier.IsNotNullOrWhitespace() )
+                        {
+                            var controlId = "js-" + identifier;
+
+                            var scriptControl = page.Header.FindControl( controlId );
+                            if ( scriptControl == null )
+                            {
+                                scriptControl = new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script src='{parms["url"]}' type='text/javascript'></script>{Environment.NewLine}" );
+                                scriptControl.ID = controlId;
+                                page.Header.Controls.Add( scriptControl );
+                            }
+                        }
+                    }
+                    else
+                    { 
+                        page.Header.Controls.Add( new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script src='{parms["url"]}' type='text/javascript'></script>{Environment.NewLine}" ) );
+                    }
                 }
             }
         }
@@ -148,6 +184,9 @@ namespace Rock.Lava.Blocks
 
             var parms = new Dictionary<string, string>();
             parms.Add( "cacheduration", "0" );
+            parms.Add( "references", string.Empty );
+            parms.Add( "disableanonymousfunction", "false" );
+            parms.Add( "url", string.Empty );
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()
