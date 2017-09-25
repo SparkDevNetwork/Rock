@@ -38,6 +38,8 @@ namespace RockWeb.Blocks.Finance
     [Description( "Builds a list of all financial transactions which can be filtered by date, account, transaction type, etc." )]
 
     [ContextAware]
+    [SecurityAction( "FilterByPerson", "The roles and/or users that can filter transactions by person." )]
+
     [LinkedPage( "Detail Page", order: 0 )]
     [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false, order: 1 )]
     [BooleanField( "Show Only Active Accounts on Filter", "If account filter is displayed, only list active accounts", false, "", 2, "ActiveAccountsOnlyFilter" )]
@@ -935,7 +937,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             // don't show the person picker if the the current context is already a specific person
-            if ( this.ContextEntity() is Person )
+            if ( this.ContextEntity() is Person || !IsUserAuthorized( "FilterByPerson" ) )
             {
                 ppPerson.Visible = false;
             }

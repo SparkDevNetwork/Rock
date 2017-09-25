@@ -175,6 +175,7 @@ namespace Rock.Model
             get
             {
                 var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( "Delete", "The roles and/or users that can delete a batch." );
                 supportedActions.AddOrReplace( "ReopenBatch", "The roles and/or users that can reopen a closed batch." );
                 return supportedActions;
             }

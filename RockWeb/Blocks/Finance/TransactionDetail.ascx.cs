@@ -1098,6 +1098,7 @@ namespace RockWeb.Blocks.Finance
             FinancialTransaction txn = null;
 
             bool editAllowed = UserCanEdit;
+            bool refundAllowed = false;
 
             var rockContext = new RockContext();
 
@@ -1116,6 +1117,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     editAllowed = txn.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 }
+                refundAllowed = txn != null && txn.IsAuthorized( "Refund", CurrentPerson );
             }
 
             bool batchEditAllowed = true;
@@ -1169,7 +1171,7 @@ namespace RockWeb.Blocks.Finance
             nbEditModeMessage.Text = string.Empty;
 
             lbEdit.Visible = editAllowed && batchEditAllowed;
-            lbRefund.Visible = editAllowed && batchEditAllowed && txn.RefundDetails == null;
+            lbRefund.Visible = refundAllowed && batchEditAllowed && txn.RefundDetails == null;
             lbAddTransaction.Visible = editAllowed && batch != null && batch.Status != BatchStatus.Closed;
 
             if ( !editAllowed )
@@ -1700,7 +1702,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     var txnService = new FinancialTransactionService( rockContext );
                     var txn = txnService.Get( txnId.Value );
-                    if ( txn != null )
+                    if ( txn != null && txn.IsAuthorized( "Refund", CurrentPerson ) )
                     {
                         var totalAmount = txn.TotalAmount;
                         var otherAmounts = new FinancialTransactionDetailService( rockContext )
