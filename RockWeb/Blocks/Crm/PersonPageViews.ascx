@@ -5,10 +5,10 @@
         
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title margin-t-sm"><i class="fa fa-desktop"></i> <asp:Literal ID="lPersonName" runat="server" /></h1>
-                    <div class="form-horizontal pull-right clearfix">
-                        <Rock:DateRangePicker ID="drpDateFilter"  CssClass="pull-left" runat="server" Label="Date Filter"  /> 
-                        <asp:Button ID="btnFilter" runat="server" Text="Filter" CssClass="btn btn-action btn-sm pull-left margin-t-lg" OnClick="btnFilter_Click" />
+                    <h1 class="panel-title"><i class="fa fa-desktop"></i> <asp:Literal ID="lPersonName" runat="server" /></h1>
+                    <div class="form-inline pull-right clearfix hidden-xs">
+                        <Rock:DateRangePicker ID="drpDateFilter" runat="server" Label="Date Filter"  /> 
+                        <asp:Button ID="btnFilter" runat="server" Text="Filter" CssClass="btn btn-action btn-xs" OnClick="btnFilter_Click" />
                     </div>
                 </div>
                 <div class="panel-body">
