@@ -208,7 +208,7 @@
             <Content>
                 <asp:ValidationSummary ID="valGroupDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupDetails" />
                 <Rock:NotificationBox ID="nbInvalidGroupType" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Group Type" />
-                <Rock:GroupPicker ID="gpOpportunityGroup" runat="server" Label="Select Group" ValidationGroup="GroupDetails" />
+                <Rock:GroupPicker ID="gpOpportunityGroup" runat="server" Label="Select Group" AllowMultiSelect="true" ValidationGroup="GroupDetails" />
             </Content>
         </Rock:ModalDialog>
 
