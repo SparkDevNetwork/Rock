@@ -202,6 +202,14 @@ namespace Rock.Web.UI.Controls
         public HelpBlock HelpBlock { get; set; }
 
         /// <summary>
+        /// Gets or sets the placeholder text.
+        /// </summary>
+        /// <value>
+        /// The placeholder text.
+        /// </value>
+        public string Placeholder { get; set; }
+
+        /// <summary>
         /// Gets or sets the warning block.
         /// </summary>
         /// <value>
@@ -319,10 +327,10 @@ namespace Rock.Web.UI.Controls
             script.AppendFormat( @"
     $('#{0}').chosen({{
         width: '100%',
-        placeholder_text_multiple: ' ',
+        placeholder_text_multiple: '{1}',
         placeholder_text_single: ' '
     }});
-", this.ClientID );
+", this.ClientID, this.Placeholder.IsNotNullOrWhitespace() ? this.Placeholder : " " );
 
             if ( DisplayDropAsAbsolute )
             {
