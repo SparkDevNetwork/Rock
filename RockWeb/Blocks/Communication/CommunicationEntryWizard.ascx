@@ -918,8 +918,11 @@
                         });
                 }
 
+                $('.js-saveeditorhtml').off('click');
+                $('.js-wizard-navigation').off('click');
+
                 // save the editor html (minus the editor components) to a hidden field
-                $('.js-saveeditorhtml').off('click').on('click', function ()
+                $('.js-saveeditorhtml').on('click', function ()
                 {
                     var $editorIframe = $('#<%=ifEmailDesigner.ClientID%>');
                     var $editorHtml = $editorIframe.contents().find('HTML').clone();
@@ -933,7 +936,7 @@
                 });
 
                 // make sure scroll position is set to top after navigating (so that stuff doesn't roll out of view if navigating from a tall to a short height )
-                $('.js-wizard-navigation').off('click').on('click', function ()
+                $('.js-wizard-navigation').on('click', function ()
                 {
                     $('html, body').animate({
                         scrollTop: $('#<%=upnlContent.ClientID%>')
