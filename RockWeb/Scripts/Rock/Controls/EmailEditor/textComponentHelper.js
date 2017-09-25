@@ -32,7 +32,7 @@
           // just keep the numeric portion in case they included alpha chars
           $(this).val(parseFloat($(this).val()) || '');
 
-          self.setMargins();
+          self.setPadding();
         });
 
         $('.js-component-text-lineheight').on('change', function ()
@@ -94,7 +94,7 @@
 
         $innerWrapper.css('border-width', borderWidth);
       },
-      setMargins: function ()
+      setPadding: function ()
       {
         var $innerWrapper = Rock.controls.emailEditor.$currentTextComponent.find('.js-component-text-wrapper');
         $innerWrapper

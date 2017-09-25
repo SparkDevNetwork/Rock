@@ -381,6 +381,150 @@
                                     <!-- Section Properties -->
                                     <div class="propertypanel propertypanel-section" data-component="section" style="display: none;">
 						                <h4 class="propertypanel-title">Section</h4>
+                                        <div id="component-section-column1">
+                                            <span class="label label-default">Column 1</span>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-section-backgroundcolor-1">Background Color</label>
+									                    <div id="component-section-backgroundcolor-1" class="input-group colorpicker-component">
+										                    <input type="text" value="" class="form-control" />
+										                    <span class="input-group-addon"><i></i></span>
+									                    </div>
+								                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-top-1">Padding Top</label>
+                                                        <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-1" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-left-1">Padding Left</label>
+									                    <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-1" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-bottom-1">Padding Bottom</label>
+									                    <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-1" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-right-1">Padding Right</label>
+									                    <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-1" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                </div>
+                                            </div> 
+                                        </div>
+
+                                        <div id="component-section-column2">
+                                            <hr class="margin-all-sm">
+                                            <span class="label label-default">Column 2</span>
+
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-section-backgroundcolor-2">Background Color</label>
+									                    <div id="component-section-backgroundcolor-2" class="input-group colorpicker-component">
+										                    <input type="text" value="" class="form-control" />
+										                    <span class="input-group-addon"><i></i></span>
+									                    </div>
+								                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-top-2">Padding Top</label>
+                                                        <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-2" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-left-2">Padding Left</label>
+									                    <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-2" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-bottom-2">Padding Bottom</label>
+									                    <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-2" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-right-2">Padding Right</label>
+									                    <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-2" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div id="component-section-column3">
+                                            <hr class="margin-all-sm">
+                                            <span class="label label-default">Column 3</span>
+                                        
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-section-backgroundcolor-3">Background Color</label>
+									                    <div id="component-section-backgroundcolor-3" class="input-group colorpicker-component">
+										                    <input type="text" value="" class="form-control" />
+										                    <span class="input-group-addon"><i></i></span>
+									                    </div>
+								                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-top-3">Padding Top</label>
+                                                        <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-3" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-left-3">Padding Left</label>
+									                    <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-3" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-bottom-3">Padding Bottom</label>
+									                    <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-3" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                    <div class="form-group">
+									                    <label for="component-section-padding-right-3">Padding Right</label>
+									                    <div class="input-group input-width-md">
+								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-3" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                </div>
+                                            </div>
+                                        </div>  
 					                </div>
 
                                     <!-- Divider Properties -->
@@ -644,7 +788,7 @@
                                             <button type="button" class="btn btn-default js-preview-mobile"><i class="fa fa-mobile"></i> Mobile</button>
                                         </div>
                                     </div>
-                                    <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview center-block">
+                                    <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview device-browser center-block">
                                         <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe js-emailpreview-iframe email-wrapper" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" scrolling="yes"></iframe>
                                     </div>
                                 </Content>
@@ -969,16 +1113,16 @@
                     var $emailPreviewIframe = $('.js-emailpreview-iframe');
 
                     if ($(this).hasClass('js-preview-mobile')) {
-                        var mobileContainerHeight = '525px';
+                        var mobileContainerHeight = '585px';
 
-                        $('.js-email-preview').removeClass("device-desktop").addClass("device-mobile");
+                        $('.js-email-preview').removeClass("device-browser").addClass("device-mobile");
                         var mobilePreviewHeight = $('.js-email-preview').height();
 
                         $emailPreviewIframe.height(mobileContainerHeight);
                         $('#<%=pnlEmailPreviewContainer.ClientID%>').height(mobileContainerHeight);
                     }
                     else {
-                        $('.js-email-preview').removeClass("device-mobile").addClass("device-desktop");
+                        $('.js-email-preview').removeClass("device-mobile").addClass("device-browser");
                         $emailPreviewIframe.height('auto');
 
                         var emailPreviewIframe = $emailPreviewIframe[0];
@@ -1084,6 +1228,7 @@
                     Rock.controls.emailEditor.dividerComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.imageComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.textComponentHelper.initializeEventHandlers();
+                    Rock.controls.emailEditor.sectionComponentHelper.initializeEventHandlers();
                 }
             }
 			
@@ -1110,7 +1255,7 @@
 				        Rock.controls.emailEditor.imageComponentHelper.setProperties($currentComponent);
 				        break;
 				    case 'section':
-                        // no properties, just a delete button
+				        Rock.controls.emailEditor.sectionComponentHelper.setProperties($currentComponent);
 				        break;
 				    case 'divider':
 				        Rock.controls.emailEditor.dividerComponentHelper.setProperties($currentComponent);
@@ -1271,6 +1416,9 @@
         
         <!-- Text Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/textComponentHelper.js", true)%>' ></script>
+
+        <!-- Section Component -->
+        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/sectionComponentHelper.js", true)%>' ></script>
 
         <!-- Button Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/buttonComponentHelper.js", true)%>' ></script>
