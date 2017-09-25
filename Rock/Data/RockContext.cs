@@ -418,6 +418,12 @@ namespace Rock.Data
         /// </value>
         public DbSet<Category> Categories { get; set; }
 
+        /// <summary>
+        /// Gets or sets the communication attachments.
+        /// </summary>
+        /// <value>
+        /// The communication attachments.
+        /// </value>
         public DbSet<Rock.Model.CommunicationAttachment> CommunicationAttachments { get; set; }
 
         /// <summary>
