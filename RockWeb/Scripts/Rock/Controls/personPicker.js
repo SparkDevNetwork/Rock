@@ -130,8 +130,6 @@
 
                 var selectedPersonId = $selectedItem.attr('data-person-id');
 
-                console.log('expanding:' + expanding);
-
                 if ($itemDetails.is(':visible')) {
                     
                   if (selectedPersonId == lastSelectedPersonId && e.type == 'click' && expanding == false ) {
@@ -185,12 +183,14 @@
 
             var showItemDetails = function ($itemDetails)
             {
-              expanding = true;
-              $itemDetails.slideDown(function ()
-              {
-                exports.personPickers[controlId].updateScrollbar();
-                expanding = false;
-              });
+              if ($itemDetails.length) {
+                expanding = true;
+                $itemDetails.slideDown(function ()
+                {
+                  exports.personPickers[controlId].updateScrollbar();
+                  expanding = false;
+                });
+              }
             }
 
             $('#' + controlId).hover(
