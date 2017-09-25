@@ -597,37 +597,45 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgGroupDetails_SaveClick( object sender, EventArgs e )
         {
-            int? groupId = gpOpportunityGroup.SelectedValueAsInt();
-            if ( groupId.HasValue )
+            var groups = new List<Group>();
+
+            foreach ( int groupId in gpOpportunityGroup.SelectedValuesAsInt() )
             {
                 var rockContext = new RockContext();
-                var group = new GroupService( rockContext ).Get( groupId.Value );
+                var group = new GroupService( rockContext ).Get( groupId );
                 if ( group != null )
                 {
-                    if ( !ValidPlacementGroups() )
-                    { 
+                    int? groupTypeId = ddlGroupType.SelectedValueAsInt();
+                    if ( groupTypeId.HasValue && group.GroupTypeId != groupTypeId.Value )
+                    {
+                        string groupTypeName = ddlGroupType.SelectedItem.Text;
+                        nbInvalidGroupType.Text = string.Format( "<p>One or more of the selected groups is not a <strong>{0}</strong> type. Please select groups that have a group type of <strong>{0}</strong>.", groupTypeName );
+                        nbInvalidGroupType.Visible = true;
                         return;
                     }
 
-                    var groupStateObj = GroupsState.Where( g => g.GroupId == group.Id ).FirstOrDefault();
-                    if ( groupStateObj == null )
-                    {
-                        groupStateObj = new GroupStateObj();
-                        groupStateObj.GroupId = group.Id;
-                        groupStateObj.GroupName = group.Name;
-                        groupStateObj.GroupTypeName = group.GroupType != null ? group.GroupType.Name : string.Empty;
-                        groupStateObj.GroupTypeId = group.GroupTypeId;
-                        groupStateObj.CampusId = group.CampusId;
-                        groupStateObj.CampusName = group.Campus != null ? group.Campus.Name : string.Empty;
-                        groupStateObj.Guid = Guid.NewGuid();
-                        GroupsState.Add( groupStateObj );
-                    }
-
-                    BindGroupGrid();
-                    HideDialog();
-                   
+                    groups.Add( group );
                 }
             }
+
+            foreach ( var group in groups )
+            {
+                var groupStateObj = GroupsState.Where( g => g.GroupId == group.Id ).FirstOrDefault();
+                if ( groupStateObj == null )
+                {
+                    groupStateObj = new GroupStateObj();
+                    groupStateObj.GroupId = group.Id;
+                    groupStateObj.GroupName = group.Name;
+                    groupStateObj.GroupTypeId = group.GroupTypeId;
+                    groupStateObj.CampusId = group.CampusId;
+                    groupStateObj.CampusName = group.Campus != null ? group.Campus.Name : string.Empty;
+                    groupStateObj.Guid = Guid.NewGuid();
+                    GroupsState.Add( groupStateObj );
+                }
+            }
+
+            BindGroupGrid();
+            HideDialog();
         }
 
         /// <summary>
