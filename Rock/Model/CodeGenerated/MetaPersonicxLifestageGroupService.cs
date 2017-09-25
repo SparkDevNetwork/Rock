@@ -110,6 +110,7 @@ namespace Rock.Model
             target.IncomeLevel = source.IncomeLevel;
             target.IncomeRank = source.IncomeRank;
             target.LifeStage = source.LifeStage;
+            target.LifeStageLevel = source.LifeStageLevel;
             target.LifestyleGroupCode = source.LifestyleGroupCode;
             target.LifestyleGroupName = source.LifestyleGroupName;
             target.MaritalStatus = source.MaritalStatus;

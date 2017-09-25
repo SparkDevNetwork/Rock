@@ -59,6 +59,9 @@ namespace Rock.Client
         public int? ImageFileId { get; set; }
 
         /// <summary />
+        public bool IsActive { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -140,6 +143,7 @@ namespace Rock.Client
             this.FromEmail = source.FromEmail;
             this.FromName = source.FromName;
             this.ImageFileId = source.ImageFileId;
+            this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
             this.Message = source.Message;
             this.MessageMetaData = source.MessageMetaData;

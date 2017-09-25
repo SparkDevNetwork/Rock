@@ -413,7 +413,7 @@ namespace Rock.Model
         /// BulkInserts AnalyticsSourceDates (really fast)
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="analyticsDimDates">The analytics source dates.</param>
+        /// <param name="analyticsSourceDates">The analytics source dates.</param>
         public static void BulkInsert( Rock.Data.RockContext rockContext, IEnumerable<AnalyticsSourceDate> analyticsSourceDates )
         {
             // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly

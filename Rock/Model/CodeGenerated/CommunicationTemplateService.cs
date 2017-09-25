@@ -102,6 +102,7 @@ namespace Rock.Model
             target.FromEmail = source.FromEmail;
             target.FromName = source.FromName;
             target.ImageFileId = source.ImageFileId;
+            target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.Message = source.Message;
             target.MessageMetaData = source.MessageMetaData;
