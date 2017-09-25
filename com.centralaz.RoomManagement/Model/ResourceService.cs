@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+
+using System.Linq;
 using Rock.Data;
 
 namespace com.centralaz.RoomManagement.Model
@@ -28,5 +30,44 @@ namespace com.centralaz.RoomManagement.Model
         /// </summary>
         /// <param name="context">The context.</param>
         public ResourceService( RockContext context ) : base( context ) { }
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( Resource item, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( new Service<ReservationResource>( Context ).Queryable().Any( a => a.ResourceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is used in a {1}.", Resource.FriendlyTypeName, ReservationResource.FriendlyTypeName );
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Deletes a specified resource. Returns a boolean flag indicating if the deletion was successful.
+        /// </summary>
+        /// <param name="item">The <see cref="com.centralaz.RoomManagement.Model.Resource" /> to delete.</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> that indicates if the <see cref="com.centralaz.RoomManagement.Model.Resource" /> was deleted successfully.
+        /// </returns>
+        public override bool Delete( Resource item )
+        {
+            string message;
+            if ( !CanDelete( item, out message ) )
+            {
+                return false;
+            }
+
+            return base.Delete( item );
+        }
     }
 }

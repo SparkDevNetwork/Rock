@@ -44,6 +44,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
     {
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -51,12 +55,22 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += ResourceDetail_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upDetail );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Resource.FriendlyTypeName );
         }
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the ResourceDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ResourceDetail_BlockUpdated( object sender, EventArgs e )
         {
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -108,6 +122,11 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
         #region Edit Events
 
+        /// <summary>
+        /// Handles the Click event of the btnSave control and saves the resource.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
             SaveResource();
@@ -118,16 +137,26 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSaveThenAdd control and saves the resource but leaves the screen so that another resource can be added quickly.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveThenAdd_Click( object sender, EventArgs e )
         {
             SaveResource();
 
             if ( Page.IsValid )
             {
-                ShowDetail( 0 );
+                ShowDetail( 0, resetCampus: false );
             }
+            nbSaveMessage.Text = "Resource saved.";
+            nbErrorMessage.Visible = true;
         }
 
+        /// <summary>
+        /// Saves the resource.
+        /// </summary>
         private void SaveResource()
         {
             if ( Page.IsValid )
@@ -185,8 +214,42 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
+            NavigateToParentPage();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            if ( PageParameter( "ResourceId" ).AsIntegerOrNull() != null )
+            {
+                RockContext rockContext = new RockContext();
+                ResourceService resourceService = new ResourceService( rockContext );
+                var resource = resourceService.Get( PageParameter( "ResourceId" ).AsInteger() );
+                if ( resource != null )
+                {
+                    string errorMessage;
+                    if ( !resourceService.CanDelete( resource, out errorMessage ) )
+                    {
+                        mdDeleteWarning.Show( "Unable to delete. " + errorMessage, Rock.Web.UI.Controls.ModalAlertType.Information );
+                        return;
+                    }
+
+                    resourceService.Delete( resource );
+                    rockContext.SaveChanges();
+                }
+            }
+
             NavigateToParentPage();
         }
 
@@ -194,26 +257,48 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
         #region Internal Methods
 
+        /// <summary>
+        /// Shows the detail for the resource.
+        /// </summary>
+        /// <param name="resourceId">The resource identifier.</param>
         public void ShowDetail( int resourceId )
+        {
+            ShowDetail( resourceId, true );
+        }
+
+        /// <summary>
+        /// Shows the detail for the resource.
+        /// </summary>
+        /// <param name="resourceId">The resource identifier.</param>
+        /// <param name="resetCampus">if set to <c>true</c> [reset campus].</param>
+        public void ShowDetail( int resourceId, bool resetCampus = true )
         {
             var rockContext = new RockContext();
             Resource resource = null;
 
-            ddlCampus.Items.Clear();
-            ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( var campus in CampusCache.All() )
+            if ( resetCampus )
             {
-                ListItem li = new ListItem( campus.Name, campus.Id.ToString() );
-                ddlCampus.Items.Add( li );
+                ddlCampus.Items.Clear();
+                ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                foreach ( var campus in CampusCache.All() )
+                {
+                    ListItem li = new ListItem( campus.Name, campus.Id.ToString() );
+                    ddlCampus.Items.Add( li );
+                }
             }
 
             if ( !resourceId.Equals( 0 ) )
             {
                 resource = new ResourceService( rockContext ).Get( resourceId );
+                btnDelete.Visible = true;
+                ddlCampus.SelectedValue = resource.CampusId.ToString();
+                pdAuditDetails.SetEntity( resource, ResolveRockUrl( "~" ) );
             }
             else
             {
                 resource = new Resource { Id = 0 };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if ( resource == null )
@@ -255,7 +340,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             tbName.Text = resource.Name;
             cpCategory.SetValue( resource.CategoryId );
-            ddlCampus.SelectedValue = resource.CampusId.ToString();
+            //ddlCampus.SelectedValue = resource.CampusId.ToString();
             if ( resource.LocationId.HasValue )
             {
                 lpLocationPicker.Location = resource.Location;
@@ -265,6 +350,9 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             gpApprovalGroup.SetValue( resource.ApprovalGroupId );
         }
 
+        /// <summary>
+        /// Clears the error message.
+        /// </summary>
         private void ClearErrorMessage()
         {
             nbErrorMessage.Title = string.Empty;
