@@ -442,6 +442,19 @@ namespace Rock.Model
         [NotMapped]
         public virtual Dictionary<int, List<string>> BatchHistoryChanges { get; set; }
 
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( "Refund", "The roles and/or users that have access to refund a transaction." );
+                return supportedActions;
+            }
+        }
+
         #endregion Virtual Properties
 
         #region Public Methods

@@ -1266,6 +1266,7 @@
     <Compile Include="Plugin\HotFixes\027_AddCheckinFeatures.cs" />
     <Compile Include="Plugin\HotFixes\028_CheckinTextSettings.cs" />
     <Compile Include="Plugin\HotFixes\033_ConnectionOpportunityCounts.cs" />
+    <Compile Include="Plugin\HotFixes\034_FinancialSecurityActions.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
