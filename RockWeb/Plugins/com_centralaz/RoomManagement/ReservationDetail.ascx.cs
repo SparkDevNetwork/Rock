@@ -1591,16 +1591,19 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             Group finalApprovalGroup = null;
             bool inApprovalGroups = false;
+            bool isSuperAdmin = false;
+            finalApprovalGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "FinalApprovalGroup" ).AsGuid() );
+
             var superAdminGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "SuperAdminGroup" ).AsGuid() );
             if ( superAdminGroup != null )
             {
                 if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( superAdminGroup.Id ) )
                 {
                     inApprovalGroups = true;
+                    isSuperAdmin = true;
                 }
                 else
                 {
-                    finalApprovalGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "FinalApprovalGroup" ).AsGuid() );
                     if ( finalApprovalGroup != null )
                     {
                         if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( finalApprovalGroup.Id ) )
@@ -1700,7 +1703,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 if ( reservation.ReservationLocations.All( rl => rl.ApprovalState == ReservationLocationApprovalState.Approved ) && reservation.ReservationResources.All( rr => rr.ApprovalState == ReservationResourceApprovalState.Approved ) )
                 {
-                    if ( finalApprovalGroup == null )
+                    if ( finalApprovalGroup == null || isSuperAdmin )
                     {
                         reservation.ApprovalState = ReservationApprovalState.Approved;
                     }
