@@ -105,6 +105,10 @@ namespace Rock.Model
         /// <value>
         /// The communication template identifier.
         /// </value>
+        /// <remarks>
+        /// [IgnoreCanDelete] since there is a ON DELETE SET NULL cascade on this
+        /// </remarks>
+        [IgnoreCanDelete]
         public int? CommunicationTemplateId { get; set; }
 
         /// <summary>

@@ -907,7 +907,7 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
 
-            var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().OrderBy( a => a.Name );
+            var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().Where( a => a.IsActive ).OrderBy( a => a.Name );
 
             // get list of templates that the current user is authorized to View
             IEnumerable<CommunicationTemplate> templateList = templateQuery.AsNoTracking().ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();

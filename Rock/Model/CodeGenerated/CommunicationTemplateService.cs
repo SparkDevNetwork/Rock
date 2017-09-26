@@ -51,12 +51,8 @@ namespace Rock.Model
         public bool CanDelete( CommunicationTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Communication>( Context ).Queryable().Any( a => a.CommunicationTemplateId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationTemplate.FriendlyTypeName, Communication.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Communication,CommunicationTemplateId 
             return true;
         }
     }
