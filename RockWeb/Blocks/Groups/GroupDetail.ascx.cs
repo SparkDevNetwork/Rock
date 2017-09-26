@@ -423,7 +423,15 @@ namespace RockWeb.Blocks.Groups
 
             qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
-            NavigateToPage( RockPage.Guid, qryParams );
+
+            if ( GetAttributeValue( "GroupListPage" ).AsGuid() != Guid.Empty )
+            {
+                NavigateToLinkedPage( "GroupListPage", qryParams );
+            }
+            else
+            {
+                NavigateToPage( RockPage.Guid, qryParams );
+            }
         }
 
         /// <summary>
