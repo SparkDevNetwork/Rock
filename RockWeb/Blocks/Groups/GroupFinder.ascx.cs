@@ -107,6 +107,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Grid", "", false, "CustomSetting" )]
     [BooleanField( "Show Schedule", "", false, "CustomSetting" )]
     [BooleanField( "Show Proximity", "", false, "CustomSetting" )]
+    [BooleanField( "Show Campus", "", false, "CustomSetting" )]
     [BooleanField( "Show Count", "", false, "CustomSetting" )]
     [BooleanField( "Show Age", "", false, "CustomSetting" )]
     [BooleanField( "Show Description", "", true, "CustomSetting" )]
@@ -316,6 +317,7 @@ namespace RockWeb.Blocks.Groups
             SetAttributeValue( "ShowGrid", cbShowGrid.Checked.ToString() );
             SetAttributeValue( "ShowSchedule", cbShowSchedule.Checked.ToString() );
             SetAttributeValue( "ShowDescription", cbShowDescription.Checked.ToString() );
+            SetAttributeValue( "ShowCampus", cbShowCampus.Checked.ToString() );
             SetAttributeValue( "ShowProximity", cbProximity.Checked.ToString() );
             SetAttributeValue( "SortByDistance", cbSortByDistance.Checked.ToString() );
             SetAttributeValue( "PageSizes", tbPageSizes.Text );
@@ -474,6 +476,7 @@ namespace RockWeb.Blocks.Groups
             cbShowGrid.Checked = GetAttributeValue( "ShowGrid" ).AsBoolean();
             cbShowSchedule.Checked = GetAttributeValue( "ShowSchedule" ).AsBoolean();
             cbShowDescription.Checked = GetAttributeValue( "ShowDescription" ).AsBoolean();
+            cbShowCampus.Checked = GetAttributeValue( "ShowCampus" ).AsBoolean();
             cbProximity.Checked = GetAttributeValue( "ShowProximity" ).AsBoolean();
             cbSortByDistance.Checked = GetAttributeValue( "SortByDistance" ).AsBoolean();
             tbPageSizes.Text = GetAttributeValue( "PageSizes" );
@@ -816,7 +819,7 @@ namespace RockWeb.Blocks.Groups
             gGroups.Columns[4].Visible = GetAttributeValue( "ShowAge" ).AsBoolean();
 
             bool showProximity = GetAttributeValue( "ShowProximity" ).AsBoolean();
-            gGroups.Columns[5].Visible = showProximity;  // Distance
+            gGroups.Columns[6].Visible = showProximity;  // Distance
 
             // Get query of groups of the selected group type
             var rockContext = new RockContext();
@@ -912,6 +915,8 @@ namespace RockWeb.Blocks.Groups
             {
                 groups = groupQry.OrderBy( g => g.Name ).ToList();
             }
+
+            gGroups.Columns[5].Visible = GetAttributeValue( "ShowCampus" ).AsBoolean() && groups.Any( g => g.CampusId.HasValue );
 
             int? fenceGroupTypeId = GetGroupTypeId( GetAttributeValue( "GeofencedGroupType" ).AsGuidOrNull() );
             bool showMap = GetAttributeValue( "ShowMap" ).AsBoolean();
@@ -1190,6 +1195,7 @@ namespace RockWeb.Blocks.Groups
                         Schedule = g.Schedule,
                         MemberCount = qryMembers.Count(),
                         AverageAge = Math.Round( qryMembers.Select( m => m.Person.BirthDate ).ToList().Select( a => Person.GetAge( a ) ).Average() ?? 0.0D ),
+                        Campus = g.Campus != null ? g.Campus.Name : "",
                         Distance = distances.Where( d => d.Key == g.Id )
                             .Select( d => d.Value ).FirstOrDefault()
                     };
