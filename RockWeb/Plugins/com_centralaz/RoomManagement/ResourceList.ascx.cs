@@ -209,7 +209,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 qry = qry.Where( r => r.Campus.Id == campusId );
             }
 
-            gResources.DataSource = qry.ToList();
+            gResources.DataSource = qry.OrderBy( r => r.Category.Name ).ThenBy( r => r.Name ).ToList();
             gResources.EntityTypeId = EntityTypeCache.Read<Resource>().Id;
             gResources.DataBind();
 
