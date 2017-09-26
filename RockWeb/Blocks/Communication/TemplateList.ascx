@@ -16,7 +16,7 @@
                         <Rock:PersonPicker ID="ppCreatedBy" runat="server" Label="Created By" Help="The person who created the template." />
                     </Rock:GridFilter>
 
-                    <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" TooltipField="Description" OnRowSelected="gCommunication_RowSelected" OnRowDataBound="gCommunication_RowDataBound" CssClass="js-grid-communicationtemplate-list">
+                    <Rock:Grid ID="gCommunicationTemplates" runat="server" AllowSorting="true" TooltipField="Description" OnRowSelected="gCommunicationTemplates_RowSelected" OnRowDataBound="gCommunicationTemplates_RowDataBound" CssClass="js-grid-communicationtemplate-list">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" SortExpression="Subject" HeaderText="Name" />
                             <Rock:RockBoundField DataField="Subject" SortExpression="Subject" HeaderText="Subject" />
