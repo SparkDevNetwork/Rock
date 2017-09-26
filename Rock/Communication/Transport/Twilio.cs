@@ -40,6 +40,8 @@ namespace Rock.Communication.Transport
     [ExportMetadata( "ComponentName", "Twilio" )]
     [TextField( "SID", "Your Twilio Account SID (find at https://www.twilio.com/user/account)", true, "", "", 0 )]
     [TextField( "Token", "Your Twilio Account Token", true, "", "", 1 )]
+    [IntegerField("Long-Code Throttling", "The amount of time (in milliseconds) to wait between sending to recipients when sending a message from a long-code number (regular phone number). When carriers detect that a message is not coming from a human, they may filter/block the message. A delay can help prevent this from happening.",
+        false, 500, order: 2)]
     public class Twilio : TransportComponent
     {
         /// <summary>
@@ -75,6 +77,12 @@ namespace Rock.Communication.Transport
                     mergeFields.AddOrReplace( mergeField.Key, mergeField.Value );
                 }
 
+                int? throttlingWaitTimeMS = null;
+                if ( this.IsLongCodePhoneNumber( smsMessage.FromNumber.Value ) )
+                {
+                    throttlingWaitTimeMS = this.GetAttributeValue( "Long-CodeThrottling" ).AsIntegerOrNull();
+                }
+
                 foreach ( var recipientData in rockMessage.GetRecipientData() )
                 {
                     try
@@ -86,11 +94,31 @@ namespace Rock.Communication.Transport
 
                         string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
 
-                        var response = MessageResource.Create(
-                            from: new TwilioTypes.PhoneNumber( smsMessage.FromNumber.Value ),
-                            to: new TwilioTypes.PhoneNumber( recipientData.To ),
-                            body: message
-                        );
+                        MessageResource response = null;
+
+                        // twilio has a max message size of 1600 (one thousand six hundred) characters
+                        // hopefully it isn't going to be that big, but just in case, break it into chunks if it is longer than that
+                        if ( message.Length > 1600 )
+                        {
+                            var messageChunks = message.SplitIntoChunks( 1600 );
+
+                            foreach ( var messageChunk in messageChunks )
+                            {
+                                response = MessageResource.Create(
+                                    from: new TwilioTypes.PhoneNumber( smsMessage.FromNumber.Value ),
+                                    to: new TwilioTypes.PhoneNumber( recipientData.To ),
+                                    body: messageChunk
+                                );
+                            }
+                        }
+                        else
+                        {
+                            response = MessageResource.Create(
+                                from: new TwilioTypes.PhoneNumber( smsMessage.FromNumber.Value ),
+                                to: new TwilioTypes.PhoneNumber( recipientData.To ),
+                                body: message
+                            );
+                        }
 
                         if ( response.ErrorMessage.IsNotNullOrWhitespace() )
                         {
@@ -101,6 +129,11 @@ namespace Rock.Communication.Transport
                     {
                         errorMessages.Add( ex.Message );
                         ExceptionLogService.LogException( ex );
+                    }
+
+                    if ( throttlingWaitTimeMS.HasValue )
+                    {
+                        System.Threading.Thread.Sleep( throttlingWaitTimeMS.Value );
                     }
                 }
             }
@@ -151,6 +184,13 @@ namespace Rock.Communication.Transport
                     string fromPhone = communication.SMSFromDefinedValue?.Value;
                     if ( !string.IsNullOrWhiteSpace( fromPhone ) )
                     {
+
+                        int? throttlingWaitTimeMS = null;
+                        if ( this.IsLongCodePhoneNumber( fromPhone ) )
+                        {
+                            throttlingWaitTimeMS = this.GetAttributeValue( "Long-CodeThrottling" ).AsIntegerOrNull();
+                        }
+
                         string accountSid = GetAttributeValue( "SID" );
                         string authToken = GetAttributeValue( "Token" );
                         TwilioClient.Init( accountSid, authToken );
@@ -193,19 +233,51 @@ namespace Rock.Communication.Transport
                                                 twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                             }
 
-                                            CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
-                                            {
-                                                From = new TwilioTypes.PhoneNumber( fromPhone ),
-                                                Body = message,
-                                                StatusCallback = new System.Uri( callbackUrl )
-                                            };
+                                            MessageResource response = null;
 
-                                            if ( attachmentMediaUrls.Any() )
+                                            // twilio has a max message size of 1600 (one thousand six hundred) characters
+                                            // hopefully it isn't going to be that big, but just in case, break it into chunks if it is longer than that
+                                            if ( message.Length > 1600 )
                                             {
-                                                createMessageOptions.MediaUrl = attachmentMediaUrls;
+                                                var messageChunks = message.SplitIntoChunks( 1600 );
+
+                                                foreach ( var messageChunk in messageChunks )
+                                                {
+                                                    CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
+                                                    {
+                                                        From = new TwilioTypes.PhoneNumber( fromPhone ),
+                                                        Body = messageChunk,
+                                                        StatusCallback = new System.Uri( callbackUrl )
+                                                    };
+
+                                                    // if this is the final chunk, add the attachment(s) 
+                                                    if ( messageChunk == messageChunks.Last() )
+                                                    {
+                                                        if ( attachmentMediaUrls.Any() )
+                                                        {
+                                                            createMessageOptions.MediaUrl = attachmentMediaUrls;
+                                                        }
+                                                    }
+
+                                                    response = MessageResource.Create( createMessageOptions );
+                                                }
                                             }
+                                            else
+                                            {
+                                                CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
+                                                {
+                                                    From = new TwilioTypes.PhoneNumber( fromPhone ),
+                                                    Body = message,
+                                                    StatusCallback = new System.Uri( callbackUrl )
+                                                };
+                                                
+                                                if ( attachmentMediaUrls.Any() )
+                                                {
+                                                    createMessageOptions.MediaUrl = attachmentMediaUrls;
+                                                }
 
-                                            var response = MessageResource.Create( createMessageOptions );
+                                                response = MessageResource.Create( createMessageOptions );
+                                            }
 
                                             recipient.Status = CommunicationRecipientStatus.Delivered;
                                             recipient.TransportEntityTypeName = this.GetType().FullName;
@@ -246,6 +318,11 @@ namespace Rock.Communication.Transport
                                 }
 
                                 recipientRockContext.SaveChanges();
+
+                                if ( throttlingWaitTimeMS.HasValue )
+                                {
+                                    System.Threading.Thread.Sleep( throttlingWaitTimeMS.Value );
+                                }
                             }
                             else
                             {
@@ -376,6 +453,19 @@ namespace Rock.Communication.Transport
         #endregion
 
         #region 
+
+        /// <summary>
+        /// Determines whether the phone number is a regular 10 digit (or longer) phone number
+        /// </summary>
+        /// <param name="fromNumber">From number.</param>
+        /// <returns>
+        ///   <c>true</c> if [is long code phone number] [the specified from number]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsLongCodePhoneNumber(string fromNumber)
+        {
+            // if the number of digits in the phone number 10 or more, assume is it a LongCode ( if it is less than 10, assume it is a short-code)
+            return fromNumber.AsNumeric().Length >= 10;
+        }
 
         /// <summary>
         /// The MIME types for SMS attachments that Rock and Twilio fully support (also see AcceptedMimeTypes )_

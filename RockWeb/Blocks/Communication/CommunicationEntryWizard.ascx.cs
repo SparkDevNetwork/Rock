@@ -1238,6 +1238,7 @@ namespace RockWeb.Blocks.Communication
                             nbResult.Text = "Test communication has been sent.";
                         }
 
+                        nbResult.Dismissable = true;
                         nbResult.Visible = true;
 
                         communicationService.Delete( testCommunication );
