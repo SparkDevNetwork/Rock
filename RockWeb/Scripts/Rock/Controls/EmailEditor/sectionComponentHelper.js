@@ -12,7 +12,6 @@
       initializeEventHandlers: function ()
       {
         var self = this;
-        debugger
 
         $('#component-section-backgroundcolor-1,#component-section-backgroundcolor-2,#component-section-backgroundcolor-3').colorpicker().on('changeColor', function ()
         {

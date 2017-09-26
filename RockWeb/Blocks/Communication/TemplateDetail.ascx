@@ -20,6 +20,9 @@
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.CommunicationTemplate, Rock" PropertyName="Name" />
                     </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
+                    </div>
                 </div>
 
                 <div class="row">

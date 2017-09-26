@@ -41,9 +41,9 @@ namespace RockWeb.Blocks.Communication
     [LinkedPage( "Detail Page" )]
     public partial class TemplateList : Rock.Web.UI.RockBlock
     {
+        #region fields
 
-        #region Fields
-
+        private HashSet<int> _templatesWithCommunications = null;
         private bool _canEdit = false;
 
         #endregion
@@ -75,6 +75,30 @@ namespace RockWeb.Blocks.Communication
 
             SecurityField securityField = gCommunication.ColumnsOfType<SecurityField>().FirstOrDefault();
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.CommunicationTemplate ) ).Id;
+
+            // make a custom delete confirmation dialog
+            gCommunication.ShowConfirmDeleteDialog = false;
+
+            string deleteScript = @"
+    $('table.js-grid-communicationtemplate-list a.grid-delete-button').click(function( e ){
+        var $btn = $(this);
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this template?', function (result) {
+            if (result) {
+                if ( $btn.closest('tr').hasClass('js-has-communications') ) {
+                    Rock.dialogs.confirm('Deleting this template will unlink it from communications that have used it. If you would like to keep the link consider inactivating the template instead. Are you sure you wish to delete this template?', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gCommunication, gCommunication.GetType(), "deleteCommunicationTemplateScript", deleteScript, true );
         }
 
         /// <summary>
@@ -245,15 +269,15 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void BindGrid()
         {
-            var communications = new CommunicationTemplateService( new RockContext() )
-                .Queryable( "CreatedByPersonAlias.Person" );
+            var rockContext = new RockContext();
+            var communicationTemplateQry = new CommunicationTemplateService( rockContext ).Queryable( "CreatedByPersonAlias.Person" );
 
             if ( _canEdit )
             {
                 int? personId = rFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();
                 if ( personId.HasValue && personId != 0 )
                 {
-                    communications = communications
+                    communicationTemplateQry = communicationTemplateQry
                         .Where( c =>
                             c.CreatedByPersonAlias != null &&
                             c.CreatedByPersonAlias.PersonId == personId.Value );
@@ -264,21 +288,23 @@ namespace RockWeb.Blocks.Communication
 
             if ( sortProperty != null )
             {
-                communications = communications.Sort( sortProperty );
+                communicationTemplateQry = communicationTemplateQry.Sort( sortProperty );
             }
             else
             {
-                communications = communications.OrderBy( c => c.Name );
+                communicationTemplateQry = communicationTemplateQry.OrderBy( c => c.Name );
             }
+
+            _templatesWithCommunications = new HashSet<int>( new CommunicationService( rockContext ).Queryable().Where( a => a.CommunicationTemplateId.HasValue ).Select( a => a.CommunicationTemplateId.Value ).Distinct().ToList() );
 
             var viewableCommunications = new List<CommunicationTemplate>();
             if ( _canEdit )
             {
-                viewableCommunications = communications.ToList();
+                viewableCommunications = communicationTemplateQry.ToList();
             }
             else
             {
-                foreach ( var comm in communications )
+                foreach ( var comm in communicationTemplateQry.ToList() )
                 {
                     if ( comm.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
@@ -318,6 +344,11 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 lSupports.Text = html.ToString();
+
+                if ( _templatesWithCommunications.Contains( communicationTemplate.Id ) )
+                {
+                    e.Row.AddCssClass( "js-has-communications" );
+                }
             }
         }
 
