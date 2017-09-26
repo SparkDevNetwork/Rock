@@ -37,11 +37,13 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Public block for users to manage their accounts" )]
 
-    [BooleanField( "Show Family Members", "Whether family members are shown or not.", true, order: 0 )]
+    [BooleanField( "View Only", "Should people be prevented from editing thier profile or family records?", false, "", 0 )]
+    [BooleanField( "Show Family Members", "Whether family members are shown or not.", true, order: 1 )]
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type",
-        "The type of address to be displayed / edited.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", order: 3 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Numbers", "The types of phone numbers to display / edit.", true, true, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, order: 4 )]
-    [LinkedPage( "Workflow Launch Page", "Page used to launch the workflow to make a profile change request", false, order: 5 )]
+        "The type of address to be displayed / edited.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", order: 2 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Numbers", "The types of phone numbers to display / edit.", true, true, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME, order: 3 )]
+    [LinkedPage( "Workflow Launch Page", "Page used to launch the workflow to make a profile change request", false, order: 4 )]
+    [TextField( "Request Changes Text", "The text to use for the request changes button (only displayed if there is a 'Workflow Launch Page' configured).", false, "Request Additional Changes", "", 5 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The family attributes that should be displayed / edited.", false, true, order: 6 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (adults)", "The person attributes that should be displayed / edited for adults.", false, true, order: 7 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (children)", "The person attributes that should be displayed / edited for children.", false, true, order: 8 )]
@@ -58,6 +60,8 @@ namespace RockWeb.Blocks.Cms
             get { return ViewState["RoleType"] as int? ?? null; }
             set { ViewState["RoleType"] = value; }
         }
+
+        bool _canEdit = false;
 
         #endregion
 
@@ -76,6 +80,12 @@ namespace RockWeb.Blocks.Cms
             RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+
+            _canEdit = !GetAttributeValue( "ViewOnly" ).AsBoolean();
+            lbEditPerson.Visible = _canEdit;
+            lbAddGroupMember.Visible = _canEdit;
+
+            lbRequestChanges.Text = GetAttributeValue( "RequestChangesText" );
         }
 
         /// <summary>
@@ -249,6 +259,11 @@ namespace RockWeb.Blocks.Cms
             var rptGroupMemberPhones = e.Item.FindControl( "rptGroupMemberPhones" ) as Repeater;
             var rptGroupMemberAttributes = e.Item.FindControl( "rptGroupMemberAttributes" ) as Repeater;
             var lbEditGroupMember = e.Item.FindControl( "lbEditGroupMember" ) as LinkButton;
+            
+            if ( lbEditGroupMember != null )
+            {
+                lbEditGroupMember.Visible = _canEdit;
+            }
 
             // Setup Image
             string imgTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 200, 200 );
