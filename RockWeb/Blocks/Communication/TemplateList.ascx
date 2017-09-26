@@ -24,7 +24,7 @@
                             <Rock:RockBoundField DataField="CreatedByPersonAlias.Person.FullName" SortExpression="CreatedByPersonAlias.Person.FullName" HeaderText="Created By" />
                             <Rock:BoolField DataField="IsActive" SortExpression="IsActive" HeaderText="Active" />
                             <Rock:SecurityField TitleField="Name" />
-                            <Rock:DeleteField OnClick="gCommunication_Delete" />
+                            <Rock:DeleteField OnClick="gCommunicationTemplates_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>
