@@ -498,11 +498,18 @@ namespace Rock.Communication.Transport
             "video/H264",
             "image/bmp",
             "text/vcard",
+            "text/x-vcard", // sometimes, vcard is reported as x-vcard when uploaded thru IIS
             "text/csv",
             "text/rtf",
             "text/richtext",
             "text/calendar"
         };
+
+
+        /// <summary>
+        /// The media size limit in bytes (5MB)
+        /// </summary>
+        public static int MediaSizeLimitBytes = 5 * 1024 * 1024;
 
         #endregion
     }

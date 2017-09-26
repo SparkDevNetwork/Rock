@@ -9,9 +9,9 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comment"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
 
-                <div class="panel-labels">
+                <asp:Panel ID="pnlHeadingLabels" runat="server" CssClass="panel-labels">
                     <div class="label label-default"><asp:LinkButton ID="btnUseSimpleEditor" runat="server" Text="Use Simple Editor" OnClick="btnUseSimpleEditor_Click" /></div>
-                </div>
+                </asp:Panel>
             </div>
             <div class="panel-body">
 
@@ -85,13 +85,16 @@
 
                 </asp:Panel>
 
-                <%-- Medium Selection --%>
-                <asp:Panel ID="pnlMediumSelection" CssClass="js-navigation-panel" runat="server" Visible="false" >
-                    <h1 class="step-title">Medium Selection</h1>
-                    <asp:ValidationSummary ID="vsMediumSelection" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgMediumSelection" CssClass="alert alert-danger" />
+                <%-- Communication Delivery, Medium Selection --%>
+                <asp:Panel ID="pnlCommunicationDelivery" CssClass="js-navigation-panel" runat="server" Visible="false" >
+                    <h1 class="step-title">Communication Delivery</h1>
+
+                    <Rock:NotificationBox ID="nbNoCommunicationTransport" runat="server" CssClass="margin-t-md" NotificationBoxType="Warning" Title="Warning" />
+
+                    <asp:ValidationSummary ID="vsCommunicationDelivery" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgCommunicationDelivery" CssClass="alert alert-danger" />
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbCommunicationName" runat="server" Label="Communication Name" Help="This name is used internally to describe the communication. It is not sent as a part of the communication." Required="true" ValidationGroup="vgMediumSelection"/>
+                            <Rock:RockTextBox ID="tbCommunicationName" runat="server" Label="Communication Name" Help="This name is used internally to describe the communication. It is not sent as a part of the communication." Required="true" ValidationGroup="vgCommunicationDelivery"/>
                         </div>
                         <div class="col-md-6">
                             <Rock:Toggle ID="tglBulkCommunication" runat="server" OnText="Yes" OffText="No" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" Help="Select this option if you are sending this email to a group of people. This will include the option for recipients to unsubscribe and will not send the email to any recipients that have already asked to be unsubscribed." Checked="false" Label="Is The Communication Bulk" />
@@ -110,11 +113,10 @@
                             </div>
                         </div>
 
-                        <Rock:NotificationBox ID="nbInvalidEmailTransport" runat="server" CssClass="margin-t-md js-invalidemailtransport-notification" NotificationBoxType="Warning" Dismissable="true" Title="Warning" />
-                        <Rock:NotificationBox ID="nbInvalidSMSTransport" runat="server" CssClass="margin-t-md js-invalidsmstransport-notification" NotificationBoxType="Warning" Dismissable="true" Title="Warning" />
-
                         <Rock:NotificationBox ID="nbRecipientPreferenceInfo" runat="server" CssClass="margin-t-md js-medium-recipientpreference-notification" NotificationBoxType="Info" Title="Heads Up!" Text="Selecting 'Recipient Preference' will require adding content for all active mediums." />
                     </Rock:RockControlWrapper>
+                    
+                    
 
                     <div class="row margin-b-md">
                         <div class="col-md-6">
@@ -122,15 +124,15 @@
                                 <div class="controls">
                                     <Rock:NotificationBox ID="nbSendDateTimeWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
                                     <Rock:Toggle ID="tglSendDateTime" runat="server" OnText="Send Immediately" ButtonSizeCssClass="btn-sm" OffText="Send at a Specific Date and Time" ActiveButtonCssClass="btn-info" Checked="false" OnCheckedChanged="tglSendDateTime_CheckedChanged" />
-                                    <Rock:DateTimePicker ID="dtpSendDateTime" runat="server" CssClass="margin-t-md" Visible="true" Required="true" ValidationGroup="vgMediumSelection" />
+                                    <Rock:DateTimePicker ID="dtpSendDateTime" runat="server" CssClass="margin-t-md" Visible="true" Required="true" ValidationGroup="vgCommunicationDelivery" />
                                 </div>
                             </Rock:RockControlWrapper>
                         </div>
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnMediumSelectionPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnMediumSelectionPrevious_Click"  />
-                        <asp:LinkButton ID="btnMediumSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgMediumSelection" CausesValidation="true" OnClick="btnMediumSelectionNext_Click" />
+                        <asp:LinkButton ID="btnCommunicationDeliveryPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnCommunicationDeliveryPrevious_Click"  />
+                        <asp:LinkButton ID="btnCommunicationDeliveryNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgCommunicationDelivery" CausesValidation="true" OnClick="btnCommunicationDeliveryNext_Click" />
                     </div>
 
                 </asp:Panel>
@@ -884,6 +886,8 @@
                                 </div>
                             </Rock:RockControlWrapper>
                             <Rock:FileUploader Id="fupMobileAttachment" runat="server" Label="Attachment" OnFileUploaded="fupMobileAttachment_FileUploaded" OnFileRemoved="fupMobileAttachment_FileRemoved" />
+                            <Rock:NotificationBox ID="nbMobileAttachmentSizeWarning" runat="server" NotificationBoxType="Warning" Text="" Dismissable="true" Visible="false" />
+                            <Rock:NotificationBox ID="nbMobileAttachmentFileTypeWarning" runat="server" NotificationBoxType="Warning" Text="" Dismissable="true" Visible="false" />
                         </div>
                         <div class="col-md-6">
                             <div class="device device-mobile hidden-md">
@@ -1385,30 +1389,17 @@
 
             function setActiveMediumTypeButton($activeBtn)
             {
-                $activeBtn.addClass('active').addClass('btn-info').removeClass('btn-default');
-                $activeBtn.siblings('.btn').removeClass('active').removeClass('btn-info').addClass('btn-default')
-                $activeBtn.closest('.btn-group').siblings('.js-hidden-selected').val($activeBtn.data('val'));
+                if ($activeBtn.length) {
+                    $activeBtn.addClass('active').addClass('btn-info').removeClass('btn-default');
+                    $activeBtn.siblings('.btn').removeClass('active').removeClass('btn-info').addClass('btn-default')
+                    $activeBtn.closest('.btn-group').siblings('.js-hidden-selected').val($activeBtn.data('val'));
+                }
 
                 if ($('.js-medium-recipientpreference').hasClass('active')) {
 
                     $('.js-medium-recipientpreference-notification').show();
                 } else {
                     $('.js-medium-recipientpreference-notification').hide();
-                }
-
-                // if email or sms transports are invalid, notifications will be rendered, but only show them based on the selected medium type
-                if ($('.js-medium-recipientpreference').hasClass('active') || $('.js-medium-email').hasClass('active')) {
-                    $('.js-invalidemailtransport-notification').show();
-                }
-                else {
-                    $('.js-invalidemailtransport-notification').hide();
-                }
-
-                if ($('.js-medium-recipientpreference').hasClass('active') || $('.js-medium-sms').hasClass('active')) {
-                    $('.js-invalidsmstransport-notification').show();
-                }
-                else {
-                    $('.js-invalidsmstransport-notification').hide();
                 }
 			}
 
