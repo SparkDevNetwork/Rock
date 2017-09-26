@@ -125,9 +125,12 @@ namespace Rock.Rest.Controllers
                 var reservation = reservationWithDates.Reservation;
                 foreach ( var reservationDateTime in reservationWithDates.ReservationDateTimes )
                 {
+                    var reservationStartDateTime = reservationDateTime.StartDateTime.AddMinutes( -reservation.SetupTime ?? 0 );
+                    var reservationEndDateTime = reservationDateTime.EndDateTime.AddMinutes( reservation.CleanupTime ?? 0 );
+
                     if (
-                        ( ( reservationDateTime.StartDateTime > startDateTime ) || ( reservationDateTime.EndDateTime > startDateTime ) ) &&
-                        ( ( reservationDateTime.StartDateTime < endDateTime ) || ( reservationDateTime.EndDateTime < endDateTime ) ) )
+                        ( ( reservationStartDateTime >= startDateTime ) || ( reservationEndDateTime >= startDateTime ) ) &&
+                        ( ( reservationStartDateTime < endDateTime ) || ( reservationEndDateTime < endDateTime ) ) )
                     {
                         reservationOccurrenceList.Add( new ReservationOccurrence
                         {
@@ -138,11 +141,12 @@ namespace Rock.Rest.Controllers
                             ReservationResources = reservation.ReservationResources.ToList(),
                             EventStartDateTime = reservationDateTime.StartDateTime,
                             EventEndDateTime = reservationDateTime.EndDateTime,
-                            ReservationStartDateTime = reservationDateTime.StartDateTime.AddMinutes( -reservation.SetupTime ?? 0 ),
-                            ReservationEndDateTime = reservationDateTime.EndDateTime.AddMinutes( reservation.CleanupTime ?? 0 ),
+                            ReservationStartDateTime = reservationStartDateTime,
+                            ReservationEndDateTime = reservationStartDateTime,
                             SetupPhotoId = reservation.SetupPhotoId,
                             Note = reservation.Note,
-                            NumberAttending = reservation.NumberAttending
+                            NumberAttending = reservation.NumberAttending,
+                            ModifiedDateTime = reservation.ModifiedDateTime
                         } );
                     }
                 }
@@ -167,6 +171,7 @@ namespace Rock.Rest.Controllers
         public int? SetupPhotoId { get; set; }
         public string Note { get; set; }
         public int? NumberAttending { get; set; }
+        public DateTime? ModifiedDateTime { get; set; }
 
     }
 }

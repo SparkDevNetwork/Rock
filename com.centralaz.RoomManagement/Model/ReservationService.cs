@@ -66,9 +66,12 @@ namespace com.centralaz.RoomManagement.Model
                 var reservation = reservationWithDates.Reservation;
                 foreach ( var reservationDateTime in reservationWithDates.ReservationDateTimes )
                 {
+                    var reservationStartDateTime = reservationDateTime.StartDateTime.AddMinutes( -reservation.SetupTime ?? 0 );
+                    var reservationEndDateTime = reservationDateTime.EndDateTime.AddMinutes( reservation.CleanupTime ?? 0 );
+
                     if (
-                        ( ( reservationDateTime.StartDateTime > filterStartDateTime ) || ( reservationDateTime.EndDateTime > filterStartDateTime ) ) &&
-                        ( ( reservationDateTime.StartDateTime < filterEndDateTime ) || ( reservationDateTime.EndDateTime < filterEndDateTime ) ) )
+                        ( ( reservationStartDateTime >= filterStartDateTime ) || ( reservationEndDateTime >= filterStartDateTime ) ) &&
+                        ( ( reservationStartDateTime < filterEndDateTime ) || ( reservationEndDateTime < filterEndDateTime ) ) )
                     {
                         reservationSummaryList.Add( new ReservationSummary
                         {
@@ -80,8 +83,8 @@ namespace com.centralaz.RoomManagement.Model
                             ReservationResources = reservation.ReservationResources.ToList(),
                             EventStartDateTime = reservationDateTime.StartDateTime,
                             EventEndDateTime = reservationDateTime.EndDateTime,
-                            ReservationStartDateTime = reservationDateTime.StartDateTime.AddMinutes( -reservation.SetupTime ?? 0 ),
-                            ReservationEndDateTime = reservationDateTime.EndDateTime.AddMinutes( reservation.CleanupTime ?? 0 ),
+                            ReservationStartDateTime = reservationStartDateTime,
+                            ReservationEndDateTime = reservationEndDateTime,
                             EventDateTimeDescription = GetFriendlyScheduleDescription( reservationDateTime.StartDateTime, reservationDateTime.EndDateTime ),
                             EventTimeDescription = GetFriendlyScheduleDescription( reservationDateTime.StartDateTime, reservationDateTime.EndDateTime, false ),
                             ReservationDateTimeDescription = GetFriendlyScheduleDescription( reservationDateTime.StartDateTime.AddMinutes( -reservation.SetupTime ?? 0 ), reservationDateTime.EndDateTime.AddMinutes( reservation.CleanupTime ?? 0 ) ),
