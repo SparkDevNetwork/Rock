@@ -24,12 +24,10 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
@@ -62,22 +60,22 @@ namespace RockWeb.Blocks.Communication
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
 
-            gCommunication.DataKeyNames = new string[] { "Id" };
-            gCommunication.Actions.ShowAdd = true;
-            gCommunication.Actions.AddClick += Actions_AddClick;
-            gCommunication.GridRebind += gCommunication_GridRebind;
+            gCommunicationTemplates.DataKeyNames = new string[] { "Id" };
+            gCommunicationTemplates.Actions.ShowAdd = true;
+            gCommunicationTemplates.Actions.AddClick += Actions_AddClick;
+            gCommunicationTemplates.GridRebind += gCommunicationTemplates_GridRebind;
 
             // The created by column/filter should only be displayed if user is allowed to approve
             _canEdit = IsUserAuthorized( Authorization.EDIT );
             ppCreatedBy.Visible = _canEdit;
-            RockBoundField createdByField = gCommunication.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "CreatedByPersonAlias.Person.FullName" );
+            RockBoundField createdByField = gCommunicationTemplates.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "CreatedByPersonAlias.Person.FullName" );
             createdByField.Visible = _canEdit;
 
-            SecurityField securityField = gCommunication.ColumnsOfType<SecurityField>().FirstOrDefault();
+            SecurityField securityField = gCommunicationTemplates.ColumnsOfType<SecurityField>().FirstOrDefault();
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.CommunicationTemplate ) ).Id;
 
             // make a custom delete confirmation dialog
-            gCommunication.ShowConfirmDeleteDialog = false;
+            gCommunicationTemplates.ShowConfirmDeleteDialog = false;
 
             string deleteScript = @"
     $('table.js-grid-communicationtemplate-list a.grid-delete-button').click(function( e ){
@@ -98,7 +96,7 @@ namespace RockWeb.Blocks.Communication
         });
     });
 ";
-            ScriptManager.RegisterStartupScript( gCommunication, gCommunication.GetType(), "deleteCommunicationTemplateScript", deleteScript, true );
+            ScriptManager.RegisterStartupScript( gCommunicationTemplates, gCommunicationTemplates.GetType(), "deleteCommunicationTemplateScript", deleteScript, true );
         }
 
         /// <summary>
@@ -153,6 +151,7 @@ namespace RockWeb.Blocks.Communication
 
                         break;
                     }
+
                 case "Created By":
                     {
                         int? personId = e.Value.AsIntegerOrNull();
@@ -182,21 +181,21 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Handles the RowSelected event of the gCommunication control.
+        /// Handles the RowSelected event of the gCommunicationTemplates control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
-        protected void gCommunication_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        protected void gCommunicationTemplates_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "TemplateId", e.RowKeyId );
         }
 
         /// <summary>
-        /// Handles the Delete event of the gCommunication control.
+        /// Handles the Delete event of the gCommunicationTemplates control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gCommunication_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        protected void gCommunicationTemplates_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var rockContext = new RockContext();
             var service = new CommunicationTemplateService( rockContext );
@@ -225,11 +224,11 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gCommunication control.
+        /// Handles the GridRebind event of the gCommunicationTemplates control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void gCommunication_GridRebind( object sender, EventArgs e )
+        public void gCommunicationTemplates_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -243,7 +242,6 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void BindFilter()
         {
-
             if ( !Page.IsPostBack )
             {
                 if ( !_canEdit )
@@ -284,7 +282,7 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            var sortProperty = gCommunication.SortProperty;
+            var sortProperty = gCommunicationTemplates.SortProperty;
 
             if ( sortProperty != null )
             {
@@ -313,16 +311,16 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            gCommunication.DataSource = viewableCommunications;
-            gCommunication.DataBind();
+            gCommunicationTemplates.DataSource = viewableCommunications;
+            gCommunicationTemplates.DataBind();
         }
 
         /// <summary>
-        /// Handles the RowDataBound event of the gCommunication control.
+        /// Handles the RowDataBound event of the gCommunicationTemplates control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gCommunication_RowDataBound( object sender, GridViewRowEventArgs e )
+        protected void gCommunicationTemplates_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             Literal lSupports = e.Row.FindControl( "lSupports" ) as Literal;
             CommunicationTemplate communicationTemplate = e.Row.DataItem as CommunicationTemplate;
@@ -333,7 +331,7 @@ namespace RockWeb.Blocks.Communication
                 {
                     html.AppendLine( "<span class='label label-success' title='This template contains an email template that supports the new communication wizard'>Email Wizard</span>" );
                 }
-                else if (!string.IsNullOrEmpty(communicationTemplate.Message))
+                else if ( !string.IsNullOrEmpty( communicationTemplate.Message ) )
                 {
                     html.AppendLine( "<span class='label label-default' title='This template does not contain an email template that supports the new communication wizard'>Legacy Email Template</span>" );
                 }
