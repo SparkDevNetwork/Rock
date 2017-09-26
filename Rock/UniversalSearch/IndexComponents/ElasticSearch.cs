@@ -626,17 +626,22 @@ namespace Rock.UniversalSearch.IndexComponents
         }
 
 
+        public override IndexModelBase GetDocumentById( Type documentType, int id )
+        {
+            return GetDocumentById( documentType, id.ToString() );
+        }
+
         /// <summary>
         /// Gets the document by identifier.
         /// </summary>
         /// <param name="documentType">Type of the document.</param>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public override IndexModelBase GetDocumentById( Type documentType, int id )
+        public override IndexModelBase GetDocumentById( Type documentType, string id )
         {
             var indexName = documentType.Name.ToLower();
 
-            var request = new GetRequest( indexName, indexName, id.ToString() ) { };
+            var request = new GetRequest( indexName, indexName, id ) { };
 
             var result = _client.Get<dynamic>( request );
 

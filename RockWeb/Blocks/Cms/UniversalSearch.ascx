@@ -23,6 +23,7 @@
                 <h1 class="panel-title"><i class="fa fa-search"></i> Universal Search</h1>
             </div>
             <div class="panel-body">
+                <Rock:NotificationBox ID="nbWarnings" runat="server" NotificationBoxType="Warning" />
 
                 <asp:Literal ID="lPreHtml" runat="server" />
                 <div class="input-group searchbox">
