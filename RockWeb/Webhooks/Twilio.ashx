@@ -32,7 +32,7 @@ public class Twilio : IHttpHandler
     private HttpRequest request;
     private HttpResponse response;
 
-    private const bool ENABLE_LOGGING = true;
+    private const bool ENABLE_LOGGING = false;
     
     public void ProcessRequest( HttpContext context )
     {
