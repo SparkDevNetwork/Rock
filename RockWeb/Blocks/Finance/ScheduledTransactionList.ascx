@@ -17,7 +17,7 @@
                             <Rock:NumberRangeEditor ID="nreAmount" runat="server" Label="Amount Range" NumberType="Double" />
                             <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency" />
                             <Rock:DateRangePicker ID="drpDates" runat="server" Label="Created" />
-                            <Rock:RockDropDownList ID="ddlAccount" runat="server" Label="Account" />
+                            <Rock:RockDropDownList ID="ddlAccount" runat="server" Label="Account" EnhanceForLongLists="true" />
                             <Rock:RockCheckBox ID="cbIncludeInactive" runat="server" Label="Include Inactive Schedules" Text="Yes" />
                         </Rock:GridFilter>
                         <Rock:Grid ID="gList" AllowSorting="true" runat="server" EmptyDataText="No Scheduled Transactions Found"

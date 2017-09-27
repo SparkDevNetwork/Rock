@@ -193,7 +193,7 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" 
-                            Required="true" ValidationGroup="ConnectionWorkflow" />
+                            Required="true" ValidationGroup="ConnectionWorkflow" EnhanceForLongLists="true" />
                     </div>
                 </div>
 

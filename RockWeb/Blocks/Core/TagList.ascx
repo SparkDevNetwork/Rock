@@ -13,7 +13,7 @@
 
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server" >
-                        <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" />
+                        <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" EnhanceForLongLists="true" />
                         <Rock:RockRadioButtonList ID="rblScope" runat="server" Label="Scope" RepeatDirection="Horizontal" 
                             AutoPostBack="true" OnSelectedIndexChanged="rblScope_SelectedIndexChanged">
                             <asp:ListItem Value="Organization" Text="Organizational" Selected="True" />
