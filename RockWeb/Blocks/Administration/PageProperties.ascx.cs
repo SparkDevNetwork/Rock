@@ -110,10 +110,9 @@ namespace RockWeb.Blocks.Administration
 
                 if ( pageCache != null && pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
-                    var blockContexts = new Dictionary<string, string>();
+                    var blockContexts = new List<Tuple<string, string, List<BlockCache>>>();
                     foreach ( var block in pageCache.Blocks )
                     {
-
                         try
                         {
                             var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
@@ -122,10 +121,14 @@ namespace RockWeb.Blocks.Administration
                                 blockControl.SetBlock( pageCache, block );
                                 foreach ( var context in blockControl.ContextTypesRequired )
                                 {
-                                    if ( !blockContexts.ContainsKey( context.Name ) )
+                                    var tuple = blockContexts.FirstOrDefault( t => t.Item1 == context.Name );
+                                    if ( tuple == null )
                                     {
-                                        blockContexts.Add( context.Name, context.FriendlyName );
+                                        tuple = new Tuple<string, string, List<BlockCache>>( context.Name, context.FriendlyName, new List<BlockCache>() );
+                                        blockContexts.Add( tuple );
                                     }
+
+                                    tuple.Item3.Add( block );
                                 }
                             }
                         }
@@ -137,16 +140,17 @@ namespace RockWeb.Blocks.Administration
 
                     phContextPanel.Visible = blockContexts.Count > 0;
 
-                    foreach ( var context in blockContexts )
+                    foreach ( var context in blockContexts.OrderBy( t => t.Item2 ) )
                     {
                         var tbContext = new RockTextBox();
-                        tbContext.ID = string.Format( "context_{0}", context.Key.Replace( '.', '_' ) );
+                        tbContext.ID = string.Format( "context_{0}", context.Item1.Replace( '.', '_' ) );
                         tbContext.Required = true;
-                        tbContext.Label = context.Value + " Parameter Name";
-                        tbContext.Help = "The page parameter name that contains the id of this context entity.";
-                        if ( pageCache.PageContexts.ContainsKey( context.Key ) )
+                        tbContext.Label = context.Item2 + " Parameter Name";
+                        tbContext.Help = string.Format( "The page parameter name that contains the id of this context entity. This parameter will be used by the following {0}: {1}",
+                            "block".PluralizeIf( context.Item3.Count > 1 ), string.Join( ", ", context.Item3 ) );
+                        if ( pageCache.PageContexts.ContainsKey( context.Item1 ) )
                         {
-                            tbContext.Text = pageCache.PageContexts[context.Key];
+                            tbContext.Text = pageCache.PageContexts[context.Item1];
                         }
 
                         phContext.Controls.Add( tbContext );
