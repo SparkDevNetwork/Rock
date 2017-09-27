@@ -735,6 +735,7 @@ namespace Rock.Web.UI.Controls
                 _ddlFieldType.SelectedIndexChanged += _ddlFieldType_SelectedIndexChanged;
                 _ddlFieldType.DataValueField = "Id";
                 _ddlFieldType.DataTextField = "Name";
+                _ddlFieldType.EnhanceForLongLists = true;
                 Controls.Add( _ddlFieldType );
 
                 _phQualifiers = new PlaceHolder();

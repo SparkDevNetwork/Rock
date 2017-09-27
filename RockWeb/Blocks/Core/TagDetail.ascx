@@ -51,7 +51,7 @@
                                     <Rock:CategoryPicker ID="cpCategory" runat="server" Required="false" Label="Category" EntityTypeName="Rock.Model.Tag" />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockDropDownList id="ddlEntityType" runat="server" Label="Entity Type" />
+                                    <Rock:RockDropDownList id="ddlEntityType" runat="server" Label="Entity Type" EnhanceForLongLists="true" />
                                     <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
                                     <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
                                 </div>

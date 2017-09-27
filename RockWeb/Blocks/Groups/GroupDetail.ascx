@@ -195,7 +195,7 @@
                         <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Group Sync Settings">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:DataViewPicker ID="dvpSyncDataview" Label="Sync Data View" runat="server"></Rock:DataViewPicker>
+                                    <Rock:DataViewPicker ID="dvpSyncDataview" Label="Sync Data View" runat="server" EnhanceForLongLists="true" ></Rock:DataViewPicker>
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="rbCreateLoginDuringSync" runat="server" Label="Create Login During Sync" Help="If the individual does not have a login should one be created during the sync process?" />
