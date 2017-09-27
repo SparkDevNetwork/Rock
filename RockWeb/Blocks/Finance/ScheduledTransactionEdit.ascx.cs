@@ -1338,7 +1338,8 @@ achieve our mission.  We are so grateful for your commitment.
         /// </summary>
         private void RegisterScript()
         {
-            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
+            RockPage.AddScriptLink(ResolveUrl("~/Scripts/jquery.payment.min.js"));
+            RockPage.AddScriptLink(ResolveUrl("~/Scripts/Rock/Validate/creditcardvalidation.js"));
 
             int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
 
@@ -1404,9 +1405,6 @@ achieve our mission.  We are so grateful for your commitment.
                 $('#{2}').val('None');
             }}
         }});
-
-        // Detect credit card type
-        $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
         // Toggle credit card display if saved card option is available
         $('div.radio-content').prev('.form-group').find('input:radio').unbind('click').on('click', function () {{

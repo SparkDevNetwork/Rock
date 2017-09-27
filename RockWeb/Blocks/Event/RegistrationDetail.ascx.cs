@@ -1489,13 +1489,8 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void RegisterClientScript()
         {
-            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
-
-            string script = @"
-    // Detect credit card type
-    $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
-";
-            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registration-detail-card-info", script, true );
+            RockPage.AddScriptLink(ResolveUrl("~/Scripts/jquery.payment.min.js"));
+            RockPage.AddScriptLink(ResolveUrl("~/Scripts/Rock/Validate/creditcardvalidation.js"));
 
             string deleteScript = @"
 

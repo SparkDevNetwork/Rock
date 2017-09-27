@@ -81,31 +81,31 @@
                                     <fieldset>
                                         <asp:PlaceHolder ID="phGiveAsPerson" runat="server">
                                             <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="false" />
-                                            <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name" />
-                                            <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name" />
+                                            <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name" FormGroupCssClass="required" ValidationGroup="PersonalInfo" />
+                                            <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name" FormGroupCssClass="required" ValidationGroup="PersonalInfo" />
                                         </asp:PlaceHolder>
                                         <asp:PlaceHolder ID="phGiveAsBusiness" runat="server" Visible="false">
                                             <asp:HiddenField ID="hfBusinessesLoaded" runat="server" />
                                             <Rock:RockRadioButtonList ID="cblBusiness" runat="server" Label="Business" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="cblBusinessOption_SelectedIndexChanged" />
-                                            <Rock:RockTextBox ID="txtBusinessName" runat="server" Label="Business Name" />
+                                            <Rock:RockTextBox ID="txtBusinessName" runat="server" Label="Business Name" FormGroupCssClass="required" />
                                         </asp:PlaceHolder>
-                                        <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="Address" />
-                                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
-                                        <Rock:EmailBox ID="txtEmail" runat="server" Label="Email"></Rock:EmailBox>
+                                        <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="Address" FormGroupCssClass="required" />
+                                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone" FormGroupCssClass="required"></Rock:PhoneNumberBox>
+                                        <Rock:EmailBox ID="txtEmail" runat="server" Label="Email" FormGroupCssClass="required"></Rock:EmailBox>
                                         <Rock:RockCheckBox ID="cbGiveAnonymously" runat="server" Text="Give Anonymously" />
                                         <asp:PlaceHolder ID="phBusinessContact" runat="server" Visible="false">
                                             <hr />
                                             <h4>Business Contact</h4>
                                             <div class="row">
                                                 <div class="col-sm-6">
-                                                    <Rock:RockTextBox ID="txtBusinessContactFirstName" runat="server" Label="First Name" />
+                                                    <Rock:RockTextBox ID="txtBusinessContactFirstName" runat="server" Label="First Name" FormGroupCssClass="required" />
                                                 </div>
                                                 <div class="col-sm-6">
-                                                    <Rock:RockTextBox ID="txtBusinessContactLastName" runat="server" Label="Last Name" />
+                                                    <Rock:RockTextBox ID="txtBusinessContactLastName" runat="server" Label="Last Name" FormGroupCssClass="required" />
                                                 </div>
                                             </div>
-                                            <Rock:PhoneNumberBox ID="pnbBusinessContactPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
-                                            <Rock:RockTextBox ID="txtBusinessContactEmail" runat="server" Label="Email"></Rock:RockTextBox>
+                                            <Rock:PhoneNumberBox ID="pnbBusinessContactPhone" runat="server" Label="Phone" FormGroupCssClass="required"></Rock:PhoneNumberBox>
+                                            <Rock:RockTextBox ID="txtBusinessContactEmail" runat="server" Label="Email" FormGroupCssClass="required"></Rock:RockTextBox>
                                         </asp:PlaceHolder>
                                     </fieldset>
                                 </div>
@@ -136,7 +136,7 @@
 
                             <div id="divNewPayment" runat="server" class="radio-content">
 
-                                <asp:HiddenField ID="hfPaymentTab" runat="server" />
+                                <Rock:HiddenFieldWithClass ID="hfPaymentTab" runat="server" CssClass="payment-tab" />
                                 <asp:PlaceHolder ID="phPills" runat="server" Visible="false">
                                     <ul class="nav nav-pills">
                                         <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">Card</a></li>
@@ -150,7 +150,8 @@
                                         <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false"></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false"></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false"></Rock:RockTextBox>
-                                        <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Card Number" MaxLength="19" CssClass="credit-card" />
+                                        <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="cc-number js-numeric" FormGroupCssClass="required" type="tel" autocomplete="cc-number" />
+                                      
                                         <ul class="card-logos list-unstyled">
                                             <li class="card-visa"></li>
                                             <li class="card-mastercard"></li>
@@ -159,13 +160,13 @@
                                         </ul>
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
+                                                <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" FormGroupCssClass="cc-exp required" />
                                             </div>
                                             <div class="col-md-6">
-                                                <Rock:RockTextBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
+                                                <Rock:RockTextBox ID="txtCVV" runat="server" Label="Card Security Code" type="tel" CssClass="cc-cvc input-width-xs js-numeric" FormGroupCssClass="required" autocomplete="cc-csc" MaxLength="4" />
                                             </div>
                                         </div>
-                                        <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
+                                        <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" FormGroupCssClass="required" />
                                         <div id="divBillingAddress" runat="server" class="toggle-content">
                                             <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
                                         </div>                                    
@@ -173,9 +174,9 @@
 
                                     <div id="divACHPaymentInfo" runat="server" visible="false" class="tab-pane">
                                         <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Account Name" />
-                                        <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing Number" />
-                                        <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account Number" />
-                                        <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">
+                                        <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" CssClass="js-numeric" FormGroupCssClass="required" />
+                                        <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account #" CssClass="js-numeric" FormGroupCssClass="required" />
+                                        <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type" FormGroupCssClass="required" >
                                             <asp:ListItem Text="Checking" Value="checking" Selected="true" />
                                             <asp:ListItem Text="Savings" Value="savings" />
                                         </Rock:RockRadioButtonList>
@@ -198,17 +199,15 @@
 
             </div>
 
-            <div class="panel panel-default no-border">
-                <div class="panel-body">
-                    <Rock:NotificationBox ID="nbSelectionMessage" runat="server" Visible="false"></Rock:NotificationBox>
+            <div class="panel no-border">
+              <Rock:NotificationBox ID="nbSelectionMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
-                    <div class="actions clearfix">
-                        <a id="lHistoryBackButton" runat="server" class="btn btn-link" href="javascript: window.history.back();" >Previous</a>
-                        <asp:LinkButton ID="btnPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnPaymentInfoNext_Click" />
-                        <asp:LinkButton ID="btnStep2PaymentPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnStep2PaymentPrev_Click" />
-                        <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary pull-right" Text="Next" />
-                    </div>
-                </div>
+              <div class="actions clearfix">
+                  <a id="lHistoryBackButton" runat="server" class="btn btn-link" href="javascript: window.history.back();" >Previous</a>
+                  <asp:LinkButton ID="btnPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnPaymentInfoNext_Click" />
+                  <asp:LinkButton ID="btnStep2PaymentPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnStep2PaymentPrev_Click" />
+                  <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary pull-right" Text="Next" />
+              </div>
             </div>
             
             <iframe id="iframeStep2" src="<%=this.Step2IFrameUrl%>" style="display:none"></iframe>

@@ -83,16 +83,17 @@
                                                 <div id="divNewCard" runat="server" class="radio-content">
                                                     <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false"></Rock:RockTextBox>
                                                     <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false"></Rock:RockTextBox>
-                                                    <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false"></Rock:RockTextBox>
-                                                    <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Card Number" MaxLength="19" CssClass="credit-card" />
+                                                    <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false" FormGroupCssClass="required"></Rock:RockTextBox>
+                                                    <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="cc-number js-numeric" FormGroupCssClass="required" type="tel" autocomplete="cc-number" />
+
                                                     <ul class="card-logos">
                                                         <li class="card-visa"></li>
                                                         <li class="card-mastercard"></li>
                                                         <li class="card-amex"></li>
                                                         <li class="card-discover"></li>
                                                     </ul>
-                                                    <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
-                                                    <Rock:NumberBox ID="txtCVV" Label="Card Security Code" runat="server" MaxLength="4" />
+                                                    <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" FormGroupCssClass="cc-exp required" />
+                                                    <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="cc-cvc input-width-xs js-numeric" FormGroupCssClass="required" runat="server" MaxLength="4" />
                                                     <div id="divBillingAddress" runat="server">
                                                         <Rock:AddressControl ID="acBillingAddress" runat="server" Label="Billing Address" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
                                                     </div>

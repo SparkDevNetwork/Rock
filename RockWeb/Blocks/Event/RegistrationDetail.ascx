@@ -193,7 +193,7 @@
                                         <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false" Required="true" ValidationGroup="Payment" ></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false" Required="true" ValidationGroup="Payment"></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false" Required="true" ValidationGroup="Payment" ></Rock:RockTextBox>
-                                        <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Card Number" MaxLength="19" CssClass="credit-card" Required="true" ValidationGroup="Payment" />
+                                        <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="cc-num js-numeric" FormGroupCssClass="required" Required="true" ValidationGroup="Payment" type="tel" autocomplete="cc-number" />
 
                                         <ul class="card-logos list-unstyled">
                                             <li class="card-visa"></li>
@@ -204,7 +204,7 @@
                                         
                                         <div class="row">
                                             <div class="col-sm-6">
-                                                <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" Required="true" ValidationGroup="Payment" />
+                                                <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" FormGroupCssClass="cc-exp required" Required="true" ValidationGroup="Payment" />
                                             </div>
                                             <div class="col-sm-6">
                                                 <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" Required="true" ValidationGroup="Payment" />

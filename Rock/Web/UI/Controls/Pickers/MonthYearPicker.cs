@@ -363,14 +363,14 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _monthDropDownList );
             _monthDropDownList.ID = "monthDropDownList";
             _monthDropDownList.SelectedIndexChanged += monthYearDropDownList_SelectedIndexChanged;
-            _monthDropDownList.CssClass = "form-control input-width-sm";
+            _monthDropDownList.CssClass = "form-control input-width-sm js-month";
 
             BindMonths();
 
             _yearDropDownList = new DropDownList();
             Controls.Add( _yearDropDownList );
             _yearDropDownList.ID = "yearDropDownList_";
-            _yearDropDownList.CssClass = "form-control input-width-sm";
+            _yearDropDownList.CssClass = "form-control input-width-sm js-year";
 
             this.RequiredFieldValidator.ControlToValidate = _yearDropDownList.ID;
 

@@ -2151,14 +2151,12 @@ TransactionAccountDetails: [
                 errorMessages.Add( "Make sure to enter a valid address.  An address is required for us to process this transaction" );
             }
 
-            bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
-            if ( displayPhone && string.IsNullOrWhiteSpace( pnbPhone.Number ) )
+            if ( pnbPhone.Visible && string.IsNullOrWhiteSpace( pnbPhone.Number ) )
             {
                 errorMessages.Add( "Make sure to enter a valid phone number.  A phone number is required for us to process this transaction" );
             }
 
-            bool displayEmail = GetAttributeValue( "DisplayEmail" ).AsBoolean();
-            if ( displayEmail && string.IsNullOrWhiteSpace( txtEmail.Text ) )
+            if ( txtEmail.Visible && string.IsNullOrWhiteSpace( txtEmail.Text ) )
             {
                 errorMessages.Add( "Make sure to enter a valid email address.  An email address is required for us to send you a payment confirmation" );
             }
@@ -2169,12 +2167,12 @@ TransactionAccountDetails: [
                 {
                     errorMessages.Add( "Make sure to enter both a first and last name for Business Contact" );
                 }
-                if ( displayPhone && string.IsNullOrWhiteSpace( pnbBusinessContactPhone.Number ) )
+                if ( pnbBusinessContactPhone.Visible && string.IsNullOrWhiteSpace( pnbBusinessContactPhone.Number ) )
                 {
                     errorMessages.Add( "Make sure to enter a valid Business Contact phone number." );
                 }
 
-                if ( displayEmail && string.IsNullOrWhiteSpace( txtBusinessContactEmail.Text ) )
+                if ( txtBusinessContactEmail.Visible && string.IsNullOrWhiteSpace( txtBusinessContactEmail.Text ) )
                 {
                     errorMessages.Add( "Make sure to enter a valid Business Contact email address." );
                 }
@@ -3102,7 +3100,8 @@ TransactionAccountDetails: [
         /// </summary>
         private void RegisterScript()
         {
-            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
+            RockPage.AddScriptLink(ResolveUrl("~/Scripts/jquery.payment.min.js"));
+            RockPage.AddScriptLink(ResolveUrl("~/Scripts/Rock/Validate/creditcardvalidation.js"));
 
             int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
 
@@ -3143,9 +3142,6 @@ TransactionAccountDetails: [
                 $('#{1}').val('ACH');
             }}
         }});
-
-        // Detect credit card type
-        $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
         // Toggle credit card display if saved card option is available
         $('div.radio-content').prev('div.radio-list').find('input:radio').unbind('click').on('click', function () {{
