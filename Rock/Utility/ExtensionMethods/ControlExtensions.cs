@@ -290,9 +290,17 @@ namespace Rock
         /// <param name="values">The values.</param>
         public static void SetValues( this CheckBoxList checkBoxList, IEnumerable<string> values )
         {
-            foreach ( ListItem item in checkBoxList.Items )
+            if ( checkBoxList is Rock.Web.UI.Controls.CampusesPicker )
             {
-                item.Selected = values.Contains( item.Value, StringComparer.OrdinalIgnoreCase );
+                // Campus Picker will add the items if neccessary, so needs to be handled differently
+                ( (Rock.Web.UI.Controls.CampusesPicker)checkBoxList ).SelectedCampusIds = values.AsIntegerList();
+            }
+            else
+            {
+                foreach ( ListItem item in checkBoxList.Items )
+                {
+                    item.Selected = values.Contains( item.Value, StringComparer.OrdinalIgnoreCase );
+                }
             }
         }
 
@@ -303,10 +311,18 @@ namespace Rock
         /// <param name="values">The values.</param>
         public static void SetValues( this CheckBoxList checkBoxList, IEnumerable<int> values )
         {
-            foreach ( ListItem item in checkBoxList.Items )
+            if ( checkBoxList is Rock.Web.UI.Controls.CampusesPicker )
             {
-                int numValue = int.MinValue;
-                item.Selected = int.TryParse( item.Value, out numValue ) && values.Contains( numValue );
+                // Campus Picker will add the items if neccessary, so needs to be handled differently
+                ( (Rock.Web.UI.Controls.CampusesPicker)checkBoxList ).SelectedCampusIds = values.ToList();
+            }
+            else
+            {
+                foreach ( ListItem item in checkBoxList.Items )
+                {
+                    int numValue = int.MinValue;
+                    item.Selected = int.TryParse( item.Value, out numValue ) && values.Contains( numValue );
+                }
             }
         }
 
@@ -325,21 +341,30 @@ namespace Rock
         {
             try
             {
-                var valueItem = listControl.Items.FindByValue( value );
-                if ( valueItem == null && defaultValue != null )
+                int? intValue = value.AsIntegerOrNull();
+                if ( listControl is Rock.Web.UI.Controls.CampusPicker && intValue.HasValue )
                 {
-                    valueItem = listControl.Items.FindByValue( defaultValue );
-                }
-
-                if ( valueItem != null )
-                {
-                    listControl.SelectedValue = valueItem.Value;
+                    // Campus Picker will add the item if neccessary, so needs to be handled differently
+                    ( (Rock.Web.UI.Controls.CampusPicker)listControl ).SelectedCampusId = intValue.Value;
                 }
                 else
                 {
-                    if ( !(listControl is RadioButtonList) && listControl.Items.Count > 0 )
+                    var valueItem = listControl.Items.FindByValue( value );
+                    if ( valueItem == null && defaultValue != null )
                     {
-                        listControl.SelectedIndex = 0;
+                        valueItem = listControl.Items.FindByValue( defaultValue );
+                    }
+
+                    if ( valueItem != null )
+                    {
+                        listControl.SelectedValue = valueItem.Value;
+                    }
+                    else
+                    {
+                        if ( !( listControl is RadioButtonList ) && listControl.Items.Count > 0 )
+                        {
+                            listControl.SelectedIndex = 0;
+                        }
                     }
                 }
             }
