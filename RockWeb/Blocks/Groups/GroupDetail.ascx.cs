@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Registration Instance Page", "The page to display registration details.", false, "", "", 7 )]
     [LinkedPage( "Event Item Occurrence Page", "The page to display event item occurrence details.", false, "", "", 8 )]
     [LinkedPage( "Content Item Page", "The page to display registration details.", false, "", "", 9 )]
+    [BooleanField( "Prevent Selecting Inactive Campus", "Should inactive campuses be excluded from the campus field when editing a group?.", false, "", 10 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -552,7 +553,7 @@ namespace RockWeb.Blocks.Groups
 
             group.Name = tbName.Text;
             group.Description = tbDescription.Text;
-            group.CampusId = ddlCampus.SelectedValueAsInt();
+            group.CampusId = cpCampus.SelectedCampusId;
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
@@ -1232,7 +1233,8 @@ namespace RockWeb.Blocks.Groups
                 ddlGroupType.SetValue( CurrentGroupTypeId );
             }
 
-            ddlCampus.SetValue( group.CampusId );
+            cpCampus.IncludeInactive = !GetAttributeValue( "PreventSelectingInactiveCampus" ).AsBoolean();
+            cpCampus.SelectedCampusId = group.CampusId;
 
             GroupRequirementsState = group.GroupRequirements.ToList();
             GroupLocationsState = group.GroupLocations.ToList();
@@ -1712,10 +1714,6 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void LoadDropDowns( RockContext rockContext )
         {
-            ddlCampus.DataSource = CampusCache.All();
-            ddlCampus.DataBind();
-            ddlCampus.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
-
             ddlSignatureDocumentTemplate.Items.Clear();
             ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
             foreach ( var documentType in new SignatureDocumentTemplateService( rockContext )
