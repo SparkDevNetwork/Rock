@@ -99,6 +99,8 @@ namespace Rock.Web.UI.Controls
             writer.WriteLine();
 
             _hfValue.RenderControl( writer );
+            _hfValueDisableVrm.RenderControl( writer );
+
             writer.WriteLine();
 
             StringBuilder html = new StringBuilder();
