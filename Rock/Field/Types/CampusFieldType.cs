@@ -150,22 +150,8 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var campusPicker = new CampusPicker { ID = id };
-
-            var allCampuses = CampusCache.All();
-
-            bool includeInactive = ( configurationValues != null && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean() );
-
-            var campusList = allCampuses
-                .Where( c => !c.IsActive.HasValue || c.IsActive.Value || includeInactive )
-                .ToList();
-
-            if ( campusList.Any() )
-            {
-                campusPicker.Campuses = campusList;
-                return campusPicker;
-            }
-
-            return null;
+            campusPicker.IncludeInactive = ( configurationValues != null && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean() );
+            return campusPicker;
         }
 
         /// <summary>
@@ -212,7 +198,7 @@ namespace Rock.Field.Types
 
                 // get the item (or null) and set it
                 var campus = CampusCache.Read( guid );
-                campusPicker.SetValue( campus == null ? "0" : campus.Id.ToString() );
+                campusPicker.SelectedCampusId = campus == null ? 0 : campus.Id;
             }
         }
 
