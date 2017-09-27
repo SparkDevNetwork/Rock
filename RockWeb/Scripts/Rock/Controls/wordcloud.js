@@ -39,8 +39,8 @@ RockPage.AddScriptLink("~/Scripts/d3-cloud/d3.min.js");
             fill = d3.scaleLinear()
             .domain([0, 1, 2, 3, 4, 5, 6, 10, 15, 20, 100])
             .range(d3.schemeCategory20b),
-            w = 960,
-            h = 600,
+            w = svgWidth,
+            h = svgHeight,
             words = [],
             max, scale = 1,
             complete = 0,
