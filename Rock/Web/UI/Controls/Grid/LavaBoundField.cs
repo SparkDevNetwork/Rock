@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
     /// Process the field value through Lava and output the results.
     /// </summary>
     [ToolboxData( "<{0}:LavaBoundField runat=server></{0}:LavaBoundField>" )]
-    class LavaBoundField : RockBoundField
+    public class LavaBoundField : RockBoundField
     {
         /// <summary>
         /// The Lava template to process the value with.
