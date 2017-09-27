@@ -127,6 +127,8 @@ namespace Rock.Lava.Blocks
                 }
                 else
                 {
+                    var url = ResolveRockUrl( parms["url"] );
+
                     if ( parms.ContainsKey( "id" ) )
                     {
                         var identifier = parms["id"];
@@ -137,7 +139,7 @@ namespace Rock.Lava.Blocks
                             var scriptControl = page.Header.FindControl( controlId );
                             if ( scriptControl == null )
                             {
-                                scriptControl = new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script src='{parms["url"]}' type='text/javascript'></script>{Environment.NewLine}" );
+                                scriptControl = new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script src='{url}' type='text/javascript'></script>{Environment.NewLine}" );
                                 scriptControl.ID = controlId;
                                 page.Header.Controls.Add( scriptControl );
                             }
@@ -145,10 +147,37 @@ namespace Rock.Lava.Blocks
                     }
                     else
                     { 
-                        page.Header.Controls.Add( new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script src='{parms["url"]}' type='text/javascript'></script>{Environment.NewLine}" ) );
+                        page.Header.Controls.Add( new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script src='{url}' type='text/javascript'></script>{Environment.NewLine}" ) );
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Resolves the rock URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        private string ResolveRockUrl(string url )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( url.StartsWith( "~~" ) )
+            {
+                string theme = "Rock";
+                if ( page.Theme.IsNotNullOrWhitespace() )
+                {
+                    theme = page.Theme;
+                }
+                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhitespace() )
+                {
+                    theme = page.Site.Theme;
+                }
+
+                url = "~/Themes/" + theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
+            }
+
+            return page.ResolveUrl( url );
         }
 
         /// <summary>
