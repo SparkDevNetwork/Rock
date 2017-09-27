@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Options", "Show an Options button in the title panel for showing images or summary.", false, order: 3 )]
     [IntegerField( "Image Height", "If the Show Images option is selected, the image height", false, 200, order: 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
-    [BooleanField( "Show Totals", "Should the Total Results Summary be displayed (summary will always be displayed when there is no context, i.e. Batch, Person, registration).", false, "", 6 )]
+    [BooleanField( "Show Account Summary", "Should the account summary be displayed at the bottom of the list?", false, order: 6 )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
     {
         private bool _isExporting = false;
@@ -1156,10 +1156,7 @@ namespace RockWeb.Blocks.Finance
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
 
-            _isExporting = false;
-
-            if ( GetAttributeValue("ShowTotals").AsBoolean() || 
-                ( _batch == null && _scheduledTxn == null && _registration == null && _person == null ) )
+            if ( GetAttributeValue( "ShowAccountSummary" ).AsBoolean() && !isExporting )
             {
                 pnlSummary.Visible = true;
 
@@ -1195,6 +1192,8 @@ namespace RockWeb.Blocks.Finance
             {
                 pnlSummary.Visible = false;
             }
+
+            _isExporting = false;
         }
 
         /// <summary>
