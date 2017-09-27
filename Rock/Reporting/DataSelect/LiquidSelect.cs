@@ -110,9 +110,9 @@ namespace Rock.Reporting.DataSelect
         /// <returns></returns>
         public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
         {
-            var result = new LiquidField();
-            result.LiquidKey = entityType.Name;
-            result.LiquidTemplate = selection;
+            var result = new LavaField();
+            result.LavaKey = entityType.Name;
+            result.LavaTemplate = selection;
             return result;
         }
 

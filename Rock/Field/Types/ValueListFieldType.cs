@@ -45,6 +45,7 @@ namespace Rock.Field.Types
             configKeys.Add( "valueprompt" );
             configKeys.Add( "definedtype" );
             configKeys.Add( "customvalues" );
+            configKeys.Add( "allowhtml" );
             return configKeys;
         }
 
@@ -84,6 +85,14 @@ namespace Rock.Field.Types
             tbCustomValues.Label = "Custom Values";
             tbCustomValues.Help = "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1:text1,value2:text2,value3:text3,...'.";
 
+            var cbAllowHtml = new RockCheckBox();
+            controls.Add( cbAllowHtml );
+
+            // turn on AutoPostBack so that it'll create the Editor control based on AllowHtml
+            cbAllowHtml.AutoPostBack = true;
+            cbAllowHtml.Label = "Allow Html";
+            cbAllowHtml.Help = "Allow Html content in values.";
+
             return controls;
         }
 
@@ -98,6 +107,7 @@ namespace Rock.Field.Types
             configurationValues.Add( "valueprompt", new ConfigurationValue( "Label Prompt", "The text to display as a prompt in the label textbox.", "" ) );
             configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", "" ) );
             configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1:text1,value2:text2,value3:text3,...'.", "" ) );
+            configurationValues.Add( "allowhtml", new ConfigurationValue( "Allow Html", "Allow Html content in values", "" ) );
 
             if ( controls != null )
             {
@@ -112,6 +122,10 @@ namespace Rock.Field.Types
                 if ( controls.Count > 2 && controls[2] != null && controls[2] is RockTextBox )
                 {
                     configurationValues["customvalues"].Value = ( (RockTextBox)controls[2] ).Text;
+                }
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is RockCheckBox )
+                {
+                    configurationValues["allowhtml"].Value = ( ( RockCheckBox ) controls[3] ).Checked.ToTrueFalse();
                 }
             }
 
@@ -138,6 +152,10 @@ namespace Rock.Field.Types
                 if ( controls.Count > 2 && controls[2] != null && controls[2] is RockTextBox && configurationValues.ContainsKey( "customvalues" ) )
                 {
                    ( (RockTextBox)controls[2] ).Text = configurationValues["customvalues"].Value;
+                }
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is RockCheckBox && configurationValues.ContainsKey( "allowhtml" ) )
+                {
+                    ( ( RockCheckBox ) controls[3] ).Checked = configurationValues["allowhtml"].Value.AsBoolean();
                 }
             }
         }
@@ -217,6 +235,11 @@ namespace Rock.Field.Types
                 if ( configurationValues.ContainsKey( "customvalues" ) )
                 {
                     control.CustomValues = Helper.GetConfiguredValues( configurationValues, "customvalues");
+                }
+
+                if (control is ValueList && configurationValues.ContainsKey( "allowhtml" ) )
+                {
+                    ( control as ValueList ).AllowHtmlValue = configurationValues["allowhtml"].Value.AsBoolean();
                 }
             }
 

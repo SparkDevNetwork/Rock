@@ -216,6 +216,11 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public HiddenField _hfValue;
 
+        /// <summary>
+        /// The hf disable VRM
+        /// </summary>
+        public HiddenField _hfValueDisableVrm;
+
         #endregion
 
         #region Properties
@@ -232,6 +237,25 @@ namespace Rock.Web.UI.Controls
             set { ViewState["ValuePrompt"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to allow HTML content in the value
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow HTML value]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowHtmlValue
+        {
+            get
+            {
+                EnsureChildControls();
+                return _hfValueDisableVrm.Value.AsBoolean();
+            }
+            set
+            {
+                EnsureChildControls();
+                _hfValueDisableVrm.Value = value.ToTrueFalse();
+            }
+        }
 
         /// <summary>
         /// Gets or sets custom values.  If custom values are used, the value control will
@@ -304,6 +328,10 @@ namespace Rock.Web.UI.Controls
             _hfValue = new HiddenField();
             _hfValue.ID = this.ID + "_hfValue";
             Controls.Add( _hfValue );
+
+            _hfValueDisableVrm = new HiddenField();
+            _hfValueDisableVrm.ID = _hfValue.ID + "_dvrm";
+            Controls.Add( _hfValueDisableVrm );
         }
 
         /// <summary>
@@ -343,6 +371,8 @@ namespace Rock.Web.UI.Controls
             writer.WriteLine();
 
             _hfValue.RenderControl( writer );
+            _hfValueDisableVrm.RenderControl( writer );
+
             writer.WriteLine();
 
             StringBuilder valueHtml = new StringBuilder();
