@@ -1862,6 +1862,23 @@ namespace RockWeb.Blocks.Event
             var transaction = gateway.ChargeStep3( RegistrationTemplateState.FinancialGateway, resultQueryString, out errorMessage );
             if ( transaction == null  )
             {
+                string realMessage = errorMessage;
+
+                paymentInfo.Amount = amount;
+                paymentInfo.Email = registration.ConfirmationEmail;
+                paymentInfo.FirstName = registration.FirstName;
+                paymentInfo.LastName = registration.LastName;
+                paymentInfo.Comment1 = string.Format( "{0} ({1})", registration.RegistrationInstance.Name, registration.RegistrationInstance.Account.GlCode );
+                paymentInfo.IPAddress = GetClientIpAddress();
+                paymentInfo.AdditionalParameters = gateway.GetStep1Parameters( ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ) );
+
+                string result = gateway.ChargeStep1( RegistrationTemplateState.FinancialGateway, paymentInfo, out errorMessage );
+                if ( string.IsNullOrWhiteSpace( errorMessage ) && !string.IsNullOrWhiteSpace( result ) )
+                {
+                    hfStep2Url.Value = result;
+                }
+
+                errorMessage = realMessage;
                 return false;
             }
 
