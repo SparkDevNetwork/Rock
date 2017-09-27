@@ -46,6 +46,10 @@
 
 		<tbody>
 		{% for reservationSummary in reservationDate %}
+		<!-- Start with one total item because the overall status must also be approved -->
+		{% assign totalItems = 1 %}
+		{% assign approvedItems = 0 %}
+
 		{% if reservationSummary.ApprovalState == 'Unapproved' %}
 			{% assign textclass = 'text-warning' %}
 			{% assign rowclass = 'warning' %}
@@ -56,21 +60,29 @@
 			{% assign textclass = '' %}
 			{% assign rowclass = '' %}
 		{% endif %}
+		
+		<!-- if it's approved, increment the approved counter -->
+		{% if reservationSummary.ApprovalState == 'Approved' %}
+			{% assign approvedItems = approvedItems|Plus:1 %}
+		{% endif %}
+		
 			<tr class="{{ rowclass }}">
 				<td><span class="{{ textclass }}">{{ reservationSummary.ReservationName }}</span></td>
 				<td><span class="{{ textclass }}">{{ reservationSummary.EventDateTimeDescription }}</span></td>
 				<td><span class="{{ textclass }}">{{ reservationSummary.ReservationDateTimeDescription }}</span></td>
 				<td><span class="{{ textclass }}">
 					<ul>
+					{% assign totalItems = reservationSummary.Locations | Size  | Plus: totalItems %}
 					{% for reservationLocation in reservationSummary.Locations %}
-					<li>{{ reservationLocation.Location.Name }}{% if reservationLocation.ApprovalState == 2 %} <i class="fa fa-check"></i>{% endif %}</li>
+					<li>{{ reservationLocation.Location.Name }}{% if reservationLocation.ApprovalState == 2 %}{% assign approvedItems = approvedItems|Plus:1 %} <i class="fa fa-check"></i>{% endif %}</li>
 					{% endfor %}
 					</ul>
 				</span></td>
 				<td><span class="{{ textclass }}">
 				  <ul>
+  					{% assign totalItems = reservationSummary.Resources | Size | Plus: totalItems %}
 					{% for reservationResource in reservationSummary.Resources %}
-					<li>{{ reservationResource.Resource.Name }}({{reservationResource.Quantity}}) {% if reservationResource.ApprovalState == 2 %} <i class="fa fa-check"></i>{% endif %}</li>
+					<li>{{ reservationResource.Resource.Name }}({{reservationResource.Quantity}}) {% if reservationResource.ApprovalState == 2 %}{% assign approvedItems = approvedItems|Plus:1 %} <i class="fa fa-check"></i>{% endif %}</li>
 					{% endfor %}
 					</ul>
 				</span></td>
@@ -82,9 +94,21 @@
 				<td><span class="{{ textclass }}">
 				  {{ reservationSummary.ApprovalState }}
 				</span></td>
-				<td><span class="{{ textclass }}">
-				  <a href="{{ DetailsPage }}?ReservationId={{ reservationSummary.Id }}"><i class="fa fa-edit"></i></a>
-				</span></td>
+				<td>
+					<span class="{{ textclass }}">
+					  <a href="{{ DetailsPage }}?ReservationId={{ reservationSummary.Id }}"><i class="fa fa-edit"></i></a>
+					</span>
+					<div class="second circle" data-size="50" data-thickness="8" data-value="{{ approvedItems | DividedBy:totalItems}}" data-start-angle="11" data-line-cap="round" 
+						{% assign perComp = approvedItems | DividedBy:totalItems %}
+						{% if perComp >= 1 %}
+							data-fill="{&quot;color&quot;: &quot;#3aeabb&quot;}" data-animation-start-value="1.0" 
+						{% else %}
+						data-fill="{&quot;gradient&quot;: [&quot;#fdd250&quot;,&quot;#f46242&quot;], &quot;gradientAngle&quot;: 1}"
+						{% endif %}
+					>
+					 <strong></strong>
+					</div>
+				</td>
 			</tr>
 		{% endfor %}
 		</tbody>
@@ -94,8 +118,61 @@
 
 <script type="text/javascript">
 
+function pageLoad(sender, args) {
+  InitialiseSettings();
+}
+
+function InitialiseSettings(){
+		$('.second.circle').circleProgress({
+			}).on('circle-animation-progress', function(event, progress, stepValue) {
+			$(this).find('strong').html(Math.floor(stepValue*100) + '<i>%</i>');
+		});
+}
+
   $( document ).ready(function() {
-  $('.js-group-item').tooltip();
+		$('.js-group-item').tooltip();
+		InitialiseSettings();
   });
 
 </script>
+
+<style>
+.circles {
+  margin-bottom: -10px;
+}
+
+.circle {
+  width: 100px;
+  margin: 6px 6px 20px;
+  display: inline-block;
+  position: relative;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.circle canvas {
+  vertical-align: top;
+}
+
+.circle strong {
+  position: absolute;
+  top: 5px;
+  left: 2px;
+  width: 100%;
+  text-align: center;
+  line-height: 40px;
+  font-size: 12px;
+}
+
+.circle strong i {
+  font-style: normal;
+  font-size: 0.6em;
+  font-weight: normal;
+}
+
+.circle span {
+  display: block;
+  color: #aaa;
+  margin-top: 12px;
+}
+</style>

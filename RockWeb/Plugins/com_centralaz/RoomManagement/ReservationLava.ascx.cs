@@ -132,6 +132,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             // register lbPrint as a PostBackControl since it is returning a File download
             ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
             scriptManager.RegisterPostBackControl( lbPrint );
+
+            RockPage.AddScriptLink( "~/Plugins/com_centralaz/RoomManagement/Assets/Scripts/circle-progress.js", fingerprint: false );
         }
 
         /// <summary>
