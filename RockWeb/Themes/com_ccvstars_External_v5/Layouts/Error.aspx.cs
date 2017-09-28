@@ -25,7 +25,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 
-namespace RockWeb.Themes.Stark.Layouts
+namespace RockWeb.Themes.com_ccvstars_External_v5.Layouts
 {
     public partial class Error : System.Web.UI.Page
     {
