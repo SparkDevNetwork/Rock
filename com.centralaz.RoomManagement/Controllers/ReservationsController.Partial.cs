@@ -146,7 +146,8 @@ namespace Rock.Rest.Controllers
                             SetupPhotoId = reservation.SetupPhotoId,
                             Note = reservation.Note,
                             NumberAttending = reservation.NumberAttending,
-                            ModifiedDateTime = reservation.ModifiedDateTime
+                            ModifiedDateTime = reservation.ModifiedDateTime,
+                            ScheduleId = reservation.ScheduleId
                         } );
                     }
                 }
@@ -157,6 +158,9 @@ namespace Rock.Rest.Controllers
 
     }
 
+    /// <summary>
+    /// A class to store occurrence data to be returned by the API
+    /// </summary>
     public class ReservationOccurrence
     {
         public int ReservationId { get; set; }
@@ -172,6 +176,7 @@ namespace Rock.Rest.Controllers
         public string Note { get; set; }
         public int? NumberAttending { get; set; }
         public DateTime? ModifiedDateTime { get; set; }
+        public int? ScheduleId { get; set; }
 
     }
 }
