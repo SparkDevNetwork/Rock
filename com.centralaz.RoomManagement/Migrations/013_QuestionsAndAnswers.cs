@@ -14,6 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Linq;
+using com.centralaz.RoomManagement.Model;
+using Rock.Data;
+using Rock.Model;
 using Rock.Plugin;
 
 namespace com.centralaz.RoomManagement.Migrations
@@ -70,9 +74,20 @@ namespace com.centralaz.RoomManagement.Migrations
 
 " );
             RockMigrationHelper.UpdateEntityType( "com.centralaz.RoomManagement.Model.Question", "F42FB8A5-D646-4FA8-AABE-D47B53A9CE35", true, true );
+
+            // Fix bug where setup photos are added as temporary binary files
+            var rockContext = new RockContext();
+            var photoIds = new ReservationService( rockContext ).Queryable().Select( r => r.SetupPhotoId ).Distinct().ToList();
+            var photos = new BinaryFileService( rockContext ).Queryable().Where( bf => photoIds.Contains( bf.Id ) ).ToList();
+            foreach ( var photo in photos )
+            {
+                photo.IsTemporary = false;
+            }
+            rockContext.SaveChanges();
+
         }
         public override void Down()
-        {           
+        {
             RockMigrationHelper.DeleteEntityType( "F42FB8A5-D646-4FA8-AABE-D47B53A9CE35" );
 
             Sql( @"

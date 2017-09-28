@@ -456,14 +456,25 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 // We can't send emails because it won't have an ID until the request is saved.
                 SendNotifications( reservation, groupGuidList, rockContext );
 
+                BinaryFileService binaryFileService = new BinaryFileService( rockContext );
                 if ( orphanedImageId.HasValue )
                 {
-                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
                     var binaryFile = binaryFileService.Get( orphanedImageId.Value );
                     if ( binaryFile != null )
                     {
                         // marked the old images as IsTemporary so they will get cleaned up later
                         binaryFile.IsTemporary = true;
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                // ensure the IsTemporary is set to false on binaryFile associated with this reservation
+                if ( reservation.SetupPhotoId.HasValue )
+                {
+                    var binaryFile = binaryFileService.Get( reservation.SetupPhotoId.Value );
+                    if ( binaryFile != null && binaryFile.IsTemporary )
+                    {
+                        binaryFile.IsTemporary = false;
                         rockContext.SaveChanges();
                     }
                 }
