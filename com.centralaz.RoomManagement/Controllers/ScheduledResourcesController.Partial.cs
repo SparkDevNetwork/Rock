@@ -55,7 +55,7 @@ namespace Rock.Rest.Controllers
         /// <param name="excludedCategoryIds">The excluded category ids.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/ScheduledResources/GetChildren/{id}" )]
+        [System.Web.Http.Route( "api/com_centralaz/ScheduledResources/GetChildren/{id}" )]
         public IQueryable<ScheduledCategoryItem> GetChildren(
             int id,
             int rootCategoryId = 0,

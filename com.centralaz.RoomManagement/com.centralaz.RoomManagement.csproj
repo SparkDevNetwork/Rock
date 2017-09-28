@@ -85,6 +85,7 @@
     <Compile Include="Attribute\ReservationApprovalStateFieldAttribute.cs" />
     <Compile Include="Attribute\ReservationFieldAttribute.cs" />
     <Compile Include="Controllers\ScheduledLocationsController.Partial.cs" />
+    <Compile Include="Controllers\ReservationsController.Partial.cs" />
     <Compile Include="Controllers\ScheduledResourcesController.Partial.cs" />
     <Compile Include="DataFilter\Reservation\ReservationInDateRangeFilter.cs" />
     <Compile Include="Field\Types\ReservationApprovalStateFieldType.cs" />

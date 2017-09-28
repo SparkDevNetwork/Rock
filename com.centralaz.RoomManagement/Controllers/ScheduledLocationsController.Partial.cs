@@ -51,7 +51,7 @@ namespace Rock.Rest.Controllers
         /// <param name="excludedCategoryIds">The excluded category ids.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/ScheduledLocations/GetChildren/{id}/{rootLocationId}" )]
+        [System.Web.Http.Route( "api/com_centralaz/ScheduledLocations/GetChildren/{id}/{rootLocationId}" )]
         public IQueryable<TreeViewItem> GetChildren(
             int id,
             int rootLocationId = 0,
