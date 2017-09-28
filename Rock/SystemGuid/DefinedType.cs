@@ -70,6 +70,11 @@ namespace Rock.SystemGuid
         public const string DISC_RESULTS_TYPE = "F06DDAD8-6058-4182-AD0A-B523BB7A2D78";
 
         /// <summary>
+        /// Guid for the Domains Sharing Logins
+        /// </summary>
+        public const string DOMAINS_SHARING_LOGINS = "6CE00E1B-FE09-45FE-BD9D-56C57A11BE1A";
+
+        /// <summary>
         /// Guid for Entity Set Purpose
         /// </summary>
         public const string ENTITY_SET_PURPOSE = "618BBF3F-794F-4FF9-9615-9211CDBAF723";

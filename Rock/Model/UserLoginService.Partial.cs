@@ -230,7 +230,7 @@ namespace Rock.Model
                             transaction.IsOnLine = false;
                             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
 
-                            FormsAuthentication.SignOut();
+                            Authorization.SignOut();
                             return null;
                         }
                     }
