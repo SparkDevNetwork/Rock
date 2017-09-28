@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Groups
     [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 11 )]
     [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 12 )]
     [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 13 )]
+    [KeyValueListField( "Additional Columns", "", false, "", "Column Heading", "Column Value {{ Lava }}", order: 14, AllowHtml = true)]
     [ContextAware]
     public partial class GroupList : RockBlock
     {
@@ -82,6 +83,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( !Page.IsPostBack )
             {
+                AddAdditionalColumns();
                 BindFilter();
                 BindGrid();
             }
@@ -154,6 +156,29 @@ namespace RockWeb.Blocks.Groups
             }
 
             SetPanelTitleAndIcon();
+        }
+
+        /// <summary>
+        /// Adds any additional columns that were defined in the block settings
+        /// </summary>
+        private void AddAdditionalColumns()
+        {
+            var additionalColumns = this.GetAttributeValue( "AdditionalColumns" ).AsDictionaryOrNull();
+            if ( additionalColumns != null && additionalColumns.Any() )
+            {
+                var deleteField = gGroups.ColumnsOfType<DeleteField>().FirstOrDefault();
+                int insertPosition = gGroups.Columns.IndexOf( deleteField );
+
+                foreach ( var keyValue in additionalColumns )
+                {
+                    var lavaColumn = new LavaField();
+                    lavaColumn.HeaderText = keyValue.Key;
+                    lavaColumn.LavaTemplate = keyValue.Value;
+
+                    gGroups.Columns.Insert( insertPosition, lavaColumn );
+                    insertPosition++;
+                }
+            }
         }
 
         /// <summary>
@@ -786,6 +811,7 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
+        [DotLiquid.LiquidType( "Id", "Path", "Name", "GroupTypeName", "GroupOrder", "GroupTypeOrder", "Description", "IsSystem", "GroupRole", "DateAdded", "IsActive", "IsActiveOrder", "MemberCount"  )]
         private class GroupListRowInfo
         {
             public int Id { get; set; }
