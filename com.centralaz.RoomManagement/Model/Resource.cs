@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
+using Rock.Data;
 using Rock.Model;
 namespace com.centralaz.RoomManagement.Model
 {
@@ -66,6 +67,7 @@ namespace com.centralaz.RoomManagement.Model
 
         public virtual Location Location { get; set; }
 
+        [LavaInclude]
         public virtual Group ApprovalGroup { get; set; }
 
         #endregion
