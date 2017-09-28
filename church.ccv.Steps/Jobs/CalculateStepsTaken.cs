@@ -116,8 +116,8 @@ namespace church.ccv.Steps
             // get our contexts
             using ( RockContext rockContext = new RockContext( ) )
             {
-                // some of these queries join large amounts of data and can take > 30 seconds, so give two minutes.
-                rockContext.Database.CommandTimeout = 120;
+                // some of these queries join large amounts of data and can take > 30 seconds, so give ten minutes.
+                rockContext.Database.CommandTimeout = 600;
 
                 Service<ActionsHistory_Adult_Person> adultActionsService = new Service<ActionsHistory_Adult_Person>( rockContext );
 
