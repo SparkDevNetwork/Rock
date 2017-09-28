@@ -208,7 +208,7 @@ namespace RockWeb.Plugins.church_ccv.Residency
                                 var page = new PageService( rockContext ).Get( new Guid( gradeDetailPageGuid ) );
                                 if ( page != null )
                                 {
-                                    string identifier = hfCompetencyPersonProjectId.Value + "|" + userLogin.Guid + "|" + DateTime.Now.Ticks;
+                                    string identifier = hfCompetencyPersonProjectId.Value + "|" + userLogin.Guid + "|" + RockDateTime.Now.Ticks;
                                     string residentGraderSessionKey = Rock.Security.Encryption.EncryptString( identifier );
                                     Session["ResidentGraderSessionKey"] = residentGraderSessionKey;
                                     var queryString = new Dictionary<string, string>();

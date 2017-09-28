@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 
 using church.ccv.CommandCenter.Data;
+using Rock;
 
 namespace church.ccv.CommandCenter.Model
 {
@@ -85,7 +86,7 @@ namespace church.ccv.CommandCenter.Model
                 recording.App = app;
                 recording.StreamName = streamName;
                 recording.RecordingName = recordingName;
-                recording.StartTime = DateTime.Now;
+                recording.StartTime = RockDateTime.Now;
                 recording.StartResponse = ParseResponse( response.Message );
                 recording.Venue = venue;
 
@@ -126,7 +127,7 @@ namespace church.ccv.CommandCenter.Model
                         r.StopTime == null );
 
                 Recording stoppedRecording = new Recording();
-                DateTime stopTime = DateTime.Now;
+                DateTime stopTime = RockDateTime.Now;
                 string responseMessage = ParseResponse( response.Message );
 
                 foreach ( var recording in recordings.OrderBy( r => r.StartTime ).ToList() )

@@ -63,7 +63,7 @@ namespace Rock.Jobs
             int throttlePeriod = Int32.Parse( dataMap.GetString( "ThrottlePeriod" ) );
             int retryPeriod = Int32.Parse( dataMap.GetString( "RetryPeriod" ) );
 
-            DateTime retryDate = DateTime.Now.Subtract(new TimeSpan(retryPeriod, 0, 0, 0));
+            DateTime retryDate = RockDateTime.Now.Subtract(new TimeSpan(retryPeriod, 0, 0, 0));
 
             var rockContext = new Rock.Data.RockContext();
             LocationService locationService = new LocationService(rockContext);

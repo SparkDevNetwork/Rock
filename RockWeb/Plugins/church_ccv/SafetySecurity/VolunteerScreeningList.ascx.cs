@@ -15,6 +15,7 @@
 // </copyright>
 //
 using church.ccv.SafetySecurity.Model;
+using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -101,8 +102,8 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             {
                 VolunteerScreening instance = new VolunteerScreening( );
                 instance.PersonAliasId = TargetPerson.PrimaryAliasId.Value;
-                instance.CreatedDateTime = DateTime.Now;
-                instance.ModifiedDateTime = DateTime.Now;
+                instance.CreatedDateTime = RockDateTime.Now;
+                instance.ModifiedDateTime = RockDateTime.Now;
                 instance.Type = (int)VolunteerScreening.Types.Legacy;
 
                 Service<VolunteerScreening> rockService = new Service<VolunteerScreening>( rockContext );

@@ -122,6 +122,8 @@ namespace church.ccv.Residency.Model
         /// </summary>
         public CompetencyPersonProjectConfiguration()
         {
+            this.HasEntitySetName( "CompetencyPersonProject" );
+
             //// Note: SQL Server doesn't let us have a Cascade Delete from CompetencyPerson to CompetencyPersonProject, and from ResidencyProject to CompetencyPersonProject
             //// so just the CascadeDelete on ResidencyProject to CompetencyPersonProject, and we'll manually delete CompetencyPersonProjects when a CompetencyPerson is deleted 
             this.HasRequired( a => a.CompetencyPerson ).WithMany( a => a.CompetencyPersonProjects ).HasForeignKey( a => a.CompetencyPersonId ).WillCascadeOnDelete( false );

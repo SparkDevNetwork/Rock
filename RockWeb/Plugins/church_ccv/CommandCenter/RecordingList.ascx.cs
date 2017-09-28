@@ -365,13 +365,13 @@ namespace RockWeb.Plugins.church_ccv.CommandCenter
 
                     if ( action.ToLower() == "start" )
                     {
-                        recording.StartTime = DateTime.Now;
+                        recording.StartTime = RockDateTime.Now;
                         recording.StopTime = null;
                         recording.StartResponse = RecordingService.ParseResponse( response.Message );
                     }
                     else
                     {
-                        recording.StopTime = DateTime.Now;
+                        recording.StopTime = RockDateTime.Now;
                         recording.StopResponse = RecordingService.ParseResponse( response.Message );
                     }
 

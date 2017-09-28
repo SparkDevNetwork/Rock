@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// A random number generator for use when calculating random attendance data.
         /// </summary>
-        private static Random _random = new Random( (int)DateTime.Now.Ticks );
+        private static Random _random = new Random( (int)RockDateTime.Now.Ticks );
 
         /// <summary>
         /// The number of characters (length) that security codes should be.

@@ -84,13 +84,13 @@ namespace Rock.Jobs
             var qry = new FinancialScheduledTransactionService( rockContext )
                 .Queryable( "ScheduledTransactionDetails,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
                 .Where( t => t.IsActive && t.FinancialPaymentDetail.ExpirationMonthEncrypted != null
-                && ( t.EndDate == null || t.EndDate > DateTime.Now ) )
+                && ( t.EndDate == null || t.EndDate > RockDateTime.Now ) )
                 .AsNoTracking();
 
             var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
             // Get the current month and year 
-            DateTime now = DateTime.Now;
+            DateTime now = RockDateTime.Now;
             int month = now.Month;
             int year = now.Year;
             int counter = 0;

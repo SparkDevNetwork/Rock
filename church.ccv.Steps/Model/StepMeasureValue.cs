@@ -144,6 +144,8 @@ namespace church.ccv.Steps.Model
         /// </summary>
         public StepMeasureValueConfiguration()
         {
+            this.HasEntitySetName( "StepMeasureValue" );
+
             this.HasRequired( m => m.StepMeasure ).WithMany( c => c.StepMeasureValues ).HasForeignKey( m => m.StepMeasureId ).WillCascadeOnDelete( true );
             this.HasOptional( m => m.Campus ).WithMany().HasForeignKey( m => m.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( m => m.PastorPersonAlias ).WithMany().HasForeignKey( m => m.PastorPersonAliasId ).WillCascadeOnDelete( false );

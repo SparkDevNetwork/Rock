@@ -190,9 +190,6 @@ namespace church.ccv.Podcast
 
         public static DateTime? LatestModifiedDateTime( )
         {
-            //JHM 6-21-2016: cc.ModifiedDateTime< DateTime.Now is a hack to fix an issue when porting from Arena. We used the Series StartDateTime as the Created/Modified DateTime, which
-            // causes a ModifiedDateTime in the future. This can go away after 7-3-2016.
-
             // this will gather the series, messages, and all attribute values, and see what the date/time of the most recent change was
             RockContext rockContext = new RockContext( );
 
@@ -200,7 +197,7 @@ namespace church.ccv.Podcast
 
             // get all podcast series sorted by ModifiedDateTime
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
-            var podcastSeries = contentChannelService.Queryable( ).Where( cc => cc.ContentChannelTypeId == ContentChannelTypeId_PodcastSeries && cc.ModifiedDateTime < DateTime.Now )
+            var podcastSeries = contentChannelService.Queryable( ).Where( cc => cc.ContentChannelTypeId == ContentChannelTypeId_PodcastSeries )
                                                                   .Select( ps => new { ps.Id, ps.ModifiedDateTime } ).AsNoTracking( );
             if( podcastSeries.Count( ) > 0 )
             {
@@ -210,7 +207,7 @@ namespace church.ccv.Podcast
                 
                 // get all messages for all the podcast series
                 ContentChannelItemService contentChannelItemService = new ContentChannelItemService( rockContext );
-                var podcastMessages = contentChannelItemService.Queryable( ).Where( cci => seriesIds.Contains( cci.ContentChannelId ) && cci.ModifiedDateTime< DateTime.Now )
+                var podcastMessages = contentChannelItemService.Queryable( ).Where( cci => seriesIds.Contains( cci.ContentChannelId ) && cci.ModifiedDateTime < RockDateTime.Now )
                                                                             .Select( cci => new { cci.Id, cci.ModifiedDateTime } ).AsNoTracking( );
                 if ( podcastMessages.Count() > 0 )
                 {
@@ -227,7 +224,7 @@ namespace church.ccv.Podcast
                     // NOW, get the most recent series OR messages' attribValue modifiedDateTime
                     mostRecentDate = new AttributeValueService( rockContext ).Queryable()
                                                 .Where( av => av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" && 
-                                                av.ModifiedDateTime < DateTime.Now && 
+                                                av.ModifiedDateTime < RockDateTime.Now && 
                                                 ( seriesIds.Contains( av.EntityId.Value ) || messageIds.Contains( av.EntityId.Value ) ) )
                                                 .AsNoTracking( )
                                                 .Max( av => av.ModifiedDateTime );

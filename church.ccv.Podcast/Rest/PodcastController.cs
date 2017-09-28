@@ -476,7 +476,7 @@ namespace chuch.ccv.Podcast.Rest
                     writer.WriteEndElement( );
 
                     writer.WriteStartElement( "copyright" );
-                    writer.WriteValue( string.Format( iTunesRSS_Copyright, DateTime.Now.Year.ToString( ) ) );
+                    writer.WriteValue( string.Format( iTunesRSS_Copyright, RockDateTime.Now.Year.ToString( ) ) );
                     writer.WriteEndElement( );
 
                     writer.WriteStartElement( "description" );
@@ -550,7 +550,7 @@ namespace chuch.ccv.Podcast.Rest
                                     if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
 
                                     // only include items whose start date has already begun and that have been approved
-                                    if( message.Date <= DateTime.Now && messageActive == true /*message.Approved == true*/ )
+                                    if( message.Date <= RockDateTime.Now && messageActive == true /*message.Approved == true*/ )
                                     {
                                         // there _must_ be a mediaURL and length in order for us to generate the podcast entry
                                         string mediaUrl = message.Attributes[ mediaKindKey ];
@@ -770,7 +770,7 @@ namespace chuch.ccv.Podcast.Rest
                                 if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
 
                                 // if the message already started AND has been approved, then its public.
-                                if ( message.Date <= DateTime.Now && messageActive == true/*message.Approved == true*/ )
+                                if ( message.Date <= RockDateTime.Now && messageActive == true/*message.Approved == true*/ )
                                 {
                                     hasPublicMessage = true;
                                     break;
@@ -831,7 +831,7 @@ namespace chuch.ccv.Podcast.Rest
                                 if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
 
                                 // if the message doesn't start yet, or hasn't been approved, set it to private.
-                                if( message.Date > DateTime.Now || messageActive == false /*message.Approved == false*/ )
+                                if( message.Date > RockDateTime.Now || messageActive == false /*message.Approved == false*/ )
                                 {
                                     writer.WriteAttributeString( "Private", "true" );
                                 }

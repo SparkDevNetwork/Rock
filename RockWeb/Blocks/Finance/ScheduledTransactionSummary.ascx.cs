@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Finance
 
                     if ( schedule.NextPaymentDate.HasValue )
                     {
-                        scheduleSummary.Add( "DaysTillNextPayment", (schedule.NextPaymentDate.Value - DateTime.Now).Days );
+                        scheduleSummary.Add( "DaysTillNextPayment", (schedule.NextPaymentDate.Value - RockDateTime.Now).Days );
                     }
                     else
                     {
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Finance
 
                     if ( lastPaymentDate.HasValue )
                     {
-                        scheduleSummary.Add("DaysSinceLastPayment",  (DateTime.Now - lastPaymentDate.Value).Days);
+                        scheduleSummary.Add("DaysSinceLastPayment",  (RockDateTime.Now - lastPaymentDate.Value).Days);
                     }
                     else
                     {

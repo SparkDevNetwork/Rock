@@ -1,3 +1,5 @@
+<script>var googleApiKey = "{{ 'Global' | Attribute:'GoogleAPIKey' }}";</script>
+
 {% if Context.Campus %}
 
   {% assign campus = Context.Campus %}

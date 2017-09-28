@@ -172,6 +172,8 @@ namespace church.ccv.CommandCenter.Model
         /// </summary>
         public RecordingConfiguration()
         {
+            this.HasEntitySetName( "Recording" );
+
             this.HasOptional( r => r.Campus ).WithMany().HasForeignKey( r => r.CampusId ).WillCascadeOnDelete( false );
         }
     }

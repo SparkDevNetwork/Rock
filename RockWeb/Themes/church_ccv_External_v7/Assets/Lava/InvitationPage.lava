@@ -94,7 +94,7 @@
 <script src="~~/Scripts/_map.js"></script>
 
 <script>
-  Rock.controls.util.loadGoogleMapsApi('https://maps.googleapis.com/maps/api/js?sensor=false&libraries=drawing')
+  Rock.controls.util.loadGoogleMapsApi('https://maps.googleapis.com/maps/api/js?sensor=false&libraries=drawing&key={{ 'Global' | Attribute:'GoogleAPIKey' }}')
 
   $(window).on('googleMapsIsLoaded', function(){
 

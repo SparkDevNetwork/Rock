@@ -60,7 +60,7 @@ namespace church.ccv.Promotions.Data
                 contentItem.ContentChannelId = contentChannelId;
                 contentItem.ContentChannelTypeId = contentChannelTypeId;
                 contentItem.StartDateTime = startDate;
-                contentItem.ApprovedDateTime = DateTime.Now;
+                contentItem.ApprovedDateTime = RockDateTime.Now;
                 contentItem.ApprovedByPersonAliasId = approvedByPersonAliasId;
                 contentItem.ExpireDateTime = null;
                 contentItem.Title = title;

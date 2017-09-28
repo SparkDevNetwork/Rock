@@ -107,6 +107,8 @@ namespace church.ccv.SampleProject.Model
         /// </summary>
         public ReferralAgencyConfiguration()
         {
+            this.HasEntitySetName( "ReferralAgency" );
+
             this.HasOptional( r => r.Campus ).WithMany().HasForeignKey( r => r.CampusId).WillCascadeOnDelete( false );
             this.HasOptional( r => r.AgencyTypeValue ).WithMany().HasForeignKey( p => p.AgencyTypeValueId ).WillCascadeOnDelete( false );
         }

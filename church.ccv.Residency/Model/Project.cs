@@ -89,6 +89,8 @@ namespace church.ccv.Residency.Model
         /// </summary>
         public ProjectConfiguration()
         {
+            this.HasEntitySetName( "Project" );
+
             this.HasRequired( p => p.Competency ).WithMany(a => a.Projects).HasForeignKey( p => p.CompetencyId ).WillCascadeOnDelete( true );
         }
     }

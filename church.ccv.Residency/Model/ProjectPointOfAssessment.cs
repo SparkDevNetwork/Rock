@@ -133,6 +133,8 @@ namespace church.ccv.Residency.Model
         /// </summary>
         public ProjectPointOfAssessmentConfiguration()
         {
+            this.HasEntitySetName( "ProjectPointOfAssessment" );
+
             this.HasRequired( a => a.Project ).WithMany(a => a.ProjectPointOfAssessments).HasForeignKey( a => a.ProjectId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.PointOfAssessmentTypeValue ).WithMany().HasForeignKey( p => p.PointOfAssessmentTypeValueId ).WillCascadeOnDelete( false );
         }

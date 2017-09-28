@@ -131,17 +131,4 @@ namespace church.ccv.Steps.Model
 
         #endregion
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class StepMeasureConfiguration : EntityTypeConfiguration<StepMeasure>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StepMeasureConfiguration"/> class.
-        /// </summary>
-        public StepMeasureConfiguration()
-        {
-        }
-    }
 }

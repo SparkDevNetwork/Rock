@@ -69,6 +69,8 @@ namespace church.ccv.Hr.Model
         /// </summary>
         public TimeCardHistoryConfiguration()
         {
+            this.HasEntitySetName( "TimeCardHistory" );
+
             this.HasRequired( a => a.TimeCard ).WithMany( a => a.TimeCardHistories ).HasForeignKey( a => a.TimeCardId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.StatusPersonAlias ).WithMany().HasForeignKey( p => p.StatusPersonAliasId ).WillCascadeOnDelete( false );
         }

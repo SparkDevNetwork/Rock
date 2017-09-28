@@ -113,6 +113,8 @@ namespace church.ccv.Residency.Model
         /// </summary>
         public CompetencyPersonConfiguration()
         {
+            this.HasEntitySetName( "CompetencyPerson" );
+
             this.HasRequired( p => p.Competency ).WithMany().HasForeignKey( p => p.CompetencyId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( false );
         }

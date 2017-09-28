@@ -148,6 +148,8 @@ namespace church.ccv.Residency.Model
         /// </summary>
         public CompetencyPersonProjectAssessmentConfiguration()
         {
+            this.HasEntitySetName( "CompetencyPersonProjectAssessment" );
+
             this.HasRequired( a => a.CompetencyPersonProject ).WithMany( a => a.CompetencyPersonProjectAssessments ).HasForeignKey( a => a.CompetencyPersonProjectId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.AssessorPerson ).WithMany().HasForeignKey( a => a.AssessorPersonId ).WillCascadeOnDelete( false );
             

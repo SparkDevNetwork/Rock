@@ -197,7 +197,7 @@ Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}
 
 {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
 
-<script src="//maps.googleapis.com/maps/api/js"></script>
+<script src="//maps.googleapis.com/maps/api/js?key={{ 'Global' | Attribute:'GoogleAPIKey' }}"></script>
 
 <script src="/Themes/church_ccv_External_v7/Scripts/min/multicampus.min.js"></script>
 

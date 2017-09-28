@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Event
                         registrant.OnWaitList = false;
 
                         // specifically NOT testing for null Registration, as we should not be here if we have a registrant with no parent Registration object
-                        registrant.Registration.LastPaymentReminderDateTime = DateTime.Now;
+                        registrant.Registration.LastPaymentReminderDateTime = RockDateTime.Now;
 
                         _rockContext.SaveChanges();
                     }

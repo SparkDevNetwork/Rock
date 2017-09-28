@@ -160,7 +160,7 @@ namespace RockWeb.Plugins.church_ccv.Residency
             }
 
             // set competencyPersonProjectAssessment.CompetencyPersonProjectId after saving competencyPersonProject in case it is new
-            competencyPersonProjectAssessment.AssessmentDateTime = DateTime.Now;
+            competencyPersonProjectAssessment.AssessmentDateTime = RockDateTime.Now;
             competencyPersonProjectAssessment.RatingNotes = tbRatingNotesOverall.Text;
             competencyPersonProjectAssessment.AssessorPersonId = hfAssessorPersonId.ValueAsInt();
 
@@ -306,7 +306,7 @@ namespace RockWeb.Plugins.church_ccv.Residency
                     }
                     else
                     {
-                        TimeSpan elapsed = DateTime.Now - new DateTime( long.Parse( ticks ) );
+                        TimeSpan elapsed = RockDateTime.Now - new DateTime( long.Parse( ticks ) );
                         if ( elapsed.TotalMinutes > 10 )
                         {
                             // somehow, the session key is stale, so don't trust it

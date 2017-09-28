@@ -71,17 +71,4 @@ namespace church.ccv.Residency.Model
 
         #endregion
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public partial class PeriodConfiguration : EntityTypeConfiguration<Period>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PeriodConfiguration"/> class.
-        /// </summary>
-        public PeriodConfiguration()
-        {
-        }
-    }
 }

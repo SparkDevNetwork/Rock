@@ -237,7 +237,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
                     PromotionsUtil.CreatePromotionOccurrence( contentChannel.Id,
                                                               contentChannel.ContentChannelTypeId,
-                                                              dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now,
+                                                              dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : RockDateTime.Now,
                                                               CurrentPersonAliasId,
                                                               "New Promotion Occurrence",
                                                               string.Empty,

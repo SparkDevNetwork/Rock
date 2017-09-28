@@ -31,7 +31,7 @@
           groupMap.draw()
         }
       })
-      Rock.controls.util.loadGoogleMapsApi('https://maps.googleapis.com/maps/api/js?sensor=false')
+      Rock.controls.util.loadGoogleMapsApi('https://maps.googleapis.com/maps/api/js?sensor=false&key={{ 'Global' | Attribute:'GoogleAPIKey' }}')
     })
   </script>
 {% endif %}

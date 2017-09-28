@@ -82,6 +82,8 @@ namespace church.ccv.Pastoral.Model
         /// </summary>
         public CareDocumentConfiguration()
         {
+            this.HasEntitySetName( "CareDocument" );
+
             this.HasRequired( p => p.CareRequest ).WithMany( p => p.Documents ).HasForeignKey( p => p.CareRequestId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.BinaryFile ).WithMany().HasForeignKey( p => p.BinaryFileId ).WillCascadeOnDelete( false );
         }

@@ -97,7 +97,7 @@ namespace church.ccv.CCVPurpleWifiSync
                     int? campusId = VenueToCampus( venue );
 
                     // get all visitors between the start of day and now (when storing attendance, we'll ignore the time portion)
-                    PurpleWifi.API.GetVisitors( int.Parse( venue.Id ), lastProcessedDate, DateTime.Now, 
+                    PurpleWifi.API.GetVisitors( int.Parse( venue.Id ), lastProcessedDate, RockDateTime.Now, 
                         delegate( HttpStatusCode statusCode, string desc, List<PurpleWifi.Models.Visitor> venueVisitors)
                         {
                             if( StatusInSuccessRange( statusCode ) )
@@ -176,7 +176,7 @@ namespace church.ccv.CCVPurpleWifiSync
                 // now store the date (not time) we last ran, which will be the starting date next time.
                 // Next time this runs, there will be some overlap, since we're technically getting people for this day twice,
                 // but our attendance system will only store one record per date.
-                lastProcessedDate = DateTime.Now.Date;
+                lastProcessedDate = RockDateTime.Now.Date;
 
                 Rock.Web.SystemSettings.SetValue( LastUpdatePropertyKey, lastProcessedDate.Value.ToString( ) );
                 context.Result = string.Format( "Sync'd Purple Data. {0} people added. {1} attendance records added. {2} people skipped due to blank name fields.", numNewPeople, numAttendanceRecords, numPeopleSkipped);

@@ -1,3 +1,5 @@
+<script>var googleApiKey = "{{ 'Global' | Attribute:'GoogleAPIKey' }}";</script>
+
 {% comment %}
 
 {% assign campus = Campuses | Where: 'Id', 1 | First %}

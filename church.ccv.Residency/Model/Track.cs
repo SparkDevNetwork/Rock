@@ -90,6 +90,8 @@ namespace church.ccv.Residency.Model
         /// </summary>
         public TrackConfiguration()
         {
+            this.HasEntitySetName( "Track" );
+
             this.HasRequired( p => p.Period ).WithMany( p => p.Tracks ).HasForeignKey( p => p.PeriodId ).WillCascadeOnDelete( false );
         }
     }

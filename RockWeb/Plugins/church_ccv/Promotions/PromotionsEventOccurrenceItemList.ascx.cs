@@ -153,7 +153,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 // if it's null, send an email. the event was deleted.
             }
             // otherwise, as long as it has a future start date, check
-            else if( eventItemOccurrence.NextStartDateTime >= DateTime.Now )
+            else if( eventItemOccurrence.NextStartDateTime >= RockDateTime.Now )
             {
                 // does it have any promotion occurrences where this event has been modified AFTER?
                 PromotionsService<PromotionRequest> promoRequestService = new PromotionsService<PromotionRequest>( rockContext );
@@ -383,7 +383,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             // Based on the promo's state, our click action changes.
 
             // if it doesn't have a future occurrence, don't allow promoting it.
-            if( eventItemOccurrence.NextStartDateTime >= DateTime.Now )
+            if( eventItemOccurrence.NextStartDateTime >= RockDateTime.Now )
             {
                 // If the request doesn't exist, then create the request, because they clicked "Request'
                 if ( promoRequest == null )
@@ -457,7 +457,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             // first, see if this item occurrence has any future events. If not, there's nothing to promote.
             var eventItemOccurrence = new EventItemOccurrenceService( new RockContext( ) ).Get( EventItemOccurrenceId );
 
-            if ( eventItemOccurrence.NextStartDateTime >= DateTime.Now )
+            if ( eventItemOccurrence.NextStartDateTime >= RockDateTime.Now )
             {
                 // now, see what the state of the content channel is within the promoRequest.
                 PromotionRequest promoReq = promoRequestQuery.Where( pr => pr.ContentChannelId == contentChannel.Id ).SingleOrDefault();

@@ -371,6 +371,8 @@ namespace church.ccv.Pastoral.Model
         /// </summary>
         public CareRequestConfiguration()
         {
+            this.HasEntitySetName( "CareRequest" );
+
             this.HasOptional( p => p.RequestedByPersonAlias ).WithMany().HasForeignKey( p => p.RequestedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.WorkerPersonAlias ).WithMany().HasForeignKey( p => p.WorkerPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectionStatusValue ).WithMany().HasForeignKey( p => p.ConnectionStatusValueId ).WillCascadeOnDelete( false );

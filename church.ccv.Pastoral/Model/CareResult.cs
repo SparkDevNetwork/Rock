@@ -96,9 +96,10 @@ namespace church.ccv.Pastoral.Model
         /// </summary>
         public CareResultConfiguration()
         {
+            this.HasEntitySetName( "CareResult" );
+
             this.HasRequired( p => p.CareRequest ).WithMany( p => p.CareResults ).HasForeignKey( p => p.CareRequestId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.ResultTypeValue ).WithMany().HasForeignKey( p => p.ResultTypeValueId ).WillCascadeOnDelete( false );
-
         }
     }
 

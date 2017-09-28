@@ -59,7 +59,7 @@ namespace Rock.PersonProfile.Badge
             DateTime? firstVisit = Person.GetAttributeValue( "FirstVisit" ).AsDateTime();
             if (firstVisit.HasValue)
             {
-                TimeSpan attendanceDuration = DateTime.Now - firstVisit.Value;
+                TimeSpan attendanceDuration = RockDateTime.Now - firstVisit.Value;
 
                 string spanValue = string.Empty;
                 string spanUnit = string.Empty;

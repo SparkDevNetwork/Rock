@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Examples
             {
                 list = ReadClassesFromAssembly();
                 var cacheItemPolicy = new CacheItemPolicy();
-                cacheItemPolicy.AbsoluteExpiration = DateTime.Now.AddMinutes( GetAttributeValue("MinutesToCache").AsInteger() );
+                cacheItemPolicy.AbsoluteExpiration = RockDateTime.Now.AddMinutes( GetAttributeValue("MinutesToCache").AsInteger() );
                 cache.Set( "classes", list, cacheItemPolicy );
             }
             else
@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Examples
                 {
                     list = ReadClassesFromAssembly();
                     var cacheItemPolicy = new CacheItemPolicy();
-                    cacheItemPolicy.AbsoluteExpiration = DateTime.Now.AddMinutes( GetAttributeValue( "MinutesToCache" ).AsInteger() );
+                    cacheItemPolicy.AbsoluteExpiration = RockDateTime.Now.AddMinutes( GetAttributeValue( "MinutesToCache" ).AsInteger() );
                     cache.Set( "classes", list, cacheItemPolicy );
                 }
             }

@@ -1,3 +1,5 @@
+<script>var googleApiKey = "{{ 'Global' | Attribute:'GoogleAPIKey' }}";</script>
+
 {% if Context.Campus == null %}
 
   <div id="campusmodal" class="campusmodal mfp-hide">

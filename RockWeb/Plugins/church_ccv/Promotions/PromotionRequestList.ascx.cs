@@ -399,7 +399,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 // create the combined promo occurrence
                 PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id, 
                                                           promoRequest.ContentChannel.ContentChannelTypeId, 
-                                                          dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now, 
+                                                          dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : RockDateTime.Now, 
                                                           CurrentPersonAliasId, 
                                                           eventItem.EventItem.Name,
                                                           BuildPromoContent( eventItem ),

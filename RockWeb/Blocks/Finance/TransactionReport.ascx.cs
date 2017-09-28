@@ -76,8 +76,8 @@ namespace RockWeb.Blocks.Finance
             if ( !Page.IsPostBack )
             {
                 // set default date range
-                drpFilterDates.LowerValue = new DateTime( DateTime.Now.Year, 1, 1 );
-                drpFilterDates.UpperValue = DateTime.Now;
+                drpFilterDates.LowerValue = new DateTime( RockDateTime.Now.Year, 1, 1 );
+                drpFilterDates.UpperValue = RockDateTime.Now;
 
                 // load account list
                 LoadAccounts();

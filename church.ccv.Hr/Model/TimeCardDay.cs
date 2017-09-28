@@ -250,6 +250,8 @@ namespace church.ccv.Hr.Model
         /// </summary>
         public TimeCardDayConfiguration()
         {
+            this.HasEntitySetName( "TimeCardDay" );
+
             this.HasRequired( a => a.TimeCard ).WithMany( a => a.TimeCardDays ).HasForeignKey( a => a.TimeCardId ).WillCascadeOnDelete( true );
         }
     }

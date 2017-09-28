@@ -1071,7 +1071,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         private List<DateTime> GetChartTimes()
         {
             // Get the current minute
-            var now = DateTime.Now;
+            var now = RockDateTime.Now;
             now = new DateTime( now.Year, now.Month, now.Day, now.Hour, now.Minute, 0 );
 
             // Find the end mark

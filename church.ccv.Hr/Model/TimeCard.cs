@@ -446,6 +446,8 @@ namespace church.ccv.Hr.Model
         /// </summary>
         public TimeCardConfiguration()
         {
+            this.HasEntitySetName( "TimeCard" );
+
             this.HasRequired( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.SubmittedToPersonAlias ).WithMany().HasForeignKey( p => p.SubmittedToPersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.ApprovedByPersonAlias ).WithMany().HasForeignKey( p => p.ApprovedByPersonAliasId ).WillCascadeOnDelete( false );

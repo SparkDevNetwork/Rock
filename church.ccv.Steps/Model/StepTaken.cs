@@ -117,6 +117,8 @@ namespace church.ccv.Steps.Model
         /// </summary>
         public StepTakenConfiguration()
         {
+            this.HasEntitySetName( "StepTaken" );
+
             this.HasRequired( m => m.StepMeasure ).WithMany( c => c.StepsTaken ).HasForeignKey( m => m.StepMeasureId ).WillCascadeOnDelete( true );
             this.HasOptional( m => m.Campus ).WithMany().HasForeignKey( m => m.CampusId ).WillCascadeOnDelete( false );
             this.HasRequired( m => m.PersonAlias ).WithMany().HasForeignKey( m => m.PersonAliasId ).WillCascadeOnDelete( false );

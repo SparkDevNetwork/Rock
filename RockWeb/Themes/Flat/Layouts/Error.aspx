@@ -7,8 +7,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title>Rock - Error</title>
 
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/bootstrap.css") %>" />
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/theme.css") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Flat/Styles/bootstrap.css") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Flat/Styles/theme.css") %>" />
 
     <script src="<%# ResolveUrl("~/Scripts/jquery-1.12.4.min.js") %>">
         $(document).ready(function () {

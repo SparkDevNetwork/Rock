@@ -257,6 +257,8 @@ namespace church.ccv.SafetySecurity.Model
         /// </summary>
         public DPSOffenderConfiguration()
         {
+            this.HasEntitySetName( "DPSOffender" );
+
             this.HasOptional( a => a.PersonAlias ).WithMany().HasForeignKey( a => a.PersonAliasId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.DpsLocation ).WithMany().HasForeignKey( a => a.DpsLocationId ).WillCascadeOnDelete( true );
         }
