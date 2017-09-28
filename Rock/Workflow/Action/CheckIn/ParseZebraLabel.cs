@@ -61,7 +61,10 @@ namespace Rock.Workflow.Action
                     return false;
                 }
 
-                binaryFile.LoadAttributes();
+                if ( binaryFile.Attributes == null )
+                {
+                    binaryFile.LoadAttributes();
+                }
 
                 // Get the existing merge fields
                 var existingMergeFields = new Dictionary<string, string>();
