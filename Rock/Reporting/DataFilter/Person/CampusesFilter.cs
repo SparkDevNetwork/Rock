@@ -24,6 +24,7 @@ using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -34,7 +35,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people that are associated with any of the selected campuses." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Campuses Filter" )]
-    public class CampusesFilter : DataFilterComponent
+    public class CampusesFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
     {
         #region Properties
 
@@ -267,6 +268,34 @@ function() {
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Updates the selection from page parameters.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <param name="rockBlock">The rock block.</param>
+        /// <returns></returns>
+        public string UpdateSelectionFromPageParameters( string selection, RockBlock rockBlock )
+        {
+            string[] selectionValues = selection?.Split( '|' ) ?? new string[] { "" };
+            if ( selectionValues.Length >= 1 )
+            {
+                // check for either a CampusId or CampusIds parameter
+                var campusIds = rockBlock.PageParameter( "CampusId" )?.SplitDelimitedValues().AsIntegerList();
+                campusIds = campusIds ?? rockBlock.PageParameter( "CampusIds" )?.SplitDelimitedValues().AsIntegerList() ?? new List<int>();
+
+                if ( campusIds.Any() )
+                {
+
+                    var selectedCampusGuids = campusIds.Select( a => CampusCache.Read( a ) ).Where( a => a != null ).Select( a => a.Guid ).ToList();
+
+                    selectionValues[0] = selectedCampusGuids.AsDelimited( "," );
+                    return selectionValues.ToList().AsDelimited( "|" );
+                }
+            }
+
+            return selection;
         }
 
         #endregion

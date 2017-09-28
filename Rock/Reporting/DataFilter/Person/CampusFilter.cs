@@ -203,29 +203,26 @@ function() {
         /// <returns></returns>
         public string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
         {
-            if ( !string.IsNullOrWhiteSpace( selection ) )
+            string[] selectionValues = selection?.Split( '|' ) ?? new string[] { "" };
+            if ( selectionValues.Length >= 1 )
             {
-                string[] selectionValues = selection.Split( '|' );
-                if ( selectionValues.Length >= 1 )
+                var campusId = rockBlock.PageParameter( "CampusId" ).AsIntegerOrNull();
+                if ( campusId == null )
                 {
-                    var campusId = rockBlock.PageParameter( "CampusId" ).AsIntegerOrNull();
-                    if ( campusId == null )
+                    var campusEntity = rockBlock.ContextEntity<Campus>();
+                    if ( campusEntity != null )
                     {
-                        var campusEntity = rockBlock.ContextEntity<Campus>();
-                        if ( campusEntity != null )
-                        {
-                            campusId = campusEntity.Id;
-                        }
+                        campusId = campusEntity.Id;
                     }
+                }
 
-                    if ( campusId.HasValue )
+                if ( campusId.HasValue )
+                {
+                    var selectedCampus = CampusCache.Read( campusId.Value );
+                    if ( selectedCampus != null )
                     {
-                        var selectedCampus = CampusCache.Read( campusId.Value );
-                        if ( selectedCampus != null )
-                        {
-                            selectionValues[0] = selectedCampus.Guid.ToString();
-                            return selectionValues.ToList().AsDelimited( "|" );
-                        }
+                        selectionValues[0] = selectedCampus.Guid.ToString();
+                        return selectionValues.ToList().AsDelimited( "|" );
                     }
                 }
             }
