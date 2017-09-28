@@ -127,6 +127,8 @@
                         </div>
                     </div>
                 </div>
+                <asp:PlaceHolder ID="phLocationAnswers" runat="server" />
+                <asp:PlaceHolder ID="phResourceAnswers" runat="server" />
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_OnClick" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_OnClick" CausesValidation="false" />
