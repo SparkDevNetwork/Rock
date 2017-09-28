@@ -535,8 +535,8 @@ namespace RockWeb.Blocks.Security
         /// <param name="user">The user.</param>
         private void DisplaySuccess( Rock.Model.UserLogin user )
         {
-            FormsAuthentication.SignOut();
-            Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, false, false );
+            Authorization.SignOut();
+            Authorization.SetAuthCookie( tbUserName.Text, false, false );
 
             if ( user != null && user.PersonId.HasValue )
             {

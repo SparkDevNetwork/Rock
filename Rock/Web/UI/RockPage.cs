@@ -684,7 +684,7 @@ namespace Rock.Web.UI
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                 }
 
-                FormsAuthentication.SignOut();
+                Authorization.SignOut();
 
                 // After logging out check to see if an anonymous user is allowed to view the current page.  If so
                 // redirect back to the current page, otherwise redirect to the site's default page
@@ -1445,7 +1445,7 @@ namespace Rock.Web.UI
             var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
             if ( impersonatedByUser != null )
             {
-                FormsAuthentication.SignOut();
+                Authorization.SignOut();
                 UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
                 Rock.Security.Authorization.SetAuthCookie( impersonatedByUser.UserName, false, false );
                 Response.Redirect( PageReference.BuildUrl( false ), false );
@@ -1480,7 +1480,7 @@ namespace Rock.Web.UI
                 Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, true, this.PageId );
                 if ( impersonatedPerson != null )
                 {
-                    FormsAuthentication.SignOut();
+                    Authorization.SignOut();
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPersonKeyParam, false, true );
                     CurrentUser = impersonatedPerson.GetImpersonatedUser();
                     UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
@@ -1492,7 +1492,7 @@ namespace Rock.Web.UI
                 else
                 {
                     // Attempting to use an impersonation token that doesn't exist or is no longer valid, so log them out
-                    FormsAuthentication.SignOut();
+                    Authorization.SignOut();
                     Session["InvalidPersonToken"] = true;
                     Response.Redirect( PageReference.BuildUrl( true ), false );
                     Context.ApplicationInstance.CompleteRequest();
@@ -1510,7 +1510,7 @@ namespace Rock.Web.UI
                         // attempting to use a page specific impersonation token for a different page, so log them out
                         if ( personToken.PageId.HasValue && personToken.PageId != this.PageId )
                         {
-                            FormsAuthentication.SignOut();
+                            Authorization.SignOut();
                             Session["InvalidPersonToken"] = true;
                             Response.Redirect( Request.RawUrl, false );
                             Context.ApplicationInstance.CompleteRequest();
