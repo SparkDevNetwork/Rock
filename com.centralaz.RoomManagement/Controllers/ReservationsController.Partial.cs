@@ -142,7 +142,7 @@ namespace Rock.Rest.Controllers
                             EventStartDateTime = reservationDateTime.StartDateTime,
                             EventEndDateTime = reservationDateTime.EndDateTime,
                             ReservationStartDateTime = reservationStartDateTime,
-                            ReservationEndDateTime = reservationStartDateTime,
+                            ReservationEndDateTime = reservationEndDateTime,
                             SetupPhotoId = reservation.SetupPhotoId,
                             Note = reservation.Note,
                             NumberAttending = reservation.NumberAttending,
