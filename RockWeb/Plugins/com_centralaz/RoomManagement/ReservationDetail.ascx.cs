@@ -1456,57 +1456,71 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             Hydrate( LocationsState, rockContext );
             Hydrate( ResourcesState, rockContext );
 
-            phLocationAnswers.Controls.Clear();
             foreach ( var reservationLocation in LocationsState )
             {
-                Control childControl = new Control();
-                HiddenField hfReservationLocationGuid = new HiddenField();
-                PlaceHolder phAttributes = new PlaceHolder();
-                var headingTitle = new HtmlGenericControl( "h3" );
+                var headControl = phLocationAnswers.FindControl( "cReservationLocation_" + reservationLocation.Guid.ToString() ) as Control;
+                if ( headControl == null )
+                {
+                    reservationLocation.LoadReservationLocationAttributes();
+                    if ( reservationLocation.Attributes.Count > 0 )
+                    {
+                        Control childControl = new Control();
+                        HiddenField hfReservationLocationGuid = new HiddenField();
+                        PlaceHolder phAttributes = new PlaceHolder();
+                        var headingTitle = new HtmlGenericControl( "h3" );
 
-                headingTitle.InnerText = reservationLocation.Location.Name;
-                hfReservationLocationGuid.Value = reservationLocation.Guid.ToString();
+                        headingTitle.InnerText = reservationLocation.Location.Name;
+                        hfReservationLocationGuid.Value = reservationLocation.Guid.ToString();
 
-                childControl.ID = "cReservationLocation_" + reservationLocation.Guid.ToString();
-                hfReservationLocationGuid.ID = "hfReservationLocationGuid_" + reservationLocation.Guid.ToString();
-                phAttributes.ID = "phAttributes_" + reservationLocation.Guid.ToString(); ;
+                        childControl.ID = "cReservationLocation_" + reservationLocation.Guid.ToString();
+                        hfReservationLocationGuid.ID = "hfReservationLocationGuid_" + reservationLocation.Guid.ToString();
+                        phAttributes.ID = "phAttributes_" + reservationLocation.Guid.ToString(); ;
 
-                reservationLocation.LoadReservationLocationAttributes();
-                bool setValue = resourceList.Contains( reservationLocation.Guid );
-                Rock.Attribute.Helper.AddEditControls( reservationLocation, phAttributes, setValue, BlockValidationGroup );
+                        reservationLocation.LoadReservationLocationAttributes();
+                        bool setValue = resourceList.Contains( reservationLocation.Guid );
+                        Rock.Attribute.Helper.AddEditControls( reservationLocation, phAttributes, setValue, BlockValidationGroup );
 
-                childControl.Controls.Add( headingTitle );
-                childControl.Controls.Add( hfReservationLocationGuid );
-                childControl.Controls.Add( phAttributes );
+                        childControl.Controls.Add( headingTitle );
+                        childControl.Controls.Add( hfReservationLocationGuid );
+                        childControl.Controls.Add( phAttributes );
 
-                phLocationAnswers.Controls.Add( childControl );
+                        phLocationAnswers.Controls.Add( childControl );
+                    }
+                }
             }
-
-            phResourceAnswers.Controls.Clear();
 
             foreach ( var reservationResource in ResourcesState )
             {
-                Control childControl = new Control();
-                HiddenField hfReservationResourceGuid = new HiddenField();
-                PlaceHolder phAttributes = new PlaceHolder();
-                var headingTitle = new HtmlGenericControl( "h3" );
+                var headControl = phResourceAnswers.FindControl( "cReservationResource_" + reservationResource.Guid.ToString() ) as Control;
+                if ( headControl == null )
+                {
+                    reservationResource.LoadReservationResourceAttributes();
+                    if ( reservationResource.Attributes.Count > 0 )
+                    {
+                        Control childControl = new Control();
+                        HiddenField hfReservationResourceGuid = new HiddenField();
+                        PlaceHolder phAttributes = new PlaceHolder();
+                        var headingTitle = new HtmlGenericControl( "h3" );
 
-                headingTitle.InnerText = reservationResource.Resource.Name;
-                hfReservationResourceGuid.Value = reservationResource.Guid.ToString();
+                        headingTitle.InnerText = reservationResource.Resource.Name;
+                        hfReservationResourceGuid.Value = reservationResource.Guid.ToString();
 
-                childControl.ID = "cReservationResource_" + reservationResource.Guid.ToString();
-                hfReservationResourceGuid.ID = "hfReservationResourceGuid_" + reservationResource.Guid.ToString(); ;
-                phAttributes.ID = "phAttributes_" + reservationResource.Guid.ToString(); ;
+                        childControl.ID = "cReservationResource_" + reservationResource.Guid.ToString();
+                        hfReservationResourceGuid.ID = "hfReservationResourceGuid_" + reservationResource.Guid.ToString(); ;
+                        phAttributes.ID = "phAttributes_" + reservationResource.Guid.ToString(); ;
 
-                reservationResource.LoadReservationResourceAttributes();
-                bool setValue = resourceList.Contains( reservationResource.Guid );
-                Rock.Attribute.Helper.AddEditControls( reservationResource, phAttributes, setValue, BlockValidationGroup );
+                        reservationResource.LoadReservationResourceAttributes();
+                        bool setValue = resourceList.Contains( reservationResource.Guid );
+                        Rock.Attribute.Helper.AddEditControls( reservationResource, phAttributes, setValue, BlockValidationGroup );
 
-                childControl.Controls.Add( headingTitle );
-                childControl.Controls.Add( hfReservationResourceGuid );
-                childControl.Controls.Add( phAttributes );
+                        childControl.Controls.Add( headingTitle );
+                        childControl.Controls.Add( hfReservationResourceGuid );
+                        childControl.Controls.Add( phAttributes );
 
-                phResourceAnswers.Controls.Add( childControl );
+                        phResourceAnswers.Controls.Add( childControl );
+                    }
+
+                }
             }
 
             NewReservationResourceList = new List<Guid>();
