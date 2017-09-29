@@ -89,11 +89,14 @@
                                             ValidationGroup="GroupFinderSettings" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:RockCheckBoxList ID="cblSchedule" runat="server" Label="Display Schedule Filters" RepeatDirection="Horizontal"
-                                            Help="Flags indicating if Day of Week and/or Time of Day filters should be displayed to filter groups with 'Weekly' schedules." ValidationGroup="GroupFinderSettings">
-                                            <asp:ListItem Text="Day of Week" Value="Day" />
-                                            <asp:ListItem Text="Time of Day" Value="Time" />
-                                        </Rock:RockCheckBoxList>
+                                        <Rock:RockRadioButtonList ID="rblFilterDOW" runat="server" Label="Display Day of Week Filter" RepeatDirection="Horizontal"
+                                            Help="Flag indicating if and how the Day of Week filter should be displayed to filter groups with 'Weekly' schedules." ValidationGroup="GroupFinderSettings">
+                                            <asp:ListItem Text="None" Value="" />
+                                            <asp:ListItem Text="Single-Select Dropdown" Value="Day" />
+                                            <asp:ListItem Text="Multi-Select Checkboxes" Value="Days" />
+                                        </Rock:RockRadioButtonList>
+                                        <Rock:RockCheckBox ID="cbFilterTimeOfDay" runat="server" Label="Display Time of Day Filter" Text="Yes"
+                                            Help="Display a Time of Day filter to filter groups with 'Weekly' schedules." ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbFilterCampus" runat="server" Label="Display Campus Filter" Text="Yes"
                                             Help="Display the campus filter" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbCampusContext" runat="server" Label="Enable Campus Context" Text="Yes"
