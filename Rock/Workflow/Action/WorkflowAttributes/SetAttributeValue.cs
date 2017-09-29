@@ -56,7 +56,8 @@ namespace Rock.Workflow.Action
             if ( attribute != null )
             {
                 string value = value = GetAttributeValue( action, "Value", true ).ResolveMergeFields( GetMergeFields( action ) );
-                if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid(), rockContext ).Id )
+                if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid(), rockContext ).Id ||
+                    attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.SSN.AsGuid(), rockContext ).Id )
                 {
                     value = Security.Encryption.EncryptString( value );
                 }

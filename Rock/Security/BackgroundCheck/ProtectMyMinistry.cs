@@ -161,7 +161,7 @@ namespace Rock.Security.BackgroundCheck
 
                 if ( ssnAttribute != null )
                 {
-                    string ssn = Encryption.DecryptString( workflow.GetAttributeValue( ssnAttribute.Key ) ).AsNumeric();
+                    string ssn = Field.Types.SSNFieldType.UnencryptAndClean( workflow.GetAttributeValue( ssnAttribute.Key ) );
                     if ( !string.IsNullOrWhiteSpace( ssn ) && ssn.Length == 9 )
                     {
                         subjectElement.Add( new XElement( "SSN", ssn.Insert( 5, "-" ).Insert( 3, "-" ) ) );
