@@ -17,6 +17,7 @@
                     <div class="col-md-12">
                         <%-- Main Opens/Clicks Line Chart --%>
                         <div class="chart-container">
+                            <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" />
                             <canvas id="openClicksLineChartCanvas" runat="server" />
                         </div>
                     </div>
@@ -25,6 +26,7 @@
                     <div class="col-md-4">
                         <%-- Opens/Clicks PieChart --%>
                         <div class="chart-container">
+                            <Rock:NotificationBox ID="nbOpenClicksPieChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" />
                             <canvas id="opensClicksPieChartCanvas" runat="server" />
                         </div>
                     </div>
@@ -45,40 +47,49 @@
                     <div class="col-md-4">
                         <%-- Clients Doughnut Chart --%>
                         <div class="chart-container">
+                            <Rock:NotificationBox ID="nbClientsDoughnutChartMessage" runat="server" NotificationBoxType="Info" Text="No Client Communication Activity" />
                             <canvas id="clientsDoughnutChartCanvas" runat="server" />
                         </div>
                     </div>
                     <div class="col-md-8">
-                        <h4>Clients In Use</h4>
-                        <Rock:Grid ID="gClientsInUse" runat="server" DisplayType="Light">
-                            <Columns>
-                                <Rock:RockBoundField DataField="ClientName" HeaderText="" />
-                                <Rock:RockBoundField DataField="ClientPercent" HeaderText="" />
-                            </Columns>
-                        </Rock:Grid>
+                        <asp:Panel ID="pnlClientApplicationUsage" runat="server">
+                            <h4>Clients In Use</h4>
+                            <asp:Repeater ID="rptClientApplicationUsage" runat="server" OnItemDataBound="rptClientApplicationUsage_ItemDataBound">
+                                <ItemTemplate>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <asp:Literal ID="lApplicationName" runat="server" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <asp:Literal ID="lUsagePercent" runat="server" />
+                                        </div>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </asp:Panel>
                     </div>
                 </div>
 
                 <asp:Panel ID="pnlMostPopularLinks" runat="server">
                     <h3>Most Popular Links</h3>
                     <div class="row">
-                        <div class="col-md-6">Url</div>
-                        <div class="col-md-3">Uniques</div>
-                        <div class="col-md-3">CTR</div>
+                        <div class="col-md-10">Url</div>
+                        <div class="col-md-1">Uniques</div>
+                        <div class="col-md-1">CTR</div>
                     </div>
                     <asp:Repeater ID="rptMostPopularLinks" runat="server" OnItemDataBound="rptMostPopularLinks_ItemDataBound">
                         <ItemTemplate>
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-10">
                                     <p>
                                         <asp:Literal ID="lUrl" runat="server" />
                                     </p>
                                     <asp:Literal ID="lUrlProgressHTML" runat="server" />
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-1">
                                     <asp:Literal ID="lUniquesCount" runat="server" />
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-1">
                                     <asp:Literal ID="lCTRPercent" runat="server" />
                                 </div>
                             </div>
@@ -89,22 +100,14 @@
             </div>
         </div>
 
-
-
         <script>
             Sys.Application.add_load(function () {
                 // Workaround for Chart.js not working in IE11 (supposed to be fixed in chart.js 2.7)
                 // see https://github.com/chartjs/Chart.js/issues/4633
                 Number.MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
                 Number.MIN_SAFE_INTEGER = Number.MIN_SAFE_INTEGER || -9007199254740991;
-
-                var chartSeriesColors = [
-                    "#8498ab",
-                    "#a4b4c4",
-                    "#b9c7d5",
-                    "#c6d2df",
-                    "#d8e1ea"
-                ]
+                
+                var chartSeriesColors = <%=this.SeriesColorsJSON%>;
 
                 var getSeriesColors = function(numberOfColors) {
 
@@ -205,7 +208,16 @@
                         legend: {
                             position: 'right'
                         },
-                        cutoutPercentage: 80
+                        cutoutPercentage: 80,
+                        tooltips: {
+                            callbacks: {
+                                label: function(tooltipItem, data) {
+                                    var dataValue = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                                    var labelText = data.labels[tooltipItem.index];
+                                    return labelText + ": " + dataValue + "%";
+                                }
+                            }
+                        }
                     },
                     data: {
                         labels: pieChartDataClientLabels,
