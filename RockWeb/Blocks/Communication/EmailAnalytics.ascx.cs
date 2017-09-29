@@ -237,7 +237,9 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    // TODO: Invalid Communication specified
+                    // Invalid Communication specified
+                    nbCommunicationorCommunicationListFound.Visible = true;
+                    nbCommunicationorCommunicationListFound.Text = "Invalid communication specified";
                 }
             }
             else if ( communicationListGroupId.HasValue )
@@ -251,10 +253,9 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    // TODO: Invalid CommunicationGroup specified
+                    nbCommunicationorCommunicationListFound.Visible = true;
+                    nbCommunicationorCommunicationListFound.Text = "Invalid communication list group specified";
                 }
-
-                lTitle.Text = "Email Analytics: " + communicationListGroup.Name;
             }
             else
             {
@@ -445,6 +446,7 @@ namespace RockWeb.Blocks.Communication
                 UsagePercent = ( a.Count() * 100.00M / interactionCount )
             } ).OrderByDescending( a => a.UsagePercent ).ToList();
 
+            pnlClientApplicationUsage.Visible = clientsUsageByApplication.Any();
             rptClientApplicationUsage.DataSource = clientsUsageByApplication;
             rptClientApplicationUsage.DataBind();
 
