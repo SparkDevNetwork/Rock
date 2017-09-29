@@ -142,10 +142,17 @@ namespace RockWeb.Blocks.Cms
 
         protected void rptShortcodes_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            if ( ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem ) && ( !canAddEditDelete ) )
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem ) 
             {
-                e.Item.FindControl( "btnEdit" ).Visible = false;
-                e.Item.FindControl( "btnDelete" ).Visible = false;
+                if ( !canAddEditDelete )
+                {
+                    e.Item.FindControl( "btnEdit" ).Visible = false;
+                    e.Item.FindControl( "btnDelete" ).Visible = false;
+                }
+
+                LavaShortcode dataItem = (LavaShortcode)e.Item.DataItem;
+
+                e.Item.FindControl( "divEditPanel" ).Visible = !dataItem.IsSystem;
             }
         }
 
@@ -176,7 +183,7 @@ namespace RockWeb.Blocks.Cms
                 lavaShortcodes = lavaShortcodes.Where( s => s.IsActive == true );
             }
 
-            rptShortcodes.DataSource = lavaShortcodes.ToList();
+            rptShortcodes.DataSource = lavaShortcodes.ToList().OrderBy( s => s.Name );
             rptShortcodes.DataBind();
         }
 
