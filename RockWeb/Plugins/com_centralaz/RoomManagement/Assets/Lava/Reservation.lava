@@ -79,7 +79,7 @@
 						<li>{{ reservationLocation.Location.Name }}{% if reservationLocation.ApprovalState == 2 %}{% assign approvedItems = approvedItems|Plus:1 %} <i class="fa fa-check"></i>
 							{% else %}
 							{% assign approvalGroup = reservationLocation.Location | Attribute:'ApprovalGroup','Object' %}
-							{% capture linkToApprover %}<li><a href='/page/113?GroupId={{approvalGroup.Id}}'>{{approvalGroup.Name}}</a> for {{reservationLocation.Location.Name}} </li>{% endcapture %}{% assign approvalNeededBy = approvalNeededBy | Append:linkToApprover %}
+							{% capture linkToApprover %}<li><a href='/Group/{{approvalGroup.Id}}'>{{approvalGroup.Name}}</a> for {{reservationLocation.Location.Name}} </li>{% endcapture %}{% assign approvalNeededBy = approvalNeededBy | Append:linkToApprover %}
 							{% endif %}
 						</li>
 						{% endfor %}
@@ -90,7 +90,7 @@
   						{% assign totalItems = reservationSummary.Resources | Size | Plus: totalItems %}
 						{% for reservationResource in reservationSummary.Resources %}
 						<li>{{ reservationResource.Resource.Name }}({{reservationResource.Quantity}}) {% if reservationResource.ApprovalState == 2 %}{% assign approvedItems = approvedItems|Plus:1 %} <i class="fa fa-check"></i>
-							{% else %}{% capture linkToApprover %}<li><a href='/page/113?GroupId={{reservationResource.Resource.ApprovalGroupId}}'>{{reservationResource.Resource.ApprovalGroup.Name}}</a> for {{reservationResource.Resource.Name}}</li>{% endcapture %}{% assign approvalNeededBy = approvalNeededBy | Append:linkToApprover %}
+							{% else %}{% capture linkToApprover %}<li><a href='/Group/{{reservationResource.Resource.ApprovalGroupId}}'>{{reservationResource.Resource.ApprovalGroup.Name}}</a> for {{reservationResource.Resource.Name}}</li>{% endcapture %}{% assign approvalNeededBy = approvalNeededBy | Append:linkToApprover %}
 							{% endif %}
 						</li>
 						{% endfor %}
