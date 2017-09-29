@@ -26,6 +26,7 @@ RockWeb/Cache/*
 RockWeb/App_Data/PackageStaging
 /scaffolding.config
 *.sln.GhostDoc.xml
+.vs/
 
 Packages/*
 
