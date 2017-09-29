@@ -727,7 +727,7 @@
 		                <div id="editor-controls" style="display: none;">
                             <div id="editor-toolbar-container" class="js-emaileditor-addon">
 			                    <div id="editor-toolbar-content">
-				                    <p><small><strong>Content Blocks</strong></small></p>
+				                    
                                     <div class="component component-text" data-content="<h1>Title</h1><p> Can't wait to see what you have to say!</p>" data-state="template">
 					                    <i class="fa fa-align-justify"></i><br /> Text
 				                    </div>
@@ -744,9 +744,9 @@
 				                    <div class="component component-button" data-content="<table class='button-outerwrap' border='0' cellpadding='0' cellspacing='0' width='100%' style='min-width:100%;'><tbody><tr><td style='padding-top:0; padding-right:0; padding-bottom:0; padding-left:0;' valign='top' align='center' class='button-innerwrap'><table border='0' cellpadding='0' cellspacing='0' class='button-shell' style='display: inline-table; border-collapse: separate !important; border-radius: 3px; background-color: rgb(43, 170, 223);'><tbody><tr><td align='center' valign='middle' class='button-content' style='font-family: Arial; font-size: 16px; padding: 15px;'><a class='button-link' title='Push Me' href='http://' target='_blank' style='font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: rgb(255, 255, 255);'>Push Me</a></td></tr></tbody></table></td></tr></tbody></table>" data-state="template">
 					                    <i class="fa fa-square-o"></i> <br /> Button
 				                    </div>
-			                    </div>
-                                <div id="editor-toolbar-structure">
-                                    <p><small><strong>Content Zones</strong></small></p>
+			                        
+                                    <div class="component-separator"></div>
+
                                     <div class="component component-section" data-content="<div class='dropzone'></div>" data-state="template">
 					                    <i class="rk rk-one-column"></i> <br /> One
 				                    </div>
