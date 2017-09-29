@@ -76,10 +76,10 @@ namespace Rock.Model
         public string OperatingSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the operating system.
+        /// Gets or sets the application.
         /// </summary>
         /// <value>
-        /// The operating system.
+        /// The application.
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
