@@ -15,6 +15,8 @@
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-12">
+                        <Rock:NotificationBox ID="nbCommunicationorCommunicationListFound" runat="server" NotificationBoxType="Warning" Text="Invalid Communication or CommunicationList Specified" Visible="false" />
+
                         <%-- Main Opens/Clicks Line Chart --%>
                         <div class="chart-container">
                             <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" />
@@ -164,7 +166,7 @@
                             xAxes: [{
                                 type: 'time',
                                 time: {
-                                    unit: 'day',
+                                    unit: false,
                                     tooltipFormat: '<%=this.LineChartTimeFormat%>',
                                 }
                             }]
