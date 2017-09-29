@@ -16,6 +16,7 @@ using Rock.Web.UI.Controls;
 using Rock.Security;
 
 using com.centralaz.RoomManagement.Model;
+using com.centralaz.RoomManagement.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_centralaz.RoomManagement
 {
@@ -278,7 +279,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             var reservedKeyNames = new List<string>();
             GetAttributeList().Where( a => !a.Guid.Equals( question.Attribute.Guid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
-            edtQuestion.AllowSearchVisible = true;
+
+            //var includeFields = new List<FieldTypeCache>();
+            //includeFields.Add( FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ) );
+            //includeFields.Add( FieldTypeCache.Read( Rock.SystemGuid.FieldType.MEMO.AsGuid() ) );
+            //includeFields.Add( FieldTypeCache.Read( Rock.SystemGuid.FieldType.DATE.AsGuid() ) );
+            //includeFields.Add( FieldTypeCache.Read( Rock.SystemGuid.FieldType.SINGLE_SELECT.AsGuid() ) );
+            //edtQuestion.IncludedFieldTypes = includeFields.ToArray();
+
             edtQuestion.ReservedKeyNames = reservedKeyNames.ToList();
 
             Type objectType = null;
@@ -334,7 +342,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
             }
 
-            var savedAttribute = Helper.SaveAttributeEdits( edtQuestion, entityTypeId, null, null, rockContext );
+            var savedAttribute = SaveAttributeEdits( edtQuestion, entityTypeId, null, null, rockContext );
             AttributeCache.FlushEntityAttributes();
             return savedAttribute;
         }
@@ -360,5 +368,33 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         }
 
         #endregion
+
+        public static Rock.Model.Attribute SaveAttributeEdits( SimpleAttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
+        {
+            // Create and update a new attribute object with new values
+            rockContext = rockContext ?? new RockContext();
+            var internalAttributeService = new AttributeService( rockContext );
+
+            Rock.Model.Attribute attribute = null;
+            var newAttribute = new Rock.Model.Attribute();
+
+            if ( edtAttribute.AttributeId.HasValue )
+            {
+                attribute = internalAttributeService.Get( edtAttribute.AttributeId.Value );
+            }
+
+            if ( attribute != null )
+            {
+                newAttribute.CopyPropertiesFrom( attribute );
+            }
+            else
+            {
+                newAttribute.Order = internalAttributeService.Queryable().Max( a => a.Order ) + 1;
+            }
+
+            edtAttribute.GetAttributeProperties( newAttribute );
+
+            return Helper.SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="QuestionList.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.RoomManagement.QuestionList" %>
+<%@ register namespace="com.centralaz.RoomManagement.Web.UI.Controls" tagprefix="CentralAZ" assembly="com.centralaz.RoomManagement"%>
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
@@ -26,17 +27,15 @@
                 </div>
             </div>
 
-            
-
         </asp:Panel>
 
-        <Rock:ModalDialog ID="modalDetails" runat="server" Title="Category" ValidationGroup="ReservationQuestions" OnSaveClick="modalDetails_SaveClick" OnCancelScript="clearActiveDialog();">
+        <Rock:ModalDialog ID="modalDetails" runat="server" Title="Add/Edit Question" ValidationGroup="ReservationQuestions" OnSaveClick="modalDetails_SaveClick" OnCancelScript="clearActiveDialog();">
             <Content>
-
                 <asp:HiddenField ID="hfIdValue" runat="server" />
-
-                <Rock:AttributeEditor ID="edtQuestion" runat="server" ShowActions="false" ValidationGroup="ReservationQuestions" />
-
+                <CentralAZ:SimpleAttributeEditor ID="edtQuestion" runat="server" ShowActions="false" ValidationGroup="ReservationQuestions" 
+                    ShowIconCssClassVisible="false" ShowAnalyticsVisible="false" ShowInGridVisible="false" 
+                    ShowCategoriesVisible="false" ShowDescriptionVisible="false" AllowSearchVisible="false" AllowSearch="false"
+                    MinimizeKey="true" NameFieldLabel="Question" />
             </Content>
         </Rock:ModalDialog>
 

@@ -132,6 +132,7 @@
     <Compile Include="Web\UI\Controls\Pickers\ScheduledLocationItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ScheduledResourcePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ResourcePicker.cs" />
+    <Compile Include="Web\UI\Controls\SimpleAttributeEditor.cs" />
     <Compile Include="Workflow\Action\Reservations\SetReservationApprovalState.cs" />
   </ItemGroup>
   <ItemGroup>
