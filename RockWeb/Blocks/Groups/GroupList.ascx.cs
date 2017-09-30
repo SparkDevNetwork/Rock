@@ -50,9 +50,8 @@ namespace RockWeb.Blocks.Groups
     [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 11 )]
     [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 12 )]
     [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 13 )]
-    [KeyValueListField( "Additional Columns", "", false, "", "Column Heading", "Column Value {{ Lava }}", order: 14, AllowHtml = true)]
     [ContextAware]
-    public partial class GroupList : RockBlock
+    public partial class GroupList : RockBlock, IAdditionalGridColumns
     {
         private int _groupTypesCount = 0;
         private bool _showGroupPath = false;
@@ -158,28 +157,28 @@ namespace RockWeb.Blocks.Groups
             SetPanelTitleAndIcon();
         }
 
+        #region IAdditionalGridColumns
+
         /// <summary>
-        /// Adds any additional columns that were defined in the block settings
+        /// Adds AdditionalColumns to the grid
         /// </summary>
-        private void AddAdditionalColumns()
+        public void AddAdditionalColumns()
         {
-            var additionalColumns = this.GetAttributeValue( "AdditionalColumns" ).AsDictionaryOrNull();
-            if ( additionalColumns != null && additionalColumns.Any() )
+            var additionalColumns = this.GetAttributeValue( AdditionalGridColumnsConfig.AttributeKey ).FromJsonOrNull<AdditionalGridColumnsConfig>();
+            if ( additionalColumns != null && additionalColumns.ColumnsConfig.Any() )
             {
                 var deleteField = gGroups.ColumnsOfType<DeleteField>().FirstOrDefault();
                 int insertPosition = gGroups.Columns.IndexOf( deleteField );
 
-                foreach ( var keyValue in additionalColumns )
+                foreach ( var column in additionalColumns.GetColumns() )
                 {
-                    var lavaColumn = new LavaField();
-                    lavaColumn.HeaderText = keyValue.Key;
-                    lavaColumn.LavaTemplate = keyValue.Value;
-
-                    gGroups.Columns.Insert( insertPosition, lavaColumn );
+                    gGroups.Columns.Insert( insertPosition, column );
                     insertPosition++;
                 }
             }
         }
+
+        #endregion IAdditionalGridColumns
 
         /// <summary>
         /// Handles the RowDataBound event of the rGrid control.
@@ -207,9 +206,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void GroupList_BlockUpdated( object sender, EventArgs e )
         {
-            ApplyBlockSettings();
-            BindFilter();
-            BindGrid();
+            this.NavigateToCurrentPageReference();
         }
 
         #endregion
