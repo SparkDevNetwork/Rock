@@ -1,31 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using com.centralaz.RoomManagement.Model;
 
-using Rock.Constants;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.ModelConfiguration;
-using System.Linq;
-using System.Runtime.Serialization;
 using Rock;
 using Rock.Data;
-using Rock.Extension;
-
-using com.centralaz.RoomManagement.Model;
 
 namespace com.centralaz.RoomManagement.Attribute
 {
@@ -48,7 +27,6 @@ namespace com.centralaz.RoomManagement.Attribute
 
             var attributeValueList = starterReservationLocation.AttributeValues.Where( kvp => questionAttributeIds.Contains( kvp.Value.AttributeId ) ).ToList();
             attributeValueList.ForEach( a => reservationLocation.AttributeValues.AddOrIgnore( a.Key, a.Value ) );
-
         }
 
         public static void LoadReservationResourceAttributes( this ReservationResource reservationResource )
@@ -69,7 +47,6 @@ namespace com.centralaz.RoomManagement.Attribute
             var attributeValueList = starterReservationResource.AttributeValues.Where( kvp => questionAttributeIds.Contains( kvp.Value.AttributeId ) ).ToList();
             reservationResource.AttributeValues = new Dictionary<string, Rock.Web.Cache.AttributeValueCache>();
             attributeValueList.ForEach( a => reservationResource.AttributeValues.AddOrIgnore( a.Key, a.Value ) );
-
         }
     }
 
