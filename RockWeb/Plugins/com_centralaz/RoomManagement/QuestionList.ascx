@@ -33,9 +33,9 @@
             <Content>
                 <asp:HiddenField ID="hfIdValue" runat="server" />
                 <CentralAZ:SimpleAttributeEditor ID="edtQuestion" runat="server" ShowActions="false" ValidationGroup="ReservationQuestions" 
-                    ShowIconCssClassVisible="false" ShowAnalyticsVisible="false" ShowInGridVisible="false" 
-                    ShowCategoriesVisible="false" ShowDescriptionVisible="false" AllowSearchVisible="false" AllowSearch="false"
-                    MinimizeKey="true" NameFieldLabel="Question" />
+                    IsIconCssClassVisible="false" IsAnalyticsVisible="false" IsShowInGridVisible="false"
+                    IsCategoriesVisible="false" IsDescriptionVisible="false" IsAllowSearchVisible="false" AllowSearch="false"
+                    IsKeyEditable="false" NameFieldLabel="Question" />
             </Content>
         </Rock:ModalDialog>
 

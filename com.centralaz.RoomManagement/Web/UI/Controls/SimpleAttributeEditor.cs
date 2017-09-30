@@ -52,6 +52,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         protected RockTextBox _tbDescription;
 
         protected CategoryPicker _cpCategories;
+        protected RockLiteral _lKey;
         protected RockTextBox _tbKey;
         protected CustomValidator _cvKey;
         protected RockTextBox _tbIconCssClass;
@@ -147,15 +148,28 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to minimize the display of the Key field.
+        /// Gets or sets a value indicating whether to allow editing the Key field.
         /// </summary>
         /// <value>
-        ///   <c>true</c> to minimize the display of the Key field; otherwise, <c>false</c>.
+        ///   <c>true</c> to see an editable Key field; otherwise, <c>false</c>.
         /// </value>
-        public bool MinimizeKey
+        public bool IsKeyEditable
         {
-            get { return ViewState["MinimizeKey"] as bool? ?? false; }
-            set { ViewState["MinimizeKey"] = value; }
+            get
+            {
+                EnsureChildControls();
+                return _lKey.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _lKey.Visible = ! value;
+                if ( ! value )
+                {
+                    _tbKey.CssClass = "hidden";
+                    _tbKey.FormGroupCssClass = "hidden";
+                }
+            }
         }
 
         /// <summary>
@@ -255,6 +269,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
             {
                 EnsureChildControls();
                 _tbKey.Text = value;
+                _lKey.Text = value;
             }
         }
 
@@ -324,7 +339,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if the Analuytics options are visible; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowAnalyticsVisible
+        public bool IsAnalyticsVisible
         {
             get
             {
@@ -345,7 +360,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if Categories option is visible; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowCategoriesVisible
+        public bool IsCategoriesVisible
         {
             get
             {
@@ -365,7 +380,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if Description option is visible; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowDescriptionVisible
+        public bool IsDescriptionVisible
         {
             get
             {
@@ -385,7 +400,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if Icon Css Class option is visible; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowIconCssClassVisible
+        public bool IsIconCssClassVisible
         {
             get
             {
@@ -405,7 +420,28 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "Use IsShowInGridVisible instead." )]
         public bool ShowInGridVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbShowInGrid.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbShowInGrid.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Show in Grid option is displayed
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsShowInGridVisible
         {
             get
             {
@@ -781,7 +817,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
                 _validationSummary = new ValidationSummary();
                 _validationSummary.ID = "valiationSummary";
                 _validationSummary.CssClass = "alert alert-danger";
-                _validationSummary.HeaderText = "Please Correct the Following";
+                _validationSummary.HeaderText = "Please correct the following:";
                 Controls.Add( _validationSummary );
 
                 _tbName = new RockTextBox();
@@ -804,6 +840,12 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
                 _cpCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
                 _cpCategories.EntityTypeQualifierColumn = "EntityTypeId";
                 Controls.Add( _cpCategories );
+
+                _lKey = new RockLiteral();
+                _lKey.Label = "Key";
+                _lKey.ID = "lKey";
+                //_lKey.Text = "<i></i>";
+                Controls.Add( _lKey );
 
                 _tbKey = new RockTextBox();
                 _tbKey.ID = "tbKey";
@@ -1000,7 +1042,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", _tbName.ClientID, _tbKey.ClientID );
+            _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}','{2}' )", _tbName.ClientID, _tbKey.ClientID, _lKey.ClientID );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
@@ -1027,6 +1069,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _lKey.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -1046,19 +1089,6 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // row 3 col 1
-            if ( MinimizeKey )
-            {
-                _tbKey.DisplayRequiredIndicator = false;
-                _tbKey.FormGroupCssClass = "text-muted";
-                _tbKey.Attributes.Add( "disabled", "" );
-                //_tbKey.CssClass = "small text-muted"; // doesn't work
-                _tbKey.Style.Add( "font-size", "70%" );
-                _tbKey.Style.Add( "color", "grey" );
-                _tbKey.Style.Add( "background-color", "inherit" );
-                _tbKey.Style.Add( "border", "0px" );
-                _tbKey.Style.Add( "box-shadow", "none" );
-            }
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cpCategories.RenderControl( writer );
@@ -1343,8 +1373,9 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         protected void RegisterClientScript()
         {
             string script = @"
-    function populateAttributeKey(nameControlId, keyControlId ) {
+    function populateAttributeKey(nameControlId, keyControlId, literalKeyControlId ) {
         // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
+        var literalKeyControl = $('#' + literalKeyControlId);
         var keyControl = $('#' + keyControlId);
         var keyValue = keyControl.val();
 
@@ -1362,6 +1393,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
             }
             
             keyControl.val(newKeyValue);
+            literalKeyControl.html(newKeyValue);
         }
     }
 
