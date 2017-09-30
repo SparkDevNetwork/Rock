@@ -64,7 +64,7 @@
                         <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="d" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                        <asp:LinkButton ID="btnDelete" runat="server" Visible="false" CssClass="btn btn-link btn-danger margin-l-md" OnClick="btnDelete_Click" CausesValidation="false"><span class="text-danger"><i class="fa fa-trash"></i> Delete</span></asp:LinkButton>
+                        <asp:LinkButton ID="btnDelete" runat="server" Visible="false" CssClass="btn btn-link btn-danger margin-l-md pull-right" OnClick="btnDelete_Click" CausesValidation="false"><i class="fa fa-trash"></i> Delete</asp:LinkButton>
                     </div>
                 </div>
             </div>
