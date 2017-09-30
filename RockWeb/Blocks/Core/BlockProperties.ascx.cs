@@ -29,6 +29,7 @@ using Rock.Web.UI;
 using Rock.Security;
 using Rock.Data;
 using System.Web;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
@@ -42,7 +43,18 @@ namespace RockWeb.Blocks.Core
     {
         #region Fields
 
-        private readonly List<string> _tabs = new List<string> { "Basic Settings", "Advanced Settings" };
+        private AdditionalGridColumnsConfig AdditionalGridColumnsConfigState
+        {
+            get
+            {
+                return ViewState["AdditionalGridColumnsConfig"] as AdditionalGridColumnsConfig;
+            }
+
+            set
+            {
+                ViewState["AdditionalGridColumnsConfig"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the current tab.
@@ -143,6 +155,26 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Gets the tabs.
+        /// </summary>
+        /// <param name="blockType">Type of the block.</param>
+        /// <returns></returns>
+        private List<string> GetTabs( BlockTypeCache blockType )
+        {
+            var blockControlType = System.Web.Compilation.BuildManager.GetCompiledType( blockType.Path );
+            bool additionalColumnsBlock = typeof( Rock.Web.UI.IAdditionalGridColumns ).IsAssignableFrom( blockControlType );
+
+            var result = new List<string> { "Basic Settings", "Advanced Settings" };
+
+            if ( additionalColumnsBlock )
+            {
+                result.Add( "Additional Grid Columns" );
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -153,7 +185,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack && _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
-                rptProperties.DataSource = _tabs;
+                rptProperties.DataSource = GetTabs(_block.BlockType);
                 rptProperties.DataBind();
 
                 tbBlockName.Text = _block.Name;
@@ -164,11 +196,15 @@ namespace RockWeb.Blocks.Core
                 // Hide the Cache duration block for now;
                 tbCacheDuration.Visible = false;
                 //tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
+
+                AdditionalGridColumnsConfigState = _block.GetAttributeValue( AdditionalGridColumnsConfig.AttributeKey ).FromJsonOrNull<AdditionalGridColumnsConfig>() ?? new AdditionalGridColumnsConfig();
+
+                BindAdditionalColumnsConfig();
             }
 
             base.OnLoad( e );
         }
-
+                
         /// <summary>
         /// Handles the Click event of the lbProperty control.
         /// </summary>
@@ -181,7 +217,9 @@ namespace RockWeb.Blocks.Core
             {
                 CurrentTab = lb.Text;
 
-                rptProperties.DataSource = _tabs;
+                int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
+                BlockCache _block = BlockCache.Read( blockId );
+                rptProperties.DataSource = GetTabs( _block.BlockType );
                 rptProperties.DataBind();
             }
 
@@ -216,6 +254,24 @@ namespace RockWeb.Blocks.Core
                 {
                     Rock.Attribute.Helper.GetEditValues( phAdvancedAttributes, block );
                 }
+
+                SaveAdditionalColumnsConfigToViewState();
+                if (this.AdditionalGridColumnsConfigState != null && this.AdditionalGridColumnsConfigState.ColumnsConfig.Any())
+                {
+                    if ( !block.Attributes.Any( a => a.Key == AdditionalGridColumnsConfig.AttributeKey ) )
+                    {
+                        block.Attributes.Add( AdditionalGridColumnsConfig.AttributeKey, null );
+                    }
+                        block.SetAttributeValue( AdditionalGridColumnsConfig.AttributeKey, this.AdditionalGridColumnsConfigState.ToJson() );
+                }
+                else
+                {
+                    if ( block.Attributes.Any( a => a.Key == AdditionalGridColumnsConfig.AttributeKey ) )
+                    {
+                        block.SetAttributeValue( AdditionalGridColumnsConfig.AttributeKey, null );
+                    }
+                }
+
                 block.SaveAttributeValues( rockContext );
 
                 Rock.Web.Cache.BlockCache.Flush( block.Id );
@@ -260,19 +316,101 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void ShowSelectedPane()
         {
-            if ( CurrentTab.Equals( "Basic Settings" ) )
+            pnlAdvancedSettings.Visible = CurrentTab.Equals( "Advanced Settings" );
+            pnlBasicProperty.Visible = CurrentTab.Equals( "Basic Settings" );
+            pnlAdditionalGridColumns.Visible = CurrentTab.Equals( "Additional Grid Columns" );
+        }
+
+        #endregion
+
+        #region Additional Grid Columns
+
+        private void BindAdditionalColumnsConfig()
+        {
+            int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
+            BlockCache _block = BlockCache.Read( blockId );
+
+            rptAdditionalGridColumns.DataSource = AdditionalGridColumnsConfigState.ColumnsConfig;
+            rptAdditionalGridColumns.DataBind();
+        }
+
+        /// <summary>
+        /// Saves the state of the additional columns configuration to view.
+        /// </summary>
+        private void SaveAdditionalColumnsConfigToViewState()
+        {
+            this.AdditionalGridColumnsConfigState = new AdditionalGridColumnsConfig();
+            foreach ( var item in rptAdditionalGridColumns.Items.OfType<RepeaterItem>())
             {
-                pnlBasicProperty.Visible = true;
-                pnlAdvancedSettings.Visible = false;
+                var columnConfig = new AdditionalGridColumnsConfig.ColumnConfig();
+                var tbHeaderText = item.FindControl( "tbHeaderText" ) as RockTextBox;
+                columnConfig.HeaderText = tbHeaderText.Text;
+                var tbHeaderClass = item.FindControl( "tbHeaderClass" ) as RockTextBox;
+                columnConfig.HeaderClass = tbHeaderClass.Text;
+                var tbItemClass = item.FindControl( "tbItemClass" ) as RockTextBox;
+                columnConfig.ItemClass = tbItemClass.Text;
+                var ceLavaTemplate = item.FindControl( "ceLavaTemplate" ) as CodeEditor;
+                columnConfig.LavaTemplate = ceLavaTemplate.Text;
+
+                this.AdditionalGridColumnsConfigState.ColumnsConfig.Add( columnConfig );
             }
-            else if ( CurrentTab.Equals( "Advanced Settings" ) )
+        }
+
+
+        /// <summary>
+        /// Handles the Click event of the lbAddColumns control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddColumns_Click( object sender, EventArgs e )
+        {
+            SaveAdditionalColumnsConfigToViewState();
+            this.AdditionalGridColumnsConfigState.ColumnsConfig.Add( new AdditionalGridColumnsConfig.ColumnConfig() );
+            BindAdditionalColumnsConfig();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDeleteColumn control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDeleteColumn_Click( object sender, EventArgs e )
+        {
+            SaveAdditionalColumnsConfigToViewState();
+            int? columnIndex = ( sender as LinkButton ).CommandArgument.AsIntegerOrNull();
+            if ( columnIndex.HasValue )
             {
-                pnlBasicProperty.Visible = false;
-                pnlAdvancedSettings.Visible = true;
+                this.AdditionalGridColumnsConfigState.ColumnsConfig.RemoveAt( columnIndex.Value );
+            }
+
+            BindAdditionalColumnsConfig();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptAdditionalGridColumns control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptAdditionalGridColumns_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            AdditionalGridColumnsConfig.ColumnConfig columnConfig = e.Item.DataItem as AdditionalGridColumnsConfig.ColumnConfig;
+            if ( columnConfig != null )
+            {
+                var tbHeaderText = e.Item.FindControl( "tbHeaderText" ) as RockTextBox;
+                tbHeaderText.Text = columnConfig.HeaderText;
+                var tbHeaderClass = e.Item.FindControl( "tbHeaderClass" ) as RockTextBox;
+                tbHeaderClass.Text = columnConfig.HeaderClass;
+                var tbItemClass = e.Item.FindControl( "tbItemClass" ) as RockTextBox;
+                tbItemClass.Text = columnConfig.ItemClass;
+
+                var ceLavaTemplate = e.Item.FindControl( "ceLavaTemplate" ) as CodeEditor;
+                ceLavaTemplate.Text = columnConfig.LavaTemplate;
+                var btnDeleteColumn = e.Item.FindControl( "btnDeleteColumn" ) as LinkButton;
+                btnDeleteColumn.CommandName = "ColumnIndex";
+                btnDeleteColumn.CommandArgument = e.Item.ItemIndex.ToString();
             }
         }
 
         #endregion
-        
     }
 }

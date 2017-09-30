@@ -37,6 +37,28 @@
                         <asp:PlaceHolder ID="phAdvancedAttributes" runat="server"></asp:PlaceHolder>
                     </asp:Panel>
 
+                    <asp:Panel ID="pnlAdditionalGridColumns" runat="server" Visible="false">
+                        <asp:LinkButton ID="lbAddColumns" runat="server" CssClass="btn btn-default" Text="Add Column" OnClick="lbAddColumns_Click" />
+                        <asp:Repeater ID="rptAdditionalGridColumns" runat="server" OnItemDataBound="rptAdditionalGridColumns_ItemDataBound">
+                            <ItemTemplate>
+                                <hr />
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <Rock:RockTextBox ID="tbHeaderText" runat="server" Label="Header Text" />
+                                        <Rock:RockTextBox ID="tbHeaderClass" runat="server" Label="Header Class" />
+                                        <Rock:RockTextBox ID="tbItemClass" runat="server" Label="Item Class" />
+                                    </div>
+                                    <div class="col-md-7">
+                                        <Rock:CodeEditor ID="ceLavaTemplate" runat="server" Label="Lava Template" EditorMode="Lava" EditorHeight="200" />
+                                    </div>
+                                    <div class="col-md-1">
+                                    <asp:LinkButton ID="btnDeleteColumn" runat="server" CssClass="btn btn-danger btn-sm" OnClick="btnDeleteColumn_Click" ><i class="fa fa-times"></i></asp:LinkButton>    
+                                    </div>
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </asp:Panel>
+
                 </div>
 
             </asp:PlaceHolder>
