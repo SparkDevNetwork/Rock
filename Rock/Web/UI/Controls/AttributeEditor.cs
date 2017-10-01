@@ -43,30 +43,31 @@ namespace Rock.Web.UI.Controls
 
         #region Controls
 
-        private HtmlInputHidden _hfExistingKeyNames;
-        private Literal _lAttributeActionTitle;
-        private ValidationSummary _validationSummary;
+        protected HtmlInputHidden _hfExistingKeyNames;
+        protected Literal _lAttributeActionTitle;
+        protected ValidationSummary _validationSummary;
 
-        private RockTextBox _tbName;
-        private RockTextBox _tbDescription;
+        protected RockTextBox _tbName;
+        protected RockTextBox _tbDescription;
 
-        private CategoryPicker _cpCategories;
-        private RockTextBox _tbKey;
-        private CustomValidator _cvKey;
-        private RockTextBox _tbIconCssClass;
-        private RockCheckBox _cbRequired;
-        private RockCheckBox _cbShowInGrid;
-        private RockCheckBox _cbAllowSearch;
-        private RockCheckBox _cbIsIndexingEnabled;
-        private RockCheckBox _cbIsAnalytic;
-        private RockCheckBox _cbIsAnalyticHistory;
+        protected CategoryPicker _cpCategories;
+        protected RockLiteral _lKey;
+        protected RockTextBox _tbKey;
+        protected CustomValidator _cvKey;
+        protected RockTextBox _tbIconCssClass;
+        protected RockCheckBox _cbRequired;
+        protected RockCheckBox _cbShowInGrid;
+        protected RockCheckBox _cbAllowSearch;
+        protected RockCheckBox _cbIsIndexingEnabled;
+        protected RockCheckBox _cbIsAnalytic;
+        protected RockCheckBox _cbIsAnalyticHistory;
 
-        private RockDropDownList _ddlFieldType;
-        private PlaceHolder _phQualifiers;
-        private PlaceHolder _phDefaultValue;
+        protected RockDropDownList _ddlFieldType;
+        protected PlaceHolder _phQualifiers;
+        protected PlaceHolder _phDefaultValue;
 
-        private LinkButton _btnSave;
-        private LinkButton _btnCancel;
+        protected LinkButton _btnSave;
+        protected LinkButton _btnCancel;
 
         #endregion Controls
 
@@ -146,6 +147,31 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to allow editing the Key field.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> to see an editable Key field; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsKeyEditable
+        {
+            get
+            {
+                EnsureChildControls();
+                return _lKey.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _lKey.Visible = !value;
+                if ( !value )
+                {
+                    _tbKey.CssClass = "hidden";
+                    _tbKey.FormGroupCssClass = "hidden";
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the action title.
         /// </summary>
         /// <value>
@@ -153,12 +179,12 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ActionTitle
         {
-            get 
+            get
             {
                 EnsureChildControls();
                 return _lAttributeActionTitle.Text;
             }
-            set 
+            set
             {
                 EnsureChildControls();
                 _lAttributeActionTitle.Text = value;
@@ -182,6 +208,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _tbName.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the label of the Name field.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string NameFieldLabel
+        {
+            get
+            {
+                EnsureChildControls();
+                return string.IsNullOrEmpty( _tbName.Label ) ? "Name" : _tbName.Label;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbName.Label = value;
             }
         }
 
@@ -222,6 +268,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _tbKey.Text = value;
+                _lKey.Text = value;
             }
         }
 
@@ -286,12 +333,114 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not to show the analytics options are displayed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the Analuytics options are visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsAnalyticsVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsAnalytic.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsAnalytic.Visible = value;
+                _cbIsAnalyticHistory.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Categories option is displayed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Categories option is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCategoriesVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cpCategories.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cpCategories.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Description option is displayed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Description option is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsDescriptionVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbDescription.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbDescription.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Icon Css Class option is displayed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Icon Css Class option is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsIconCssClassVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbIconCssClass.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbIconCssClass.Visible = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether Show in Grid option is displayed
         /// </summary>
         /// <value>
         ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "Use IsShowInGridVisible instead." )]
         public bool ShowInGridVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbShowInGrid.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbShowInGrid.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Show in Grid option is displayed
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsShowInGridVisible
         {
             get
             {
@@ -321,6 +470,28 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.ViewState["ExcludedFieldTypeIds"] = value.Select( a => a.Id ).ToArray();
+
+                EnsureChildControls();
+                LoadFieldTypes();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the included field types.
+        /// </summary>
+        /// <value>
+        /// The included field types.
+        /// </value>
+        public FieldTypeCache[] IncludedFieldTypes
+        {
+            get
+            {
+                int[] includedFieldTypeIds = this.ViewState["IncludedFieldTypeIds"] as int[];
+                return includedFieldTypeIds?.Select( a => FieldTypeCache.Read( a ) ).ToArray() ?? new FieldTypeCache[0];
+            }
+            set
+            {
+                this.ViewState["IncludedFieldTypeIds"] = value.Select( a => a.Id ).ToArray();
 
                 EnsureChildControls();
                 LoadFieldTypes();
@@ -536,9 +707,9 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get 
-            { 
-                return ViewState["ValidationGroup"] as string; 
+            get
+            {
+                return ViewState["ValidationGroup"] as string;
             }
             set
             {
@@ -555,12 +726,12 @@ namespace Rock.Web.UI.Controls
         public List<string> ReservedKeyNames
         {
             get
-            { 
-                return ViewState["ReservedKeyNames"] as List<string> ?? new List<string>(); 
+            {
+                return ViewState["ReservedKeyNames"] as List<string> ?? new List<string>();
             }
-            set 
-            { 
-                ViewState["ReservedKeyNames"] = value; 
+            set
+            {
+                ViewState["ReservedKeyNames"] = value;
             }
         }
 
@@ -601,9 +772,16 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Loads the field types.
         /// </summary>
-        private void LoadFieldTypes()
+        protected void LoadFieldTypes()
         {
-            _ddlFieldType.DataSource = FieldTypeCache.All().Where( a => !this.ExcludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
+            if ( this.IncludedFieldTypes.Any() )
+            {
+                _ddlFieldType.DataSource = FieldTypeCache.All().Where( a => this.IncludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
+            }
+            else
+            {
+                _ddlFieldType.DataSource = FieldTypeCache.All().Where( a => !this.ExcludedFieldTypes.Any( x => x.Id == a.Id ) ).ToList();
+            }
             _ddlFieldType.DataBind();
         }
 
@@ -638,12 +816,12 @@ namespace Rock.Web.UI.Controls
                 _validationSummary = new ValidationSummary();
                 _validationSummary.ID = "valiationSummary";
                 _validationSummary.CssClass = "alert alert-danger";
-                _validationSummary.HeaderText = "Please Correct the Following";
-                Controls.Add( _validationSummary ); 
-                
+                _validationSummary.HeaderText = "Please correct the following:";
+                Controls.Add( _validationSummary );
+
                 _tbName = new RockTextBox();
                 _tbName.ID = "tbName";
-                _tbName.Label = "Name";
+                _tbName.Label = NameFieldLabel;
                 _tbName.Required = true;
                 Controls.Add( _tbName );
 
@@ -661,6 +839,12 @@ namespace Rock.Web.UI.Controls
                 _cpCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
                 _cpCategories.EntityTypeQualifierColumn = "EntityTypeId";
                 Controls.Add( _cpCategories );
+
+                _lKey = new RockLiteral();
+                _lKey.Label = "Key";
+                _lKey.ID = "lKey";
+                _lKey.Visible = false;  // Default is to not show this option
+                Controls.Add( _lKey );
 
                 _tbKey = new RockTextBox();
                 _tbKey.ID = "tbKey";
@@ -684,7 +868,7 @@ namespace Rock.Web.UI.Controls
                 Controls.Add( _tbIconCssClass );
 
                 _cbRequired = new RockCheckBox();
-                _cbRequired.ID ="cbRequired";
+                _cbRequired.ID = "cbRequired";
                 _cbRequired.Label = "Required";
                 _cbRequired.Text = "Require a value";
                 Controls.Add( _cbRequired );
@@ -789,7 +973,7 @@ namespace Rock.Web.UI.Controls
 
                 Qualifiers = field.ConfigurationValues( qualifierControls );
             }
-            
+
         }
 
         /// <summary>
@@ -838,7 +1022,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( control is IRockControl )
                 {
-                    ( (IRockControl)control ).ValidationGroup = validationGroup;
+                    ( ( IRockControl ) control ).ValidationGroup = validationGroup;
                 }
             }
             foreach ( var control in _phDefaultValue.Controls )
@@ -858,7 +1042,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", _tbName.ClientID, _tbKey.ClientID );
+            _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}','{2}' )", _tbName.ClientID, _tbKey.ClientID, _lKey.ClientID );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
@@ -867,8 +1051,8 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             var existingKeyNames = new List<string>();
-            ReservedKeyNames.ForEach( n => existingKeyNames.Add(n));
-            ObjectPropertyNames.ForEach( n => existingKeyNames.Add(n));
+            ReservedKeyNames.ForEach( n => existingKeyNames.Add( n ) );
+            ObjectPropertyNames.ForEach( n => existingKeyNames.Add( n ) );
             _hfExistingKeyNames.Value = existingKeyNames.ToJson();
             _hfExistingKeyNames.RenderControl( writer );
 
@@ -885,6 +1069,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _lKey.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -1130,7 +1315,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="fieldTypeId">The field type id.</param>
         /// <param name="recreate">if set to <c>true</c> [recreate].</param>
-        private void CreateFieldTypeDetailControls(int? fieldTypeId, bool recreate = false )
+        protected void CreateFieldTypeDetailControls( int? fieldTypeId, bool recreate = false )
         {
             EnsureChildControls();
 
@@ -1151,7 +1336,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 int i = 0;
-                foreach(var control in configControls )
+                foreach ( var control in configControls )
                 {
                     control.ID = string.Format( "qualifier_{0}", i++ );
                     _phQualifiers.Controls.Add( control );
@@ -1186,11 +1371,12 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Registers the client script.
         /// </summary>
-        private void RegisterClientScript()
+        protected void RegisterClientScript()
         {
             string script = @"
-    function populateAttributeKey(nameControlId, keyControlId ) {
+    function populateAttributeKey(nameControlId, keyControlId, literalKeyControlId ) {
         // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
+        var literalKeyControl = $('#' + literalKeyControlId);
         var keyControl = $('#' + keyControlId);
         var keyValue = keyControl.val();
 
@@ -1208,6 +1394,7 @@ namespace Rock.Web.UI.Controls
             }
             
             keyControl.val(newKeyValue);
+            literalKeyControl.html(newKeyValue);
         }
     }
 

@@ -82,7 +82,7 @@
                         </div>
                     </div>
                 </asp:panel>
-                <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" ShowInGridVisible="true" />
+                <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" IsShowInGridVisible="true" />
             </Content>
         </Rock:ModalDialog>
 
