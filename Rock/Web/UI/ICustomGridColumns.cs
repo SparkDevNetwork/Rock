@@ -22,43 +22,29 @@ using Rock.Web.UI.Controls;
 namespace Rock.Web.UI
 {
     /// <summary>
-    /// Interface for Blocks that have a grid that supports adding additional columns from Block Configuration. See GroupList.ascs.cs for example usage.
+    /// Interface for Blocks that have a grid that supports adding custom columns from Block Configuration. See GroupList.ascs.cs for example usage.
     /// </summary>
-    public interface IAdditionalGridColumns
+    public interface ICustomGridColumns
     {
-        /// <summary>
-        /// Add AdditionalColumns to the grid
-        /// 
-        /// </summary>
-        void AddAdditionalColumns();
     }
 
     /// <summary>
     /// 
     /// </summary>
     [Serializable]
-    public class AdditionalGridColumnsConfig
+    public class CustomGridColumnsConfig
     {
         /// <summary>
         /// The attribute key
         /// </summary>
-        public const string AttributeKey = "core.AdditionalGridColumnsConfig";
+        public const string AttributeKey = "core.CustomGridColumnsConfig";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AdditionalGridColumnsConfig"/> class.
+        /// Initializes a new instance of the <see cref="CustomGridColumnsConfig"/> class.
         /// </summary>
-        public AdditionalGridColumnsConfig()
+        public CustomGridColumnsConfig()
         {
             this.ColumnsConfig = new List<ColumnConfig>();
-        }
-
-        /// <summary>
-        /// Gets the columns.
-        /// </summary>
-        /// <returns></returns>
-        public List<LavaField> GetColumns()
-        {
-            return ColumnsConfig.Select( a => a.GetGridColumn() ).ToList();
         }
 
         /// <summary>
@@ -106,6 +92,22 @@ namespace Rock.Web.UI
             /// The lava template.
             /// </value>
             public string LavaTemplate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the type of the position offset.
+            /// </summary>
+            /// <value>
+            /// The type of the position offset.
+            /// </value>
+            public OffsetType PositionOffsetType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the position offset relative to PositionOffsetType
+            /// </summary>
+            /// <value>
+            /// The position offset.
+            /// </value>
+            public int PositionOffset { get; set; }
             
             /// <summary>
             /// Gets the grid column.
@@ -119,6 +121,22 @@ namespace Rock.Web.UI
                 lavaField.ItemStyle.CssClass = this.ItemClass;
                 lavaField.LavaTemplate = this.LavaTemplate;
                 return lavaField;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public enum OffsetType
+            {
+                /// <summary>
+                /// The first column
+                /// </summary>
+                FirstColumn,
+                
+                /// <summary>
+                /// The last column
+                /// </summary>
+                LastColumn
             }
         }
     }
