@@ -14,8 +14,8 @@
         }
         
         var self = this;
-        self.editorToolbarContent = document.getElementById('editor-toolbar-content');
-        self.editorToolbarStructure = document.getElementById('editor-toolbar-structure');
+        self.editorToolbarContent = $('#'+ options.id).find('.js-editor-toolbar-content')[0];
+        self.editorToolbarStructure = $('#' + options.id).find('.js-editor-toolbar-structure')[0];
         self.componentSelected = options.componentSelected;
 
         // configure and load the dragula script for content components
