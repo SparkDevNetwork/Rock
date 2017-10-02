@@ -724,9 +724,10 @@
 			                </div>
 		                </section>
 			
-		                <div id="editor-controls" style="display: none;">
-                            <div id="editor-toolbar-container" class="js-emaileditor-addon">
-			                    <div id="editor-toolbar-content">
+		                <%-- the contents editor-controls-markup is copied into the iframe --%>
+                        <div id="editor-controls-markup" style="display: none;">
+                            <div id="editor-controls" class="editor-toolbar-container js-emaileditor-addon">
+			                    <div class="js-editor-toolbar-content">
 				                    
                                     <div class="component component-text" data-content="<h1>Title</h1><p> Can't wait to see what you have to say!</p>" data-state="template">
 					                    <i class="fa fa-align-justify"></i><br /> Text
@@ -746,6 +747,8 @@
 				                    </div>
 			                        
                                     <div class="component-separator"></div>
+                                </div>
+                                <div class="js-editor-toolbar-structure">
 
                                     <div class="component component-section" data-content="<div class='dropzone'></div>" data-state="template">
 					                    <i class="rk rk-one-column"></i> <br /> One
@@ -770,8 +773,7 @@
                             </div>
 		                </div>	
                     </div>
-                    
-                    <%-- TODO: review css here... --%>
+
                     <div class="actions margin-t-lg">
                         <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-saveeditorhtml js-wizard-navigation" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
                         <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml js-wizard-navigation" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
@@ -1199,7 +1201,7 @@
                 editorScript.onload = function ()
                 {
                     $editorIframe[0].contentWindow.Rock.controls.emailEditor.initialize({
-                        id: 'editor-window',
+                        id: 'editor-controls',
                         componentSelected: loadPropertiesPage
                     });
                 };
@@ -1217,7 +1219,7 @@
                     var $this = $(this);
                     var contents = $this.contents();
 
-                    var editorMarkup = $('#editor-controls').contents();
+                    var editorMarkup = $('#editor-controls-markup').contents();
 
                     $(contents).find('body').prepend(editorMarkup);
                     $('#<%=pnlEmailEditor.ClientID%>').fadeTo(0, 1);
