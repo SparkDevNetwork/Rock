@@ -72,7 +72,7 @@
 
         <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Matrix Template Attributes" OnSaveClick="dlgAttribute_SaveClick" OnCancelScript="" ValidationGroup="MatrixTemplateAttributes">
             <Content>
-                <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="MatrixTemplateAttributes" ShowInGridVisible="false" />
+                <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="MatrixTemplateAttributes" IsShowInGridVisible="false" />
             </Content>
         </Rock:ModalDialog>
 

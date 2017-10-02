@@ -43,30 +43,109 @@ namespace Rock.Web.UI.Controls
 
         #region Controls
 
+        /// <summary>
+        /// Existing key names control
+        /// </summary>
         protected HtmlInputHidden _hfExistingKeyNames;
+
+        /// <summary>
+        /// Attribute action title control
+        /// </summary>
         protected Literal _lAttributeActionTitle;
+
+        /// <summary>
+        /// Validation summary control
+        /// </summary>
         protected ValidationSummary _validationSummary;
 
+        /// <summary>
+        /// Name control
+        /// </summary>
         protected RockTextBox _tbName;
+
+        /// <summary>
+        /// Description control
+        /// </summary>
         protected RockTextBox _tbDescription;
 
+        /// <summary>
+        /// Categories control
+        /// </summary>
         protected CategoryPicker _cpCategories;
+
+        /// <summary>
+        /// Key control (readonly)
+        /// </summary>
         protected RockLiteral _lKey;
+
+        /// <summary>
+        /// Key control (editable)
+        /// </summary>
         protected RockTextBox _tbKey;
+
+        /// <summary>
+        /// Key validator
+        /// </summary>
         protected CustomValidator _cvKey;
+
+        /// <summary>
+        /// Icon CSS class control
+        /// </summary>
         protected RockTextBox _tbIconCssClass;
+
+        /// <summary>
+        /// Required control
+        /// </summary>
         protected RockCheckBox _cbRequired;
+
+        /// <summary>
+        /// Show in grid control
+        /// </summary>
         protected RockCheckBox _cbShowInGrid;
+
+        /// <summary>
+        /// Allow search control
+        /// </summary>
         protected RockCheckBox _cbAllowSearch;
+
+        /// <summary>
+        /// Is indexing enabled control
+        /// </summary>
         protected RockCheckBox _cbIsIndexingEnabled;
+
+        /// <summary>
+        /// Is analytic control
+        /// </summary>
         protected RockCheckBox _cbIsAnalytic;
+
+        /// <summary>
+        /// Is analytic history control
+        /// </summary>
         protected RockCheckBox _cbIsAnalyticHistory;
 
+        /// <summary>
+        /// Field type control
+        /// </summary>
         protected RockDropDownList _ddlFieldType;
+
+        /// <summary>
+        /// Qualifiers control
+        /// </summary>
         protected PlaceHolder _phQualifiers;
+
+        /// <summary>
+        /// Default value control
+        /// </summary>
         protected PlaceHolder _phDefaultValue;
 
+        /// <summary>
+        /// Save control
+        /// </summary>
         protected LinkButton _btnSave;
+
+        /// <summary>
+        /// Cancel control
+        /// </summary>
         protected LinkButton _btnCancel;
 
         #endregion Controls

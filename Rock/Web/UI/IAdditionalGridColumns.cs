@@ -19,9 +19,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Rock.Web.UI.Controls;
 
-/// <summary>
-/// 
-/// </summary>
 namespace Rock.Web.UI
 {
     /// <summary>
