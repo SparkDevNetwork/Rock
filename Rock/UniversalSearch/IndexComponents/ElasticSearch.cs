@@ -625,7 +625,12 @@ namespace Rock.UniversalSearch.IndexComponents
             this.DeleteDocumentByProperty( documentType, "id", id );
         }
 
-
+        /// <summary>
+        /// Gets the document by identifier.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
         public override IndexModelBase GetDocumentById( Type documentType, int id )
         {
             return GetDocumentById( documentType, id.ToString() );

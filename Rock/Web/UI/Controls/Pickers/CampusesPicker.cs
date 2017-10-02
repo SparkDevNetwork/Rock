@@ -135,6 +135,10 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Checks the items.
+        /// </summary>
+        /// <param name="values">The values.</param>
         public void CheckItems( List<int> values )
         {
             if ( values.Any() )
