@@ -3557,5 +3557,50 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201709231340508_PersonicxCluster", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ///DECLARE @WorkflowTypeId int = ( SELECT TOP 1 [Id] FROM [WorkflowType] WHERE [Guid] = &apos;16D12EF7-C546-4039-9036-B73D118EDC90&apos; )
+        ///DECLARE @WFEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = &apos;3540E9A7-FE30-43A9-8B0A-A372B63DFC93&apos; )
+        ///DECLARE @EncryptedTextFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = &apos;36167F3E-8CB2-44F9-9022-102F171FBC9A&apos; )
+        ///DECLARE @SSNFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = &apos;4722C99A-C078-464A-968F-13AB5E8E318F&apos; )
+        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710021015059_BackgroundCheckSSN {
+            get {
+                return ResourceManager.GetString("_201710021015059_BackgroundCheckSSN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /* MP: Create/Update the System &apos;Blank&apos; communication template */
+        ///UPDATE Communication
+        ///SET CommunicationTemplateId = NULL
+        ///WHERE CommunicationTemplateId IN (
+        ///		SELECT Id
+        ///		FROM CommunicationTemplate
+        ///		WHERE [Guid] = &apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///		)
+        ///
+        ///DELETE
+        ///FROM CommunicationTemplate
+        ///WHERE [Guid] = &apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///
+        ///INSERT INTO [dbo].[CommunicationTemplate] (
+        ///	[Name]
+        ///	,[Description]
+        ///	,[IsSystem]
+        ///	,[Subject]
+        ///	,[MediumDataJson]
+        ///	,[Guid]
+        ///	,[Message]
+        ///	)
+        ///VALUES [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710021015059_BlankCommTemplate {
+            get {
+                return ResourceManager.GetString("_201710021015059_BlankCommTemplate", resourceCulture);
+            }
+        }
     }
 }
