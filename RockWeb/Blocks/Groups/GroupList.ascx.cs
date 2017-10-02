@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Groups
     [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 12 )]
     [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 13 )]
     [ContextAware]
-    public partial class GroupList : RockBlock, IAdditionalGridColumns
+    public partial class GroupList : RockBlock, ICustomGridColumns
     {
         private int _groupTypesCount = 0;
         private bool _showGroupPath = false;
@@ -82,7 +82,6 @@ namespace RockWeb.Blocks.Groups
         {
             if ( !Page.IsPostBack )
             {
-                AddAdditionalColumns();
                 BindFilter();
                 BindGrid();
             }
@@ -122,7 +121,11 @@ namespace RockWeb.Blocks.Groups
 
             Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
             boundFields["Name"].Visible = !_showGroupPath;
-            gGroups.Columns[1].Visible = _showGroupPath;
+
+            // The GroupPathName field is the RockTemplateField that has a headertext of "Name"
+            var groupPathNameField = gGroups.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Name" );
+            groupPathNameField.Visible = _showGroupPath;
+
             boundFields["GroupTypeName"].Visible = GetAttributeValue( "DisplayGroupTypeColumn" ).AsBoolean();
             boundFields["Description"].Visible = showDescriptionColumn;
 
@@ -156,29 +159,6 @@ namespace RockWeb.Blocks.Groups
 
             SetPanelTitleAndIcon();
         }
-
-        #region IAdditionalGridColumns
-
-        /// <summary>
-        /// Adds AdditionalColumns to the grid
-        /// </summary>
-        public void AddAdditionalColumns()
-        {
-            var additionalColumns = this.GetAttributeValue( AdditionalGridColumnsConfig.AttributeKey ).FromJsonOrNull<AdditionalGridColumnsConfig>();
-            if ( additionalColumns != null && additionalColumns.ColumnsConfig.Any() )
-            {
-                var deleteField = gGroups.ColumnsOfType<DeleteField>().FirstOrDefault();
-                int insertPosition = gGroups.Columns.IndexOf( deleteField );
-
-                foreach ( var column in additionalColumns.GetColumns() )
-                {
-                    gGroups.Columns.Insert( insertPosition, column );
-                    insertPosition++;
-                }
-            }
-        }
-
-        #endregion IAdditionalGridColumns
 
         /// <summary>
         /// Handles the RowDataBound event of the rGrid control.
@@ -686,7 +666,8 @@ namespace RockWeb.Blocks.Groups
             // hide the group type column if there's only one type; must come after DataBind()
             if ( _groupTypesCount == 1 )
             {
-                this.gGroups.Columns[2].Visible = false;
+                var groupTypeColumn = this.gGroups.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "GroupTypeName" );
+                groupTypeColumn.Visible = false;
             }
         }
 
