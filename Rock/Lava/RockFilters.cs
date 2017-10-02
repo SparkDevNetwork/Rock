@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -35,6 +36,7 @@ using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
 using Humanizer.Localisation;
+using ImageResizer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Rock;
@@ -1727,6 +1729,15 @@ namespace Rock.Lava
         {
             if ( input != null )
             {
+                if ( input is IDictionary<string, object> )
+                {
+                    var dictionaryObject = input as IDictionary<string, object>;
+                    if ( dictionaryObject.ContainsKey( propertyKey ) )
+                    {
+                        return dictionaryObject[ propertyKey];
+                    }
+                }
+
                 return input.GetPropertyValue( propertyKey );
             }
 
@@ -3734,9 +3745,9 @@ namespace Rock.Lava
                     else if ( value is IDictionary<string, object> ) 
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( selectKey ) && dictionaryObject[selectKey].Equals( selectKey ) )
+                        if ( dictionaryObject.ContainsKey( selectKey ) )
                         {
-                            result.Add( dictionaryObject );
+                            result.Add( dictionaryObject[selectKey] );
                         }
                     }
                 }
@@ -4047,6 +4058,60 @@ namespace Rock.Lava
             }
 
             return currentPerson;
+        }
+
+        /// <summary>
+        /// Base64 encodes a binary file
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="resizeSettings">The resize settings.</param>
+        /// <returns></returns>
+        public static string Base64Encode( DotLiquid.Context context, object input, string resizeSettings )
+        {
+            BinaryFile binaryFile = null;
+
+            if ( input is int )
+            {
+                binaryFile = new BinaryFileService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is BinaryFile )
+            {
+                binaryFile = (BinaryFile)input;
+            }
+
+            if ( binaryFile != null )
+            {
+                using ( var stream = GetResized( resizeSettings, binaryFile.ContentStream ) )
+                {
+                    byte[] imageBytes = stream.ReadBytesToEnd();
+                    return Convert.ToBase64String( imageBytes );
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private static Stream GetResized( string resizeSettings, Stream fileContent )
+        {
+            try
+            {
+                if ( resizeSettings.IsNullOrWhiteSpace() )
+                {
+                    return fileContent;
+                }
+
+                ResizeSettings settings = new ResizeSettings( HttpUtility.ParseQueryString( resizeSettings ) );
+                MemoryStream resizedStream = new MemoryStream();
+
+                ImageBuilder.Current.Build( fileContent, resizedStream, settings );
+                return resizedStream;
+            }
+            catch
+            {
+                // if resize failed, just return original content
+                return fileContent;
+            }
         }
 
         #endregion

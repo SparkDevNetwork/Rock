@@ -716,6 +716,19 @@ namespace Rock
             return input.Replace( " ", "" );
         }
 
+        /// <summary>
+        /// Breaks a string into chunks. Handy for splitting a large string into smaller chunks
+        /// from https://stackoverflow.com/a/1450889/1755417
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="maxChunkSize">Maximum size of the chunk.</param>
+        /// <returns></returns>
+        public static IEnumerable<string> SplitIntoChunks( this string str, int maxChunkSize )
+        {
+            for ( int i = 0; i < str.Length; i += maxChunkSize )
+                yield return str.Substring( i, Math.Min( maxChunkSize, str.Length - i ) );
+        }
+
         #endregion String Extensions
     }
 }

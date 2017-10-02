@@ -151,6 +151,8 @@ namespace Rock.Web.UI.Controls
                     ( (IRockControlAdditionalRendering)rockControl ).RenderAfterLabel( writer );
                 }
 
+                writer.Write( " " ); // add space for inline forms, otherwise the label butts right up to the control
+
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-wrapper" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }

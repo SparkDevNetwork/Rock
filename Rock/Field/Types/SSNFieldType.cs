@@ -217,7 +217,7 @@ namespace Rock.Field.Types
 
         #endregion
 
-        private string UnencryptAndClean( string encryptedValue )
+        public static string UnencryptAndClean( string encryptedValue )
         {
             if ( encryptedValue.IsNotNullOrWhitespace() )
             {

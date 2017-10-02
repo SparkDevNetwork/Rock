@@ -17,17 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Communication
@@ -38,8 +35,86 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "Email Analytics" )]
     [Category( "Communication" )]
     [Description( "Shows a graph of email statistics optionally limited to a specific communication or communication list." )]
+
+    [TextField("Series Colors", "A comma-delimited list of colors that the charts will use.", true, "#8498ab,#a4b4c4,#b9c7d5,#c6d2df,#d8e1ea", order:0) ]
     public partial class EmailAnalytics : RockBlock
     {
+        #region Properties that are used by the markup file
+
+        /// <summary>
+        /// Gets or sets the line chart data labels json.
+        /// </summary>
+        /// <value>
+        /// The line chart data labels json.
+        /// </value>
+        public string LineChartDataLabelsJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the line chart data opens json.
+        /// </summary>
+        /// <value>
+        /// The line chart data opens json.
+        /// </value>
+        public string LineChartDataOpensJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the line chart data clicks json.
+        /// </summary>
+        /// <value>
+        /// The line chart data clicks json.
+        /// </value>
+        public string LineChartDataClicksJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the line chart data un opened json.
+        /// </summary>
+        /// <value>
+        /// The line chart data un opened json.
+        /// </value>
+        public string LineChartDataUnOpenedJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the line chart time format. see http://momentjs.com/docs/#/displaying/format/
+        /// </summary>
+        /// <value>
+        /// The line chart time format.
+        /// </value>
+        public string LineChartTimeFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pie chart data open clicks json.
+        /// </summary>
+        /// <value>
+        /// The pie chart data open clicks json.
+        /// </value>
+        public string PieChartDataOpenClicksJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pie chart data client labels json.
+        /// </summary>
+        /// <value>
+        /// The pie chart data client labels json.
+        /// </value>
+        public string PieChartDataClientLabelsJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pie chart data client counts json.
+        /// </summary>
+        /// <value>
+        /// The pie chart data client counts json.
+        /// </value>
+        public string PieChartDataClientCountsJSON { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series colors.
+        /// </summary>
+        /// <value>
+        /// The series colors.
+        /// </value>
+        public string SeriesColorsJSON { get; set; }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -50,7 +125,7 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            // NOTE: moment needs to be loaded before chartjs
+            // NOTE: moment.js needs to be loaded before chartjs
             RockPage.AddScriptLink( "/Scripts/moment.min.js", true );
             RockPage.AddScriptLink( "/Scripts/Chartjs/Chart.js", true );
 
@@ -75,7 +150,7 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
-        #region Events
+        #region Events 
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -84,7 +159,55 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowCharts();
+            // reload page if block settings where changed
+            this.NavigateToCurrentPageReference();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptMostPopularLinks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs" /> instance containing the event data.</param>
+        protected void rptMostPopularLinks_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            TopLinksInfo topLinksInfo = e.Item.DataItem as TopLinksInfo;
+            if ( topLinksInfo != null )
+            {
+                Literal lUrl = e.Item.FindControl( "lUrl" ) as Literal;
+                lUrl.Text = topLinksInfo.Url;
+
+                Literal lUrlProgressHTML = e.Item.FindControl( "lUrlProgressHTML" ) as Literal;
+                lUrlProgressHTML.Text = string.Format(
+                    @"<div class='progress'>
+                        <div class='progress-bar' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%'>
+                            <span class='sr-only'>{0}%</span>
+                        </div>
+                    </div>",
+                    Math.Round( topLinksInfo.PercentOfTop, 2 ) );
+
+                Literal lUniquesCount = e.Item.FindControl( "lUniquesCount" ) as Literal;
+                lUniquesCount.Text = topLinksInfo.UniquesCount.ToString();
+
+                Literal lCTRPercent = e.Item.FindControl( "lCTRPercent" ) as Literal;
+                lCTRPercent.Text = Math.Round( topLinksInfo.CTRPercent, 2 ) + "%";
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptClientApplicationUsage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptClientApplicationUsage_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            ApplicationUsageInfo applicationUsageInfo = e.Item.DataItem as ApplicationUsageInfo;
+            if ( applicationUsageInfo != null )
+            {
+                var lApplicationName = e.Item.FindControl( "lApplicationName" ) as Literal;
+                var lUsagePercent = e.Item.FindControl( "lUsagePercent" ) as Literal;
+                lApplicationName.Text = applicationUsageInfo.Application ?? "Unknown";
+                lUsagePercent.Text = Math.Round( applicationUsageInfo.UsagePercent, 2 ).ToString() + "%";
+            }
         }
 
         #endregion
@@ -101,6 +224,7 @@ namespace RockWeb.Blocks.Communication
             hfCommunicationListGroupId.Value = this.PageParameter( "CommunicationListId" );
 
             int? communicationId = hfCommunicationId.Value.AsIntegerOrNull();
+            string noDataMessageName = string.Empty;
             int? communicationListGroupId = hfCommunicationListGroupId.Value.AsIntegerOrNull();
             if ( communicationId.HasValue )
             {
@@ -108,11 +232,14 @@ namespace RockWeb.Blocks.Communication
                 var communication = new CommunicationService( rockContext ).Get( communicationId.Value );
                 if ( communication != null )
                 {
-                    lTitle.Text = "Email Analytics: " + (communication.Name ?? communication.Subject);
+                    lTitle.Text = "Email Analytics: " + ( communication.Name ?? communication.Subject );
+                    noDataMessageName = communication.Name ?? communication.Subject;
                 }
                 else
                 {
-                    // TODO: Invalid Communication specified
+                    // Invalid Communication specified
+                    nbCommunicationorCommunicationListFound.Visible = true;
+                    nbCommunicationorCommunicationListFound.Text = "Invalid communication specified";
                 }
             }
             else if ( communicationListGroupId.HasValue )
@@ -122,13 +249,13 @@ namespace RockWeb.Blocks.Communication
                 if ( communicationListGroup != null )
                 {
                     lTitle.Text = "Email Analytics: " + communicationListGroup.Name;
+                    noDataMessageName = communicationListGroup.Name;
                 }
                 else
                 {
-                    // TODO: Invalid CommunicationGroup specified
+                    nbCommunicationorCommunicationListFound.Visible = true;
+                    nbCommunicationorCommunicationListFound.Text = "Invalid communication list group specified";
                 }
-
-                lTitle.Text = "Email Analytics: " + communicationListGroup.Name;
             }
             else
             {
@@ -138,6 +265,7 @@ namespace RockWeb.Blocks.Communication
 
             var interactionChannelCommunication = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
             var interactionQuery = new InteractionService( rockContext ).Queryable().Where( a => a.InteractionComponent.ChannelId == interactionChannelCommunication.Id );
+
             List<int> communicationIdList = null;
             if ( communicationId.HasValue )
             {
@@ -159,12 +287,15 @@ namespace RockWeb.Blocks.Communication
                 {
                     a.InteractionDateTime,
                     a.Operation,
+                    a.InteractionData,
                     CommunicationRecipientId = a.EntityId
                 } )
                 .ToList();
 
             List<SummaryInfo> interactionsSummary = new List<SummaryInfo>();
             TimeSpan roundTimeSpan = TimeSpan.FromDays( 1 );
+
+            this.SeriesColorsJSON = this.GetAttributeValue( "SeriesColors" ).SplitDelimitedValues().ToArray().ToJson();
 
             this.LineChartTimeFormat = "LL";
 
@@ -207,18 +338,23 @@ namespace RockWeb.Blocks.Communication
                     OpenCounts = x.Count( xx => xx.Operation == "Opened" )
                 } ).OrderBy( a => a.SummaryDateTime ).ToList();
 
+            var lineChartHasData = interactionsSummary.Any();
+            openClicksLineChartCanvas.Style[HtmlTextWriterStyle.Display] = lineChartHasData ? string.Empty : "none";
+            nbOpenClicksLineChartMessage.Visible = !lineChartHasData;
+            nbOpenClicksLineChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
+
             this.LineChartDataLabelsJSON = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
             this.LineChartDataClicksJSON = interactionsSummary.Select( a => a.ClickCounts ).ToList().ToJson();
 
             List<int> openCountsList = interactionsSummary.Select( a => a.OpenCounts ).ToList();
             this.LineChartDataOpensJSON = openCountsList.ToJson();
 
-
             int? totalRecipientCount = null;
 
             if ( communicationIdList != null )
             {
-                totalRecipientCount = new CommunicationRecipientService( rockContext ).Queryable().Where( a => communicationIdList.Contains( a.CommunicationId ) ).Count();
+                CommunicationRecipientStatus[] sentStatus = new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Opened, CommunicationRecipientStatus.Delivered };
+                totalRecipientCount = new CommunicationRecipientService( rockContext ).Queryable().Where( a => sentStatus.Contains( a.Status ) && communicationIdList.Contains( a.CommunicationId ) ).Count();
             }
 
             List<int> unopenedCountsList = new List<int>();
@@ -239,20 +375,20 @@ namespace RockWeb.Blocks.Communication
             /* Opens/Clicks Pie Chart */
 
             int totalOpens = interactionsList.Where( a => a.Operation == "Opened" ).Count();
-            int totalClicks = interactionsList.Where( a => a.Operation == "Click" ).Count();
+            int totalClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).Count();
 
             // Unique Opens is the number of times a Recipient opened at least once
             int uniqueOpens = interactionsList.Where( a => a.Operation == "Opened" ).GroupBy( a => a.CommunicationRecipientId ).Count();
 
             // Unique Clicks is the number of times a Recipient clicked at least once in an email
-            int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" ).GroupBy( a => a.CommunicationRecipientId ).Count();
+            int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).GroupBy( a => a.CommunicationRecipientId ).Count();
 
             lUniqueOpens.Text = uniqueOpens.ToString();
             lTotalOpens.Text = totalOpens.ToString();
             lTotalClicks.Text = totalClicks.ToString();
             if ( uniqueOpens > 0 )
             {
-                lClickThroughRate.Text = string.Format( "{0:P2}", ( ( decimal ) uniqueClicks / uniqueOpens ) );
+                lClickThroughRate.Text = string.Format( "{0:P2}", ( decimal ) uniqueClicks / uniqueOpens );
             }
             else
             {
@@ -266,7 +402,7 @@ namespace RockWeb.Blocks.Communication
             if ( totalRecipientCount.HasValue )
             {
                 // NOTE: just in case we have more recipients activity then there are recipient records, don't let it go negative
-                openClicksUnopenedDataList.Add( Math.Max(totalRecipientCount.Value - uniqueOpens, 0) );
+                openClicksUnopenedDataList.Add( Math.Max( totalRecipientCount.Value - uniqueOpens, 0 ) );
             }
             else
             {
@@ -275,27 +411,52 @@ namespace RockWeb.Blocks.Communication
 
             this.PieChartDataOpenClicksJSON = openClicksUnopenedDataList.ToJson();
 
+            var pieChartOpenClicksHasData = openClicksUnopenedDataList.Sum() > 0;
+            opensClicksPieChartCanvas.Style[HtmlTextWriterStyle.Display] = pieChartOpenClicksHasData ? string.Empty : "none";
+            nbOpenClicksPieChartMessage.Visible = !pieChartOpenClicksHasData;
+            nbOpenClicksPieChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
 
-            /* Clients-In-Use Pie Chart*/
-            var clientsUsage = interactionQuery
-                //.Where(a => a.InteractionSessionId.HasValue && a.InteractionSession.DeviceTypeId.HasValue && !string.IsNullOrEmpty(a.InteractionSession.DeviceType.ClientType) )
-                .GroupBy( a => a.InteractionSession.DeviceType.ClientType ).Select( a => new
+            int interactionCount = interactionsList.Count();
+
+            /* Clients-In-Use (Client Type) Pie Chart*/
+            var clientsUsageByClientType = interactionQuery
+            .GroupBy( a => a.InteractionSession.DeviceType.ClientType ).Select( a => new ClientTypeUsageInfo
             {
                 ClientType = a.Key,
-                ClientCount = a.Count()
-            } ).OrderByDescending(a => a.ClientCount).ToList();
+                UsagePercent = a.Count() * 100.00M / interactionCount
+            } ).OrderByDescending( a => a.UsagePercent ).ToList().Select( a => new ClientTypeUsageInfo
+            {
+                ClientType = a.ClientType,
+                UsagePercent = Math.Round(a.UsagePercent, 2)
+            } ).ToList();
 
-            this.PieChartDataClientLabelsJSON = clientsUsage.Select( a => string.IsNullOrEmpty(a.ClientType) ? "Unknown" : a.ClientType ).ToList().ToJson();
-            this.PieChartDataClientCountsJSON = clientsUsage.Select( a => a.ClientCount ).ToList().ToJson();
+            this.PieChartDataClientLabelsJSON = clientsUsageByClientType.Select( a => string.IsNullOrEmpty( a.ClientType ) ? "Unknown" : a.ClientType ).ToList().ToJson();
+            this.PieChartDataClientCountsJSON = clientsUsageByClientType.Select( a => a.UsagePercent ).ToList().ToJson();
+
+            var clientUsageHasData = clientsUsageByClientType.Where( a => a.UsagePercent > 0 ).Any();
+            clientsDoughnutChartCanvas.Style[HtmlTextWriterStyle.Display] = clientUsageHasData ? string.Empty : "none";
+            nbClientsDoughnutChartMessage.Visible = !clientUsageHasData;
+            nbClientsDoughnutChartMessage.Text = "No client usage activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
+
+            /* Clients-In-Use (Application) Grid */
+            var clientsUsageByApplication = interactionQuery
+            .GroupBy( a => a.InteractionSession.DeviceType.Application ).Select( a => new ApplicationUsageInfo
+            {
+                Application = a.Key,
+                UsagePercent = ( a.Count() * 100.00M / interactionCount )
+            } ).OrderByDescending( a => a.UsagePercent ).ToList();
+
+            pnlClientApplicationUsage.Visible = clientsUsageByApplication.Any();
+            rptClientApplicationUsage.DataSource = clientsUsageByApplication;
+            rptClientApplicationUsage.DataBind();
 
             /* Most Popular Links from Clicks*/
-            var topClicks = interactionQuery.Where( a => !string.IsNullOrEmpty( a.InteractionData ) ).GroupBy( a => a.InteractionData ).Select( a => new
+            var topClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).GroupBy( a => a.InteractionData ).Select( a => new
             {
                 LinkUrl = a.Key,
-
-                // EntityId is CommunicationRecipientId
-                UniqueClickCount = a.GroupBy(x => x.EntityId).Count()
+                UniqueClickCount = a.GroupBy( x => x.CommunicationRecipientId ).Count()
             } ).OrderByDescending( a => a.UniqueClickCount ).Take( 100 ).ToList();
+            
 
             if ( topClicks.Any() )
             {
@@ -305,7 +466,7 @@ namespace RockWeb.Blocks.Communication
                     PercentOfTop = ( decimal ) a.UniqueClickCount * 100 / topLinkCount,
                     Url = a.LinkUrl,
                     UniquesCount = a.UniqueClickCount,
-                    CTRPercent = "TODO"
+                    CTRPercent = a.UniqueClickCount * 100.00M / totalOpens
                 } ).ToList();
 
                 rptMostPopularLinks.DataSource = mostPopularLinksData;
@@ -318,70 +479,120 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        #endregion
+
+        #region Block specific classes
+
         /// <summary>
         /// 
         /// </summary>
         public class SummaryInfo
         {
+            /// <summary>
+            /// Gets or sets the summary date time.
+            /// </summary>
+            /// <value>
+            /// The summary date time.
+            /// </value>
             public DateTime SummaryDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the click counts.
+            /// </summary>
+            /// <value>
+            /// The click counts.
+            /// </value>
             public int ClickCounts { get; set; }
+
+            /// <summary>
+            /// Gets or sets the open counts.
+            /// </summary>
+            /// <value>
+            /// The open counts.
+            /// </value>
             public int OpenCounts { get; set; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public class TopLinksInfo
         {
+            /// <summary>
+            /// Gets or sets the percent of top.
+            /// </summary>
+            /// <value>
+            /// The percent of top.
+            /// </value>
             public decimal PercentOfTop { get; set; }
+
+            /// <summary>
+            /// Gets or sets the URL.
+            /// </summary>
+            /// <value>
+            /// The URL.
+            /// </value>
             public string Url { get; set; }
+
+            /// <summary>
+            /// Gets or sets the uniques count.
+            /// </summary>
+            /// <value>
+            /// The uniques count.
+            /// </value>
             public int UniquesCount { get; set; }
-            public string CTRPercent { get; set; }
+
+            /// <summary>
+            /// Gets or sets the CTR percent.
+            /// </summary>
+            /// <value>
+            /// The CTR percent.
+            /// </value>
+            public decimal CTRPercent { get; set; }
         }
 
-        public string LineChartDataLabelsJSON { get; set; }
-        public string LineChartDataOpensJSON { get; set; }
-        public string LineChartDataClicksJSON { get; set; }
-        public string LineChartDataUnOpenedJSON { get; set; }
-
         /// <summary>
-        /// Gets or sets the line chart time format. see http://momentjs.com/docs/#/displaying/format/
+        /// 
         /// </summary>
-        /// <value>
-        /// The line chart time format.
-        /// </value>
-        public string LineChartTimeFormat { get; set; }
-
-        public string PieChartDataOpenClicksJSON { get; set; }
-
-        public string PieChartDataClientLabelsJSON { get; set; }
-        public string PieChartDataClientCountsJSON { get; set; }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the rptMostPopularLinks control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rptMostPopularLinks_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        public class ClientTypeUsageInfo
         {
-            // todo
-            TopLinksInfo topLinksInfo = e.Item.DataItem as TopLinksInfo;
-            if ( topLinksInfo != null )
-            {
-                Literal lUrl = e.Item.FindControl( "lUrl" ) as Literal;
-                lUrl.Text = topLinksInfo.Url;
+            /// <summary>
+            /// Gets or sets the type of the client.
+            /// </summary>
+            /// <value>
+            /// The type of the client.
+            /// </value>
+            public string ClientType { get; set; }
 
-                Literal lUrlProgressHTML = e.Item.FindControl( "lUrlProgressHTML" ) as Literal;
-                lUrlProgressHTML.Text = string.Format( @"
-<div class='progress'>
-    <div class='progress-bar' role='progressbar' aria-valuenow='{0}'
-        aria-valuemin='0' aria-valuemax='100' style='width: {0}%'>
-        <span class='sr-only'>{0}%</span>
-    </div>
-</div>", Math.Round( topLinksInfo.PercentOfTop, 2 ) );
+            /// <summary>
+            /// Gets or sets the usage percent.
+            /// </summary>
+            /// <value>
+            /// The usage percent.
+            /// </value>
+            public decimal UsagePercent { get; set; }
+        }
 
-                Literal lUniquesCount = e.Item.FindControl( "lUniquesCount" ) as Literal;
-                lUniquesCount.Text = topLinksInfo.UniquesCount.ToString();
+        /// <summary>
+        /// 
+        /// </summary>
+        public class ApplicationUsageInfo
+        {
+            /// <summary>
+            /// Gets or sets the application.
+            /// </summary>
+            /// <value>
+            /// The application.
+            /// </value>
+            public string Application { get; set; }
 
-                Literal lCTRPercent = e.Item.FindControl( "lCTRPercent" ) as Literal;
-            }
+            /// <summary>
+            /// Gets or sets the usage percent.
+            /// </summary>
+            /// <value>
+            /// The usage percent.
+            /// </value>
+            public decimal UsagePercent { get; set; }
         }
 
         #endregion

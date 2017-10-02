@@ -783,7 +783,7 @@ namespace RockWeb.Blocks.Communication
 
             CommunicationData = new CommunicationDetails();
             CommunicationDetails.Copy( communication, CommunicationData );
-            CommunicationData.AttachmentBinaryFileIds = communication.AttachmentBinaryFileIds;
+            CommunicationData.EmailAttachmentBinaryFileIds = communication.EmailAttachmentBinaryFileIds;
 
             var template = communication.CommunicationTemplate;
 
@@ -881,7 +881,7 @@ namespace RockWeb.Blocks.Communication
                 var medium = MediumContainer.GetComponentByEntityTypeId( MediumEntityTypeId );
                 if ( medium != null )
                 {
-                    foreach ( var template in new CommunicationTemplateService( new RockContext() ).Queryable()
+                    foreach ( var template in new CommunicationTemplateService( new RockContext() ).Queryable().Where(a => a.IsActive)
                         .OrderBy( t => t.Name ) )
                     {
                         if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -1105,7 +1105,7 @@ namespace RockWeb.Blocks.Communication
             if ( template != null )
             {
                 CommunicationDetails.Copy( template, CommunicationData );
-                CommunicationData.AttachmentBinaryFileIds = template.AttachmentBinaryFileIds;
+                CommunicationData.EmailAttachmentBinaryFileIds = template.EmailAttachmentBinaryFileIds;
                 if ( loadControl )
                 {
                     LoadMediumControl( true );
@@ -1263,14 +1263,14 @@ namespace RockWeb.Blocks.Communication
             CommunicationDetails.Copy( CommunicationData, communication );
 
             // delete any attachments that are no longer included
-            foreach ( var attachment in communication.Attachments.Where( a => !CommunicationData.AttachmentBinaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
+            foreach ( var attachment in communication.Attachments.Where( a => !CommunicationData.EmailAttachmentBinaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
             {
                 communication.Attachments.Remove( attachment );
                 communicationAttachmentService.Delete( attachment );
             }
 
             // add any new attachments that were added
-            foreach ( var attachmentBinaryFileId in CommunicationData.AttachmentBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
+            foreach ( var attachmentBinaryFileId in CommunicationData.EmailAttachmentBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
             {
                 communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId } );
             }
@@ -1356,7 +1356,9 @@ namespace RockWeb.Blocks.Communication
 
             CurrentPageReference.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
-            hlViewCommunication.Visible = this.Page.ControlsOfTypeRecursive<RockWeb.Blocks.Communication.CommunicationDetail>().Any();
+
+            // only show the Link if there is a CommunicationDetail block type on this page
+            hlViewCommunication.Visible = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
 
             pnlResult.Visible = true;
 

@@ -23,6 +23,9 @@ namespace Rock.Configuration
     /// </summary>
     public class AttributeValueConfig : ConfigurationElement
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeValueConfig"/> class.
+        /// </summary>
         public AttributeValueConfig()
         {
 

@@ -354,7 +354,7 @@ namespace RockWeb.Blocks.Security
                     transaction.IsOnLine = false;
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
 
-                    FormsAuthentication.SignOut();
+                    Authorization.SignOut();
                 }
 
                 userLoginService.Delete( user );

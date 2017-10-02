@@ -3377,5 +3377,185 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201709131136468_spAnalytics_ETL_FinancialTransaction", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimAttendanceDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].[AnalyticsDimAttendanceDate]
+        ///AS
+        ///SELECT d.DateKey AS [AttendanceDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(x.AttendanceDateKey)
+        ///        FROM AnalyticsFactAttendance x
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(x.AttendanceDateKey)
+        ///        FROM AnalyticsFactAttendance x
+        ///        )
+        ///.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimAttendanceDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimAttendanceDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyHeadOfHouseholdBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimFamilyHeadOfHouseholdBirthDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].AnalyticsDimFamilyHeadOfHouseholdBirthDate
+        ///AS
+        ///SELECT d.DateKey AS [BirthDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(x.BirthDateKey)
+        ///        FROM AnalyticsDimFamilyHeadOfHousehold x
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(x.BirthDateKey)
+        ///        FROM AnalyticsDimFamilyHeadOfHousehol [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialTransactionDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimFinancialTransactionDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].[AnalyticsDimFinancialTransactionDate]
+        ///AS
+        ///SELECT d.DateKey AS [TransactionDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(x.TransactionDateKey)
+        ///        FROM AnalyticsFactFinancialTransaction x
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(x.TransactionDateKey)
+        ///        FROM AnalyticsFactFinancialTransact [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonCurrentBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimPersonCurrentBirthDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].AnalyticsDimPersonCurrentBirthDate
+        ///AS
+        ///SELECT d.DateKey AS [BirthDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonCurrent x
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonCurrent x
+        ///        )
+        ///.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimPersonCurrentBirthDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimPersonCurrentBirthDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonHistoricalBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimPersonHistoricalBirthDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].AnalyticsDimPersonHistoricalBirthDate
+        ///AS
+        ///SELECT d.DateKey AS [BirthDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonHistorical x
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonHistorical x
+        ///        )
+        ///.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /* MP: Create the System &apos;Blank&apos; communication template */
+        ///UPDATE Communication
+        ///SET CommunicationTemplateId = NULL
+        ///WHERE CommunicationTemplateId IN (
+        ///		SELECT Id
+        ///		FROM CommunicationTemplate
+        ///		WHERE [Guid] = &apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///		)
+        ///
+        ///DELETE
+        ///FROM CommunicationTemplate
+        ///WHERE [Guid] = &apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///
+        ///INSERT INTO [dbo].[CommunicationTemplate] (
+        ///	[Name]
+        ///	,[Description]
+        ///	,[IsSystem]
+        ///	,[Subject]
+        ///	,[MediumDataJson]
+        ///	,[Guid]
+        ///	,[Message]
+        ///	)
+        ///VALUES (
+        ///	&apos;B [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709222257442_CommunicationSMSAttachments_AddCommunicationTemplates {
+            get {
+                return ResourceManager.GetString("_201709222257442_CommunicationSMSAttachments_AddCommunicationTemplates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO [LavaShortCode]
+        ///	([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
+        ///	VALUES
+        ///	(&apos;YouTube&apos;,&apos;Creates a responsive YouTube embe&apos;&apos;d from just a simple video id.&apos;,&apos;&lt;p&gt;Embedding a YouTube video is easy, right? Well what if you want it to be responsive (adjust with the size of the window)? Or what about 
+        ///control of what is shown in the player? The YouTube shortcode helps to shorten (see what we did there) the t [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709222257442_CommunicationSMSAttachments_AddLavaShortCodes {
+            get {
+                return ResourceManager.GetString("_201709222257442_CommunicationSMSAttachments_AddLavaShortCodes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;01&apos;,&apos;Summit Estates&apos;,&apos;Summit Estates combines above-average wealth and education. These late-30s to early-60s households with children and teens rank high for household income (5th), home value (2nd) and net worth (1st). Fully 70% have earned a college of post-graduate degree. Summit Estates create time in their often professional-dual-income-with-children schedules for cultural activities, sports, fitness and travel. They generally are not heavy TV viewers, but references include financial channels, sport [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709231340508_PersonicxCluster {
+            get {
+                return ResourceManager.GetString("_201709231340508_PersonicxCluster", resourceCulture);
+            }
+        }
     }
 }

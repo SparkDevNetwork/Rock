@@ -33,6 +33,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process event registration reminders
     /// </summary>
+    [IntegerField( "Expire Date", "The number of days past the registration reminder to refrain from sending the email. This would only be used if something went wrong and acts like a safety net to prevent sending the reminder after the fact.", true, 1, key: "ExpireDate" )]
     [DisallowConcurrentExecution]
     public class SendRegistrationReminders : IJob
     {
@@ -50,11 +51,15 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
+
+            var expireDays = dataMap.GetIntFromString( "ExpireDate" );
+
             int remindersSent = 0;
 
             using ( var rockContext = new RockContext() )
             {
                 DateTime now = RockDateTime.Now;
+                DateTime expireDate = now.AddDays( expireDays * -1 );
 
                 foreach ( var instance in new RegistrationInstanceService( rockContext )
                     .Queryable( "RegistrationTemplate,Registrations" )
@@ -64,7 +69,8 @@ namespace Rock.Jobs
                         i.RegistrationTemplate.ReminderEmailTemplate != "" &&
                         !i.ReminderSent &&
                         i.SendReminderDateTime.HasValue &&
-                        i.SendReminderDateTime <= now )
+                        i.SendReminderDateTime <= now &&
+                        i.SendReminderDateTime >= expireDate)
                     .ToList() )
                 {
                     var template = instance.RegistrationTemplate;

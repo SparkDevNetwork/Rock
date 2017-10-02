@@ -46,7 +46,7 @@
             <Content>
                 <div class="row">
                     <div class="col-md-4">
-                        <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" />
+                        <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" EnhanceForLongLists="true" />
                     </div>
                 </div>
 

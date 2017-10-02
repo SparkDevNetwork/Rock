@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -52,6 +53,8 @@ namespace RockWeb.Blocks.Communication
     [CustomCheckboxListField( "Communication Types", "The communication types that should be available to user to send (If none are selected, all will be available).", "Recipient Preference,Email,SMS", false, order: 4 )]
     [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved.", false, 300, "", order: 5 )]
     [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 6 )]
+    [IntegerField( "Max SMS Image Width", "The maximum width (in pixels) of an image attached to a mobile communication. If its width is over the max, Rock will automatically resize image to the max width.", false, 600, order: 7 )]
+    [LinkedPage( "Simple Communication Page", "The page to use if the 'Use Simple Editor' panel heading icon is clicked. Leave this blank to not show the 'Use Simple Editor' heading icon", false, order: 8 )]
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
         #region Properties
@@ -94,6 +97,11 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
+            // Tell the browsers to not cache. This will help prevent browser using stale communication wizard stuff after navigating away from this page
+            Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
+            Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
+            Page.Response.Cache.SetNoStore();
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -105,6 +113,9 @@ namespace RockWeb.Blocks.Communication
             gIndividualRecipients.GridRebind += gIndividualRecipients_GridRebind;
             gIndividualRecipients.Actions.ShowAdd = false;
             gIndividualRecipients.ShowActionRow = false;
+
+            btnUseSimpleEditor.Visible = !string.IsNullOrEmpty( this.GetAttributeValue( "SimpleCommunicationPage" ) );
+            pnlHeadingLabels.Visible = btnUseSimpleEditor.Visible;
         }
 
         /// <summary>
@@ -283,15 +294,31 @@ namespace RockWeb.Blocks.Communication
 
             //// NOTE: tbEmailPreview will be populated by parsing the Html of the Email/Template
 
-            hfAttachedBinaryFileIds.Value = communication.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
-            UpdateAttachedFiles( false );
+            hfEmailAttachedBinaryFileIds.Value = communication.GetAttachmentBinaryFileIds( CommunicationType.Email ).AsDelimited( "," );
+            UpdateEmailAttachedFiles( false );
 
             // Mobile Text Editor
             ddlSMSFrom.SetValue( communication.SMSFromDefinedValueId );
             tbSMSTextMessage.Text = communication.SMSMessage;
 
+            fupMobileAttachment.BinaryFileId = communication.GetAttachmentBinaryFileIds( CommunicationType.SMS ).FirstOrDefault();
+            UpdateMobileAttachedFiles( false );
+
             // Email Editor
             hfEmailEditorHtml.Value = communication.Message;
+
+            htmlEditor.MergeFields.Clear();
+            htmlEditor.MergeFields.Add( "GlobalAttribute" );
+            htmlEditor.MergeFields.Add( "Rock.Model.Person" );
+            htmlEditor.MergeFields.Add( "Communication.Subject|Subject" );
+            htmlEditor.MergeFields.Add( "Communication.FromName|From Name" );
+            htmlEditor.MergeFields.Add( "Communication.FromAddress|From Address" );
+            htmlEditor.MergeFields.Add( "Communication.ReplyTo|Reply To" );
+            htmlEditor.MergeFields.Add( "UnsubscribeOption" );
+            if ( communication.AdditionalMergeFields.Any() )
+            {
+                htmlEditor.MergeFields.AddRange( communication.AdditionalMergeFields );
+            }
         }
 
         /// <summary>
@@ -485,7 +512,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             pnlRecipientSelection.Visible = false;
-            ShowMediumSelection();
+            ShowCommunicationDelivery();
         }
 
         /// <summary>
@@ -699,13 +726,13 @@ namespace RockWeb.Blocks.Communication
             if ( groupMemberQuery != null )
             {
                 int groupMemberCount = groupMemberQuery.Count();
-                lRecipientFromListCount.Visible = true;
+                pnlRecipientFromListCount.Visible = true;
 
                 lRecipientFromListCount.Text = string.Format( "{0} {1} selected", groupMemberCount, "recipient".PluralizeIf( groupMemberCount != 1 ) );
             }
             else
             {
-                lRecipientFromListCount.Visible = false;
+                pnlRecipientFromListCount.Visible = false;
             }
         }
 
@@ -769,56 +796,71 @@ namespace RockWeb.Blocks.Communication
 
         #endregion Recipient Selection
 
-        #region Medium Selection
+        #region Communication Delivery, Medium Selection
 
         /// <summary>
-        /// Shows the medium selection.
+        /// Shows the Communication Delivery, Medium Selection
         /// </summary>
-        private void ShowMediumSelection()
+        private void ShowCommunicationDelivery()
         {
-            pnlMediumSelection.Visible = true;
-            SetNavigationHistory( pnlMediumSelection );
+            pnlCommunicationDelivery.Visible = true;
+            SetNavigationHistory( pnlCommunicationDelivery );
 
             // Render warnings for any inactive transports (Javascript will hide and show based on Medium Selection)
             var mediumsWithActiveTransports = Rock.Communication.MediumContainer.Instance.Components.Select( a => a.Value.Value ).Where( x => x.Transport != null && x.Transport.IsActive );
-            if ( !mediumsWithActiveTransports.Any( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ) )
+            bool smsTransportEnabled = mediumsWithActiveTransports.Any( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            bool emailTransportEnabled = mediumsWithActiveTransports.Any( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+
+            btnMediumSMS.Visible = smsTransportEnabled;
+            btnMediumEmail.Visible = emailTransportEnabled;
+
+            // only prompt for Medium Type if both SMS and Email are available
+            rcwMediumType.Visible = smsTransportEnabled && emailTransportEnabled;
+
+            if ( !rcwMediumType.Visible )
             {
-                nbInvalidEmailTransport.Text = "The Email medium does not have an active transport configured. Email communications will not be delivered until the transport is configured correctly.";
-                nbInvalidEmailTransport.Visible = true;
-            }
-            else
-            {
-                nbInvalidEmailTransport.Visible = false;
+                // if only one MediumType is availalbe, automatically set the MediumType to it
+                if ( emailTransportEnabled )
+                {
+                    hfMediumType.Value = CommunicationType.Email.ConvertToInt().ToString();
+                }
+                else if ( smsTransportEnabled )
+                {
+                    hfMediumType.Value = CommunicationType.SMS.ConvertToInt().ToString();
+                }
             }
 
-            if ( !mediumsWithActiveTransports.Any( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ) )
+            // make sure that either EMAIL or SMS is enabled
+            if ( !( emailTransportEnabled || smsTransportEnabled ) )
             {
-                nbInvalidSMSTransport.Text = "The SMS medium does not have an active transport configured. SMS communications will not be delivered until the transport is configured correctly.";
-                nbInvalidSMSTransport.Visible = true;
+                nbNoCommunicationTransport.Text = "There are no active Email or SMS communication transports configured.";
+                nbNoCommunicationTransport.Visible = true;
+                btnCommunicationDeliveryNext.Enabled = false;
             }
             else
             {
-                nbInvalidSMSTransport.Visible = false;
+                nbNoCommunicationTransport.Visible = false;
+                btnCommunicationDeliveryNext.Enabled = true;
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the btnMediumSelectionPrevious control.
+        /// Handles the Click event of the btnCommunicationDeliveryPrevious control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnMediumSelectionPrevious_Click( object sender, EventArgs e )
+        protected void btnCommunicationDeliveryPrevious_Click( object sender, EventArgs e )
         {
-            pnlMediumSelection.Visible = false;
+            pnlCommunicationDelivery.Visible = false;
             ShowRecipientSelection();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnMediumSelectionNext control.
+        /// Handles the Click event of the btnCommunicationDeliveryNext control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnMediumSelectionNext_Click( object sender, EventArgs e )
+        protected void btnCommunicationDeliveryNext_Click( object sender, EventArgs e )
         {
             if ( dtpSendDateTime.Visible )
             {
@@ -846,7 +888,7 @@ namespace RockWeb.Blocks.Communication
 
             nbSendDateTimeWarning.Visible = false;
 
-            pnlMediumSelection.Visible = false;
+            pnlCommunicationDelivery.Visible = false;
 
             ShowTemplateSelection();
         }
@@ -862,7 +904,7 @@ namespace RockWeb.Blocks.Communication
             dtpSendDateTime.Visible = !tglSendDateTime.Checked;
         }
 
-        #endregion Medium Selection
+        #endregion Communication Delivery, Medium Selection
 
         #region Template Selection
 
@@ -884,7 +926,7 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
 
-            var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().OrderBy( a => a.Name );
+            var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().Where( a => a.IsActive ).OrderBy( a => a.Name );
 
             // get list of templates that the current user is authorized to View
             IEnumerable<CommunicationTemplate> templateList = templateQuery.AsNoTracking().ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
@@ -957,8 +999,24 @@ namespace RockWeb.Blocks.Communication
 
             var communicationTemplate = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() );
 
-            tbFromName.Text = communicationTemplate.FromName;
-            ebFromAddress.Text = communicationTemplate.FromEmail;
+            // If the template does not provide a default From Name and Address use the current person.
+            if ( communicationTemplate.FromName.IsNotNullOrWhitespace() )
+            {
+                tbFromName.Text = communicationTemplate.FromName;
+            }
+            else
+            {
+                tbFromName.Text = CurrentPerson.FullName;
+            }
+
+            if ( communicationTemplate.FromEmail.IsNotNullOrWhitespace() )
+            {
+                ebFromAddress.Text = communicationTemplate.FromEmail;
+            }
+            else
+            {
+                ebFromAddress.Text = CurrentPerson.Email;
+            }
 
             ebReplyToAddress.Text = communicationTemplate.ReplyToEmail;
             ebCCList.Text = communicationTemplate.CCEmails;
@@ -970,8 +1028,8 @@ namespace RockWeb.Blocks.Communication
 
             hfEmailEditorHtml.Value = communicationTemplate.Message;
 
-            hfAttachedBinaryFileIds.Value = communicationTemplate.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
-            UpdateAttachedFiles( false );
+            hfEmailAttachedBinaryFileIds.Value = communicationTemplate.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
+            UpdateEmailAttachedFiles( false );
 
             // SMS Fields
             if ( communicationTemplate.SMSFromDefinedValueId.HasValue )
@@ -993,7 +1051,7 @@ namespace RockWeb.Blocks.Communication
         {
             pnlTemplateSelection.Visible = false;
 
-            ShowMediumSelection();
+            ShowCommunicationDelivery();
         }
 
         /// <summary>
@@ -1124,6 +1182,17 @@ namespace RockWeb.Blocks.Communication
                         testCommunication.Status = CommunicationStatus.Approved;
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
+                        foreach ( var attachment in communication.Attachments )
+                        {
+                            var cloneAttachment = attachment.Clone( false );
+                            cloneAttachment.Id = 0;
+                            cloneAttachment.Guid = Guid.Empty;
+                            cloneAttachment.ForeignGuid = null;
+                            cloneAttachment.ForeignId = null;
+                            cloneAttachment.ForeignKey = null;
+
+                            testCommunication.Attachments.Add( cloneAttachment );
+                        }
 
                         // for the test email, just use the current person as the recipient, but copy/paste the AdditionalMergeValuesJson to our test recipient so it has the same as the real recipients
                         var testRecipient = new CommunicationRecipient();
@@ -1188,6 +1257,7 @@ namespace RockWeb.Blocks.Communication
                             nbResult.Text = "Test communication has been sent.";
                         }
 
+                        nbResult.Dismissable = true;
                         nbResult.Visible = true;
 
                         communicationService.Delete( testCommunication );
@@ -1221,10 +1291,30 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailPreview_Click( object sender, EventArgs e )
         {
+            // make sure the ifEmailDesigner srcdoc gets updated from what was in the email editor
+            ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
+
             upnlEmailPreview.Update();
 
-            ifEmailPreview.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
-            ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
+            var rockContext = new RockContext();
+            var communication = UpdateCommunication( rockContext );
+            Person currentPerson;
+            if ( communication.CreatedByPersonAlias != null && communication.CreatedByPersonAlias.Person != null )
+            {
+                currentPerson = communication.CreatedByPersonAlias.Person;
+            }
+            else
+            {
+                currentPerson = this.CurrentPerson;
+            }
+
+            var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
+            var sampleCommunicationRecipient = communication.Recipients.FirstOrDefault();
+            sampleCommunicationRecipient.Communication = communication;
+            var mergeFields = sampleCommunicationRecipient.CommunicationMergeValues( commonMergeFields );
+
+            ifEmailPreview.Attributes["srcdoc"] = hfEmailEditorHtml.Value.ResolveMergeFields( mergeFields );
+
             pnlEmailPreview.Visible = true;
             mdEmailPreview.Show();
         }
@@ -1298,31 +1388,31 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Handles the FileUploaded event of the fupAttachments control.
+        /// Handles the FileUploaded event of the fupEmailAttachments control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
-        protected void fupAttachments_FileUploaded( object sender, FileUploaderEventArgs e )
+        protected void fupEmailAttachments_FileUploaded( object sender, FileUploaderEventArgs e )
         {
-            UpdateAttachedFiles( true );
+            UpdateEmailAttachedFiles( true );
         }
 
         /// <summary>
         /// Updates the HTML for the Attached Files and optionally adds the file that was just uploaded using the file uploader
         /// </summary>
-        private void UpdateAttachedFiles( bool addUploadedFile )
+        private void UpdateEmailAttachedFiles( bool addUploadedFile )
         {
-            List<int> attachmentList = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
-            if ( addUploadedFile && fupAttachments.BinaryFileId.HasValue )
+            List<int> attachmentList = hfEmailAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+            if ( addUploadedFile && fupEmailAttachments.BinaryFileId.HasValue )
             {
-                if ( !attachmentList.Contains( fupAttachments.BinaryFileId.Value ) )
+                if ( !attachmentList.Contains( fupEmailAttachments.BinaryFileId.Value ) )
                 {
-                    attachmentList.Add( fupAttachments.BinaryFileId.Value );
+                    attachmentList.Add( fupEmailAttachments.BinaryFileId.Value );
                 }
             }
 
-            hfAttachedBinaryFileIds.Value = attachmentList.AsDelimited( "," );
-            fupAttachments.BinaryFileId = null;
+            hfEmailAttachedBinaryFileIds.Value = attachmentList.AsDelimited( "," );
+            fupEmailAttachments.BinaryFileId = null;
 
             // pre-populate dictionary so that the attachments are listed in the order they were added
             Dictionary<int, string> binaryFileAttachments = attachmentList.ToDictionary( k => k, v => string.Empty );
@@ -1349,14 +1439,14 @@ namespace RockWeb.Blocks.Communication
             foreach ( var binaryFileAttachment in binaryFileAttachments )
             {
                 var attachmentUrl = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFileAttachment.Key );
-                var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
+                var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfEmailAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
                 sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank'>{1}</a> <a><i class='fa fa-times' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
             }
 
             sbAttachmentsHtml.AppendLine( "  </ul>" );
             sbAttachmentsHtml.AppendLine( "</div>" );
 
-            lAttachmentListHtml.Text = sbAttachmentsHtml.ToString();
+            lEmailAttachmentListHtml.Text = sbAttachmentsHtml.ToString();
         }
 
         #endregion Email Summary
@@ -1388,6 +1478,143 @@ namespace RockWeb.Blocks.Communication
             nbSMSTestResult.Visible = false;
             pnlMobileTextEditor.Visible = true;
             SetNavigationHistory( pnlMobileTextEditor );
+        }
+
+        /// <summary>
+        /// Handles the FileUploaded event of the fupMobileAttachment control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
+        protected void fupMobileAttachment_FileUploaded( object sender, FileUploaderEventArgs e )
+        {
+            UpdateMobileAttachedFiles( true );
+        }
+
+        /// <summary>
+        /// Handles the FileRemoved event of the fupMobileAttachment control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
+        protected void fupMobileAttachment_FileRemoved( object sender, FileUploaderEventArgs e )
+        {
+            // ensure that the binaryfileid is set to null if the file was removed
+            fupMobileAttachment.BinaryFileId = null;
+            UpdateMobileAttachedFiles( true );
+        }
+
+        /// <summary>
+        /// Updates the mobile attached files.
+        /// </summary>
+        /// <param name="resizeImageIfNeeded">if set to <c>true</c> [resize image if needed].</param>
+        protected void UpdateMobileAttachedFiles( bool resizeImageIfNeeded )
+        {
+            nbMobileAttachmentFileTypeWarning.Visible = false;
+            nbMobileAttachmentSizeWarning.Visible = false;
+            if ( !fupMobileAttachment.BinaryFileId.HasValue )
+            {
+                imgSMSImageAttachment.Visible = false;
+                return;
+            }
+
+            var rockContext = new RockContext();
+            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+
+            // load binary file from database
+            var binaryFile = binaryFileService.Get( fupMobileAttachment.BinaryFileId.Value );
+            if ( binaryFile != null )
+            {
+                if ( binaryFile.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap( binaryFile.ContentStream );
+
+                    // intentionally tell imageResizer to ignore the 3200x3200 size limit so that we can crop it first before limiting the size.
+                    var sizingPlugin = ImageResizer.Configuration.Config.Current.Plugins.Get<ImageResizer.Plugins.Basic.SizeLimiting>();
+                    var origLimit = sizingPlugin.Limits.TotalBehavior;
+                    sizingPlugin.Limits.TotalBehavior = ImageResizer.Plugins.Basic.SizeLimits.TotalSizeBehavior.IgnoreLimits;
+
+                    var imageStream = binaryFile.ContentStream;
+
+                    try
+                    {
+
+                        // Make sure Image is no bigger than maxwidth
+                        int maxWidth = this.GetAttributeValue( "MaxSMSImageWidth" ).AsIntegerOrNull() ?? 600;
+                        imageStream.Seek( 0, SeekOrigin.Begin );
+                        System.Drawing.Bitmap croppedBitmap = new System.Drawing.Bitmap( imageStream );
+
+                        if ( ( croppedBitmap.Width > maxWidth ) )
+                        {
+                            string resizeParams = string.Format( "width={0}", maxWidth );
+                            MemoryStream croppedAndResizedStream = new MemoryStream();
+                            ImageResizer.ResizeSettings resizeSettings = new ImageResizer.ResizeSettings( resizeParams );
+                            imageStream.Seek( 0, SeekOrigin.Begin );
+                            ImageResizer.ImageBuilder.Current.Build( imageStream, croppedAndResizedStream, resizeSettings );
+
+                            binaryFile.ContentStream = croppedAndResizedStream;
+
+                            rockContext.SaveChanges();
+                        }
+                    }
+                    finally
+                    {
+                        // set the size limit behavior back to what it was
+                        sizingPlugin.Limits.TotalBehavior = origLimit;
+                    }
+
+                    imgSMSImageAttachment.ImageUrl = string.Format( "~/GetImage.ashx?guid={0}", binaryFile.Guid );
+                    imgSMSImageAttachment.Visible = true;
+                    imgSMSImageAttachment.Width = new Unit( 50, UnitType.Percentage );
+                }
+                else
+                {
+
+                    // get a thumbnail based on the file extension
+                    var virtualThumbnailFilePath = "~/Assets/Icons/FileTypes/other.png";
+                    if ( !string.IsNullOrEmpty( binaryFile.FileName ) )
+                    {
+                        string fileExtension = Path.GetExtension( binaryFile.FileName ).TrimStart( '.' );
+                        virtualThumbnailFilePath = string.Format( "~/Assets/Icons/FileTypes/{0}.png", fileExtension );
+                        string physicalFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
+                        if ( !File.Exists( physicalFilePath ) )
+                        {
+                            virtualThumbnailFilePath = "~/Assets/Icons/FileTypes/other.png";
+                        }
+                    }
+
+                    imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath;
+                    imgSMSImageAttachment.Visible = true;
+                    imgSMSImageAttachment.Width = new Unit( 10, UnitType.Percentage );
+                }
+
+                if ( Rock.Communication.Transport.Twilio.SupportedMimeTypes.Any( a => binaryFile.MimeType.Equals( a, StringComparison.OrdinalIgnoreCase ) ) )
+                {
+                    // fully supported, no warning or info about filetype is needed
+                    nbMobileAttachmentFileTypeWarning.Visible = false;
+                }
+                else if ( Rock.Communication.Transport.Twilio.AcceptedMimeTypes.Any( a => binaryFile.MimeType.Equals( a, StringComparison.OrdinalIgnoreCase ) ) )
+                {
+                    // accepted, but not fully supported. Show an info message
+                    nbMobileAttachmentFileTypeWarning.NotificationBoxType = NotificationBoxType.Info;
+                    nbMobileAttachmentFileTypeWarning.Text = string.Format( "When sending attachments with MMS; jpg, gif, and png images are supported for all carriers. Files of type <small>{0}</small> are also accepted, but support is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.", binaryFile.MimeType );
+                    nbMobileAttachmentFileTypeWarning.Visible = true;
+                }
+                else
+                {
+                    // might not be accepted, and definitely not fully supported. Show a warning message
+                    nbMobileAttachmentFileTypeWarning.Text = string.Format( "When sending attachments with MMS; jpg, gif, and png images are supported for all carriers. However, files of type <small>{0}</small> might not be accepted, and support is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.", binaryFile.MimeType );
+                    nbMobileAttachmentFileTypeWarning.NotificationBoxType = NotificationBoxType.Warning;
+                    nbMobileAttachmentFileTypeWarning.Visible = true;
+                }
+
+                if ( binaryFile.FileSize > Rock.Communication.Transport.Twilio.MediaSizeLimitBytes )
+                {
+                    // bigger than what twilio says it supports
+                    nbMobileAttachmentSizeWarning.Visible = true;
+                    nbMobileAttachmentSizeWarning.Text = string.Format( "The attached file is {0}MB, which is over the {1}MB media size limit.", binaryFile.FileSize / 1024 / 1024, ( Rock.Communication.Transport.Twilio.MediaSizeLimitBytes / 1024 / 1024 ) );
+                }
+
+                upnlContent.Update();
+            }
         }
 
         /// <summary>
@@ -1655,8 +1882,8 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             CurrentPageReference.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 
-            // only show the Link if there is a CommunicationDetail block on this page
-            hlViewCommunication.Visible = this.Page.ControlsOfTypeRecursive<RockWeb.Blocks.Communication.CommunicationDetail>().Any();
+            // only show the Link if there is a CommunicationDetail block type on this page
+            hlViewCommunication.Visible = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
         }
 
         /// <summary>
@@ -1848,19 +2075,31 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             communication.CCEmails = ebCCList.Text;
             communication.BCCEmails = ebBCCList.Text;
 
-            var binaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+            List<int> emailBinaryFileIds = hfEmailAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+            List<int> smsBinaryFileIds = new List<int>();
+
+            if ( fupMobileAttachment.BinaryFileId.HasValue )
+            {
+                smsBinaryFileIds.Add( fupMobileAttachment.BinaryFileId.Value );
+            }
 
             // delete any attachments that are no longer included
-            foreach ( var attachment in communication.Attachments.Where( a => !binaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
+            foreach ( var attachment in communication.Attachments.Where( a => ( !emailBinaryFileIds.Contains( a.BinaryFileId ) && !smsBinaryFileIds.Contains( a.BinaryFileId ) ) ).ToList() )
             {
                 communication.Attachments.Remove( attachment );
                 communicationAttachmentService.Delete( attachment );
             }
 
-            // add any new attachments that were added
-            foreach ( var attachmentBinaryFileId in binaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
+            // add any new email attachments that were added
+            foreach ( var attachmentBinaryFileId in emailBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
             {
-                communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId } );
+                communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.Email } );
+            }
+
+            // add any new SMS attachments that were added
+            foreach ( var attachmentBinaryFileId in smsBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
+            {
+                communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.SMS } );
             }
 
             communication.Subject = tbEmailSubject.Text;
@@ -1901,41 +2140,8 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUseSimpleEditor_Click( object sender, EventArgs e )
         {
-            // Get the URL to communication page
-            string url;
-
             int communicationId = hfCommunicationId.Value.AsInteger();
-
-            var pageRef = this.RockPage.Site.CommunicationPageReference;
-            if ( pageRef.PageId > 0 )
-            {
-                if ( communicationId > 0 )
-                {
-                    pageRef.Parameters.AddOrReplace( "CommunicationId", communicationId.ToString() );
-                }
-
-                url = pageRef.BuildUrl();
-            }
-            else
-            {
-                if ( communicationId > 0 )
-                {
-                    url = "~/Communication/{0}";
-                }
-                else
-                {
-                    url = "~/Communication";
-                }
-            }
-
-
-            if ( url.Contains( "{0}" ) )
-            {
-                url = string.Format( url, communicationId );
-            }
-
-            Page.Response.Redirect( url, false );
-            Context.ApplicationInstance.CompleteRequest();
+            NavigateToLinkedPage( "SimpleCommunicationPage", "CommunicationId", communicationId );
         }
     }
 }

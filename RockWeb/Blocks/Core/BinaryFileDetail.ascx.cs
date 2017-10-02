@@ -437,7 +437,7 @@ namespace RockWeb.Blocks.Core
                 OrphanedBinaryFileIdList = tempList;
 
                 // load attributes, then get the attribute values from the UI
-                binaryFile.LoadAttributes();
+                binaryFile.LoadAttributes(); 
                 Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFile );
 
                 LaunchFileUploadWorkflow( binaryFile, binaryFileService );

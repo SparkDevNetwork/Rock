@@ -89,7 +89,7 @@
                 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" />
+                        <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" EnhanceForLongLists="true" />
                     </div>
                     <div class="col-md-6 padding-t-md">
                         <label>Common Block Types</label><br />

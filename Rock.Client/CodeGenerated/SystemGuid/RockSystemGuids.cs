@@ -30,6 +30,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Attribute
     {
+        public const string DEFINED_VALUE_FUNDRAISING_DONATE_BUTTON_TEXT = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E";
         public const string FAMILY_CHECKIN_IDENTIFIERS = "8F528431-A438-4488-8DC3-CA42E66C1B37";
         public const string GLOBAL_DEFAULT_SHORT_LINK_SITE = "DD0E0757-2A01-47BB-A74A-F6E69B0399C8";
         public const string GLOBAL_EMAIL_LINK_PREFERENCE = "F1BECEF9-1047-E89F-4CC8-8F856750E5D0";
@@ -77,6 +78,8 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class BlockType
     {
+        public const string COMMUNICATION_DETAIL = "CEDC742C-0AB3-487D-ABC2-77A0A443AEBF";
+        public const string COMMUNICATION_ENTRY = "D9834641-7F39-4CFA-8CB2-E64068127565";
         public const string CONTENT_CHANNEL_VIEW = "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F";
         public const string HTML_CONTENT = "19B61D65-37E3-459F-A44F-DEF0089118A3";
         public const string PAGE_MENU = "CACB9D1A-A820-4587-986A-D66A69EE9948";

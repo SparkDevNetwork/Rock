@@ -105,6 +105,10 @@ namespace Rock.Model
         /// <value>
         /// The communication template identifier.
         /// </value>
+        /// <remarks>
+        /// [IgnoreCanDelete] since there is a ON DELETE SET NULL cascade on this
+        /// </remarks>
+        [IgnoreCanDelete]
         public int? CommunicationTemplateId { get; set; }
 
         /// <summary>
@@ -372,6 +376,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the attachments.
+        /// NOTE: In most cases, you should use GetAttachments( CommunicationType ) instead.
         /// </summary>
         /// <value>
         /// The attachments.
@@ -456,7 +461,7 @@ namespace Rock.Model
                             mediumData.AddIfNotBlank( "BCC", BCCEmails );
                             mediumData.AddIfNotBlank( "Subject", Subject );
                             mediumData.AddIfNotBlank( "HtmlMessage", Message );
-                            mediumData.AddIfNotBlank( "Attachments", AttachmentBinaryFileIds.ToList().AsDelimited( "," ) );
+                            mediumData.AddIfNotBlank( "Attachments", GetAttachmentBinaryFileIds( CommunicationType.Email ).AsDelimited( "," ) );
                             break;
                         }
                 }
@@ -464,7 +469,7 @@ namespace Rock.Model
                 return mediumData;
             }
 
-            set {}
+            set { }
         }
 
         /// <summary>
@@ -493,17 +498,32 @@ namespace Rock.Model
         public virtual DefinedValue SMSFromDefinedValue { get; set; }
 
         /// <summary>
-        /// Gets or sets a list of binary file ids
+        /// Gets or sets a list of email binary file ids
         /// </summary>
         /// <value>
         /// The attachment binary file ids
         /// </value>
         [NotMapped]
-        public virtual IEnumerable<int> AttachmentBinaryFileIds
+        public virtual IEnumerable<int> EmailAttachmentBinaryFileIds
         {
             get
             {
-                return this.Attachments.Select( a => a.BinaryFileId ).ToList();
+                return this.Attachments.Where( a => a.CommunicationType == CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a list of sms binary file ids
+        /// </summary>
+        /// <value>
+        /// The attachment binary file ids
+        /// </value>
+        [NotMapped]
+        public virtual IEnumerable<int> SMSAttachmentBinaryFileIds
+        {
+            get
+            {
+                return this.Attachments.Where( a => a.CommunicationType == CommunicationType.SMS ).Select( a => a.BinaryFileId ).ToList();
             }
         }
 
@@ -519,6 +539,39 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Adds the attachment.
+        /// </summary>
+        /// <param name="communicationAttachment">The communication attachment.</param>
+        /// <param name="communicationType">Type of the communication.</param>
+        public void AddAttachment( CommunicationAttachment communicationAttachment, CommunicationType communicationType )
+        {
+            communicationAttachment.CommunicationType = communicationType;
+            this.Attachments.Add( communicationAttachment );
+        }
+
+        /// <summary>
+        /// Gets the attachments.
+        /// Specify CommunicationType.Email to get the attachments for Email and CommunicationType.SMS to get the Attachment(s) for SMS
+        /// </summary>
+        /// <param name="communicationType">Type of the communication.</param>
+        /// <returns></returns>
+        public IEnumerable<CommunicationAttachment> GetAttachments( CommunicationType communicationType )
+        {
+            return this.Attachments.Where( a => a.CommunicationType == communicationType );
+        }
+
+        /// <summary>
+        /// Gets the attachment binary file ids.
+        /// Specify CommunicationType.Email to get the attachments for Email and CommunicationType.SMS to get the Attachment(s) for SMS
+        /// </summary>
+        /// <param name="communicationType">Type of the communication.</param>
+        /// <returns></returns>
+        public List<int> GetAttachmentBinaryFileIds( CommunicationType communicationType )
+        {
+            return this.GetAttachments( communicationType ).Select( a => a.BinaryFileId ).ToList();
+        }
 
         /// <summary>
         /// Returns a medium data value.
@@ -643,8 +696,8 @@ namespace Rock.Model
                     .Where( r =>
                         r.CommunicationId == communicationId &&
                         r.PersonAlias.Person.IsDeceased == false &&
-                        ( r.Status == CommunicationRecipientStatus.Pending || 
-                            ( r.Status == CommunicationRecipientStatus.Sending && r.ModifiedDateTime < delayTime ) 
+                        ( r.Status == CommunicationRecipientStatus.Pending ||
+                            ( r.Status == CommunicationRecipientStatus.Sending && r.ModifiedDateTime < delayTime )
                         ) &&
                         r.MediumEntityTypeId.HasValue &&
                         r.MediumEntityTypeId.Value == mediumEntityId )

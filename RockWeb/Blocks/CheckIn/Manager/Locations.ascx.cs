@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [LinkedPage( "Person Page", "The page used to display a selected person's details.", order: 2 )]
     [LinkedPage( "Area Select Page", "The page to redirect user to if area has not be configured or selected.", order: 3 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 4, defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
+    [BooleanField( "Search By Code", "A flag indicating if security codes should also be evaluated in the search box results.", order: 5 )]
     public partial class Locations : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -286,10 +287,44 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     } );
 
                 // Do the person search
+                var personService = new PersonService( rockContext );
+                List<Rock.Model.Person> people = null;
                 bool reversed = false;
-                var results = new PersonService( rockContext )
-                    .GetByFullName( tbSearch.Text, false, false, false, out reversed )
-                    .ToList()
+
+                string searchValue = tbSearch.Text.Trim();
+                if ( searchValue.IsNullOrWhiteSpace() )
+                {
+                    people = new List<Rock.Model.Person>();
+                }
+                else
+                {
+                    // If searching by code is enabled, first search by the code
+                    if ( GetAttributeValue( "SearchByCode" ).AsBoolean() )
+                    {
+                        var dayStart = RockDateTime.Today;
+                        var now = RockDateTime.Now;
+                        var personIds = new AttendanceService( rockContext )
+                            .Queryable().Where( a =>
+                                a.StartDateTime >= dayStart &&
+                                a.StartDateTime <= now &&
+                                a.AttendanceCode.Code == searchValue )
+                            .Select( a => a.PersonAlias.PersonId )
+                            .Distinct();
+                        people = personService.Queryable()
+                            .Where( p => personIds.Contains( p.Id ) )
+                            .ToList();
+                    }
+
+                    if ( people == null || !people.Any() )
+                    {
+                        // If searching by code was disabled or nobody was found with code, search by name
+                        people = personService
+                            .GetByFullName( searchValue, false, false, false, out reversed )
+                            .ToList();
+                    }
+                }
+
+                var results = people
                     .GroupJoin(
                         attendanceQry,
                         p => p.Id,
@@ -338,6 +373,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 rptPeople.Visible = true;
                 rptPeople.DataSource = results;
                 rptPeople.DataBind();
+
             }
 
             RegisterStartupScript();

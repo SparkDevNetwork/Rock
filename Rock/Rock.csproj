@@ -708,6 +708,7 @@
     <Compile Include="Lava\Blocks\RockEntity.cs" />
     <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
     <Compile Include="Lava\Blocks\Search.cs" />
+    <Compile Include="Lava\Blocks\Javascript.cs" />
     <Compile Include="Lava\Blocks\Stylesheet.cs" />
     <Compile Include="Lava\Blocks\WebRequest.cs" />
     <Compile Include="Lava\Blocks\Sql.cs" />
@@ -736,7 +737,7 @@
     <Compile Include="Model\AnalyticsDimFamilyHeadOfHousehold.cs" />
     <Compile Include="Model\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="Model\AnalyticsDimPersonCurrent.cs" />
-    <Compile Include="Model\AnalyticsDimDate.cs" />
+    <Compile Include="Model\AnalyticsSourceDate.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionType.cs" />
     <Compile Include="Model\AnalyticsFactAttendance.cs" />
     <Compile Include="Model\AnalyticsSourceAttendance.cs" />
@@ -1149,6 +1150,8 @@
     <Compile Include="Reporting\DataFilter\Person\LocationFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PostalCodeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasNoteFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\UserLoginDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\UserLogin\LoginTypeFilter.cs" />
     <Compile Include="Reporting\DataSelect\FormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupAttributeSelect.cs" />
@@ -1263,6 +1266,7 @@
     <Compile Include="Plugin\HotFixes\027_AddCheckinFeatures.cs" />
     <Compile Include="Plugin\HotFixes\028_CheckinTextSettings.cs" />
     <Compile Include="Plugin\HotFixes\033_ConnectionOpportunityCounts.cs" />
+    <Compile Include="Plugin\HotFixes\034_FinancialSecurityActions.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1398,6 +1402,7 @@
     <Compile Include="Utility\Async.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExcelHelper.cs" />
+    <Compile Include="Utility\ExtensionMethods\DataTable.cs" />
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
@@ -1412,10 +1417,12 @@
     <Compile Include="Web\Cache\WorkflowTypeCache.cs" />
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
+    <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
+    <Compile Include="Web\UI\IAdditionalGridColumns.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
@@ -1876,6 +1883,7 @@
     <Compile Include="Workflow\Action\Connections\AddConnectionRequestActivity.cs" />
     <Compile Include="Workflow\Action\Connections\CreateConnectionRequest.cs" />
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestState.cs" />
+    <Compile Include="Workflow\Action\Connections\SetConnectionRequestConnector.cs" />
     <Compile Include="Workflow\Action\Connections\SetConnectionRequestStatus.cs" />
     <Compile Include="Workflow\Action\Connections\TransferConnectionRequest.cs" />
     <Compile Include="Workflow\Action\Finance\BenevolenceRequestAdd.cs" />
@@ -1908,6 +1916,8 @@
     <Compile Include="Workflow\Action\Utility\InteractionAdd.cs" />
     <Compile Include="Workflow\Action\Utility\CreateShortLink.cs" />
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
+    <Compile Include="Workflow\Action\Utility\SetEntityAttribute.cs" />
+    <Compile Include="Workflow\Action\Utility\SetEntityProperty.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
     <Compile Include="Workflow\Action\Utility\RunSQL.cs" />

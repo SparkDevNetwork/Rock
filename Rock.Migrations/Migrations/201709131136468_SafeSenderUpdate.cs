@@ -91,6 +91,59 @@ being rejected by the receiving email servers due to the email having a differen
 
             // MP: Mask Account Number 
             Sql( @"
+    DECLARE @CCType INT = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE GUID = '928A2E04-C77B-4282-888F-EC549CEE026A' )
+
+    DECLARE @Visa INT  = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE GUID = 'FC66B5F8-634F-4800-A60D-436964D27B64' )
+    DECLARE @MasterCard INT  = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE GUID = '6373A4B6-4DCA-4EB6-9ADE-B30E8A7F8621' )
+    DECLARE @Amex INT  = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE GUID = '696A54E3-352C-49FB-88A1-BCDBD81AA9EC' )
+    DECLARE @Discover INT  = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE GUID = '4B746601-E9EB-4660-BA13-C0B66B24E248' )
+    DECLARE @Diners INT  = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE GUID = '1A9A4DB9-AFF3-4773-875C-C10346BD1CA7' )
+    DECLARE @JCB INT  = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE GUID = '4DD7F0C2-F6B7-4510-90E6-287ADC25FD05' )
+
+    ;WITH CTE AS (
+	    SELECT 
+		    [Id],
+		    CASE 
+			    WHEN [AccountNumberMasked] LIKE '34%' AND LEN([AccountNumberMasked]) = 15 THEN @Amex
+			    WHEN [AccountNumberMasked] LIKE '37%' AND LEN([AccountNumberMasked]) = 15 THEN @Amex
+
+			    WHEN [AccountNumberMasked] LIKE '300%' AND LEN([AccountNumberMasked]) = 14 THEN @Diners
+			    WHEN [AccountNumberMasked] LIKE '301%' AND LEN([AccountNumberMasked]) = 14 THEN @Diners
+			    WHEN [AccountNumberMasked] LIKE '302%' AND LEN([AccountNumberMasked]) = 14 THEN @Diners
+			    WHEN [AccountNumberMasked] LIKE '303%' AND LEN([AccountNumberMasked]) = 14 THEN @Diners
+			    WHEN [AccountNumberMasked] LIKE '304%' AND LEN([AccountNumberMasked]) = 14 THEN @Diners
+			    WHEN [AccountNumberMasked] LIKE '305%' AND LEN([AccountNumberMasked]) = 14 THEN @Diners
+			    WHEN [AccountNumberMasked] LIKE '36%' AND LEN([AccountNumberMasked]) = 14 THEN @Diners
+
+			    WHEN [AccountNumberMasked] LIKE '6011%' AND LEN([AccountNumberMasked]) = 16 THEN @Discover
+
+			    WHEN [AccountNumberMasked] LIKE '3%' AND LEN([AccountNumberMasked]) = 16 THEN @JCB
+			    WHEN [AccountNumberMasked] LIKE '1800%' AND LEN([AccountNumberMasked]) = 15 THEN @JCB
+			    WHEN [AccountNumberMasked] LIKE '2131%' AND LEN([AccountNumberMasked]) = 15 THEN @JCB
+
+			    WHEN [AccountNumberMasked] LIKE '51%' AND LEN([AccountNumberMasked]) = 16 THEN @MasterCard
+			    WHEN [AccountNumberMasked] LIKE '52%' AND LEN([AccountNumberMasked]) = 16 THEN @MasterCard
+			    WHEN [AccountNumberMasked] LIKE '53%' AND LEN([AccountNumberMasked]) = 16 THEN @MasterCard
+			    WHEN [AccountNumberMasked] LIKE '54%' AND LEN([AccountNumberMasked]) = 16 THEN @MasterCard
+			    WHEN [AccountNumberMasked] LIKE '55%' AND LEN([AccountNumberMasked]) = 16 THEN @MasterCard
+
+			    WHEN [AccountNumberMasked] LIKE '4%' AND LEN([AccountNumberMasked]) = 13 THEN @Visa
+			    WHEN [AccountNumberMasked] LIKE '4%' AND LEN([AccountNumberMasked]) = 16 THEN @Visa
+
+		    END AS [CCType]	
+
+	    FROM [FinancialPaymentDetail]
+	    WHERE [CurrencyTypeValueId] = @CCType
+	    AND [CreditCardTypeValueId] IS NULL
+	    AND [AccountNumberMasked] IS NOT NULL
+	    AND [AccountNumberMasked] NOT LIKE '*%'
+    )
+
+    UPDATE P SET [CreditCardTypeValueId] = DV.[Id]
+    FROM CTE
+    INNER JOIN [FinancialPaymentDetail] P ON P.[Id] = CTE.[Id]
+    INNER JOIN [DefinedValue] DV ON DV.[Id] = CTE.[CCType]
+
     UPDATE FinancialPaymentDetail SET AccountNumberMasked = REPLICATE('*', len(AccountNumberMasked) - 4) + Right(AccountNumberMasked, 4)
     WHERE AccountNumberMasked IS NOT NULL
     AND REPLICATE('*', len(AccountNumberMasked) - 4) + Right(AccountNumberMasked, 4) != AccountNumberMasked

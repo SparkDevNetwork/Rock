@@ -79,7 +79,7 @@
                                     </asp:Panel>
                             
                                     <asp:Panel ID="pnlDataviewSourceType" runat="server">
-                                        <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" />
+                                        <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" EnhanceForLongLists="true" />
                                         <Rock:NotificationBox ID="nbDataViewHelp" runat="server" Visible="false" />
                                     </asp:Panel>
                             

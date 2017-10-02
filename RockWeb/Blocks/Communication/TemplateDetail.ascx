@@ -20,6 +20,9 @@
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.CommunicationTemplate, Rock" PropertyName="Name" />
                     </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
+                    </div>
                 </div>
 
                 <div class="row">
@@ -124,15 +127,14 @@
                 <asp:Panel ID="pnlEmailPreview" runat="server" Visible="false">
                     <Rock:ModalDialog ID="mdEmailPreview" runat="server" Title="Email Preview">
                         <Content>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <%-- ## TODO ## Options for what type of email client to emulate? --%>
-                                </div>
-                                <div class="col-md-6">
+                            <div class="text-center margin-v-md">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-default js-preview-desktop"><i class="fa fa-desktop"></i> Desktop</button>
+                                    <button type="button" class="btn btn-default js-preview-mobile"><i class="fa fa-mobile"></i> Mobile</button>
                                 </div>
                             </div>
-                            <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview">
-                                <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe js-emailpreview-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
+                            <div id="pnlEmailPreviewContainer" runat="server" class="email-preview js-email-preview device-browser center-block">
+                                <iframe id="ifEmailPreview" name="emailpreview-iframe" class="emaileditor-iframe js-emailpreview-iframe email-wrapper" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" scrolling="yes"></iframe>
                             </div>
                         </Content>
 
@@ -186,6 +188,34 @@
                 if ($('#<%=hfShowAdditionalFields.ClientID %>').val() == "true") {
                     $('.js-additional-fields').show();
                 }
+
+                // resize the email preview when the Mobile/Desktop modes are clicked
+                $('.js-preview-mobile, .js-preview-desktop').off('click').on('click', function (a, b, c)
+                {
+                    var $emailPreviewIframe = $('.js-emailpreview-iframe');
+
+                    if ($(this).hasClass('js-preview-mobile')) {
+                        var mobileContainerHeight = '585px';
+
+                        $('.js-email-preview').removeClass("device-browser").addClass("device-mobile");
+                        var mobilePreviewHeight = $('.js-email-preview').height();
+
+                        $emailPreviewIframe.height(mobileContainerHeight);
+                        $('#<%=pnlEmailPreviewContainer.ClientID%>').height(mobileContainerHeight);
+                    }
+                    else {
+                        $('.js-email-preview').removeClass("device-mobile").addClass("device-browser");
+                        $emailPreviewIframe.height('auto');
+
+                        var emailPreviewIframe = $emailPreviewIframe[0];
+                        var newHeight = $(emailPreviewIframe.contentWindow.document).height();
+                        if ($(emailPreviewIframe).height() != newHeight) {
+                            $(emailPreviewIframe).height(newHeight);
+                        }
+
+                        $('#<%=pnlEmailPreviewContainer.ClientID%>').height(newHeight);
+                    }
+                });
             });
 
             function removeAttachment(source, hf, fileId)

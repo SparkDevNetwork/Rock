@@ -35,7 +35,7 @@ namespace Rock.Jobs
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [IntegerField( "How Many Records", "The number of communication records to process on each run of this job.", false, 300000, "", 0, "HowMany" )]
+    [IntegerField( "How Many Records", "The number of communication records to process on each run of this job.", false, 100000, "", 0, "HowMany" )]
     public class MigrateCommunicationMediumData : IJob
     {
         /// <summary>
@@ -50,7 +50,7 @@ namespace Rock.Jobs
 
             int howMany = dataMap.GetString( "HowMany" ).AsIntegerOrNull() ?? 300000;
 
-            bool anyRemaining = UpdateCommunicationRecords( false, howMany );
+            bool anyRemaining = UpdateCommunicationRecords( true, howMany );
 
             if ( !anyRemaining )
             {
@@ -115,7 +115,8 @@ namespace Rock.Jobs
                             {
                                 var attachment = new CommunicationTemplateAttachment();
                                 attachment.BinaryFile = binaryFile;
-                                comm.Attachments.Add( attachment );
+                                attachment.CommunicationType = CommunicationType.Email;
+                                comm.AddAttachment( attachment, CommunicationType.Email );
                             }
                         }
 
@@ -157,7 +158,8 @@ namespace Rock.Jobs
                             {
                                 var attachment = new CommunicationAttachment();
                                 attachment.BinaryFile = binaryFile;
-                                comm.Attachments.Add( attachment );
+                                attachment.CommunicationType = CommunicationType.Email;
+                                comm.AddAttachment( attachment, CommunicationType.Email );
                             }
                         }
 
@@ -198,7 +200,7 @@ namespace Rock.Jobs
                     commDetails.CCEmails = ConvertMediumData( mediumData, "CC", commDetails.Message );
                     commDetails.BCCEmails = ConvertMediumData( mediumData, "BCC", commDetails.Message );
                     commDetails.Message = ConvertMediumData( mediumData, "HtmlMessage", commDetails.Message );
-                    attachmentBinaryFileIds = ConvertMediumData( mediumData, "Attachments", commDetails.AttachmentBinaryFileIds.ToList().AsDelimited( "," ) ).SplitDelimitedValues().AsIntegerList();
+                    attachmentBinaryFileIds = ConvertMediumData( mediumData, "Attachments", commDetails.EmailAttachmentBinaryFileIds.ToList().AsDelimited( "," ) ).SplitDelimitedValues().AsIntegerList();
                 }
             }
         }
