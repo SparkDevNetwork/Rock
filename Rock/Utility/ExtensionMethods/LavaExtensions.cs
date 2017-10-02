@@ -322,8 +322,8 @@ namespace Rock
                 {
                     try
                     {
-                        var parentVariable = ( keyValue.Value.GetType().GetInterface( "IList" ) != null ) ? keyValue.Key.ToLower().Singularize() : keyValue.Key;
-                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentVariable ) );
+                        var parentVariable = ( keyValue.Value?.GetType().GetInterface( "IList" ) != null ) ? keyValue.Key.ToLower().Singularize() : keyValue.Key;
+                        result.Add( keyValue.Key, keyValue.Value?.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentVariable ) );
                     }
                     catch ( Exception ex )
                     {
