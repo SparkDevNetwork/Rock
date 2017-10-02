@@ -103,10 +103,10 @@ namespace Rock.Attribute
 
                 rockContext = rockContext ?? new RockContext();
 
-                bool additionalGridColumnsBlock = typeof( Rock.Web.UI.IAdditionalGridColumns ).IsAssignableFrom( type );
+                bool additionalGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
                 if ( additionalGridColumnsBlock )
                 {
-                    entityProperties.Add( new TextFieldAttribute( AdditionalGridColumnsConfig.AttributeKey, category: "CustomSetting" ) );
+                    entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" ) );
                 }
 
                 bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );

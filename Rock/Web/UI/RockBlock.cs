@@ -463,6 +463,14 @@ namespace Rock.Web.UI
             this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, BlockCache.Id );
 
             RockPage.BlockUpdated += Page_BlockUpdated;
+
+            if ( !Page.IsPostBack )
+            {
+                if ( this is ICustomGridColumns )
+                {
+                    AddCustomGridColumns();
+                }
+            }
         }
 
         /// <summary>
@@ -510,6 +518,39 @@ namespace Rock.Web.UI
         }
 
         #endregion
+
+
+        #region ICustomGridColumns
+
+        /// <summary>
+        /// Adds any custom grid columns to the Grid on the block
+        /// </summary>
+        public virtual void AddCustomGridColumns()
+        {
+            var additionalColumns = this.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ).FromJsonOrNull<CustomGridColumnsConfig>();
+            var grid = this.ControlsOfTypeRecursive<Rock.Web.UI.Controls.Grid>().FirstOrDefault();
+            if ( grid != null && additionalColumns != null && additionalColumns.ColumnsConfig.Any() )
+            {
+                foreach ( var columnConfig in additionalColumns.ColumnsConfig )
+                {
+                    int insertPosition;
+                    if ( columnConfig.PositionOffsetType == CustomGridColumnsConfig.ColumnConfig.OffsetType.LastColumn )
+                    {
+                        insertPosition = grid.Columns.Count - columnConfig.PositionOffset;
+                    }
+                    else
+                    {
+                        insertPosition = columnConfig.PositionOffset;
+                    }
+
+                    var column = columnConfig.GetGridColumn();
+                    grid.Columns.Insert( insertPosition, column );
+                    insertPosition++;
+                }
+            }
+        }
+
+        #endregion ICustomGridColumns
 
         #region Public Methods
 
