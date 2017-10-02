@@ -86,7 +86,20 @@ namespace Rock.Rest.Controllers
                 reservationQry = reservationQry.Where( r => r.ReservationResources.Any( rr => resourceIdList.Contains( rr.ResourceId ) ) );
             }
 
-            List<ReservationApprovalState> approvalStateList = approvalStates.SplitDelimitedValues().ToList().Select( a => a.ConvertToEnum<ReservationApprovalState>() ).ToList();
+            List<ReservationApprovalState> approvalStateList = new List<ReservationApprovalState>();
+
+            foreach ( var approvalString in approvalStates.SplitDelimitedValues() )
+            {
+                try
+                {
+                    approvalStateList.Add( approvalString.ConvertToEnum<ReservationApprovalState>() );
+                }
+                catch
+                {
+
+                }
+            }
+
             if ( approvalStateList.Any() )
             {
                 reservationQry = reservationQry.Where( r => approvalStateList.Contains( r.ApprovalState ) );
