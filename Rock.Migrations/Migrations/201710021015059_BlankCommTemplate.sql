@@ -15,6 +15,7 @@ INSERT INTO [dbo].[CommunicationTemplate] (
 	[Name]
 	,[Description]
 	,[IsSystem]
+	,[IsActive]
 	,[Subject]
 	,[MediumDataJson]
 	,[Guid]
@@ -23,6 +24,7 @@ INSERT INTO [dbo].[CommunicationTemplate] (
 VALUES (
 	'Blank'
 	,'A template without predefined content that can be used to create email and SMS communications'
+	,1
 	,1
 	,''
 	,'{}'
