@@ -257,6 +257,11 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
         #region Internal Methods
 
+        private void HideQuestionList( bool editable )
+        {
+            this.HideSecondaryBlocks( editable );
+        }
+
         /// <summary>
         /// Shows the detail for the resource.
         /// </summary>
@@ -293,12 +298,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 btnDelete.Visible = true;
                 ddlCampus.SelectedValue = resource.CampusId.ToString();
                 pdAuditDetails.SetEntity( resource, ResolveRockUrl( "~" ) );
+                HideQuestionList( false );
             }
             else
             {
                 resource = new Resource { Id = 0 };
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
+                HideQuestionList( true );
             }
 
             if ( resource == null )

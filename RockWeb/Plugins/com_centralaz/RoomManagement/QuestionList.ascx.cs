@@ -26,7 +26,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
     [DisplayName( "Question List" )]
     [Category( "com_centralaz > Room Management" )]
     [Description( "A list of questions tied to a resource or location" )]
-    public partial class QuestionList : RockBlock
+    public partial class QuestionList : RockBlock, ISecondaryBlock
     {
         #region Properties
         public int ResourceId
@@ -225,6 +225,15 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         #region Methods
 
         /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlList.Visible = visible;
+        }
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
@@ -244,6 +253,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             rGrid.DataBind();
         }
 
+        /// <summary>
+        /// Gets the questions.
+        /// </summary>
+        /// <returns></returns>
         private List<Question> GetQuestions()
         {
             var questionList = new List<Question>();
@@ -263,6 +276,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             return questionList;
         }
 
+        /// <summary>
+        /// Shows the edit.
+        /// </summary>
+        /// <param name="questionId">The question identifier.</param>
         protected void ShowEdit( int? questionId )
         {
             Question question = null;
@@ -308,7 +325,11 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             modalDetails.Show();
         }
 
-
+        /// <summary>
+        /// Saves the attribute.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         private Rock.Model.Attribute SaveAttribute( RockContext rockContext )
         {
             List<Rock.Model.Attribute> attributeList = GetAttributeList();
@@ -347,6 +368,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             return savedAttribute;
         }
 
+        /// <summary>
+        /// Gets the attribute list.
+        /// </summary>
+        /// <returns></returns>
         private List<Rock.Model.Attribute> GetAttributeList()
         {
             var rockContext = new RockContext();
@@ -367,8 +392,15 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             return attributeList;
         }
 
-        #endregion
-
+        /// <summary>
+        /// Saves the attribute edits.
+        /// </summary>
+        /// <param name="edtAttribute">The edt attribute.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         public static Rock.Model.Attribute SaveAttributeEdits( SimpleAttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
         {
             // Create and update a new attribute object with new values
@@ -396,5 +428,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             return Helper.SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
         }
+
+        #endregion
+
     }
 }
