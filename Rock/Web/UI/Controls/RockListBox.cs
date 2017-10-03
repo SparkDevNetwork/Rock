@@ -351,6 +351,43 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Selects the values.
+        /// </summary>
+        /// <value>
+        /// The selected values.
+        /// </value>
+        public List<string> SelectedValues
+        {
+            get
+            {
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Selects the values as int.
+        /// </summary>
+        /// <value>
+        /// The selected values as int.
+        /// </value>
+        public List<int> SelectedValuesAsInt
+        {
+            get
+            {
+                var values = new List<int>();
+                foreach ( string stringValue in SelectedValues )
+                {
+                    int numValue = int.MinValue;
+                    if ( int.TryParse( stringValue, out numValue ) )
+                    {
+                        values.Add( numValue );
+                    }
+                }
+                return values;
+            }
+        }
+
+        /// <summary>
         /// Renders any data validator.
         /// </summary>
         /// <param name="writer">The writer.</param>
