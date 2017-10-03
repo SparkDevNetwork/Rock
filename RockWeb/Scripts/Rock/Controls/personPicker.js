@@ -184,7 +184,7 @@
             $('#' + controlId + '_btnSelect').click(function () {
                 var radInput = $('#' + controlId).find('input:checked'),
                     selectedValue = radInput.val(),
-                    selectedText = radInput.closest('.picker-select-item').find('label').text();
+                    selectedText = radInput.closest('.picker-select-item').attr('data-person-name');
 
                 setSelectedPerson(selectedValue, selectedText);
             });
@@ -228,10 +228,29 @@
                             inactiveWarning = " <small>(" + item.RecordStatus + ")</small>";
                         }
 
+                        var quickSummaryInfo = "";
+                        if (item.FormattedAge || item.SpouseName) {
+                            quickSummaryInfo = " <small class='rollover-item text-muted'>";
+                            if (item.FormattedAge) {
+                                quickSummaryInfo += "Age: " + item.FormattedAge;
+                            }
+
+                            if (item.SpouseName) {
+                                if (item.FormattedAge) {
+                                    quickSummaryInfo += "; ";
+                                }
+
+                                quickSummaryInfo += "Spouse: " + item.SpouseName;
+                            }
+
+                            quickSummaryInfo += "</small>";
+                        }
+
                         var $div = $('<div/>').attr('class', 'radio'),
 
                             $label = $('<label/>')
-                                .html(item.Name + inactiveWarning + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
+                                .html(item.Name + inactiveWarning + quickSummaryInfo + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
+                                .addClass('rollover-container')
                                 .prependTo($div),
 
                             $radio = $('<input type="radio" name="person-id" />')
@@ -242,6 +261,7 @@
                             $li = $('<li/>')
                                 .addClass('picker-select-item')
                                 .attr('data-person-id', item.Id)
+                                .attr('data-person-name', item.Name)
                                 .html($div),
 
                             $resultSection = $(this.options.appendTo);
