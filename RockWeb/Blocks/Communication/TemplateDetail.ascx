@@ -178,16 +178,18 @@
                     });
                 }
 
-                $('.js-show-additional-fields').off('click').on('click', function ()
-                {
-                    $('#<%=hfShowAdditionalFields.ClientID %>').val(!$('.js-addition-fields').is(':visible'));
+                $('.js-show-additional-fields').off('click').on('click', function () {
+                    var isVisible = !$('.js-additional-fields').is(':visible');
+                    $('#<%=hfShowAdditionalFields.ClientID %>').val(isVisible);
+                    $('.js-show-additional-fields').text(isVisible ? 'Hide Additional Fields' : 'Show Additional Fields');
                     $('.js-additional-fields').slideToggle();
                     return false;
                 });
 
                 if ($('#<%=hfShowAdditionalFields.ClientID %>').val() == "true") {
-                    $('.js-additional-fields').show();
-                }
+                     $('.js-additional-fields').show();
+                     $('.js-show-additional-fields').text('Hide Additional Fields');
+                 }
 
                 // resize the email preview when the Mobile/Desktop modes are clicked
                 $('.js-preview-mobile, .js-preview-desktop').off('click').on('click', function (a, b, c)

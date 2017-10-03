@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Communication
                 }
                 else if ( !string.IsNullOrEmpty( communicationTemplate.Message ) )
                 {
-                    html.AppendLine( "<span class='label label-default' title='This template does not contain an email template that supports the new communication wizard'>Legacy Email Template</span>" );
+                    html.AppendLine( "<span class='label label-default' title='This template does not contain an email template that supports the new communication wizard'>Simple Email Template</span>" );
                 }
 
                 if ( communicationTemplate.Guid == Rock.SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid() || communicationTemplate.HasSMSTemplate() )
