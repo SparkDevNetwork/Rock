@@ -2,6 +2,7 @@
     Used to manage styles for specific blocks.
 
     1. Communication Blocks - styles for the communication blocks
+    2. Communicatino Wizard - styles for the communication wizard
 
 */
 
@@ -34,4 +35,119 @@ iframe.email-body {
   height: 300px;
   background-color: #fff;
   border: 1px solid @panel-border;
+}
+
+// 2. Communication Entry
+// -------------------------
+.emaileditor-wrapper {
+    position: relative;
+    margin: -15px;
+    height: 900px;
+}
+
+#emaileditor {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+    top: 0;
+}
+
+#section-email {
+	width: 60%;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+}
+
+#email-editor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  border-top: 1px solid @panel-border;
+}
+
+#emaileditor-designer {
+    width: 60%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.emaileditor-iframe {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-right: 1px solid @panel-border;
+}
+
+#emaileditor-properties {
+	width: 40%;
+	background-color: @panel-heading-bg;
+	padding: 12px;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: 0;
+}
+
+
+// 2. Communication Wizard
+// -------------------------
+
+.communication-template {
+  border: 1px solid @panel-border;
+  color: @text-color;
+  display: block;
+  padding: 15px;
+  position: relative;
+  margin-bottom: 24px;
+  height: 192px;
+  overflow: hidden;
+
+  &:focus {
+    color: @text-color;
+  }
+
+  &:hover {
+    border: 2px solid @alert-info-border;
+    color: @text-color;
+  }
+
+  label {
+    font-size: 16px;
+  }
+}
+
+.template-selected {
+  border: 2px solid @alert-info-text;
+
+  &:hover {
+    border: 2px solid @alert-info-text;
+  }
+
+  &:before {
+    font-family: FontAwesome;
+    content: @fa-var-check-circle;
+    color: @alert-info-text;
+    font-family: FontAwesome;
+    position: absolute;
+    top: -4px;
+    left: 8px;
+    z-index: 1;
+    font-size: 36px;
+  }
+}
+
+.step-title {
+  margin-top: 0;
 }

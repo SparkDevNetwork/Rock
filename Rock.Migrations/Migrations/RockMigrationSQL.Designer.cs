@@ -3217,7 +3217,7 @@ namespace Rock.Migrations.Migrations {
         ///INCLUDE ([TransactionId],[Amount])
         ///GO
         ///
-        ///CREATE NONCLUSTERED INDEX [IX_TransactionDateTime_Source_Person_Details]
+        ///CREATE NONCLUSTERED INDEX [IX_TransactionDateTime_SourceType_AuthorizedPerson_PaymentDetails]
         ///ON [dbo].[FinancialTransaction] ([TransactionDateTime])
         ///INCLUDE ([Id],[SourceTypeValueId],[AuthorizedPersonAliasId],[FinancialPaymentDetailId])
         ///GO.
@@ -3263,10 +3263,10 @@ namespace Rock.Migrations.Migrations {
         ///	&lt;/summary&gt;
         ///&lt;/doc&gt;
         ///*/
-        ///ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
+        ///CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_PersonSummary]
         ///	  @StartDate datetime = NULL
         ///	, @EndDate datetime = NULL
-        ///	, @MinAmount decimal(18,2) = NULL        /// [rest of string was truncated]&quot;;.
+        ///	, @MinAmount decimal(18,2) = NULL [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201708162105164_AnalyticsPerformance_PersonSummary {
             get {
@@ -3294,6 +3294,258 @@ namespace Rock.Migrations.Migrations {
         public static string _201708162105164_AnalyticsPerformance_TransactionData {
             get {
                 return ResourceManager.GetString("_201708162105164_AnalyticsPerformance_TransactionData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /* Create the System &apos;Blank&apos; communication template */
+        ///DELETE
+        ///FROM CommunicationTemplate
+        ///WHERE [Guid] = &apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///
+        ///INSERT INTO [dbo].[CommunicationTemplate] (
+        ///	[Name]
+        ///	,[Description]
+        ///	,[IsSystem]
+        ///	,[Subject]
+        ///	,[MediumDataJson]
+        ///	,[Guid]
+        ///	,[Message]
+        ///	)
+        ///VALUES (
+        ///	&apos;Blank&apos;
+        ///	,&apos;A template without predefined content that can be used to create email and SMS communications&apos;
+        ///	,1
+        ///	,&apos;&apos;
+        ///	,&apos;{}&apos;
+        ///	,&apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///	,
+        ///	&apos;&lt;html&gt;
+        ///&lt;head&gt;
+        ///&lt;title&gt;A Respons [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709082257551_Communications2_AddCommunicationTemplates {
+            get {
+                return ResourceManager.GetString("_201709082257551_Communications2_AddCommunicationTemplates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF EXISTS (
+        ///        SELECT *
+        ///        FROM [sysobjects]
+        ///        WHERE [id] = OBJECT_ID(N&apos;[dbo].[spAnalytics_ETL_Attendance]&apos;)
+        ///            AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1
+        ///        )
+        ///    DROP PROCEDURE [dbo].spAnalytics_ETL_Attendance
+        ///GO
+        ///
+        ///-- EXECUTE [dbo].[spAnalytics_ETL_Attendance] 
+        ///CREATE PROCEDURE [dbo].spAnalytics_ETL_Attendance
+        ///AS
+        ///BEGIN
+        ///    DECLARE @MinDateTime DATETIME = DATEFROMPARTS(1900, 1, 1)
+        ///        ,@EtlDateTime DATETIME = SysDateTime();
+        ///
+        ///    -- insert records into [[An [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709131136468_spAnalytics_ETL_Attendance {
+            get {
+                return ResourceManager.GetString("_201709131136468_spAnalytics_ETL_Attendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF EXISTS (
+        ///        SELECT *
+        ///        FROM [sysobjects]
+        ///        WHERE [id] = OBJECT_ID(N&apos;[dbo].[spAnalytics_ETL_FinancialTransaction]&apos;)
+        ///            AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1
+        ///        )
+        ///    DROP PROCEDURE [dbo].spAnalytics_ETL_FinancialTransaction
+        ///GO
+        ///
+        ///-- truncate table [AnalyticsSourceFinancialTransaction]
+        ///-- EXECUTE [dbo].[spAnalytics_ETL_FinancialTransaction] 
+        ///CREATE PROCEDURE [dbo].[spAnalytics_ETL_FinancialTransaction]
+        ///AS
+        ///BEGIN
+        ///    DECLARE @MinDateTime DATETIME = DATEFROMPA [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709131136468_spAnalytics_ETL_FinancialTransaction {
+            get {
+                return ResourceManager.GetString("_201709131136468_spAnalytics_ETL_FinancialTransaction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimAttendanceDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].[AnalyticsDimAttendanceDate]
+        ///AS
+        ///SELECT d.DateKey AS [AttendanceDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(x.AttendanceDateKey)
+        ///        FROM AnalyticsFactAttendance x
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(x.AttendanceDateKey)
+        ///        FROM AnalyticsFactAttendance x
+        ///        )
+        ///.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimAttendanceDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimAttendanceDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyHeadOfHouseholdBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimFamilyHeadOfHouseholdBirthDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].AnalyticsDimFamilyHeadOfHouseholdBirthDate
+        ///AS
+        ///SELECT d.DateKey AS [BirthDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(x.BirthDateKey)
+        ///        FROM AnalyticsDimFamilyHeadOfHousehold x
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(x.BirthDateKey)
+        ///        FROM AnalyticsDimFamilyHeadOfHousehol [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialTransactionDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimFinancialTransactionDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].[AnalyticsDimFinancialTransactionDate]
+        ///AS
+        ///SELECT d.DateKey AS [TransactionDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(x.TransactionDateKey)
+        ///        FROM AnalyticsFactFinancialTransaction x
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(x.TransactionDateKey)
+        ///        FROM AnalyticsFactFinancialTransact [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonCurrentBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimPersonCurrentBirthDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].AnalyticsDimPersonCurrentBirthDate
+        ///AS
+        ///SELECT d.DateKey AS [BirthDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonCurrent x
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonCurrent x
+        ///        )
+        ///.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimPersonCurrentBirthDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimPersonCurrentBirthDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonHistoricalBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimPersonHistoricalBirthDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].AnalyticsDimPersonHistoricalBirthDate
+        ///AS
+        ///SELECT d.DateKey AS [BirthDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonHistorical x
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(x.BirthDateKey)
+        ///        FROM AnalyticsDimPersonHistorical x
+        ///        )
+        ///.
+        /// </summary>
+        public static string _201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate {
+            get {
+                return ResourceManager.GetString("_201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /* MP: Create the System &apos;Blank&apos; communication template */
+        ///UPDATE Communication
+        ///SET CommunicationTemplateId = NULL
+        ///WHERE CommunicationTemplateId IN (
+        ///		SELECT Id
+        ///		FROM CommunicationTemplate
+        ///		WHERE [Guid] = &apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///		)
+        ///
+        ///DELETE
+        ///FROM CommunicationTemplate
+        ///WHERE [Guid] = &apos;A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A&apos;
+        ///
+        ///INSERT INTO [dbo].[CommunicationTemplate] (
+        ///	[Name]
+        ///	,[Description]
+        ///	,[IsSystem]
+        ///	,[Subject]
+        ///	,[MediumDataJson]
+        ///	,[Guid]
+        ///	,[Message]
+        ///	)
+        ///VALUES (
+        ///	&apos;B [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709222257442_CommunicationSMSAttachments_AddCommunicationTemplates {
+            get {
+                return ResourceManager.GetString("_201709222257442_CommunicationSMSAttachments_AddCommunicationTemplates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO [LavaShortCode]
+        ///	([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
+        ///	VALUES
+        ///	(&apos;YouTube&apos;,&apos;Creates a responsive YouTube embe&apos;&apos;d from just a simple video id.&apos;,&apos;&lt;p&gt;Embedding a YouTube video is easy, right? Well what if you want it to be responsive (adjust with the size of the window)? Or what about 
+        ///control of what is shown in the player? The YouTube shortcode helps to shorten (see what we did there) the t [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201709222257442_CommunicationSMSAttachments_AddLavaShortCodes {
+            get {
+                return ResourceManager.GetString("_201709222257442_CommunicationSMSAttachments_AddLavaShortCodes", resourceCulture);
             }
         }
     }

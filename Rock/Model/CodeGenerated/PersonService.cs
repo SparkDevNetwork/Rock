@@ -98,6 +98,7 @@ namespace Rock.Model
             target.BirthDay = source.BirthDay;
             target.BirthMonth = source.BirthMonth;
             target.BirthYear = source.BirthYear;
+            target.CommunicationPreference = source.CommunicationPreference;
             target.ConnectionStatusValueId = source.ConnectionStatusValueId;
             target.Email = source.Email;
             target.EmailNote = source.EmailNote;

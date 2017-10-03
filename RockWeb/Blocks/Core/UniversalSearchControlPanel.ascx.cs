@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Core
 
             tbSmartSearchFieldCrieria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
 
-            var searchType = ((int)SearchType.ExactMatch).ToString();
+            var searchType = ((int)SearchType.Wildcard).ToString();
 
             if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ) )
             {
@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Core
             }
             lSmartSearchFilterCriteria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
 
-            var searchType = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ).ConvertToEnumOrNull<SearchType>() ?? SearchType.ExactMatch;
+            var searchType = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ).ConvertToEnumOrNull<SearchType>() ?? SearchType.Wildcard;
             lSearchType.Text = searchType.ToString();
         }
 

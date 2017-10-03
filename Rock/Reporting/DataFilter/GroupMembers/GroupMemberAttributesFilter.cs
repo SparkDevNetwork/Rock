@@ -439,8 +439,15 @@ namespace Rock.Reporting.DataFilter.GroupMember
             if ( settings.IsValid
                 && settings.AttributeFilterSettings.Any() )
             {
+                // I think this filter _should_ be written so it is constrained to a particular group type:
+                //var groupType = new GroupTypeService( new RockContext() ).Get( values[0].AsGuid() );
+                //if ( groupType != null )
+                //{
+                //   var entityFields = GetGroupMemberAttributes( groupType.Id );
+                // ...etc.
+
                 var entityFields = GetGroupMemberAttributes();
-                var entityField = entityFields.FirstOrDefault( f => f.Name == settings.AttributeKey );
+                var entityField = entityFields.FindFromFilterSelection( settings.AttributeKey );
                 if ( entityField != null )
                 {
                     return GetAttributeExpression( serviceInstance, parameterExpression, entityField, settings.AttributeFilterSettings );

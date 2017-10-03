@@ -48,15 +48,7 @@ namespace Rock.Transactions
             using ( var rockContext = new RockContext() )
             {
                 var communication = new CommunicationService( rockContext ).Get( CommunicationId );
-
-                if ( communication != null && communication.Status == CommunicationStatus.Approved )
-                {
-                    var medium = communication.Medium;
-                    if ( medium != null )
-                    {
-                        medium.Send( communication );
-                    }
-                }
+                Rock.Model.Communication.Send( communication );
             }
         }
     }

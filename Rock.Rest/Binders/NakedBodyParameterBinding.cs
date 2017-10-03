@@ -56,17 +56,10 @@ namespace Westwind.Web.WebApi
                                                     HttpActionContext actionContext,
                                                     CancellationToken cancellationToken )
         {
-            var binding = actionContext
-                .ActionDescriptor
-                .ActionBinding;
-
-            if ( binding.ParameterBindings.Length > 1 ||
-                actionContext.Request.Method == HttpMethod.Get )
+            if (  actionContext.Request.Method == HttpMethod.Get )
                 return EmptyTask.Start();
 
-            var type = binding
-                        .ParameterBindings[0]
-                        .Descriptor.ParameterType;
+            var type = this.Descriptor.ParameterType;
 
             if ( type == typeof( string ) )
             {

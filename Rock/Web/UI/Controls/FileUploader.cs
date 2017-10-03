@@ -822,12 +822,12 @@ Rock.controls.fileUploader.initialize({{
 
             if ( eventArgument == "FileRemoved" )
             {
+                this.BinaryFileId = 0;
+
                 if ( FileRemoved != null )
                 {
                     FileRemoved( this, new FileUploaderEventArgs( this.BinaryFileId ) );
                 }
-
-                this.BinaryFileId = 0;
             }
         }
     }

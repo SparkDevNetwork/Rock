@@ -117,10 +117,12 @@ namespace Rock.Transactions
 
                     if ( recipients.Any() )
                     {
-                        var recipientList = new List<RecipientData>();
-                        recipients.ToList().ForEach( r => recipientList.Add( new RecipientData( r.Key, r.Value ) ) );
-                        Email.Send( Rock.SystemGuid.SystemEmail.REGISTRATION_NOTIFICATION.AsGuid(), recipientList, AppRoot, ThemeRoot );
-
+                        var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemEmail.REGISTRATION_NOTIFICATION.AsGuid() );
+                        emailMessage.AdditionalMergeFields = mergeFields;
+                        recipients.ToList().ForEach( r => emailMessage.AddRecipient( new RecipientData( r.Key, r.Value ) ) );
+                        emailMessage.AppRoot = AppRoot;
+                        emailMessage.ThemeRoot = ThemeRoot;
+                        emailMessage.Send();
                     }
                 }
             }

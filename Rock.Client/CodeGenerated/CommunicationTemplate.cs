@@ -35,6 +35,12 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string BCCEmails { get; set; }
+
+        /// <summary />
+        public string CCEmails { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -44,10 +50,25 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string MediumDataJson { get; set; }
+        public string FromEmail { get; set; }
 
         /// <summary />
-        public int? MediumEntityTypeId { get; set; }
+        public string FromName { get; set; }
+
+        /// <summary />
+        public int? ImageFileId { get; set; }
+
+        /// <summary />
+        public bool IsActive { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public string Message { get; set; }
+
+        /// <summary />
+        public string MessageMetaData { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -58,7 +79,25 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public string PushMessage { get; set; }
+
+        /// <summary />
+        public string PushSound { get; set; }
+
+        /// <summary />
+        public string PushTitle { get; set; }
+
+        /// <summary />
+        public string ReplyToEmail { get; set; }
+
+        /// <summary />
         public int? SenderPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? SMSFromDefinedValueId { get; set; }
+
+        /// <summary />
+        public string SMSMessage { get; set; }
 
         /// <summary />
         public string Subject { get; set; }
@@ -96,14 +135,27 @@ namespace Rock.Client
         public void CopyPropertiesFrom( CommunicationTemplate source )
         {
             this.Id = source.Id;
+            this.BCCEmails = source.BCCEmails;
+            this.CCEmails = source.CCEmails;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.MediumDataJson = source.MediumDataJson;
-            this.MediumEntityTypeId = source.MediumEntityTypeId;
+            this.FromEmail = source.FromEmail;
+            this.FromName = source.FromName;
+            this.ImageFileId = source.ImageFileId;
+            this.IsActive = source.IsActive;
+            this.IsSystem = source.IsSystem;
+            this.Message = source.Message;
+            this.MessageMetaData = source.MessageMetaData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.PushMessage = source.PushMessage;
+            this.PushSound = source.PushSound;
+            this.PushTitle = source.PushTitle;
+            this.ReplyToEmail = source.ReplyToEmail;
             this.SenderPersonAliasId = source.SenderPersonAliasId;
+            this.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
+            this.SMSMessage = source.SMSMessage;
             this.Subject = source.Subject;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -121,13 +173,13 @@ namespace Rock.Client
     public partial class CommunicationTemplate : CommunicationTemplateEntity
     {
         /// <summary />
-        public Dictionary<string, string> MediumData { get; set; }
-
-        /// <summary />
-        public EntityType MediumEntityType { get; set; }
+        public ICollection<CommunicationTemplateAttachment> Attachments { get; set; }
 
         /// <summary />
         public PersonAlias SenderPersonAlias { get; set; }
+
+        /// <summary />
+        public DefinedValue SMSFromDefinedValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

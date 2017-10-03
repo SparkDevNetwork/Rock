@@ -198,9 +198,7 @@ namespace Rock.Jobs
                 }
 
                 // send out notificatons
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-                var recipients = new List<RecipientData>();
-
+                int recipients = 0;
                 var notificationRecipients = _notificationList.GroupBy( p => p.Person.Id ).ToList();
                 foreach ( var recipientId in notificationRecipients )
                 {
@@ -208,20 +206,18 @@ namespace Rock.Jobs
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                     mergeFields.Add( "Person", recipient );
-
                     var notificationGroupIds = _notificationList
                                                     .Where( n => n.Person.Id == recipient.Id )
                                                     .Select( n => n.GroupId )
                                                     .ToList();
-
                     var missingRequirements = _groupsMissingRequriements.Where( g => notificationGroupIds.Contains( g.Id ) ).ToList();
-
                     mergeFields.Add( "GroupsMissingRequirements", missingRequirements );
 
-                    recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
-                    Email.Send( systemEmailGuid.Value, recipients, appRoot );
+                    var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
+                    emailMessage.AddRecipient( new RecipientData( recipient.Email, mergeFields ) );
+                    emailMessage.Send();
 
-                    recipients.Clear();
+                    recipients++;
                 }
 
                 // add accountability group members
@@ -231,19 +227,19 @@ namespace Rock.Jobs
                                                         .Where( m => m.Group.Guid == accountAbilityGroupGuid )
                                                         .Select( m => m.Person );
 
+                    var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
                     foreach ( var person in accountabilityGroupMembers )
                     {
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Person", person );
                         mergeFields.Add( "GroupsMissingRequirements", _groupsMissingRequriements );
-
-                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
+                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                        recipients++;
                     }
+                    emailMessage.Send();
                 }
 
-                Email.Send( systemEmailGuid.Value, recipients, appRoot );
-
-                context.Result = string.Format( "{0} requirement notification {1} sent", recipients.Count, "email".PluralizeIf( recipients.Count() != 1 ) );
+                context.Result = string.Format( "{0} requirement notification {1} sent", recipients, "email".PluralizeIf( recipients != 1 ) );
 
             }
             else

@@ -47,6 +47,9 @@ namespace Rock.Client
         public int? BirthYear { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.CommunicationType CommunicationPreference { get; set; }
+
+        /// <summary />
         public int? ConnectionStatusValueId { get; set; }
 
         /// <summary />
@@ -191,6 +194,7 @@ namespace Rock.Client
             this.BirthDay = source.BirthDay;
             this.BirthMonth = source.BirthMonth;
             this.BirthYear = source.BirthYear;
+            this.CommunicationPreference = source.CommunicationPreference;
             this.ConnectionStatusValueId = source.ConnectionStatusValueId;
             this.Email = source.Email;
             this.EmailNote = source.EmailNote;

@@ -30,7 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             // add global attribute for boosting universal search models
-            RockMigrationHelper.AddGlobalAttribute( SystemGuid.FieldType.KEY_VALUE_LIST, "", "", "Universal Search Index Boost", "Allows you to boost certain universal search indexes.", 1000, "personindex^4", "757F912F-55E0-76A9-46D2-345BB61D7B02", "UniversalSearchIndexBoost" );
+            RockMigrationHelper.AddGlobalAttribute( SystemGuid.FieldType.KEY_VALUE_LIST, "", "", "Universal Search Index Boost", "Allows you to boost certain universal search indexes.", 1000, "", "757F912F-55E0-76A9-46D2-345BB61D7B02", "UniversalSearchIndexBoost" );
 
             // Add Fundraising Page/Block
             RockMigrationHelper.AddPage( true, "4E237286-B715-4109-A578-C1445EC02707", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Fundraising", "", "3E0F2EF9-DC32-4DFD-B213-A410AE5B6AB7", "" ); // Site:Rock RMS

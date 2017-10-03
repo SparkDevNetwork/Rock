@@ -111,7 +111,7 @@ namespace Rock.Financial
         /// </summary>
         public override string MaskedNumber
         {
-            get { return Number.Masked(); }
+            get { return Number.Masked( true ); }
         }
 
         /// <summary>

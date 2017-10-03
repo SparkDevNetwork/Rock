@@ -86,7 +86,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name.
         /// </value>
-        [RockIndexField( Boost = 2 )]
+        [RockIndexField( Boost = 3 )]
         public string Name { get; set; }
 
         /// <summary>

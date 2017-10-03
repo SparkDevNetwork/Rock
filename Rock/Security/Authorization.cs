@@ -44,6 +44,11 @@ namespace Rock.Security
         public const string EDIT = "Edit";
 
         /// <summary>
+        /// Authorization to delete object (only used in few places where delete needs to be securred differently that EDIT, i.e. Financial Batch )
+        /// </summary>
+        public const string DELETE = "Delete";
+
+        /// <summary>
         /// Authorization to administer object ( add child object, set security, etc)
         /// </summary>
         public const string ADMINISTRATE = "Administrate";
@@ -54,9 +59,14 @@ namespace Rock.Security
         public const string APPROVE = "Approve";
 
         /// <summary>
-        /// Authorization to interact with the object (content channgel item)
+        /// Authorization to interact with the object (content channel item)
         /// </summary>
         public const string INTERACT = "Interact";
+
+        /// <summary>
+        /// Authorization to refund a transaction
+        /// </summary>
+        public const string REFUND = "Refund";
 
         #endregion
 
@@ -746,6 +756,18 @@ namespace Rock.Security
                 httpCookie.Expires = ticket.Expiration;
 
             System.Web.HttpContext.Current.Response.Cookies.Add( httpCookie );
+        }
+
+        /// <summary>
+        /// Checks to see if a person is authorized for entity
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public static bool? AuthorizedForEntity( ISecured entity, string action, Rock.Model.Person person )
+        {
+            return ItemAuthorized( entity, action, person, true, false );
         }
 
         #endregion

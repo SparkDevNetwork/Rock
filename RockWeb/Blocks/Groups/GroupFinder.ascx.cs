@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Groups
 </div>
 
 {% if LinkedPages.GroupDetailPage and LinkedPages.GroupDetailPage != '' %}
-    <a class='btn btn-xs btn-action margin-r-sm' href='|{{ LinkedPages.GroupDetailPage }}|?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
+    <a class='btn btn-xs btn-action margin-r-sm' href='{{ LinkedPages.GroupDetailPage }}?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
 {% endif %}
 
 {% if LinkedPages.RegisterPage and LinkedPages.RegisterPage != '' %}
@@ -599,7 +599,7 @@ namespace RockWeb.Blocks.Groups
                     // Hide the search button and show the results immediately since there is 
                     // no filter criteria to be entered
                     phFilterControls.Visible = false;
-                    btnSearch.Visible = false;
+                    btnSearch.Visible = GetAttributeValue( "DisplayCampusFilter" ).AsBoolean();
                     pnlResults.Visible = true;
                 }
             }
@@ -1545,13 +1545,13 @@ namespace RockWeb.Blocks.Groups
 ";
 
             var locationJson = location != null ?
-                string.Format( "JSON.parse('{0}')", location.ToJson().Replace( Environment.NewLine, "" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
+                string.Format( "JSON.parse('{0}')", location.ToJson().Replace( Environment.NewLine, "" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
 
             var fencesJson = fences != null && fences.Any() ?
-                string.Format( "JSON.parse('{0}')", fences.ToJson().Replace( Environment.NewLine, "" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
+                string.Format( "JSON.parse('{0}')", fences.ToJson().Replace( Environment.NewLine, "" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
 
             var groupsJson = groups != null && groups.Any() ?
-                string.Format( "JSON.parse('{0}')", groups.ToJson().Replace( Environment.NewLine, "" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
+                string.Format( "JSON.parse('{0}')", groups.ToJson().Replace( Environment.NewLine, "" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", "" ) ) : "null";
 
             string mapScript = string.Format( mapScriptFormat,
                 locationJson,       // 0

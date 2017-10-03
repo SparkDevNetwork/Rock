@@ -152,17 +152,21 @@ namespace RockWeb.Blocks.Event
                             var registration = registrationService.Get( registrationId );
                             if ( registration != null && !string.IsNullOrWhiteSpace(registration.ConfirmationEmail) )
                             {
-                                var recipients = new List<string>();
-
                                 Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
                                 mergeObjects.Add( "Registration", registration );
                                 mergeObjects.Add( "RegistrationInstance", _registrationInstance );
 
-                                recipients.Add( registration.ConfirmationEmail );
-
-                                string message = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
-
-                                Email.Send( txtFromEmail.Text, txtFromName.Text, txtFromSubject.Text, recipients, message, appRoot );
+                                var emailMessage = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
+                                emailMessage.AdditionalMergeFields = mergeObjects;
+                                emailMessage.FromEmail = txtFromEmail.Text;
+                                emailMessage.FromName = txtFromName.Text;
+                                emailMessage.Subject = txtFromSubject.Text;
+                                emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeObjects ) );
+                                emailMessage.Message = ceEmailMessage.Text;
+                                emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                                emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                                emailMessage.CreateCommunicationRecord = false;
+                                emailMessage.Send();
 
                                 registration.LastPaymentReminderDateTime = RockDateTime.Now;
                                 rockContext.SaveChanges();
