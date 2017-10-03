@@ -384,15 +384,19 @@ namespace Rock.Rest.Controllers
 
             if ( includeDetails == false )
             {
-                var simpleResultQry = sortedPersonQry.Select( a => new { a.Id, a.FirstName, a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId, a.RecordStatusValueId } );
-                var simpleResult = simpleResultQry.ToList().Select( a => new PersonSearchResult
+                var personService = this.Service as PersonService;
+
+                var simpleResult = sortedPersonQry.AsNoTracking().ToList().Select( a => new PersonSearchResult
                 {
                     Id = a.Id,
                     Name = showFullNameReversed
                     ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
                     : Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
                     IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId,
-                    RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Read( a.RecordStatusValueId.Value ).Value : string.Empty
+                    RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Read( a.RecordStatusValueId.Value ).Value : string.Empty,
+                    Age = Person.GetAge( a.BirthDate ) ?? -1,
+                    FormattedAge = a.FormatAge().ReplaceLastOccurrence( " old", string.Empty ).Trim(),
+                    SpouseName = personService.GetSpouse( a, x => x.Person.NickName )
                 } );
 
                 return simpleResult.AsQueryable();
@@ -784,10 +788,19 @@ namespace Rock.Rest.Controllers
         public string ImageHtmlTag { get; set; }
 
         /// <summary>
-        /// Gets or sets the age.
+        /// Gets or sets the age in years
+        /// NOTE: returns -1 if age is unknown
         /// </summary>
         /// <value>The age.</value>
         public int Age { get; set; }
+
+        /// <summary>
+        /// Gets or sets the formatted age.
+        /// </summary>
+        /// <value>
+        /// The formatted age.
+        /// </value>
+        public string FormattedAge { get; set; }
 
         /// <summary>
         /// Gets or sets the gender.
