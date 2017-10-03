@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Communication
 
                 Literal lUrlProgressHTML = e.Item.FindControl( "lUrlProgressHTML" ) as Literal;
                 lUrlProgressHTML.Text = string.Format(
-                    @"<div class='progress'>
+                    @"<div class='progress margin-b-none'>
                         <div class='progress-bar progress-bar-link' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%'>
                             <span class='sr-only'>{0}%</span>
                         </div>

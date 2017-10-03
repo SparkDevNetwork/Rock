@@ -97,17 +97,17 @@
                     </div>
                     <asp:Repeater ID="rptMostPopularLinks" runat="server" OnItemDataBound="rptMostPopularLinks_ItemDataBound">
                         <ItemTemplate>
-                            <div class="row">
-                                <div class="col-md-10">
+                            <div class="row margin-b-lg">
+                                <div class="col-sm-10">
                                     <p>
                                         <asp:Literal ID="lUrl" runat="server" />
                                     </p>
                                     <asp:Literal ID="lUrlProgressHTML" runat="server" />
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-sm-1">
                                     <asp:Literal ID="lUniquesCount" runat="server" />
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-sm-1">
                                     <asp:Literal ID="lCTRPercent" runat="server" />
                                 </div>
                             </div>
