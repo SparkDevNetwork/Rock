@@ -259,6 +259,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             this.IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
+            UpdateRecipientFromListCount();
             UpdateIndividualRecipientsCountText();
 
             // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
@@ -1109,15 +1110,8 @@ namespace RockWeb.Blocks.Communication
         protected void btnEmailEditorPrevious_Click( object sender, EventArgs e )
         {
             pnlEmailEditor.Visible = false;
-            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.RecipientPreference )
-            {
-                ShowMobileTextEditor();
-            }
-            else
-            {
-                ShowEmailSummary();
-            }
+            ShowEmailSummary();
+            
         }
 
         /// <summary>
@@ -1130,7 +1124,15 @@ namespace RockWeb.Blocks.Communication
             ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
             pnlEmailEditor.Visible = false;
 
-            ShowConfirmation();
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
+            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.RecipientPreference )
+            {
+                ShowMobileTextEditor();
+            }
+            else
+            {
+                ShowConfirmation();
+            }
         }
 
         /// <summary>
@@ -1376,15 +1378,7 @@ namespace RockWeb.Blocks.Communication
 
             pnlEmailSummary.Visible = false;
 
-            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.RecipientPreference )
-            {
-                ShowMobileTextEditor();
-            }
-            else if ( communicationType == CommunicationType.Email )
-            {
-                ShowEmailEditor();
-            }
+            ShowEmailEditor();
         }
 
         /// <summary>
@@ -1629,7 +1623,7 @@ namespace RockWeb.Blocks.Communication
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
             if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
             {
-                ShowEmailSummary();
+                ShowEmailEditor();
             }
             else
             {
@@ -1645,15 +1639,7 @@ namespace RockWeb.Blocks.Communication
         protected void btnMobileTextEditorNext_Click( object sender, EventArgs e )
         {
             pnlMobileTextEditor.Visible = false;
-            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
-            {
-                ShowEmailEditor();
-            }
-            else
-            {
-                ShowConfirmation();
-            }
+            ShowConfirmation();
         }
 
         /// <summary>
@@ -1763,13 +1749,13 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             pnlConfirmation.Visible = false;
 
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
-            {
-                ShowEmailEditor();
-            }
-            else if ( communicationType == CommunicationType.SMS )
+            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.RecipientPreference )
             {
                 ShowMobileTextEditor();
+            }
+            else if ( communicationType == CommunicationType.Email )
+            {
+                ShowEmailEditor();
             }
         }
 

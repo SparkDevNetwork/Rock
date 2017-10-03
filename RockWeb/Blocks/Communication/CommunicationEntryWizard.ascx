@@ -732,7 +732,7 @@
                                     <div class="component component-text" data-content="<h1>Title</h1><p> Can't wait to see what you have to say!</p>" data-state="template">
 					                    <i class="fa fa-align-justify"></i><br /> Text
 				                    </div>
-				                    <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-width='full' />" data-state="template">
+				                    <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-imgcsswidth='full' />" data-state="template">
 					                    <i class="fa fa-picture-o"></i> <br /> Image
 				                    </div>
 				                
@@ -929,7 +929,7 @@
                     <div class="row margin-b-md js-confirmation-datetime" style="display:none">
                         <div class="col-md-6">
                             <Rock:NotificationBox ID="nbSendDateTimeWarningConfirmation" runat="server" NotificationBoxType="Danger" Visible="false" />
-                            <Rock:Toggle ID="tglSendDateTimeConfirmation" runat="server" OnText="Send Immediately" OffText="Send at a Specific Date and Time" ActiveButtonCssClass="btn-primary" Checked="false" OnCheckedChanged="tglSendDateTimeConfirmation_CheckedChanged" />
+                            <Rock:Toggle ID="tglSendDateTimeConfirmation" runat="server" OnText="Send Immediately" ButtonSizeCssClass="btn-sm" OffText="Send at a Specific Date and Time" ActiveButtonCssClass="btn-info" Checked="false" OnCheckedChanged="tglSendDateTimeConfirmation_CheckedChanged" />
                             <Rock:DateTimePicker ID="dtpSendDateTimeConfirmation" runat="server" CssClass="margin-t-md" Visible="true" Required="true" ValidationGroup="vgConfirmation" />
                         </div>
                         <div class="col-md-6">
@@ -1007,7 +1007,9 @@
 
                 $('.js-show-additional-fields').off('click').on('click', function ()
                 {
-                    $('#<%=hfShowAdditionalFields.ClientID %>').val(!$('.js-addition-fields').is(':visible'));
+                    var isVisible = !$('.js-additional-fields').is(':visible');
+                    $('#<%=hfShowAdditionalFields.ClientID %>').val(isVisible);
+                    $('.js-show-additional-fields').text(isVisible ? 'Hide Additional Fields' : 'Show Additional Fields');
                     $('.js-additional-fields').slideToggle();
                     return false;
                 });
@@ -1015,6 +1017,7 @@
                 if ($('#<%=hfShowAdditionalFields.ClientID %>').val() == "true")
                 {
                     $('.js-additional-fields').show();
+                    $('.js-show-additional-fields').text('Hide Additional Fields');
                 }
 
                 $('.js-email-sendtest').off('click').on('click', function ()
