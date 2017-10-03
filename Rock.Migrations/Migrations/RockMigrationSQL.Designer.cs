@@ -3537,15 +3537,6 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to -- deleted to save space, these shortcodes are recreated in a later migration.
-        /// </summary>
-        public static string _201709222257442_CommunicationSMSAttachments_AddLavaShortCodes {
-            get {
-                return ResourceManager.GetString("_201709222257442_CommunicationSMSAttachments_AddLavaShortCodes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;01&apos;,&apos;Summit Estates&apos;,&apos;Summit Estates combines above-average wealth and education. These late-30s to early-60s households with children and teens rank high for household income (5th), home value (2nd) and net worth (1st). Fully 70% have earned a college of post-graduate degree. Summit Estates create time in their often professional-dual-income-with-children schedules for cultural activities, sports, fitness and travel. They generally are not heavy TV viewers, but references include financial channels, sport [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201709231340508_PersonicxCluster {

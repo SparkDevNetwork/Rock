@@ -882,6 +882,11 @@ INSERT INTO [LavaShortCode]
     you would like to pay with the settings in real-time head over <a href="https://www.jasondavies.com/wordcloud/">the Javascript''s homepage</a>.
 </p>
 
+<pre>{[ wordcloud ]}
+    ... out a lot of text here ...
+{[ endwordcloud ]}
+</pre>
+
 <ul>
     <li><strong>width</strong> (960) – The width in pixels of the word cloud control.</li>
     <li><strong>height</strong> (420) - The height in pixels of the control.</li>
