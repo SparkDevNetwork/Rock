@@ -37,7 +37,7 @@ Move-Item "$rootfolder\temp\Ulfberht" "$webroot\Themes"
 
 # move custom Children's check-in theme back from temp
 Write-Host "Moving Themes\CheckinKids_CentralAZ folder back from temp directory"
-Move-Item "$rootfolder\temp\CheckinKids_CentralAZ" "$webroot\Themes"
+Move-Item "$rootfolder\temp\CheckinKids_CentralAZ" "$webroot\Themes" -Force
 
 # move a robots file back from temp if it exists
 If (Test-Path "$rootfolder\temp\robots.txt"){
