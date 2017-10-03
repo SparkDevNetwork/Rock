@@ -753,6 +753,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             Guid rowGuid = (Guid)e.RowKeyValue;
             ResourcesState.RemoveEntity( rowGuid );
 
+            var headControl = phResourceAnswers.FindControl( "cReservationResource_" + rowGuid.ToString() ) as Control;
+            if ( headControl != null )
+            {
+                phResourceAnswers.Controls.Remove( headControl );
+            }
+
             BindReservationResourcesGrid();
         }
 
@@ -1029,6 +1035,13 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
 
             LocationsState.RemoveEntity( rowGuid );
+
+            var headControl = phLocationAnswers.FindControl( "cReservationLocation_" + reservationLocation.Guid.ToString() ) as Control;
+            if ( headControl != null )
+            {
+                phLocationAnswers.Controls.Remove( headControl );
+            }
+
             BindReservationLocationsGrid();
         }
 
@@ -1487,7 +1500,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         hfReservationLocationGuid.ID = "hfReservationLocationGuid_" + reservationLocation.Guid.ToString();
                         phAttributes.ID = "phAttributes_" + reservationLocation.Guid.ToString(); ;
 
-                        reservationLocation.LoadReservationLocationAttributes();
                         bool setValue = resourceList.Contains( reservationLocation.Guid );
                         Rock.Attribute.Helper.AddEditControls( reservationLocation, phAttributes, setValue, BlockValidationGroup );
 
@@ -1520,7 +1532,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         hfReservationResourceGuid.ID = "hfReservationResourceGuid_" + reservationResource.Guid.ToString(); ;
                         phAttributes.ID = "phAttributes_" + reservationResource.Guid.ToString(); ;
 
-                        reservationResource.LoadReservationResourceAttributes();
                         bool setValue = resourceList.Contains( reservationResource.Guid );
                         Rock.Attribute.Helper.AddEditControls( reservationResource, phAttributes, setValue, BlockValidationGroup );
 
