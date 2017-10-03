@@ -2128,28 +2128,31 @@ namespace Rock.Web.UI.Controls
                 allColumns.Add( selectField );
             }
 
-            foreach ( var property in modelType.GetProperties() )
+            if ( modelType != null )
             {
-                // limit to non-virtual methods to prevent lazy loading issues
-                var getMethod = property.GetGetMethod();
-                if ( !getMethod.IsVirtual || getMethod.IsFinal || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
+                foreach ( var property in modelType.GetProperties() )
                 {
-                    if ( property.Name != "Id" )
+                    // limit to non-virtual methods to prevent lazy loading issues
+                    var getMethod = property.GetGetMethod();
+                    if ( !getMethod.IsVirtual || getMethod.IsFinal || ( property.GetCustomAttribute<PreviewableAttribute>() != null ) )
                     {
-                        BoundField boundField = GetGridField( property );
-                        boundField.DataField = property.Name;
-                        boundField.SortExpression = property.Name;
-                        boundField.HeaderText = property.Name.SplitCase();
+                        if ( property.Name != "Id" )
+                        {
+                            BoundField boundField = GetGridField( property );
+                            boundField.DataField = property.Name;
+                            boundField.SortExpression = property.Name;
+                            boundField.HeaderText = property.Name.SplitCase();
 
-                        if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
-                        {
-                            displayColumns.Add( boundField );
-                        }
-                        else if ( displayColumns.Count == 0
-                            && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0
-                            && !property.GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any() )
-                        {
-                            allColumns.Add( boundField );
+                            if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
+                            {
+                                displayColumns.Add( boundField );
+                            }
+                            else if ( displayColumns.Count == 0
+                                && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0
+                                && !property.GetCustomAttributes( typeof( HideFromReportingAttribute ), true ).Any() )
+                            {
+                                allColumns.Add( boundField );
+                            }
                         }
                     }
                 }

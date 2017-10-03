@@ -39,16 +39,46 @@ namespace Rock.Model
         /// the <see cref="Rock.Model.TaggedItem"/> belongs to. </param>
         /// <param name="entityGuid">A <see cref="System.Guid"/> representing the entity Guid of the <see cref="Rock.Model.TaggedItem"/></param>
         /// <returns>A queryable collection of <see cref="Rock.Model.TaggedItem">TaggedItems</see> that match the provided criteria.</returns>
-        public IQueryable<TaggedItem> Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId, Guid entityGuid )
+        //public IQueryable<TaggedItem> Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId, Guid entityGuid )
+        //{
+        //    return Get( entityTypeId, entityQualifierColumn, entityQualifierValue, ownerId, entityGuid, null );
+        //}
+
+        /// <summary>
+        /// Gets the specified entity type identifier.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <returns></returns>
+        public IQueryable<TaggedItem> Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId, Guid entityGuid, Guid? categoryGuid )
         {
-            return Queryable("Tag")
-                .Where( t => t.Tag.EntityTypeId == entityTypeId &&
-                    ( t.Tag.EntityTypeQualifierColumn == entityQualifierColumn || (t.Tag.EntityTypeQualifierColumn == null && entityQualifierColumn == null)) &&
-                    ( t.Tag.EntityTypeQualifierValue == entityQualifierValue || (t.Tag.EntityTypeQualifierValue == null && entityQualifierValue == null)) &&
-                    ( t.Tag.OwnerPersonAlias == null || ( ownerId.HasValue && t.Tag.OwnerPersonAlias.PersonId == ownerId ) ) &&
-                    t.EntityGuid == entityGuid
-                    )
-                .OrderBy( t => t.Tag.Name);
+            var qry = Queryable( "Tag" )
+                .Where( t => 
+                    ( t.EntityGuid == entityGuid ) &&
+                    ( !t.Tag.EntityTypeId.HasValue || t.Tag.EntityTypeId == entityTypeId ) &&
+                    ( t.Tag.OwnerPersonAlias == null || ( ownerId.HasValue && t.Tag.OwnerPersonAlias.PersonId == ownerId ) ) );
+
+
+            if ( entityQualifierColumn.IsNotNullOrWhitespace() )
+            {
+                qry = qry.Where( t => t.Tag.EntityTypeQualifierColumn == entityQualifierColumn );
+            }
+
+            if ( entityQualifierValue.IsNotNullOrWhitespace() )
+            {
+                qry = qry.Where( t => t.Tag.EntityTypeQualifierValue == entityQualifierValue );
+            }
+
+            if ( categoryGuid.HasValue )
+            {
+                qry = qry.Where( t => t.Tag.Category.Guid == categoryGuid.Value );
+            }
+
+            return qry.OrderBy( t => t.Tag.Name);
         }
 
         /// <summary>

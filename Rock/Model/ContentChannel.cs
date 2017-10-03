@@ -171,14 +171,22 @@ namespace Rock.Model
         public bool IsIndexEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the Content Channel Item Tag Categories.
+        /// Gets or sets a value indicating whether this instance is tagging enabled.
         /// </summary>
         /// <value>
-        /// The Content Channel Item Tag Categories.
+        ///   <c>true</c> if this instance is tagging enabled; otherwise, <c>false</c>.
         /// </value>
-        [MaxLength( 100 )]
         [DataMember]
-        public string ItemTagCategories { get; set; }
+        public bool IsTaggingEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item tag category identifier.
+        /// </summary>
+        /// <value>
+        /// The item tag category identifier.
+        /// </value>
+        [DataMember]
+        public int? ItemTagCategoryId { get; set; }
 
         #endregion
 
@@ -192,6 +200,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ContentChannelType ContentChannelType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item tag category.
+        /// </summary>
+        /// <value>
+        /// The item tag category.
+        /// </value>
+        [DataMember]
+        public virtual Category ItemTagCategory { get; set; }
 
         /// <summary>
         /// Gets or sets the items.
@@ -388,6 +405,7 @@ namespace Rock.Model
         {
             this.HasMany( p => p.ChildContentChannels ).WithMany( c => c.ParentContentChannels ).Map( m => { m.MapLeftKey( "ContentChannelId" ); m.MapRightKey( "ChildContentChannelId" ); m.ToTable( "ContentChannelAssociation" ); } );
             this.HasRequired( c => c.ContentChannelType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentChannelTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.ItemTagCategory ).WithMany().HasForeignKey( c => c.ItemTagCategoryId ).WillCascadeOnDelete( false );
         }
     }
 

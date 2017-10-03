@@ -71,7 +71,7 @@
                                 <Rock:RockTemplateField HeaderText="Accounts" >
                                     <ItemTemplate><%# GetAccounts( Container.DataItem ) %></ItemTemplate>
                                 </Rock:RockTemplateField>
-                                <Rock:RockBoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" ColumnPriority="DesktopLarge" />                
+                                <Rock:RockBoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" ColumnPriority="DesktopLarge" HtmlEncode="false" />                
                                 <Rock:RockBoundField DataField="Status" HeaderText="Status" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                 <Rock:DateTimeField DataField="SettledDate" HeaderText="Settled Date/Time" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                 <Rock:RockBoundField DataField="SettledGroupId" HeaderText="Processor Batch Id" ExcelExportBehavior="AlwaysInclude" Visible="false" />
