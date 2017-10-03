@@ -56,7 +56,7 @@ Write-Host "Moving Themes\Ulfberht folder to temp directory"
 Move-Item "$webroot\Themes\Ulfberht" "$rootfolder\temp\" -Force
 
 # move custom Children's check-in theme to temp (since it contains live files)
-Write-Host "Moving Themes\Ulfberht folder to temp directory"
+Write-Host "Moving Themes\CheckinKids_CentralAZ folder to temp directory"
 Move-Item "$webroot\Themes\CheckinKids_CentralAZ" "$rootfolder\temp\" -Force
 
 # move a robots file if it exists
