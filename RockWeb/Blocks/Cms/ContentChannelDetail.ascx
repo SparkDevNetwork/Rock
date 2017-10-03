@@ -90,7 +90,7 @@
                             </div>
                             <Rock:RockCheckBox ID="cbEnableTag" runat="server" Label="Enable Tagging" CssClass="js-content-channel-enable-tags" />
                             <div id="divTag" runat="server" class="js-content-channel-tags">
-                                <Rock:CategoryPicker ID="cpCategory" runat="server"  AllowMultiSelect="true" EntityTypeName="Rock.Model.Tag" Label="Tag Categories" />
+                                <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.Tag" Label="Tag Category" />
 
                             </div>
                         </div>

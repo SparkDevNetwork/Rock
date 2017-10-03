@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this TaggedItem target, TaggedItem source )
         {
             target.Id = source.Id;
+            target.EntityTypeId = source.EntityTypeId;
             target.EntityGuid = source.EntityGuid;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

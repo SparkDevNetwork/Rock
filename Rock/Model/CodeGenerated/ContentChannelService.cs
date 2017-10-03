@@ -109,7 +109,6 @@ namespace Rock.Model
             target.IconCssClass = source.IconCssClass;
             target.IsIndexEnabled = source.IsIndexEnabled;
             target.ItemsManuallyOrdered = source.ItemsManuallyOrdered;
-            target.ItemTagCategories = source.ItemTagCategories;
             target.ItemUrl = source.ItemUrl;
             target.Name = source.Name;
             target.RequiresApproval = source.RequiresApproval;

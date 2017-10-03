@@ -72,9 +72,9 @@
                         </div>
                     </div>
 
-                     <div class="taglist margin-v-lg clearfix">
-                        <Rock:TagList ID="taglTags" runat="server" />
-                    </div>
+                    <Rock:RockControlWrapper ID="rcwTags" runat="server" Label="Tags" >
+                        <Rock:TagList ID="taglTags" runat="server" CssClass="clearfix" />
+                    </Rock:RockControlWrapper>
 
                     <div class="row">
                         <div class="col-md-12">

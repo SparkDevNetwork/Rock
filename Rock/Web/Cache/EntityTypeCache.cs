@@ -194,6 +194,15 @@ namespace Rock.Web.Cache
         /// The index document URL.
         /// </value>
         public string IndexDocumentUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a lava template that can be used for generating a link to view details for this entity (i.e. "~/person/{{ Entity.Id }}").
+        /// </summary>
+        /// <value>
+        /// The link URL.
+        /// </value>
+        public string LinkUrlLavaTemplate { get; set; }
+
         #endregion
 
         #region Methods
@@ -236,6 +245,7 @@ namespace Rock.Web.Cache
                 this.IsAnalyticHistoricalSupported = entityType.IsAnalyticHistoricalSupported;
                 this.IndexResultTemplate = entityType.IndexResultTemplate;
                 this.IndexDocumentUrl = entityType.IndexDocumentUrl;
+                this.LinkUrlLavaTemplate = entityType.LinkUrlLavaTemplate;
 
                 _entityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );
             }
