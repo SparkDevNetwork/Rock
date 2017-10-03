@@ -3537,11 +3537,7 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to INSERT INTO [LavaShortCode]
-        ///	([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
-        ///	VALUES
-        ///	(&apos;YouTube&apos;,&apos;Creates a responsive YouTube embe&apos;&apos;d from just a simple video id.&apos;,&apos;&lt;p&gt;Embedding a YouTube video is easy, right? Well what if you want it to be responsive (adjust with the size of the window)? Or what about 
-        ///control of what is shown in the player? The YouTube shortcode helps to shorten (see what we did there) the t [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to -- deleted to save space, these shortcodes are recreated in a later migration.
         /// </summary>
         public static string _201709222257442_CommunicationSMSAttachments_AddLavaShortCodes {
             get {
@@ -3590,16 +3586,31 @@ namespace Rock.Migrations.Migrations {
         ///	[Name]
         ///	,[Description]
         ///	,[IsSystem]
+        ///	,[IsActive]
         ///	,[Subject]
         ///	,[MediumDataJson]
         ///	,[Guid]
-        ///	,[Message]
-        ///	)
-        ///VALUES [rest of string was truncated]&quot;;.
+        ///	,[Messag [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201710021015059_BlankCommTemplate {
             get {
                 return ResourceManager.GetString("_201710021015059_BlankCommTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- delete existing shortcodes
+        ///DELETE FROM [LavaShortcode] WHERE [Guid] IN (&apos;D8B431AA-13EA-4F5F-9D6E-85B6D26EB72A&apos;, &apos;B579B014-735E-4D9C-9DEF-00D4FBCECE21&apos;, &apos;4284B1C9-E73D-4162-8AEE-13A03CAF2938&apos;)
+        ///
+        ///-- YouTube
+        ///INSERT INTO [LavaShortCode]
+        ///	([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
+        ///	VALUES
+        ///	(&apos;YouTube&apos;,&apos;Creates a responsive YouTube embed from just a simple video id.&apos;,&apos;&lt;p&gt;Embedding a YouTube video is easy, ri [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710031453003_InitialShortcodesLoad {
+            get {
+                return ResourceManager.GetString("_201710031453003_InitialShortcodesLoad", resourceCulture);
             }
         }
     }
