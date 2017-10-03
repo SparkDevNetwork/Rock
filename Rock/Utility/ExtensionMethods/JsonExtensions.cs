@@ -38,7 +38,11 @@ namespace Rock
         /// <returns></returns>
         public static string ToJson( this object obj )
         {
-            return ToJson( Formatting.Indented );
+            return JsonConvert.SerializeObject( obj, Formatting.Indented,
+                new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                } );
         }
 
         /// <summary>
