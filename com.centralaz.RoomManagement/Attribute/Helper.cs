@@ -19,13 +19,17 @@ namespace com.centralaz.RoomManagement.Attribute
             var questionService = new QuestionService( rockContext );
             var questionAttributeIds = questionService.Queryable().Where( q => q.LocationId == reservationLocation.LocationId ).Select( q => q.AttributeId ).ToList();
 
-            var starterReservationLocation = reservationLocation;
+            var starterReservationLocation = new ReservationLocation();
+            starterReservationLocation.CopyPropertiesFrom( reservationLocation );
+
             Rock.Attribute.Helper.LoadAttributes( starterReservationLocation );
 
             var attributeList = starterReservationLocation.Attributes.Where( kvp => questionAttributeIds.Contains( kvp.Value.Id ) ).ToList();
+            reservationLocation.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
             attributeList.ForEach( a => reservationLocation.Attributes.AddOrIgnore( a.Key, a.Value ) );
 
             var attributeValueList = starterReservationLocation.AttributeValues.Where( kvp => questionAttributeIds.Contains( kvp.Value.AttributeId ) ).ToList();
+            reservationLocation.AttributeValues = new Dictionary<string, Rock.Web.Cache.AttributeValueCache>();
             attributeValueList.ForEach( a => reservationLocation.AttributeValues.AddOrIgnore( a.Key, a.Value ) );
         }
 
