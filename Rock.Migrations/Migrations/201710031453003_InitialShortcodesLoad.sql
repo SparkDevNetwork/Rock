@@ -657,7 +657,20 @@ INSERT INTO [LavaShortCode]
     <li><strong>filllinearea</strong> (false) – This setting determines if the area under a line should be filled in (basically creating an area chart.</li>
     <li><strong>fillcolor</strong> (rgba(5,155,255,.6)) – The fill color for data items. You can also provide a fill color for each item independently on the [[ dataitem ]] configuration. </li>
     <li><strong>label</strong> – The label to show for the single axis (not often needed in a single axis chart, but hey it''s there.)</li>
+    <li><strong>xaxistype</strong> (linear) – The x-axis type. This is primarily used for time based charts. Valid values are ''linear'' and ''time''.</li>
 </ul>
+
+<h5>Time Based Charts</h5>
+<p>
+    If the x-axis of your chart is date/time based you''ll want to set the ''xaxistype'' to ''time'' and provide
+    the date in the label field.
+</p>
+<pre>{[ chart type:''line'' xaxistype:''time'' ]}
+    [[ dataitem label:''1/1/2017'' value:''24'']] [[ enddataitem ]]
+    [[ dataitem label:''2/1/2017'' value:''38'' ]] [[ enddataitem ]]
+    [[ dataitem label:''3/1/2017'' value:''42''  ]] [[ enddataitem ]]
+    [[ dataitem label:''5/1/2017'' value:''23'' ]] [[ enddataitem ]]
+{[ endchart ]}</pre>
 
 <p>
     That should be more than enough settings to get you started on the journey to chart success. But… what about 
@@ -678,7 +691,7 @@ INSERT INTO [LavaShortCode]
 {[ endchart ]}</pre>
 
 <div class="text-center">
-    <img src="https://rockrms.blob.core.windows.net/documentation/Lava/Shortcodes/chart-series.jpg" />
+    <img src="https://rockrms.blob.core.windows.net/documentation/Lava/Shortcodes/chart-series.jpg">
 </div>
 
 <p>
@@ -705,7 +718,20 @@ INSERT INTO [LavaShortCode]
     <li><strong>pointhoverbordercolor</strong> (rgba(5,155,255,.6)) – The hover color of the border on points.</li>
     <li><strong>pointhoverradius</strong> (3) – The size of the point when hovering.</li>
 </ul>
-',1,1,'chart','{% javascript url:''~/Scripts/Chartjs/Chart.min.js'' id:''chartjs''%}{% endjavascript %}
+
+<h5>Time Based Multi-Series Charts</h5>
+<p>
+    Like their single series brothers, multi-series charts can be line based to by setting
+    the xseriestype = ''line'' and providing the dates in the ''label'' setting.
+</p>
+<pre>{[ chart type:''line'' labels:''1/1/2017,2/1/2017,6/1/2017'' xaxistype:''time'' ]}
+    [[ dataset label:''Small Groups'' data:''12, 15, 34'' fillcolor:''#059BFF'' ]] [[ enddataset ]]
+    [[ dataset label:''Serving Teams'' data:''10, 22, 41'' fillcolor:''#FF3D67'' ]] [[ enddataset ]]
+    [[ dataset label:''General Groups'' data:''5, 12, 21'' fillcolor:''#4BC0C0'' ]] [[ enddataset ]]
+    [[ dataset label:''Fundraising Groups'' data:''3, 17, 32'' fillcolor:''#FFCD56'' ]] [[ enddataset ]]
+{[ endchart ]}</pre>
+',1,1,'chart','{% javascript url:''~/Scripts/moment.min.js'' id:''moment''%}{% endjavascript %}
+{% javascript url:''~/Scripts/Chartjs/Chart.min.js'' id:''chartjs''%}{% endjavascript %}
 
 {% assign id = uniqueid %}
 {% assign curvedlines = curvedlines | AsBoolean %}
@@ -809,6 +835,25 @@ var options = {
         bodyFontColor: ''{{ tooltipfontcolor }}'',
         titleFontColor: ''{{ tooltipfontcolor }}''
     }
+    {% if xaxistype == ''time'' %}
+        ,scales: {
+        xAxes: [{
+            type: "time",
+            display: true,
+            scaleLabel: {
+                display: true,
+                labelString: ''Date''
+            }
+        }],
+        yAxes: [{
+            display: true,
+            scaleLabel: {
+                display: true,
+                labelString: ''value''
+            }
+        }]
+    }
+    {% endif %}
 };
 
 var data = {
@@ -829,7 +874,8 @@ var chart = new Chart(ctx, {
 
 </script>
 
-',2,'','fillcolor^rgba(5,155,255,.6)|bordercolor^#059BFF|borderwidth^0|legendposition^bottom|legendshow^false|chartheight^400px|chartwidth^100%|tooltipshow^true|fontcolor^#777|fontfamily^''OpenSans'',''Helvetica Neue'',Helvetica,Arial,sans-serif|tooltipbackgroundcolor^#000|type^bar|pointradius^3|pointcolor^#059BFF|pointbordercolor^#059BFF|pointborderwidth^0|pointhovercolor^rgba(5,155,255,.6)|pointhoverbordercolor^rgba(5,155,255,.6)|borderdash^|curvedlines^true|filllinearea^false|labels^|tooltipfontcolor^#fff|pointhoverradius^3','43819A34-4819-4507-8FEA-2E406B5474EA')
+
+',2,'','fillcolor^rgba(5,155,255,.6)|bordercolor^#059BFF|borderwidth^0|legendposition^bottom|legendshow^false|chartheight^400px|chartwidth^100%|tooltipshow^true|fontcolor^#777|fontfamily^''OpenSans'',''Helvetica Neue'',Helvetica,Arial,sans-serif|tooltipbackgroundcolor^#000|type^bar|pointradius^3|pointcolor^#059BFF|pointbordercolor^#059BFF|pointborderwidth^0|pointhovercolor^rgba(5,155,255,.6)|pointhoverbordercolor^rgba(5,155,255,.6)|borderdash^|curvedlines^true|filllinearea^false|labels^|tooltipfontcolor^#fff|pointhoverradius^3|xaxistype^linear','43819A34-4819-4507-8FEA-2E406B5474EA')
 
 
 -- Panel
