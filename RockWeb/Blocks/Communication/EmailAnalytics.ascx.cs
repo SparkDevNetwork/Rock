@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Humanizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Shows a graph of email statistics optionally limited to a specific communication or communication list." )]
 
-    [TextField("Series Colors", "A comma-delimited list of colors that the charts will use.", true, "#8498ab,#a4b4c4,#b9c7d5,#c6d2df,#d8e1ea", order:0) ]
+    [TextField("Series Colors", "A comma-delimited list of colors that the charts will use.", true, "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766", order:0) ]
     public partial class EmailAnalytics : RockBlock
     {
         #region Properties that are used by the markup file
@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Communication
                 Literal lUrlProgressHTML = e.Item.FindControl( "lUrlProgressHTML" ) as Literal;
                 lUrlProgressHTML.Text = string.Format(
                     @"<div class='progress'>
-                        <div class='progress-bar' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%'>
+                        <div class='progress-bar progress-bar-link' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%'>
                             <span class='sr-only'>{0}%</span>
                         </div>
                     </div>",
@@ -383,12 +383,13 @@ namespace RockWeb.Blocks.Communication
             // Unique Clicks is the number of times a Recipient clicked at least once in an email
             int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).GroupBy( a => a.CommunicationRecipientId ).Count();
 
-            lUniqueOpens.Text = uniqueOpens.ToString();
-            lTotalOpens.Text = totalOpens.ToString();
-            lTotalClicks.Text = totalClicks.ToString();
+            lUniqueOpens.Text = string.Format( "<span>{0}</span><br><span style='font-size: 45px; font-weight: 700; line-height: 40px;'>{1:#,##0}</span>", "Unique Opens", uniqueOpens );
+            lTotalOpens.Text = string.Format( "<span>{0}</span><br><span style='font-size: 45px; font-weight: 700; line-height: 40px;'>{1:#,##0}</span>", "Total Opens", totalOpens);
+            lTotalClicks.Text = string.Format( "<span>{0}</span><br><span style='font-size: 45px; font-weight: 700; line-height: 40px;'>{1:#,##0}</span>", "Total Clicks", totalClicks );
+
             if ( uniqueOpens > 0 )
             {
-                lClickThroughRate.Text = string.Format( "{0:P2}", ( decimal ) uniqueClicks / uniqueOpens );
+                lClickThroughRate.Text = string.Format( "<span>{0}</span><br><span style='font-size: 45px; font-weight: 700; line-height: 40px;'>{1:P2}</span>", "Click Through Rate (CTR)", ( decimal ) uniqueClicks / uniqueOpens );
             }
             else
             {
@@ -430,7 +431,7 @@ namespace RockWeb.Blocks.Communication
                 UsagePercent = Math.Round(a.UsagePercent, 2)
             } ).ToList();
 
-            this.PieChartDataClientLabelsJSON = clientsUsageByClientType.Select( a => string.IsNullOrEmpty( a.ClientType ) ? "Unknown" : a.ClientType ).ToList().ToJson();
+            this.PieChartDataClientLabelsJSON = clientsUsageByClientType.Select( a => string.IsNullOrEmpty( a.ClientType ) ? "Unknown" : a.ClientType.Transform( To.TitleCase ) ).ToList().ToJson();
             this.PieChartDataClientCountsJSON = clientsUsageByClientType.Select( a => a.UsagePercent ).ToList().ToJson();
 
             var clientUsageHasData = clientsUsageByClientType.Where( a => a.UsagePercent > 0 ).Any();
@@ -451,11 +452,20 @@ namespace RockWeb.Blocks.Communication
             rptClientApplicationUsage.DataBind();
 
             /* Most Popular Links from Clicks*/
-            var topClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).GroupBy( a => a.InteractionData ).Select( a => new
-            {
-                LinkUrl = a.Key,
-                UniqueClickCount = a.GroupBy( x => x.CommunicationRecipientId ).Count()
-            } ).OrderByDescending( a => a.UniqueClickCount ).Take( 100 ).ToList();
+            var topClicks = interactionsList
+                                .Where( a => 
+                                    a.Operation == "Click" 
+                                    && !string.IsNullOrEmpty( a.InteractionData ) 
+                                    && !a.InteractionData.Contains( "/Unsubscribe/") )
+                                .GroupBy( a => a.InteractionData )
+                                .Select( a => new
+                                    {
+                                        LinkUrl = a.Key,
+                                        UniqueClickCount = a.GroupBy( x => x.CommunicationRecipientId ).Count()
+                                    } )
+                                .OrderByDescending( a => a.UniqueClickCount )
+                                .Take( 100 )
+                                .ToList();
             
 
             if ( topClicks.Any() )
