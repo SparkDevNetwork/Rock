@@ -86,14 +86,14 @@
                     </div>
                 </div>
 
-                <hr />
-                <h1 class="text-center">Popular Links</h1>
-
                 <asp:Panel ID="pnlMostPopularLinks" runat="server">
+                    <hr />
+                    <h1 class="text-center">Popular Links</h1>
+
                     <div class="row">
                         <div class="col-md-10"><strong>Url</strong></div>
                         <div class="col-md-1"><strong>Uniques</strong></div>
-                        <div class="col-md-1"><strong>CTR</strong></div>
+                        <div id="pnlCTRHeader" runat="server" class="col-md-1"><strong>CTR</strong></div>
                     </div>
                     <asp:Repeater ID="rptMostPopularLinks" runat="server" OnItemDataBound="rptMostPopularLinks_ItemDataBound">
                         <ItemTemplate>
@@ -107,7 +107,7 @@
                                 <div class="col-sm-1">
                                     <asp:Literal ID="lUniquesCount" runat="server" />
                                 </div>
-                                <div class="col-sm-1">
+                                <div id="pnlCTRData" runat="server"  class="col-sm-1">
                                     <asp:Literal ID="lCTRPercent" runat="server" />
                                 </div>
                             </div>
@@ -170,6 +170,7 @@
                             backgroundColor: '#FFBF2F',
                             borderColor: '#FFBF2F',
                             data: lineChartDataUnopened,
+                            hidden: lineChartDataUnopened == null,
                             spanGaps: true,
                             fill: false
                         }],
@@ -178,7 +179,18 @@
                         maintainAspectRatio: false,
                         responsive: true,
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: {
+                                filter: function (item, data) {
+                                    // don't include the label if the dataset is hidden
+                                    if (data.datasets[item.datasetIndex].hidden)
+                                    {
+                                        return false;
+                                    }
+
+                                    return true;
+                                }
+                            }
                         },
                         scales: {
                             xAxes: [{
@@ -202,7 +214,17 @@
                         maintainAspectRatio: false,
                         responsive: true,
                         legend: {
-                            position: 'right'
+                            position: 'right',
+                            labels: {
+                                filter: function (item, data) {
+                                    // don't include the label if the dataset isn't defined
+                                    if (data.datasets[0].data[item.index] == null) {
+                                        return false;
+                                    }
+
+                                    return true;
+                                }
+                            }
                         }
                     },
                     data: {
