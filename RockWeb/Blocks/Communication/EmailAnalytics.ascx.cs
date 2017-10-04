@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Shows a graph of email statistics optionally limited to a specific communication or communication list." )]
 
-    [TextField("Series Colors", "A comma-delimited list of colors that the charts will use.", false, "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766", order:0) ]
+    [TextField( "Series Colors", "A comma-delimited list of colors that the Clients chart will use.", false, "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766", order: 0 )]
     public partial class EmailAnalytics : RockBlock
     {
         #region Properties that are used by the markup file
@@ -355,18 +355,21 @@ namespace RockWeb.Blocks.Communication
             List<int> openCountsList = interactionsSummary.Select( a => a.OpenCounts ).ToList();
             this.LineChartDataOpensJSON = openCountsList.ToJson();
 
-            int? totalRecipientCount = null;
+            int? deliveredRecipientCount = null;
+            int? failedRecipientCount = null;
 
             if ( communicationIdList != null )
             {
                 CommunicationRecipientStatus[] sentStatus = new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Opened, CommunicationRecipientStatus.Delivered };
-                totalRecipientCount = new CommunicationRecipientService( rockContext ).Queryable().Where( a => sentStatus.Contains( a.Status ) && communicationIdList.Contains( a.CommunicationId ) ).Count();
+                CommunicationRecipientStatus[] failedStatus = new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Failed };
+                deliveredRecipientCount = new CommunicationRecipientService( rockContext ).Queryable().Where( a => sentStatus.Contains( a.Status ) && communicationIdList.Contains( a.CommunicationId ) ).Count();
+                failedRecipientCount = new CommunicationRecipientService( rockContext ).Queryable().Where( a => failedStatus.Contains( a.Status ) && communicationIdList.Contains( a.CommunicationId ) ).Count();
             }
 
             List<int> unopenedCountsList = new List<int>();
-            if ( totalRecipientCount.HasValue )
+            if ( deliveredRecipientCount.HasValue )
             {
-                int unopenedRemaining = totalRecipientCount.Value;
+                int unopenedRemaining = deliveredRecipientCount.Value;
                 foreach ( var openCounts in openCountsList )
                 {
                     unopenedRemaining = unopenedRemaining - openCounts;
@@ -382,8 +385,7 @@ namespace RockWeb.Blocks.Communication
                 this.LineChartDataUnOpenedJSON = "null";
             }
 
-            /* Opens/Clicks Pie Chart */
-
+            /* Actions Pie Chart and Stats */
             int totalOpens = interactionsList.Where( a => a.Operation == "Opened" ).Count();
             int totalClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).Count();
 
@@ -393,36 +395,52 @@ namespace RockWeb.Blocks.Communication
             // Unique Clicks is the number of times a Recipient clicked at least once in an email
             int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).GroupBy( a => a.CommunicationRecipientId ).Count();
 
-            lUniqueOpens.Text = string.Format( "<span>{0}</span><br><span style='font-size: 45px; font-weight: 700; line-height: 40px;'>{1:#,##0}</span>", "Unique Opens", uniqueOpens );
-            lTotalOpens.Text = string.Format( "<span>{0}</span><br><span style='font-size: 45px; font-weight: 700; line-height: 40px;'>{1:#,##0}</span>", "Total Opens", totalOpens);
-            lTotalClicks.Text = string.Format( "<span>{0}</span><br><span style='font-size: 45px; font-weight: 700; line-height: 40px;'>{1:#,##0}</span>", "Total Clicks", totalClicks );
+            string actionsStatFormatNumber =  "<span>{0}</span><br><span class='js-actions-statistic' title='{1}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{2:#,##0}</span>";
+            string actionsStatFormatPercent = "<span>{0}</span><br><span class='js-actions-statistic' title='{1}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{2:P2}</span>";
+
+            if ( deliveredRecipientCount.HasValue  )
+            {
+                lDelivered.Text = string.Format( actionsStatFormatNumber, "Delivered", "The number of recipients that the email was successfully delivered to", deliveredRecipientCount );
+                lPercentOpened.Text = string.Format( actionsStatFormatPercent, "Percent Opened", "The percent of the delivered emails that were opened at least once", deliveredRecipientCount > 0 ? ( decimal) uniqueOpens  / deliveredRecipientCount : 0 );
+                lFailedRecipients.Text = string.Format( actionsStatFormatNumber, "Failed Recipients", "The number of emails that failed to get delivered", failedRecipientCount );
+                lUnopened.Text = string.Format( actionsStatFormatNumber, "Unopened", "The number of emails that were delivered but not yet opened", deliveredRecipientCount - uniqueOpens );
+            }
+
+            lUniqueOpens.Text = string.Format( actionsStatFormatNumber, "Unique Opens", "The number of emails that were opened at least once", uniqueOpens );
+            lTotalOpens.Text = string.Format( actionsStatFormatNumber, "Total Opens", "The total number of times the emails were opened, including ones that were already opened once", totalOpens );
+
+            lUniqueClicks.Text = string.Format( actionsStatFormatNumber, "Unique Clicks", "The number of times a recipient clicked on a link at least once in any of the opened emails", uniqueClicks );
+            lTotalClicks.Text = string.Format( actionsStatFormatNumber, "Total Clicks", "The total number of times a link was clicked in any of the opened emails", totalClicks );
 
             if ( uniqueOpens > 0 )
             {
-                lClickThroughRate.Text = string.Format( "<span>{0}</span><br><span style='font-size: 45px; font-weight: 700; line-height: 40px;'>{1:P2}</span>", "Click Through Rate (CTR)", ( decimal ) uniqueClicks / uniqueOpens );
+                lClickThroughRate.Text = string.Format( actionsStatFormatPercent, "Click Through Rate (CTR)", "The percent of emails that had at least one click", ( decimal ) uniqueClicks / uniqueOpens );
             }
             else
             {
-                lClickThroughRate.Text = "n/a";
+                lClickThroughRate.Text = string.Empty;
             }
 
-            var openClicksUnopenedDataList = new List<int?>();
-            openClicksUnopenedDataList.Add( uniqueOpens );
-            openClicksUnopenedDataList.Add( uniqueClicks );
+            // action stats is [opens,clicks,unopened];
+            var actionsStats = new int?[3];
 
-            if ( totalRecipientCount.HasValue )
+            // "Opens" would be unique number that Clicked Or Opened, so subtract clicks so they aren't counted twice
+            actionsStats[0] = uniqueOpens - uniqueClicks;
+            actionsStats[1] = uniqueClicks;
+
+            if ( deliveredRecipientCount.HasValue )
             {
                 // NOTE: just in case we have more recipients activity then there are recipient records, don't let it go negative
-                openClicksUnopenedDataList.Add( Math.Max( totalRecipientCount.Value - uniqueOpens, 0 ) );
+                actionsStats[2] = Math.Max( deliveredRecipientCount.Value - uniqueOpens, 0 );
             }
             else
             {
-                openClicksUnopenedDataList.Add( null );
+                actionsStats[2] = null;
             }
 
-            this.PieChartDataOpenClicksJSON = openClicksUnopenedDataList.ToJson();
+            this.PieChartDataOpenClicksJSON = actionsStats.ToJson();
 
-            var pieChartOpenClicksHasData = openClicksUnopenedDataList.Sum() > 0;
+            var pieChartOpenClicksHasData = actionsStats.Sum() > 0;
             opensClicksPieChartCanvas.Style[HtmlTextWriterStyle.Display] = pieChartOpenClicksHasData ? string.Empty : "none";
             nbOpenClicksPieChartMessage.Visible = !pieChartOpenClicksHasData;
             nbOpenClicksPieChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
@@ -465,25 +483,26 @@ namespace RockWeb.Blocks.Communication
 
             /* Most Popular Links from Clicks*/
             var topClicks = interactionsList
-                                .Where( a => 
-                                    a.Operation == "Click" 
-                                    && !string.IsNullOrEmpty( a.InteractionData ) 
-                                    && !a.InteractionData.Contains( "/Unsubscribe/") )
+                                .Where( a =>
+                                    a.Operation == "Click"
+                                    && !string.IsNullOrEmpty( a.InteractionData )
+                                    && !a.InteractionData.Contains( "/Unsubscribe/" ) )
                                 .GroupBy( a => a.InteractionData )
                                 .Select( a => new
-                                    {
-                                        LinkUrl = a.Key,
-                                        UniqueClickCount = a.GroupBy( x => x.CommunicationRecipientId ).Count()
-                                    } )
+                                {
+                                    LinkUrl = a.Key,
+                                    UniqueClickCount = a.GroupBy( x => x.CommunicationRecipientId ).Count()
+                                } )
                                 .OrderByDescending( a => a.UniqueClickCount )
                                 .Take( 100 )
                                 .ToList();
-            
+
 
             if ( topClicks.Any() )
             {
                 int topLinkCount = topClicks.Max( a => a.UniqueClickCount );
 
+                // CTR really only makes sense if we are showing data for a single communication, so only show if it's a single communication
                 bool singleCommunication = communicationIdList != null && communicationIdList.Count == 1;
 
                 var mostPopularLinksData = topClicks.Select( a => new TopLinksInfo
@@ -491,11 +510,11 @@ namespace RockWeb.Blocks.Communication
                     PercentOfTop = ( decimal ) a.UniqueClickCount * 100 / topLinkCount,
                     Url = a.LinkUrl,
                     UniquesCount = a.UniqueClickCount,
-                    CTRPercent = singleCommunication ? a.UniqueClickCount * 100.00M / totalOpens : (decimal?)null
+                    CTRPercent = singleCommunication ? a.UniqueClickCount * 100.00M / deliveredRecipientCount : ( decimal? ) null
                 } ).ToList();
 
                 pnlCTRHeader.Visible = singleCommunication;
-                
+
                 rptMostPopularLinks.DataSource = mostPopularLinksData;
                 rptMostPopularLinks.DataBind();
                 pnlMostPopularLinks.Visible = true;

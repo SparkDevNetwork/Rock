@@ -44,11 +44,18 @@
                     </div>
                     <div class="col-md-8">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-sm-4">
+                                <Rock:RockLiteral ID="lDelivered" runat="server" />
+                                <Rock:RockLiteral ID="lPercentOpened" runat="server" />
+                                <Rock:RockLiteral ID="lFailedRecipients" runat="server" />
+                            </div>
+                            <div class="col-sm-4">
                                 <Rock:RockLiteral ID="lUniqueOpens" runat="server" />
                                 <Rock:RockLiteral ID="lTotalOpens" runat="server" />
+                                <Rock:RockLiteral ID="lUnopened" runat="server" />
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-sm-4">
+                                <Rock:RockLiteral ID="lUniqueClicks" runat="server" />
                                 <Rock:RockLiteral ID="lTotalClicks" runat="server" />
                                 <Rock:RockLiteral ID="lClickThroughRate" runat="server" />
                             </div>
@@ -90,25 +97,25 @@
                     <hr />
                     <h1 class="text-center">Popular Links</h1>
 
-                    <div class="row">
-                        <div class="col-md-10"><strong>Url</strong></div>
-                        <div class="col-md-1"><strong>Uniques</strong></div>
-                        <div id="pnlCTRHeader" runat="server" class="col-md-1"><strong>CTR</strong></div>
+                    <div class="row hidden-xs">
+                        <div class="col-sm-10"><strong>Url</strong></div>
+                        <div class="col-sm-1"><strong>Uniques</strong></div>
+                        <div id="pnlCTRHeader" runat="server" class="col-sm-1"><strong>CTR</strong></div>
                     </div>
                     <asp:Repeater ID="rptMostPopularLinks" runat="server" OnItemDataBound="rptMostPopularLinks_ItemDataBound">
                         <ItemTemplate>
                             <div class="row margin-b-lg">
-                                <div class="col-sm-10">
+                                <div class="col-sm-10 col-xs-12">
                                     <p>
                                         <asp:Literal ID="lUrl" runat="server" />
                                     </p>
                                     <asp:Literal ID="lUrlProgressHTML" runat="server" />
                                 </div>
-                                <div class="col-sm-1">
-                                    <asp:Literal ID="lUniquesCount" runat="server" />
+                                <div class="col-sm-1 col-xs-6">
+                                    <label class="visible-xs margin-r-sm pull-left">Uniques:</label><asp:Literal ID="lUniquesCount" runat="server" />
                                 </div>
-                                <div id="pnlCTRData" runat="server"  class="col-sm-1">
-                                    <asp:Literal ID="lCTRPercent" runat="server" />
+                                <div id="pnlCTRData" runat="server" class="col-sm-1 col-xs-6">
+                                    <label class="visible-xs margin-r-sm pull-left">CTR:</label><asp:Literal ID="lCTRPercent" runat="server" />
                                 </div>
                             </div>
                         </ItemTemplate>
@@ -274,6 +281,9 @@
                         }],
                     }
                 });
+
+                // Tooltips
+                $('.js-actions-statistic').tooltip();
             });
         </script>
     </ContentTemplate>
