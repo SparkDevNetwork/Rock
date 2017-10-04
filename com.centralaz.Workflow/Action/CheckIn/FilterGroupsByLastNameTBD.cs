@@ -71,6 +71,12 @@ namespace com.centralaz.Workflow.Action.CheckIn
                             string lastNameBeginLetterRange = group.Group.GetAttributeValue( "LastNameBeginLetterRange" );
                             string lastNameEndLetterRange = group.Group.GetAttributeValue( "LastNameEndLetterRange" );
 
+                            // Don't filter if both are empty
+                            if ( string.IsNullOrWhiteSpace( lastNameBeginLetterRange ) && string.IsNullOrWhiteSpace( lastNameEndLetterRange ) )
+                            {
+                                continue;
+                            }
+
                             char rangeStart = ( string.IsNullOrWhiteSpace( lastNameBeginLetterRange ) ) ? 'A' : char.Parse( lastNameBeginLetterRange.Trim().ToUpper() );
                             char rangeEnd = ( string.IsNullOrWhiteSpace( lastNameEndLetterRange ) ) ? 'Z' : char.Parse( lastNameEndLetterRange.Trim().ToUpper() );
 
