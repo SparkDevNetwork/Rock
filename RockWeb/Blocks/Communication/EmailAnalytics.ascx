@@ -120,11 +120,7 @@
 
         <script>
             Sys.Application.add_load(function () {
-                // Workaround for Chart.js not working in IE11 (supposed to be fixed in chart.js 2.7)
-                // see https://github.com/chartjs/Chart.js/issues/4633
-                Number.MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
-                Number.MIN_SAFE_INTEGER = Number.MIN_SAFE_INTEGER || -9007199254740991;
-                
+
                 var chartSeriesColors = <%=this.SeriesColorsJSON%>;
 
                 var getSeriesColors = function(numberOfColors) {
