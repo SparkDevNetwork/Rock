@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Humanizer;
 using Rock;
@@ -36,7 +37,7 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Shows a graph of email statistics optionally limited to a specific communication or communication list." )]
 
-    [TextField("Series Colors", "A comma-delimited list of colors that the charts will use.", true, "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766", order:0) ]
+    [TextField("Series Colors", "A comma-delimited list of colors that the charts will use.", false, "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766", order:0) ]
     public partial class EmailAnalytics : RockBlock
     {
         #region Properties that are used by the markup file
@@ -189,7 +190,12 @@ namespace RockWeb.Blocks.Communication
                 lUniquesCount.Text = topLinksInfo.UniquesCount.ToString();
 
                 Literal lCTRPercent = e.Item.FindControl( "lCTRPercent" ) as Literal;
-                lCTRPercent.Text = Math.Round( topLinksInfo.CTRPercent, 2 ) + "%";
+                HtmlGenericControl pnlCTRData = e.Item.FindControl( "pnlCTRData" ) as HtmlGenericControl;
+                pnlCTRData.Visible = topLinksInfo.CTRPercent.HasValue;
+                if ( topLinksInfo.CTRPercent.HasValue )
+                {
+                    lCTRPercent.Text = Math.Round( topLinksInfo.CTRPercent.Value, 2 ) + "%";
+                }
             }
         }
 
@@ -368,9 +374,13 @@ namespace RockWeb.Blocks.Communication
                     // NOTE: just in case we have more recipients activity then there are recipient records, don't let it go negative
                     unopenedCountsList.Add( Math.Max( unopenedRemaining, 0 ) );
                 }
-            }
 
-            this.LineChartDataUnOpenedJSON = unopenedCountsList.ToJson();
+                this.LineChartDataUnOpenedJSON = unopenedCountsList.ToJson();
+            }
+            else
+            {
+                this.LineChartDataUnOpenedJSON = "null";
+            }
 
             /* Opens/Clicks Pie Chart */
 
@@ -396,7 +406,7 @@ namespace RockWeb.Blocks.Communication
                 lClickThroughRate.Text = "n/a";
             }
 
-            var openClicksUnopenedDataList = new List<int>();
+            var openClicksUnopenedDataList = new List<int?>();
             openClicksUnopenedDataList.Add( uniqueOpens );
             openClicksUnopenedDataList.Add( uniqueClicks );
 
@@ -407,7 +417,7 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                openClicksUnopenedDataList.Add( 0 );
+                openClicksUnopenedDataList.Add( null );
             }
 
             this.PieChartDataOpenClicksJSON = openClicksUnopenedDataList.ToJson();
@@ -421,15 +431,17 @@ namespace RockWeb.Blocks.Communication
 
             /* Clients-In-Use (Client Type) Pie Chart*/
             var clientsUsageByClientType = interactionQuery
-            .GroupBy( a => a.InteractionSession.DeviceType.ClientType ).Select( a => new ClientTypeUsageInfo
-            {
-                ClientType = a.Key,
-                UsagePercent = a.Count() * 100.00M / interactionCount
-            } ).OrderByDescending( a => a.UsagePercent ).ToList().Select( a => new ClientTypeUsageInfo
-            {
-                ClientType = a.ClientType,
-                UsagePercent = Math.Round(a.UsagePercent, 2)
-            } ).ToList();
+                .GroupBy( a => ( a.InteractionSession.DeviceType.ClientType ?? "Unknown" ).ToLower() ).Select( a => new ClientTypeUsageInfo
+                {
+                    ClientType = a.Key,
+                    UsagePercent = a.Count() * 100.00M / interactionCount
+                } ).OrderByDescending( a => a.UsagePercent ).ToList()
+                .Where( a => !a.ClientType.Equals( "Robot", StringComparison.OrdinalIgnoreCase ) ) // no robots
+                .Select( a => new ClientTypeUsageInfo
+                {
+                    ClientType = a.ClientType,
+                    UsagePercent = Math.Round( a.UsagePercent, 2 )
+                } ).ToList();
 
             this.PieChartDataClientLabelsJSON = clientsUsageByClientType.Select( a => string.IsNullOrEmpty( a.ClientType ) ? "Unknown" : a.ClientType.Transform( To.TitleCase ) ).ToList().ToJson();
             this.PieChartDataClientCountsJSON = clientsUsageByClientType.Select( a => a.UsagePercent ).ToList().ToJson();
@@ -471,14 +483,19 @@ namespace RockWeb.Blocks.Communication
             if ( topClicks.Any() )
             {
                 int topLinkCount = topClicks.Max( a => a.UniqueClickCount );
+
+                bool singleCommunication = communicationIdList != null && communicationIdList.Count == 1;
+
                 var mostPopularLinksData = topClicks.Select( a => new TopLinksInfo
                 {
                     PercentOfTop = ( decimal ) a.UniqueClickCount * 100 / topLinkCount,
                     Url = a.LinkUrl,
                     UniquesCount = a.UniqueClickCount,
-                    CTRPercent = a.UniqueClickCount * 100.00M / totalOpens
+                    CTRPercent = singleCommunication ? a.UniqueClickCount * 100.00M / totalOpens : (decimal?)null
                 } ).ToList();
 
+                pnlCTRHeader.Visible = singleCommunication;
+                
                 rptMostPopularLinks.DataSource = mostPopularLinksData;
                 rptMostPopularLinks.DataBind();
                 pnlMostPopularLinks.Visible = true;
@@ -558,7 +575,7 @@ namespace RockWeb.Blocks.Communication
             /// <value>
             /// The CTR percent.
             /// </value>
-            public decimal CTRPercent { get; set; }
+            public decimal? CTRPercent { get; set; }
         }
 
         /// <summary>
