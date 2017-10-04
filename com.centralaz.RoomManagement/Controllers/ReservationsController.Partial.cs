@@ -43,7 +43,7 @@ namespace Rock.Rest.Controllers
     public partial class ReservationsController
     {
         /// <summary>
-        /// Gets the reservation occurrences by date range.
+        /// Gets the reservation occurrences
         /// </summary>
         /// <param name="startDateTime">The start date time. Defaults to current datetime.</param>
         /// <param name="endDateTime">The end date time. Defaults to current datetime plus one month.</param>
