@@ -28,6 +28,7 @@
                             <Rock:RockBoundField DataField="CompletedDate" HeaderText="Application Completed" SortExpression="CompletedDate" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus" />
                             <Rock:RockBoundField DataField="IsStars" HeaderText="STARS Applicant" />
+                            <Rock:RockBoundField DataField="MinistryLeader" HeaderText="Ministry Leader" SortExpression="MinistryLeader" />
                         </Columns>
                     </Rock:Grid>
                 </div>

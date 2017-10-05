@@ -202,6 +202,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             using ( RockContext rockContext = new RockContext( ) )
             {
                 List<CampusCache> campusCache = CampusCache.All( );
+                PersonAliasService paService = new PersonAliasService( rockContext );
 
                 // get all volunteer screening instances. This is complicated, so I'll explain:
 
@@ -242,6 +243,12 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 // Its SentDate, CompletedDate (Taken from the WF table)
                 // Its Person (Taken from the PersonAlias table)
                 // Its Campus (Taken from the AttributeValue table)
+
+                // get a list of all "MinistryLead" attribute values, which we'll match up with each Application when binding the rows
+                var ministryLeadResult = attribWithValue.Where( a => a.Attribute.Key == "MinistryLead" )
+                                                        .Select( a => new MinistryLeadResult {  EntityId = a.AttribValue.EntityId,
+                                                                                                MinistryLead = a.AttribValue.Value }  )
+                                                        .ToList( );
 
                 // JHM 7-10-17
                 // HORRIBLE HACK - If the application was sent before we ended testing, we need to support old states and attributes.
@@ -297,7 +304,8 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                                 CompletedDate = ParseCompletedDate( vs.SentDate, vs.CompletedDate ),
                                 State = VolunteerScreening.GetState( vs.SentDate, vs.CompletedDate, vs.Workflow.Status ),
                                 Campus = campusCache.Where( c => c.Guid == vs.CampusGuid.AsGuid( ) ).SingleOrDefault( ).Name,
-                                IsStars = IsStars( vs.Workflow, starsQueryResult )
+                                IsStars = IsStars( vs.Workflow, starsQueryResult ),
+                                MinistryLeader = TryGetMinistryLead( vs.Workflow, ministryLeadResult, paService )
                             } ).ToList( );
                 }
 
@@ -334,6 +342,29 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
                 return "No";
             }
+        }
+
+        public class MinistryLeadResult
+        {
+            public int? EntityId { get; set; }
+            public string MinistryLead { get; set; }
+        }
+
+        string TryGetMinistryLead( Workflow workflow, List<MinistryLeadResult> ministryLeadQueryResult, PersonAliasService paService )
+        {
+            // it's possible that no ministry lead has been assigned yet. In that case, we'll return an empty string
+            MinistryLeadResult ministryLead = ministryLeadQueryResult.Where( ml => ml.EntityId == workflow.Id ).SingleOrDefault( );
+            if ( ministryLead != null )
+            {
+                // make sure the person exists
+                Person person = paService.Get( ministryLead.MinistryLead.AsGuid( ) ).Person;
+                if ( person != null )
+                {
+                    return person.FullName;
+                }
+            }
+
+            return string.Empty;
         }
 
         string ParseCompletedDate( DateTime sentDate, DateTime completedDate )
