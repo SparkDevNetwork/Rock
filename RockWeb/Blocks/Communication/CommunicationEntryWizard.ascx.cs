@@ -2032,14 +2032,23 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             communication.Name = tbCommunicationName.Text;
             communication.IsBulkCommunication = tglBulkCommunication.Checked;
             communication.CommunicationType = ( CommunicationType ) hfMediumType.Value.AsInteger();
-            communication.ListGroupId = ddlCommunicationGroupList.SelectedValue.AsIntegerOrNull();
+
+            if ( tglRecipientSelection.Checked )
+            {
+                communication.ListGroupId = ddlCommunicationGroupList.SelectedValue.AsIntegerOrNull();
+            }
+            else
+            {
+                communication.ListGroup = null;
+                communication.ListGroupId = null;
+            }
 
             var emailMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
             var smsMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
             List<GroupMember> communicationListGroupMemberList = null;
             if ( communication.ListGroupId.HasValue )
             {
-                communicationListGroupMemberList = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == communication.ListGroupId.Value ).ToList();
+                communicationListGroupMemberList = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == communication.ListGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active ).ToList();
             }
 
             foreach ( var recipient in communication.Recipients )
