@@ -992,15 +992,15 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
             _cbIsAnalyticHistory.Visible = false;
 
             // Only show the Analytic checkbox if the Entity is IAnalytic
-            if ( this.AttributeEntityTypeId.HasValue )
-            {
-                var entityType = EntityTypeCache.Read( this.AttributeEntityTypeId.Value );
-                if ( entityType != null )
-                {
-                    _cbIsAnalytic.Visible = entityType.IsAnalyticSupported;
-                    _cbIsAnalyticHistory.Visible = entityType.IsAnalyticHistoricalSupported;
-                }
-            }
+            //if ( this.AttributeEntityTypeId.HasValue )
+            //{
+            //    var entityType = EntityTypeCache.Read( this.AttributeEntityTypeId.Value );
+            //    if ( entityType != null )
+            //    {
+            //        _cbIsAnalytic.Visible = entityType.IsAnalyticSupported;
+            //        _cbIsAnalyticHistory.Visible = entityType.IsAnalyticHistoricalSupported;
+            //    }
+            //}
 
             // Set the validation group for all controls
             string validationGroup = ValidationGroup;
@@ -1234,9 +1234,9 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
                 this.Required = attribute.IsRequired;
                 this.ShowInGrid = attribute.IsGridColumn;
                 this.AllowSearch = attribute.AllowSearch;
-                this.IsIndexingEnabled = attribute.IsIndexEnabled;
-                this.IsAnalytic = attribute.IsAnalytic;
-                this.IsAnalyticHistory = attribute.IsAnalyticHistory;
+                //this.IsIndexingEnabled = attribute.IsIndexEnabled;
+                //this.IsAnalytic = attribute.IsAnalytic;
+                //this.IsAnalyticHistory = attribute.IsAnalyticHistory;
 
                 var qualifiers = new Dictionary<string, ConfigurationValue>();
                 if ( attribute.AttributeQualifiers != null )
@@ -1283,9 +1283,9 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
                 attribute.IsRequired = this.Required;
                 attribute.IsGridColumn = this.ShowInGrid;
                 attribute.AllowSearch = this.AllowSearch;
-                attribute.IsIndexEnabled = this.IsIndexingEnabled;
-                attribute.IsAnalytic = this.IsAnalytic;
-                attribute.IsAnalyticHistory = this.IsAnalyticHistory;
+                //attribute.IsIndexEnabled = this.IsIndexingEnabled;
+                //attribute.IsAnalytic = this.IsAnalytic;
+                //attribute.IsAnalyticHistory = this.IsAnalyticHistory;
 
                 attribute.Categories.Clear();
                 new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
@@ -1343,8 +1343,8 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
 
                 // default control id needs to be unique to field type because some field types will transform
                 // field (i.e. htmleditor) and switching field types will not reset that
-                if ( field.HasDefaultControl )
-                {
+                //if ( field.HasDefaultControl )
+                //{
                     var defaultControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}", fieldTypeId.Value ) );
                     if ( defaultControl != null )
                     {
@@ -1361,9 +1361,8 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
                             rockControl.Required = false;
                             rockControl.Label = "Default Value";
                         }
-
                     }
-                }
+                //}
             }
         }
 
