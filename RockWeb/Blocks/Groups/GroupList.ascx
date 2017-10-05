@@ -35,6 +35,7 @@
                             <Rock:DateTimeField DataField="DateAdded" HeaderText="Added" SortExpression="DateAdded" FormatAsElapsedTime="true" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActiveOrder" />
+                            <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gGroups_Delete" />
                         </Columns>
                     </Rock:Grid>

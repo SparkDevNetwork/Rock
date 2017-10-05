@@ -46,10 +46,11 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Display Active Status Column", "Should the Active Status column be displayed?", false, "", 7 )]
     [BooleanField( "Display Member Count Column", "Should the Member Count column be displayed? Does not affect lists with a person context.", true, "", 8 )]
     [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 9 )]
-    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 10 )]
-    [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 11 )]
-    [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 12 )]
-    [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 13 )]
+    [BooleanField( "Display Security Column", "Should the Security column be displayed?", false, "", 10 )]
+    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 11 )]
+    [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 12 )]
+    [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 13 )]
+    [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 14 )]
     [ContextAware]
     public partial class GroupList : RockBlock, ICustomGridColumns
     {
@@ -72,6 +73,9 @@ namespace RockWeb.Blocks.Groups
 
             this.BlockUpdated += GroupList_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlGroupList );
+
+            SecurityField securityField = gGroups.Columns.OfType<SecurityField>().FirstOrDefault();
+            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
         }
 
         /// <summary>
@@ -111,6 +115,7 @@ namespace RockWeb.Blocks.Groups
             bool showDescriptionColumn = GetAttributeValue( "DisplayDescriptionColumn" ).AsBoolean();
             bool showActiveStatusColumn = GetAttributeValue( "DisplayActiveStatusColumn" ).AsBoolean();
             bool showSystemColumn = GetAttributeValue( "DisplaySystemColumn" ).AsBoolean();
+            bool showSecurityColumn = GetAttributeValue( "DisplaySecurityColumn" ).AsBoolean();
 
             if ( !showDescriptionColumn )
             {
@@ -132,6 +137,12 @@ namespace RockWeb.Blocks.Groups
             Dictionary<string, BoolField> boolFields = gGroups.Columns.OfType<BoolField>().ToDictionary( a => a.DataField );
             boolFields["IsActive"].Visible = showActiveStatusColumn;
             boolFields["IsSystem"].Visible = showSystemColumn;
+
+            var securityField = gGroups.ColumnsOfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.Visible = showSecurityColumn;
+            }
 
             int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
             if ( ContextTypesRequired.Any( a => a.Id == personEntityTypeId ) )
