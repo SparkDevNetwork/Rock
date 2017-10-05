@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -3602,6 +3602,32 @@ namespace Rock.Migrations.Migrations {
         public static string _201710031453003_InitialShortcodesLoad {
             get {
                 return ResourceManager.GetString("_201710031453003_InitialShortcodesLoad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @simpleCommunicationEntryBlockId INT = (
+        /// SELECT TOP 1 Id
+        /// FROM [Block]
+        /// WHERE [Guid] = &apos;BD9B2F32-AB18-4761-80C9-FDA4DBEEA9EC&apos;
+        /// )
+        ///DECLARE @wizardCommunicationEntryBlockId INT = (
+        /// SELECT TOP 1 Id
+        /// FROM [Block]
+        /// WHERE [Guid] = &apos;82D5B1A0-1C17-464E-9EC5-414549FB44C7&apos;
+        /// )
+        ///DECLARE @simpleCommunicationEntryBlockTypeId INT = (
+        /// SELECT TOP 1 Id
+        /// FROM [BlockType]
+        /// WHERE [Guid] = &apos;D9834641-7F39-4CFA-8CB2-E64068127565&apos;
+        /// );
+        ///DECLARE @wizardCommunicationEntryBlockTypeId INT = (
+        /// SELECT TOP 1 Id
+        /// F [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710051632496_Analytics3_CommunicationBlockSettings {
+            get {
+                return ResourceManager.GetString("_201710051632496_Analytics3_CommunicationBlockSettings", resourceCulture);
             }
         }
     }
