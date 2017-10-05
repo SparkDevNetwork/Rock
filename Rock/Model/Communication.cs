@@ -343,6 +343,15 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets or sets the list group.
+        /// </summary>
+        /// <value>
+        /// The list group.
+        /// </value>
+        [DataMember]
+        public virtual Group ListGroup { get; set; }
+
+        /// <summary>
         /// Gets or sets the sender person alias.
         /// </summary>
         /// <value>
@@ -766,7 +775,10 @@ namespace Rock.Model
             this.HasOptional( c => c.ReviewerPersonAlias ).WithMany().HasForeignKey( c => c.ReviewerPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SMSFromDefinedValue ).WithMany().HasForeignKey( c => c.SMSFromDefinedValueId ).WillCascadeOnDelete( false );
 
-            // the Migration will manually add a CASCADE DELETE SET NULL for CommunicationTemplateId
+            // the Migration will manually add a ON DELETE SET NULL for ListGroupId
+            this.HasOptional( c => c.ListGroup ).WithMany().HasForeignKey( c => c.ListGroupId ).WillCascadeOnDelete( false );
+
+            // the Migration will manually add a ON DELETE SET NULL for CommunicationTemplateId
             this.HasOptional( c => c.CommunicationTemplate ).WithMany().HasForeignKey( c => c.CommunicationTemplateId ).WillCascadeOnDelete( false );
         }
     }

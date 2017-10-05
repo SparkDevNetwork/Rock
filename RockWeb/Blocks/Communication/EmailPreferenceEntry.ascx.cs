@@ -32,26 +32,29 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// User control for editing a system email
+    /// 
     /// </summary>
     [DisplayName( "Email Preference Entry" )]
     [Category( "Communication" )]
-    [Description( "Allows user to set their email preference." )]
+    [Description( "Allows user to set their email preference or unsubscribe from a communication list." )]
 
-    [MemoField( "Emails Allowed Text", "Text to display for the 'Emails Allowed' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, and wish to receive all emails.", "", 0, null, 3, true )]
-    [MemoField( "No Mass Emails Text", "Text to display for the 'No Mass Emails' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not wish to receive mass emails (personal emails are fine).", "", 1, null, 3, true )]
-    [MemoField( "No Emails Text", "Text to display for the 'No Emails' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not want to receive emails of ANY kind.", "", 2, null, 3, true )]
-    [MemoField( "Not Involved Text", "Text to display for the 'Not Involved' option.", false, " I am no longer involved with {{ 'Global' | Attribute:'OrganizationName' }}.", "", 3, null, 3, true )]
-    [MemoField( "Success Text", "Text to display after user submits selection.", false, "<h4>Thank You</h4>We have saved your email preference.", "", 4, null, 3, true )]
-    [TextField( "Reasons to Exclude", "A delimited list of the Inactive Reasons to exclude from Reason list", false, "No Activity,Deceased", "", 5)]
+    [MemoField( "Unsubscribe from List Text", "Text to display for the 'Unsubscribe me from list' option.", false, "Please unsubscribe me from emails regarding '{{ Communication.ListGroup | Attribute:'PublicName' | Default:Communication.ListGroup.Name }}'", "", 1, null, 3, true )]
+    [MemoField( "Emails Allowed Text", "Text to display for the 'Emails Allowed' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, and wish to receive all emails.", "", 2, null, 3, true )]
+    [MemoField( "No Mass Emails Text", "Text to display for the 'No Mass Emails' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not wish to receive mass emails (personal emails are fine).", "", 3, null, 3, true )]
+    [MemoField( "No Emails Text", "Text to display for the 'No Emails' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not want to receive emails of ANY kind.", "", 4, null, 3, true )]
+    [MemoField( "Not Involved Text", "Text to display for the 'Not Involved' option.", false, " I am no longer involved with {{ 'Global' | Attribute:'OrganizationName' }}.", "", 5, null, 3, true )]
+    [MemoField( "Success Text", "Text to display after user submits selection.", false, "<h4>Thank You</h4>We have saved your email preference.", "", 6, null, 3, true )]
+    [MemoField( "Unsubscribe Success Text", "Text to display after user unsubscribes from a list.", false, "<h4>Thank You</h4>We have saved your removed you from the '{{ Communication.ListGroup | Attribute:'PublicName' | Default:Communication.ListGroup.Name }}' list.", "", 7, null, 3, true )]
+    [TextField( "Reasons to Exclude", "A delimited list of the Inactive Reasons to exclude from Reason list", false, "No Activity,Deceased", "", 8)]
     public partial class EmailPreferenceEntry : RockBlock
     {
         #region Fields
 
         private Person _person = null;
+        private Rock.Model.Communication _communication = null;
 
         #endregion
-        
+
         #region Control Methods
 
         /// <summary>
@@ -63,12 +66,21 @@ namespace RockWeb.Blocks.Communication
             base.OnInit( e );
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            int? communicationId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
+            
+            var rockContext = new RockContext();
+            if ( communicationId.HasValue )
+            {
+                _communication = new CommunicationService( rockContext ).Get( communicationId.Value );
+                mergeFields.Add( "Communication", _communication );
+            }
+
             LoadDropdowns( mergeFields );
 
             var key = PageParameter( "Person" );
             if ( !string.IsNullOrWhiteSpace( key ) )
             {
-                var service = new PersonService( new RockContext() );
+                var service = new PersonService( rockContext );
                 _person = service.GetByUrlEncodedKey( key );
             }
 
@@ -77,16 +89,19 @@ namespace RockWeb.Blocks.Communication
                 _person = CurrentPerson;
             }
 
+            nbUnsubscribeSuccessMessage.NotificationBoxType = NotificationBoxType.Success;
+            nbUnsubscribeSuccessMessage.Text = GetAttributeValue( "UnsubscribeSuccessText" ).ResolveMergeFields( mergeFields );
+
             if (_person != null)
             {
-                nbMessage.NotificationBoxType = NotificationBoxType.Success;
-                nbMessage.Text = GetAttributeValue( "SuccessText" ).ResolveMergeFields( mergeFields );
+                nbEmailPreferenceSuccessMessage.NotificationBoxType = NotificationBoxType.Success;
+                nbEmailPreferenceSuccessMessage.Text = GetAttributeValue( "SuccessText" ).ResolveMergeFields( mergeFields );
             }
             else
             {
-                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbMessage.Text = "Unfortunately, we're unable to update your email preference, as we're not sure who you are.";
-                nbMessage.Visible = true;
+                nbEmailPreferenceSuccessMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbEmailPreferenceSuccessMessage.Text = "Unfortunately, we're unable to update your email preference, as we're not sure who you are.";
+                nbEmailPreferenceSuccessMessage.Visible = true;
                 btnSubmit.Visible = false;
             }
 
@@ -147,6 +162,10 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
 
+                if ( _communication != null && _communication.ListGroupId.HasValue )
+                {
+                    rblEmailPreference.SelectedValue = "4";
+                }
             }
 
             divNotInvolved.Attributes["Style"] = rblEmailPreference.SelectedValue == "3" ? "display:block" : "display:none";
@@ -163,6 +182,12 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSubmit_Click( object sender, EventArgs e )
         {
+            if ( rblEmailPreference.SelectedValue == "4")
+            {
+                UnsubscribeFromList();
+                return;
+            }
+
             if (_person != null)
             {
                 var changes = new List<string>();
@@ -248,9 +273,58 @@ namespace RockWeb.Blocks.Communication
 
                     rockContext.SaveChanges();
 
-                    nbMessage.Visible = true;
+                    nbEmailPreferenceSuccessMessage.Visible = true;
                     return;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Unsubscribes the person from the List that the communication was sent to
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
+        private void UnsubscribeFromList()
+        {
+            if ( _person != null && _communication != null && _communication.ListGroup != null )
+            {
+                var rockContext = new RockContext();
+
+                // normally there would be at most 1 group member record for the person, but just in case, mark them all inactive
+                var groupMemberRecordsForPerson = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == _communication.ListGroupId && a.PersonId == _person.Id );
+                foreach( var groupMember in groupMemberRecordsForPerson)
+                {
+                    groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
+                    if ( groupMember.Note.IsNullOrWhiteSpace() )
+                    {
+                        groupMember.Note = "Unsubscribed";
+                    }
+                }
+
+                var communicationRecipient = _communication.GetRecipientsQry( rockContext ).Where( a => a.PersonAlias.PersonId == _person.Id ).FirstOrDefault();
+                if ( communicationRecipient != null )
+                {
+                    var interactionService = new InteractionService( rockContext );
+
+                    InteractionComponent interactionComponent = new InteractionComponentService( rockContext )
+                                        .GetComponentByEntityId( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid(),
+                                            _communication.Id, _communication.Subject );
+                    rockContext.SaveChanges();
+
+
+                    var ipAddress = GetClientIpAddress();
+                    var userAgent = Request.UserAgent ?? "";
+
+                    UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( userAgent );
+                    var clientOs = client.OS.ToString();
+                    var clientBrowser = client.UserAgent.ToString();
+                    var clientType = InteractionDeviceType.GetClientType( userAgent );
+
+                    interactionService.AddInteraction( interactionComponent.Id, communicationRecipient.Id, "Unsubscribe", "", communicationRecipient.PersonAliasId, RockDateTime.Now, clientBrowser, clientOs, clientType, userAgent, ipAddress );
+
+                    rockContext.SaveChanges();
+                }
+
+                nbUnsubscribeSuccessMessage.Visible = true;
             }
         }
 
@@ -258,13 +332,23 @@ namespace RockWeb.Blocks.Communication
 
         #region Methods
 
+        /// <summary>
+        /// Loads the dropdowns.
+        /// </summary>
+        /// <param name="mergeObjects">The merge objects.</param>
         private void LoadDropdowns( Dictionary<string, object> mergeObjects )
         {
+            if ( _communication != null && _communication.ListGroupId.HasValue )
+            {
+                rblEmailPreference.Items.Add( new ListItem( GetAttributeValue( "UnsubscribefromListText" ).ResolveMergeFields( mergeObjects ), "4" ) );
+            }
+
             rblEmailPreference.Items.Add( new ListItem( GetAttributeValue( "EmailsAllowedText" ).ResolveMergeFields( mergeObjects ), "0" ) );
             rblEmailPreference.Items.Add( new ListItem( GetAttributeValue( "NoMassEmailsText" ).ResolveMergeFields( mergeObjects ), "1" ) );
             rblEmailPreference.Items.Add( new ListItem( GetAttributeValue( "NoEmailsText" ).ResolveMergeFields( mergeObjects ), "2" ) );
             rblEmailPreference.Items.Add( new ListItem( GetAttributeValue( "NotInvolvedText" ).ResolveMergeFields( mergeObjects ), "3" ) );
-            rblEmailPreference.SelectedIndex = 0;
+
+            // NOTE: OnLoad will set the default selection based the communication.ListGroup and/or the person's current email preference
 
             var excludeReasons = GetAttributeValue( "ReasonstoExclude" ).SplitDelimitedValues( false ).ToList();
             var ds = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ).DefinedValues
