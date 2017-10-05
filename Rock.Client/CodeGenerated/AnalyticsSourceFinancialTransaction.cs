@@ -199,8 +199,5 @@ namespace Rock.Client
         /// <summary />
         public AnalyticsSourceDate TransactionDate { get; set; }
 
-        /// <summary />
-        public AnalyticsDimFinancialTransactionType TransactionTypeValue { get; set; }
-
     }
 }
