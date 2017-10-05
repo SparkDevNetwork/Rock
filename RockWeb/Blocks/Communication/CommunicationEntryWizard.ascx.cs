@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -1315,7 +1316,54 @@ namespace RockWeb.Blocks.Communication
             sampleCommunicationRecipient.Communication = communication;
             var mergeFields = sampleCommunicationRecipient.CommunicationMergeValues( commonMergeFields );
 
-            ifEmailPreview.Attributes["srcdoc"] = hfEmailEditorHtml.Value.ResolveMergeFields( mergeFields );
+            Rock.Communication.MediumComponent emailMediumWithActiveTransport = Rock.Communication.MediumContainer.Instance.Components.Select( a => a.Value.Value )
+                .Where( x => x.Transport != null && x.Transport.IsActive )
+                .Where( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).FirstOrDefault();
+
+            string communicationHtml = hfEmailEditorHtml.Value;
+            
+            if ( emailMediumWithActiveTransport != null )
+            {
+                var mediumAttributes = new Dictionary<string, string>();
+                foreach ( var attr in emailMediumWithActiveTransport.Attributes.Select( a => a.Value ) )
+                {
+                    string value = emailMediumWithActiveTransport.GetAttributeValue( attr.Key );
+                    if ( value.IsNotNullOrWhitespace() )
+                    {
+                        mediumAttributes.Add( attr.Key, value );
+                    }
+                }
+
+                string publicAppRoot = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+
+                // Add Html view
+                // Get the unsubscribe content and add a merge field for it
+                if ( communication.IsBulkCommunication && mediumAttributes.ContainsKey( "UnsubscribeHTML" ) )
+                {
+                    string unsubscribeHtml = emailMediumWithActiveTransport.Transport.ResolveText( mediumAttributes["UnsubscribeHTML"], currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                    mergeFields.AddOrReplace( "UnsubscribeOption", unsubscribeHtml );
+                    communicationHtml = emailMediumWithActiveTransport.Transport.ResolveText( communicationHtml, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+
+                    // Resolve special syntax needed if option was included in global attribute
+                    if ( Regex.IsMatch( communicationHtml, @"\[\[\s*UnsubscribeOption\s*\]\]" ) )
+                    {
+                        communicationHtml = Regex.Replace( communicationHtml, @"\[\[\s*UnsubscribeOption\s*\]\]", unsubscribeHtml );
+                    }
+
+                    // Add the unsubscribe option at end if it wasn't included in content
+                    if ( !communicationHtml.Contains( unsubscribeHtml ) )
+                    {
+                        communicationHtml += unsubscribeHtml;
+                    }
+                }
+                else
+                {
+                    communicationHtml = emailMediumWithActiveTransport.Transport.ResolveText( communicationHtml, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                    communicationHtml = Regex.Replace( communicationHtml, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                }
+            }
+
+            ifEmailPreview.Attributes["srcdoc"] = communicationHtml;
 
             pnlEmailPreview.Visible = true;
             mdEmailPreview.Show();
