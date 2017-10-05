@@ -14,10 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Linq;
-using com.centralaz.RoomManagement.Model;
-using Rock.Data;
-using Rock.Model;
 using Rock.Plugin;
 
 namespace com.centralaz.RoomManagement.Migrations
