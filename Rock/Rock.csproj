@@ -341,6 +341,7 @@
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\CampusesFieldAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\CodeEditorFieldAttribute.cs" />
     <Compile Include="Attribute\CommunicationTemplateFieldAttribute .cs" />
