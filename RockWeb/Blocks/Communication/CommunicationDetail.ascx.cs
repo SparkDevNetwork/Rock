@@ -160,7 +160,15 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    ShowDetail( communication );
+                    // if they somehow got here and aren't authorized to View, hide everything
+                    if ( !communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    {
+                        this.Visible = false;
+                    }
+                    else
+                    {
+                        ShowDetail( communication );
+                    }
                 }
             }
         }

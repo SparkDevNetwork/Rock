@@ -232,7 +232,16 @@ namespace RockWeb.Blocks.Communication
             CommunicationStatus[] editableStatuses = new CommunicationStatus[] { CommunicationStatus.Transient, CommunicationStatus.Draft, CommunicationStatus.Denied };
             if ( editableStatuses.Contains( communication.Status ) || ( communication.Status == CommunicationStatus.PendingApproval && editingApproved ) )
             {
-                // communication is either new or OK to edit
+                // Make sure they are authorized to view
+                if ( !communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                {
+                    // not authorized, so hide this block
+                    this.Visible = false;
+                }
+                else
+                {
+                    // communication is either new or OK to edit
+                }
             }
             else
             {
