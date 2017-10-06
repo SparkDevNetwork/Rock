@@ -3630,5 +3630,24 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201710051632496_Analytics3_CommunicationBlockSettings", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Update DefaultValue for Email Medium&apos;s Unsubscribe HTML
+        ///UPDATE Attribute
+        ///SET DefaultValue = &apos;
+        ///&lt;p style=&apos;&apos;float: right;&apos;&apos;&gt;
+        ///    &lt;small&gt;&lt;a href=&apos;&apos;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicApplicationRoot&apos;&apos; }}Unsubscribe/{{ Person | PersonTokenCreate:43200,3 }}?CommunicationId={{ Communication.Id }}&apos;&apos;&gt;Unsubscribe&lt;/a&gt;&lt;/small&gt;
+        ///&lt;/p&gt;
+        ///&apos;
+        ///WHERE [Guid] = &apos;2942EFCB-9BCF-4A16-9A78-D6149E2EAAD3&apos;
+        ///	AND DefaultValue = &apos;
+        ///&lt;p style=&apos;&apos;float: right;&apos;&apos;&gt;
+        ///    &lt;small&gt;&lt;a href=&apos;&apos;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicApplicationRoot&apos;&apos;  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710061805334_CommunicationListGroup_UpdateEmailMediumAttributeValues {
+            get {
+                return ResourceManager.GetString("_201710061805334_CommunicationListGroup_UpdateEmailMediumAttributeValues", resourceCulture);
+            }
+        }
     }
 }
