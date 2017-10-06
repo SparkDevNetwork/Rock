@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Communication
                     ( communication.Status == CommunicationStatus.PendingApproval && _editingApproved ) )
                 {
                     // Make sure they are authorized to view
-                    if ( communication == null || communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    if ( communication == null || communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
                     {
                         ShowDetail( communication );
                     }

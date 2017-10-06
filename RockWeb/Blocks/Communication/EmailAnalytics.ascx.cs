@@ -403,7 +403,10 @@ namespace RockWeb.Blocks.Communication
                 lDelivered.Text = string.Format( actionsStatFormatNumber, "Delivered", "The number of recipients that the email was successfully delivered to", deliveredRecipientCount );
                 lPercentOpened.Text = string.Format( actionsStatFormatPercent, "Percent Opened", "The percent of the delivered emails that were opened at least once", deliveredRecipientCount > 0 ? ( decimal) uniqueOpens  / deliveredRecipientCount : 0 );
                 lFailedRecipients.Text = string.Format( actionsStatFormatNumber, "Failed Recipients", "The number of emails that failed to get delivered", failedRecipientCount );
-                lUnopened.Text = string.Format( actionsStatFormatNumber, "Unopened", "The number of emails that were delivered but not yet opened", deliveredRecipientCount - uniqueOpens );
+
+                // just in case there are more opens then delivered, don't let it go negative
+                var unopenedCount = Math.Max( deliveredRecipientCount.Value - uniqueOpens, 0 );
+                lUnopened.Text = string.Format( actionsStatFormatNumber, "Unopened", "The number of emails that were delivered but not yet opened", unopenedCount );
             }
 
             lUniqueOpens.Text = string.Format( actionsStatFormatNumber, "Unique Opens", "The number of emails that were opened at least once", uniqueOpens );
