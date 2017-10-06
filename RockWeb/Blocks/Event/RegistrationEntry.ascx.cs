@@ -3472,7 +3472,8 @@ namespace RockWeb.Blocks.Event
                                 if ( familyMembers.Any() )
                                 {
                                     ddlFamilyMembers.Visible = true;
-                                    ddlFamilyMembers.Items.Add( new ListItem() );
+                                    // "Add Family Member" list item is used to clear out form fields for adding new family members
+                                    ddlFamilyMembers.Items.Insert( 0, new ListItem( "Add Family Member", "" ) );
 
                                     foreach ( var familyMember in familyMembers )
                                     {
