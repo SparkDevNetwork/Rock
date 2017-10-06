@@ -668,7 +668,7 @@ namespace RockWeb.Blocks.Communication
                                 btnDeny.Visible = true;
                                 btnEdit.Visible = true;
                             }
-                            btnCancel.Visible = true;
+                            btnCancel.Visible = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                             break;
                         }
                     case CommunicationStatus.Approved:
@@ -679,7 +679,7 @@ namespace RockWeb.Blocks.Communication
 
 
                             btnCancel.Visible = hasPendingRecipients;
-                            btnCopy.Visible = true;
+                            btnCopy.Visible = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                             break;
                         }
                 }
