@@ -245,6 +245,8 @@ namespace RockWeb.Blocks.Event
         {
             base.OnLoad( e );
 
+            nbPlacementNotifiction.Visible = false;
+
             if ( !Page.IsPostBack )
             {
                 int? tab = PageParameter( "Tab" ).AsIntegerOrNull();
@@ -1913,30 +1915,44 @@ namespace RockWeb.Blocks.Event
                                     var registrant = registrants.FirstOrDefault( r => r.Id == registrantId );
                                     if ( registrant != null && roleId.HasValue && roleId.Value > 0 )
                                     {
-                                        var groupMember = new GroupMember();
-                                        groupMember.PersonId = registrant.PersonAlias.PersonId;
-                                        groupMember.GroupId = group.Id;
-                                        groupMember.GroupRoleId = roleId.Value;
-                                        groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-
-                                        if ( !groupMember.IsValidGroupMember( rockContext ) )
+                                        var groupMember = groupMemberService.Queryable().AsNoTracking()
+                                            .FirstOrDefault( m =>
+                                                m.PersonId == registrant.PersonAlias.PersonId &&
+                                                m.GroupId == group.Id &&
+                                                m.GroupRoleId == roleId.Value );
+                                        if ( groupMember == null )
                                         {
-                                            throw new Exception( string.Format( "Placing '{0}' in the '{1}' group is not valid for the following reason: {2}",
-                                                registrant.Person.FullName, group.Name,
-                                                groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" ) ) );
+                                            groupMember = new GroupMember();
+                                            groupMember.PersonId = registrant.PersonAlias.PersonId;
+                                            groupMember.GroupId = group.Id;
+                                            groupMember.GroupRoleId = roleId.Value;
+                                            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+
+                                            if ( !groupMember.IsValidGroupMember( rockContext ) )
+                                            {
+                                                throw new Exception( string.Format( "Placing '{0}' in the '{1}' group is not valid for the following reason: {2}",
+                                                    registrant.Person.FullName, group.Name,
+                                                    groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" ) ) );
+                                            }
+                                            groupMemberService.Add( groupMember );
+                                            rockContext.SaveChanges();
                                         }
-                                        groupMemberService.Add( groupMember );
-                                        rockContext.SaveChanges();
                                     }
 
                                 }
                             }
 
                         } );
+
+                        nbPlacementNotifiction.NotificationBoxType = NotificationBoxType.Success;
+                        nbPlacementNotifiction.Text = "Registrants were successfully placed in the selected groups.";
+                        nbPlacementNotifiction.Visible = true;
                     }
                     catch ( Exception ex )
                     {
-                        nbWarningNotificationBox.Text = ex.Message;
+                        nbPlacementNotifiction.NotificationBoxType = NotificationBoxType.Danger;
+                        nbPlacementNotifiction.Text = ex.Message;
+                        nbPlacementNotifiction.Visible = true;
                     }
                 }
             }
