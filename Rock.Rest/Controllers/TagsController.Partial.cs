@@ -40,14 +40,15 @@ namespace Rock.Rest.Controllers
         /// <param name="entityQualifier">The entity qualifier.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="includeInactive">The include inactive.</param>
         /// <returns></returns>
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
-        public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier = null, string entityQualifierValue = null, string categoryGuid = null )
+        public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier = null, string entityQualifierValue = null, string categoryGuid = null, bool? includeInactive = false )
         {
             string tagName = WebUtility.UrlDecode( name );
-            var tag = ( ( TagService ) Service ).Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid.AsGuidOrNull() );
+            var tag = ( ( TagService ) Service ).Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid.AsGuidOrNull(), includeInactive );
 
             if ( tag == null || !tag.IsAuthorized( "Tag", GetPerson() ) )
             {
@@ -69,14 +70,15 @@ namespace Rock.Rest.Controllers
         /// <param name="entityQualifier">The entity qualifier.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="includeInactive">The include inactive.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Tags/AvailableNames" )]
-        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name = null, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null )
+        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name = null, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
             var tags = ( ( TagService ) Service )
-                .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, categoryGuid )
+                .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, categoryGuid, includeInactive )
                 .Where( t =>
                     t.Name.StartsWith( name ) &&
                     !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ) && 

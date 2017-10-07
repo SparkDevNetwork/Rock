@@ -197,6 +197,9 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
         public override Dictionary<string, string> SupportedActions
         {
             get

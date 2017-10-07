@@ -14,6 +14,7 @@
                 this.preventTagCreation = options.preventTagCreation;
                 this.delaySave = options.delaySave;
                 this.categoryGuid = options.categoryGuid;
+                this.includeInactive = options.includeInactive;
             },
             exports;
 
@@ -26,7 +27,8 @@
             restUrl += '?entityTypeId=' + tagList.entityTypeId;
             restUrl += '&ownerId=' + tagList.currentPersonId;
             restUrl += '&name=' + encodeURIComponent(tagName);
-            
+            restUrl += '&includeInactive' + tagList.includeInactive.toString();
+           
             if (tagList.entityQualifierColumn) {
                 restUrl += '&entityQualifier=' + tagList.entityQualifierColumn;
             }
@@ -73,6 +75,7 @@
             restUrl += '&ownerId=' + tagList.currentPersonId;
             restUrl += '&entityGuid=' + tagList.entityGuid;
             restUrl += '&name=' + encodeURIComponent(tagName);
+            restUrl += '&includeInactive' + tagList.includeInactive.toString();
 
             if (tagList.categoryGuid && tagList.categoryGuid != '') {
                 restUrl += '&categoryGuid=' + this.categoryGuid;
@@ -113,6 +116,7 @@
                 restUrl += '&ownerId=' + tagList.currentPersonId;
                 restUrl += '&entityGuid=' + tagList.entityGuid;
                 restUrl += '&name=' + encodeURIComponent(tagName);
+                restUrl += '&includeInactive' + tagList.includeInactive.toString();
 
                 if (tagList.entityQualifierColumn) {
                     restUrl += '&entityQualifier=' + tagList.entityQualifierColumn;
@@ -162,6 +166,7 @@
             restUrl += '?entityTypeId=' + this.entityTypeId;
             restUrl += '&ownerId=' + this.currentPersonId;
             restUrl += '&entityGuid=' + this.entityGuid;
+            restUrl += '&includeInactive' + this.includeInactive.toString();
 
             if (this.entityQualifierColumn) {
                 restUrl += '&entityQualifier=' + this.entityQualifierColumn;

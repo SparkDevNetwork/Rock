@@ -224,7 +224,8 @@ Rock.controls.tagList.initialize({{
     entityQualifierValue: '{5}',
     preventTagCreation: {6},
     delaySave: {7},
-    categoryGuid: '{8}'
+    categoryGuid: '{8}',
+    includeInactive: {9}
 }});",
                     this.ClientID,
                     EntityTypeId,
@@ -234,7 +235,8 @@ Rock.controls.tagList.initialize({{
                     string.IsNullOrWhiteSpace( EntityQualifierValue ) ? string.Empty : EntityQualifierValue,
                     ( !AllowNewTags ).ToString().ToLower(),
                     DelaySave.ToString().ToLower(),
-                    CategoryGuid.HasValue ? CategoryGuid.Value.ToString() : "" );
+                    CategoryGuid.HasValue ? CategoryGuid.Value.ToString() : "",
+                    this.ShowInActiveTags.ToString().ToLower() );
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "tag_picker_" + this.ID, script, true );
             }
         }
@@ -255,7 +257,7 @@ Rock.controls.tagList.initialize({{
             {
                 var service = new TaggedItemService( rockContext );
                 var qry = service.Get(
-                    EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid )
+                    EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInActiveTags )
                     .Where( c => c.Tag.IsActive || ( ShowInActiveTags ) );
 
                 var items = qry
@@ -312,7 +314,7 @@ Rock.controls.tagList.initialize({{
 
                 // Get the existing tagged items for this entity
                 var existingTaggedItems = new List<TaggedItem>();
-                foreach ( var taggedItem in taggedItemService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid ) )
+                foreach ( var taggedItem in taggedItemService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInActiveTags ) )
                 {
                     if ( taggedItem.IsAuthorized( Authorization.VIEW, person ) )
                     {
@@ -331,7 +333,7 @@ Rock.controls.tagList.initialize({{
                     }
 
                     // If this is a new tag, create it
-                    Tag tag = tagService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, tagName, CategoryGuid );
+                    Tag tag = tagService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, tagName, CategoryGuid, ShowInActiveTags );
                     if ( ( tag == null || !tag.IsAuthorized( "Tag", person ) ) && personAlias != null )
                     {
                         tag = new Tag();

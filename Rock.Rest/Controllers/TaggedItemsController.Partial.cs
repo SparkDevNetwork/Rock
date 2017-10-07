@@ -43,9 +43,10 @@ namespace Rock.Rest.Controllers
         /// <param name="entityQualifier">The entity qualifier.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="includeInactive">The include inactive.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null )
+        public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
             SetProxyCreation( true );
 
@@ -54,7 +55,7 @@ namespace Rock.Rest.Controllers
 
             var tagService = new TagService( (Rock.Data.RockContext)Service.Context );
 
-            var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid );
+            var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid, includeInactive );
             if ( tag == null || !tag.IsAuthorized( "Tag", person ) )
             {
                 int? categoryId = null;
@@ -102,11 +103,12 @@ namespace Rock.Rest.Controllers
         /// <param name="entityQualifier">The entity qualifier.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="includeInactive">The include inactive.</param>
         /// <exception cref="HttpResponseException">
         /// </exception>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
-        public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null )
+        public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
             SetProxyCreation( true );
 
@@ -120,7 +122,7 @@ namespace Rock.Rest.Controllers
             TaggedItem taggedItem = null;
 
             var tagService = new TagService( (Rock.Data.RockContext)Service.Context );
-            var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid );
+            var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid, includeInactive );
             if ( tag != null )
             {
                 taggedItem = tag.TaggedItems.Where( i => i.EntityGuid == entityGuid ).FirstOrDefault();

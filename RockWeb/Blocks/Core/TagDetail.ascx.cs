@@ -425,6 +425,13 @@ namespace RockWeb.Blocks.Core
             lDescription.Text = tag.Description;
             hlEntityType.Text = tag.EntityType != null ? tag.EntityType.FriendlyName : "None";
 
+            lScope.Text = tag.OwnerPersonAliasId.HasValue ? "Personal" : "Organizational";
+            lOwner.Visible = tag.OwnerPersonAlias != null;
+            if ( tag.OwnerPersonAlias != null && tag.OwnerPersonAlias.Person != null )
+            {
+                lOwner.Text = tag.OwnerPersonAlias.Person.FullName;
+            }
+
             btnSecurity.Visible = !tag.OwnerPersonAliasId.HasValue && ( _canConfigure || tag.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
             
             btnSecurity.EntityId = tag.Id;
