@@ -314,7 +314,8 @@ namespace RockWeb.Blocks.Core
                     Owner = ( t.OwnerPersonAlias != null && t.OwnerPersonAlias.Person != null ) ?
                         t.OwnerPersonAlias.Person.LastName + ", " + t.OwnerPersonAlias.Person.NickName : "",
                     Scope = ( t.OwnerPersonAlias != null ) ? "Personal" : "Organization",
-                    EntityCount = t.TaggedItems.Count()
+                    EntityCount = t.TaggedItems.Count(),
+                    IsActive = t.IsActive
                 } ).ToList();
 
                 rGrid.EntityTypeId = EntityTypeCache.Read<Tag>().Id;

@@ -69,11 +69,20 @@
 
                 <fieldset id="fieldsetViewDetails" runat="server">
 
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
                     <p class="description">
                         <asp:Literal ID="lDescription" runat="server"></asp:Literal>
                     </p>
 
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <Rock:RockLiteral ID="lScope" runat="server" Label="Scope" />
+                        </div>
+                        <div class="col-sm-6">
+                            <Rock:RockLiteral ID="lOwner" runat="server" Label="Owner" />
+                        </div>
+                    </div>
 
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />

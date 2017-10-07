@@ -214,6 +214,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<TaggedItem>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, TaggedItem.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<UserLogin>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, UserLogin.FriendlyTypeName );
@@ -272,6 +278,7 @@ namespace Rock.Model
             target.IsEntity = source.IsEntity;
             target.IsIndexingEnabled = source.IsIndexingEnabled;
             target.IsSecured = source.IsSecured;
+            target.LinkUrlLavaTemplate = source.LinkUrlLavaTemplate;
             target.MultiValueFieldTypeId = source.MultiValueFieldTypeId;
             target.Name = source.Name;
             target.SingleValueFieldTypeId = source.SingleValueFieldTypeId;

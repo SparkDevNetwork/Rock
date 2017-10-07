@@ -36,6 +36,7 @@
                             </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Owner" HeaderText="Owner" />
                             <Rock:RockBoundField DataField="EntityCount" HeaderText="Entity Count" />
+                            <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                             <Rock:DeleteField OnClick="rGrid_Delete" />
                         </Columns>
                     </Rock:Grid>
