@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201710042305404_TagEntityUpdate"; }
+            get { return "201710070331132_TagEntityUpdate"; }
         }
         
         string IMigrationMetadata.Source
