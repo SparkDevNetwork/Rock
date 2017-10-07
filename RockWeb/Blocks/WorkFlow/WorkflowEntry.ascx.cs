@@ -770,7 +770,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( HydrateObjects() && _action != null && _action.Id != previousActionId )
                     {
-                        Response.Redirect( string.Format( "{0}?workFlowId={1}", Request.Url.AbsolutePath, _workflow.Id ), false );
+                        NavigateToCurrentPageReference( new Dictionary<string, string> { { "WorkflowId", _workflow.Id.ToString() } } );
                     }
                     else
                     {
