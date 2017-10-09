@@ -404,7 +404,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         {
             pnlEdit.Visible = false;
             pnlView.Visible = true;
-
+            List<int> toRemove = new List<int>();
             var entityType = EntityTypeCache.Read( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066".AsGuid() );
 
             if ( entityType != null )
@@ -425,6 +425,16 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 if ( !String.IsNullOrWhiteSpace( userPreference ) )
                 {
                     registrationList = JsonConvert.DeserializeObject<List<RegistrationInstanceCount>>( userPreference );
+
+                    // remove item no longer followed
+                    foreach ( var registrationInstance in registrationList )
+                    {
+                        if ( !qryFollowedItems.Any( f => f.Id == registrationInstance.InstanceId ) )
+                        {
+                            toRemove.Add( registrationInstance.InstanceId );
+                        }
+                    }
+                    registrationList.RemoveAll( x => toRemove.Contains( x.InstanceId ) );
 
                     foreach ( var registrationInstance in registrationList )
                     {
@@ -523,7 +533,6 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                             registrationInstance.Count = registrantIdList.Count;
                         }
                     }
-
                 }
 
                 // Add any followed items that are not pre-defined.
@@ -555,6 +564,17 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
                 string template = GetAttributeValue( "LavaTemplate" );
                 lContent.Text = template.ResolveMergeFields( mergeFields );
+
+                // Resave followed registrations if we removed some that are no longer followed.
+                if ( toRemove.Count > 0 )
+                {
+                    var jsonSetting = new JsonSerializerSettings
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                        ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                    };
+                    this.SetUserPreference( "FollowedRegistrations", JsonConvert.SerializeObject( registrationList, Formatting.None, jsonSetting ) );
+                }
 
                 // show debug info
                 if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
