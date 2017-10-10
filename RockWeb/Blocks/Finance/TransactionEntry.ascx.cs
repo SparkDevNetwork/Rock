@@ -610,6 +610,12 @@ TransactionAccountDetails: [
                 dtpStartDate.SelectedDate = RockDateTime.Today.AddDays( 1 );
             }
 
+            if ( oneTime && dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate.Value.Date != RockDateTime.Today )
+            {
+                // A future "one-time" transaction is not really a one-time transaction. It's processed as a scheduled transaction
+                oneTime = false;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 BindSavedAccounts( rockContext, oneTime );

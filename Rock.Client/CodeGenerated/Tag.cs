@@ -41,7 +41,7 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public int EntityTypeId { get; set; }
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public string EntityTypeQualifierColumn { get; set; }

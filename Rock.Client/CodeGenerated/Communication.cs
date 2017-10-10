@@ -222,6 +222,9 @@ namespace Rock.Client
         public CommunicationTemplate CommunicationTemplate { get; set; }
 
         /// <summary />
+        public Group ListGroup { get; set; }
+
+        /// <summary />
         public ICollection<CommunicationRecipient> Recipients { get; set; }
 
         /// <summary />

@@ -13,7 +13,18 @@
                 </div>
                 <div class="panel-body">
                     <div class="grid grid-panel">
-                        <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" OnRowSelected="gReport_RowSelected" />
+                        <Rock:Grid ID="gReport" runat="server" AllowSorting="true" RowItemText="Tag" EmptyDataText="No Results" OnRowSelected="gReport_RowSelected" >
+                            <Columns>
+                                <Rock:SelectField Visible="false" />
+                                <Rock:RockBoundField DataField="Id" Visible="false" />
+                                <Rock:RockBoundField DataField="PersonId" Visible="false" />
+                                <Rock:RockTemplateField HeaderText="Item">
+                                    <ItemTemplate><%# GetItemName( (int)Eval( "EntityTypeId" ), (Guid)Eval( "EntityGuid" ) ) %></ItemTemplate>
+                                </Rock:RockTemplateField>
+                                <Rock:DateField HeaderText="Date Tagged" DataField="CreatedDateTime" SortExpression="CreatedDateTime" />
+                                <Rock:DeleteField OnClick="gReport_Delete" />
+                            </Columns>
+                        </Rock:Grid>
                     </div>
 
                 </div>

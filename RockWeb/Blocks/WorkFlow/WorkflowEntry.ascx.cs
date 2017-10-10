@@ -814,7 +814,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( HydrateObjects() && _action != null && _action.Id != previousActionId )
                     {
-                        BuildForm( true );
+                        NavigateToCurrentPageReference( new Dictionary<string, string> { { "WorkflowId", _workflow.Id.ToString() } } );
                     }
                     else
                     {

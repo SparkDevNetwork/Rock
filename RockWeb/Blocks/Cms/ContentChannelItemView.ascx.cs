@@ -31,6 +31,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -544,6 +545,33 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
+                // Find any possible tags for the items
+                var itemTags = new Dictionary<Guid, string>();
+                if ( selectedChannel.IsTaggingEnabled )
+                {
+                    itemTags = items.ToDictionary( i => i.Guid, v => "" );
+                    var entityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid() ).Id;
+                    var testedTags = new Dictionary<int, string>();
+
+                    foreach ( var taggedItem in new TaggedItemService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( i =>
+                            i.EntityTypeId == entityTypeId &&
+                            itemTags.Keys.Contains( i.EntityGuid ) )
+                        .OrderBy( i => i.Tag.Name ) )
+                    {
+                        if ( !testedTags.ContainsKey( taggedItem.TagId ) )
+                        {
+                            testedTags.Add( taggedItem.TagId, taggedItem.Tag.IsAuthorized( Authorization.VIEW, CurrentPerson ) ? taggedItem.Tag.Name : string.Empty );
+                        }
+
+                        if ( testedTags[taggedItem.TagId].IsNotNullOrWhitespace() )
+                        {
+                            itemTags[taggedItem.EntityGuid] += string.Format( "<span class='tag'>{0}</span>", testedTags[taggedItem.TagId] );
+                        }
+                    }
+                }
+
                 gContentChannelItems.ObjectList = new Dictionary<string, object>();
                 items.ForEach( i => gContentChannelItems.ObjectList.Add( i.Id.ToString(), i ) );
 
@@ -556,6 +584,7 @@ namespace RockWeb.Blocks.Cms
                     i.ExpireDateTime,
                     i.Priority,
                     Status = DisplayStatus( i.Status ),
+                    Tags = itemTags.GetValueOrNull( i.Guid ),
                     Occurrences = i.EventItemOccurrences.Any(),
                     CreatedByPersonName = i.CreatedByPersonAlias != null ? String.Format( "<a href={0}>{1}</a>", ResolveRockUrl( string.Format( "~/Person/{0}", i.CreatedByPersonAlias.PersonId ) ), i.CreatedByPersonName ) : String.Empty
                 } ).ToList();
@@ -835,6 +864,17 @@ namespace RockWeb.Blocks.Cms
                 createdByPersonNameField.HeaderText = "Created By";
                 createdByPersonNameField.HtmlEncode = false;
                 gContentChannelItems.Columns.Add( createdByPersonNameField );
+
+                // Add Tag Field
+                if ( channel.IsTaggingEnabled )
+                {
+                    var tagField = new BoundField();
+                    gContentChannelItems.Columns.Add( tagField );
+                    tagField.DataField = "Tags";
+                    tagField.HeaderText = "Tags";
+                    tagField.ItemStyle.CssClass = "taglist";
+                    tagField.HtmlEncode = false;
+                }
 
                 bool canEditChannel = channel.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                 gContentChannelItems.Actions.ShowAdd = canEditChannel;

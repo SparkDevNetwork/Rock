@@ -1302,41 +1302,47 @@ namespace RockWeb.Blocks.Crm
                 if ( !string.IsNullOrWhiteSpace( ddlTagList.SelectedValue ) )
                 {
                     int tagId = ddlTagList.SelectedValue.AsInteger();
-                    var taggedItemService = new TaggedItemService( rockContext );
 
-                    // get guids of selected individuals
-                    var personGuids = new PersonService( rockContext ).Queryable( true )
-                                        .Where( p =>
-                                            ids.Contains( p.Id ) )
-                                        .Select( p => p.Guid )
-                                        .ToList();
-
-                    if ( ddlTagAction.SelectedValue == "Add" )
+                    var tag = new TagService( rockContext ).Get( tagId );
+                    if ( tag != null && tag.IsAuthorized( "TAG", CurrentPerson ) )
                     {
-                        foreach ( var personGuid in personGuids )
-                        {
-                            if ( !taggedItemService.Queryable().Where( t => t.TagId == tagId && t.EntityGuid == personGuid ).Any() )
-                            {
-                                TaggedItem taggedItem = new TaggedItem();
-                                taggedItem.TagId = tagId;
-                                taggedItem.EntityGuid = personGuid;
+                        var taggedItemService = new TaggedItemService( rockContext );
 
-                                taggedItemService.Add( taggedItem );
-                                rockContext.SaveChanges();
+                        // get guids of selected individuals
+                        var personGuids = new PersonService( rockContext ).Queryable( true )
+                                            .Where( p =>
+                                                ids.Contains( p.Id ) )
+                                            .Select( p => p.Guid )
+                                            .ToList();
+
+                        if ( ddlTagAction.SelectedValue == "Add" )
+                        {
+                            foreach ( var personGuid in personGuids )
+                            {
+                                if ( !taggedItemService.Queryable().Where( t => t.TagId == tagId && t.EntityGuid == personGuid ).Any() )
+                                {
+                                    TaggedItem taggedItem = new TaggedItem();
+                                    taggedItem.TagId = tagId;
+                                    taggedItem.EntityTypeId = personEntityTypeId;
+                                    taggedItem.EntityGuid = personGuid;
+
+                                    taggedItemService.Add( taggedItem );
+                                    rockContext.SaveChanges();
+                                }
                             }
                         }
-                    }
-                    else // remove
-                    {
-                        foreach ( var personGuid in personGuids )
+                        else // remove
                         {
-                            var taggedPerson = taggedItemService.Queryable().Where( t => t.TagId == tagId && t.EntityGuid == personGuid ).FirstOrDefault();
-                            if ( taggedPerson != null )
+                            foreach ( var personGuid in personGuids )
                             {
-                                taggedItemService.Delete( taggedPerson );
+                                var taggedPerson = taggedItemService.Queryable().Where( t => t.TagId == tagId && t.EntityGuid == personGuid ).FirstOrDefault();
+                                if ( taggedPerson != null )
+                                {
+                                    taggedItemService.Delete( taggedPerson );
+                                }
                             }
+                            rockContext.SaveChanges();
                         }
-                        rockContext.SaveChanges();
                     }
                 }
                 #endregion
