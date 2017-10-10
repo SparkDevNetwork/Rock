@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField("Show Last Modified Date Column", "Allows the Last Modified Date column to be hidden.", true, "", 2)]
     [BooleanField( "Show Group Column", "Allows the group column to be hidden.", false, "", 3 )]
     [BooleanField( "Limit Pledges To Current Person", "Limit the results to pledges for the current person.", false, "", 4)]
+    [BooleanField( "Show Account Summary", "Should the account summary be displayed at the bottom of the list?", false, order: 5 )]
 
     [BooleanField( "Show Person Filter", "Allows person filter to be hidden.", true, "Display Filters", 0)]
     [BooleanField( "Show Account Filter", "Allows account filter to be hidden.", true, "Display Filters", 1 )]
@@ -420,6 +421,31 @@ namespace RockWeb.Blocks.Finance
 
             gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.AccountId ).ToList();
             gPledges.DataBind();
+
+            var showAccountSummary = this.GetAttributeValue( "ShowAccountSummary" ).AsBoolean();
+            if ( showAccountSummary || TargetPerson == null )
+            {
+                pnlSummary.Visible = true;
+
+                var summaryList = pledges
+                                .GroupBy( a => a.AccountId )
+                                .Select( a => new AccountSummaryRow
+                                {
+                                    AccountId = a.Key.Value,
+                                    TotalAmount = a.Sum( x => x.TotalAmount ),
+                                    Name = a.Select( p => p.Account.Name ).FirstOrDefault(),
+                                    Order = a.Select( p => p.Account.Order ).FirstOrDefault()
+                                } ).ToList();
+
+                var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ) : 0;
+                lGrandTotal.Text = grandTotalAmount.FormatAsCurrency();
+                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = a.TotalAmount.FormatAsCurrency() } ).ToList();
+                rptAccountSummary.DataBind();
+            }
+            else
+            {
+                pnlSummary.Visible = false;
+            }
         }
 
         /// <summary>
@@ -469,6 +495,17 @@ namespace RockWeb.Blocks.Finance
         public void SetVisible( bool visible )
         {
             pnlContent.Visible = visible;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class AccountSummaryRow
+        {
+            public int AccountId { get; internal set; }
+            public string Name { get; internal set; }
+            public int Order { get; internal set; }
+            public decimal TotalAmount { get; set; }
         }
     }
 }
