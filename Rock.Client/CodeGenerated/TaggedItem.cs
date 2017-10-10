@@ -38,6 +38,9 @@ namespace Rock.Client
         public Guid EntityGuid { get; set; }
 
         /// <summary />
+        public int EntityTypeId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -91,6 +94,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.EntityGuid = source.EntityGuid;
+            this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsSystem = source.IsSystem;
@@ -112,6 +116,9 @@ namespace Rock.Client
     /// </summary>
     public partial class TaggedItem : TaggedItemEntity
     {
+        /// <summary />
+        public EntityType EntityType { get; set; }
+
         /// <summary />
         public Tag Tag { get; set; }
 

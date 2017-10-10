@@ -3767,6 +3767,19 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object SortByAttribute( DotLiquid.Context context, object input, string attributeKey )
         {
+            return SortByAttribute( context, input, attributeKey, "asc" );
+        }
+        
+        /// <summary>
+        /// Sorts the list of items by the specified attribute's value
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="sortOrder">asc or desc for sort order.</param>
+        /// <returns></returns>
+        public static object SortByAttribute( DotLiquid.Context context, object input, string attributeKey, string sortOrder )
+        {
             if ( input is IEnumerable )
             {
                 var rockContext = GetRockContext( context );
@@ -3789,7 +3802,14 @@ namespace Rock.Lava
                         var item2AttributeValue = item2.AttributeValues.Where( a => a.Key == attributeKey ).FirstOrDefault().Value.SortValue;
                         if ( item1AttributeValue is IComparable && item2AttributeValue is IComparable )
                         {
-                            return ( item1AttributeValue as IComparable ).CompareTo( item2AttributeValue as IComparable );
+                            if (sortOrder.ToLower() == "desc")
+                            {
+                                return ( item2AttributeValue as IComparable ).CompareTo( item1AttributeValue as IComparable );
+                            }
+                            else
+                            {
+                                return ( item1AttributeValue as IComparable ).CompareTo( item2AttributeValue as IComparable );
+                            }
                         }
                         else
                         {

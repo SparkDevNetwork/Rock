@@ -13,7 +13,8 @@
                 this.entityQualifierValue = options.entityQualifierValue;
                 this.preventTagCreation = options.preventTagCreation;
                 this.delaySave = options.delaySave;
-                this.categoryIds = options.categoryIds;
+                this.categoryGuid = options.categoryGuid;
+                this.includeInactive = options.includeInactive;
             },
             exports;
 
@@ -23,19 +24,22 @@
             // from the cache.
             var tagList = exports.tagLists[$(this).attr('id')],
                 restUrl = Rock.settings.get('baseUrl') + 'api/tags';
-            restUrl += '/' + tagList.entityTypeId;
-            restUrl += '/' + tagList.currentPersonId;
-            
+            restUrl += '?entityTypeId=' + tagList.entityTypeId;
+            restUrl += '&ownerId=' + tagList.currentPersonId;
+            restUrl += '&name=' + encodeURIComponent(tagName);
+            restUrl += '&includeInactive' + tagList.includeInactive.toString();
+           
             if (tagList.entityQualifierColumn) {
-                restUrl += '/' + tagList.entityQualifierColumn;
+                restUrl += '&entityQualifier=' + tagList.entityQualifierColumn;
             }
 
             if (tagList.entityQualifierValue) {
-                restUrl += '/' + tagList.entityQualifierValue;
+                restUrl += '&entityQualifierValue=' + tagList.entityQualifierValue;
             }
 
-            restUrl += '?name=' + encodeURIComponent(tagName);
-
+            if (tagList.categoryGuid && tagList.categoryGuid != '') {
+                restUrl += '&categoryGuid=' + tagList.categoryGuid;
+            }
 
             $.ajax({
                 url: restUrl,
@@ -67,10 +71,15 @@
 
             var tagList = this,
                 restUrl = Rock.settings.get('baseUrl') + 'api/taggeditems'
-            restUrl += '/' + tagList.entityTypeId;
-            restUrl += '/' + tagList.currentPersonId;
-            restUrl += '/' + tagList.entityGuid;
-            restUrl += '?name=' + encodeURIComponent(tagName);
+            restUrl += '?entityTypeId=' + tagList.entityTypeId;
+            restUrl += '&ownerId=' + tagList.currentPersonId;
+            restUrl += '&entityGuid=' + tagList.entityGuid;
+            restUrl += '&name=' + encodeURIComponent(tagName);
+            restUrl += '&includeInactive' + tagList.includeInactive.toString();
+
+            if (tagList.categoryGuid && tagList.categoryGuid != '') {
+                restUrl += '&categoryGuid=' + this.categoryGuid;
+            }
 
             // only attempt to add tag if an entityGuid exists
             if (!tagList.delaySave) {
@@ -93,26 +102,33 @@
         };
 
         TagList.prototype.removeTag = function (tagName) {
+
             // Since `removeTag` is being called by the jQuery lib, `this`
             // is the current TagList DOM element. Get the HTML ID and fetch
             // from the cache.
             var tagList = exports.tagLists[$(this).attr('id')],
                 restUrl = Rock.settings.get('baseUrl') + 'api/taggeditems';
-            restUrl += '/' + tagList.entityTypeId;
-            restUrl += '/' + tagList.currentPersonId;
-            restUrl += '/' + tagList.entityGuid;
 
             // only attempt to remove tag if an entityGuid exists
             if (!tagList.delaySave) {
+
+                restUrl += '?entityTypeId=' + tagList.entityTypeId;
+                restUrl += '&ownerId=' + tagList.currentPersonId;
+                restUrl += '&entityGuid=' + tagList.entityGuid;
+                restUrl += '&name=' + encodeURIComponent(tagName);
+                restUrl += '&includeInactive' + tagList.includeInactive.toString();
+
                 if (tagList.entityQualifierColumn) {
-                    restUrl += '/' + tagList.entityQualifierColumn;
+                    restUrl += '&entityQualifier=' + tagList.entityQualifierColumn;
                 }
 
                 if (tagList.entityQualifierValue) {
-                    restUrl += '/' + tagList.entityQualifierValue;
+                    restUrl += '&entityQualifierValue=' + tagList.entityQualifierValue;
                 }
 
-                restUrl += '?name=' + encodeURIComponent(tagName);
+                if (tagList.categoryGuid && tagList.categoryGuid != '') {
+                    restUrl += '&categoryGuid=' + tagList.categoryGuid;
+                }
 
                 $.ajax({
                     type: 'DELETE',
@@ -146,19 +162,20 @@
 
         TagList.prototype.initialize = function () {
 
-            var autoCompleteUrlPrefix = Rock.settings.get('baseUrl') + 'api/tags/availablenames';
-            autoCompleteUrlPrefix += '/' + this.entityTypeId;
-            autoCompleteUrlPrefix += '/' + this.currentPersonId;
+            var restUrl = Rock.settings.get('baseUrl') + 'api/Tags/AvailableNames';
+            restUrl += '?entityTypeId=' + this.entityTypeId;
+            restUrl += '&ownerId=' + this.currentPersonId;
+            restUrl += '&entityGuid=' + this.entityGuid;
+            restUrl += '&includeInactive' + this.includeInactive.toString();
 
-            var autoCompleteUrlSuffix = '/' + this.entityGuid;
             if (this.entityQualifierColumn) {
-                autoCompleteUrlSuffix += '/' + this.entityQualifierColumn;
+                restUrl += '&entityQualifier=' + this.entityQualifierColumn;
             }
             if (this.entityQualifierValue) {
-                autoCompleteUrlSuffix += '/' + this.entityQualifierValue;
+                restUrl += '&entityQualifierValue=' + this.entityQualifierValue;
             }
-            if (this.categoryIds) {
-                autoCompleteUrlSuffix += '?categoryIds=' + this.categoryIds;
+            if (this.categoryGuid && this.categoryGuid != '') {
+                restUrl += '&categoryGuid=' + this.categoryGuid;
             }
 
             $('ul.ui-autocomplete').css({ 'width': '300px' });
@@ -166,7 +183,7 @@
             $('#' + this.controlId).tagsInput({
                 autocomplete_url: function (request, response) {
                     $.ajax({
-                        url: autoCompleteUrlPrefix + '/' + request.term + autoCompleteUrlSuffix,
+                        url: restUrl + '&name=' + request.term,
                         dataType: 'json',
                         success: function (data, status, xhr) {
                             response($.map(data, function (item) {

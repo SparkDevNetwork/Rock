@@ -357,6 +357,10 @@
     <Compile Include="Migrations\201710061805334_CommunicationListGroup.Designer.cs">
       <DependentUpon>201710061805334_CommunicationListGroup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201710070331132_TagEntityUpdate.cs" />
+    <Compile Include="Migrations\201710070331132_TagEntityUpdate.Designer.cs">
+      <DependentUpon>201710070331132_TagEntityUpdate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2773,6 +2777,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201710061805334_CommunicationListGroup.resx">
       <DependentUpon>201710061805334_CommunicationListGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710070331132_TagEntityUpdate.resx">
+      <DependentUpon>201710070331132_TagEntityUpdate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

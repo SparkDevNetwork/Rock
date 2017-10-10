@@ -107,6 +107,7 @@ namespace Rock.Workflow.Action
                                         {
                                             TaggedItem taggedPerson = new TaggedItem();
                                             taggedPerson.Tag = orgTag;
+                                            taggedPerson.EntityTypeId = personEntityType.Id;
                                             taggedPerson.EntityGuid = person.Guid;
                                             orgTag.TaggedItems.Add( taggedPerson );
                                             rockContext.SaveChanges();
