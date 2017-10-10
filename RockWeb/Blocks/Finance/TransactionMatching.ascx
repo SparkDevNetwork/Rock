@@ -112,7 +112,7 @@
                                 </div>
                                 <asp:Panel ID="pnlAddOptionalAccount" runat="server" CssClass="row" Visible="false">
                                     <div class="col-md-8">
-                                        <Rock:RockDropDownList ID="ddlAddAccount" runat="server" CssClass="js-add-account" EnhanceForLongLists="true" onblur="javascript:return handleAddAccountBoxEvent(this, event);" onkeydown="javascript:return handleAddAccountBoxEvent(this, event);" />
+                                        <Rock:RockDropDownList ID="ddlAddAccount" runat="server" CssClass="js-add-account" EnhanceForLongLists="true" />
                                     </div>
                                     <div class="col-md-4" style="margin-left:-10px">
                                         <Rock:CurrencyBox ID="cbOptionalAccountAmount" runat="server" CssClass="input-width-md" />
