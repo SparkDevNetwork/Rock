@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Cms
     [Description( "Lists themes in the Theme folder." )]
 
     [LinkedPage("Theme Styler Page", "Page to use for the theme styler page.")]
-    public partial class ThemeList : Rock.Web.UI.RockBlock
+    public partial class ThemeList : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
         #region Fields
 

@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Administration
     [Description( "Lists all scheduled jobs." )]
 
     [LinkedPage("Detail Page")]
-    public partial class ScheduledJobList : RockBlock
+    public partial class ScheduledJobList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

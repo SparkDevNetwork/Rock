@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Cms
     [Description( "Lists content channels." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class ContentChannelList : RockBlock, ISecondaryBlock
+    public partial class ContentChannelList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
 
         #region Control Methods

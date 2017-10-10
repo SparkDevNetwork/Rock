@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Administration
     [Description( "Lists all the REST controllers." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class RestControllerList : RockBlock
+    public partial class RestControllerList : RockBlock, ICustomGridColumns
     {
 
         #region Base Control Methods
@@ -55,8 +55,11 @@ namespace RockWeb.Blocks.Administration
             gControllers.Actions.ShowAdd = false;
             gControllers.IsDeleteEnabled = false;
 
-            SecurityField securityField = gControllers.Columns[3] as SecurityField;
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RestController ) ).Id;
+            var securityField = gControllers.ColumnsOfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RestController ) ).Id;
+            }
         }
 
         /// <summary>
