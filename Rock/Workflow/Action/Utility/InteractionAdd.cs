@@ -142,7 +142,7 @@ namespace Rock.Workflow.Action
             var interactionEntityId = GetAttributeValue( action, "InteractionEntityId", true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
 
             // Write the interaction record
-            var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, interactionEntityId, operation, interactionData, personAliasId, RockDateTime.Now, null, null, null, null, null );
+            var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, interactionEntityId, operation, interactionData, personAliasId, RockDateTime.Now, null, null, null, null, null, null );
             interaction.InteractionSummary = interactionSummary;
             rockContext.SaveChanges();
 

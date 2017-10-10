@@ -137,7 +137,7 @@ namespace RockWeb
                             var clientBrowser = client.UserAgent.ToString();
                             var clientType = InteractionDeviceType.GetClientType( userAgent );
 
-                            interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, RockDateTime.Now, clientBrowser, clientOs, clientType, userAgent, ipAddress );
+                            interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, RockDateTime.Now, clientBrowser, clientOs, clientType, userAgent, ipAddress, null );
 
                             rockContext.SaveChanges();
                             
