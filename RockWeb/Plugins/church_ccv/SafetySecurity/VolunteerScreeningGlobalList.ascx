@@ -15,9 +15,9 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                         <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
-                        <Rock:RockDropDownList ID="ddlStarsApp" runat="server" Label="STARS Applicant" />
+                        <Rock:RockDropDownList ID="ddlApplicationType" runat="server" Label="Application Type" />
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
-                        <Rock:RockTextBox ID="tbPersonName" runat="server" Label="Person Name" />
+                        <Rock:RockTextBox ID="tbApplicantName" runat="server" Label="Applicant Name" />
                     </Rock:GridFilter>
 
                     <Rock:Grid ID="gGrid" runat="server" OnRowSelected="gGrid_Edit">
@@ -27,7 +27,7 @@
                             <Rock:RockBoundField DataField="SentDate" HeaderText="Application Sent" SortExpression="SentDate" />
                             <Rock:RockBoundField DataField="CompletedDate" HeaderText="Application Completed" SortExpression="CompletedDate" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus" />
-                            <Rock:RockBoundField DataField="IsStars" HeaderText="STARS Applicant" />
+                            <Rock:RockBoundField DataField="ApplicationType" HeaderText="Application Type" />
                             <Rock:RockBoundField DataField="MinistryLeader" HeaderText="Ministry Leader" SortExpression="MinistryLeader" />
                         </Columns>
                     </Rock:Grid>
