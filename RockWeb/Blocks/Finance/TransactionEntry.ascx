@@ -46,7 +46,7 @@
                                         <div id="divRepeatingPayments" runat="server" visible="false">
                                             <Rock:ButtonDropDownList ID="btnFrequency" runat="server" Label="Frequency"
                                                 DataTextField="Value" DataValueField="Id" AutoPostBack="true" OnSelectionChanged="btnFrequency_SelectionChanged" />
-                                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" />
+                                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" AutoPostBack="true" OnTextChanged="btnFrequency_SelectionChanged" />
                                         </div>
 
                                         <Rock:RockTextBox ID="txtCommentEntry" runat="server" Required="true" Label="Comment" />
@@ -168,8 +168,8 @@
 
                                     <div id="divACHPaymentInfo" runat="server" visible="false" class="tab-pane">
                                         <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Name on Account" />
-                                        <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" />
-                                        <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account #" />
+                                        <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing Number" />
+                                        <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account Number" />
                                         <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">
                                             <asp:ListItem Text="Checking" Value="checking" Selected="true" />
                                             <asp:ListItem Text="Savings" Value="savings" />
