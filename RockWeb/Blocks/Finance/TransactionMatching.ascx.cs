@@ -575,18 +575,27 @@ namespace RockWeb.Blocks.Finance
                         accountBox.Text = string.Empty;
                     }
 
+                    bool existingAmounts = false;
                     foreach ( var detail in transactionToMatch.TransactionDetails )
                     {
                         var accountBox = rptAccounts.ControlsOfTypeRecursive<CurrencyBox>().Where( a => a.Attributes["data-account-id"].AsInteger() == detail.AccountId ).FirstOrDefault();
                         if ( accountBox != null )
                         {
+                            existingAmounts = true;
                             accountBox.Text = detail.Amount.ToString();
                         }
                     }
 
-                    string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
-                    bool onlyShowSelectedAccounts = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
-                    UpdateVisibleAccountBoxes( onlyShowSelectedAccounts );
+                    if ( existingAmounts )
+                    {
+                        string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+                        bool onlyShowSelectedAccounts = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
+                        UpdateVisibleAccountBoxes( onlyShowSelectedAccounts );
+                    }
+                    else
+                    {
+                        UpdateVisibleAccountBoxes();
+                    }
 
                     tbSummary.Text = transactionToMatch.Summary;
 
