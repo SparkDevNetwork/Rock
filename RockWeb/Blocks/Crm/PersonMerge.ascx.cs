@@ -410,6 +410,11 @@ validity of the request before completing this merge." :
                         primaryPerson.SystemNote = GetNewStringValue( "InactiveReasonNote", changes );
                         primaryPerson.SystemNote = GetNewStringValue( "SystemNote", changes );
 
+                        var peopleIds = MergeData.People.Select( a => a.Id ).ToList();
+                        primaryPerson.CreatedDateTime = personService.Queryable()
+                                                        .Where( p => peopleIds.Contains( p.Id ) )
+                                                        .Min( a => a.CreatedDateTime );
+
                         // Update phone numbers
                         var phoneTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
                         foreach ( var phoneType in phoneTypes )
