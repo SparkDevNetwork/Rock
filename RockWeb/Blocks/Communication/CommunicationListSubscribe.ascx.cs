@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "Communication List Subscribe" )]
     [Category( "Communication" )]
     [Description( "Block that allows a person to manage the communication lists that they are subscribed to" )]
-    [GroupCategoryField( "Communication List Categories", "Select the categories of the communication lists to display, or select none to show all.", true, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, required: false, order: 1 )]
+    [GroupCategoryField( "Communication List Categories", "Select the categories of the communication lists to display, or select none to show all that the user is authorized to view.", true, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, required: false, order: 1 )]
     public partial class CommunicationListSubscribe : RockBlock
     {
         #region fields
