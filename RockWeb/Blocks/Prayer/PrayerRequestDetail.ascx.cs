@@ -343,6 +343,10 @@ namespace RockWeb.Blocks.Prayer
             }
 
             descriptionList.Add( "Name", prayerRequest.FullName );
+            if ( !string.IsNullOrWhiteSpace( prayerRequest.Email ) )
+            {
+                descriptionList.Add( "Email", String.Format( "<a href='mailto:{0}'>{0}</a>", prayerRequest.Email ) );
+            }
             descriptionList.Add( "Campus", prayerRequest.Campus );
             descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
             descriptionList.Add( "Answer", prayerRequest.Answer.ScrubHtmlAndConvertCrLfToBr() );
