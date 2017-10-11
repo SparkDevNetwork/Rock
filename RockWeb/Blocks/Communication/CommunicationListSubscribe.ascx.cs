@@ -296,7 +296,12 @@ namespace RockWeb.Blocks.Communication
             var categoryService = new CategoryService( rockContext );
 
             int communicationListGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
-            var communicationListQry = groupService.Queryable().Where( a => a.GroupTypeId == communicationListGroupTypeId && a.IsActive );
+
+            // Get a list of all the Active CommunicationLists, but exclude Sync'd groups that the person is not in (Sync'ing would remove that person)
+            var communicationListQry = groupService.Queryable()
+                .Where( a => a.GroupTypeId == communicationListGroupTypeId
+                        && a.IsActive
+                        && ( a.SyncDataViewId == null || a.Members.Any(m => m.PersonId == this.CurrentPersonId) ) );
 
             var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
 
@@ -320,12 +325,6 @@ namespace RockWeb.Blocks.Communication
                     {
                         viewableCommunicationLists.Add( communicationList );
                     }
-                }
-
-                // also include any lists that the person is currently subscribed to (if not listed already)
-                if ( groupMemberService.Queryable().Any( a => a.GroupId == communicationList.Id && a.GroupMemberStatus == GroupMemberStatus.Active && a.PersonId == this.CurrentPersonId ) )
-                {
-                    viewableCommunicationLists.Add( communicationList );
                 }
             }
 
