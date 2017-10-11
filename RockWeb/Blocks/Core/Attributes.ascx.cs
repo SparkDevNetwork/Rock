@@ -129,9 +129,23 @@ namespace RockWeb.Blocks.Core
                     lEntityQualifierField.Visible = !_configuredType;   // qualifier
                 }
 
-                rGrid.Columns[5].Visible = !_displayValueEdit; // default value / value
-                rGrid.Columns[6].Visible = _displayValueEdit; // default value / value
-                rGrid.Columns[7].Visible = _displayValueEdit;  // edit
+                var rtDefaultValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtDefaultValue" );
+                if ( rtDefaultValueField != null )
+                {
+                    rtDefaultValueField.Visible = !_displayValueEdit; // default value / value
+                }
+
+                var rtValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtValue" );
+                if ( rtValueField != null )
+                {
+                    rtValueField.Visible = _displayValueEdit; // default value / value
+                }
+
+                var editField = rGrid.ColumnsOfType<EditField>().FirstOrDefault();
+                if ( editField != null )
+                {
+                    editField.Visible = _displayValueEdit; // edit
+                }
 
                 var securityField = rGrid.ColumnsOfType<SecurityField>().FirstOrDefault();
                 if ( securityField != null )
