@@ -169,6 +169,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete]
         public bool IsAnalyticSupported { get; set; }
 
         /// <summary>
@@ -177,7 +178,83 @@ namespace Rock.Web.Cache
         /// <value>
         /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete]
         public bool IsAnalyticHistoricalSupported { get; set; }
+
+        /// <summary>
+        /// Determines whether [is analytics supported] [the specified entity type qualifier column].
+        /// </summary>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is analytics supported] [the specified entity type qualifier column]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsAnalyticsSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            Type type = this.GetEntityType();
+
+            if ( type != null )
+            {
+                return type.GetCustomAttributes( true ).OfType<AnalyticsAttribute>()
+                        .Any( x =>
+                            ( string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( entityTypeQualifierColumn ) )
+                                || ( x.EntityTypeQualifierColumn == entityTypeQualifierColumn && x.EntityTypeQualifierValue == entityTypeQualifierValue )
+                            );
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether [is analytics historical supported] [the specified entity type qualifier column].
+        /// </summary>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is analytics historical supported] [the specified entity type qualifier column]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsAnalyticsHistoricalSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            Type type = this.GetEntityType();
+
+            if ( type != null )
+            {
+                return type.GetCustomAttributes( true ).OfType<AnalyticsAttribute>()
+                        .Where( a => a.SupportsHistory )
+                        .Any( x =>
+                            ( string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( entityTypeQualifierColumn ) )
+                                || ( x.EntityTypeQualifierColumn == entityTypeQualifierColumn && x.EntityTypeQualifierValue == entityTypeQualifierValue )
+                            );
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance support dynamically added Attributes for the Analytic Tables for the specified Attribute
+        /// </summary>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is analytic attributes supported] [the specified attribute]; otherwise, <c>false</c>.
+        /// </returns>
+        /// <value></value>
+        public bool IsAnalyticAttributesSupported( string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            Type type = this.GetEntityType();
+
+            if ( type != null )
+            {
+                return type.GetCustomAttributes( true ).OfType<AnalyticsAttribute>()
+                        .Where( a => a.SupportsAttributes )
+                        .Any( x =>
+                            ( string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( entityTypeQualifierColumn ) )
+                                || ( x.EntityTypeQualifierColumn == entityTypeQualifierColumn && x.EntityTypeQualifierValue == entityTypeQualifierValue )
+                            );
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Gets or sets the index result template.
@@ -241,8 +318,6 @@ namespace Rock.Web.Cache
                 this.MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
                 this.IsIndexingEnabled = entityType.IsIndexingEnabled;
                 this.IsIndexingSupported = entityType.IsIndexingSupported;
-                this.IsAnalyticSupported = entityType.IsAnalyticSupported;
-                this.IsAnalyticHistoricalSupported = entityType.IsAnalyticHistoricalSupported;
                 this.IndexResultTemplate = entityType.IndexResultTemplate;
                 this.IndexDocumentUrl = entityType.IndexDocumentUrl;
                 this.LinkUrlLavaTemplate = entityType.LinkUrlLavaTemplate;

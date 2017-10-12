@@ -490,6 +490,7 @@
     <Compile Include="Data\FieldTypeAttribute.cs" />
     <Compile Include="Data\AnalyticHistoryFieldAttribute.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
+    <Compile Include="Data\AnalyticsAttribute.cs" />
     <Compile Include="Data\IAnalyticHistorical.cs" />
     <Compile Include="Data\IAnalytic.cs" />
     <Compile Include="Data\ICategorized.cs" />
@@ -674,6 +675,7 @@
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
+    <Compile Include="Jobs\ProcessAnalyticsDimFamily.cs" />
     <Compile Include="Jobs\ProcessAnalyticsDimPerson.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />

@@ -19,7 +19,7 @@ using System;
 namespace Rock.Data
 {
     /// <summary>
-    /// Custom attribute used to decorate model properties of an IAnalyticHistorical model that indicates 
+    /// Custom attribute used to decorate model properties of an [Analytics (supportsHistory=true)] model  that indicates 
     /// that changes to the value of the property should count as "Analytic History"
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
