@@ -193,7 +193,10 @@
 
             </div>
 
-            <Rock:NotificationBox ID="nbSelectionMessage" runat="server" Visible="false"></Rock:NotificationBox>
+            <Rock:NotificationBox ID="nbSelectionMessage" runat="server" Visible="false" ></Rock:NotificationBox>
+            <div ID="nbClientSideNotification" runat="server" class="alert alert-danger" style="display: none">
+		        <strong><p>Before we finish...</p> </strong>
+	        </div>
 
             <div class="actions clearfix margin-b-lg">
                 <a id="lHistoryBackButton" runat="server" class="btn btn-link" href="javascript: window.history.back();" >Previous</a>

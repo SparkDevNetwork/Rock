@@ -3111,15 +3111,29 @@ TransactionAcountDetails: [
         }});
 
         // Disable the submit button as soon as it's clicked to prevent double-clicking
-        $('a[id$=""btnNext""]').click(function() {{
-            $(this).unbind('click');
+        $('[id$=""aStep2Submit""]').click(function() {{
+            var pageValid = true;
+            if ( $('#{22}').hasClass('active') )
+            {{
+                if ( $('#{8}').val() === '')
+                {{
+                    pageValid = false;
+                }}
+
+                if ( $('#{10}').val() === '')
+                {{
+                    pageValid = false;
+                }}
+            }}
+
+            $( this).unbind('click');
             if (typeof (Page_ClientValidate) == 'function') {{
-                if (Page_IsValid) {{
+                if (Page_IsValid ) {{
                     Page_ClientValidate();
                 }}
             }}
-            if (Page_IsValid) {{
-			    $(this).addClass('disabled');
+            if (Page_IsValid && pageValid ) {{
+			    $( this).addClass('disabled');
 			    $(this).click(function () {{
 				    return false;
 			    }});
@@ -3134,6 +3148,33 @@ TransactionAcountDetails: [
     // Posts the iframe (step 2)
     $('#aStep2Submit').on('click', function(e) {{
         e.preventDefault();
+
+        if ( $('#{22}').hasClass('active') )
+        {{
+            var pageValid = true;
+            var errorText = $('#{21}').html();
+            var ccNumber = $('#{8}').val();
+            if ( ccNumber === '')
+            {{
+                errorText += 'Make sure to enter a valid credit card number.<br />';
+                pageValid = false;
+            }}
+
+            var cvvCode = $('#{10}').val();
+            if ( cvvCode === '')
+            {{
+                errorText += 'Make sure to enter a valid credit card security code.<br />';
+                pageValid = false;
+            }}
+
+            if ( !pageValid )
+            {{
+                $('#{21}').show();
+                $('#{21}').html( errorText );
+                return;
+            }}
+        }}
+
         if (typeof (Page_ClientValidate) == 'function') {{
             if (Page_IsValid && Page_ClientValidate('{7}') ) {{
                 $(this).prop('disabled', true);
@@ -3220,7 +3261,9 @@ TransactionAcountDetails: [
                 acBillingAddress.ClientID,      // {17}
                 txtCardFirstName.ClientID,      // {18}
                 txtCardLastName.ClientID,       // {19}
-                txtCardName.ClientID            // {20}
+                txtCardName.ClientID,            // {20}
+                nbClientSideNotification.ClientID, // {21}
+                liCreditCard.ClientID           // {22}
             );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
