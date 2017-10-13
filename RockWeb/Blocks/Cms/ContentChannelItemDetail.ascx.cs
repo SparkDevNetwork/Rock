@@ -697,6 +697,13 @@ namespace RockWeb.Blocks.Cms
 
             ContentChannelItem contentItem = GetContentItem();
 
+            if ( contentItem == null )
+            {
+                // this block requires a valid ContentChannel in order to know which channel the ContentChannelItem belongs to, so if ContentChannel wasn't specified, don't show this block
+                this.Visible = false;
+                return;
+            }
+
             taglTags.EntityTypeId = EntityTypeCache.Read( typeof( ContentChannelItem ) ).Id;
             taglTags.CategoryGuid = ( contentItem.ContentChannel != null && contentItem.ContentChannel.ItemTagCategory != null ) ?
                  contentItem.ContentChannel.ItemTagCategory.Guid : (Guid?)null;
