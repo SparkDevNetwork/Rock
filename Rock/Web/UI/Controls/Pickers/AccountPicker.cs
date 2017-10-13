@@ -142,6 +142,39 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Returns a list of the ancestor FinancialAccounts of the specified FinancialAccount.
+        /// If the ParentFinancialAccount property of the FinancialAccount is not populated, it is assumed to be a top-level node.
+        /// </summary>
+        /// <param name="financialAccount">The financial account.</param>
+        /// <param name="ancestorFinancialAccountIds">The ancestor financial account ids.</param>
+        /// <returns></returns>
+        private List<int> GetFinancialAccountAncestorsIdList( FinancialAccount financialAccount, List<int> ancestorFinancialAccountIds = null )
+        {
+            if ( ancestorFinancialAccountIds == null )
+            {
+                ancestorFinancialAccountIds = new List<int>();
+            }
+
+            if ( financialAccount == null )
+            {
+                return ancestorFinancialAccountIds;
+            }
+
+            // If we have encountered this node previously in our tree walk, there is a recursive loop in the tree.
+            if ( ancestorFinancialAccountIds.Contains( financialAccount.Id ) )
+            {
+                return ancestorFinancialAccountIds;
+            }
+
+            // Create or add this node to the history stack for this tree walk.
+            ancestorFinancialAccountIds.Insert( 0, financialAccount.Id );
+
+            ancestorFinancialAccountIds = this.GetFinancialAccountAncestorsIdList( financialAccount.ParentAccount, ancestorFinancialAccountIds );
+
+            return ancestorFinancialAccountIds;
+        }
+
+        /// <summary>
         /// Sets the values.
         /// </summary>
         /// <param name="accounts">The accounts.</param>
@@ -153,31 +186,28 @@ namespace Rock.Web.UI.Controls
             {
                 var ids = new List<string>();
                 var names = new List<string>();
-                List<int> parentAccountIds = new List<int>();
+                var parentIds = new List<int>();
 
-                foreach ( var account in financialAccounts )
+                foreach ( var account in accounts )
                 {
                     if ( account != null )
                     {
                         ids.Add( account.Id.ToString() );
-                        names.Add( account.PublicName );
+                        names.Add( account.Name );
                         var parentAccount = account.ParentAccount;
-
-                        while ( parentAccount != null )
+                        var accountParentIds = GetFinancialAccountAncestorsIdList( parentAccount );
+                        foreach ( var accountParentId in accountParentIds )
                         {
-                            if ( parentAccountIds.Contains( parentAccount.Id ) )
+                            if ( !parentIds.Contains( accountParentId ) )
                             {
-                                // infinite recursion
-                                break;
+                                parentIds.Add( accountParentId );
                             }
-
-                            parentAccountIds.Insert( 0, parentAccount.Id );
-                            parentAccount = parentAccount.ParentAccount;
                         }
                     }
                 }
 
-                InitialItemParentIds = parentAccountIds.AsDelimited( "," );
+                // NOTE: Order is important (parents before children)
+                InitialItemParentIds = parentIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }
