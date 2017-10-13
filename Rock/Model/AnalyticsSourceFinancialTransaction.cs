@@ -70,8 +70,7 @@ namespace Rock.Model
         public int TransactionDateKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the authorized person key 
-        /// TODO Fix this so that this is: At the Time of the Transaction
+        /// Gets or sets the authorized person key for the person's record at the time of the transaction
         /// </summary>
         /// <value>
         /// The authorized person key.
@@ -80,8 +79,7 @@ namespace Rock.Model
         public int? AuthorizedPersonKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the authorized person key 
-        /// TODO Fix this so that this is: Current Personkey (ETL will have to maintain this )
+        /// Gets or sets the authorized person key for the person's current record
         /// </summary>
         /// <value>
         /// The authorized person key.

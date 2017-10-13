@@ -404,15 +404,9 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                 }
 
                 // refresh the view definitions just in case the schema changed
-                var viewNames = rockContext.Database.SqlQuery<string>( @"SELECT [name]
-FROM sys.VIEWS
-WHERE SCHEMA_NAME(schema_id) = 'dbo'
-	AND [name] LIKE 'AnalyticsDimFamily%'" ).ToList();
-
-                foreach ( var view in viewNames )
-                {
-                    rockContext.Database.ExecuteSqlCommand( $"exec sp_refreshview [{view}]" );
-                }
+                // NOTE: Order is important!
+                rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimFamilyHistorical]" );
+                rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimFamilyCurrent]" );
             }
         }
     }

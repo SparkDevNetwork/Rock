@@ -6,6 +6,8 @@ GO
 CREATE VIEW AnalyticsFactAttendance
 AS
 SELECT asa.*
+    ,adphPerson.PrimaryFamilyKey [FamilyKey]
+	,adpcPerson.PrimaryFamilyKey [CurrentFamilyKey]
     ,isnull(at.NAME, 'None') [AttendanceTypeName]
     ,isnull(l.NAME, 'None') [LocationName]
     ,isnull(c.NAME, 'None') [CampusName]
@@ -24,6 +26,8 @@ SELECT asa.*
         ELSE 'None'
         END [RSVPStatus]
 FROM AnalyticsSourceAttendance asa
+LEFT JOIN AnalyticsDimPersonCurrent adpcPerson ON adpcPerson.Id = asa.CurrentPersonKey
+LEFT JOIN AnalyticsDimPersonHistorical adphPerson ON adphPerson.Id = asa.PersonKey
 LEFT JOIN GroupType at ON at.Id = asa.AttendanceTypeId
 LEFT JOIN Location l ON l.Id = asa.LocationId
 LEFT JOIN Campus c ON c.Id = asa.CampusId
