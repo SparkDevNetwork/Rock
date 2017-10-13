@@ -206,6 +206,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
+                // NOTE: Order is important (parents before children) since the GroupTreeView loads on demand
                 InitialItemParentIds = parentIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
