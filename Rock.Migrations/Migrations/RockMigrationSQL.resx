@@ -580,4 +580,13 @@
   <data name="_201710061805334_CommunicationListGroup_UpdateEmailMediumAttributeValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201710061805334_communicationlistgroup_updateemailmediumattributevalues.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201710131721219_InteractionRelatedEntity_AnalyticsFactAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201710131721219_interactionrelatedentity_analyticsfactattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201710131721219_InteractionRelatedEntity_AnalyticsFactFinancialTransaction" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201710131721219_interactionrelatedentity_analyticsfactfinancialtransaction.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201710131721219_interactionrelatedentity_spanalytics_etl_family.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
