@@ -61,8 +61,6 @@
                                             </Rock:RockTemplateField>
                                             <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                             <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
-                                            <Rock:EditField OnClick="gAccountsEdit_EditClick" />
-                                            <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
