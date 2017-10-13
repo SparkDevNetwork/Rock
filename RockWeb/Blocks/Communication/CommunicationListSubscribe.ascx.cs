@@ -90,7 +90,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            nbResult.Visible = false;
             BindRepeater();
         }
 
@@ -106,7 +105,7 @@ namespace RockWeb.Blocks.Communication
             {
                 var hfGroupId = e.Item.FindControl( "hfGroupId" ) as HiddenField;
                 var cbCommunicationListIsSubscribed = e.Item.FindControl( "cbCommunicationListIsSubscribed" ) as RockCheckBox;
-                var rblCommunicationPreference = e.Item.FindControl( "rblCommunicationPreference" ) as RockRadioButtonList;
+                var tglCommunicationPreference = e.Item.FindControl( "tglCommunicationPreference" ) as Toggle;
 
                 hfGroupId.Value = group.Id.ToString();
                 cbCommunicationListIsSubscribed.Text = group.GetAttributeValue( "PublicName" );
@@ -138,147 +137,30 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
 
-                rblCommunicationPreference.SetValue( ( int ) communicationType );
+                tglCommunicationPreference.Checked = communicationType == CommunicationType.Email;
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSave control.
+        /// Handles the CheckedChanged event of the cbCommunicationListIsSubscribed control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
+        protected void cbCommunicationListIsSubscribed_CheckedChanged( object sender, EventArgs e )
         {
-            bool hasErrors = false;
-            foreach ( var item in rptCommunicationLists.Items.OfType<RepeaterItem>() )
-            {
-                var hfGroupId = item.FindControl( "hfGroupId" ) as HiddenField;
-                var cbCommunicationListIsSubscribed = item.FindControl( "cbCommunicationListIsSubscribed" ) as RockCheckBox;
-                var rblCommunicationPreference = item.FindControl( "rblCommunicationPreference" ) as RockRadioButtonList;
-                var nbGroupNotification = item.FindControl( "nbGroupNotification" ) as NotificationBox;
-
-                using ( var rockContext = new RockContext() )
-                {
-                    int groupId = hfGroupId.Value.AsInteger();
-                    var groupMemberService = new GroupMemberService( rockContext );
-                    var group = new GroupService( rockContext ).Get( groupId );
-                    var groupMemberRecordsForPerson = groupMemberService.Queryable().Where( a => a.GroupId == groupId && a.PersonId == this.CurrentPersonId ).ToList();
-                    if ( groupMemberRecordsForPerson.Any() )
-                    {
-                        // normally there would be at most 1 group member record for the person, but just in case, mark them all
-                        foreach ( var groupMember in groupMemberRecordsForPerson )
-                        {
-                            if ( cbCommunicationListIsSubscribed.Checked )
-                            {
-                                if ( groupMember.GroupMemberStatus == GroupMemberStatus.Inactive )
-                                {
-                                    groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                                    if ( groupMember.Note == "Unsubscribed" )
-                                    {
-                                        groupMember.Note = string.Empty;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if ( groupMember.GroupMemberStatus == GroupMemberStatus.Active )
-                                {
-                                    groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
-                                    if ( groupMember.Note.IsNullOrWhiteSpace() )
-                                    {
-                                        groupMember.Note = "Unsubscribed";
-                                    }
-                                }
-                            }
-
-                            groupMember.LoadAttributes();
-                            CommunicationType communicationType = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
-                            groupMember.SetAttributeValue( "PreferredCommunicationMedium", communicationType.ConvertToInt().ToString() );
-                            groupMember.SaveAttributeValue( "PreferredCommunicationMedium", rockContext );
-                        }
-                    }
-                    else
-                    {
-                        // they are not currently in the Group
-                        if ( cbCommunicationListIsSubscribed.Checked )
-                        {
-                            var groupMember = new GroupMember();
-                            groupMember.PersonId = this.CurrentPersonId.Value;
-                            groupMember.GroupId = group.Id;
-                            int? defaultGroupRoleId = GroupTypeCache.Read( group.GroupTypeId ).DefaultGroupRoleId;
-                            if ( defaultGroupRoleId.HasValue )
-                            {
-                                groupMember.GroupRoleId = defaultGroupRoleId.Value;
-                            }
-                            else
-                            {
-                                nbGroupNotification.Text = "Unable to add to group.";
-                                nbGroupNotification.Details = "Group has no default group role";
-                                nbGroupNotification.NotificationBoxType = NotificationBoxType.Danger;
-                                nbGroupNotification.Visible = true;
-                                hasErrors = true;
-                            }
-
-                            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                            groupMember.LoadAttributes();
-                            CommunicationType communicationType = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
-                            groupMember.SetAttributeValue( "PreferredCommunicationMedium", communicationType.ConvertToInt().ToString() );
-
-                            if ( groupMember.IsValidGroupMember( rockContext ) )
-                            {
-                                groupMemberService.Add( groupMember );
-                                rockContext.SaveChanges();
-                                groupMember.SaveAttributeValue( "PreferredCommunicationMedium", rockContext );
-
-                                if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
-                                {
-                                    Rock.Security.Role.Flush( group.Id );
-                                }
-                            }
-                            else
-                            {
-                                // if the group member couldn't be added (for example, one of the group membership rules didn't pass), add the validation messages to the errormessages
-                                nbGroupNotification.Text = "Unable to add to group.";
-                                nbGroupNotification.Details = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
-                                nbGroupNotification.NotificationBoxType = NotificationBoxType.Danger;
-                                nbGroupNotification.Visible = true;
-                                hasErrors = true;
-                            }
-                        }
-                    }
-
-
-                    rockContext.SaveChanges();
-                }
-            }
-
-            if ( hasErrors )
-            {
-                nbResult.Text = "Email Preferences Updated with warnings";
-                nbResult.NotificationBoxType = NotificationBoxType.Warning;
-                nbResult.Visible = true;
-                pnlCommunicationPreferences.Visible = true;
-            }
-            else
-            {
-                nbResult.Text = "Email Preferences Updated";
-                nbResult.NotificationBoxType = NotificationBoxType.Success;
-                nbResult.Visible = true;
-                pnlCommunicationPreferences.Visible = false;
-            }
+            var repeaterItem = ( sender as RockCheckBox ).BindingContainer as RepeaterItem;
+            SaveChanges( repeaterItem );
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the CheckedChanged event of the tglCommunicationPreference control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void tglCommunicationPreference_CheckedChanged( object sender, EventArgs e )
         {
-            nbResult.Text = "No changes made to email preferences";
-            nbResult.NotificationBoxType = NotificationBoxType.Info;
-            nbResult.Visible = true;
-            pnlCommunicationPreferences.Visible = false;
+            var repeaterItem = ( sender as Toggle ).BindingContainer as RepeaterItem;
+            SaveChanges( repeaterItem );
         }
 
         #endregion
@@ -286,10 +168,119 @@ namespace RockWeb.Blocks.Communication
         #region Methods
 
         /// <summary>
+        /// Saves the changes.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        protected void SaveChanges( RepeaterItem item )
+        {
+            var hfGroupId = item.FindControl( "hfGroupId" ) as HiddenField;
+            var cbCommunicationListIsSubscribed = item.FindControl( "cbCommunicationListIsSubscribed" ) as RockCheckBox;
+            var tglCommunicationPreference = item.FindControl( "tglCommunicationPreference" ) as Toggle;
+            var nbGroupNotification = item.FindControl( "nbGroupNotification" ) as NotificationBox;
+            nbGroupNotification.Visible = false;
+
+            using ( var rockContext = new RockContext() )
+            {
+                int groupId = hfGroupId.Value.AsInteger();
+                var groupMemberService = new GroupMemberService( rockContext );
+                var group = new GroupService( rockContext ).Get( groupId );
+                var groupMemberRecordsForPerson = groupMemberService.Queryable().Where( a => a.GroupId == groupId && a.PersonId == this.CurrentPersonId ).ToList();
+                if ( groupMemberRecordsForPerson.Any() )
+                {
+                    // normally there would be at most 1 group member record for the person, but just in case, mark them all
+                    foreach ( var groupMember in groupMemberRecordsForPerson )
+                    {
+                        if ( cbCommunicationListIsSubscribed.Checked )
+                        {
+                            if ( groupMember.GroupMemberStatus == GroupMemberStatus.Inactive )
+                            {
+                                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                                if ( groupMember.Note == "Unsubscribed" )
+                                {
+                                    groupMember.Note = string.Empty;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if ( groupMember.GroupMemberStatus == GroupMemberStatus.Active )
+                            {
+                                groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
+                                if ( groupMember.Note.IsNullOrWhiteSpace() )
+                                {
+                                    groupMember.Note = "Unsubscribed";
+                                }
+                            }
+                        }
+
+                        groupMember.LoadAttributes();
+                        CommunicationType communicationType = tglCommunicationPreference.Checked ? CommunicationType.Email : CommunicationType.SMS;
+                        groupMember.SetAttributeValue( "PreferredCommunicationMedium", communicationType.ConvertToInt().ToString() );
+                        groupMember.SaveAttributeValue( "PreferredCommunicationMedium", rockContext );
+                    }
+                }
+                else
+                {
+                    // they are not currently in the Group
+                    if ( cbCommunicationListIsSubscribed.Checked )
+                    {
+                        var groupMember = new GroupMember();
+                        groupMember.PersonId = this.CurrentPersonId.Value;
+                        groupMember.GroupId = group.Id;
+                        int? defaultGroupRoleId = GroupTypeCache.Read( group.GroupTypeId ).DefaultGroupRoleId;
+                        if ( defaultGroupRoleId.HasValue )
+                        {
+                            groupMember.GroupRoleId = defaultGroupRoleId.Value;
+                        }
+                        else
+                        {
+                            nbGroupNotification.Text = "Unable to add to group.";
+                            nbGroupNotification.Details = "Group has no default group role";
+                            nbGroupNotification.NotificationBoxType = NotificationBoxType.Danger;
+                            nbGroupNotification.Visible = true;
+                        }
+
+                        groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                        groupMember.LoadAttributes();
+                        CommunicationType communicationType = tglCommunicationPreference.Checked ? CommunicationType.Email : CommunicationType.SMS;
+                        groupMember.SetAttributeValue( "PreferredCommunicationMedium", communicationType.ConvertToInt().ToString() );
+
+                        if ( groupMember.IsValidGroupMember( rockContext ) )
+                        {
+                            groupMemberService.Add( groupMember );
+                            rockContext.SaveChanges();
+                            groupMember.SaveAttributeValue( "PreferredCommunicationMedium", rockContext );
+
+                            if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+                            {
+                                Rock.Security.Role.Flush( group.Id );
+                            }
+                        }
+                        else
+                        {
+                            // if the group member couldn't be added (for example, one of the group membership rules didn't pass), add the validation messages to the errormessages
+                            nbGroupNotification.Text = "Unable to add to group.";
+                            nbGroupNotification.Details = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                            nbGroupNotification.NotificationBoxType = NotificationBoxType.Danger;
+                            nbGroupNotification.Visible = true;
+                        }
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
         /// Binds the repeater.
         /// </summary>
         protected void BindRepeater()
         {
+            if ( this.CurrentPersonId == null )
+            {
+                return;
+            }
+
             var rockContext = new RockContext();
             var groupService = new GroupService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
@@ -301,7 +292,7 @@ namespace RockWeb.Blocks.Communication
             var communicationListQry = groupService.Queryable()
                 .Where( a => a.GroupTypeId == communicationListGroupTypeId
                         && a.IsActive
-                        && ( a.SyncDataViewId == null || a.Members.Any(m => m.PersonId == this.CurrentPersonId) ) );
+                        && ( a.SyncDataViewId == null || a.Members.Any( m => m.PersonId == this.CurrentPersonId ) ) );
 
             var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
 
@@ -355,5 +346,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion
+
+
     }
 }
