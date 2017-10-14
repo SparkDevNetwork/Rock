@@ -101,7 +101,9 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
 
+                    <div class="panel panel-block">
                         <div class="panel-heading">
                             <div class="row margin-t-sm">
                                 <div class="col-md-6">
