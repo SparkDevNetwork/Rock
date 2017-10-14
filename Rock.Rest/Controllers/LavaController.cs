@@ -37,7 +37,6 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [System.Web.Http.Route( "api/Lava/RenderTemplate" )]
         [HttpPost]
-        [RequireHttps]
         [Authenticate, Secured]
         public string RenderTemplate( [NakedBody] string template )
         {
@@ -47,10 +46,10 @@ namespace Rock.Rest.Controllers
             lavaOptions.GetCurrentPerson = true;
             lavaOptions.GetCampuses = true;
             lavaOptions.GetLegacyGlobalMergeFields = false;
+            var currentPerson = GetPerson();
 
-            Dictionary<string, object> mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(null, GetPerson(), lavaOptions);
-            
-            return template.ResolveMergeFields( mergeFields );
+            Dictionary<string, object> mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(null, currentPerson, lavaOptions);
+            return template.ResolveMergeFields( mergeFields, currentPerson );
         }
     }
 }
