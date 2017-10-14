@@ -186,9 +186,9 @@ namespace Rock.Reporting
                 using ( var rockContext = new RockContext() )
                 {
                     var qryAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeId );
-                    if ( entityType == typeof( Group ) )
+                    if ( entityType == typeof( Group ) || entityType == typeof( GroupMember ) )
                     {
-                        // in the case of Group, show attributes that are entity global, but also ones that are qualified by GroupTypeId
+                        // in the case of Group or GroupMember, show attributes that are entity global, but also ones that are qualified by GroupTypeId
                         qryAttributes = qryAttributes
                             .Where( a =>
                                 a.EntityTypeQualifierColumn == null ||
@@ -348,8 +348,8 @@ namespace Rock.Reporting
                     entityField.FieldConfig.Add( config.Key, config.Value );
                 }
 
-                // Special processing for Entity Type "Group" to handle sub-types that are distinguished by GroupTypeId.
-                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" )
+                // Special processing for Entity Type "Group" or "GroupMember" to handle sub-types that are distinguished by GroupTypeId.
+                if ( ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) || attribute.EntityTypeId == EntityTypeCache.GetId( typeof( GroupMember ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" ) )
                 {
                     using ( var rockContext = new RockContext() )
                     {
