@@ -160,6 +160,17 @@ namespace RockWeb.Blocks.Connection
 
             nbErrorMessage.Visible = false;
             nbRequirementsErrors.Visible = false;
+            nbCriticalMessage.Visible = false;
+
+            if ( PageParameter( "ConnectionRequestId" ).AsInteger() == 0 && PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() == null )
+            {
+                nbCriticalMessage.Visible = true;
+                nbCriticalMessage.Title = "Critical";
+                nbCriticalMessage.Text = "<p>No existing Request or any connection oppurtunity found associated with the request</p>";
+                pnlEditDetails.Visible = false;
+                pnlReadDetails.Visible = false;
+                return;
+            }
 
             if ( !Page.IsPostBack )
             {
@@ -1216,7 +1227,11 @@ namespace RockWeb.Blocks.Connection
 
             if ( connectionRequest == null )
             {
-                connectionOpportunity = connectionOpportunityService.Get( connectionOpportunityId.Value );
+                if ( connectionOpportunityId.HasValue )
+                {
+                    connectionOpportunity = connectionOpportunityService.Get( connectionOpportunityId.Value );
+                }
+
                 if ( connectionOpportunity != null )
                 {
                     var connectionStatus = connectionStatusService
