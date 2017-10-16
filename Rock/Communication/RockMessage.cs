@@ -76,7 +76,7 @@ namespace Rock.Communication
         public string EnabledLavaCommands { get; set; }
 
         /// <summary>
-        /// Gets or sets any additional merge fields.
+        /// Gets or sets any additional merge fields that are appended to each recipient's merge fields
         /// </summary>
         /// <value>
         /// The merge fields.
