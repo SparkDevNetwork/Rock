@@ -615,6 +615,10 @@ namespace Rock.Rest.Controllers
             string imageHtml = string.Format(
                 "<div class='person-image' style='background-image:url({0}&width=65);background-size:cover;background-position:50%'></div>",
                 Person.GetPersonPhotoUrl( person, 200, 200 ) );
+            if ( !string.IsNullOrWhiteSpace( person.TopSignalIndicatorClass ) )
+            {
+                imageHtml = string.Format( "<div class='pull-left {0}'>{1}</div>", person.TopSignalIndicatorClass, imageHtml );
+            }
 
             string personInfoHtml = string.Empty;
             Guid matchLocationGuid;

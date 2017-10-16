@@ -564,6 +564,64 @@ body#splash {
   }
 }
 
+// Signal styles
+// --------------------------------------------------
+
+.signal:not(.signal-icon) {
+  border-left-style: solid;
+  border-left-width: 3px;
+}
+
+.signal:not(img):not(.signal-icon) {
+  padding-left: 3px;
+}
+
+td > .signal:not(img):not(.signal-icon):first-child {
+  margin-left: -6px;
+}
+
+.signal-default:not(.signal-icon) {
+  border-left-color: #fff;
+}
+.signal-icon.signal-default {
+  color: #fff;
+}
+
+.signal-primary:not(.signal-icon) {
+  border-left-color: @brand-primary;
+}
+.signal-icon.signal-primary {
+  color: @brand-primary;
+}
+
+.signal-success:not(.signal-icon) {
+  border-left-color: @brand-success;
+}
+.signal-icon.signal-success {
+  color: @brand-success;
+}
+
+.signal-info:not(.signal-icon) {
+  border-left-color: @brand-info;
+}
+.signal-icon.signal-info {
+  color: @brand-info
+}
+
+.signal-warning:not(.signal-icon) {
+  border-left-color: @brand-warning;
+}
+.signal-icon.signal-warning {
+  color: @brand-warning;
+}
+
+.signal-danger:not(.signal-icon) {
+  border-left-color: @brand-danger;
+}
+.signal-icon.signal-danger {
+  color: @brand-danger;
+}
+
 /*#endregion */
 
 

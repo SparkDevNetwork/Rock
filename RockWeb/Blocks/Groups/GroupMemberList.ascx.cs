@@ -1212,8 +1212,11 @@ namespace RockWeb.Blocks.Groups
                         m.Person.NickName,
                         m.Person.LastName,
                         Name =
-                        ( isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) ) +
-                            m.Person.NickName + " " + m.Person.LastName
+                        ( string.Format("<div class='{0}'>", m.Person.TopSignalIndicatorClass)
+                            + ( isExporting ?
+                                m.Person.LastName + ", " + m.Person.NickName
+                                : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )
+                                    + m.Person.NickName + " " + m.Person.LastName )
                             + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) ) 
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )
@@ -1222,7 +1225,7 @@ namespace RockWeb.Blocks.Groups
                                 : string.Empty )
                             + ((personIdsThatHaventSigned.Contains( m.PersonId ))
                                 ? " <i class='fa fa-pencil-square-o text-danger'></i>"
-                                : string.Empty)),
+                                : string.Empty) + "</div>"),
                         m.Person.BirthDate,
                         m.Person.Age,
                         m.Person.ConnectionStatusValueId,
