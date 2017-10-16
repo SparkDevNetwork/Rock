@@ -121,14 +121,14 @@ namespace Rock.Data
         /// The analytics dim attendance locations.
         /// </value>
         public DbSet<AnalyticsDimAttendanceLocation> AnalyticsDimAttendanceLocations { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the analytics dim dates.
+        /// Gets or sets the analytics source dates.
         /// </summary>
         /// <value>
-        /// The analytics dim dates.
+        /// The analytics source dates.
         /// </value>
-        public DbSet<AnalyticsDimDate> AnalyticsDimDates { get; set; }
+        public DbSet<AnalyticsSourceDate> AnalyticsSourceDates { get; set; }
         
         /// <summary>
         /// Gets or sets the analytics dim family currents.
@@ -169,14 +169,6 @@ namespace Rock.Data
         /// The analytics dim financial batches.
         /// </value>
         public DbSet<AnalyticsDimFinancialBatch> AnalyticsDimFinancialBatches { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim financial transaction types.
-        /// </summary>
-        /// <value>
-        /// The analytics dim financial transaction types.
-        /// </value>
-        public DbSet<AnalyticsDimFinancialTransactionType> AnalyticsDimFinancialTransactionTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the analytics dim person currents.
@@ -257,6 +249,30 @@ namespace Rock.Data
         /// The attendance codes.
         /// </value>
         public DbSet<AttendanceCode> AttendanceCodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute matrices.
+        /// </summary>
+        /// <value>
+        /// The attribute matrices.
+        /// </value>
+        public DbSet<Rock.Model.AttributeMatrix> AttributeMatrices { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute matrix items.
+        /// </summary>
+        /// <value>
+        /// The attribute matrix items.
+        /// </value>
+        public DbSet<Rock.Model.AttributeMatrixItem> AttributeMatrixItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute matrix templates.
+        /// </summary>
+        /// <value>
+        /// The attribute matrix templates.
+        /// </value>
+        public DbSet<Rock.Model.AttributeMatrixTemplate> AttributeMatrixTemplates { get; set; }
 
         /// <summary>
         /// Gets or sets the Attributes.
@@ -395,6 +411,14 @@ namespace Rock.Data
         public DbSet<Category> Categories { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication attachments.
+        /// </summary>
+        /// <value>
+        /// The communication attachments.
+        /// </value>
+        public DbSet<Rock.Model.CommunicationAttachment> CommunicationAttachments { get; set; }
+
+        /// <summary>
         /// Gets or sets the communications.
         /// </summary>
         /// <value>
@@ -409,6 +433,14 @@ namespace Rock.Data
         /// The communication recipients.
         /// </value>
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication template attachment.
+        /// </summary>
+        /// <value>
+        /// The communication template attachment.
+        /// </value>
+        public DbSet<Rock.Model.CommunicationTemplateAttachment> CommunicationTemplateAttachment { get; set; }
 
         /// <summary>
         /// Gets or sets the communication templates.
@@ -433,6 +465,14 @@ namespace Rock.Data
         /// The connection opportunities.
         /// </value>
         public DbSet<ConnectionOpportunity> ConnectionOpportunities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection opportunity group configs.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity group configs.
+        /// </value>
+        public DbSet<Rock.Model.ConnectionOpportunityGroupConfig> ConnectionOpportunityGroupConfigs { get; set; }
 
         /// <summary>
         /// Gets or sets the connection opportunity campuses.
@@ -899,6 +939,14 @@ namespace Rock.Data
         public DbSet<GroupScheduleExclusion> GroupScheduleExclusions { get; set; }
 
         /// <summary>
+        /// Gets or sets the group type location types.
+        /// </summary>
+        /// <value>
+        /// The group type location types.
+        /// </value>
+        public DbSet<Rock.Model.GroupTypeLocationType> GroupTypeLocationTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Group Types.
         /// </summary>
         /// <value>
@@ -971,6 +1019,14 @@ namespace Rock.Data
         public DbSet<InteractionSession> InteractionSessions { get; set; }
 
         /// <summary>
+        /// Gets or sets the lava shortcodes.
+        /// </summary>
+        /// <value>
+        /// The lava shortcodes.
+        /// </value>
+        public DbSet<Rock.Model.LavaShortcode> LavaShortcodes { get; set; }
+
+        /// <summary>
         /// Gets or sets the layouts.
         /// </summary>
         /// <value>
@@ -993,6 +1049,46 @@ namespace Rock.Data
         /// The merge templates.
         /// </value>
         public DbSet<MergeTemplate> MergeTemplates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the meta first name gender lookups.
+        /// </summary>
+        /// <value>
+        /// The meta first name gender lookups.
+        /// </value>
+        public DbSet<Rock.Model.MetaFirstNameGenderLookup> MetaFirstNameGenderLookups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the meta last name lookups.
+        /// </summary>
+        /// <value>
+        /// The meta last name lookups.
+        /// </value>
+        public DbSet<Rock.Model.MetaLastNameLookup> MetaLastNameLookups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the meta nick name lookups.
+        /// </summary>
+        /// <value>
+        /// The meta nick name lookups.
+        /// </value>
+        public DbSet<Rock.Model.MetaNickNameLookup> MetaNickNameLookups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the meta personicx lifestage clusters.
+        /// </summary>
+        /// <value>
+        /// The meta personicx lifestage clusters.
+        /// </value>
+        public DbSet<Rock.Model.MetaPersonicxLifestageCluster> MetaPersonicxLifestageClusters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the meta personicx lifestage groups.
+        /// </summary>
+        /// <value>
+        /// The meta personicx lifestage groups.
+        /// </value>
+        public DbSet<Rock.Model.MetaPersonicxLifestageGroup> MetaPersonicxLifestageGroups { get; set; }
 
         /// <summary>
         /// Gets or sets the metaphones.
@@ -1105,6 +1201,14 @@ namespace Rock.Data
         /// the People.
         /// </value>
         public DbSet<Person> People { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personal devices.
+        /// </summary>
+        /// <value>
+        /// The personal devices.
+        /// </value>
+        public DbSet<Rock.Model.PersonalDevice> PersonalDevices { get; set; }
 
         /// <summary>
         /// Gets or sets the Person Aliases.
@@ -1281,6 +1385,14 @@ namespace Rock.Data
         /// The reports.
         /// </value>
         public DbSet<RestController> RestControllers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule category exclusions.
+        /// </summary>
+        /// <value>
+        /// The schedule category exclusions.
+        /// </value>
+        public DbSet<Rock.Model.ScheduleCategoryExclusion> ScheduleCategoryExclusions { get; set; }
 
         /// <summary>
         /// Gets or sets the schedules.

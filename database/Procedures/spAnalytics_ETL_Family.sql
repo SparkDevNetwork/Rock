@@ -43,6 +43,8 @@ BEGIN
             FROM DefinedValue
             WHERE [Guid] = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
             )
+		,@RowsUpdated INT = 0
+		,@RowsInserted INT = 0
 
     -- throw it all into a temp table so we can Insert and Update only where needed
     CREATE TABLE #AnalyticsSourceFamily (
@@ -225,8 +227,10 @@ AND fh.FamilyId NOT IN ( -- Ensure that there isn't already a History Record for
     WHERE s.FamilyId NOT IN (
             SELECT FamilyId
             FROM AnalyticsSourceFamilyHistorical
-            WHERE CurrentRowIndicator = 1
+ WHERE CurrentRowIndicator = 1
             )
+
+    set @RowsInserted = @@ROWCOUNT;
 
     UPDATE fh
     SET fh.NAME = t.NAME
@@ -255,6 +259,8 @@ AND fh.FamilyId NOT IN ( -- Ensure that there isn't already a History Record for
         OR fh.[MailingAddressLocationId] != t.MailingAddressLocationId
         OR fh.[MappedAddressLocationId] != t.MappedAddressLocationId
 
+    set @RowsUpdated = @@ROWCOUNT;
+
     -- delete any Family records that no longer exist the [Group] table (or are no longer GroupType of family)
     DELETE
     FROM AnalyticsSourceFamilyHistorical
@@ -268,4 +274,6 @@ AND fh.FamilyId NOT IN ( -- Ensure that there isn't already a History Record for
     Explicitly clean up temp tables before the proc exits (vs. have SQL Server do it for us after the proc is done)
     */
     DROP TABLE #AnalyticsSourceFamily;
+
+	select @RowsInserted [RowsInserted], @RowsUpdated [RowsUpdated]
 END

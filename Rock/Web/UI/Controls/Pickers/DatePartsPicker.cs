@@ -293,11 +293,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The future year count.
         /// </value>
-        public int FutureYearCount
+        public int? FutureYearCount
         {
             get
             {
-                return ViewState["FutureYearCount"] as int? ?? 50;
+                return ViewState["FutureYearCount"] as int?;
             }
 
             set
@@ -435,7 +435,7 @@ namespace Rock.Web.UI.Controls
 
             yearDropDownList.Items.Clear();
             yearDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            var maxYear = this.AllowFutureDates ? RockDateTime.Now.AddYears( this.FutureYearCount ).Year : RockDateTime.Now.Year;
+            var maxYear = this.AllowFutureDates ? RockDateTime.Now.AddYears( this.FutureYearCount ?? 50 ).Year : RockDateTime.Now.Year;
             var minYear = this.StartYear;
             for ( int year = maxYear; year >= minYear; year-- )
             {
@@ -475,8 +475,8 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( "class", "form-control-group js-datepartspicker" );
 
-            writer.AddAttribute( "data-required", this.Required.ToTrueFalse().ToLower());
-            writer.AddAttribute( "data-requireyear", this.RequireYear.ToTrueFalse().ToLower());
+            writer.AddAttribute( "data-required", this.Required.ToTrueFalse().ToLower() );
+            writer.AddAttribute( "data-requireyear", this.RequireYear.ToTrueFalse().ToLower() );
             writer.AddAttribute( "data-allowFuture", this.AllowFutureDates.ToTrueFalse().ToLower() );
             writer.AddAttribute( "data-itemlabel", this.Label );
 
@@ -565,7 +565,14 @@ namespace Rock.Web.UI.Controls
                 {
                     monthDropDownList.SelectedValue = value.Value.Month.ToString();
                     dayDropDownList.SelectedValue = value.Value.Day.ToString();
-                    yearDropDownList.SelectedValue = value.Value.Year != DateTime.MinValue.Year ? value.Value.Year.ToString() : string.Empty;
+                    var selectedYearValue = value.Value.Year != DateTime.MinValue.Year ? value.Value.Year.ToString() : string.Empty;
+
+                    if ( !string.IsNullOrEmpty( selectedYearValue ) && yearDropDownList.Items.FindByValue( selectedYearValue ) == null )
+                    {
+                        yearDropDownList.Items.Insert( 0, new ListItem( selectedYearValue, selectedYearValue ) );
+                    }
+
+                    yearDropDownList.SetValue( selectedYearValue );
                 }
                 else
                 {

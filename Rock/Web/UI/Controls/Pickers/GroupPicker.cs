@@ -36,7 +36,20 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private RockCheckBox _cbShowInactiveGroups;
 
+        /// <summary>
+        /// The Select All button
+        /// </summary>
+        private HyperLink _btnSelectAll;
+
         #endregion
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupPicker"/> class.
+        /// </summary>
+        public GroupPicker(): base()
+        {
+            this.ShowSelectChildren = true;
+        }
 
         /// <summary>
         /// Gets or sets the root group identifier.
@@ -59,6 +72,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the included group type ids.
+        /// </summary>
+        /// <value>
+        /// The included group type ids.
+        /// </value>
+        public List<int> IncludedGroupTypeIds
+        {
+            get
+            {
+                return ViewState["IncludedGroupTypeIds"] as List<int> ?? new List<int>();
+            }
+
+            set
+            {
+                ViewState["IncludedGroupTypeIds"] = value;
+                SetExtraRestParams();
+            }
+        }
+
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -74,8 +108,15 @@ namespace Rock.Web.UI.Controls
             _cbShowInactiveGroups.AutoPostBack = true;
             _cbShowInactiveGroups.CheckedChanged += _cbShowInactiveGroups_CheckedChanged;
             this.Controls.Add( _cbShowInactiveGroups );
+
+            _btnSelectAll = new HyperLink();
+            _btnSelectAll.ID = "_btnSelectAll";
+            _btnSelectAll.CssClass = "btn btn-default btn-xs js-select-all pull-right margin-l-sm";
+            _btnSelectAll.Text = "Select All";
+
+            this.Controls.Add( _btnSelectAll );
         }
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -147,15 +188,13 @@ namespace Rock.Web.UI.Controls
         /// <param name="groups">The groups.</param>
         public void SetValues( IEnumerable<Group> groups )
         {
-            var theGroups = groups.ToList();
-
-            if ( theGroups.Any() )
+            if ( groups != null && groups.Any() )
             {
                 var ids = new List<string>();
                 var names = new List<string>();
                 var parentIds = new List<int>();
 
-                foreach ( var group in theGroups )
+                foreach ( var group in groups )
                 {
                     if ( group != null )
                     {
@@ -163,10 +202,17 @@ namespace Rock.Web.UI.Controls
                         names.Add( group.Name );
                         var parentGroup = group.ParentGroup;
                         var groupParentIds = GetGroupAncestorsIdList( parentGroup );
-                        parentIds.AddRange( groupParentIds );
+                        foreach ( var groupParentId in groupParentIds )
+                        {
+                            if ( !parentIds.Contains( groupParentId ) )
+                            {
+                                parentIds.Add( groupParentId );
+                            }
+                        }
                     }
                 }
 
+                // NOTE: Order is important (parents before children) since the GroupTreeView loads on demand
                 InitialItemParentIds = parentIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
@@ -215,6 +261,11 @@ namespace Rock.Web.UI.Controls
         {
             base.RenderCustomPickerActions( writer );
 
+            if ( this.AllowMultiSelect )
+            {
+                _btnSelectAll.RenderControl( writer );
+            }
+
             _cbShowInactiveGroups.RenderControl( writer );
         }
 
@@ -223,11 +274,18 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void SetExtraRestParams( bool includeInactiveGroups = false )
         {
-            ItemRestUrlExtraParams = "?includeInactiveGroups=" + includeInactiveGroups.ToTrueFalse();
+            var extraParams = new System.Text.StringBuilder();
+            extraParams.Append( $"?includeInactiveGroups={includeInactiveGroups.ToTrueFalse()}" );
             if ( RootGroupId.HasValue )
             {
-                ItemRestUrlExtraParams += string.Format( "&rootGroupId={0}", RootGroupId.Value );
+                extraParams.Append( $"&rootGroupId={RootGroupId.Value}" );
             }
+            if ( IncludedGroupTypeIds != null && IncludedGroupTypeIds.Any() )
+            {
+                extraParams.Append( $"&includedGroupTypeIds={IncludedGroupTypeIds.AsDelimited(",")}" );
+            }
+
+            ItemRestUrlExtraParams = extraParams.ToString();
         }
 
         /// <summary>

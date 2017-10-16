@@ -77,7 +77,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the summary of the LifestyleCluster.
         /// </value>
         [DataMember]
-        [MaxLength( 600 )]
+        [MaxLength( 1000 )]
         public string Summary { get; set; }
 
         /// <summary>
@@ -108,6 +108,16 @@ namespace Rock.Model
         [MaxLength( 120 )]
         [DataMember]
         public string LifeStage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the life stage level.
+        /// </summary>
+        /// <value>
+        /// The life stage level.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string LifeStageLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the MaritalStatus

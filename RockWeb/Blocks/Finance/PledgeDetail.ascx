@@ -13,7 +13,7 @@
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-
+                <Rock:NotificationBox ID="nbInvalid" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
@@ -31,7 +31,7 @@
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlGroup" runat="server" Visible="false" DataTextField="Name" DataValueField="GroupId" />
                             <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
-                            <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" Required="True" />
+                            <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" MinimumValue="0" Required="True" />
                         </div>
                         <div class="col-md-6">
                             <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" />

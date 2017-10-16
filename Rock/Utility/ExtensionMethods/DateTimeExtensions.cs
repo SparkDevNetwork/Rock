@@ -411,5 +411,59 @@ namespace Rock
         }
 
         #endregion TimeSpan Extensions
+
+        #region Time/Date Rounding 
+
+        /// <summary>
+        /// Rounds the specified rounding interval.
+        /// from https://stackoverflow.com/a/4108889/1755417
+        /// </summary>
+        /// <param name="time">The time.</param>
+        /// <param name="roundingInterval">The rounding interval.</param>
+        /// <param name="roundingType">Type of the rounding.</param>
+        /// <returns></returns>
+        public static TimeSpan Round( this TimeSpan time, TimeSpan roundingInterval, MidpointRounding roundingType )
+        {
+            return new TimeSpan(
+                Convert.ToInt64( Math.Round(
+                    time.Ticks / ( decimal ) roundingInterval.Ticks,
+                    roundingType
+                ) ) * roundingInterval.Ticks
+            );
+        }
+
+        /// <summary>
+        /// Rounds the specified rounding interval.
+        /// from https://stackoverflow.com/a/4108889/1755417
+        /// </summary>
+        /// <example>
+        /// new TimeSpan(0, 2, 26).Round( TimeSpan.FromSeconds(5)); // rounds to 00:02:25
+        /// new TimeSpan(3, 34, 0).Round( TimeSpan.FromMinutes(30); // round to 03:30
+        /// </example>
+        /// <param name="time">The time.</param>
+        /// <param name="roundingInterval">The rounding interval.</param>
+        /// <returns></returns>
+        public static TimeSpan Round( this TimeSpan time, TimeSpan roundingInterval )
+        {
+            return Round( time, roundingInterval, MidpointRounding.ToEven );
+        }
+
+        /// <summary>
+        /// Rounds the specified rounding interval.
+        /// from https://stackoverflow.com/a/4108889/1755417
+        /// </summary>
+        /// <example>
+        /// new DateTime(2010, 11, 4, 10, 28, 27).Round( TimeSpan.FromMinutes(1) ); // rounds to 2010.11.04 10:28:00
+        /// new DateTime(2010, 11, 4, 13, 28, 27).Round( TimeSpan.FromDays(1) ); // rounds to 2010.11.05 00:00
+        /// </example>
+        /// <param name="datetime">The datetime.</param>
+        /// <param name="roundingInterval">The rounding interval.</param>
+        /// <returns></returns>
+        public static DateTime Round( this DateTime datetime, TimeSpan roundingInterval )
+        {
+            return new DateTime( ( datetime - DateTime.MinValue ).Round( roundingInterval ).Ticks );
+        }
+
+        #endregion Time/Date Rounding 
     }
 }

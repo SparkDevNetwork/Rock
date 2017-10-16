@@ -29,6 +29,7 @@ using Rock.Web.UI;
 using Rock.Security;
 using Rock.Data;
 using System.Web;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
@@ -42,7 +43,18 @@ namespace RockWeb.Blocks.Core
     {
         #region Fields
 
-        private readonly List<string> _tabs = new List<string> { "Basic Settings", "Advanced Settings" };
+        private CustomGridColumnsConfig CustomGridColumnsConfigState
+        {
+            get
+            {
+                return ViewState["CustomGridColumnsConfig"] as CustomGridColumnsConfig;
+            }
+
+            set
+            {
+                ViewState["CustomGridColumnsConfig"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the current tab.
@@ -143,6 +155,26 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Gets the tabs.
+        /// </summary>
+        /// <param name="blockType">Type of the block.</param>
+        /// <returns></returns>
+        private List<string> GetTabs( BlockTypeCache blockType )
+        {
+            var blockControlType = System.Web.Compilation.BuildManager.GetCompiledType( blockType.Path );
+            bool customColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( blockControlType );
+
+            var result = new List<string> { "Basic Settings", "Advanced Settings" };
+
+            if ( customColumnsBlock )
+            {
+                result.Add( "Custom Grid Columns" );
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -153,7 +185,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack && _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
-                rptProperties.DataSource = _tabs;
+                rptProperties.DataSource = GetTabs(_block.BlockType);
                 rptProperties.DataBind();
 
                 tbBlockName.Text = _block.Name;
@@ -164,11 +196,15 @@ namespace RockWeb.Blocks.Core
                 // Hide the Cache duration block for now;
                 tbCacheDuration.Visible = false;
                 //tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
+
+                CustomGridColumnsConfigState = _block.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ).FromJsonOrNull<CustomGridColumnsConfig>() ?? new CustomGridColumnsConfig();
+
+                BindCustomColumnsConfig();
             }
 
             base.OnLoad( e );
         }
-
+                
         /// <summary>
         /// Handles the Click event of the lbProperty control.
         /// </summary>
@@ -181,7 +217,9 @@ namespace RockWeb.Blocks.Core
             {
                 CurrentTab = lb.Text;
 
-                rptProperties.DataSource = _tabs;
+                int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
+                BlockCache _block = BlockCache.Read( blockId );
+                rptProperties.DataSource = GetTabs( _block.BlockType );
                 rptProperties.DataBind();
             }
 
@@ -216,6 +254,25 @@ namespace RockWeb.Blocks.Core
                 {
                     Rock.Attribute.Helper.GetEditValues( phAdvancedAttributes, block );
                 }
+
+                SaveCustomColumnsConfigToViewState();
+                if ( this.CustomGridColumnsConfigState != null && this.CustomGridColumnsConfigState.ColumnsConfig.Any() )
+                {
+                    if ( !block.Attributes.Any( a => a.Key == CustomGridColumnsConfig.AttributeKey ) )
+                    {
+                        block.Attributes.Add( CustomGridColumnsConfig.AttributeKey, null );
+                    }
+
+                    block.SetAttributeValue( CustomGridColumnsConfig.AttributeKey, this.CustomGridColumnsConfigState.ToJson() );
+                }
+                else
+                {
+                    if ( block.Attributes.Any( a => a.Key == CustomGridColumnsConfig.AttributeKey ) )
+                    {
+                        block.SetAttributeValue( CustomGridColumnsConfig.AttributeKey, null );
+                    }
+                }
+
                 block.SaveAttributeValues( rockContext );
 
                 Rock.Web.Cache.BlockCache.Flush( block.Id );
@@ -260,19 +317,144 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void ShowSelectedPane()
         {
-            if ( CurrentTab.Equals( "Basic Settings" ) )
+            pnlAdvancedSettings.Visible = CurrentTab.Equals( "Advanced Settings" );
+            pnlBasicProperty.Visible = CurrentTab.Equals( "Basic Settings" );
+            pnlCustomGridColumns.Visible = CurrentTab.Equals( "Custom Grid Columns" );
+        }
+
+        #endregion
+
+        #region Custom Grid Columns
+
+        /// <summary>
+        /// Binds the custom columns configuration.
+        /// </summary>
+        private void BindCustomColumnsConfig()
+        {
+            int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
+            BlockCache _block = BlockCache.Read( blockId );
+
+            rptCustomGridColumns.DataSource = CustomGridColumnsConfigState.ColumnsConfig;
+            rptCustomGridColumns.DataBind();
+        }
+
+        /// <summary>
+        /// Saves the state of the custom columns configuration to view.
+        /// </summary>
+        private void SaveCustomColumnsConfigToViewState()
+        {
+            this.CustomGridColumnsConfigState = new CustomGridColumnsConfig();
+            foreach ( var item in rptCustomGridColumns.Items.OfType<RepeaterItem>())
             {
-                pnlBasicProperty.Visible = true;
-                pnlAdvancedSettings.Visible = false;
+                var columnConfig = new CustomGridColumnsConfig.ColumnConfig();
+
+                var nbRelativeOffset = item.FindControl( "nbRelativeOffset" ) as NumberBox;
+                columnConfig.PositionOffset = nbRelativeOffset.Text.AsInteger();
+
+                var ddlOffsetType = item.FindControl( "ddlOffsetType" ) as RockDropDownList;
+                columnConfig.PositionOffsetType = ddlOffsetType.SelectedValueAsEnum<CustomGridColumnsConfig.ColumnConfig.OffsetType>();
+
+                var tbHeaderText = item.FindControl( "tbHeaderText" ) as RockTextBox;
+                columnConfig.HeaderText = tbHeaderText.Text;
+                var tbHeaderClass = item.FindControl( "tbHeaderClass" ) as RockTextBox;
+                columnConfig.HeaderClass = tbHeaderClass.Text;
+                var tbItemClass = item.FindControl( "tbItemClass" ) as RockTextBox;
+                columnConfig.ItemClass = tbItemClass.Text;
+                var ceLavaTemplate = item.FindControl( "ceLavaTemplate" ) as CodeEditor;
+                columnConfig.LavaTemplate = ceLavaTemplate.Text;
+
+                this.CustomGridColumnsConfigState.ColumnsConfig.Add( columnConfig );
             }
-            else if ( CurrentTab.Equals( "Advanced Settings" ) )
+        }
+
+
+        /// <summary>
+        /// Handles the Click event of the lbAddColumns control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddColumns_Click( object sender, EventArgs e )
+        {
+            SaveCustomColumnsConfigToViewState();
+            this.CustomGridColumnsConfigState.ColumnsConfig.Add( new CustomGridColumnsConfig.ColumnConfig() );
+            BindCustomColumnsConfig();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDeleteColumn control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDeleteColumn_Click( object sender, EventArgs e )
+        {
+            SaveCustomColumnsConfigToViewState();
+            int? columnIndex = ( sender as LinkButton ).CommandArgument.AsIntegerOrNull();
+            if ( columnIndex.HasValue )
             {
-                pnlBasicProperty.Visible = false;
-                pnlAdvancedSettings.Visible = true;
+                this.CustomGridColumnsConfigState.ColumnsConfig.RemoveAt( columnIndex.Value );
+            }
+
+            BindCustomColumnsConfig();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptCustomGridColumns control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptCustomGridColumns_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            CustomGridColumnsConfig.ColumnConfig columnConfig = e.Item.DataItem as CustomGridColumnsConfig.ColumnConfig;
+            if ( columnConfig != null )
+            {
+                var nbRelativeOffset = e.Item.FindControl( "nbRelativeOffset" ) as NumberBox;
+                nbRelativeOffset.Text = columnConfig.PositionOffset.ToString();
+
+                var ddlOffsetType = e.Item.FindControl( "ddlOffsetType" ) as RockDropDownList;
+                ddlOffsetType.SetValue( (int)columnConfig.PositionOffsetType );
+                ddlOffsetType_SelectedIndexChanged( ddlOffsetType, null );
+
+                var tbHeaderText = e.Item.FindControl( "tbHeaderText" ) as RockTextBox;
+                tbHeaderText.Text = columnConfig.HeaderText;
+                var tbHeaderClass = e.Item.FindControl( "tbHeaderClass" ) as RockTextBox;
+                tbHeaderClass.Text = columnConfig.HeaderClass;
+                var tbItemClass = e.Item.FindControl( "tbItemClass" ) as RockTextBox;
+                tbItemClass.Text = columnConfig.ItemClass;
+
+                var ceLavaTemplate = e.Item.FindControl( "ceLavaTemplate" ) as CodeEditor;
+                ceLavaTemplate.Text = columnConfig.LavaTemplate;
+                var btnDeleteColumn = e.Item.FindControl( "btnDeleteColumn" ) as LinkButton;
+                btnDeleteColumn.CommandName = "ColumnIndex";
+                btnDeleteColumn.CommandArgument = e.Item.ItemIndex.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlOffsetType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlOffsetType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var ddlOffsetType = sender as RockDropDownList;
+            if ( ddlOffsetType != null )
+            {
+                var repeaterItem = ddlOffsetType.BindingContainer as System.Web.UI.WebControls.RepeaterItem;
+                if ( repeaterItem != null )
+                {
+                    NumberBox nbRelativeOffset = repeaterItem.FindControl( "nbRelativeOffset" ) as NumberBox;
+                    if ( ddlOffsetType.SelectedValue.AsInteger() == 1 )
+                    {
+                        nbRelativeOffset.PrependText = "<i class='fa fa-minus'></i>";
+                    }
+                    else
+                    {
+                        nbRelativeOffset.PrependText = "<i class='fa fa-plus'></i>";
+                    }
+                }
             }
         }
 
         #endregion
-        
     }
 }

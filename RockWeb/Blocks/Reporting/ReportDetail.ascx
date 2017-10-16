@@ -31,23 +31,25 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" EntityTypeName="Rock.Model.Report" Label="Category" />
-                                    <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" Required="true" AutoPostBack="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged"/>
-                                    <Rock:DataViewPicker ID="ddlDataView" runat="server" Label="Data View" Required="false" />
+                                    <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" Required="true" AutoPostBack="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged" EnhanceForLongLists="true" />
+                                    <Rock:DataViewPicker ID="ddlDataView" runat="server" Label="Data View" Required="false" EnhanceForLongLists="true" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:KeyValueList ID="kvSortFields" runat="server" Label="Sorting" />
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:NumberBox ID="nbFetchTop" runat="server" NumberType="Integer" Required="false" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
+                            <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:NumberBox ID="nbFetchTop" runat="server" NumberType="Integer" Required="false" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
                                         Help="Limits the number of rows returned in the report. Leave blank to show all rows." />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:RockTextBox ID="tbQueryHint" runat="server" Label="Query Hint" Help="The Query Hint to apply to the query that is executed on the database server. These can sometimes improve the performance of the report, but could also make it worse. Examples are: <code>OPTIMIZE FOR UNKNOWN</code> and <code>RECOMPILE</code>." />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                </div>
-
-                            </div>
+                            </Rock:PanelWidget>
 
                             <section class="panel panel-widget">
                                 <header class="panel-heading clearfix">
@@ -99,7 +101,9 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
 
+                    <div class="panel panel-block">
                         <div class="panel-heading">
                             <div class="row margin-t-sm">
                                 <div class="col-md-6">

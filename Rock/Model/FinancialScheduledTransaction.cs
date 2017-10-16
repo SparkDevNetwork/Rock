@@ -126,7 +126,8 @@ namespace Rock.Model
         public DateTime? NextPaymentDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the date and time of the last status update.
+        /// Gets or sets the date and time of the last status update. In other words,
+        /// the date and time the gateway was last queried for the status of the scheduled profile/transaction.
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime" /> representing the date and time of the last status update.

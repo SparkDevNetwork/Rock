@@ -67,6 +67,13 @@ namespace Rock.Migrations
                     }
                 }
             }
+
+            // In V7, the Communication and CommunicationTemplate models were updated to move data stored as JSON in a varchar(max) 
+            // column (MediumDataJson) to specific columns. This method will update all of the communication templates, and the most 
+            // recent 5000 communications. A job will runto convert the remaining communications. This can be removed after every 
+            // customer has migrated past v7
+            Jobs.MigrateCommunicationMediumData.UpdateCommunicationRecords( true, 5000 );
+
         }
     }
 }

@@ -170,7 +170,10 @@ namespace Rock.Workflow.Action
 
             if ( recipients.Any() )
             {
-                Email.Send( GetAttributeValue( action, "SystemEmail" ).AsGuid(), recipients, string.Empty, string.Empty, GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean() );
+                var emailMessage = new RockEmailMessage( GetAttributeValue( action, "SystemEmail" ).AsGuid() );
+                emailMessage.SetRecipients( recipients );
+                emailMessage.CreateCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
+                emailMessage.Send();
             }
 
             return true;

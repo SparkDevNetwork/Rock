@@ -46,6 +46,21 @@ namespace Rock
         }
 
         /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
+        public static string ToJson( this object obj, Formatting format )
+        {
+            return JsonConvert.SerializeObject( obj, format,
+                new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                } );
+        }
+
+        /// <summary>
         /// Attempts to deserialize a json string into T.  If it can't be deserialized, returns null
         /// </summary>
         /// <typeparam name="T"></typeparam>

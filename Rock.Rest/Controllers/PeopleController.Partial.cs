@@ -483,15 +483,19 @@ namespace Rock.Rest.Controllers
 
             if ( includeDetails == false )
             {
-                var simpleResultQry = sortedPersonQry.Select( a => new { a.Id, a.FirstName, a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId, a.RecordStatusValueId } );
-                var simpleResult = simpleResultQry.ToList().Select( a => new PersonSearchResult
+                var personService = this.Service as PersonService;
+
+                var simpleResult = sortedPersonQry.AsNoTracking().ToList().Select( a => new PersonSearchResult
                 {
                     Id = a.Id,
                     Name = showFullNameReversed
                     ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
                     : Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
                     IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId,
-                    RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Read( a.RecordStatusValueId.Value ).Value : string.Empty
+                    RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Read( a.RecordStatusValueId.Value ).Value : string.Empty,
+                    Age = Person.GetAge( a.BirthDate ) ?? -1,
+                    FormattedAge = a.FormatAge(),
+                    SpouseName = personService.GetSpouse( a, x => x.Person.NickName )
                 } );
 
                 return simpleResult.AsQueryable();
@@ -651,7 +655,7 @@ namespace Rock.Rest.Controllers
 
                 if ( personAge != null )
                 {
-                    personInfoHtml += " <em class='age'>(" + personAge.ToString() + " yrs old)</em>";
+                    personInfoHtml += " <em class='age'>(" + person.FormatAge() + " old)</em>";
                 }
 
                 if ( familyGroupMember.GroupRoleId == adultRoleId )
@@ -718,6 +722,64 @@ namespace Rock.Rest.Controllers
             personSearchResult.PickerItemDetailsImageHtml = imageHtml;
             personSearchResult.PickerItemDetailsPersonInfoHtml = personInfoHtml;
             personSearchResult.PickerItemDetailsHtml = string.Format( itemDetailFormat, imageHtml, personInfoHtml );
+        }
+
+        /// <summary>
+        /// Obsolete: Gets the search details
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
+        [Obsolete( "Returns incorrect results, will be removed in a future version" )]
+        public string GetImpersonationParameterObsolete( int personId )
+        {
+            // NOTE: This route is called GetSearchDetails but really returns an ImpersonationParameter due to a copy/paste bug. 
+            // Marked obsolete but kept around in case anybody was taking advantage of this bug 
+
+            string result = string.Empty;
+
+            var rockContext = this.Service.Context as Rock.Data.RockContext;
+
+            var person = new PersonService( rockContext ).Queryable().Include( a => a.Aliases ).AsNoTracking().FirstOrDefault( a => a.Id == personId );
+
+            if ( person != null )
+            {
+                result = person.ImpersonationParameter;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Creates and stores a new PersonToken for a person using the specified ExpireDateTime, UsageLimit, and Page
+        /// Returns the encrypted URLEncoded Token along with the ImpersonationParameter key in the form of "rckipid={ImpersonationParameter}"
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="expireDateTime">The expire date time.</param>
+        /// <param name="usageLimit">The usage limit.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetImpersonationParameter" )]
+        public string GetImpersonationParameter( int personId, DateTime? expireDateTime = null, int? usageLimit = null, int? pageId = null )
+        {
+            string result = string.Empty;
+
+            var rockContext = this.Service.Context as Rock.Data.RockContext;
+
+            var person = new PersonService( rockContext ).Queryable().Include( a => a.Aliases ).AsNoTracking().FirstOrDefault( a => a.Id == personId );
+
+            if ( person != null )
+            {
+                return person.GetImpersonationParameter( expireDateTime, usageLimit, pageId );
+            }
+            else
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
         }
 
         /// <summary>
@@ -864,10 +926,19 @@ namespace Rock.Rest.Controllers
         public string ImageHtmlTag { get; set; }
 
         /// <summary>
-        /// Gets or sets the age.
+        /// Gets or sets the age in years
+        /// NOTE: returns -1 if age is unknown
         /// </summary>
         /// <value>The age.</value>
         public int Age { get; set; }
+
+        /// <summary>
+        /// Gets or sets the formatted age.
+        /// </summary>
+        /// <value>
+        /// The formatted age.
+        /// </value>
+        public string FormattedAge { get; set; }
 
         /// <summary>
         /// Gets or sets the gender.

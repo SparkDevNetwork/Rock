@@ -33,7 +33,8 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransaction" )]
     [DataContract]
-    public partial class FinancialTransaction : Model<FinancialTransaction>, IAnalytic
+    [Analytics(false, false)]
+    public partial class FinancialTransaction : Model<FinancialTransaction>
     {
         #region Entity Properties
 
@@ -441,6 +442,19 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         public virtual Dictionary<int, List<string>> BatchHistoryChanges { get; set; }
+
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( "Refund", "The roles and/or users that have access to refund a transaction." );
+                return supportedActions;
+            }
+        }
 
         #endregion Virtual Properties
 

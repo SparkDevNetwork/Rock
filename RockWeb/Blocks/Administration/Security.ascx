@@ -35,20 +35,20 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
-        <div class="well well-pillwrap">
-            <div id="divActions" runat="server">
-                <ul class="nav nav-pills">
-                    <asp:Repeater ID="rptActions" runat="server">
-                        <ItemTemplate>
-                            <li class='<%# GetTabClass( Eval( "Key" ) ) %>'>
-                                <asp:LinkButton ID="lbAction" runat="server" Text='<%# SplitCase( Eval( "Key" ) ) %>' OnClick="lbAction_Click"></asp:LinkButton>
-                            </li>
-                        </ItemTemplate>
-                    </asp:Repeater>
-                    <li class="pull-right pill-help"><a data-toggle="collapse" href="#security-details" class=""><i class="fa fa-question-circle"></i></a></li>
-                </ul>
-            </div>
+        
+        <div id="divActions" runat="server" class="well well-pillwrap">
+            <ul class="nav nav-pills">
+                <asp:Repeater ID="rptActions" runat="server">
+                    <ItemTemplate>
+                        <li class='<%# GetTabClass( Eval( "Key" ) ) %>'>
+                            <asp:LinkButton ID="lbAction" runat="server" Text='<%# SplitCase( Eval( "Key" ) ) %>' OnClick="lbAction_Click"></asp:LinkButton>
+                        </li>
+                    </ItemTemplate>
+                </asp:Repeater>
+                <li class="pull-right pill-help"><a data-toggle="collapse" href="#security-details" class=""><i class="fa fa-question-circle"></i></a></li>
+            </ul>
         </div>
+        
 
         <div id="divContent" runat="server" class="tab-content">
 
@@ -98,11 +98,11 @@
                             <Columns>
                                 <Rock:RockBoundField DataField="AuthRule.DisplayName" HeaderText="Role / User" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" HtmlEncode="false" />
                                 <Rock:RockTemplateField>
-                                    <HeaderTemplate>Allow or Deny</HeaderTemplate>
-                                    <HeaderStyle HorizontalAlign="Left" />
-                                    <ItemStyle Wrap="false" HorizontalAlign="Left" />
+                                    <HeaderTemplate>Action</HeaderTemplate>
+                                    <HeaderStyle HorizontalAlign="Center" />
+                                    <ItemStyle Wrap="false" HorizontalAlign="Center" />
                                     <ItemTemplate>
-                                        <%# Eval("AuthRule.AllowOrDeny").ToString() == "A" ? "Allow" : "Deny" %>
+                                        <%# Eval("AuthRule.AllowOrDeny").ToString() == "A" ? "<span class='label label-success'>Allow</span>" : "<span class='label label-danger'>Deny</span>" %>
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
                                 <Rock:RockBoundField DataField="EntityTitle" HeaderText="From" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" HtmlEncode="false" />
@@ -117,7 +117,7 @@
 
                 <fieldset>
                     <legend>Select Role to Add</legend>
-                    <Rock:RockDropDownList ID="ddlRoles" runat="server" Label="Role" AutoPostBack="true" OnSelectedIndexChanged="ddlRoles_SelectedIndexChanged" />
+                    <Rock:RockDropDownList ID="ddlRoles" runat="server" Label="Role" AutoPostBack="true" OnSelectedIndexChanged="ddlRoles_SelectedIndexChanged" EnhanceForLongLists="true" />
                     <dl>
                         <dt></dt>
                         <dd>

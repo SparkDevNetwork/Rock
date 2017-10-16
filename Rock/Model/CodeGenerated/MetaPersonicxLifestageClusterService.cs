@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( MetaPersonicxLifestageCluster item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.MetaPersonicxLifestageClusterId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", MetaPersonicxLifestageCluster.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -98,6 +104,7 @@ namespace Rock.Model
             target.IncomeLevel = source.IncomeLevel;
             target.IncomeRank = source.IncomeRank;
             target.LifeStage = source.LifeStage;
+            target.LifeStageLevel = source.LifeStageLevel;
             target.LifestyleClusterCode = source.LifestyleClusterCode;
             target.LifestyleClusterName = source.LifestyleClusterName;
             target.MaritalStatus = source.MaritalStatus;

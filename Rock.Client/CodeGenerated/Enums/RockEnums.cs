@@ -119,6 +119,16 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum CommunicationType
+    {
+        RecipientPreference = 0x0,
+        Email = 0x1,
+        SMS = 0x2,
+        PushNotification = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     [Flags]
     public enum ComparisonType
     {
@@ -466,6 +476,14 @@ namespace Rock.Client.Enums
         Weekly = 0x1,
         Custom = 0x2,
         Named = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SegmentCriteria
+    {
+        All = 0x0,
+        Any = 0x1,
     }
 
     /// <summary>

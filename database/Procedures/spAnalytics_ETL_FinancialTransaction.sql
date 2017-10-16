@@ -96,27 +96,15 @@ BEGIN
     LEFT JOIN FinancialScheduledTransaction fst ON ft.ScheduledTransactionId = fst.Id
     LEFT JOIN DefinedValue dvtf ON fst.TransactionFrequencyValueId = dvtf.Id
     WHERE ft.TransactionDateTime > @MinDateTime
-        AND CONCAT (
-            ft.Id
-            ,'_'
-            ,ftd.Id
-            ) NOT IN (
-            SELECT TransactionKey
+        AND ftd.Id NOT IN (
+            SELECT TransactionDetailId
             FROM AnalyticsSourceFinancialTransaction
             )
 
     -- remove records from AnalyticsSourceFinancialTransaction that no longer exist in the source FinancialTransaction/FinancialTransactionDetail tables
     DELETE
     FROM AnalyticsSourceFinancialTransaction
-    WHERE TransactionKey NOT IN (
-            SELECT CONCAT (
-                    ft.Id
-                    ,'_'
-                    ,ftd.Id
-                    ) [TransactionKey]
-            FROM FinancialTransaction ft
-            JOIN FinancialTransactionDetail ftd ON ftd.TransactionId = ft.Id
-            )
+    WHERE TransactionDetailId NOT IN (select Id from FinancialTransactionDetail)
 
     -- figure out IsFirstTransaction
     UPDATE AnalyticsSourceFinancialTransaction
@@ -198,7 +186,7 @@ BEGIN
             ,ft.Summary [Summary]
             ,ft.TransactionTypeValueId [TransactionTypeValueId]
             ,ft.SourceTypeValueId [SourceTypeValueId]
-            ,CASE 
+      ,CASE 
                 WHEN ft.ScheduledTransactionId IS NULL
                     THEN 0
                 ELSE 1

@@ -59,7 +59,7 @@
 
                 <div class="actions ">
                     <div class="pull-right">
-                        <asp:LinkButton ID="btnAddBlock" runat="server" ToolTip="Add Block" Text="<i class='fa fa-plus'></i>" CssClass="btn btn-default btn-sm" OnClick="btnAddBlock_Click" />
+                        <asp:LinkButton ID="btnAddBlock" runat="server" ToolTip="Add Block" Text="<i class='fa fa-plus-circle'></i>" CssClass="btn btn-default btn-sm" OnClick="btnAddBlock_Click" />
                     </div>
 
                 </div>
@@ -89,7 +89,7 @@
                 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" />
+                        <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" EnhanceForLongLists="true" />
                     </div>
                     <div class="col-md-6 padding-t-md">
                         <label>Common Block Types</label><br />

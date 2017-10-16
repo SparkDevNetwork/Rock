@@ -26,6 +26,7 @@ using DotLiquid.Util;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Model;
+using System;
 
 namespace Rock.Lava.Shortcodes
 {
@@ -83,6 +84,9 @@ namespace Rock.Lava.Shortcodes
             if (_shortcode != null )
             {
                 var parms = ParseMarkup( _markup, context );
+
+                // add a unique id so shortcodes have easy access to one
+                parms.Add( "uniqueid", "id-" + Guid.NewGuid().ToString() );
 
                 var results = _shortcode.Markup.ResolveMergeFields( parms, _shortcode.EnabledLavaCommands );
                 result.Write( results );

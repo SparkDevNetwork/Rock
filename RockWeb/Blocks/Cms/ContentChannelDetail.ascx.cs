@@ -113,6 +113,10 @@ namespace RockWeb.Blocks.Cms
     $('.js-content-channel-enable-rss').change( function() {
         $(this).closest('div.form-group').siblings('div.js-content-channel-rss').slideToggle()
     });
+
+    $('.js-content-channel-enable-tags').change( function() {
+        $(this).closest('div.form-group').siblings('div.js-content-channel-tags').slideToggle()
+    });
 ";
             ScriptManager.RegisterStartupScript( cbEnableRss, cbEnableRss.GetType(), "enable-rss", script, true );
 
@@ -320,6 +324,8 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.ItemUrl = tbItemUrl.Text;
                 contentChannel.TimeToLive = nbTimetoLive.Text.AsIntegerOrNull();
                 contentChannel.ItemUrl = tbContentChannelItemPublishingPoint.Text;
+                contentChannel.IsTaggingEnabled = cbEnableTag.Checked;
+                contentChannel.ItemTagCategoryId = cbEnableTag.Checked ? cpCategory.SelectedValueAsInt() : (int?)null;
 
                 contentChannel.ChildContentChannels = new List<ContentChannel>();
                 contentChannel.ChildContentChannels.Clear();
@@ -739,8 +745,12 @@ namespace RockWeb.Blocks.Cms
                 cbChildItemsManuallyOrdered.Checked = contentChannel.ChildItemsManuallyOrdered;
                 cbEnableRss.Checked = contentChannel.EnableRss;
                 tbContentChannelItemPublishingPoint.Text = contentChannel.ItemUrl;
+                cbEnableTag.Checked = contentChannel.IsTaggingEnabled;
+                cpCategory.SetValue( contentChannel.ItemTagCategoryId );
 
                 divRss.Attributes["style"] = cbEnableRss.Checked ? "display:block" : "display:none";
+                divTag.Attributes["style"] = cbEnableTag.Checked ? "display:block" : "display:none";
+
                 tbChannelUrl.Text = contentChannel.ChannelUrl;
                 tbItemUrl.Text = contentChannel.ItemUrl;
                 nbTimetoLive.Text = ( contentChannel.TimeToLive ?? 0 ).ToString();

@@ -65,7 +65,13 @@ namespace Rock.Client
         public bool IsIndexEnabled { get; set; }
 
         /// <summary />
+        public bool IsTaggingEnabled { get; set; }
+
+        /// <summary />
         public bool ItemsManuallyOrdered { get; set; }
+
+        /// <summary />
+        public int? ItemTagCategoryId { get; set; }
 
         /// <summary />
         public string ItemUrl { get; set; }
@@ -130,7 +136,9 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
             this.IsIndexEnabled = source.IsIndexEnabled;
+            this.IsTaggingEnabled = source.IsTaggingEnabled;
             this.ItemsManuallyOrdered = source.ItemsManuallyOrdered;
+            this.ItemTagCategoryId = source.ItemTagCategoryId;
             this.ItemUrl = source.ItemUrl;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
@@ -157,6 +165,9 @@ namespace Rock.Client
 
         /// <summary />
         public ContentChannelType ContentChannelType { get; set; }
+
+        /// <summary />
+        public Category ItemTagCategory { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

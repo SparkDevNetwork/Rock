@@ -681,15 +681,39 @@ WHERE ic.ChannelId = @channelId
             }
 
             // clean up other orphaned entity attributes
-            foreach ( var cachedType in EntityTypeCache.All().Where( e => e.IsEntity && typeof( IHasAttributes ).IsAssignableFrom( e.GetEntityType() ) && !e.GetEntityType().Namespace.Equals( "Rock.Rest.Controllers" ) ) )
+            Type rockContextType = typeof( Rock.Data.RockContext );
+            foreach ( var cachedType in EntityTypeCache.All().Where( e => e.IsEntity ) )
             {
-                var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic )
-                    .First( m => m.Name == "CleanupOrphanedAttributeValuesForEntityType" );
-                var genericMethod = classMethod.MakeGenericMethod( cachedType.GetEntityType() );
-                var result = genericMethod.Invoke( this, null ) as int?;
-                if ( result.HasValue )
+                Type entityType = cachedType.GetEntityType();
+                if ( entityType != null &&
+                    typeof( IEntity ).IsAssignableFrom( entityType ) &&
+                    typeof( IHasAttributes ).IsAssignableFrom( entityType ) &&
+                    !entityType.Namespace.Equals( "Rock.Rest.Controllers" ) )
                 {
-                    recordsDeleted += (int)result;
+                    try
+                    {
+                        bool ignore = false;
+                        if ( entityType.Assembly != rockContextType.Assembly )
+                        {
+                            // If the model is from a custom project, verify that it is using RockContext, if not, ignore it since an 
+                            // exception will occur due to the AttributeValue query using RockContext.
+                            var entityContextType = Reflection.SearchAssembly( entityType.Assembly, typeof( System.Data.Entity.DbContext ) );
+                            ignore = ( entityContextType.Any() && !entityContextType.First().Value.Equals( rockContextType ) );
+                        }
+
+                        if ( !ignore )
+                        {
+                            var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic )
+                            .First( m => m.Name == "CleanupOrphanedAttributeValuesForEntityType" );
+                            var genericMethod = classMethod.MakeGenericMethod( entityType );
+                            var result = genericMethod.Invoke( this, null ) as int?;
+                            if ( result.HasValue )
+                            {
+                                recordsDeleted += (int)result;
+                            }
+                        }
+                    }
+                    catch { }
                 }
             }
 

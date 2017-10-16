@@ -41,7 +41,8 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "Person" )]
     [DataContract]
-    public partial class Person : Model<Person>, IRockIndexable, IAnalyticHistorical
+    [Analytics( true, true )]
+    public partial class Person : Model<Person>, IRockIndexable
     {
         #region Constants
 
@@ -387,6 +388,15 @@ namespace Rock.Model
         public EmailPreference EmailPreference { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication preference.
+        /// </summary>
+        /// <value>
+        /// The communication preference.
+        /// </value>
+        [DataMember]
+        public CommunicationType CommunicationPreference { get; set; }
+
+        /// <summary>
         /// Gets or sets notes about why a person profile needs to be reviewed
         /// </summary>
         /// <value>
@@ -425,6 +435,24 @@ namespace Rock.Model
         [DataMember]
         public int? ViewedCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the MetaPersonicxLifestageCluster Id of the <see cref="Rock.Model.MetaPersonicxLifestageCluster"/>.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing a MetaPersonicxLifestageCluster Id of the <see cref="Rock.Model.MetaPersonicxLifestageCluster"/>.
+        /// </value>
+        [DataMember]
+        public int? MetaPersonicxLifestageClusterId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MetaPersonicxLifestageGroup Id of the <see cref="Rock.Model.MetaPersonicxLifestageGroup"/>.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing a MetaPersonicxLifestageGroup Id of the <see cref="Rock.Model.MetaPersonicxLifestageGroup"/>.
+        /// </value>
+        [DataMember]
+        public int? MetaPersonicxLifestageGroupId { get; set; }
+
         #endregion
 
         #region Constructors
@@ -439,6 +467,7 @@ namespace Rock.Model
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
             _aliases = new Collection<PersonAlias>();
+            CommunicationPreference = CommunicationType.Email;
         }
 
         #endregion
@@ -903,6 +932,24 @@ namespace Rock.Model
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
+        /// Gets or sets the metaPersonicxLifestage cluster.
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
+        [DataMember]
+        public virtual MetaPersonicxLifestageCluster MetaPersonicxLifestageCluster { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metaPersonicxLifestage group.
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
+        [DataMember]
+        public virtual MetaPersonicxLifestageGroup MetaPersonicxLifestageGroup { get; set; }
+
+        /// <summary>
         /// Gets the Person's birth date. Note: Use SetBirthDate to set the Birthdate
         /// </summary>
         /// <value>
@@ -1033,7 +1080,7 @@ namespace Rock.Model
                 }
                 if (age > 0)
                 {
-                    return age + (age == 1 ? " yr old " : " yrs old ");
+                    return age + (age == 1 ? " yr" : " yrs");
                 }
                 else if ( age < -1 )
                 {
@@ -1055,7 +1102,7 @@ namespace Rock.Model
                 }
                 if (months > 0)
                 {
-                    return months + (months == 1 ? " mo old " : " mos old ");
+                    return months + (months == 1 ? " mo" : " mos");
                 }
             }
 
@@ -1068,7 +1115,7 @@ namespace Rock.Model
                     var birthMonth = new DateTime(BirthYear.Value, BirthMonth.Value, 1);
                     days = days + birthMonth.AddMonths(1).AddDays(-1).Day;
                 }
-                return days + (days == 1 ? " day old " : " days old ");
+                return days + (days == 1 ? " day" : " days");
             }
             return string.Empty;
         }
@@ -1303,7 +1350,7 @@ namespace Rock.Model
         {
             get
             {
-                return "rckipid=" + this.GetImpersonationToken();
+                return this.GetImpersonationParameter();
             }
         }
 
@@ -1386,6 +1433,35 @@ namespace Rock.Model
         public virtual string GetImpersonationToken()
         {
             return GetImpersonationToken( null, null, null );
+        }
+
+        /// <summary>
+        /// Creates and stores a new PersonToken for a person using the default ExpireDateTime and UsageLimit.
+        /// Returns the encrypted URLEncoded Token along with the ImpersonationParameter key in the form of "rckipid={ImpersonationParameter}"
+        /// </summary>
+        /// <returns></returns>
+        /// <value>
+        /// A <see cref="System.String" /> representing the impersonation parameter.
+        /// </value>
+        public virtual string GetImpersonationParameter()
+        {
+            return GetImpersonationParameter( null, null, null );
+        }
+
+        /// <summary>
+        /// Creates and stores a new PersonToken for a person using the specified ExpireDateTime, UsageLimit, and Page
+        /// Returns the encrypted URLEncoded Token along with the ImpersonationParameter key in the form of "rckipid={ImpersonationParameter}"
+        /// </summary>
+        /// <param name="expireDateTime">The expire date time.</param>
+        /// <param name="usageLimit">The usage limit.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        /// <value>
+        /// A <see cref="System.String" /> representing the impersonation parameter.
+        /// </value>
+        public virtual string GetImpersonationParameter( DateTime? expireDateTime, int? usageLimit, int? pageId )
+        {
+            return $"rckipid={GetImpersonationToken( expireDateTime, usageLimit, pageId )}";
         }
 
         /// <summary>
@@ -1506,6 +1582,12 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
+            if ( entry.State == EntityState.Deleted )
+            {
+                // If PersonRecord is getting deleted, don't do any of the presavechanges
+                return;
+            }
+
             var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
             var deceased = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
 
@@ -2815,6 +2897,8 @@ namespace Rock.Model
             this.HasOptional( p => p.TitleValue ).WithMany().HasForeignKey( p => p.TitleValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GivingGroup ).WithMany().HasForeignKey( p => p.GivingGroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.MetaPersonicxLifestageCluster ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageClusterId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.MetaPersonicxLifestageGroup ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageGroupId ).WillCascadeOnDelete( false );
         }
     }
 

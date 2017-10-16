@@ -51,6 +51,8 @@ namespace Rock.Model
         public bool CanDelete( CommunicationTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
+            
+            // ignoring Communication,CommunicationTemplateId 
             return true;
         }
     }
@@ -88,13 +90,26 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this CommunicationTemplate target, CommunicationTemplate source )
         {
             target.Id = source.Id;
+            target.BCCEmails = source.BCCEmails;
+            target.CCEmails = source.CCEmails;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.MediumDataJson = source.MediumDataJson;
-            target.MediumEntityTypeId = source.MediumEntityTypeId;
+            target.FromEmail = source.FromEmail;
+            target.FromName = source.FromName;
+            target.ImageFileId = source.ImageFileId;
+            target.IsActive = source.IsActive;
+            target.IsSystem = source.IsSystem;
+            target.Message = source.Message;
+            target.MessageMetaData = source.MessageMetaData;
             target.Name = source.Name;
+            target.PushMessage = source.PushMessage;
+            target.PushSound = source.PushSound;
+            target.PushTitle = source.PushTitle;
+            target.ReplyToEmail = source.ReplyToEmail;
             target.SenderPersonAliasId = source.SenderPersonAliasId;
+            target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
+            target.SMSMessage = source.SMSMessage;
             target.Subject = source.Subject;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

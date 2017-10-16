@@ -65,6 +65,9 @@ namespace Rock.Client
         public string LifeStage { get; set; }
 
         /// <summary />
+        public string LifeStageLevel { get; set; }
+
+        /// <summary />
         public string LifestyleGroupCode { get; set; }
 
         /// <summary />
@@ -151,6 +154,7 @@ namespace Rock.Client
             this.IncomeLevel = source.IncomeLevel;
             this.IncomeRank = source.IncomeRank;
             this.LifeStage = source.LifeStage;
+            this.LifeStageLevel = source.LifeStageLevel;
             this.LifestyleGroupCode = source.LifestyleGroupCode;
             this.LifestyleGroupName = source.LifestyleGroupName;
             this.MaritalStatus = source.MaritalStatus;

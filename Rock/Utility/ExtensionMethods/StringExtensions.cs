@@ -579,16 +579,29 @@ namespace Rock
         }
 
         /// <summary>
-        /// Masks the specified value if greater than 4 characters (such as a credit card number).
+        /// Masks the specified value if greater than 4 characters (such as a credit card number) showing only the last 4 chars prefixed with 12*s
         /// For example, the return string becomes "************6789".
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
         public static string Masked( this string value )
         {
-            if ( value.Length > 4 )
+            return value.Masked( false );
+        }
+
+        /// <summary>
+        /// Masks the specified value if greater than 4 characters (such as a credit card number) showing only the last 4 chars and replacing the preceeding chars with *
+        /// For example, the return string becomes "************6789".
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="preserveLength">if set to <c>true</c> [preserve length]. If false, always put 12 *'s as the prefix</param>
+        /// <returns></returns>
+        public static string Masked( this string value, bool preserveLength )
+        {
+            if ( value != null && value.Length > 4 )
             {
-                return string.Concat( new string( '*', 12 ), value.Substring( value.Length - 4 ) );
+                int maskedLength = preserveLength ? value.Length - 4 : 12;
+                return string.Concat( new string( '*', maskedLength ), value.Substring( value.Length - 4 ) );
             }
             else
             {
@@ -701,6 +714,19 @@ namespace Rock
         public static string RemoveSpaces( this string input )
         {
             return input.Replace( " ", "" );
+        }
+
+        /// <summary>
+        /// Breaks a string into chunks. Handy for splitting a large string into smaller chunks
+        /// from https://stackoverflow.com/a/1450889/1755417
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="maxChunkSize">Maximum size of the chunk.</param>
+        /// <returns></returns>
+        public static IEnumerable<string> SplitIntoChunks( this string str, int maxChunkSize )
+        {
+            for ( int i = 0; i < str.Length; i += maxChunkSize )
+                yield return str.Substring( i, Math.Min( maxChunkSize, str.Length - i ) );
         }
 
         #endregion String Extensions

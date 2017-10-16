@@ -63,7 +63,7 @@
                                         <asp:ListItem Text="Group Type" Value="0" />
                                     </Rock:RockDropDownList>
                                     <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id"
-                                        Help="The printer that this device should use for printing" />
+                                        Help="The printer that this device should use for printing" EnhanceForLongLists="true" />
                                     <Rock:RockDropDownList ID="ddlPrintFrom" runat="server" Label="Print From" Required="false"
                                         Help="When this device needs to print, where should the printing be initiated from?  Either the server running Rock, or from the actual client device? " />
                                 </div>

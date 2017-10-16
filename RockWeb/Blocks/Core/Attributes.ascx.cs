@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.Core
             }
 
             _configuredType = GetAttributeValue( "ConfigureType" ).AsBooleanOrNull() ?? true;
-            edtAttribute.ShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
+            edtAttribute.IsShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
 
             Guid? entityTypeGuid = GetAttributeValue( "Entity" ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
@@ -565,7 +565,7 @@ namespace RockWeb.Blocks.Core
             int? entityTypeId = _configuredType ? _entityTypeId : ddlEntityType.SelectedValueAsInt();
             
             var entityTypeCache = entityTypeId.HasValue ? EntityTypeCache.Read( entityTypeId.Value ) : null;
-            cbAnalyticsEnabled.Visible = entityTypeCache != null && entityTypeCache.IsAnalyticSupported;
+            cbAnalyticsEnabled.Visible = entityTypeCache != null && entityTypeCache.IsAnalyticsSupported( null, null );
             cbAnalyticsEnabled.Checked = rFilter.GetUserPreference( "Analytics Enabled" ).AsBoolean();
 
             BindCategoryFilter();

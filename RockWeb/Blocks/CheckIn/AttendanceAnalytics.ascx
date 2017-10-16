@@ -35,7 +35,7 @@
             </div>
 
             <div class="panel-body">
-                <div class="row row-eq-height-md">
+                <div class="row">
                     <div class="col-md-3 filter-options">
 
                         <Rock:GroupTypePicker ID="ddlAttendanceType" runat="server" Label="Attendance Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
@@ -67,7 +67,16 @@
                         <Rock:RockCheckBoxList ID="clbCampuses" runat="server" FormGroupCssClass="campuses-picker js-campuses-picker" CssClass="campuses-picker-vertical" Label="Campuses" 
                             Help="The campuses to display attendance for. Leave blank to not filter by campus." />
                         
-                        <div class="js-groups-container">
+                        <Rock:GroupPicker ID="gpGroups" runat="server" Label="Select Group(s)" AllowMultiSelect="true" Visible="false" OnSelectItem="gpGroups_SelectItem" />
+                        <Rock:RockControlWrapper ID="rcwSelectedGroups" runat="server" Label="Selected Groups" Visible="false">
+                            <ul class="list-unstyled" visible="false" >
+                                <asp:Repeater ID="rptSelectedGroups" runat="server">
+                                    <ItemTemplate><li><%# Container.DataItem %></li></ItemTemplate>
+                                </asp:Repeater> 
+                            </ul>
+                        </Rock:RockControlWrapper>
+
+                        <asp:Panel ID="pnlGroups" runat="server" Visible="false" class="js-groups-container">
                             <Rock:NotificationBox ID="nbGroupsWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one group." Visible="false"/>
                             
                             <div class="grouplist-actions rollover-container" id="divGroupListActions" runat="server">
@@ -83,17 +92,17 @@
                             </div>
                             
                             <hr class="margin-t-sm" />
-                            <ul class="list-unstyled group-checkboxes">
 
+                            <ul class="list-unstyled group-checkboxes" >
                                 <asp:Repeater ID="rptGroupTypes" runat="server" OnItemDataBound="rptGroupTypes_ItemDataBound">
                                     <ItemTemplate>
                                     </ItemTemplate>
                                 </asp:Repeater>
-
                             </ul>
-                        </div>
 
-                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" />
+                        </asp:Panel>
+
+                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" Visible="false" EnhanceForLongLists="true" />
 
                     </div>
                     <div class="col-md-9">

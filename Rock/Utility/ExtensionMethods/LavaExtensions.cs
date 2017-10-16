@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using DotLiquid;
 using Rock.Data;
@@ -54,7 +55,21 @@ namespace Rock
 
             lavaDebugPanel.Append( "<p>Below is a listing of available merge fields for this block. Find out more on Lava at <a href='http://www.rockrms.com/lava' target='_blank'>rockrms.com/lava</a>." );
 
-            lavaDebugPanel.Append( formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) ) );
+
+            int maxWaitMS = 10000;
+            System.Web.HttpContext taskContext = System.Web.HttpContext.Current; 
+            var formatLavaTask = new Task( () =>
+            {
+                System.Web.HttpContext.Current = taskContext;
+                lavaDebugPanel.Append( formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) ) );
+            } );
+
+            formatLavaTask.Start();
+
+            if ( !formatLavaTask.Wait( maxWaitMS ) )
+            {
+                return "<div class='alert alert-warning lava-debug'>Warning: Timeout generating Lava Help</div>";
+            }
 
             // Add a 'GlobalAttribute' entry if it wasn't part of the LavaObject
             if ( !( lavaObject is IDictionary<string, object> ) || !( (IDictionary<string, object>)lavaObject ).Keys.Contains( "GlobalAttribute" ) )
@@ -216,7 +231,46 @@ namespace Rock
                     {
                         try
                         {
-                            object propValue = liquidObject[key];
+                            object propValue = null;
+                            var propType = entityType.GetPropertyType( key );
+                            if ( propType?.Name == "ICollection`1" )
+                            {
+                                // if the property type is an ICollection, get the underlying query and just fetch one for an example (just in case there are 1000s of records)
+                                var entityDbContext = GetDbContextFromEntity( myObject );
+                                if ( entityDbContext != null )
+                                {
+                                    var entryCollection = entityDbContext.Entry( myObject )?.Collection( key );
+                                    if ( entryCollection.IsLoaded )
+                                    {
+                                        propValue = liquidObject[key];
+                                    }
+                                    else
+                                    {
+                                        try
+                                        {
+                                            var propQry = entryCollection.Query().Provider.CreateQuery<Rock.Data.IEntity>( entryCollection.Query().Expression );
+                                            int propCollectionCount = propQry.Count();
+                                            List<object> listSample = propQry.Take( 1 ).ToList().Cast<object>().ToList();
+                                            if ( propCollectionCount > 1 )
+                                            {
+                                                listSample.Add( $"({propCollectionCount - 1} more...)" );
+                                            }
+
+                                            propValue = listSample;
+                                        }
+                                        catch
+                                        {
+                                            // The Collection might be a database model that isn't an IEntity, so just do it the regular way
+                                            propValue = liquidObject[key];
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                propValue = liquidObject[key];
+                            }
+
                             if ( propValue != null )
                             {
                                 result.Add( key, propValue.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentElement + "." + key ) );
@@ -268,8 +322,8 @@ namespace Rock
                 {
                     try
                     {
-                        var parentVariable = ( keyValue.Value.GetType().GetInterface( "IList" ) != null ) ? keyValue.Key.ToLower().Singularize() : keyValue.Key;
-                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentVariable ) );
+                        var parentVariable = ( keyValue.Value?.GetType().GetInterface( "IList" ) != null ) ? keyValue.Key.ToLower().Singularize() : keyValue.Key;
+                        result.Add( keyValue.Key, keyValue.Value?.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentVariable ) );
                     }
                     catch ( Exception ex )
                     {
@@ -375,7 +429,7 @@ namespace Rock
 
                             sb.Append( "<div class='panel panel-default panel-lavadebug'>" );
 
-                            sb.Append( string.Format( "<div class='panel-heading clearfix collapsed' data-toggle='collapse' data-target='#collapse-{0}'>", panelId ) );
+                            sb.Append( string.Format( "<div class='panel-heading clearfix collapsed' data-toggle='collapse' data-target='#collapse-{0}' onclick='$(\"#collapse-{0}\").collapse(\"toggle\"); event.stopPropagation();'>", panelId ) );
                             sb.Append( string.Format( "<h5 class='panel-title pull-left'>{0}</h5> <div class='pull-right'><i class='fa fa-chevron-up'></i></div>", keyVal.Key.SplitCase() ) );
                             sb.Append( "</div>" );
 
@@ -441,6 +495,27 @@ namespace Rock
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Uses reflection to figure out the DbContext associated with the entity
+        /// NOTE: the entity needs to be a DynamicProxy
+        /// from https://stackoverflow.com/a/43667414/1755417
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        private static DbContext GetDbContextFromEntity( object entity )
+        {
+            FieldInfo entityWrapperField = entity.GetType().GetField( "_entityWrapper" );
+
+            if ( entityWrapperField == null )
+                return null;
+
+            var entityWrapper = entityWrapperField.GetValue( entity );
+            PropertyInfo entityWrapperContextProperty = entityWrapper.GetType().GetProperty( "Context" );
+            var context = ( System.Data.Entity.Core.Objects.ObjectContext ) entityWrapperContextProperty.GetValue( entityWrapper, null );
+
+            return context?.TransactionHandler?.DbContext as DbContext;
         }
 
         /// <summary>

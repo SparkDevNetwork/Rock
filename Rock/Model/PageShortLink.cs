@@ -63,7 +63,6 @@ namespace Rock.Model
         /// The URL.
         /// </value>
         [Required]
-        [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
         public string Url { get; set; }
 

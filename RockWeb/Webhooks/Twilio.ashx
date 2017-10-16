@@ -67,7 +67,7 @@ class TwilioResponseAsync : IAsyncResult
     Object IAsyncResult.AsyncState { get { return _state; } }
     bool IAsyncResult.CompletedSynchronously { get { return false; } }
 
-    private const bool ENABLE_LOGGING = true;
+    private const bool ENABLE_LOGGING = false;
 
     public TwilioResponseAsync(AsyncCallback callback, HttpContext context, Object state)
     {

@@ -241,7 +241,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendEmail_Click( object sender, EventArgs e )
         {
-            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" );
             int sendCount = 0;
 
             foreach ( RepeaterItem repeaterItem in rptRecipients.Items )
@@ -253,15 +252,18 @@ namespace RockWeb.Blocks.Event
                     if ( registrationId.HasValue )
                     {
                         var registration = _registrants.Where( r => r.RegistrationId == registrationId ).Select( r => r.Registration ).FirstOrDefault();
-
                         var mergeObjects = GetMergeObjects( registration );
 
-                        var recipients = new List<string>();
-                        recipients.Add( registration.ConfirmationEmail );
-
-                        string message = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
-
-                        Email.Send( tbFromEmail.Text, tbFromName.Text, tbFromSubject.Text, recipients, message, appRoot );
+                        var emailMessage = new RockEmailMessage();
+                        emailMessage.AdditionalMergeFields = mergeObjects;
+                        emailMessage.FromEmail = tbFromEmail.Text;
+                        emailMessage.FromName = tbFromName.Text;
+                        emailMessage.Subject = tbFromSubject.Text;
+                        emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeObjects ) );
+                        emailMessage.Message = ceEmailMessage.Text;
+                        emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                        emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                        emailMessage.Send();
 
                         sendCount++;
                     }

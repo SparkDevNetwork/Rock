@@ -563,7 +563,8 @@ namespace RockWeb.Blocks.Groups
 
             if ( !groupType.IsValid )
             {
-                // Controls will render the error messages                    
+                cvGroupType.IsValid = groupType.IsValid;
+                cvGroupType.ErrorMessage = groupType.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
             }
 
@@ -1927,6 +1928,12 @@ namespace RockWeb.Blocks.Groups
             {
                 attribute = new Attribute();
                 attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                if (hfGroupTypeId.Value.AsInteger() > 0)
+                {
+                    attribute.EntityTypeQualifierColumn = "GroupTypeId";
+                    attribute.EntityTypeQualifierValue = hfGroupTypeId.Value;
+                }
+
                 edtGroupAttributes.ActionTitle = ActionTitle.Add( "attribute for groups of group type " + tbName.Text );
             }
             else

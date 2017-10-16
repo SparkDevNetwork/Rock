@@ -50,7 +50,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 </pre>
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [BooleanField( "Enable Impersonation", "Should the Impersonate custom action be enabled? Note: If enabled, it is only visible to users that are authorized to administrate the person.", false, "", 3 )]
-    [LinkedPage( "Impersonation Start Page", "The page to navigate to after clicking the Impersonate action.", false, Rock.SystemGuid.Page.EXTERNAL_HOMEPAGE, "", 4)]
+    [LinkedPage( "Impersonation Start Page", "The page to navigate to after clicking the Impersonate action.", false, "", "", 4)]
     [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 5 )]
     [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers.", false, "", 6 )]
     [BooleanField( "Display Middle Name", "Display the middle name of the person.", false, "", 7)]
@@ -60,6 +60,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 10 )]
     [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed", true, "", 11 )]
     [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 12 )]
+    [CategoryField( "Tag Category", "Optional category to limit the tags to. If specified all new personal tags will be added with this category.", false, 
+        "Rock.Model.Tag", "", "", false, "", "", 13 )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -162,6 +164,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
                     }
 
+                    hlVCard.NavigateUrl = ResolveRockUrl( string.Format( "~/GetVCard.ashx?Person={0}", Person.Id ) );
+
                     var socialCategoryGuid = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL.AsGuid();
                     if ( !socialCategoryGuid.IsEmpty() )
                     {
@@ -185,7 +189,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     if ( Person.BirthDate.HasValue )
                     {
-                        lAge.Text = string.Format("{0}<small>({1})</small><br/>", Person.FormatAge(), (Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString());
+                        var formattedAge = Person.FormatAge();
+                        if ( formattedAge.IsNotNullOrWhitespace() )
+                        {
+                            formattedAge += " old";
+                        }
+
+                        lAge.Text = string.Format( "{0} <small>({1})</small><br/>", formattedAge, ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString() );
                     }
 
                     lGender.Text = Person.Gender.ToString();
@@ -221,6 +231,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         taglPersonTags.Visible = true;
                         taglPersonTags.EntityTypeId = Person.TypeId;
                         taglPersonTags.EntityGuid = Person.Guid;
+                        taglPersonTags.CategoryGuid = GetAttributeValue( "TagCategory" ).AsGuidOrNull();
                         taglPersonTags.GetTagValues( CurrentPersonId );
                     }
                     else
@@ -424,7 +435,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     var qryParams = new Dictionary<string, string>();
                     qryParams.Add( "rckipid", impersonationToken );
-                    NavigateToLinkedPage( "ImpersonationStartPage", qryParams );
+                    if ( !string.IsNullOrEmpty( this.GetAttributeValue( "ImpersonationStartPage" ) ) )
+                    {
+                        NavigateToLinkedPage( "ImpersonationStartPage", qryParams );
+                    }
+                    else
+                    {
+                        NavigateToCurrentPageReference( qryParams );
+                    }
                 }
             }
         }

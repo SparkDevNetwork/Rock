@@ -28,6 +28,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -40,7 +41,8 @@ namespace RockWeb.Blocks.Communication
 
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page", order: 1 )]
+    [LinkedPage( "Email Analytics", defaultValue:Rock.SystemGuid.Page.EMAIL_ANALYTICS, order: 2 )]
     public partial class CommunicationList : Rock.Web.UI.RockBlock
     {
         private bool canApprove = false;
@@ -95,7 +97,7 @@ namespace RockWeb.Blocks.Communication
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Subject", tbSubject.Text );
-            rFilter.SaveUserPreference( "Medium", cpMedium.SelectedValue );
+            rFilter.SaveUserPreference( "Communication Type", ddlType.SelectedValue );
             rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             int personId = ppSender.PersonId ?? 0;
             rFilter.SaveUserPreference( "Created By", canApprove ? personId.ToString() : "" );
@@ -122,12 +124,11 @@ namespace RockWeb.Blocks.Communication
         {
             switch ( e.Key )
             {
-                case "Medium":
+                case "Communication Type":
                     {
-                        var entity = EntityTypeCache.Read( e.Value.AsGuid() );
-                        if ( entity != null )
+                        if ( !string.IsNullOrWhiteSpace( e.Value ) )
                         {
-                            e.Value = entity.FriendlyName;
+                            e.Value = ( (CommunicationType)System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
                         }
 
                         break;
@@ -184,7 +185,19 @@ namespace RockWeb.Blocks.Communication
                 if ( communicationItem != null )
                 {
                     // Hide delete button if there are any successful recipients
-                    e.Row.Cells[8].Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
+                    e.Row.Cells[9].Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
+
+                    Literal lEmailAnalyticsLink = e.Row.FindControl( "lEmailAnalyticsLink" ) as Literal;
+                    if ( lEmailAnalyticsLink != null )
+                    {
+                        var qryParams = new Dictionary<string, string>();
+                        qryParams.Add( "CommunicationId", communicationItem.Id.ToString() );
+                        var emailAnalyticsUrl = new PageReference( this.GetAttributeValue( "EmailAnalytics" ), qryParams ).BuildUrl();
+                        if ( !string.IsNullOrEmpty( emailAnalyticsUrl ) )
+                        {
+                            lEmailAnalyticsLink.Text = string.Format( "<div class='text-center'><a href='{0}' class='btn btn-default btn-sm' title='Email Analytics'><i class='fa fa-line-chart'></i></a></div>", emailAnalyticsUrl );
+                        }
+                    }
                 }
             }
         }
@@ -247,11 +260,8 @@ namespace RockWeb.Blocks.Communication
         {
             tbSubject.Text = rFilter.GetUserPreference( "Subject" );
 
-            if ( cpMedium.Items[0].Value != string.Empty )
-            {
-                cpMedium.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-            }
-            cpMedium.SelectedValue = rFilter.GetUserPreference( "Medium" );
+            ddlType.BindToEnum<CommunicationType>( true );
+            ddlType.SetValue( rFilter.GetUserPreference( "Communication Type" ) );
 
             ddlStatus.BindToEnum<CommunicationStatus>();
             // Replace the Transient status with an empty value (need an empty one, and don't need transient value)
@@ -304,10 +314,10 @@ namespace RockWeb.Blocks.Communication
                 communications = communications.Where( c => c.Subject.Contains( subject ) );
             }
 
-            Guid? entityTypeGuid = cpMedium.SelectedValue.AsGuidOrNull();
-            if ( entityTypeGuid.HasValue )
+            var communicationType = ddlType.SelectedValueAsEnumOrNull<CommunicationType>();
+            if ( communicationType != null )
             {
-                communications = communications.Where( c => c.MediumEntityType != null && c.MediumEntityType.Guid.Equals( entityTypeGuid.Value ) );
+                communications = communications.Where( c => c.CommunicationType == communicationType );
             }
 
             string status = ddlStatus.SelectedValue;
@@ -350,16 +360,24 @@ namespace RockWeb.Blocks.Communication
             string content = tbContent.Text;
             if ( !string.IsNullOrWhiteSpace( content ) )
             {
-                communications = communications.Where( c => c.MediumDataJson.Contains( content ) );
+                communications = communications.Where( c =>
+                    c.Message.Contains( content ) ||
+                    c.SMSMessage.Contains( content ) ||
+                    c.PushMessage.Contains( content ) );
             }
 
             var recipients = new CommunicationRecipientService( rockContext ).Queryable();
 
-            var queryable = communications
+            // We want to limit to only communications that they are authorized to view, but if there are a large number of communications, that could be very slow. 
+            // So, since communication security is based on CommunicationTemplate, take a shortcut and just limit based on authorized communication templates
+            var authorizedCommunicationTemplateIds = new CommunicationTemplateService( rockContext ).Queryable()
+                .Where( a => communications.Where( x => x.CommunicationTemplateId.HasValue ).Select( x => x.CommunicationTemplateId.Value ).Distinct().Contains( a.Id ) )
+                .ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Id ).ToList();
+
+            var queryable = communications.Where(a => a.CommunicationTemplateId == null || authorizedCommunicationTemplateIds.Contains(a.CommunicationTemplateId.Value) )
                 .Select( c => new CommunicationItem {
                     Id = c.Id,
-                    MediumEntityTypeId = c.MediumEntityTypeId,
-                    MediumName = c.MediumEntityTypeId.HasValue ? c.MediumEntityType.FriendlyName : null,
+                    CommunicationType = c.CommunicationType,
                     Subject = c.Subject,
                     CreatedDateTime = c.CreatedDateTime,
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
@@ -394,8 +412,7 @@ namespace RockWeb.Blocks.Communication
         protected class CommunicationItem
         {
             public int Id { get; set; }
-            public int? MediumEntityTypeId { get; set; }
-            public string MediumName { get; set; }
+            public CommunicationType CommunicationType { get; set; }
             public string Subject { get; set; }
             public DateTime? CreatedDateTime { get; set; }
             public Person Sender { get; set; }

@@ -28,6 +28,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using System.Collections.Generic;
 using DotLiquid;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -41,6 +42,9 @@ namespace RockWeb.Blocks.Cms
     [LinkedPage("Detail Page")]
     public partial class LavaShortcodeList : RockBlock
     {
+
+        public bool canAddEditDelete = false;
+
         #region Control Methods
 
         /// <summary>
@@ -53,15 +57,6 @@ namespace RockWeb.Blocks.Cms
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
-
-            // Block Security and special attributes (RockPage takes care of View)
-            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-
-            gLavaShortcode.DataKeyNames = new string[] { "Id" };
-            gLavaShortcode.Actions.AddClick += gLavaShortcode_Add;
-            gLavaShortcode.GridRebind += gLavaShortcode_GridRebind;
-            gLavaShortcode.Actions.ShowAdd = canAddEditDelete;
-            gLavaShortcode.IsDeleteEnabled = canAddEditDelete;
         }
 
         /// <summary>
@@ -70,14 +65,16 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+
             if ( !Page.IsPostBack )
             {
-                BindGrid();
+                LoadShortcodes();
             }
 
             base.OnLoad( e );
         }
-        
+
         #endregion
 
         #region Events 
@@ -87,69 +84,86 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
+        private void Block_BlockUpdated( object sender, EventArgs e )
         {
-            BindGrid();
+            LoadShortcodes();
         }
 
         /// <summary>
-        /// Handles the Add event of the gLavaShortcode control.
+        /// Handles the Click event of the btnAddShortcut control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gLavaShortcode_Add( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnAddShortcut_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "lavaShortcodeId", 0 );
         }
 
         /// <summary>
-        /// Handles the Edit event of the gLavaShortcode control.
+        /// Handles the Click event of the btnEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gLavaShortCode_Edit( object sender, RowEventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "lavaShortcodeId", e.RowKeyId );
+            LinkButton btn = ( LinkButton ) sender;
+            RepeaterItem item = ( RepeaterItem ) btn.NamingContainer;
+            HiddenField hfShortcodeId = ( HiddenField ) item.FindControl( "hfShortcodeId" );
+
+            NavigateToLinkedPage( "DetailPage", "lavaShortcodeId", hfShortcodeId.ValueAsInt() );
         }
 
         /// <summary>
-        /// Handles the Delete event of the gLavaShortcode control.
+        /// Handles the Click event of the btnDelete control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gLavaShortCode_Delete( object sender, RowEventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
         {
+            LinkButton btn = ( LinkButton ) sender;
+            RepeaterItem item = ( RepeaterItem ) btn.NamingContainer;
+            HiddenField hfShortcodeId = ( HiddenField ) item.FindControl( "hfShortcodeId" );
+
             var rockContext = new RockContext();
             LavaShortcodeService lavaShortcodeService = new LavaShortcodeService( rockContext );
-            LavaShortcode lavaShortcode = lavaShortcodeService.Get( e.RowKeyId );
+            LavaShortcode lavaShortcode = lavaShortcodeService.Get( hfShortcodeId.ValueAsInt() );
 
             if ( lavaShortcode != null )
             {
                 // unregister the shortcode
                 Template.UnregisterShortcode( lavaShortcode.TagName );
 
-                string errorMessage;
-                if ( !lavaShortcodeService.CanDelete( lavaShortcode, out errorMessage ) )
-                {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
-
                 lavaShortcodeService.Delete( lavaShortcode );
                 rockContext.SaveChanges();
             }
 
-            BindGrid();
+            LoadShortcodes();
+        }
+
+        protected void rptShortcodes_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem ) 
+            {
+                if ( !canAddEditDelete )
+                {
+                    e.Item.FindControl( "btnEdit" ).Visible = false;
+                    e.Item.FindControl( "btnDelete" ).Visible = false;
+                }
+
+                LavaShortcode dataItem = (LavaShortcode)e.Item.DataItem;
+
+                e.Item.FindControl( "divEditPanel" ).Visible = !dataItem.IsSystem;
+            }
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gLavaShortcode control.
+        /// Handles the CheckedChanged event of the tglShowActive control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void gLavaShortcode_GridRebind( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglShowActive_CheckedChanged( object sender, EventArgs e )
         {
-            BindGrid();
+            LoadShortcodes();
         }
 
         #endregion
@@ -157,29 +171,26 @@ namespace RockWeb.Blocks.Cms
         #region Internal Methods
 
         /// <summary>
-        /// Binds the grid.
+        /// Loads the shortcodes.
         /// </summary>
-        private void BindGrid()
+        private void LoadShortcodes()
         {
             LavaShortcodeService lavaShortcodeService = new LavaShortcodeService( new RockContext() );
-            SortProperty sortProperty = gLavaShortcode.SortProperty;
-
             var lavaShortcodes = lavaShortcodeService.Queryable();
-           
-            if ( sortProperty != null )
+
+            if ( tglShowActive.Checked )
             {
-                lavaShortcodes = lavaShortcodes.Sort( sortProperty );
-            }
-            else
-            {
-                lavaShortcodes = lavaShortcodes.OrderBy( p => p.Name );
+                lavaShortcodes = lavaShortcodes.Where( s => s.IsActive == true );
             }
 
-            gLavaShortcode.EntityTypeId = EntityTypeCache.Read<LavaShortcode>().Id;
-            gLavaShortcode.DataSource = lavaShortcodes.ToList();
-            gLavaShortcode.DataBind();
+            rptShortcodes.DataSource = lavaShortcodes.ToList().OrderBy( s => s.Name );
+            rptShortcodes.DataBind();
         }
 
         #endregion
+
+
+
+        
     }
 }

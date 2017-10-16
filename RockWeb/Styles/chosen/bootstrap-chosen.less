@@ -19,6 +19,13 @@
   position: relative;
   vertical-align: middle;
 
+  // https://github.com/harvesthq/chosen/issues/2029
+  .chosen-choices .search-field:only-child,
+  .chosen-choices .search-field:only-child input {
+    width: 100% !important;
+    opacity: 0.6;
+  }
+
   .chosen-drop {
     background: @chosen-background;
     border: 1px solid @chosen-drop-border;

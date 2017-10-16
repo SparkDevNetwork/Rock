@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for viewing a list of tags." )]
 
+    [BooleanField( "Show Qualifier Columns", "Should the 'Qualifier Column' and 'Qualifier Value' fields be displayed in the grid?", false, "", 0 )]
     [LinkedPage( "Detail Page" )]
     public partial class TagList : Rock.Web.UI.RockBlock
     {
@@ -55,12 +56,11 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
+            _canConfigure = IsUserAuthorized( Authorization.EDIT );
 
             // Load Entity Type Filter
+            ddlEntityType.Items.Add( new System.Web.UI.WebControls.ListItem() );
             new EntityTypeService( new RockContext() ).GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
-
-            ppOwner.Visible = _canConfigure;
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
@@ -83,6 +83,26 @@ namespace RockWeb.Blocks.Core
                 BindFilter();
                 BindGrid();
             }
+            else
+            {
+                string personalFormId = string.Format( "{0}$1", cblScope.UniqueID );
+                if ( Request.Form["__EVENTTARGET"] == personalFormId )
+                {
+                    if ( Request.Form[personalFormId] != null && Request.Form[personalFormId] == "Personal" )
+                    {
+                        if ( _canConfigure && !ppOwner.Visible )
+                        {
+                            ppOwner.SetValue( CurrentPerson );
+                        }
+                        ppOwner.Visible = _canConfigure;
+                    }
+                    else
+                    {
+                        ppOwner.SetValue( null );
+                        ppOwner.Visible = false;
+                    }
+                }
+            }
 
             base.OnLoad( e );
         }
@@ -99,8 +119,9 @@ namespace RockWeb.Blocks.Core
         protected void rGrid_Add( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "tagId", "0" );
-            parms.Add( "entityTypeId", rFilter.GetUserPreference( "EntityType" ).AsIntegerOrNull().ToString() );
+            parms.Add( "TagId", "0" );
+            parms.Add( "CategoryId", cpCategory.SelectedValueAsId().ToString() );
+            parms.Add( "EntityTypeId", rFilter.GetUserPreference( "EntityType" ).AsIntegerOrNull().ToString() );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
@@ -112,7 +133,7 @@ namespace RockWeb.Blocks.Core
         protected void rGrid_Edit( object sender, RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "tagId", e.RowKeyValue.ToString() );
+            parms.Add( "TagId", e.RowKeyValue.ToString() );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
@@ -150,7 +171,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var tags = GetTags();
+            var tags = GetTags( true );
             if ( tags != null )
             {
                 using ( var rockContext = new RockContext() )
@@ -175,26 +196,6 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the rblScope control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rblScope_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            if ( rblScope.SelectedValue == "Personal" && CurrentPerson != null )
-            {
-                ppOwner.SetValue( CurrentPerson );
-                ppOwner.Visible = _canConfigure;
-            }
-            else
-            {
-                ppOwner.SetValue( null );
-                ppOwner.Visible = false;
-            }
-
-        }
-
-        /// <summary>
         /// Rs the filter_ display filter value.
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -203,8 +204,13 @@ namespace RockWeb.Blocks.Core
         {
             switch ( e.Key )
             {
+                case "Category":
+                    var category = CategoryCache.Read( int.Parse( e.Value ) );
+                    e.Value = category != null ? category.Name : string.Empty;  
+                    break;
                 case "EntityType":
-                    e.Value = EntityTypeCache.Read( int.Parse( e.Value ) ).FriendlyName;
+                    var entityType = EntityTypeCache.Read( int.Parse( e.Value ) );
+                    e.Value = entityType != null ? entityType.FriendlyName : string.Empty;
                     break;
                 case "Owner":
                     int? personId = e.Value.AsIntegerOrNull();
@@ -235,15 +241,12 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
+            rFilter.SaveUserPreference( "Category", cpCategory.SelectedValue );
             rFilter.SaveUserPreference( "EntityType", ddlEntityType.SelectedValue );
-            rFilter.SaveUserPreference( "Scope", rblScope.SelectedValue );
-
-            if (rblScope.SelectedValue == "Personal" && !ppOwner.PersonId.HasValue && CurrentPerson != null )
-            {
-                ppOwner.SetValue( CurrentPerson );
-            }
-
-            rFilter.SaveUserPreference( "Owner", ppOwner.PersonId.HasValue ? ppOwner.PersonId.Value.ToString() : string.Empty );
+            rFilter.SaveUserPreference( "Scope", cblScope.SelectedValues.AsDelimited(",") );
+            rFilter.SaveUserPreference( "Owner", 
+                ( _canConfigure && cblScope.SelectedValues.Contains( "Personal" ) && ppOwner.PersonId.HasValue ) ?
+                ppOwner.PersonId.Value.ToString() : string.Empty );
 
             BindGrid();
         }
@@ -257,51 +260,31 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilter()
         {
-            if ( string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "EntityType" ) ) )
-            {
-                rFilter.SaveUserPreference( "EntityType", EntityTypeCache.Read( "Rock.Model.Person" ).Id.ToString() );
-            }
+            cpCategory.SetValue( rFilter.GetUserPreference( "Category" ).AsIntegerOrNull() );
             ddlEntityType.SelectedValue = rFilter.GetUserPreference( "EntityType" );
+            cblScope.SetValues( rFilter.GetUserPreference( "Scope" ).SplitDelimitedValues().ToList() );
 
-            if (string.IsNullOrWhiteSpace(rFilter.GetUserPreference("Scope")))
-            {
-                rFilter.SaveUserPreference("Scope", "Personal");
-            }
-            rblScope.SelectedValue = rFilter.GetUserPreference( "Scope" );
-
-            if ( rblScope.SelectedValue == "Personal" )
+            if ( _canConfigure && cblScope.SelectedValues.Contains( "Personal" ) )
             {
                 Person owner = CurrentPerson;
-                if ( _canConfigure && !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Owner" ) ) )
+                int? savedOwnerId = rFilter.GetUserPreference( "Owner" ).AsIntegerOrNull();
+                if ( savedOwnerId.HasValue )
                 {
-                    int? savedOwnerId = rFilter.GetUserPreference( "Owner" ).AsIntegerOrNull();
-                    if ( savedOwnerId.HasValue )
-                    {
-                        var person = new PersonService( new RockContext() ).Queryable()
-                            .Where( p => p.Id == savedOwnerId.Value )
-                            .FirstOrDefault();
+                    var person = new PersonService( new RockContext() ).Queryable()
+                        .Where( p => p.Id == savedOwnerId.Value )
+                        .FirstOrDefault();
 
-                        if ( person != null )
-                        {
-                            owner = person;
-                        }
-                    }
-                }
-                if ( owner != null )
-                {
-                    rFilter.SaveUserPreference( "Owner", owner.Id.ToString() );
-                    if ( _canConfigure )
+                    if ( person != null )
                     {
-                        ppOwner.SetValue( owner );
+                        owner = person;
                     }
                 }
 
-                ppOwner.Visible = _canConfigure;
+                ppOwner.SetValue( owner ?? CurrentPerson );
+                ppOwner.Visible = true;
             }
             else
             {
-                rFilter.SaveUserPreference( "Owner", string.Empty );
-                ppOwner.SetValue( null );
                 ppOwner.Visible = false;
             }
         }
@@ -311,9 +294,13 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            rGrid.Columns[0].Visible = true;
+            bool ordered = _canConfigure && !rFilter.GetUserPreference( "Scope" ).SplitDelimitedValues().ToList().Contains( "Personal" );
+            rGrid.ColumnsOfType<ReorderField>().First().Visible =  ordered;
 
-            var tags = GetTags();
+            bool showQualifierCols = GetAttributeValue( "ShowQualifierColumns" ).AsBoolean();
+            rGrid.ColumnsOfType<RockBoundField>().Where( c => c.DataField.StartsWith( "EntityTypeQualifier" ) ).ToList().ForEach( c => c.Visible = showQualifierCols );
+
+            var tags = GetTags( ordered );
             if (tags != null)
             {
                 rGrid.DataSource = tags.Select( t => new
@@ -321,12 +308,14 @@ namespace RockWeb.Blocks.Core
                     Id = t.Id,
                     Name = t.Name,
                     Description = t.Description,
-                    EntityTypeName = t.EntityType.FriendlyName,
+                    EntityTypeName = t.EntityType != null ? t.EntityType.FriendlyName : "<All>",
                     EntityTypeQualifierColumn = t.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = t.EntityTypeQualifierValue,
-                    Owner = ( t.OwnerPersonAlias != null && t.OwnerPersonAlias.Person != null ) ? 
-                        t.OwnerPersonAlias.Person.LastName + ", " + t.OwnerPersonAlias.Person.NickName : 
-                        "Organization"
+                    Owner = ( t.OwnerPersonAlias != null && t.OwnerPersonAlias.Person != null ) ?
+                        t.OwnerPersonAlias.Person.LastName + ", " + t.OwnerPersonAlias.Person.NickName : "",
+                    Scope = ( t.OwnerPersonAlias != null ) ? "Personal" : "Organization",
+                    EntityCount = t.TaggedItems.Count(),
+                    IsActive = t.IsActive
                 } ).ToList();
 
                 rGrid.EntityTypeId = EntityTypeCache.Read<Tag>().Id;
@@ -338,38 +327,73 @@ namespace RockWeb.Blocks.Core
         /// Gets the tags.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<Tag> GetTags()
+        private IQueryable<Tag> GetTags( bool ordered )
         {
+            var queryable = new TagService( new RockContext() ).Queryable();
+
+            int? categoryId = cpCategory.SelectedValueAsId();
+            if ( categoryId.HasValue )
+            {
+                queryable = queryable.Where( t => t.CategoryId == categoryId.Value );
+            }
+
             int? entityTypeId = rFilter.GetUserPreference( "EntityType" ).AsIntegerOrNull();
             if ( entityTypeId.HasValue )
             {
-                var queryable = new Rock.Model.TagService( new RockContext() ).Queryable().
-                    Where( t => t.EntityTypeId == entityTypeId.Value );
+                queryable = queryable.Where( t => t.EntityTypeId == entityTypeId.Value );
+            }
 
-                if ( rFilter.GetUserPreference( "Scope" ) == "Organization" )
+            string personFlag = string.Empty;     // Space = None, 0 = All, Integer = Specific Person
+            var scopes = rFilter.GetUserPreference( "Scope" ).SplitDelimitedValues().ToList();
+            if ( scopes.Contains( "Personal" ) )
+            {
+                if ( _canConfigure )
                 {
-                    // Only allow sorting of public tags if authorized to Administer
-                    rGrid.Columns[0].Visible = _canConfigure;
-                    queryable = queryable.Where( t => !t.OwnerPersonAliasId.HasValue );
+                    personFlag = ( rFilter.GetUserPreference( "Owner" ).AsIntegerOrNull() ?? 0 ).ToString();
                 }
                 else
                 {
-                    int? personId = rFilter.GetUserPreference( "Owner" ).AsIntegerOrNull();
-                    if ( _canConfigure && personId.HasValue )
-                    {
-                        queryable = queryable.Where( t => t.OwnerPersonAlias != null && t.OwnerPersonAlias.PersonId == personId.Value );
-                    }
-                    else
-                    {
-                        queryable = queryable.Where( t => t.OwnerPersonAlias != null && t.OwnerPersonAlias.PersonId == CurrentPersonId );
-                    }
+                    personFlag = CurrentPersonId.HasValue ? CurrentPersonId.Value.ToString() : string.Empty;
                 }
-
-                return queryable.OrderBy( t => t.Order );
-
             }
 
-            return null;
+            bool includeOrgs = scopes.Contains( "Organization" );
+
+            switch ( personFlag )
+            {
+                // No people
+                case "":
+                    queryable = includeOrgs ?
+                        queryable.Where( t => !t.OwnerPersonAliasId.HasValue ) :
+                        queryable; 
+                    break;
+                    
+                // All people
+                case "0":
+                    queryable = includeOrgs ?
+                        queryable :
+                        queryable.Where( t => t.OwnerPersonAliasId.HasValue ); 
+                    break;    
+
+                // Specific Person
+                default:
+                    int personId = personFlag.AsInteger();
+                    queryable = includeOrgs ?
+                        queryable.Where( t => t.OwnerPersonAlias == null || t.OwnerPersonAlias.PersonId == personId ) :
+                        queryable.Where( t => t.OwnerPersonAlias != null && t.OwnerPersonAlias.PersonId == personId );
+                    break;    
+            }
+
+            rGrid.ColumnsOfType<ReorderField>().First().Visible = _canConfigure && includeOrgs && personFlag == string.Empty;
+
+            if ( ordered )
+            {
+                return queryable.OrderBy( t => t.Order ).ThenBy( t => t.Name );
+            }
+            else
+            {
+                return queryable.OrderBy( t => t.Name );
+            }
         }
 
         #endregion

@@ -463,6 +463,14 @@ namespace Rock.Web.UI
             this.BlockValidationGroup = string.Format( "{0}_{1}", this.GetType().BaseType.Name, BlockCache.Id );
 
             RockPage.BlockUpdated += Page_BlockUpdated;
+
+            if ( !Page.IsPostBack )
+            {
+                if ( this is ICustomGridColumns )
+                {
+                    AddCustomGridColumns();
+                }
+            }
         }
 
         /// <summary>
@@ -475,11 +483,21 @@ namespace Rock.Web.UI
             {
                 if ( this.PageParameter( "ShowDebugTimings" ).AsBoolean() )
                 {
-                    TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
+                    TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
                     var lblShowDebugTimings = this.Page.Form.Controls.OfType<Label>().Where( a => a.ID == "lblShowDebugTimings" ).FirstOrDefault();
                     if ( lblShowDebugTimings != null )
                     {
+                        var previousPointInTimeMS = lblShowDebugTimings.Attributes["PointInTimeMS"]?.AsDoubleOrNull();
+                        if ( previousPointInTimeMS.HasValue )
+                        {
+                            var lastDurationMS = Math.Round(tsDuration.TotalMilliseconds - previousPointInTimeMS.Value, 3);
+                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "</pre>", $"  [{lastDurationMS}ms]</pre>" );
+                        }
+
                         lblShowDebugTimings.Text += string.Format( "<pre>Start OnLoad {0} @ {1}</pre>", this.BlockName, tsDuration.TotalMilliseconds );
+
+
+                        lblShowDebugTimings.Attributes["PointInTimeMS"] = tsDuration.TotalMilliseconds.ToString();
                     }
                 }
             }
@@ -500,6 +518,39 @@ namespace Rock.Web.UI
         }
 
         #endregion
+
+
+        #region ICustomGridColumns
+
+        /// <summary>
+        /// Adds any custom grid columns to the Grid on the block
+        /// </summary>
+        public virtual void AddCustomGridColumns()
+        {
+            var additionalColumns = this.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ).FromJsonOrNull<CustomGridColumnsConfig>();
+            var grid = this.ControlsOfTypeRecursive<Rock.Web.UI.Controls.Grid>().FirstOrDefault();
+            if ( grid != null && additionalColumns != null && additionalColumns.ColumnsConfig.Any() )
+            {
+                foreach ( var columnConfig in additionalColumns.ColumnsConfig )
+                {
+                    int insertPosition;
+                    if ( columnConfig.PositionOffsetType == CustomGridColumnsConfig.ColumnConfig.OffsetType.LastColumn )
+                    {
+                        insertPosition = grid.Columns.Count - columnConfig.PositionOffset;
+                    }
+                    else
+                    {
+                        insertPosition = columnConfig.PositionOffset;
+                    }
+
+                    var column = columnConfig.GetGridColumn();
+                    grid.Columns.Insert( insertPosition, column );
+                    insertPosition++;
+                }
+            }
+        }
+
+        #endregion ICustomGridColumns
 
         #region Public Methods
 
@@ -718,7 +769,7 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Navigates to current page.
+        /// Navigates to current page id
         /// </summary>
         /// <param name="queryString">The query string.</param>
         /// <returns></returns>
@@ -731,6 +782,26 @@ namespace Rock.Web.UI
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Navigates to current page reference including current page parameters and query parameters, with an option to specify additional query parameters
+        /// </summary>
+        /// <param name="additionalQueryParameters">The additional query parameters.</param>
+        /// <returns></returns>
+        public bool NavigateToCurrentPageReference( Dictionary<string, string> additionalQueryParameters = null)
+        {
+            var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
+            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
+            if ( additionalQueryParameters != null )
+            {
+                foreach ( var qryParam in additionalQueryParameters )
+                {
+                    pageReference.QueryString[qryParam.Key] = qryParam.Value;
+                }
+            }
+
+            return NavigateToPage( pageReference );
         }
 
         /// <summary>

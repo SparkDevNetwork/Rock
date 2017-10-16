@@ -19,6 +19,18 @@
                 } else if (typeof google == 'object' && typeof google.maps == 'object') {
                     this.googleMapsIsLoaded();
                 }
+            },
+          // parses the value as a float and adds a 'px' suffix if successful. If the value can't be parsed, this will return an empty string
+          // note: this uses javascript's parseFloat which will convert the the numeric portion value to a float as long as it starts with a numeric value
+            getValueAsPixels: function (a)
+            {
+              var floatValue = parseFloat(a)
+              if (floatValue) {
+                return floatValue + 'px'
+              }
+              else {
+                return '';
+              }
             }
         };
 

@@ -168,7 +168,17 @@ namespace RockWeb.Blocks.Administration
             job.LoadAttributes();
             phAttributes.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
-            
+        }
+
+        /// <summary>
+        /// Handles the TextChanged event of the tbCronExpression control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tbCronExpression_TextChanged( object sender, EventArgs e )
+        {
+            lCronExpressionDesc.Text = ExpressionDescriptor.GetDescription( tbCronExpression.Text, new Options { ThrowExceptionOnParseError = false } );
+            lCronExpressionDesc.Visible = true;
         }
 
         /// <summary>
@@ -237,8 +247,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( job.IsSystem )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( ServiceJob.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.System( ServiceJob.FriendlyTypeName );
             }
 
             if ( readOnly )
@@ -250,15 +259,14 @@ namespace RockWeb.Blocks.Administration
                 phAttributes.Visible = false;
                 tbCronExpression.Text = job.CronExpression;
             }
-
             
-            tbName.ReadOnly = readOnly;
-            tbDescription.ReadOnly = readOnly;
-            cbActive.Enabled = !readOnly;
-            ddlJobTypes.Enabled = !readOnly;
+            tbName.ReadOnly = readOnly || job.IsSystem;
+            tbDescription.ReadOnly = readOnly || job.IsSystem;
+            cbActive.Enabled = !( readOnly || job.IsSystem );
+            ddlJobTypes.Enabled = !( readOnly || job.IsSystem );
             tbNotificationEmails.ReadOnly = readOnly;
             ddlNotificationStatus.Enabled = !readOnly;
-            tbCronExpression.ReadOnly = readOnly;
+            tbCronExpression.ReadOnly = readOnly || job.IsSystem;
 
             btnSave.Visible = !readOnly;
         }
