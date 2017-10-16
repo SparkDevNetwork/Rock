@@ -1242,6 +1242,10 @@ namespace RockWeb.Blocks.Communication
 
                         testRecipient.MediumEntityTypeId = mediumEntityTypeId;
 
+                        // If we are just sending a Test Email, don't use set it up to use the CommunicationList
+                        testCommunication.ListGroup = null;
+                        testCommunication.ListGroupId = null;
+
                         testCommunication.Recipients.Add( testRecipient );
 
                         var communicationService = new CommunicationService( rockContext );
@@ -2024,17 +2028,19 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
             // Add any new recipients
             HashSet<int> communicationPersonIdHash = new HashSet<int>( qryRecipients.Select( a => a.PersonAlias.PersonId ) );
-            foreach ( var recipientPersonId in recipientPersonIds )
+            var recipientPersonIdsAliasId = new PersonService( rockContext ).Queryable().Where( a => recipientPersonIds.Contains( a.Id ) ).Select( a => new
             {
-                if ( !communicationPersonIdHash.Contains( recipientPersonId ) )
+                PersonId = a.Id,
+                PrimaryAliasId = a.Aliases.Where( x => x.AliasPersonId == x.PersonId ).Select( pa => pa.Id ).FirstOrDefault()
+            } ).ToList();
+
+            foreach ( var recipientPersonIdAliasId in recipientPersonIdsAliasId )
+            {
+                if ( !communicationPersonIdHash.Contains( recipientPersonIdAliasId.PersonId ) )
                 {
-                    var person = new PersonService( rockContext ).Get( recipientPersonId );
-                    if ( person != null )
-                    {
-                        var communicationRecipient = new CommunicationRecipient();
-                        communicationRecipient.PersonAlias = person.PrimaryAlias;
-                        communication.Recipients.Add( communicationRecipient );
-                    }
+                    var communicationRecipient = new CommunicationRecipient();
+                    communicationRecipient.PersonAliasId = recipientPersonIdAliasId.PrimaryAliasId;
+                    communication.Recipients.Add( communicationRecipient );
                 }
             }
 
