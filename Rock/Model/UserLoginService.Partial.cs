@@ -164,7 +164,7 @@ namespace Rock.Model
         #region Static Methods
 
         /// <summary>
-        /// Returns the <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in.
+        /// Returns the <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in, and updates their last activity date
         /// </summary>
         /// <returns>The <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in</returns>
         public static UserLogin GetCurrentUser()
@@ -173,7 +173,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns the <see cref="Rock.Model.UserLogin"/>
+        /// Returns the <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in, and updates their last activity date if userIsOnline=true
         /// </summary>
         /// <param name="userIsOnline">A <see cref="System.Boolean"/> value that returns the logged in user if <c>true</c>; otherwise can return the impersonated user</param>
         /// <returns>The current <see cref="Rock.Model.UserLogin"/></returns>
