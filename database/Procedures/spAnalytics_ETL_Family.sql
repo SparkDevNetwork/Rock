@@ -227,7 +227,7 @@ AND fh.FamilyId NOT IN ( -- Ensure that there isn't already a History Record for
     WHERE s.FamilyId NOT IN (
             SELECT FamilyId
             FROM AnalyticsSourceFamilyHistorical
-            WHERE CurrentRowIndicator = 1
+ WHERE CurrentRowIndicator = 1
             )
 
     set @RowsInserted = @@ROWCOUNT;

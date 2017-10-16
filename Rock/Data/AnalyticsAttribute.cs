@@ -35,10 +35,12 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AnalyticsAttribute"/> class.
+        /// Initializes a new instance of the <see cref="AnalyticsAttribute" /> class.
         /// </summary>
         /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
         /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="supportsHistory">if set to <c>true</c> [supports history].</param>
+        /// <param name="supportsAttributes">if set to <c>true</c> [supports attributes].</param>
         public AnalyticsAttribute( string entityTypeQualifierColumn, string entityTypeQualifierValue, bool supportsHistory, bool supportsAttributes )
         {
             this.EntityTypeQualifierColumn = entityTypeQualifierColumn;
