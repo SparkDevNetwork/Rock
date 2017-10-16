@@ -120,7 +120,7 @@
                         </div>
                         <div class="col-md-4 col-md-offset-2">
                             <Rock:RockRadioButtonList ID="rblState" runat="server" Label="State" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblState_SelectedIndexChanged" AutoPostBack="true" />
-                            <Rock:DatePicker ID="dpFollowUp" runat="server" Label="Follow-up Date" Visible="false" />
+                            <Rock:DatePicker ID="dpFollowUp" runat="server" Label="Follow-up Date" AllowPastDateSelection="false" Visible="false" />
                         </div>
                     </div>
 
