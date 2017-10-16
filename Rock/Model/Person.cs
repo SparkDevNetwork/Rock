@@ -452,6 +452,17 @@ namespace Rock.Model
         [DataMember]
         public int? MetaPersonicxLifestageGroupId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the top signal CSS class. This property is used to display a small color bar
+        /// on a person if they have a related signal.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the name of the signal CSS class.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string TopSignalIndicatorClass { get; set; }
+
         #endregion
 
         #region Constructors
@@ -2387,6 +2398,11 @@ namespace Rock.Model
         {
             if (person != null )
             {
+                if ( !string.IsNullOrWhiteSpace( person.TopSignalIndicatorClass ) )
+                {
+                    className = className + " " + person.TopSignalIndicatorClass;
+                }
+
                 return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? (Guid?)person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
             } else
             {
