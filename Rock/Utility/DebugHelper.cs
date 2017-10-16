@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Data.Common;
 using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
 using System.Linq;
@@ -56,8 +57,72 @@ namespace Rock
             /// <param name="command"></param>
             /// <param name="interceptionContext"></param>
             /// <inheritdoc />
+            public override void NonQueryExecuting( DbCommand command, DbCommandInterceptionContext<int> interceptionContext )
+            {
+                this.CommandExecuting( command, interceptionContext, out object userState );
+                interceptionContext.UserState = userState;
+            }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
+            public override void NonQueryExecuted( DbCommand command, DbCommandInterceptionContext<int> interceptionContext )
+            {
+                this.CommandExecuted( command, interceptionContext, interceptionContext.UserState );
+            }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
+            public override void ScalarExecuting( DbCommand command, DbCommandInterceptionContext<object> interceptionContext )
+            {
+                this.CommandExecuting( command, interceptionContext, out object userState );
+                interceptionContext.UserState = userState;
+            }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
+            public override void ScalarExecuted( DbCommand command, DbCommandInterceptionContext<object> interceptionContext )
+            {
+                this.CommandExecuted( command, interceptionContext, interceptionContext.UserState );
+            }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
             public override void ReaderExecuting( System.Data.Common.DbCommand command, DbCommandInterceptionContext<System.Data.Common.DbDataReader> interceptionContext )
             {
+                this.CommandExecuting( command, interceptionContext, out object userState );
+                interceptionContext.UserState = userState;
+            }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
+            public override void ReaderExecuted( DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext )
+            {
+                this.CommandExecuted( command, interceptionContext, interceptionContext.UserState );
+            }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
+            private void CommandExecuting( DbCommand command, DbCommandInterceptionContext interceptionContext, out object userState )
+            {
+                userState = null;
                 if ( RockContext != null && !interceptionContext.DbContexts.Any( a => a == RockContext ) )
                 {
                     return;
@@ -108,9 +173,9 @@ namespace Rock
 
                 sbDebug.AppendLine( "\nEND\nGO\n\n" );
 
-                if ( interceptionContext.UserState == null )
+                if ( userState == null )
                 {
-                    interceptionContext.UserState = new DebugHelperUserState { CallNumber = DebugHelper._callCounts, Stopwatch = Stopwatch.StartNew() };
+                    userState = new DebugHelperUserState { CallNumber = DebugHelper._callCounts, Stopwatch = Stopwatch.StartNew() };
                 }
 
                 System.Diagnostics.Debug.Write( sbDebug.ToString() );
@@ -121,9 +186,9 @@ namespace Rock
             /// </summary>
             /// <param name="command">The command.</param>
             /// <param name="interceptionContext">The interception context.</param>
-            public override void ReaderExecuted( System.Data.Common.DbCommand command, DbCommandInterceptionContext<System.Data.Common.DbDataReader> interceptionContext )
+            public void CommandExecuted( System.Data.Common.DbCommand command, DbCommandInterceptionContext interceptionContext, object userState )
             {
-                var debugHelperUserState = interceptionContext.UserState as DebugHelperUserState;
+                var debugHelperUserState = userState as DebugHelperUserState;
                 if ( debugHelperUserState != null )
                 {
                     debugHelperUserState.Stopwatch.Stop();
