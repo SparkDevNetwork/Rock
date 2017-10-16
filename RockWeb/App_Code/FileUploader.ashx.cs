@@ -235,7 +235,7 @@ namespace RockWeb
             var response = new
             {
                 Id = binaryFile.Id,
-                FileName = binaryFile.FileName
+                FileName = binaryFile.FileName.UrlEncode()
             };
 
             context.Response.Write( response.ToJson() );
