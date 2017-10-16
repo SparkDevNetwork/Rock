@@ -90,6 +90,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AccountId = source.AccountId;
             target.Amount = source.Amount;
+            target.AuthorizedCurrentFamilyKey = source.AuthorizedCurrentFamilyKey;
             target.AuthorizedCurrentPersonKey = source.AuthorizedCurrentPersonKey;
             target.AuthorizedFamilyId = source.AuthorizedFamilyId;
             target.AuthorizedFamilyKey = source.AuthorizedFamilyKey;
@@ -111,6 +112,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.GivingGroupId = source.GivingGroupId;
             target.GivingId = source.GivingId;
+            target.GivingUnitCurrentKey = source.GivingUnitCurrentKey;
             target.GivingUnitKey = source.GivingUnitKey;
             target.IsFirstTransactionOfType = source.IsFirstTransactionOfType;
             target.IsScheduled = source.IsScheduled;
