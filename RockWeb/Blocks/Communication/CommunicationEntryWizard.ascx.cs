@@ -431,6 +431,17 @@ namespace RockWeb.Blocks.Communication
             this.AddHistory( "navigationHistoryInstance", hfNavigationHistoryInstance.Value );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnUseSimpleEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnUseSimpleEditor_Click( object sender, EventArgs e )
+        {
+            int communicationId = hfCommunicationId.Value.AsInteger();
+            NavigateToLinkedPage( "SimpleCommunicationPage", "CommunicationId", communicationId );
+        }
+
         #endregion
 
         #region Recipient Selection
@@ -803,6 +814,40 @@ namespace RockWeb.Blocks.Communication
             }
 
             return groupMemberQuery;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDeleteSelectedRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDeleteSelectedRecipients_Click( object sender, EventArgs e )
+        {
+            // get the selected personIds
+            bool removeAll = false;
+            var selectField = gIndividualRecipients.ColumnsOfType<SelectField>().First();
+            if ( selectField != null && selectField.HeaderCheckbox != null )
+            {
+                // if the 'Select All' checkbox in the header is checked, and they haven't unselected anything, then assume they want to remove all recipients
+                removeAll = selectField.HeaderCheckbox.Checked && gIndividualRecipients.SelectedKeys.Count == gIndividualRecipients.PageSize;
+            }
+
+            if ( removeAll )
+            {
+                IndividualRecipientPersonIds.Clear();
+            }
+            else
+            {
+                var selectedPersonIds = gIndividualRecipients.SelectedKeys.OfType<int>().ToList();
+                IndividualRecipientPersonIds.RemoveAll( a => selectedPersonIds.Contains( a ) );
+            }
+            
+            BindIndividualRecipientsGrid();
+
+            UpdateIndividualRecipientsCountText();
+
+            // upnlContent has UpdateMode = Conditional and this is a modal, so we have to update manually
+            upnlContent.Update();
         }
 
         #endregion Recipient Selection
@@ -1327,6 +1372,7 @@ namespace RockWeb.Blocks.Communication
             var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
             var sampleCommunicationRecipient = communication.Recipients.FirstOrDefault();
             sampleCommunicationRecipient.Communication = communication;
+            sampleCommunicationRecipient.PersonAlias = sampleCommunicationRecipient.PersonAlias ?? new PersonAliasService( rockContext ).Get( sampleCommunicationRecipient.PersonAliasId );
             var mergeFields = sampleCommunicationRecipient.CommunicationMergeValues( commonMergeFields );
 
             Rock.Communication.MediumComponent emailMediumWithActiveTransport = Rock.Communication.MediumContainer.Instance.Components.Select( a => a.Value.Value )
@@ -2195,15 +2241,6 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
         #endregion
 
-        /// <summary>
-        /// Handles the Click event of the btnUseSimpleEditor control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnUseSimpleEditor_Click( object sender, EventArgs e )
-        {
-            int communicationId = hfCommunicationId.Value.AsInteger();
-            NavigateToLinkedPage( "SimpleCommunicationPage", "CommunicationId", communicationId );
-        }
+        
     }
 }

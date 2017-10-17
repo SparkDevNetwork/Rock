@@ -80,6 +80,11 @@
                                     <Rock:DeleteField OnClick="gIndividualRecipients_DeleteClick" />
                                 </Columns>
                             </Rock:Grid>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <asp:LinkButton ID="btnDeleteSelectedRecipients" runat="server" CssClass="btn btn-action btn-xs margin-t-sm pull-right" OnClick="btnDeleteSelectedRecipients_Click" Text="Remove Selected Recipients" />
+                                </div>
+                            </div>
                         </Content>
                     </Rock:ModalDialog>
 
