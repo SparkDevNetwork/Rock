@@ -2240,7 +2240,7 @@ BEGIN
         }
 
         /// <summary>
-        /// Adds the defined value attribute value.
+        /// Adds/Overwrites the defined value attribute value.
         /// </summary>
         /// <param name="definedValueGuid">The defined value unique identifier.</param>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
@@ -2285,6 +2285,35 @@ BEGIN
                     value.Replace( "'", "''" )
                 )
             );
+        }
+
+        /// <summary>
+        /// Adds/Overwrites the Group attribute value.
+        /// </summary>
+        public void AddGroupAttributeValue( string groupGuid, string attributeGuid, string value )
+        {
+            Migration.Sql( $@"
+
+                DECLARE @GroupId int
+                SET @GroupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{groupGuid}')
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @GroupId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@GroupId,
+                    '{value.Replace( "'", "''" )}',
+                    NEWID())"
+                );
         }
 
         /// <summary>
