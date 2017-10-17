@@ -892,14 +892,16 @@
                             <Rock:NotificationBox ID="nbMobileAttachmentFileTypeWarning" runat="server" NotificationBoxType="Warning" Text="" Dismissable="true" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <div class="device device-mobile hidden-md">
+                            <div class="device device-mobile hidden-sm hidden-xs">
                                 <div class="sms">
                                     <header><span class="left">Messages</span><h2><asp:Literal ID="lSMSChatPerson" runat="server" Text="Ted Decker" /></h2><span class="right">Contacts</span></header>
                                     <div class="messages-wrapper">
-                                      <div class="js-sms-chatoutput message to">
-                                          <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
-                                      </div>
-                                        <asp:Image ID="imgSMSImageAttachment" runat="server" CssClass="pull-right margin-r-md" width="50%" />
+                                        <div class="js-sms-chatoutput message to">
+                                            <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
+                                        </div>
+
+                                        <div id="divAttachmentLoadError" runat="server" style="display: none" class="alert alert-danger margin-all-md" />
+                                        <asp:Image ID="imgSMSImageAttachment" runat="server" CssClass="pull-right margin-r-md" onerror="showSMSAttachmentLoadError()" Width="50%" />
                                     </div>
                                 </div>
                             </div>
@@ -1390,6 +1392,10 @@
 			    else {
 			        $('.js-sms-chatoutput').hide();
 			    }
+            }
+
+            function showSMSAttachmentLoadError() {
+                $('#<%=divAttachmentLoadError.ClientID%>').show();
             }
 
             function setActiveMediumTypeButton($activeBtn)

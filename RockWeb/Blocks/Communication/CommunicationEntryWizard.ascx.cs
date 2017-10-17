@@ -1528,6 +1528,8 @@ namespace RockWeb.Blocks.Communication
             // make the PersonId of the First Recipient available to Javascript so that we can do some Lava processing using REST and Javascript
             var rockContext = new RockContext();
             Rock.Model.Communication communication = UpdateCommunication( rockContext );
+            var firstRecipient = communication.Recipients.First();
+            firstRecipient.PersonAlias = firstRecipient.PersonAlias ?? new PersonAliasService( rockContext ).Get( firstRecipient.PersonAliasId );
             hfSMSSampleRecipientPersonId.Value = communication.Recipients.First().PersonAlias.PersonId.ToString();
 
             nbSMSTestResult.Visible = false;
@@ -1616,7 +1618,9 @@ namespace RockWeb.Blocks.Communication
                         sizingPlugin.Limits.TotalBehavior = origLimit;
                     }
 
-                    imgSMSImageAttachment.ImageUrl = string.Format( "~/GetImage.ashx?guid={0}", binaryFile.Guid );
+                    string publicAppRoot = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                    imgSMSImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
+                    divAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
                     imgSMSImageAttachment.Width = new Unit( 50, UnitType.Percentage );
                 }
