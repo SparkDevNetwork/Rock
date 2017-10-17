@@ -131,6 +131,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Group Categories (for a specific group type)
+
+        /// <summary>
+        /// The 'Public' category for Communication List groups
+        /// </summary>
+        public const string GROUPTYPE_COMMUNICATIONLIST_PUBLIC = "A0889E77-67D9-418C-B301-1B3924692058";
+
+        #endregion
+
         #region System Email Categories
 
         /// <summary>
