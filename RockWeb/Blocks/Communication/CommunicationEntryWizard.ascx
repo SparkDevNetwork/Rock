@@ -110,10 +110,9 @@
                                     <a id="btnMediumEmail" runat="server" class="btn btn-default btn-sm js-medium-email" data-val="1" >Email</a>
                                     <a id="btnMediumSMS" runat="server" class="btn btn-default btn-sm js-medium-sms" data-val="2" >SMS</a>
                                 </div>
+                                <span class="margin-t-md label label-info js-medium-recipientpreference-notification">Selecting 'Recipient Preference' will require adding content for all active mediums.</span>
                             </div>
                         </div>
-
-                        <Rock:NotificationBox ID="nbRecipientPreferenceInfo" runat="server" CssClass="margin-t-md js-medium-recipientpreference-notification" NotificationBoxType="Info" Title="Heads Up!" Text="Selecting 'Recipient Preference' will require adding content for all active mediums." />
                     </Rock:RockControlWrapper>
                     
                     
