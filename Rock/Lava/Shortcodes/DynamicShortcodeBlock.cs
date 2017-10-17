@@ -47,7 +47,7 @@ namespace Rock.Lava.Shortcodes
 
         StringBuilder _blockMarkup = new StringBuilder();
 
-        const int _maxRecurrsionDepth = 20;
+        const int _maxRecursionDepth = 10;
 
         /// <summary>
         /// Method that will be run at Rock startup
@@ -172,7 +172,7 @@ namespace Rock.Lava.Shortcodes
                 {
                     currentRecurrsionDepth = parms["RecursionDepth"].ToString().AsInteger() + 1;
 
-                    if (currentRecurrsionDepth > _maxRecurrsionDepth )
+                    if (currentRecurrsionDepth > _maxRecursionDepth )
                     {
                         result.Write( "A recursive loop was dected and processing of this shortcode has stopped." );
                         return;
