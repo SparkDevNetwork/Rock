@@ -41,8 +41,9 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Lists scheduled transactions either for current person (Person Detail Page) or all scheduled transactions." )]
 
-    [LinkedPage( "View Page" )]
-    [LinkedPage( "Add Page" )]
+    [LinkedPage( "View Page", "", false )]
+    [LinkedPage( "Add Page", "", false )]
+    [AccountsField( "Accounts", "Limit the results to scheduled transactions that match the selected accounts.", false, "", "", 2 )]
     [ContextAware]
     public partial class ScheduledTransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock
     {
@@ -79,7 +80,10 @@ namespace RockWeb.Blocks.Finance
             gList.Actions.ShowAdd = canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( "AddPage" ) );
             gList.IsDeleteEnabled = canEdit;
 
-            gList.Actions.AddClick += gList_Add;
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ViewPage" ) ) )
+            {
+                gList.RowSelected += gList_Edit;
+            }
             gList.GridRebind += gList_GridRebind;
 
             TargetPerson = ContextEntity<Person>();
@@ -274,6 +278,13 @@ namespace RockWeb.Blocks.Finance
                     .Queryable( "ScheduledTransactionDetails,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
                     .AsNoTracking();
 
+                // Valid Accounts
+                var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+                if ( accountGuids.Any() )
+                {
+                    qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
+                }
+
                 // Amount Range
                 var nre = new NumberRangeEditor();
                 nre.DelimitedValues = gfSettings.GetUserPreference( "Amount" );
@@ -379,10 +390,22 @@ namespace RockWeb.Blocks.Finance
             var txn = dataItem as FinancialScheduledTransaction;
             if ( txn != null )
             {
-                var summary  = txn.ScheduledTransactionDetails
-                    .OrderBy( d => d.Account.Order )
-                    .Select( d => string.Format( "{0}: {1}", d.Account.Name, d.Amount.FormatAsCurrency() ) )
+                var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+                var summary = txn.ScheduledTransactionDetails
+                    .Select( d => new
+                    {
+                        IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ),
+                        Order = d.Account.Order,
+                        Name = d.Account.Name,
+                        Amount = d.Amount
+                    } )
+                    .OrderBy( d => d.IsOther )
+                    .ThenBy( d => d.Order )
+                    .Select( d => string.Format( "{0}: {1}",
+                        !d.IsOther ? d.Name : "Other",
+                        d.Amount.FormatAsCurrency() ) )
                     .ToList();
+
                 if ( summary.Any() )
                 {
                     if ( _isExporting )
