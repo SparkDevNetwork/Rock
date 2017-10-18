@@ -350,10 +350,28 @@ namespace RockWeb.Blocks.Communication
             nbOpenClicksLineChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
 
             this.LineChartDataLabelsJSON = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
-            this.LineChartDataClicksJSON = interactionsSummary.Select( a => a.ClickCounts ).ToList().ToJson();
 
+            List<int> cumulativeClicksList = new List<int>();
+            List<int> clickCountsList = interactionsSummary.Select( a => a.ClickCounts ).ToList();
+            int clickCountsSoFar = 0;
+            foreach ( var clickCounts in clickCountsList )
+            {
+                clickCountsSoFar += clickCounts;
+                cumulativeClicksList.Add( clickCountsSoFar );
+            }
+
+            this.LineChartDataClicksJSON = cumulativeClicksList.ToJson();
+
+            List<int> cumulativeOpensList = new List<int>();
             List<int> openCountsList = interactionsSummary.Select( a => a.OpenCounts ).ToList();
-            this.LineChartDataOpensJSON = openCountsList.ToJson();
+            int openCountsSoFar = 0;
+            foreach (var openCounts in openCountsList)
+            {
+                openCountsSoFar += openCounts;
+                cumulativeOpensList.Add( openCountsSoFar );
+            }
+
+            this.LineChartDataOpensJSON = cumulativeOpensList.ToJson();
 
             int? deliveredRecipientCount = null;
             int? failedRecipientCount = null;
