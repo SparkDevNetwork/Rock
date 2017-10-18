@@ -6,9 +6,9 @@
         <asp:Panel ID="pnlView" runat="server">
             <asp:Label ID="lHoliday" runat="server" Text="Select the holiday you would like to view metrics for:" />
             <asp:DropDownList ID="ddlHoliday" runat="server" OnSelectedIndexChanged="ddlHoliday_SelectedIndexChanged" AutoPostBack="true" Font-Size="Large">
-                <asp:ListItem Value="Christmas" />
-                <asp:ListItem Value="Thanksgiving" />
-                <asp:ListItem Value="Easter" />               
+                <asp:ListItem Value="Christmas" Text="Christmas" />
+                <asp:ListItem Value="Thanksgiving" Text="Thanksgiving" />
+                <asp:ListItem Value="Easter" Text="Easter" />               
             </asp:DropDownList>
             <div class="row">
                 <div class="col-md-10">

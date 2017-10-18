@@ -71,11 +71,11 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
             base.OnLoad( e );
 
             lHoliday.Visible = GetAttributeValue( "ShowHolidayDropdown" ).AsBoolean();
-            ddlHoliday.Visible = GetAttributeValue( "ShowHolidayDropdown" ).AsBoolean();            
+            ddlHoliday.Visible = GetAttributeValue( "ShowHolidayDropdown" ).AsBoolean();
             calCalendar.Visible = GetAttributeValue( "ShowCalendar" ).AsBoolean( resultIfNullOrEmpty: true );
 
             if ( !Page.IsPostBack )
-            {               
+            {
                 ShowDetail();
             }
         }
@@ -142,7 +142,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
 
                 if ( !PageParameter( "Holiday" ).IsNullOrWhiteSpace() )
                 {
-                    ddlHoliday.SelectedValue = PageParameter( "Holiday" );
+                    ddlHoliday.SetValue( PageParameter( "Holiday" ) );
                 }
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
@@ -155,6 +155,11 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
             }
             else
             {
+                if ( !PageParameter( "Holiday" ).IsNullOrWhiteSpace() )
+                {
+                    ddlHoliday.SetValue( PageParameter( "Holiday" ) );
+                }
+
                 var rockContext = new RockContext();
                 var categoryService = new CategoryService( rockContext );
                 var scheduleService = new ScheduleService( rockContext );
