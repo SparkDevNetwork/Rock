@@ -1212,11 +1212,9 @@ namespace RockWeb.Blocks.Groups
                         m.Person.NickName,
                         m.Person.LastName,
                         Name =
-                        ( string.Format("<div class='{0}'>", m.Person.TopSignalIndicatorClass)
-                            + ( isExporting ?
-                                m.Person.LastName + ", " + m.Person.NickName
-                                : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )
-                                    + m.Person.NickName + " " + m.Person.LastName )
+                        ( isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )
+                                    + m.Person.NickName + " " + m.Person.LastName
+                            + ( !string.IsNullOrWhiteSpace( m.Person.TopSignalColor ) ? " " + m.Person.GetSignalMarkup() : string.Empty )
                             + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) ) 
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )
