@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -37,16 +38,21 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
     [DisplayName( "DPS Evaluation Block" )]
     [Category( "com_centralaz > DpsMatch" )]
     [Description( "Block to manually evaluate Person entries similar to known sexual offenders" )]
-    [TextField( "Note Text", "The text for the alert note that is placed on the person's timeline", true, "Known Sex Offender" )]
+    [TextField( "Offender Note Text", "The text for the alert note that is placed on the person's timeline. {0} will be replaced with the offenders firstname and {1} will be the lastname.", true, "Known Sex Offender", key: "NoteText" )]
     [TextField( "Completion Text", "The text for the notification box at completion", true, "There are no unprocessed matches at this time." )]
     [GroupField( "Offender Group", "The Group for Offenders", true )]
+    [TextField( "Offender Link Format", "The standard format for a link back to the offender source data/website. Where {0} will be replaced with the firstname and {1} will be the lastname.", true, "http://www.icrimewatch.net/results.php?AgencyID=55662&SubmitNameSearch=1&OfndrLast={1}&OfndrFirst={0}&OfndrCity=" )]
+    [NoteTypeField( "Alert Note Type", "The alert note type you use for noting a possible match that needs more data on the Rock person record. The last note of that type which is an Alert will be shown.", false, "Rock.Model.Person", defaultValue: "66A1B9D7-7EFA-40F3-9415-E54437977D60" )]
+    [LinkedPage( "Add Note Page", "A special page that allows adding a note to a person by passing the note text and personid to the block on the special page.", false )]
+    [TextField( "Alert Note Text", "The text for the alert note that is placed on the person's timeline when you have a possible match that needs more data on the Rock person record.", true, "Same name to registered sex offender. Verify DOB, Address and photo before serving. See security director if you have questions." )]
+
     public partial class DPSEvaluationBlock : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         static Dictionary<int, List<Match>> _matchList;
         static int _dictionaryIndex = 0;
-
+        static int _alertNoteTypeId = 0;
         #endregion
 
         #region Base Control Methods
@@ -73,6 +79,12 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
 
             if ( !Page.IsPostBack )
             {
+                var noteType = new NoteTypeService( new RockContext() ).Get( GetAttributeValue( "AlertNoteType" ).AsGuid() );
+                if ( noteType != null )
+                {
+                    _alertNoteTypeId = noteType.Id;
+                }
+
                 if ( _matchList == null || _matchList.Count == 0 )
                 {
                     PopulateMatchList();
@@ -252,8 +264,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
                 OffenderService offenderService = new OffenderService( new DpsMatchContext() );
                 Offender offender = offenderService.Get( _matchList.ElementAt( _dictionaryIndex ).Key );
                 List<Match> matchSubList = _matchList.ElementAt( _dictionaryIndex ).Value;
-                DataTable dt = GetDataTable( offender, matchSubList );
-                gValues.DataSource = dt;
+                gValues.DataSource = GetDataTable( offender, matchSubList );
                 gValues.DataBind();
             }
         }
@@ -302,8 +313,8 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
         /// <returns></returns>
         public DataTable GetDataTable( Offender offender, List<Match> matchList )
         {
+            var addNotePage = GetAttributeValue( "AddNotePage" );
             var tbl = new DataTable();
-
             tbl.Columns.Add( "Label" );
 
             //Offender
@@ -319,7 +330,9 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
             //Name
             rowValues = new List<object>();
             rowValues.Add( "Name" );
-            rowValues.Add( String.Format( "{0} {1}", offender.FirstName, offender.LastName ) );
+            var offenderDetailsLink = string.Format( GetAttributeValue( "OffenderLinkFormat" ), offender.FirstName, offender.LastName );
+            rowValues.Add( String.Format( "<a target='_blank' href='{0}'>{1} {2}</a>", offenderDetailsLink, offender.FirstName, offender.LastName ) );
+
             foreach ( Match match in matchList )
             {
                 var person = match.PersonAlias.Person;
@@ -386,6 +399,54 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
                 else
                 {
                     rowValues.Add( "F" );
+                }
+            }
+            tbl.Rows.Add( rowValues.ToArray() );
+
+            //Alert Notes
+            NoteService noteService = new NoteService( new RockContext() );
+            rowValues = new List<object>();
+            rowValues.Add( "Alerts" );
+            rowValues.Add( string.Empty );
+            foreach ( Match match in matchList )
+            {
+                var note = noteService.Queryable().AsNoTracking()
+                    .Where( n =>
+                        n.NoteTypeId == _alertNoteTypeId &&
+                        n.EntityId == match.PersonAlias.PersonId &&
+                        n.IsAlert == true )
+                    .OrderByDescending( n => n.CreatedDateTime )
+                    .FirstOrDefault();
+
+                if ( note != null )
+                {
+                    rowValues.Add(
+                        string.Format( "<span class='label label-danger' data-toggle='tooltip' data-html='true' title='{1} <br>[by {2} on {3}]'>{0}</span>",
+                            note.Text.Truncate( 40 ),
+                            note.Text,
+                            note.CreatedByPersonName,
+                            note.CreatedDateTime != null ? note.CreatedDateTime.Value.ToString( "MM/dd/yy" ) : string.Empty
+                         ) 
+                    );
+                }
+                else
+                {
+                    if ( string.IsNullOrEmpty( addNotePage ) )
+                    {
+                        rowValues.Add( string.Empty );
+                    }
+                    else
+                    {
+                        Dictionary<string, string> queryParams = new Dictionary<string, string>();
+                        queryParams.Add( "personId", match.PersonAlias.PersonId.ToStringSafe() );
+                        queryParams.Add( "text", GetAttributeValue( "AlertNoteText" ) );
+                        queryParams.Add( "t", "Add Alert Note" );
+
+                        string url = LinkedPageUrl( "AddNotePage", queryParams );
+
+                        // This trick uses the Dialog page template and this example comes from the PageProperties block.
+                        rowValues.Add( string.Format( "<a href=\"javascript: Rock.controls.modal.show($( this ), '{0}' )\" class='btn btn-xs btn-warning'>Add Alert</a>", url ) );
+                    }
                 }
             }
             tbl.Rows.Add( rowValues.ToArray() );

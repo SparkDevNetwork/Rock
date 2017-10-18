@@ -2,7 +2,6 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-
         <div class="panel panel-block">
             <div class="panel-heading">
             </div>
@@ -23,6 +22,12 @@
             </div>
 
         </div>
+
+        <script>
+          $(document).ready(function(){
+            $('[data-toggle="tooltip"]').tooltip(); 
+          });
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
