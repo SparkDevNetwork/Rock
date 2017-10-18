@@ -459,9 +459,10 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the name of the signal CSS class.
         /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string TopSignalIndicatorClass { get; set; }
+        //[MaxLength( 100 )]
+        //[DataMember]
+        [NotMapped]
+        public virtual string TopSignalColor { get { return "red"; } set { } }
 
         #endregion
 
@@ -2398,11 +2399,6 @@ namespace Rock.Model
         {
             if (person != null )
             {
-                if ( !string.IsNullOrWhiteSpace( person.TopSignalIndicatorClass ) )
-                {
-                    className = className + " " + person.TopSignalIndicatorClass;
-                }
-
                 return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? (Guid?)person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
             } else
             {
@@ -2537,6 +2533,49 @@ namespace Rock.Model
             }
 
             return string.Format( "<img src='{0}'{1}{2}{3}/>", photoUrl.ToString(), styleString, altString, classString );
+        }
+
+
+        public string GetSignalMarkup()
+        {
+            if ( !string.IsNullOrWhiteSpace( TopSignalColor ) )
+            {
+                return string.Format( "<i class='fa fa-flag' style='color: {0};'></i>", TopSignalColor );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the person image tag with their signal applied if they have one.
+        /// </summary>
+        /// <param name="person">The person to get the image for.</param>
+        /// <param name="maxWidth">The maximum width (in px).</param>
+        /// <param name="maxHeight">The maximum height (in px).</param>
+        /// <param name="altText">The alt text to use on the image.</param>
+        /// <param name="className">The css class name to apply to the image.</param>
+        /// <returns>A string representation of either a Div tag or an Img tag.</returns>
+        public static string GetPersonPhotoImageTagWithSignal( Person person, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
+        {
+            if ( person != null )
+            {
+                string imgTag = GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? ( Guid? ) person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
+                string signalTag = person.GetSignalMarkup();
+
+                if ( string.IsNullOrWhiteSpace( signalTag ) )
+                {
+                    return imgTag;
+                }
+                else
+                {
+                    return string.Format( "<div class='person-signal'>{0}{1}</div>", signalTag, imgTag );
+                }
+            }
+            else
+            {
+                return GetPersonPhotoImageTag( null, null, null, Gender.Unknown, null, maxWidth, maxHeight, altText, className );
+            }
+
         }
 
 
