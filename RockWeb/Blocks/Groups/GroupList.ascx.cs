@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Groups
     [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 12 )]
     [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 13 )]
     [ContextAware]
-    public partial class GroupList : RockBlock
+    public partial class GroupList : RockBlock, IAdditionalGridColumns
     {
         private int _groupTypesCount = 0;
         private bool _showGroupPath = false;
@@ -82,6 +82,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( !Page.IsPostBack )
             {
+                AddAdditionalColumns();
                 BindFilter();
                 BindGrid();
             }
@@ -156,6 +157,29 @@ namespace RockWeb.Blocks.Groups
             SetPanelTitleAndIcon();
         }
 
+        #region IAdditionalGridColumns
+
+        /// <summary>
+        /// Adds AdditionalColumns to the grid
+        /// </summary>
+        public void AddAdditionalColumns()
+        {
+            var additionalColumns = this.GetAttributeValue( AdditionalGridColumnsConfig.AttributeKey ).FromJsonOrNull<AdditionalGridColumnsConfig>();
+            if ( additionalColumns != null && additionalColumns.ColumnsConfig.Any() )
+            {
+                var deleteField = gGroups.ColumnsOfType<DeleteField>().FirstOrDefault();
+                int insertPosition = gGroups.Columns.IndexOf( deleteField );
+
+                foreach ( var column in additionalColumns.GetColumns() )
+                {
+                    gGroups.Columns.Insert( insertPosition, column );
+                    insertPosition++;
+                }
+            }
+        }
+
+        #endregion IAdditionalGridColumns
+
         /// <summary>
         /// Handles the RowDataBound event of the rGrid control.
         /// </summary>
@@ -182,9 +206,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void GroupList_BlockUpdated( object sender, EventArgs e )
         {
-            ApplyBlockSettings();
-            BindFilter();
-            BindGrid();
+            this.NavigateToCurrentPageReference();
         }
 
         #endregion
@@ -786,6 +808,7 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
+        [DotLiquid.LiquidType( "Id", "Path", "Name", "GroupTypeName", "GroupOrder", "GroupTypeOrder", "Description", "IsSystem", "GroupRole", "DateAdded", "IsActive", "IsActiveOrder", "MemberCount"  )]
         private class GroupListRowInfo
         {
             public int Id { get; set; }

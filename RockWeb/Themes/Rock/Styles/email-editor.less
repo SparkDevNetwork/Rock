@@ -44,8 +44,6 @@
 
 #editor-toolbar-content {
   padding: 12px 12px 0 12px;
-  width: 50%;
-  float: left;
 }
 
 #editor-toolbar-content:after {
@@ -54,20 +52,15 @@
   clear: both;
 }
 
-#editor-toolbar-structure {
-	padding: 12px 12px 0 12px;
-    float: left;
-}
-
-#editor-toolbar-structure:after {
-  content: "";
-  display: table;
-  clear: both;
+.component-separator {
+  width: 24px;
+  float: left;
+  height: 20px;
 }
 
 .component {
-	cursor: pointer;
-	overflow: auto;
+  cursor: pointer;
+  overflow: auto;
 }
 
 .component.selected {
@@ -82,14 +75,14 @@
 .component[data-state=template] {
   border: 1px solid @btn-default-border;
   text-align: center;
-  padding: 6px;
+  padding: 4px;
   margin-bottom: 12px;
   font-size: 11px;
   font-family: @font-family-sans-serif;
   background-color: @btn-default-bg;
   color: @btn-default-color;
   border-radius: 4px;
-  width: 50px;
+  width: 40px;
   float: left;
   margin-right: 8px;
   cursor: move;

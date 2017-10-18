@@ -132,7 +132,7 @@ create table #codeTable (
         '            RockMigrationHelper.AddBlockAttributeValue("'+     
         CONVERT(nvarchar(50), b.Guid)+ '","'+ 
         CONVERT(nvarchar(50), a.Guid)+ '",@"'+ 
-        ISNULL(av.Value,'')+ '"); // '+ a.[Name] + 
+        ISNULL(replace(av.Value, '"', '""'),'')+ '");'+
         @crlf
     from [AttributeValue] [av]
     join Block b on b.Id = av.EntityId

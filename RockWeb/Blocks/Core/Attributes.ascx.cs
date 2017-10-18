@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.Core
             }
 
             _configuredType = GetAttributeValue( "ConfigureType" ).AsBooleanOrNull() ?? true;
-            edtAttribute.ShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
+            edtAttribute.IsShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
 
             Guid? entityTypeGuid = GetAttributeValue( "Entity" ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )

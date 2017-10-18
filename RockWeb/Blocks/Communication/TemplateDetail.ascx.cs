@@ -134,6 +134,7 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 communicationTemplate.Name = tbName.Text;
+                communicationTemplate.IsActive = cbIsActive.Checked;
                 communicationTemplate.Description = tbDescription.Text;
                 communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
 
@@ -226,6 +227,7 @@ namespace RockWeb.Blocks.Communication
             hfCommunicationTemplateId.Value = templateId.ToString();
 
             tbName.Text = communicationTemplate.Name;
+            cbIsActive.Checked = communicationTemplate.IsActive;
             tbDescription.Text = communicationTemplate.Description;
             imgTemplatePreview.BinaryFileId = communicationTemplate.ImageFileId;
             // TODO imgTemplatePreview.BinaryFileTypeGuid = 
@@ -303,6 +305,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             tbName.ReadOnly = communicationTemplate.IsSystem;
+            cbIsActive.Enabled = !communicationTemplate.IsSystem;
             //tbDescription.ReadOnly = communicationTemplate.IsSystem;
             //imgTemplatePreview.Enabled = !communicationTemplate.IsSystem;
             tbFromName.ReadOnly = communicationTemplate.IsSystem;

@@ -28,6 +28,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -40,7 +41,8 @@ namespace RockWeb.Blocks.Communication
 
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page", order: 1 )]
+    [LinkedPage( "Email Analytics", defaultValue:Rock.SystemGuid.Page.EMAIL_ANALYTICS, order: 2 )]
     public partial class CommunicationList : Rock.Web.UI.RockBlock
     {
         private bool canApprove = false;
@@ -183,7 +185,19 @@ namespace RockWeb.Blocks.Communication
                 if ( communicationItem != null )
                 {
                     // Hide delete button if there are any successful recipients
-                    e.Row.Cells[8].Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
+                    e.Row.Cells[9].Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
+
+                    Literal lEmailAnalyticsLink = e.Row.FindControl( "lEmailAnalyticsLink" ) as Literal;
+                    if ( lEmailAnalyticsLink != null )
+                    {
+                        var qryParams = new Dictionary<string, string>();
+                        qryParams.Add( "CommunicationId", communicationItem.Id.ToString() );
+                        var emailAnalyticsUrl = new PageReference( this.GetAttributeValue( "EmailAnalytics" ), qryParams ).BuildUrl();
+                        if ( !string.IsNullOrEmpty( emailAnalyticsUrl ) )
+                        {
+                            lEmailAnalyticsLink.Text = string.Format( "<a href='{0}' class='btn btn-default btn-xs' title='Email Analytics'><i class='fa fa-line-chart'></i></a>", emailAnalyticsUrl );
+                        }
+                    }
                 }
             }
         }

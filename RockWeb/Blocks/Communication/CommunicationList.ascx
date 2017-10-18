@@ -41,6 +41,7 @@
                                     <span class="badge badge-danger" title="Failed" data-toggle="tooltip" style='<%# (int)Eval("FailedRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("FailedRecipients") %></span>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
+                            <Rock:RockLiteralField HeaderText="" ID="lEmailAnalyticsLink" />
                             <Rock:DeleteField OnClick="gCommunication_Delete" />
                         </Columns>
                     </Rock:Grid>

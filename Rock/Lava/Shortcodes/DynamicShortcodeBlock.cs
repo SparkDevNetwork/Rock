@@ -161,6 +161,9 @@ namespace Rock.Lava.Shortcodes
             {
                 var parms = ParseMarkup( _markup, context );
 
+                // add a unique id so shortcodes have easy access to one
+                parms.Add( "uniqueid", "id-" + Guid.NewGuid().ToString() );
+
                 var lavaTemplate = shortcode.Markup;
                 var blockMarkup = _blockMarkup.ToString().ResolveMergeFields( _internalMergeFields, _enabledSecurityCommands );
 

@@ -125,7 +125,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count > 2 && configurationValues != null )
             {
                 var cbFormatAsLink = controls[1] as RockCheckBox;
-                if ( cbFormatAsLink != null )
+                if ( cbFormatAsLink != null && configurationValues.ContainsKey( FORMAT_AS_LINK ) )
                 {
                     cbFormatAsLink.Checked = configurationValues[FORMAT_AS_LINK].Value.AsBooleanOrNull() ?? false;
                 }

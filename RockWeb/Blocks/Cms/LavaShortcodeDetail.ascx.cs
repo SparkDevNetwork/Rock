@@ -240,7 +240,11 @@ namespace RockWeb.Blocks.Core
             tbTagName.Text = lavaShortcode.TagName;
             kvlParameters.Value = lavaShortcode.Parameters;
             hfOriginalTagName.Value = lavaShortcode.TagName;
-            lcpLavaCommands.SetValues( lavaShortcode.EnabledLavaCommands.Split( ',' ).ToList() );
+
+            if ( lavaShortcode.EnabledLavaCommands.IsNotNullOrWhitespace() )
+            {
+                lcpLavaCommands.SetValues( lavaShortcode.EnabledLavaCommands.Split( ',' ).ToList() );
+            }
 
             rblTagType.BindToEnum<TagType>();
             rblTagType.SetValue( ( int ) lavaShortcode.TagType );

@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Group List Page", "The page to display related Group List.", false, "", "", 11 )]
     [LinkedPage( "Fundraising Progress Page", "The page to display fundraising progress for all its members.", false, "", "", 12 )]
     [BooleanField( "Show Location Addresses", "Determines if the location address should be shown when viewing the group details.", true, order: 13)]
+    [BooleanField( "Prevent Selecting Inactive Campus", "Should inactive campuses be excluded from the campus field when editing a group?.", false, "", 14 )]
 
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
@@ -423,7 +424,15 @@ namespace RockWeb.Blocks.Groups
 
             qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
-            NavigateToPage( RockPage.Guid, qryParams );
+
+            if ( GetAttributeValue( "GroupListPage" ).AsGuid() != Guid.Empty )
+            {
+                NavigateToLinkedPage( "GroupListPage", qryParams );
+            }
+            else
+            {
+                NavigateToPage( RockPage.Guid, qryParams );
+            }
         }
 
         /// <summary>
@@ -565,7 +574,7 @@ namespace RockWeb.Blocks.Groups
 
             group.Name = tbName.Text;
             group.Description = tbDescription.Text;
-            group.CampusId = ddlCampus.SelectedValueAsInt();
+            group.CampusId = cpCampus.SelectedCampusId;
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
@@ -1366,7 +1375,8 @@ namespace RockWeb.Blocks.Groups
                 ddlGroupType.SetValue( CurrentGroupTypeId );
             }
 
-            ddlCampus.SetValue( group.CampusId );
+            cpCampus.IncludeInactive = !GetAttributeValue( "PreventSelectingInactiveCampus" ).AsBoolean();
+            cpCampus.SelectedCampusId = group.CampusId;
 
             GroupRequirementsState = group.GetGroupRequirements( rockContext ).Where( a => a.GroupId.HasValue ).ToList();
             GroupLocationsState = group.GroupLocations.ToList();
@@ -1870,10 +1880,6 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void LoadDropDowns( RockContext rockContext )
         {
-            ddlCampus.DataSource = CampusCache.All();
-            ddlCampus.DataBind();
-            ddlCampus.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
-
             ddlSignatureDocumentTemplate.Items.Clear();
             ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
             foreach ( var documentType in new SignatureDocumentTemplateService( rockContext )

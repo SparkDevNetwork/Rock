@@ -58,6 +58,7 @@
                                     <Rock:RockBoundField DataField="Schedule" HeaderText="Schedule" />
                                     <Rock:RockBoundField DataField="MemberCount" HeaderText="Members" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                     <Rock:RockBoundField DataField="AverageAge" HeaderText="Average Age" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                                    <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
                                     <Rock:RockBoundField DataField="Distance" HeaderText="Distance" DataFormatString="{0:N2} M" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                 </Columns>
                             </Rock:Grid>
@@ -88,11 +89,14 @@
                                             ValidationGroup="GroupFinderSettings" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:RockCheckBoxList ID="cblSchedule" runat="server" Label="Display Schedule Filters" RepeatDirection="Horizontal"
-                                            Help="Flags indicating if Day of Week and/or Time of Day filters should be displayed to filter groups with 'Weekly' schedules." ValidationGroup="GroupFinderSettings">
-                                            <asp:ListItem Text="Day of Week" Value="Day" />
-                                            <asp:ListItem Text="Time of Day" Value="Time" />
-                                        </Rock:RockCheckBoxList>
+                                        <Rock:RockRadioButtonList ID="rblFilterDOW" runat="server" Label="Display Day of Week Filter" RepeatDirection="Horizontal"
+                                            Help="Flag indicating if and how the Day of Week filter should be displayed to filter groups with 'Weekly' schedules." ValidationGroup="GroupFinderSettings">
+                                            <asp:ListItem Text="None" Value="" />
+                                            <asp:ListItem Text="Single-Select Dropdown" Value="Day" />
+                                            <asp:ListItem Text="Multi-Select Checkboxes" Value="Days" />
+                                        </Rock:RockRadioButtonList>
+                                        <Rock:RockCheckBox ID="cbFilterTimeOfDay" runat="server" Label="Display Time of Day Filter" Text="Yes"
+                                            Help="Display a Time of Day filter to filter groups with 'Weekly' schedules." ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbFilterCampus" runat="server" Label="Display Campus Filter" Text="Yes"
                                             Help="Display the campus filter" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbCampusContext" runat="server" Label="Enable Campus Context" Text="Yes"
@@ -164,10 +168,12 @@
                                             Help="Should the description for each group be displayed?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbShowCount" runat="server" Label="Show Member Count" Text="Yes"
                                             Help="Should the number of members in each group be displayed in the result grid?" ValidationGroup="GroupFinderSettings" />
-                                    </div>
-                                    <div class="col-md-6">
                                         <Rock:RockCheckBox ID="cbShowAge" runat="server" Label="Show Average Age" Text="Yes"
                                             Help="Should the average group member age be displayed for each group in the result grid?" ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbShowCampus" runat="server" Label="Show Campus" Text="Yes"
+                                            Help="Should the campus column be displayed? If selected, the Campus column will still only be displayed if one or more of the groups has a campus." ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbProximity" runat="server" Label="Show Distance" Text="Yes"
                                             Help="Should the distance to each group be displayed? Using this option will require the user to enter their address when searching for groups." ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbSortByDistance" runat="server" Label="Sort by Distance" Text="Yes"
@@ -182,10 +188,10 @@
                             <Rock:PanelWidget ID="wpLinkedPages" runat="server" Title="Linked Pages">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:PagePicker ID="ppGroupDetailPage" runat="server" Label="Group Detail Page" Required="false" />
+                                        <Rock:PagePicker ID="ppGroupDetailPage" runat="server" Label="Group Detail Page" Help="If showing the Grid, this is the page user will be redirected to when they click on the row. If using Formatted ouput, a url to this page will be included as a 'GroupDetailPage' property of the 'LinkedPages' merge field." Required="false" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:PagePicker ID="ppRegisterPage" runat="server" Label="Register Page" Required="false" />
+                                        <Rock:PagePicker ID="ppRegisterPage" runat="server" Label="Register Page" Help="If this value is set and the block is configured to show the Grid, a 'Register' button will be added to each row for user to click and be redirected to this page. If using Formatted ouput, a url to this page will be included as a 'RegisterPage' property of the 'LinkedPages' merge field." Required="false" />
                                     </div>
                                 </div>
                             </Rock:PanelWidget>

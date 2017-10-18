@@ -129,6 +129,7 @@
                             <li><a href="https://github.com/bcuff/elasticsearch-net-aws">Elasticsearch Net for Amazon AWS</a> (Apache 2)</li>
                             <li><a href="https://github.com/d3/d3">D3 (Data-Driven Documents)</a> (Custom)</li>
                             <li><a href="https://github.com/jasondavies/d3-cloud">D3 Word Cloud</a> (Custom)</li>
+                            <li><a href="http://www.chartjs.org">Chart.js</a> (MIT)</li>
                         </ul>
                     </div>
                 </div>
