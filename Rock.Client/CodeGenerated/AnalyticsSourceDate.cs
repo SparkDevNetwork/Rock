@@ -53,6 +53,9 @@ namespace Rock.Client
         public string CalendarYearMonth { get; set; }
 
         /// <summary />
+        public string CalendarYearMonthName { get; set; }
+
+        /// <summary />
         public string CalendarYearQuarter { get; set; }
 
         /// <summary />
@@ -158,6 +161,7 @@ namespace Rock.Client
             this.CalendarWeek = source.CalendarWeek;
             this.CalendarYear = source.CalendarYear;
             this.CalendarYearMonth = source.CalendarYearMonth;
+            this.CalendarYearMonthName = source.CalendarYearMonthName;
             this.CalendarYearQuarter = source.CalendarYearQuarter;
             this.ChristmasIndicator = source.ChristmasIndicator;
             this.ChristmasWeekIndicator = source.ChristmasWeekIndicator;

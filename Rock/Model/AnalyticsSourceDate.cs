@@ -190,7 +190,7 @@ namespace Rock.Model
         public int CalendarWeek { get; set; }
 
         /// <summary>
-        /// Gets or sets the calendar month.
+        /// Gets or sets the calendar month number. Numeric Month (Jan = 1)
         /// </summary>
         /// <value>
         /// The calendar month.
@@ -199,7 +199,7 @@ namespace Rock.Model
         public int CalendarMonth { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the calendar in month.
+        /// Gets or sets the name of the calendar in month. Format: "MMMM"
         /// </summary>
         /// <value>
         /// The name of the calendar in month.
@@ -209,7 +209,7 @@ namespace Rock.Model
         public string CalendarMonthName { get; set; }
 
         /// <summary>
-        /// Gets or sets the calendar in month name abbrevated.
+        /// Gets or sets the calendar in month name abbrevated. Format: "MMM"
         /// </summary>
         /// <value>
         /// The calendar in month name abbrevated.
@@ -219,7 +219,7 @@ namespace Rock.Model
         public string CalendarMonthNameAbbrevated { get; set; }
 
         /// <summary>
-        /// Gets or sets the calendar year month.
+        /// Gets or sets the calendar year month. Format: "yyyyMM" 
         /// </summary>
         /// <value>
         /// The calendar year month.
@@ -229,7 +229,17 @@ namespace Rock.Model
         public string CalendarYearMonth { get; set; }
 
         /// <summary>
-        /// Gets or sets the calendar quarter.
+        /// Gets or sets the name of the calendar year month. Format: "yyyy MMM", for example "2017 Mar"
+        /// </summary>
+        /// <value>
+        /// The name of the calendar year month.
+        /// </value>
+        [DataMember]
+        [MaxLength( 450 )]
+        public string CalendarYearMonthName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the calendar quarter. Format: "Q{#}", for example "Q2"
         /// </summary>
         /// <value>
         /// The calendar quarter.
@@ -239,7 +249,7 @@ namespace Rock.Model
         public string CalendarQuarter { get; set; }
 
         /// <summary>
-        /// Gets or sets the calendar year quarter.
+        /// Gets or sets the calendar year quarter. Format: "yyyy Q{#}", for example "2017 Q2"
         /// </summary>
         /// <value>
         /// The calendar year quarter.
@@ -249,7 +259,7 @@ namespace Rock.Model
         public string CalendarYearQuarter { get; set; }
 
         /// <summary>
-        /// Gets or sets the calendar year.
+        /// Gets or sets the calendar year. Format: "yyyy"
         /// </summary>
         /// <value>
         /// The calendar year.
