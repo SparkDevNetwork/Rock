@@ -194,6 +194,8 @@ namespace RockWeb.Blocks.Reporting
                 analyticsSourceDate.CalendarMonthNameAbbrevated = generateDate.ToString( "MMM" );
 
                 analyticsSourceDate.CalendarYearMonth = generateDate.ToString( "yyyyMM" );
+                analyticsSourceDate.CalendarYearMonthName = generateDate.ToString( "yyyy MMM" );
+
                 int quarter = ( generateDate.Month + 2 ) / 3;
 
                 analyticsSourceDate.CalendarQuarter = string.Format( "Q{0}", quarter );
