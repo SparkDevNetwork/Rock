@@ -1,0 +1,249 @@
+{% assign dayOfWeek = 'Now' | Date:'dddd' %}
+{% assign hour = 'Now' | Date:'H' | DividedBy:1 %}
+{% assign sundayDate = 'Now' | SundayDate %}
+{% assign param =  'Global' | PageParameter:'SundayDate' %}
+
+<h2>Total Weekend Attendance</h2>
+
+<div class="grid">
+<table class="grid-table table table-bordered table-striped table-hover">
+		<thead>
+			<tr align="left" data-original-title="" title="">
+				<th data-priority="1" scope="col">Attendance Type</th>
+				<th data-priority="1" scope="col">This Week
+                    {%for row in table1.rows %}
+                        {% assign note = row.ThisWeekNotes | Trim %}
+                        {% if note != '' %}
+                            <mark>{{note}}</mark>
+                        {% endif %}
+                    {% endfor %}
+				</th>
+				<th data-priority="1" scope="col">Last Week
+                    {%for row in table1.rows %}
+                        {% assign note = row.LastWeekNotes | Trim %}
+                        {% if note != '' %}
+                            <mark>{{note}}</mark>
+                        {% endif %}
+                    {% endfor %}
+				</th>
+				<th data-priority="1" scope="col">Last Year
+                    {%for row in table1.rows %}
+                        {% assign note = row.LastYearNotes | Trim %}
+                        {% if note != '' %}
+                            <mark>{{note}}</mark>
+                        {% endif %}
+                    {% endfor %}
+                </th>
+				<th data-priority="1" scope="col">Growth (Year Over Year)</th>
+			</tr>
+		</thead>
+		<tbody>
+		
+        {% if dayOfWeek == 'Saturday' and hour >= 16 %}
+            <tr>
+    		    <td colspan="5">
+        		    <em><small class='text-muted'>Total Attendance will be available after 1pm on Sunday</small></em>
+    			</td>
+    		</tr>
+    		
+        {% elseif dayOfWeek == 'Sunday' and hour < 13 %}
+    		<tr>
+    		    <td colspan="5">
+        		    <em><small class='text-muted'>Total Attendance will be available after 1pm on Sunday</small></em>
+    			</td>
+    		</tr>
+    		
+        {% else %}
+        	<!-- Show row data -->
+    		{%for row in table1.rows %}
+    			<tr align="left" data-original-title="" title="">
+    				<td class="grid-select-cell" data-priority="1">{{row.AttendanceType}}</td>
+    				<td class="grid-select-cell" data-priority="1">{{row.ThisWeek }}</td>
+    				<td class="grid-select-cell" data-priority="1">{{row.LastWeek}}</td>
+    				<td class="grid-select-cell" data-priority="1">{{row.LastYear}}</td>
+    				{% if row.Growth < 0 %}
+    				{% assign color = "#ff6666" %}
+    				{% else %}
+    				{% assign color = "#66ff66" %}
+    				{% endif %}
+    				<td class="grid-select-cell" data-priority="1" {% if row.Growth > 0 or row.Growth < 0 %}style="background-color:{{color}};"{% endif %}><p style="color:black">{{row.Growth | Format:'p1' }}</p></td>
+    			</tr>
+    		{% endfor %}
+    		
+        {% endif %}
+
+		</tbody>
+		<tfoot>
+		</tfoot>
+	</table>
+</div>
+
+
+{% if param == sundayDate %}
+    {% if dayOfWeek == 'Saturday' and hour >= 16 %}
+    <h2>Live Service Breakdown</h2>
+    {% elseif dayOfWeek == 'Sunday' and hour < 13 %}
+    <h2>Live Service Breakdown</h2>
+    {% else %}
+        <h2>Service Breakdown</h2>
+    {% endif %}
+{% else %}
+    <h2>Service Breakdown</h2>
+{% endif %}
+<h4>(All Activities during specific service time)</h4>
+<div class="grid">
+<table class="grid-table table table-bordered table-striped table-hover">
+		<thead>
+			<tr align="left" data-original-title="" title="">
+				<th data-priority="1" scope="col">Service</th>
+				<th data-priority="1" scope="col">This Week</th>
+				<th data-priority="1" scope="col">Last Week</th>
+				<th data-priority="1" scope="col">Last Year</th>
+				<th data-priority="1" scope="col">Growth (Year Over Year)</th>
+			</tr>
+		</thead><tbody>
+		{%for row in table2.rows %}
+			<tr align="left" data-original-title="" title="">
+				<td class="grid-select-cell" data-priority="1">{{row.Schedule}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.ThisWeek }}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.LastWeek}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.LastYear}}</td>
+				{% if row.Growth < 0 %}
+				{% assign color = "#ff6666" %}
+				{% else %}
+				{% assign color = "#66ff66" %}
+				{% endif %}
+				<td class="grid-select-cell" data-priority="1" {% if row.Growth > 0 or row.Growth < 0 %}style="background-color:{{color}};"{% endif %}><p style="color:black">{{row.Growth | Format:'p1' }}</p></td>
+			</tr>
+			{% endfor %}
+		</tbody><tfoot>
+		</tfoot>
+	</table></div>
+
+
+<h2>Campus Rollup</h2>
+<div class="grid">
+<table class="grid-table table table-bordered table-striped table-hover">
+		<thead>
+			<tr align="left" data-original-title="" title="">
+				<th data-priority="1" scope="col">Campus</th>
+				<th data-priority="1" scope="col">This Week</th>
+				<th data-priority="1" scope="col">Last Week</th>
+				<th data-priority="1" scope="col">Last Year</th>
+				<th data-priority="1" scope="col">Growth (YoY)</th>
+			</tr>
+		</thead><tbody>
+		{%for row in table3.rows %}
+			<tr align="left" data-original-title="" title="">
+				<td class="grid-select-cell" data-priority="1">{{row.Campus}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.ThisWeek }}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.LastWeek}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.LastYear}}</td>
+				{% if row.Growth < 0 %}
+				{% assign color = "#ff6666" %}
+				{% else %}
+				{% assign color = "#66ff66" %}
+				{% endif %}
+				<td class="grid-select-cell" data-priority="1" {% if row.Growth > 0 or row.Growth < 0 %}style="background-color:{{color}};"{% endif %}><p style="color:black">{{row.Growth | Format:'p1' }}</p></td>
+			</tr>
+			{% endfor %}
+		</tbody><tfoot>
+		</tfoot>
+	</table></div>
+
+
+<div class='row'>
+<div class='col-md-4'>
+<h2>Worship Center</h2>
+<div class="grid">
+<table class="grid-table table table-bordered table-striped table-hover">
+		<thead>
+			<tr align="left" data-original-title="" title="">
+				<th data-priority="1" scope="col">Campus</th>
+				<th data-priority="1" scope="col">This Week</th>
+				<th data-priority="1" scope="col">Last Week</th>
+				<th data-priority="1" scope="col">Last Year</th>
+				<th data-priority="1" scope="col">Growth (YoY)</th>
+			</tr>
+		</thead><tbody>
+		{%for row in table4.rows %}
+			<tr align="left" data-original-title="" title="">
+				<td class="grid-select-cell text-nowrap" data-priority="1">{{row.Campus}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.ThisWeek }}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.LastWeek}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.LastYear}}</td>
+				{% if row.Growth < 0 %}
+				{% assign color = "#ff6666" %}
+				{% else %}
+				{% assign color = "#66ff66" %}
+				{% endif %}
+				<td class="grid-select-cell" data-priority="1" {% if row.Growth > 0 or row.Growth < 0 %}style="background-color:{{color}};"{% endif %}><p style="color:black">{{row.Growth | Format:'p1' }}</p></td>
+			</tr>
+			{% endfor %}
+		</tbody><tfoot>
+		</tfoot>
+	</table></div>
+</div>
+<div class='col-md-4'>
+<h2>Children</h2>
+<div class="grid">
+<table class="grid-table table table-bordered table-striped table-hover">
+		<thead>
+			<tr align="left" data-original-title="" title="">
+				<th data-priority="1" scope="col">Campus</th>
+				<th data-priority="1" scope="col">This Week</th>
+				<th data-priority="1" scope="col">Last Week</th>
+				<th data-priority="1" scope="col">Last Year</th>
+				<th data-priority="1" scope="col">Growth (YoY)</th>
+			</tr>
+		</thead><tbody>
+		{%for row in table5.rows %}
+			<tr align="left" data-original-title="" title="">
+				<td class="grid-select-cell text-nowrap" data-priority="1">{{row.Campus}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.ThisWeek }}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.LastWeek}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.LastYear}}</td>
+				{% if row.Growth < 0 %}
+				{% assign color = "#ff6666" %}
+				{% else %}
+				{% assign color = "#66ff66" %}
+				{% endif %}
+				<td class="grid-select-cell" data-priority="1" {% if row.Growth > 0 or row.Growth < 0 %}style="background-color:{{color}};"{% endif %}><p style="color:black">{{row.Growth | Format:'p1' }}</p></td>
+			</tr>
+			{% endfor %}
+		</tbody><tfoot>
+		</tfoot>
+	</table></div>
+</div>
+<div class='col-md-4'>
+<h2>Students</h2>
+<div class="grid">
+<table class="grid-table table table-bordered table-striped table-hover">
+		<thead>
+			<tr align="left" data-original-title="" title="">
+				<th data-priority="1" scope="col">Campus</th>
+				<th data-priority="1" scope="col">This Week</th>
+				<th data-priority="1" scope="col">Last Week</th>
+				<th data-priority="1" scope="col">Last Year</th>
+				<th data-priority="1" scope="col">Growth (YoY)</th>
+			</tr>
+		</thead><tbody>
+		{%for row in table6.rows %}
+			<tr align="left" data-original-title="" title="">
+				<td class="grid-select-cell text-nowrap" data-priority="1">{{row.Campus}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.ThisWeek }}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.LastWeek}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.LastYear}}</td>
+				{% if row.Growth < 0 %}
+				{% assign color = "#ff6666" %}
+				{% else %}
+				{% assign color = "#66ff66" %}
+				{% endif %}
+				<td class="grid-select-cell" data-priority="1" {% if row.Growth > 0 or row.Growth < 0 %}style="background-color:{{color}};"{% endif %}><p style="color:black">{{row.Growth | Format:'p1' }}</p></td>
+			</tr>
+			{% endfor %}
+		</tbody><tfoot>
+		</tfoot>
+	</table></div>
+</div>
+</div>
