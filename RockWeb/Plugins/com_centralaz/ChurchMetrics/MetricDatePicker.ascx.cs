@@ -40,6 +40,8 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
     [CategoryField( "Metric Root Category", required: true, entityTypeName: "Rock.Model.MetricCategory" )]
     [CategoryField( "Schedule Root Category", required: true, entityTypeName: "Rock.Model.Schedule" )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, "", "", 0 )]
+    [BooleanField( "Show Holiday Dropdown", "Whether to show the holiday dropdown list.", false )]
+    [BooleanField( "Show Calendar", "Whether to show the calendar.", true )]
     public partial class MetricDatePicker : Rock.Web.UI.RockBlock
     {
 
@@ -68,8 +70,12 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
         {
             base.OnLoad( e );
 
+            lHoliday.Visible = GetAttributeValue( "ShowHolidayDropdown" ).AsBoolean();
+            ddlHoliday.Visible = GetAttributeValue( "ShowHolidayDropdown" ).AsBoolean();            
+            calCalendar.Visible = GetAttributeValue( "ShowCalendar" ).AsBoolean( resultIfNullOrEmpty: true );
+
             if ( !Page.IsPostBack )
-            {
+            {               
                 ShowDetail();
             }
         }
@@ -99,6 +105,21 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
             NavigateToCurrentPage( qryParams );
         }
 
+        protected void ddlHoliday_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            if ( !String.IsNullOrWhiteSpace( PageParameter( "CampusId" ) ) )
+            {
+                qryParams["CampusId"] = PageParameter( "CampusId" );
+            }
+            if ( !String.IsNullOrWhiteSpace( PageParameter( "SundayDate" ) ) )
+            {
+                qryParams["SundayDate"] = PageParameter( "SundayDate" );
+            }
+            qryParams["Holiday"] = ddlHoliday.SelectedValue;
+            NavigateToCurrentPage( qryParams );
+        }
+
         #endregion
 
         #region Methods
@@ -119,11 +140,16 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                     campusName = CampusCache.Read( campusId.Value ).Name;
                 }
 
+                if ( !PageParameter( "Holiday" ).IsNullOrWhiteSpace() )
+                {
+                    ddlHoliday.SelectedValue = PageParameter( "Holiday" );
+                }
+
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeFields.Add( "SundayDate", sundayDate );
                 mergeFields.Add( "MondayDate", mondayDate );
                 mergeFields.Add( "CampusName", campusName );
-                mergeFields.Add( "WeekOfYear", sundayDate.Value.GetWeekOfYear(System.Globalization.CalendarWeekRule.FirstDay, DayOfWeek.Monday) );
+                mergeFields.Add( "WeekOfYear", sundayDate.Value.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstDay, DayOfWeek.Monday ) );
                 mergeFields.Add( "WeekOfMonth", sundayDate.Value.GetWeekOfMonth( DayOfWeek.Monday ) );
                 lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
             }
