@@ -369,6 +369,10 @@
     <Compile Include="Migrations\201710181729151_AnalyticsCalendarYearMonthName.Designer.cs">
       <DependentUpon>201710181729151_AnalyticsCalendarYearMonthName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201710192047587_PowerBiReportViewer.cs" />
+    <Compile Include="Migrations\201710192047587_PowerBiReportViewer.Designer.cs">
+      <DependentUpon>201710192047587_PowerBiReportViewer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2794,6 +2798,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201710181729151_AnalyticsCalendarYearMonthName.resx">
       <DependentUpon>201710181729151_AnalyticsCalendarYearMonthName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710192047587_PowerBiReportViewer.resx">
+      <DependentUpon>201710192047587_PowerBiReportViewer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
