@@ -1599,9 +1599,6 @@ namespace Rock.Lava
                 return string.Empty;
             }
 
-            // Try to get RockContext from the dotLiquid context
-            var rockContext = GetRockContext( context );
-
             AttributeCache attribute = null;
             string rawValue = string.Empty;
             int? entityId = null;
@@ -1609,7 +1606,7 @@ namespace Rock.Lava
             // If Input is "Global" then look for a global attribute with key
             if ( input.ToString().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
             {
-                var globalAttributeCache = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext );
+                var globalAttributeCache = Rock.Web.Cache.GlobalAttributesCache.Read();
                 attribute = globalAttributeCache.Attributes
                     .FirstOrDefault( a => a.Key.Equals( attributeKey, StringComparison.OrdinalIgnoreCase ) );
                 if ( attribute != null )
@@ -1652,7 +1649,7 @@ namespace Rock.Lava
                 {
                     if ( item.Attributes == null )
                     {
-                        item.LoadAttributes( rockContext );
+                        item.LoadAttributes();
                     }
 
                     if ( item.Attributes.ContainsKey( attributeKey ) )
