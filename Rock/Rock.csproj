@@ -1150,6 +1150,7 @@
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\LocationFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\PersonalDeviceDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PostalCodeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasNoteFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\UserLoginDataViewFilter.cs" />
