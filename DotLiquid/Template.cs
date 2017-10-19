@@ -327,13 +327,13 @@ namespace DotLiquid
 			if (string.IsNullOrEmpty(source))
 				return new List<string>();
 
-			// Trim leading whitespace.
-			source = Regex.Replace(source, string.Format(@"([ \t]+)?({0}|{1}|{2})-", Liquid.VariableStart, Liquid.TagStart, Liquid.ShortCodeStart), "$2");
+            // Trim leading whitespace.
+            source = Liquid.LeadingWhitespaceRegex.Replace( source, "$2");
 
-			// Trim trailing whitespace.
-			source = Regex.Replace(source, string.Format(@"-({0}|{1}|{2})(\n|\r\n|[ \t]+)?", Liquid.VariableEnd, Liquid.TagEnd, Liquid.ShortCodeEnd), "$1");
+            // Trim trailing whitespace.
+			source = Liquid.TrailingWhitespaceRegex.Replace(source, "$1");
 
-			List<string> tokens = Regex.Split(source, Liquid.TemplateParser).ToList();
+			List<string> tokens = Liquid.TemplateParserRegex.Split( source ).ToList();
 
 			// Trim any whitespace elements from the end of the array.
 			for (int i = tokens.Count - 1; i > 0; --i)
