@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Block that allows a person to manage the communication lists that they are subscribed to" )]
     [GroupCategoryField( "Communication List Categories", "Select the categories of the communication lists to display, or select none to show all that the user is authorized to view.", true, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, defaultValue: Rock.SystemGuid.Category.GROUPTYPE_COMMUNICATIONLIST_PUBLIC, required: false, order: 1 )]
-    [BooleanField( "Show Medium Preference", "Show the users current medium preference for each list and allow them to change it", true, order: 2 )]
+    [BooleanField( "Show Medium Preference", "Show the user's current medium preference for each list and allow them to change it.", true, order: 2 )]
     public partial class CommunicationListSubscribe : RockBlock
     {
         #region fields
