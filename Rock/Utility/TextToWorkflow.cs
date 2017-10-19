@@ -46,7 +46,7 @@ namespace Rock.Utility
             var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.TEXT_TO_WORKFLOW.AsGuid() );
             if ( definedType != null && definedType.DefinedValues != null && definedType.DefinedValues.Any() )
             {
-                var smsWorkflows = definedType.DefinedValues.Where( v => v.Value.RemoveSpaces() == toPhone.RemoveSpaces() ).OrderBy( v => v.Order ).ToList();
+                var smsWorkflows = definedType.DefinedValues.Where( v => v.Value.AsNumeric() == toPhone.AsNumeric() ).OrderBy( v => v.Order ).ToList();
 
                 // iterate through workflows looking for a keyword match
                 foreach ( DefinedValueCache dvWorkflow in smsWorkflows )
