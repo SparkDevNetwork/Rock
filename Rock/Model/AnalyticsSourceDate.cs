@@ -446,7 +446,20 @@ namespace Rock.Model
         public static void GenerateAnalyticsSourceDateData( int fiscalStartMonth, bool givingMonthUseSundayDate, DateTime startDate, DateTime endDate )
         {
             // remove all the rows and rebuild
-            new RockContext().Database.ExecuteSqlCommand( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
+            using ( var rockContext = new RockContext() )
+            {
+                try
+                {
+                    // if TRUNCATE takes more than 5 seconds, it is probably due to a lock. If so, do a DELETE FROM instead
+                    rockContext.Database.CommandTimeout = 5;
+                    rockContext.Database.ExecuteSqlCommand( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
+                }
+                catch
+                {
+                    rockContext.Database.CommandTimeout = null;
+                    rockContext.Database.ExecuteSqlCommand( string.Format( "DELETE FROM {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
+                }
+            }
 
             List<AnalyticsSourceDate> generatedDates = new List<AnalyticsSourceDate>();
 
@@ -605,10 +618,11 @@ namespace Rock.Model
                 generateDate = generateDate.AddDays( 1 );
             }
 
-            var rockContext = new RockContext();
-            
-            // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly
-            EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceDates ).InsertAll( generatedDates );
+            using ( var rockContext = new RockContext() )
+            {
+                // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly
+                EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceDates ).InsertAll( generatedDates );
+            }
         }
     }
 
