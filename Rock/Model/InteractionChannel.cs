@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -144,6 +145,14 @@ namespace Rock.Model
 
         #region Public Methods
 
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            Web.Cache.InteractionChannelCache.Flush( this.Id );
+        }
 
         #endregion
     }
