@@ -52,5 +52,10 @@ namespace Rock.SystemGuid
         /// Content Channel View Block Type Guid
         /// </summary>
         public const string CONTENT_CHANNEL_VIEW = "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F";
+
+        /// <summary>
+        /// The PowerBI Account Registration Block Type Guid
+        /// </summary>
+        public const string POWERBI_ACCOUNT_REGISTRATION = "EA20D87E-ED46-3DAA-4C4D-4156C399B1C2";
     }
 }
