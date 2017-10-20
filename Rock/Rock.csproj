@@ -528,6 +528,7 @@
     <Compile Include="Follow\EventComponent.cs" />
     <Compile Include="Follow\EventContainer.cs" />
     <Compile Include="Follow\Event\PersonAnniversary.cs" />
+    <Compile Include="Follow\Event\PersonPrayerRequest.cs" />
     <Compile Include="Follow\Event\PersonBaptized.cs" />
     <Compile Include="Follow\Event\PersonBirthday.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
@@ -999,6 +1000,7 @@
     <Compile Include="Plugin\HotFixes\028_CheckinTextSettings.cs" />
     <Compile Include="Plugin\HotFixes\027_AddCheckinFeatures.cs" />
     <Compile Include="Plugin\HotFixes\033_ConnectionOpportunityCounts.cs" />
+    <Compile Include="Plugin\HotFixes\036_PrayerRequestFollowingEvent.cs" />
     <Compile Include="Plugin\HotFixes\035_TransactionListSummary.cs" />
     <Compile Include="Plugin\HotFixes\034_FinancialSecurityActions.cs" />
     <Compile Include="Plugin\Migration.cs" />
