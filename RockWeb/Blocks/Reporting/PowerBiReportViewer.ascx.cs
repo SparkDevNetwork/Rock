@@ -15,9 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
@@ -40,13 +40,6 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "Report URL", "The URL of the report to display.", true, "", "CustomSetting", 2, "ReportUrl" )]
     public partial class PowerBiReportViewer : Rock.Web.UI.RockBlockCustomSettings
     {
-        #region Fields
-
-        protected string _accessToken = string.Empty;
-        protected string _embedUrl = string.Empty;
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -87,7 +80,7 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
-        #region Events
+        #region Block Settings
 
         /// <summary>
         /// Shows the settings.
@@ -95,37 +88,26 @@ namespace RockWeb.Blocks.Reporting
         protected override void ShowSettings()
         {
             pnlEditModal.Visible = true;
-            //pnlView.Visible = false;
 
             var biAccounts = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
 
-            ddlSettingAccountList.DataSource = biAccounts.DefinedValues;
-            ddlSettingAccountList.DataTextField = "Value";
-            ddlSettingAccountList.DataValueField = "Guid";
-            ddlSettingAccountList.DataBind();
-            ddlSettingAccountList.Items.Insert( 0, "" );
-
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PowerBiAccount" ) ) )
+            ddlSettingPowerBiAccount.Items.Clear();
+            ddlSettingPowerBiAccount.Items.Add( new ListItem() );
+            foreach ( var biAccount in biAccounts.DefinedValues )
             {
-                // check that the power bi account still exists
-                var configuredAccount = DefinedValueCache.Read( GetAttributeValue( "PowerBiAccount" ) );
-
-                if ( configuredAccount != null )
-                {
-                    ddlSettingAccountList.SelectedValue = GetAttributeValue( "PowerBiAccount" );
-
-                    var reportList = GetReportList( GetAttributeValue( "PowerBiAccount" ).AsGuid() );
-
-                    ddlSettingReportUrl.DataSource = reportList;
-                    ddlSettingReportUrl.DataTextField = "name";
-                    ddlSettingReportUrl.DataValueField = "embedurl";
-                    ddlSettingReportUrl.DataBind();
-
-                    ddlSettingReportUrl.Items.Insert( 0, "" );
-
-                    ddlSettingReportUrl.SelectedValue = GetAttributeValue( "ReportUrl" );
-                }
+                ddlSettingPowerBiAccount.Items.Add( new ListItem( biAccount.Value, biAccount.Guid.ToString() ) );
             }
+
+            var configuredAccountGuid = GetAttributeValue( "PowerBiAccount" ).AsGuidOrNull();
+            var configuredGroupId = GetAttributeValue( "GroupId" );
+
+            ddlSettingPowerBiAccount.SetValue( configuredAccountGuid );
+            LoadGroupList();
+
+            ddlSettingPowerBiGroup.SetValue( configuredGroupId );
+            LoadReportList();
+
+            ddlSettingPowerBiReportUrl.SetValue( GetAttributeValue( "ReportUrl" ) );
 
             upnlContent.Update();
             mdEdit.Show();
@@ -138,8 +120,9 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            SetAttributeValue( "PowerBiAccount", ddlSettingAccountList.SelectedValue );
-            SetAttributeValue( "ReportUrl", ddlSettingReportUrl.SelectedValue );
+            SetAttributeValue( "PowerBiAccount", ddlSettingPowerBiAccount.SelectedValue );
+            SetAttributeValue( "GroupId", ddlSettingPowerBiGroup.SelectedValue );
+            SetAttributeValue( "ReportUrl", ddlSettingPowerBiReportUrl.SelectedValue );
             SaveAttributeValues();
 
             mdEdit.Hide();
@@ -150,21 +133,28 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlSettingAccountList control.
+        /// Handles the SelectedIndexChanged event of the ddlSettingPowerBiGroup control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlSettingAccountList_SelectedIndexChanged( object sender, EventArgs e )
+        protected void ddlSettingPowerBiGroup_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var reportList = GetReportList( ddlSettingAccountList.SelectedValue.AsGuid() );
-
-            ddlSettingReportUrl.DataSource = reportList;
-            ddlSettingReportUrl.DataTextField = "name";
-            ddlSettingReportUrl.DataValueField = "embedurl";
-            ddlSettingReportUrl.DataBind();
-
-            ddlSettingReportUrl.Items.Insert( 0, "" );
+            LoadReportList();
         }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlSettingPowerBiAccount control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
+        protected void ddlSettingPowerBiAccount_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            LoadGroupList();
+        }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Handles the Click event of the btnLogin control.
@@ -177,20 +167,36 @@ namespace RockWeb.Blocks.Reporting
             PowerBiUtilities.AuthenticateAccount( GetAttributeValue( "PowerBiAccount" ).AsGuid(), Request.Url.AbsoluteUri );
         }
 
-        #endregion
+        /// <summary>
+        /// Loads the group list.
+        /// </summary>
+        private void LoadGroupList()
+        {
+            var accessToken = PowerBiUtilities.GetAccessToken( ddlSettingPowerBiAccount.SelectedValue.AsGuid() );
+            var groups = PowerBiUtilities.GetGroups( accessToken );
 
-        #region Methods
+            ddlSettingPowerBiGroup.Items.Clear();
+            ddlSettingPowerBiGroup.Items.Add( new ListItem() );
+            foreach ( var group in groups )
+            {
+                ddlSettingPowerBiGroup.Items.Add( new ListItem( group.Name, group.Id ) );
+            }
+        }
 
         /// <summary>
-        /// Gets the report list.
+        /// Loads the report list.
         /// </summary>
-        /// <param name="biAccountValueGuid">The bi account value unique identifier.</param>
-        /// <returns></returns>
-        private List<PBIReport> GetReportList( Guid biAccountValueGuid )
+        private void LoadReportList()
         {
-            var accessToken = PowerBiUtilities.GetAccessToken( biAccountValueGuid );
-            string debugGroupId = "1d8fd188-d641-49b6-8a2c-6194fa70af1b";
-            return PowerBiUtilities.GetReports( accessToken, debugGroupId );
+            var accessToken = PowerBiUtilities.GetAccessToken( ddlSettingPowerBiAccount.SelectedValue.AsGuid() );
+            var reports = PowerBiUtilities.GetReports( accessToken, ddlSettingPowerBiGroup.SelectedValue );
+
+            ddlSettingPowerBiReportUrl.Items.Clear();
+            ddlSettingPowerBiReportUrl.Items.Add( new ListItem() );
+            foreach ( var report in reports )
+            {
+                ddlSettingPowerBiReportUrl.Items.Add( new ListItem( report.name, report.embedUrl ) );
+            }
         }
 
         /// <summary>
@@ -202,12 +208,9 @@ namespace RockWeb.Blocks.Reporting
             pnlView.Visible = true;
 
             nbError.Text = string.Empty;
+            hfReportEmbedUrl.Value = GetAttributeValue( "ReportUrl" );
 
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ReportUrl" ) ) )
-            {
-                _embedUrl = GetAttributeValue( "ReportUrl" );
-            }
-            else
+            if ( hfReportEmbedUrl.Value.IsNullOrWhiteSpace() )
             {
                 pnlView.Visible = false;
                 nbError.NotificationBoxType = NotificationBoxType.Warning;
@@ -222,9 +225,9 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( accountValue != null )
                 {
-                    _accessToken = PowerBiUtilities.GetAccessToken( accountValue.Guid );
+                    hfAccessToken.Value = PowerBiUtilities.GetAccessToken( accountValue.Guid );
 
-                    if ( string.IsNullOrWhiteSpace( _accessToken ) )
+                    if ( string.IsNullOrWhiteSpace( hfAccessToken.Value ) )
                     {
                         pnlView.Visible = false;
                         pnlLogin.Visible = true;

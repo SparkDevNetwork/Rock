@@ -125,6 +125,7 @@ namespace Rock.Reporting
         /// <param name="returnUrl">The return URL.</param>
         public static void CreateAccount( string accountName, string accountDescription, string clientId, string clientSecret, string redirectUrl, string returnUrl )
         {
+            // save all this stuff to Session so that the PowerBIAuth webhook has what it needs to process
             HttpContext.Current.Session["PowerBiAccountValueId"] = "0";
             HttpContext.Current.Session["PowerBiAccountName"] = accountName;
             HttpContext.Current.Session["PowerBiAccountDescription"] = accountDescription;
@@ -172,7 +173,6 @@ namespace Rock.Reporting
 
             if ( biAccountValue != null )
             {
-
                 var refreshToken = biAccountValue.AttributeValues.Where( v => v.Key == "RefreshToken" ).Select( v => v.Value.Value ).FirstOrDefault();
                 var clientId = biAccountValue.AttributeValues.Where( v => v.Key == "ClientId" ).Select( v => v.Value.Value ).FirstOrDefault();
                 var clientSecret = biAccountValue.AttributeValues.Where( v => v.Key == "ClientSecret" ).Select( v => v.Value.Value ).FirstOrDefault();
@@ -232,6 +232,58 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Gets the groups
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="message">The message.</param>
+        /// <returns></returns>
+        public static List<PBIGroup> GetGroups( string accessToken, out string message )
+        {
+            message = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( accessToken ) )
+            {
+                string responseContent = string.Empty;
+
+                try
+                {
+                    // configure groups request
+                    System.Net.WebRequest request;
+                    request = System.Net.WebRequest.Create( $"{_baseUri}groups" ) as System.Net.HttpWebRequest;
+
+                    request.Method = "GET";
+                    request.ContentLength = 0;
+                    request.Headers.Add( "Authorization", String.Format( "Bearer {0}", accessToken ) );
+
+                    // get response from request.GetResponse()
+                    using ( var response = request.GetResponse() as System.Net.HttpWebResponse )
+                    {
+                        // get reader from response stream
+                        using ( var reader = new System.IO.StreamReader( response.GetResponseStream() ) )
+                        {
+                            responseContent = reader.ReadToEnd();
+
+                            // deserialize JSON string
+                            PBIGroups groups = JsonConvert.DeserializeObject<PBIGroups>( responseContent );
+
+                            return groups.value.ToList();
+                        }
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    message = ex.Message;
+                }
+            }
+            else
+            {
+                message = "Invalid access token was used to retrieve group list.";
+            }
+
+            return new List<PBIGroup>();
+        }
+
+        /// <summary>
         /// Gets the reports.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
@@ -262,7 +314,7 @@ namespace Rock.Reporting
                     request.ContentLength = 0;
                     request.Headers.Add( "Authorization", String.Format( "Bearer {0}", accessToken ) );
 
-                    // get reports response from request.GetResponse()
+                    // get response from request.GetResponse()
                     using ( var response = request.GetResponse() as System.Net.HttpWebResponse )
                     {
                         // get reader from response stream
@@ -288,6 +340,18 @@ namespace Rock.Reporting
             }
 
             return new List<PBIReport>();
+        }
+
+        /// <summary>
+        /// Gets the groups.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public static List<PBIGroup> GetGroups( string accessToken )
+        {
+            string message;
+            return GetGroups( accessToken, out message );
         }
 
         /// <summary>
@@ -326,4 +390,25 @@ namespace Rock.Reporting
 
         public string datasetId { get; set; }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class PBIGroups
+    {
+        public PBIGroup[] value { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class PBIGroup
+    {
+        public string Id { get; set; }
+
+        public string Name { get; set; }
+
+        public bool IsReadOnly { get; set; }
+    }
+
 }
