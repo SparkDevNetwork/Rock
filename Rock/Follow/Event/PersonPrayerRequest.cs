@@ -17,27 +17,26 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity;
-using System.Linq;
 
 using Rock;
 using Rock.Data;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
+using System.Data.Entity;
+using System.Linq;
 
 namespace Rock.Follow.Event
 {
     /// <summary>
-    /// Person First Attended a Group Type following Event
+    /// Person Baptized following Event
     /// </summary>
-    [Description( "Person First Attended Group Type" )]
+    [Description( "Person Prayer Request" )]
     [Export( typeof( EventComponent ) )]
-    [ExportMetadata( "ComponentName", "PersonFirstAttendedGroupType" )]
+    [ExportMetadata( "ComponentName", "PersonPrayerRequest" )]
 
-    [GroupTypeField( "Group Type", "The group type to evaluate if person has just attended for the first time", true, order: 0 )]
-    [IntegerField( "Max Days Back", "Maximum number of days back to consider", false, 30, "", 1)]
-    public class PersonFirstAttendedGroupType : EventComponent
+    [IntegerField( "Max Days Back", "Maximum number of days back to consider", false, 30, "", 0)]
+    public class PersonPrayerRequest : EventComponent
     {
         #region Event Component Implementation
 
@@ -61,38 +60,37 @@ namespace Rock.Follow.Event
         /// <returns></returns>
         public override bool HasEventHappened( FollowingEventType followingEvent, IEntity entity, DateTime? lastNotified )
         {
-            Guid? groupTypeGuid = GetAttributeValue( followingEvent, "GroupType" ).AsGuidOrNull();
-            if ( followingEvent != null && entity != null && groupTypeGuid.HasValue )
+            if ( followingEvent != null && entity != null )
             {
+                int daysBack = GetAttributeValue( followingEvent, "MaxDaysBack" ).AsInteger();
+                var processDate = RockDateTime.Today;
+                if ( !followingEvent.SendOnWeekends && processDate.DayOfWeek == DayOfWeek.Monday ) 
+                {
+                    daysBack += 2;
+                }
+
+                var cuttoffDateTime = processDate.AddDays( 0 - daysBack );
+                if ( lastNotified.HasValue && lastNotified.Value > cuttoffDateTime )
+                {
+                    cuttoffDateTime = lastNotified.Value;
+                }
+
                 var personAlias = entity as PersonAlias;
                 if ( personAlias != null && personAlias.Person != null )
                 {
-                    var person = personAlias.Person;
-
-                    DateTime? firstAttended = new AttendanceService( new RockContext() )
-                        .Queryable().AsNoTracking()
-                        .Where( a =>
-                            a.DidAttend.HasValue &&
-                            a.DidAttend.Value &&
-                            a.PersonAlias != null &&
-                            a.PersonAlias.PersonId == personAlias.PersonId &&
-                            a.Group != null &&
-                            a.Group.GroupType.Guid.Equals( groupTypeGuid.Value ) )
-                        .Min( a => a.StartDateTime );
-
-                    if ( firstAttended.HasValue )
+                    using ( var rockContext = new RockContext() )
                     {
-                        int daysBack = GetAttributeValue( followingEvent, "MaxDaysBack" ).AsInteger();
-                        var processDate = RockDateTime.Today;
-                        if ( !followingEvent.SendOnWeekends && RockDateTime.Today.DayOfWeek == DayOfWeek.Friday )
-                        {
-                            daysBack += 2;
-                        }
-
-                        if ( processDate.Subtract( firstAttended.Value ).Days < daysBack )
-                        {
-                            return true;
-                        }
+                        return new PrayerRequestService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Any( r =>
+                                r.RequestedByPersonAlias != null &&
+                                r.RequestedByPersonAlias.PersonId == personAlias.PersonId &&
+                                r.ApprovedOnDateTime.HasValue &&
+                                r.ApprovedOnDateTime.Value >= cuttoffDateTime && 
+                                r.IsApproved.HasValue && 
+                                r.IsApproved.Value &&
+                                r.IsPublic.HasValue &&
+                                r.IsPublic.Value );
                     }
                 }
             }
