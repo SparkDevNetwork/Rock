@@ -219,21 +219,26 @@ namespace Rock.Jobs
                                                                 .FirstOrDefault();
                                                             DateTime? lastNotification = previousNotification != null ? previousNotification.LastNotified : (DateTime?)null;
 
-                                                            // if the event happened
-                                                            if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
+                                                            // If ok to send on this day
+                                                            var today = RockDateTime.Today;
+                                                            if ( eventType.SendOnWeekends || ( today.DayOfWeek != DayOfWeek.Saturday && today.DayOfWeek != DayOfWeek.Sunday ) )
                                                             {
-                                                                // Store the event type id and the entity for later processing of notifications
-                                                                eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
-                                                                eventsThatHappened[eventType.Id].Add( entity.Id, eventComponent.FormatEntityNotification( eventType, entity ) );
-
-                                                                if ( previousNotification == null )
+                                                                // if the event happened
+                                                                if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
                                                                 {
-                                                                    previousNotification = new FollowingEventNotification();
-                                                                    previousNotification.FollowingEventTypeId = eventType.Id;
-                                                                    previousNotification.EntityId = entity.Id;
-                                                                    followingEventNotificationService.Add( previousNotification );
+                                                                    // Store the event type id and the entity for later processing of notifications
+                                                                    eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
+                                                                    eventsThatHappened[eventType.Id].Add( entity.Id, eventComponent.FormatEntityNotification( eventType, entity ) );
+
+                                                                    if ( previousNotification == null )
+                                                                    {
+                                                                        previousNotification = new FollowingEventNotification();
+                                                                        previousNotification.FollowingEventTypeId = eventType.Id;
+                                                                        previousNotification.EntityId = entity.Id;
+                                                                        followingEventNotificationService.Add( previousNotification );
+                                                                    }
+                                                                    previousNotification.LastNotified = timestamp;
                                                                 }
-                                                                previousNotification.LastNotified = timestamp;
                                                             }
                                                         }
 
