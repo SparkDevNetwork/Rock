@@ -127,6 +127,12 @@ namespace Rock.Plugin.HotFixes
     AND [BODY] like '%{% capture ButtonLinkReplace %}{{ ''Global'' | Attribute:''InternalApplicationRoot'' }}WorkflowEntry/{{ Workflow.WorkflowTypeId }}?WorkflowGuid={{ Workflow.Guid }}&action={{ button.Name }}{% endcapture %}%'
 " );
 
+            // JE: Update the CronExpression for Download Payments
+            Sql( @"
+    UPDATE [ServiceJob] SET [CronExpression] = '0 0 5 1/1 * ? *'
+    WHERE [Guid] = '43044F38-F357-4CF4-995D-C60D4724C97E' 
+    AND [CronExpression] = '0 0 5 ? * MON-FRI *'
+" );
         }
 
         /// <summary>
