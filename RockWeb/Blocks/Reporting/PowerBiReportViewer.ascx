@@ -13,8 +13,9 @@
                     <asp:UpdatePanel ID="upnlEdit" runat="server">
                         <ContentTemplate>
 
-                            <Rock:RockDropDownList ID="ddlSettingAccountList" runat="server" Label="Power BI Account" AutoPostBack="true" OnSelectedIndexChanged="ddlSettingAccountList_SelectedIndexChanged" />
-                            <Rock:RockDropDownList ID="ddlSettingReportUrl" runat="server" Label="Report" />
+                            <Rock:RockDropDownList ID="ddlSettingPowerBiAccount" runat="server" Label="Power BI Account" AutoPostBack="true" OnSelectedIndexChanged="ddlSettingPowerBiAccount_SelectedIndexChanged" />
+                            <Rock:RockDropDownList ID="ddlSettingPowerBiGroup" runat="server" Label="Power BI Group"  AutoPostBack="true" OnSelectedIndexChanged="ddlSettingPowerBiGroup_SelectedIndexChanged"/>
+                            <Rock:RockDropDownList ID="ddlSettingPowerBiReportUrl" runat="server" Label="Report" />
 
                         </ContentTemplate>
                     </asp:UpdatePanel>
@@ -23,6 +24,8 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlView" runat="server">
+            <asp:HiddenField ID="hfAccessToken" runat="server" />
+            <asp:HiddenField ID="hfReportEmbedUrl" runat="server" />
             <div class="js-report-conatiner">
                 <div class="report-wrapper js-report-wrapper">
                     <div style="position: relative; width: 100%; height: 100%;">
@@ -40,7 +43,7 @@
                             return;
                         }
 
-                        iframe.src = '<%= _embedUrl %>';
+                        iframe.src = $('#<%= hfReportEmbedUrl.ClientID%>').val();
                         iframe.onload = postActionLoadReport;
 
                         var height = $(window).height() - 200;
@@ -90,7 +93,7 @@
                 function postActionLoadReport() {
 
                     // get the access token.
-                    accessToken = '<%= _accessToken %>';
+                    accessToken = $('#<%= hfAccessToken.ClientID%>').val();
 
                     // return if no a
                     if ("" === accessToken)
