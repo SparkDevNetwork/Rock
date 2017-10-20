@@ -59,7 +59,8 @@ namespace Rock
             /// <inheritdoc />
             public override void NonQueryExecuting( DbCommand command, DbCommandInterceptionContext<int> interceptionContext )
             {
-                this.CommandExecuting( command, interceptionContext, out object userState );
+                object userState;
+                this.CommandExecuting( command, interceptionContext, out userState );
                 interceptionContext.UserState = userState;
             }
 
@@ -80,7 +81,8 @@ namespace Rock
             /// <inheritdoc />
             public override void ScalarExecuting( DbCommand command, DbCommandInterceptionContext<object> interceptionContext )
             {
-                this.CommandExecuting( command, interceptionContext, out object userState );
+                object userState;
+                this.CommandExecuting( command, interceptionContext, out userState );
                 interceptionContext.UserState = userState;
             }
 
@@ -101,7 +103,8 @@ namespace Rock
             /// <inheritdoc />
             public override void ReaderExecuting( System.Data.Common.DbCommand command, DbCommandInterceptionContext<System.Data.Common.DbDataReader> interceptionContext )
             {
-                this.CommandExecuting( command, interceptionContext, out object userState );
+                object userState;
+                this.CommandExecuting( command, interceptionContext, out userState );
                 interceptionContext.UserState = userState;
             }
 
