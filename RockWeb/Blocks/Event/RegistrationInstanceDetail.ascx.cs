@@ -1503,7 +1503,8 @@ namespace RockWeb.Blocks.Event
                     var groupIds = placements.Keys.ToList();
                     foreach ( var group in new GroupService( rockContext )
                         .Queryable( "GroupType" ).AsNoTracking()
-                        .Where( g => groupIds.Contains( g.Id ) ) )
+                        .Where( g => groupIds.Contains( g.Id ) )
+                        .ToList() )
                     {
                         foreach ( int registrantId in placements[group.Id] )
                         {
@@ -1525,11 +1526,22 @@ namespace RockWeb.Blocks.Event
                                 groupMember.GroupRoleId = roleId.Value;
                                 groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                                 groupMemberService.Add( groupMember );
+
+                                if ( cbSetGroupAttributes.Checked )
+                                {
+                                    registrant.LoadAttributes( rockContext );
+                                    groupMember.LoadAttributes( rockContext );
+                                    foreach( var attr in groupMember.Attributes.Where( m => registrant.Attributes.Keys.Contains( m.Key ) ) )
+                                    {
+                                        groupMember.SetAttributeValue( attr.Key, registrant.GetAttributeValue( attr.Key ) );
+                                    }
+                                }
+
+                                rockContext.SaveChanges();
+                                groupMember.SaveAttributeValues( rockContext );
                             }
                         }
                     }
-
-                    rockContext.SaveChanges();
                 }
             }
 
@@ -1845,6 +1857,7 @@ namespace RockWeb.Blocks.Event
                     {
                         liGroupPlacement.AddCssClass( "active" );
                         pnlGroupPlacement.Visible = true;
+                        cbSetGroupAttributes.Checked = true;
                         BindGroupPlacementGrid();
                         break;
                     }
