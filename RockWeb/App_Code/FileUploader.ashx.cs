@@ -187,6 +187,16 @@ namespace RockWeb
         }
 
         /// <summary>
+        /// Dictionary of deprecated or incorrect mimetypes and what they should be mapped to instead
+        /// </summary>
+        private Dictionary<string, string> _mimeTypeRemap = new Dictionary<string, string>
+        {
+            { "text/directory", "text/vcard" },
+            { "text/directory; profile=vCard", "text/vcard" },
+            { "text/x-vcard", "text/vcard" }
+        };
+
+        /// <summary>
         /// Processes the binary file.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -229,6 +239,12 @@ namespace RockWeb
             binaryFile.MimeType = uploadedFile.ContentType;
             binaryFile.FileSize = uploadedFile.ContentLength;
             binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+
+            if ( _mimeTypeRemap.ContainsKey( binaryFile.MimeType ) )
+            {
+                binaryFile.MimeType = _mimeTypeRemap[binaryFile.MimeType];
+            }
+
             binaryFile.ContentStream = GetFileContentStream( context, uploadedFile );
             rockContext.SaveChanges();
 
