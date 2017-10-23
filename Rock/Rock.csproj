@@ -769,6 +769,8 @@
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonSignalService.cs" />
+    <Compile Include="Model\CodeGenerated\SignalTypeService.cs" />
     <Compile Include="Model\CommunicationTemplateAttachment.cs" />
     <Compile Include="Model\CommunicationAttachment.cs" />
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
@@ -1106,6 +1108,7 @@
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
+    <Compile Include="Model\PersonSignal.cs" />
     <Compile Include="Model\PersonToken.cs" />
     <Compile Include="Model\PersonTokenService.Partial.cs" />
     <Compile Include="Model\PersonViewed.cs" />
@@ -1136,6 +1139,7 @@
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
+    <Compile Include="Model\SignalType.cs" />
     <Compile Include="Model\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
     <Compile Include="Model\PageShortLinkService.Partial.cs" />
