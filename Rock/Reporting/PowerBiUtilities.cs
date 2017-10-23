@@ -11,6 +11,9 @@ using Rock.Web.Cache;
 
 namespace Rock.Reporting
 {
+    /// <summary>
+    /// Power BI Utilities Class
+    /// </summary>
     public static class PowerBiUtilities
     {
         private static readonly string _authorityUri = "https://login.windows.net/common/oauth2/authorize/";
@@ -287,6 +290,7 @@ namespace Rock.Reporting
         /// Gets the reports.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
+        /// <param name="groupId">The group identifier.</param>
         /// <param name="message">The message.</param>
         /// <returns></returns>
         public static List<PBIReport> GetReports( string accessToken, string groupId, out string message )
@@ -346,7 +350,6 @@ namespace Rock.Reporting
         /// Gets the groups.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        /// <param name="groupId">The group identifier.</param>
         /// <returns></returns>
         public static List<PBIGroup> GetGroups( string accessToken )
         {
@@ -372,6 +375,12 @@ namespace Rock.Reporting
     /// </summary>
     public class PBIReports
     {
+        /// <summary>
+        /// Gets or sets the value.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
         public PBIReport[] value { get; set; }
     }
 
@@ -380,14 +389,44 @@ namespace Rock.Reporting
     /// </summary>
     public class PBIReport
     {
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
         public string id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the web URL.
+        /// </summary>
+        /// <value>
+        /// The web URL.
+        /// </value>
         public string webUrl { get; set; }
 
+        /// <summary>
+        /// Gets or sets the embed URL.
+        /// </summary>
+        /// <value>
+        /// The embed URL.
+        /// </value>
         public string embedUrl { get; set; }
 
+        /// <summary>
+        /// Gets or sets the dataset identifier.
+        /// </summary>
+        /// <value>
+        /// The dataset identifier.
+        /// </value>
         public string datasetId { get; set; }
     }
 
@@ -396,6 +435,12 @@ namespace Rock.Reporting
     /// </summary>
     public class PBIGroups
     {
+        /// <summary>
+        /// Gets or sets the value.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
         public PBIGroup[] value { get; set; }
     }
 
@@ -404,10 +449,28 @@ namespace Rock.Reporting
     /// </summary>
     public class PBIGroup
     {
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is read only.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is read only; otherwise, <c>false</c>.
+        /// </value>
         public bool IsReadOnly { get; set; }
     }
 

@@ -44,18 +44,60 @@ namespace Rock.Web.Cache
 
         private object _obj = new object();
 
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the component entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The component entity type identifier.
+        /// </value>
         public int? ComponentEntityTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the interaction entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The interaction entity type identifier.
+        /// </value>
         public int? InteractionEntityTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the channel entity identifier.
+        /// </summary>
+        /// <value>
+        /// The channel entity identifier.
+        /// </value>
         public int? ChannelEntityId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the channel type medium value identifier.
+        /// </summary>
+        /// <value>
+        /// The channel type medium value identifier.
+        /// </value>
         public int? ChannelTypeMediumValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the duration of the retention.
+        /// </summary>
+        /// <value>
+        /// The duration of the retention.
+        /// </value>
         public int? RetentionDuration { get; set; }
 
+        /// <summary>
+        /// Gets the type of the component entity.
+        /// </summary>
+        /// <value>
+        /// The type of the component entity.
+        /// </value>
         public EntityTypeCache ComponentEntityType
         {
             get
@@ -70,6 +112,12 @@ namespace Rock.Web.Cache
         }
 
 
+        /// <summary>
+        /// Gets the type of the interaction entity.
+        /// </summary>
+        /// <value>
+        /// The type of the interaction entity.
+        /// </value>
         public EntityTypeCache InteractionEntityType
         {
             get
@@ -83,6 +131,12 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the channel type medium value.
+        /// </summary>
+        /// <value>
+        /// The channel type medium value.
+        /// </value>
         public DefinedValueCache ChannelTypeMediumValue
         {
             get
@@ -96,6 +150,12 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the interaction components.
+        /// </summary>
+        /// <value>
+        /// The interaction components.
+        /// </value>
         public List<InteractionComponentCache> InteractionComponents
         {
             get
@@ -116,12 +176,18 @@ namespace Rock.Web.Cache
                 return components;
             }
         }
+        /// <summary>
+        /// The component ids
+        /// </summary>
         private List<int> componentIds = null;
 
         #endregion
 
         #region Public Methods
 
+        /// <summary>
+        /// Initializes the component ids.
+        /// </summary>
         private void InitComponentIds()
         {
             lock ( _obj )
@@ -139,6 +205,10 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Adds the component identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
         public void AddComponentId( int id )
         {
             InitComponentIds();
@@ -152,6 +222,10 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Removes the component identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
         public void RemoveComponentId( int id )
         {
             InitComponentIds();

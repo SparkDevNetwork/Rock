@@ -66,8 +66,7 @@ namespace Rock.Web.Cache
         /// Returns LavaTemplate object from cache.  If definedValue does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
+        /// <param name="content">The content.</param>
         /// <returns></returns>
         public static LavaTemplateCache Read( string content )
         {
@@ -75,6 +74,12 @@ namespace Rock.Web.Cache
                 () => Load( content ) );
         }
 
+        /// <summary>
+        /// Gets the or add existing.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="valueFactory">The value factory.</param>
+        /// <returns></returns>
         public static LavaTemplateCache GetOrAddExisting( string key, Func<LavaTemplateCache> valueFactory )
         {
             RockMemoryCache cache = RockMemoryCache.Default;
