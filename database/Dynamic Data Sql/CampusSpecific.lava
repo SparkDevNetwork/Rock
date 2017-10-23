@@ -38,22 +38,6 @@
 			</tr>
 		</thead>
 		<tbody>
-		
-        {% if dayOfWeek == 'Saturday' and hour >= 16 %}
-            <tr>
-    		    <td colspan="5">
-        		    <em><small class='text-muted'>Total Attendance will be available after 1pm on Sunday</small></em>
-    			</td>
-    		</tr>
-    		
-        {% elseif dayOfWeek == 'Sunday' and hour < 13 %}
-    		<tr>
-    		    <td colspan="5">
-        		    <em><small class='text-muted'>Total Attendance will be available after 1pm on Sunday</small></em>
-    			</td>
-    		</tr>
-    		
-        {% else %}
         	<!-- Show row data -->
     		{%for row in table1.rows %}
     			<tr align="left" data-original-title="" title="">
@@ -69,8 +53,6 @@
     				<td class="grid-select-cell" data-priority="1" {% if row.Growth > 0 or row.Growth < 0 %}style="background-color:{{color}};"{% endif %}><p style="color:black">{{row.Growth | Format:'p1' }}</p></td>
     			</tr>
     		{% endfor %}
-    		
-        {% endif %}
 
 		</tbody>
 		<tfoot>

@@ -285,7 +285,7 @@ From
 	, Format(currentWeekService.Attendance,'N0')  as 'ThisWeek'
 	, Format(lastWeekService.Attendance,'N0')  as 'LastWeek'
 	, Format(lastYearWeekService.Attendance,'N0')  as 'LastYear'
-	, (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance As 'Growth'
+	, Case When (lastYearWeekService.Attendance != 0 and lastYearWeekService.Attendance is not null) then (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance  else null end As 'Growth'
 	--, thisweekNotes.Notes as 'ThisWeekNotes'
 	, CASE thisweekNotes.Notes WHEN null THEN '' WHEN '' THEN '' ELSE SUBSTRING(thisweekNotes.Notes, 1, LEN(thisweekNotes.Notes) - 1 ) END AS 'ThisWeekNotes'
 	--, lastweekNotes.Notes as 'LastWeekNotes'
@@ -314,7 +314,7 @@ From
 		,Sum(Attendance) as 'Attendance'
 		From @MetricValues mv
 		where MetricValueDateTime >= @LastWeekStart and MetricValueDateTime <= @LastWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(RootMetricCategoryId)
 	) as lastWeekService
 	on titleTable.AttendanceType = lastWeekService.AttendanceType
@@ -324,7 +324,7 @@ From
 		,Sum(Attendance) as 'Attendance'
 		From @MetricValues
 		where MetricValueDateTime >= @LastYearWeekStart and MetricValueDateTime <= @LastYearWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(RootMetricCategoryId)
 	) as lastYearWeekService
 	on titleTable.AttendanceType = lastYearWeekService.AttendanceType
@@ -404,7 +404,7 @@ From (
 	, Format(currentWeekService.Attendance,'N0')  as 'ThisWeek'
 	, Format(lastWeekService.Attendance,'N0')  as 'LastWeek'
 	, Format(lastYearWeekService.Attendance,'N0')  as 'LastYear'
-	, (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance As 'Growth'
+	, Case When (lastYearWeekService.Attendance != 0 and lastYearWeekService.Attendance is not null) then (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance  else null end As 'Growth'
 	From 
 	(
 		select CASE GROUPING(ScheduleName) WHEN 1 THEN 'Total' ELSE Max(ScheduleName) END as 'Schedule'
@@ -427,7 +427,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @MetricValues
 		where MetricValueDateTime >= @LastWeekStart and MetricValueDateTime <= @LastWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastWeekService
 	on titleTable.Schedule = lastWeekService.Schedule
@@ -437,7 +437,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @MetricValues
 		where MetricValueDateTime >= @LastYearWeekStart and MetricValueDateTime <= @LastYearWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastYearWeekService
 	on titleTable.Schedule = lastYearWeekService.Schedule
@@ -458,7 +458,7 @@ From (
 	, Format(currentWeekService.Attendance,'N0')  as 'ThisWeek'
 	, Format(lastWeekService.Attendance,'N0')  as 'LastWeek'
 	, Format(lastYearWeekService.Attendance,'N0')  as 'LastYear'
-	, (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance As 'Growth'
+	, Case When (lastYearWeekService.Attendance != 0 and lastYearWeekService.Attendance is not null) then (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance  else null end As 'Growth'
 	From 
 	(
 		select CASE GROUPING(ScheduleName) WHEN 1 THEN 'Total' ELSE Max(ScheduleName) END as 'Schedule'
@@ -482,7 +482,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @WorshipMetricValues
 		where MetricValueDateTime >= @LastWeekStart and MetricValueDateTime <= @LastWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastWeekService
 	on titleTable.Schedule = lastWeekService.Schedule
@@ -492,7 +492,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @WorshipMetricValues
 		where MetricValueDateTime >= @LastYearWeekStart and MetricValueDateTime <= @LastYearWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastYearWeekService
 	on titleTable.Schedule = lastYearWeekService.Schedule
@@ -513,7 +513,7 @@ From (
 	, Format(currentWeekService.Attendance,'N0')  as 'ThisWeek'
 	, Format(lastWeekService.Attendance,'N0')  as 'LastWeek'
 	, Format(lastYearWeekService.Attendance,'N0')  as 'LastYear'
-	, (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance As 'Growth'
+	, Case When (lastYearWeekService.Attendance != 0 and lastYearWeekService.Attendance is not null) then (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance  else null end As 'Growth'
 	From 
 	(
 		select CASE GROUPING(ScheduleName) WHEN 1 THEN 'Total' ELSE Max(ScheduleName) END as 'Schedule'
@@ -537,7 +537,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @ChildrensMetricValues
 		where MetricValueDateTime >= @LastWeekStart and MetricValueDateTime <= @LastWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastWeekService
 	on titleTable.Schedule = lastWeekService.Schedule
@@ -547,7 +547,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @ChildrensMetricValues
 		where MetricValueDateTime >= @LastYearWeekStart and MetricValueDateTime <= @LastYearWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastYearWeekService
 	on titleTable.Schedule = lastYearWeekService.Schedule
@@ -568,7 +568,7 @@ From (
 	, Format(currentWeekService.Attendance,'N0')  as 'ThisWeek'
 	, Format(lastWeekService.Attendance,'N0')  as 'LastWeek'
 	, Format(lastYearWeekService.Attendance,'N0')  as 'LastYear'
-	, (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance As 'Growth'
+	, Case When (lastYearWeekService.Attendance != 0 and lastYearWeekService.Attendance is not null) then (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance  else null end As 'Growth'
 	From 
 	(
 		select CASE GROUPING(ScheduleName) WHEN 1 THEN 'Total' ELSE Max(ScheduleName) END as 'Schedule'
@@ -592,7 +592,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @StudentsMetricValues
 		where MetricValueDateTime >= @LastWeekStart and MetricValueDateTime <= @LastWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastWeekService
 	on titleTable.Schedule = lastWeekService.Schedule
@@ -602,7 +602,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @StudentsMetricValues
 		where MetricValueDateTime >= @LastYearWeekStart and MetricValueDateTime <= @LastYearWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastYearWeekService
 	on titleTable.Schedule = lastYearWeekService.Schedule
@@ -623,7 +623,7 @@ From (
 	, Format(currentWeekService.Attendance,'N0')  as 'ThisWeek'
 	, Format(lastWeekService.Attendance,'N0')  as 'LastWeek'
 	, Format(lastYearWeekService.Attendance,'N0')  as 'LastYear'
-	, (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance As 'Growth'
+	, Case When (lastYearWeekService.Attendance != 0 and lastYearWeekService.Attendance is not null) then (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance  else null end As 'Growth'
 	From 
 	(
 		select CASE GROUPING(ScheduleName) WHEN 1 THEN 'Total' ELSE Max(ScheduleName) END as 'Schedule'
@@ -647,7 +647,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @BaptismsMetricValues
 		where MetricValueDateTime >= @LastWeekStart and MetricValueDateTime <= @LastWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastWeekService
 	on titleTable.Schedule = lastWeekService.Schedule
@@ -657,7 +657,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @BaptismsMetricValues
 		where MetricValueDateTime >= @LastYearWeekStart and MetricValueDateTime <= @LastYearWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastYearWeekService
 	on titleTable.Schedule = lastYearWeekService.Schedule
@@ -678,7 +678,7 @@ From (
 	, Format(currentWeekService.Attendance,'N0')  as 'ThisWeek'
 	, Format(lastWeekService.Attendance,'N0')  as 'LastWeek'
 	, Format(lastYearWeekService.Attendance,'N0')  as 'LastYear'
-	, (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance As 'Growth'
+	, Case When (lastYearWeekService.Attendance != 0 and lastYearWeekService.Attendance is not null) then (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance  else null end As 'Growth'
 	From 
 	(
 		select CASE GROUPING(ScheduleName) WHEN 1 THEN 'Total' ELSE Max(ScheduleName) END as 'Schedule'
@@ -702,7 +702,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @DiscoverCentralMetricValues
 		where MetricValueDateTime >= @LastMonthStart and MetricValueDateTime <= @LastMonthEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastWeekService
 	on titleTable.Schedule = lastWeekService.Schedule
@@ -712,7 +712,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @DiscoverCentralMetricValues
 		where MetricValueDateTime >= @LastYearMonthStart and MetricValueDateTime <= @LastYearMonthEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastYearWeekService
 	on titleTable.Schedule = lastYearWeekService.Schedule
@@ -733,7 +733,7 @@ From (
 	, Format(currentWeekService.Attendance,'N0')  as 'ThisWeek'
 	, Format(lastWeekService.Attendance,'N0')  as 'LastWeek'
 	, Format(lastYearWeekService.Attendance,'N0')  as 'LastYear'
-	, (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance As 'Growth'
+	, Case When (lastYearWeekService.Attendance != 0 and lastYearWeekService.Attendance is not null) then (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance  else null end As 'Growth'
 	From 
 	(
 		select CASE GROUPING(ScheduleName) WHEN 1 THEN 'Total' ELSE Max(ScheduleName) END as 'Schedule'
@@ -757,7 +757,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @FirstTimeGuestMetricValues
 		where MetricValueDateTime >= @LastWeekStart and MetricValueDateTime <= @LastWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastWeekService
 	on titleTable.Schedule = lastWeekService.Schedule
@@ -767,7 +767,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @FirstTimeGuestMetricValues
 		where MetricValueDateTime >= @LastYearWeekStart and MetricValueDateTime <= @LastYearWeekEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastYearWeekService
 	on titleTable.Schedule = lastYearWeekService.Schedule
