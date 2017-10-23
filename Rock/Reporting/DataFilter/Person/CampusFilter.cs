@@ -59,6 +59,28 @@ namespace Rock.Reporting.DataFilter.Person
             get { return "Additional Filters"; }
         }
 
+        /// <summary>
+        /// Gets the control class name.
+        /// </summary>
+        /// <value>
+        /// The name of the control class.
+        /// </value>
+        internal virtual string ControlClassName
+        {
+            get { return "js-campus-picker"; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether to include inactive campuses.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include inactive]; otherwise, <c>false</c>.
+        /// </value>
+        internal virtual bool IncludeInactive
+        {
+            get { return true; }
+        }
+
         #endregion
 
         #region Public Methods
@@ -87,14 +109,14 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return @"
-function() {
-    var campusPicker = $('.js-campus-picker', $content);
+            return string.Format( @"
+function() {{
+    var campusPicker = $('.{0}', $content);
     var campusName = $(':selected', campusPicker).text();
 
     return 'Campus: ' + campusName;
-}
-";
+}}
+", ControlClassName );
         }
 
         /// <summary>
@@ -130,8 +152,8 @@ function() {
             CampusPicker campusPicker = new CampusPicker();
             campusPicker.ID = filterControl.ID + "_0";
             campusPicker.Label = string.Empty;
-            campusPicker.CssClass = "js-campus-picker";
-            campusPicker.Campuses = CampusCache.All();
+            campusPicker.CssClass = $"{ControlClassName}";
+            campusPicker.Campuses = CampusCache.All( IncludeInactive );
 
             filterControl.Controls.Add( campusPicker );
 
