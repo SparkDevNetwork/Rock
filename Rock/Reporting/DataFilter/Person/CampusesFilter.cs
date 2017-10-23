@@ -61,6 +61,28 @@ namespace Rock.Reporting.DataFilter.Person
             get { return "Additional Filters"; }
         }
 
+        /// <summary>
+        /// Gets the control class name.
+        /// </summary>
+        /// <value>
+        /// The name of the control class.
+        /// </value>
+        internal virtual string ControlClassName
+        {
+            get { return "js-campuses-picker"; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether to include inactive campuses.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include inactive]; otherwise, <c>false</c>.
+        /// </value>
+        internal virtual bool IncludeInactive
+        {
+            get { return true; }
+        }
+
         #endregion
 
         #region Public Methods
@@ -89,19 +111,19 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return @"
-function() {
+            return string.Format( @"
+function() {{
     var result = 'Campuses';
-    var campusesPicker = $('.js-campuses-picker', $content);
-    var checkedCampuses = $('.js-campuses-picker', $content).find(':checked').closest('label');
-    if (checkedCampuses.length) {
+    var campusesPicker = $('.{0}', $content);
+    var checkedCampuses = $('.{0}', $content).find(':checked').closest('label');
+    if (checkedCampuses.length) {{
         var campusCommaList = checkedCampuses.map(function() { return $(this).text() }).get().join(',');
         result = 'Campuses: ' + campusCommaList;
-    }
+    }}
 
     return result;
-}
-";
+}}
+", ControlClassName );
         }
 
         /// <summary>
@@ -146,8 +168,8 @@ function() {
             CampusesPicker campusesPicker = new CampusesPicker();
             campusesPicker.ID = filterControl.ID + "_0";
             campusesPicker.Label = string.Empty;
-            campusesPicker.CssClass = "js-campuses-picker campuses-picker";
-            campusesPicker.Campuses = CampusCache.All();
+            campusesPicker.CssClass = $"{ControlClassName} campuses-picker";
+            campusesPicker.Campuses = CampusCache.All( IncludeInactive );
 
             filterControl.Controls.Add( campusesPicker );
 
@@ -297,5 +319,6 @@ function() {
         }
 
         #endregion
+
     }
 }

@@ -1041,7 +1041,9 @@
     <Compile Include="Reporting\DataFilter\NotInOtherDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\OtherDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\AgeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\CampusesActiveFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusesFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\CampusActiveFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FirstContributionDateFilter.cs" />
@@ -1056,6 +1058,7 @@
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGeofenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InGroupSimpleFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
