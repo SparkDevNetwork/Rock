@@ -541,6 +541,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                                .Queryable().AsNoTracking()
                                .Where( s =>
                                    s.CategoryId.HasValue &&
+                                   s.IsActive &&
                                    s.CategoryId.Value == scheduleCategory.Id )
                                 .ToList() // Here we ToList so that we can take advantage of the NextStartDateTime property
                                 .Where( s =>
