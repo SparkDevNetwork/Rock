@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
@@ -37,7 +38,7 @@ namespace RockWeb.Blocks.Prayer
 
     [LinkedPage( "Detail Page", Order = 0 ),]
     [CategoryField( "Category Selection", "A top level category. Only prayer requests comments under this category will be shown.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Category Selection", 1, "PrayerRequestCategory" )]
-    public partial class PrayerCommentsList : Rock.Web.UI.RockBlock
+    public partial class PrayerCommentsList : RockBlock, ICustomGridColumns
     {
         #region Fields
 

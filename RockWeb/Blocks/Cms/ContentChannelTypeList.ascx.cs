@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Cms
     [Description("Lists content channel types in the system.")]
 
     [LinkedPage("Detail Page")]
-    public partial class ContentChannelTypeList : RockBlock
+    public partial class ContentChannelTypeList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

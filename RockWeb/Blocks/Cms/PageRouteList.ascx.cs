@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Displays a list of page routes.")]
     [LinkedPage("Detail Page")]
-    public partial class PageRouteList : RockBlock
+    public partial class PageRouteList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
@@ -37,7 +38,7 @@ namespace RockWeb.Blocks.Communication
     [Description( "Lists the available communication templates that can used when creating new communications." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class TemplateList : Rock.Web.UI.RockBlock
+    public partial class TemplateList : RockBlock, ICustomGridColumns
     {
         #region fields
 

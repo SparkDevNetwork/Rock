@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Crm
     [Description( "Shows a list of all person badges." )]
 
     [LinkedPage("Detail Page")]
-    public partial class PersonBadgeList : RockBlock
+    public partial class PersonBadgeList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods
 
@@ -60,8 +60,11 @@ namespace RockWeb.Blocks.Crm
             gPersonBadge.Actions.ShowAdd = canAddEditDelete;
             gPersonBadge.IsDeleteEnabled = canAddEditDelete;
 
-            SecurityField securityField = gPersonBadge.Columns[4] as SecurityField;
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.PersonBadge ) ).Id;
+            var securityField = gPersonBadge.ColumnsOfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.PersonBadge ) ).Id;
+            }
         }
 
 

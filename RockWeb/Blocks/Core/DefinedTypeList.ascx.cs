@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Core
 
     [LinkedPage( "Detail Page", order: 0 )]
     [CategoryField( "Categories", "If block should only display Defined Types from specific categories, select the categories here.", true, "Rock.Model.DefinedType", order: 1 )]
-    public partial class DefinedTypeList : RockBlock
+    public partial class DefinedTypeList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

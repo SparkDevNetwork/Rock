@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Groups
     [Description( "Lists all group types with filtering by purpose and system group types." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class GroupTypeList : RockBlock
+    public partial class GroupTypeList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 
