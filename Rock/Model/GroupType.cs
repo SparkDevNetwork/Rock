@@ -612,6 +612,8 @@ namespace Rock.Model
                     }
                 }
             }
+
+            base.PreSaveChanges( dbContext, state );
         }
 
         /// <summary>
