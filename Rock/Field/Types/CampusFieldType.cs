@@ -242,7 +242,9 @@ namespace Rock.Field.Types
             cbList.AddCssClass( "js-filter-control" );
             cbList.RepeatDirection = RepeatDirection.Horizontal;
 
-            var campusList = CampusCache.All();
+            bool includeInactive = ( configurationValues != null && configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean() );
+
+            var campusList = CampusCache.All( includeInactive );
             if ( campusList.Any() )
             {
                 foreach ( var campus in campusList )
