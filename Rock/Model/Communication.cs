@@ -678,6 +678,33 @@ namespace Rock.Model
             return this.Name;
         }
 
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( DbContext dbContext )
+        {
+            // ensure any attachments have the binaryFile.IsTemporary set to False
+            var attachmentBinaryFilesIds = this.Attachments.Select( a => a.BinaryFileId ).ToList();
+            if ( attachmentBinaryFilesIds.Any() )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var temporaryBinaryFiles = new BinaryFileService( rockContext ).GetByIds( attachmentBinaryFilesIds ).Where( a => a.IsTemporary == true ).ToList();
+                    {
+                        foreach ( var binaryFile in temporaryBinaryFiles )
+                        {
+                            binaryFile.IsTemporary = false;
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                }
+            }
+
+            base.PostSaveChanges( dbContext );
+        }
+
         #endregion
 
         #region Private Methods
