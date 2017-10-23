@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField("Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4)]
     [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, "ShowAttendance" )]
     [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6 )]
-    public partial class GroupMemberList : RockBlock, ISecondaryBlock
+    public partial class GroupMemberList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Private Variables
 

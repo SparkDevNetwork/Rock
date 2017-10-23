@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -39,7 +40,7 @@ namespace RockWeb.Blocks.Reporting
     [Description( "Lists all reports under a specified report category." )]
     [CategoryField( "Report Category", "Category to use to list reports for.", false, "Rock.Model.Report", "", "", true, "89e54497-5e98-4f1b-b83a-95bfb685da91", "" )]
     [LinkedPage("Detail Page", "Detail page to show report.", true, "", "", 1)]
-    public partial class ReportList : Rock.Web.UI.RockBlock
+    public partial class ReportList : RockBlock, ICustomGridColumns
     {
         #region Fields
 

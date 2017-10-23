@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "View Page" )]
     [LinkedPage( "Add Page" )]
     [ContextAware]
-    public partial class ScheduledTransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock
+    public partial class ScheduledTransactionList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         private bool _isExporting = false;
 

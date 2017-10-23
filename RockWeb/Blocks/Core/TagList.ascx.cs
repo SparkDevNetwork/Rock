@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
@@ -38,7 +39,7 @@ namespace RockWeb.Blocks.Core
 
     [BooleanField( "Show Qualifier Columns", "Should the 'Qualifier Column' and 'Qualifier Value' fields be displayed in the grid?", false, "", 0 )]
     [LinkedPage( "Detail Page" )]
-    public partial class TagList : Rock.Web.UI.RockBlock
+    public partial class TagList : RockBlock, ICustomGridColumns
     {
         #region Fields
 

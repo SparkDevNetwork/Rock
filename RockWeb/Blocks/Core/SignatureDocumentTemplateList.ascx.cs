@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Lists all the signature document templates and allows for managing them." )]
 
     [LinkedPage("Detail Page")]
-    public partial class SignatureDocumentTemplateList : RockBlock
+    public partial class SignatureDocumentTemplateList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 
