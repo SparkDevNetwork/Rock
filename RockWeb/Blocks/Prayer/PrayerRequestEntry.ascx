@@ -15,7 +15,7 @@
                     <asp:Panel ID="pnlRequester" runat="server">
                         <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                         <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="false" />
-                        <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email"  Required="false" />
+                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="false" />
                     </asp:Panel>
                     
                     <Rock:ButtonDropDownList ID="bddlCategory" runat="server" Label="Category"></Rock:ButtonDropDownList>
