@@ -133,6 +133,8 @@ namespace Rock.Model
                     }
                 }
             }
+
+            base.PostSaveChanges( dbContext );
         }
 
         #endregion

@@ -152,6 +152,8 @@ namespace Rock.Model
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
             Web.Cache.InteractionChannelCache.Flush( this.Id );
+
+            base.PostSaveChanges( dbContext );
         }
 
         #endregion
