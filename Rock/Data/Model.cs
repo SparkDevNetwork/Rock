@@ -212,6 +212,7 @@ namespace Rock.Data
         /// <param name="state"></param>
         public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
         {
+            PreSaveChanges( dbContext, dbContext.ChangeTracker.Entries<IModel>().Where( a => a.Entity == this ).FirstOrDefault(), state );
         }
 
         /// <summary>
@@ -232,7 +233,6 @@ namespace Rock.Data
         /// <param name="state">The state.</param>
         public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state )
         {
-            PreSaveChanges( dbContext, entry.State );
         }
 
         /// <summary>
