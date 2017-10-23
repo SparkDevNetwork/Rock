@@ -21,7 +21,7 @@
                     <Rock:HighlightLabel ID="hlState" runat="server" Visible="false" />
                 </div>
             </div>
-
+            <Rock:NotificationBox ID="nbCriticalMessage" runat="server" NotificationBoxType="Danger" />
             <asp:Panel ID="pnlReadDetails" runat="server">
 
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
