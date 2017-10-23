@@ -459,10 +459,18 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the name of the signal CSS class.
         /// </value>
-        //[MaxLength( 100 )]
-        //[DataMember]
-        [NotMapped]
-        public virtual string TopSignalColor { get { return "red"; } set { } }
+        [MaxLength( 100 )]
+        [DataMember]
+        public string TopSignalColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the highest priority PersonSignal associated with this person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing a PersonSignal Id of the <see cref="Rock.Model.PersonSignal"/>.
+        /// </value>
+        [DataMember]
+        public int? TopSignalId { get; set; }
 
         #endregion
 
@@ -950,6 +958,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual MetaPersonicxLifestageCluster MetaPersonicxLifestageCluster { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signals applied to this person.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.PersonSignal">PersonSignal</see> entities representing the signals that are associated with this person.
+        /// </value>
+        public virtual ICollection<PersonSignal> Signals { get; set; }
 
         /// <summary>
         /// Gets or sets the metaPersonicxLifestage group.

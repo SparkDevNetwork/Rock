@@ -182,6 +182,7 @@
     <Compile Include="CodeGenerated\PersonBadge.cs" />
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="CodeGenerated\PersonSignal.cs" />
     <Compile Include="CodeGenerated\PersonToken.cs" />
     <Compile Include="CodeGenerated\PersonViewed.cs" />
     <Compile Include="CodeGenerated\PhoneNumber.cs" />
@@ -204,6 +205,7 @@
     <Compile Include="CodeGenerated\ScheduleCategoryExclusion.cs" />
     <Compile Include="CodeGenerated\ServiceJob.cs" />
     <Compile Include="CodeGenerated\ServiceLog.cs" />
+    <Compile Include="CodeGenerated\SignalType.cs" />
     <Compile Include="CodeGenerated\SignatureDocument.cs" />
     <Compile Include="CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="CodeGenerated\Site.cs" />

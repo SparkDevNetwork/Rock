@@ -129,6 +129,8 @@ namespace Rock.Model
             target.SuffixValueId = source.SuffixValueId;
             target.SystemNote = source.SystemNote;
             target.TitleValueId = source.TitleValueId;
+            target.TopSignalColor = source.TopSignalColor;
+            target.TopSignalId = source.TopSignalId;
             target.ViewedCount = source.ViewedCount;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

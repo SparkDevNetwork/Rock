@@ -1240,8 +1240,16 @@ namespace Rock.Data
         /// <value>
         /// The person previous names.
         /// </value>
-        public DbSet<PersonPreviousName> PersonPreviousNames { get; set; }        
-        
+        public DbSet<PersonPreviousName> PersonPreviousNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Signals.
+        /// </summary>
+        /// <value>
+        /// the Person Vieweds.
+        /// </value>
+        public DbSet<PersonSignal> PersonSignals { get; set; }
+
         /// <summary>
         /// Gets or sets the Person Vieweds.
         /// </summary>
@@ -1417,6 +1425,14 @@ namespace Rock.Data
         /// the Service Logs.
         /// </value>
         public DbSet<ServiceLog> ServiceLogs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signature documents.
+        /// </summary>
+        /// <value>
+        /// The signature documents.
+        /// </value>
+        public DbSet<SignalType> SignalTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the signature documents.
