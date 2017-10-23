@@ -31,9 +31,9 @@ namespace Rock.Reporting.DataFilter.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter people on whether they are in the specified group or groups" )]
+    [Description( "Filter people on whether they are in the specified group, groups or child groups, with specific roles, status and dates" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Person In Group(s) Filter" )]
+    [ExportMetadata( "ComponentName", "Person In Group(s) Filter (Advanced)" )]
     public class InGroupFilter : DataFilterComponent
     {
         #region Properties
@@ -74,7 +74,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "In Group(s)";
+            return "In Group(s) (Advanced)";
         }
 
         /// <summary>
