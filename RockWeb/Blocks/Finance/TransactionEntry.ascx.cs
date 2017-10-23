@@ -527,7 +527,7 @@ TransactionAccountDetails: [
             }
 
             // Update the total amount
-            lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
+            lblTotalAmount.Text = GlobalAttributesCache.Value("CurrencySymbol") + SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
 
             // Set the frequency date label based on if 'One Time' is selected or not
             if ( btnFrequency.Items.Count > 0 )
@@ -3321,7 +3321,10 @@ TransactionAccountDetails: [
                 mergeFields.Add( "Account", account );
                 txtAccountAmount.Label = accountHeaderTemplate.ResolveMergeFields( mergeFields );
 
-                txtAccountAmount.Text = accountItem.Amount.ToString( "N2" );
+                if ( accountItem.Amount != 0 )
+                {
+                    txtAccountAmount.Text = accountItem.Amount.ToString( "N2" );
+                }
 
                 if ( !accountItem.Enabled )
                 {
