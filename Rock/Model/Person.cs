@@ -1659,6 +1659,8 @@ namespace Rock.Model
                 var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
+
+            base.PreSaveChanges( dbContext, entry );
         }
 
         /// <summary>

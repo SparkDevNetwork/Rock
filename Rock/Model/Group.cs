@@ -634,6 +634,8 @@ namespace Rock.Model
                     attendance.SearchResultGroupId = null;
                 }
             }
+
+            base.PreSaveChanges( dbContext, state );
         }
 
         /// <summary>
