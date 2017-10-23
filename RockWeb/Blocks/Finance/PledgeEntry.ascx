@@ -20,7 +20,7 @@
 
                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
-                    <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email" Required="true" />
+                    <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
 
                     <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
                     <Rock:CurrencyBox ID="tbTotalAmount" runat="server" Label="Total Pledge Amount" MinimumValue="0" Required="true" />
