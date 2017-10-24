@@ -42,7 +42,7 @@ namespace Rock.Model
                     t.EntityTypeId == entityTypeId &&
                     ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) )
                 )
-                .OrderBy( t => t.Order );
+                .OrderBy( t => t.Order ).ThenBy( t => t.Id );
         }
 
         /// <summary>
