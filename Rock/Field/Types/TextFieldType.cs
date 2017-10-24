@@ -66,8 +66,8 @@ namespace Rock.Field.Types
 
             var maxLength = new RockTextBox();
             controls.Add( maxLength );
-            maxLength.Label = "Max Length";
-            maxLength.Help = "Enter the max length of this field (0 is unlimited).";
+            maxLength.Label = "Maximum Length";
+            maxLength.Help = "Enter the maximum length of this field (leave blank for unlimited).";
 
             return controls;
         }
