@@ -160,15 +160,14 @@ namespace RockWeb.Blocks.Connection
 
             nbErrorMessage.Visible = false;
             nbRequirementsErrors.Visible = false;
-            nbCriticalMessage.Visible = false;
+            nbNoParameterMessage.Visible = false;
 
             if ( PageParameter( "ConnectionRequestId" ).AsInteger() == 0 && PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() == null )
             {
-                nbCriticalMessage.Visible = true;
-                nbCriticalMessage.Title = "Critical";
-                nbCriticalMessage.Text = "<p>No existing Request or any connection oppurtunity found associated with the request</p>";
-                pnlEditDetails.Visible = false;
-                pnlReadDetails.Visible = false;
+                nbNoParameterMessage.Visible = true;
+                pnlContents.Visible = false;
+                wpConnectionRequestWorkflow.Visible = false;
+                wpConnectionRequestActivities.Visible = false;
                 return;
             }
 
