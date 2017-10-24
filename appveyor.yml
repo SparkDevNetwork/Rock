@@ -1,0 +1,122 @@
+#---------------------------------#
+#            Rock RMS             #
+#---------------------------------#
+
+# version format
+version: 1.3.{build}
+
+# increment flag
+pull_requests:
+  do_not_increment_build_number: true
+
+# branches to build
+branches:
+  only:
+  - master
+  - beta
+  - alpha
+  - gauntlet
+  - pre-alpha-release
+
+# Do not build on tags (GitHub only)
+skip_tags: true
+
+# operating system (build VM template)
+image: Visual Studio 2015
+configuration: Release
+platform: Any CPU
+
+# clone directory and depth
+clone_depth: 1
+clone_folder: C:\projects\Rock
+
+# environment variables
+environment:
+  priv_key: MIIEpAIBAAKCAQEAvLvf+Orblx7cByPn4XrryeiIniS8Jpqwti/M2m9IO50IxygS BALaU9mIyAgPGaj/aToKoifHji5jZwz4rBHEFYksnml+DudkKdwFy/aosbQPkUmF qYxZU+woA1alnk7OXTs7gO4LcQylpWAHvgFqFfQCyu8w9GxmEhKav8W+DHqKu1P6 MtHfH4azi53TPJXII/y6+8t84Jtjk9vOa3BddvWRPrtZ0xcXk4M2c/aGwoRZANWn 70GaxdGc3RvuTJHwUwzFXuqW3aU2DDQS8qMzHbkrRpdjCZ0jewHHKj0imiVPApQf agwE/nHselxSyKn5BllE9v3bIZyTFeCc4l89GQIDAQABAoIBACYhq0HGabFhqcDD j2DuDd+QXLHe6CjAjj1w8OmdHDH3K0PZo7ItxWC1jb4karCbhWcENAvJD7d5RdoX M9LIEB7txRcIZ1CpjYIrkvw/jJvCrnaDLT8xPQcIqpjqE7IlZ+pMQlxtO+COVpVQ DqBj9sQStdG8e96WXBUAr0VZtWkdq+crJtgm7F7m/vGek6xBy28h5bePBOw4hyYk t/d/uORqjkp5g8B1/hDz/cfgFJDV4LdXiYYGY9ljobUMEqPm5imwo8Gbcs/8WU4d xp4BAneu1Era7ONqs0Kwk9pFz5LFTXOaebyEJKojI54ccn0i9sS7xHPR+Kz9fFZT NC/tQAUCgYEA8FISbnD5jPcFnkt1lEMer6EGMFMNwMAaqEwdu/A28tYafk2o3V2K 3ZKg5zk1pCT/E4G5ximpsr1S3xnuHY7hBDK82ZOhok7VIlE+dyMqKVc0LwSj99k2 m9Xh4HS1tyFhpGHyxDremLzVFTgKc/XMtgF9BNe95lQKsvrj55/jFlsCgYEAyQwu gHXZFYzDPx2swTrmwUJXwV1/ruDsoHhydIniqGW+T5J5qq/dG/+RddeD6ry3h2bI MCjuvL+2iXhwO7w2F8pCyORCqea9fdhTdeGxSmoi7KRWOEa9Nb03v61HqN1rP5Pa HSlNYNgIuoscUsH6IQ4hWKBGp9DzPAqtn18IXJsCgYEA1zlZYmlxROqxsGt6GNbn s3itdzfaeEZTWWgZtQfT3jUbMwRP+DhfNkKsMYhN3vx3KLwkaTFE1luxzTaGxxf/ s2fRM7aAqkCZpotGOyJWDwIXLQil5EE3I+cvzHoZh7GwpaxG47CpS/bJiqBO1D1N Ia9BjMW+P3oCvvnsg7LwiEMCgYEAg+6xiW1Mkv63lfCkUH2VtlcR/Xuc8ab6wWep PF7L1dRGqjMmEmOsBtaUny9Ziy5ihcFmN2x1Fnn8kIPvqtOc78m0P97C/HnF+hJ+ 2onL7VhvKLnDNtT9D4nnTqqoruD2o1ckOCTFeXrrZ3colAplWVHLgjxTgYb2R31+ aGpVs2cCgYBWfBbmwWe7N7U4ZZbHuk3qWm6qK5x5G+AoH5YDTj4tg6D69CwDadUU AgG7iFut5xa0uIbhcYFO1tX15jQ1Q4hX6ZQ8ENcGmZCEd2fyA3FhvDJv0MkgTh+F MK+Ewfs7rfcHRq8bO3lsRd8Ydv7aURFWy5uMC9+idD9ekx3qnfAeFg==
+
+# scripts that run after cloning repository
+install:
+- ps: >-
+    $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
+
+    $fileContent += $env:priv_key.Replace(' ', "`n")
+
+    $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
+
+    Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
+
+    git clone -q --depth=1 git@github.com:NewSpring/rock-bookshelf.git c:\projects\Rock\.remote\rock-bookshelf
+
+    git clone -q --depth=1 git@github.com:NewSpring/rock-power-bi.git c:\projects\Rock\.remote\rock-power-bi
+
+    git clone -q --depth=1 git@github.com:NewSpring/rock-paid-plugins.git c:\projects\Rock\.remote\rock-paid-plugins
+
+    git clone -q --depth=1 git@github.com:NewSpring/rock-spiritual-gifts.git c:\projects\rock-spiritual-gifts
+
+    git clone -q --depth=1 git@github.com:NewSpring/rock-misc.git c:\projects\rock-misc
+
+
+# directories to preserve between builds
+cache:
+- node_modules
+- packages
+
+# scripts to run before build
+before_build:
+- ps: >-
+    if (Test-Path 'C:\Tools\NuGet3') { $nugetDir = 'C:\Tools\NuGet3' } else { $nugetDir = 'C:\Tools\NuGet' }
+
+    (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v3.3.0/nuget.exe', "$nugetDir\NuGet.exe")
+
+    npm install --production
+
+    npm install normajs
+
+    node ./node_modules/normajs/bin/norma.js build
+
+    nuget restore Rock.sln
+
+    $src = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\Facades"
+
+    $dst = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2"
+
+    Get-ChildItem $src | Copy-Item -Destination $dst -Force
+
+    (Get-Content "C:\projects\Rock\RockWeb\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "C:\projects\Rock\RockWeb\web.config"
+
+# build configuration
+build:
+  project: Rock.sln
+  publish_wap: true
+  parallel: true
+  verbosity: minimal
+
+# flag to stop building if an error throws
+matrix:
+  fast_finish: true
+
+# test
+test:
+  assemblies:
+    - Rock.Tests\**\*.dll
+
+# IIS artifact configuration
+artifacts:
+- path: RockWeb
+  name: NewSpringRockKit
+  type: WebDeployPackage
+
+# deployment configuration
+deploy:
+- provider: Environment
+  name: Alpha (alpha-rock.newspring.cc)
+  on:
+    branch: alpha
+
+# notifications
+notifications:
+  - provider: Slack
+    auth_token:
+      secure: 1OsoJ8x/9EYQWTaJQVCj53YgZJRiz/GSLl5VhE7ZA0wb/J5wISUoxzxhIUMSttheY0G/iQCBt1Tb/9lLaIulWw==
+    channel: deployments
+
