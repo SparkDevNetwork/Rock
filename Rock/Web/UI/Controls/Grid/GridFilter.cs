@@ -421,7 +421,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Deletes the user preferences.
+        /// Deletes all the grid user preferences for all grid filters on the block
         /// </summary>
         public void DeleteUserPreferences()
         {
