@@ -33,7 +33,7 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string IS_PASSWORD_KEY = "ispassword";
-        private const string MAX_LENGTH = "0";
+        private const string MAX_LENGTH = "maxlength";
 
         /// <summary>
         /// Returns a list of the configuration keys
