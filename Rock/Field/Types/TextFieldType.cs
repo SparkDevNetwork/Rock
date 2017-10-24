@@ -30,10 +30,10 @@ namespace Rock.Field.Types
     [Serializable]
     public class TextFieldType : FieldType
     {
-
         #region Configuration
 
         private const string IS_PASSWORD_KEY = "ispassword";
+        private const string MAX_LENGTH = "0";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -43,6 +43,7 @@ namespace Rock.Field.Types
         {
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( IS_PASSWORD_KEY );
+            configKeys.Add( MAX_LENGTH );
             return configKeys;
         }
 
@@ -62,6 +63,12 @@ namespace Rock.Field.Types
             cb.Label = "Password Field";
             cb.Text = "Yes";
             cb.Help = "When set, edit field will be masked.";
+
+            var maxLength = new RockTextBox();
+            controls.Add( maxLength );
+            maxLength.Label = "Max Length";
+            maxLength.Help = "Enter the max length of this field (0 is unlimited).";
+
             return controls;
         }
 
@@ -74,10 +81,19 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( IS_PASSWORD_KEY, new ConfigurationValue( "Password Field", "When set, edit field will be masked.", "" ) );
+            configurationValues.Add( MAX_LENGTH, new ConfigurationValue( "Maximum Length", "Enter the maximum length of this field.", "" ) );
 
-            if ( controls != null && controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
-            { 
-                configurationValues[IS_PASSWORD_KEY].Value = ( (CheckBox)controls[0] ).Checked.ToString();
+            if ( controls != null && controls.Count > 0 )
+            {
+                if ( controls[0] != null && controls[0] is CheckBox )
+                {
+                    configurationValues[IS_PASSWORD_KEY].Value = ( (CheckBox)controls[0] ).Checked.ToString();
+                }
+
+                if ( controls[1] != null && controls[1] is TextBox )
+                {
+                    configurationValues[MAX_LENGTH].Value = ( (TextBox)controls[1] ).Text;
+                }
             }
 
             return configurationValues;
@@ -90,7 +106,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public bool IsPassword( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if (configurationValues != null && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
+            if ( configurationValues != null && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
             {
                 return configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
             }
@@ -110,6 +126,11 @@ namespace Rock.Field.Types
                 if ( controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
                 {
                     ( (CheckBox)controls[0] ).Checked = configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
+                }
+
+                if ( controls[1] != null && controls[1] is TextBox && configurationValues.ContainsKey( MAX_LENGTH ) )
+                {
+                    ( (TextBox)controls[1] ).Text = configurationValues[MAX_LENGTH].Value;
                 }
             }
         }
@@ -209,6 +230,13 @@ namespace Rock.Field.Types
                 configurationValues[IS_PASSWORD_KEY].Value.AsBoolean() )
             {
                 tb.TextMode = TextBoxMode.Password;
+            }
+
+            if ( configurationValues != null &&
+               configurationValues.ContainsKey( MAX_LENGTH ) &&
+               configurationValues[MAX_LENGTH].Value.AsInteger() > 0 )
+            {
+                tb.MaxLength = configurationValues[MAX_LENGTH].Value.AsInteger();
             }
 
             return tb;
@@ -315,6 +343,5 @@ namespace Rock.Field.Types
         }
 
         #endregion
-
     }
 }
