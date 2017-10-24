@@ -60,6 +60,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 10 )]
     [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed", true, "", 11 )]
     [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 12 )]
+    [CategoryField( "Tag Category", "Optional category to limit the tags to. If specified all new personal tags will be added with this category.", false, 
+        "Rock.Model.Tag", "", "", false, "", "", 13 )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -187,7 +189,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     if ( Person.BirthDate.HasValue )
                     {
-                        lAge.Text = string.Format("{0}<small>({1})</small><br/>", Person.FormatAge(), (Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString());
+                        var formattedAge = Person.FormatAge();
+                        if ( formattedAge.IsNotNullOrWhitespace() )
+                        {
+                            formattedAge += " old";
+                        }
+
+                        lAge.Text = string.Format( "{0} <small>({1})</small><br/>", formattedAge, ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString() );
                     }
 
                     lGender.Text = Person.Gender.ToString();
@@ -223,6 +231,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         taglPersonTags.Visible = true;
                         taglPersonTags.EntityTypeId = Person.TypeId;
                         taglPersonTags.EntityGuid = Person.Guid;
+                        taglPersonTags.CategoryGuid = GetAttributeValue( "TagCategory" ).AsGuidOrNull();
                         taglPersonTags.GetTagValues( CurrentPersonId );
                     }
                     else

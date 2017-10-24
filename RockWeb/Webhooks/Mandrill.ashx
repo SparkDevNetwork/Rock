@@ -127,7 +127,7 @@ public class Mandrill : IHttpHandler
                                         if ( interactionComponent != null )
                                         {
                                             interactionService.AddInteraction( interactionComponent.Id, communicationRecipient.Id, "Opened", "", communicationRecipient.PersonAliasId, item.EventDateTime,
-                                                item.UserAgent.UserAgentName, item.UserAgent.OperatingSystemName, item.UserAgent.Type, null, item.IpAddress );
+                                                item.UserAgent.UserAgentName, item.UserAgent.OperatingSystemName, item.UserAgent.Type, null, item.IpAddress, null );
                                         }
                                         break;
 
@@ -135,7 +135,7 @@ public class Mandrill : IHttpHandler
                                         if ( interactionComponent != null )
                                         {
                                             interactionService.AddInteraction( interactionComponent.Id, communicationRecipient.Id, "Click", "", communicationRecipient.PersonAliasId, item.EventDateTime,
-                                                item.UserAgent.UserAgentName, item.UserAgent.OperatingSystemName, item.UserAgent.Type, null, item.IpAddress );
+                                                item.UserAgent.UserAgentName, item.UserAgent.OperatingSystemName, item.UserAgent.Type, null, item.IpAddress, null );
                                         }
                                         break;
                                 }

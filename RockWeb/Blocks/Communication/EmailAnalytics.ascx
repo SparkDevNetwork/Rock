@@ -1,5 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EmailAnalytics.ascx.cs" Inherits="RockWeb.Blocks.Communication.EmailAnalytics" %>
 
+<style>
+    .progress-bar-link {
+        background-color: #60BD68;
+    }
+</style>
+
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <asp:HiddenField ID="hfCommunicationId" runat="server" />
@@ -20,10 +27,13 @@
                         <%-- Main Opens/Clicks Line Chart --%>
                         <div class="chart-container">
                             <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" />
-                            <canvas id="openClicksLineChartCanvas" runat="server" />
+                            <canvas id="openClicksLineChartCanvas" runat="server" style="height: 450px;" />
                         </div>
                     </div>
                 </div>
+
+                <hr />
+                <h1 class="text-center">Actions</h1>
                 <div class="row">
                     <div class="col-md-4">
                         <%-- Opens/Clicks PieChart --%>
@@ -34,17 +44,28 @@
                     </div>
                     <div class="col-md-8">
                         <div class="row">
-                            <div class="col-md-6">
-                                <Rock:RockLiteral ID="lUniqueOpens" runat="server" Label="Unique Opens" Text="TODO" />
-                                <Rock:RockLiteral ID="lTotalOpens" runat="server" Label="Total Opens" Text="TODO" />
+                            <div class="col-sm-4">
+                                <Rock:RockLiteral ID="lDelivered" runat="server" />
+                                <Rock:RockLiteral ID="lPercentOpened" runat="server" />
+                                <Rock:RockLiteral ID="lFailedRecipients" runat="server" />
                             </div>
-                            <div class="col-md-6">
-                                <Rock:RockLiteral ID="lTotalClicks" runat="server" Label="Total Clicks" Text="TODO" />
-                                <Rock:RockLiteral ID="lClickThroughRate" runat="server" Label="Click Through Rate (CTR)" Text="TODO" />
+                            <div class="col-sm-4">
+                                <Rock:RockLiteral ID="lUniqueOpens" runat="server" />
+                                <Rock:RockLiteral ID="lTotalOpens" runat="server" />
+                                <Rock:RockLiteral ID="lUnopened" runat="server" />
+                            </div>
+                            <div class="col-sm-4">
+                                <Rock:RockLiteral ID="lUniqueClicks" runat="server" />
+                                <Rock:RockLiteral ID="lTotalClicks" runat="server" />
+                                <Rock:RockLiteral ID="lClickThroughRate" runat="server" />
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <hr />
+                <h1 class="text-center">Clients</h1>
+
                 <div class="row">
                     <div class="col-md-4">
                         <%-- Clients Doughnut Chart --%>
@@ -73,26 +94,28 @@
                 </div>
 
                 <asp:Panel ID="pnlMostPopularLinks" runat="server">
-                    <h3>Most Popular Links</h3>
-                    <div class="row">
-                        <div class="col-md-10">Url</div>
-                        <div class="col-md-1">Uniques</div>
-                        <div class="col-md-1">CTR</div>
+                    <hr />
+                    <h1 class="text-center">Popular Links</h1>
+
+                    <div class="row hidden-xs">
+                        <div class="col-sm-10"><strong>Url</strong></div>
+                        <div class="col-sm-1"><strong>Uniques</strong></div>
+                        <div id="pnlCTRHeader" runat="server" class="col-sm-1"><strong>CTR</strong></div>
                     </div>
                     <asp:Repeater ID="rptMostPopularLinks" runat="server" OnItemDataBound="rptMostPopularLinks_ItemDataBound">
                         <ItemTemplate>
-                            <div class="row">
-                                <div class="col-md-10">
+                            <div class="row margin-b-lg">
+                                <div class="col-sm-10 col-xs-12">
                                     <p>
                                         <asp:Literal ID="lUrl" runat="server" />
                                     </p>
                                     <asp:Literal ID="lUrlProgressHTML" runat="server" />
                                 </div>
-                                <div class="col-md-1">
-                                    <asp:Literal ID="lUniquesCount" runat="server" />
+                                <div class="col-sm-1 col-xs-6">
+                                    <label class="visible-xs margin-r-sm pull-left">Uniques:</label><asp:Literal ID="lUniquesCount" runat="server" />
                                 </div>
-                                <div class="col-md-1">
-                                    <asp:Literal ID="lCTRPercent" runat="server" />
+                                <div id="pnlCTRData" runat="server" class="col-sm-1 col-xs-6">
+                                    <label class="visible-xs margin-r-sm pull-left">CTR:</label><asp:Literal ID="lCTRPercent" runat="server" />
                                 </div>
                             </div>
                         </ItemTemplate>
@@ -104,11 +127,7 @@
 
         <script>
             Sys.Application.add_load(function () {
-                // Workaround for Chart.js not working in IE11 (supposed to be fixed in chart.js 2.7)
-                // see https://github.com/chartjs/Chart.js/issues/4633
-                Number.MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
-                Number.MIN_SAFE_INTEGER = Number.MIN_SAFE_INTEGER || -9007199254740991;
-                
+
                 var chartSeriesColors = <%=this.SeriesColorsJSON%>;
 
                 var getSeriesColors = function(numberOfColors) {
@@ -129,6 +148,7 @@
                 var lineChartDataUnopened = <%=this.LineChartDataUnOpenedJSON%>;
 
                 var linechartCtx = $('#<%=openClicksLineChartCanvas.ClientID%>')[0].getContext('2d');
+
                 var clicksLineChart = new Chart(linechartCtx, {
                     type: 'line',
                     data: {
@@ -136,8 +156,8 @@
                         datasets: [{
                             type: 'line',
                             label: 'Opens',
-                            backgroundColor: chartSeriesColors[0],
-                            borderColor: chartSeriesColors[0],
+                            backgroundColor: '#5DA5DA',
+                            borderColor: '#5DA5DA',
                             data: lineChartDataOpens,
                             spanGaps: true,
                             fill: false
@@ -145,8 +165,8 @@
                         {
                             type: 'line',
                             label: 'Clicks',
-                            backgroundColor: chartSeriesColors[1],
-                            borderColor: chartSeriesColors[1],
+                            backgroundColor: '#60BD68',
+                            borderColor: '#60BD68',
                             data: lineChartDataClicks,
                             spanGaps: true,
                             fill: false
@@ -154,14 +174,31 @@
                         {
                             type: 'line',
                             label: 'Unopened',
-                            backgroundColor: chartSeriesColors[2],
-                            borderColor: chartSeriesColors[2],
+                            backgroundColor: '#FFBF2F',
+                            borderColor: '#FFBF2F',
                             data: lineChartDataUnopened,
+                            hidden: lineChartDataUnopened == null,
                             spanGaps: true,
                             fill: false
                         }],
                     },
                     options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                filter: function (item, data) {
+                                    // don't include the label if the dataset is hidden
+                                    if (data.datasets[item.datasetIndex].hidden)
+                                    {
+                                        return false;
+                                    }
+
+                                    return true;
+                                }
+                            }
+                        },
                         scales: {
                             xAxes: [{
                                 type: 'time',
@@ -181,20 +218,32 @@
                 var opensClicksPieChart = new Chart(opensClicksPieChartCanvasCtx, {
                     type: 'pie',
                     options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
                         legend: {
-                            position: 'right'
+                            position: 'right',
+                            labels: {
+                                filter: function (item, data) {
+                                    // don't include the label if the dataset isn't defined
+                                    if (data.datasets[0].data[item.index] == null) {
+                                        return false;
+                                    }
+
+                                    return true;
+                                }
+                            }
                         }
                     },
                     data: {
                         labels: [
                             'Opens',
-                            'Clicks',
+                            'Clicked',
                             'Unopened'
                         ],
                         datasets: [{
                             type: 'pie',
                             data: pieChartDataOpenClicks,
-                            backgroundColor: getSeriesColors(pieChartDataOpenClicks.length),
+                            backgroundColor: ['#5DA5DA', '#60BD68','#FFBF2F'],
                         }],
                     }
                 });
@@ -207,10 +256,12 @@
                 var clientsDoughnutChart = new Chart(clientsDoughnutChartCanvasCtx, {
                     type: 'doughnut',
                     options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
                         legend: {
                             position: 'right'
                         },
-                        cutoutPercentage: 80,
+                        cutoutPercentage: 50,
                         tooltips: {
                             callbacks: {
                                 label: function(tooltipItem, data) {
@@ -230,6 +281,9 @@
                         }],
                     }
                 });
+
+                // Tooltips
+                $('.js-actions-statistic').tooltip();
             });
         </script>
     </ContentTemplate>

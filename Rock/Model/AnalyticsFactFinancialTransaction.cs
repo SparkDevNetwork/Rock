@@ -71,7 +71,7 @@ namespace Rock.Model
 
         /// <summary>
         /// This is the FamilyKey (AnalyticsDimFamilyCurrent.Id) of the family of the Authorized Person that did this transaction
-        /// Note that this is the current family that the person is in. 
+        /// Note that this is the family that the person was in at the time of the transaction
         /// To see what GivingGroup they were part of when the Transaction occured, see GivingUnitKey
         /// </summary>
         /// <value>
@@ -81,13 +81,33 @@ namespace Rock.Model
         public int? AuthorizedFamilyKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the giving unit key.
+        /// This is the FamilyKey (AnalyticsDimFamilyCurrent.Id) of the family of the Authorized Person that did this transaction
+        /// Note that this is the family that the person is in now
+        /// To see what GivingGroup they were part of when the Transaction occured, see GivingUnitKey
+        /// </summary>
+        /// <value>
+        /// The authorized family key.
+        /// </value>
+        [DataMember]
+        public int? AuthorizedCurrentFamilyKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the giving unit key, which is the GivingGroup the person was in at the time of the transaction
         /// </summary>
         /// <value>
         /// The giving unit key.
         /// </value>
         [DataMember]
         public int? GivingUnitKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current giving unit key, which is the GivingGroup the person is in now
+        /// </summary>
+        /// <value>
+        /// The giving unit key.
+        /// </value>
+        [DataMember]
+        public int? GivingUnitCurrentKey { get; set; }
 
         /// <summary>
         /// Gets or sets the gateway identifier.
@@ -146,7 +166,6 @@ namespace Rock.Model
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
             this.HasOptional( t => t.Batch ).WithMany().HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
-            this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.Account ).WithMany().HasForeignKey( t => t.AccountId ).WillCascadeOnDelete( false );
         }
     }

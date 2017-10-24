@@ -46,12 +46,13 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Display Active Status Column", "Should the Active Status column be displayed?", false, "", 7 )]
     [BooleanField( "Display Member Count Column", "Should the Member Count column be displayed? Does not affect lists with a person context.", true, "", 8 )]
     [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 9 )]
-    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 10 )]
-    [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 11 )]
-    [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 12 )]
-    [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 13 )]
+    [BooleanField( "Display Security Column", "Should the Security column be displayed?", false, "", 10 )]
+    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 11 )]
+    [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 12 )]
+    [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 13 )]
+    [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 14 )]
     [ContextAware]
-    public partial class GroupList : RockBlock, IAdditionalGridColumns
+    public partial class GroupList : RockBlock, ICustomGridColumns
     {
         private int _groupTypesCount = 0;
         private bool _showGroupPath = false;
@@ -72,6 +73,9 @@ namespace RockWeb.Blocks.Groups
 
             this.BlockUpdated += GroupList_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlGroupList );
+
+            SecurityField securityField = gGroups.Columns.OfType<SecurityField>().FirstOrDefault();
+            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
         }
 
         /// <summary>
@@ -82,7 +86,6 @@ namespace RockWeb.Blocks.Groups
         {
             if ( !Page.IsPostBack )
             {
-                AddAdditionalColumns();
                 BindFilter();
                 BindGrid();
             }
@@ -112,6 +115,7 @@ namespace RockWeb.Blocks.Groups
             bool showDescriptionColumn = GetAttributeValue( "DisplayDescriptionColumn" ).AsBoolean();
             bool showActiveStatusColumn = GetAttributeValue( "DisplayActiveStatusColumn" ).AsBoolean();
             bool showSystemColumn = GetAttributeValue( "DisplaySystemColumn" ).AsBoolean();
+            bool showSecurityColumn = GetAttributeValue( "DisplaySecurityColumn" ).AsBoolean();
 
             if ( !showDescriptionColumn )
             {
@@ -122,13 +126,23 @@ namespace RockWeb.Blocks.Groups
 
             Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
             boundFields["Name"].Visible = !_showGroupPath;
-            gGroups.Columns[1].Visible = _showGroupPath;
+
+            // The GroupPathName field is the RockTemplateField that has a headertext of "Name"
+            var groupPathNameField = gGroups.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Name" );
+            groupPathNameField.Visible = _showGroupPath;
+
             boundFields["GroupTypeName"].Visible = GetAttributeValue( "DisplayGroupTypeColumn" ).AsBoolean();
             boundFields["Description"].Visible = showDescriptionColumn;
 
             Dictionary<string, BoolField> boolFields = gGroups.Columns.OfType<BoolField>().ToDictionary( a => a.DataField );
             boolFields["IsActive"].Visible = showActiveStatusColumn;
             boolFields["IsSystem"].Visible = showSystemColumn;
+
+            var securityField = gGroups.ColumnsOfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.Visible = showSecurityColumn;
+            }
 
             int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
             if ( ContextTypesRequired.Any( a => a.Id == personEntityTypeId ) )
@@ -156,29 +170,6 @@ namespace RockWeb.Blocks.Groups
 
             SetPanelTitleAndIcon();
         }
-
-        #region IAdditionalGridColumns
-
-        /// <summary>
-        /// Adds AdditionalColumns to the grid
-        /// </summary>
-        public void AddAdditionalColumns()
-        {
-            var additionalColumns = this.GetAttributeValue( AdditionalGridColumnsConfig.AttributeKey ).FromJsonOrNull<AdditionalGridColumnsConfig>();
-            if ( additionalColumns != null && additionalColumns.ColumnsConfig.Any() )
-            {
-                var deleteField = gGroups.ColumnsOfType<DeleteField>().FirstOrDefault();
-                int insertPosition = gGroups.Columns.IndexOf( deleteField );
-
-                foreach ( var column in additionalColumns.GetColumns() )
-                {
-                    gGroups.Columns.Insert( insertPosition, column );
-                    insertPosition++;
-                }
-            }
-        }
-
-        #endregion IAdditionalGridColumns
 
         /// <summary>
         /// Handles the RowDataBound event of the rGrid control.
@@ -686,7 +677,8 @@ namespace RockWeb.Blocks.Groups
             // hide the group type column if there's only one type; must come after DataBind()
             if ( _groupTypesCount == 1 )
             {
-                this.gGroups.Columns[2].Visible = false;
+                var groupTypeColumn = this.gGroups.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "GroupTypeName" );
+                groupTypeColumn.Visible = false;
             }
         }
 

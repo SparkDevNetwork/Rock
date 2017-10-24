@@ -17,7 +17,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFinancialAccount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFinancialBatch.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFinancialTransactionType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimPersonCurrent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsFactAttendance.cs" />

@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -3537,19 +3537,6 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to INSERT INTO [LavaShortCode]
-        ///	([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
-        ///	VALUES
-        ///	(&apos;YouTube&apos;,&apos;Creates a responsive YouTube embe&apos;&apos;d from just a simple video id.&apos;,&apos;&lt;p&gt;Embedding a YouTube video is easy, right? Well what if you want it to be responsive (adjust with the size of the window)? Or what about 
-        ///control of what is shown in the player? The YouTube shortcode helps to shorten (see what we did there) the t [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string _201709222257442_CommunicationSMSAttachments_AddLavaShortCodes {
-            get {
-                return ResourceManager.GetString("_201709222257442_CommunicationSMSAttachments_AddLavaShortCodes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;01&apos;,&apos;Summit Estates&apos;,&apos;Summit Estates combines above-average wealth and education. These late-30s to early-60s households with children and teens rank high for household income (5th), home value (2nd) and net worth (1st). Fully 70% have earned a college of post-graduate degree. Summit Estates create time in their often professional-dual-income-with-children schedules for cultural activities, sports, fitness and travel. They generally are not heavy TV viewers, but references include financial channels, sport [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201709231340508_PersonicxCluster {
@@ -3590,16 +3577,147 @@ namespace Rock.Migrations.Migrations {
         ///	[Name]
         ///	,[Description]
         ///	,[IsSystem]
+        ///	,[IsActive]
         ///	,[Subject]
         ///	,[MediumDataJson]
         ///	,[Guid]
-        ///	,[Message]
-        ///	)
-        ///VALUES [rest of string was truncated]&quot;;.
+        ///	,[Messag [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201710021015059_BlankCommTemplate {
             get {
                 return ResourceManager.GetString("_201710021015059_BlankCommTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- delete existing shortcodes
+        ///DELETE FROM [LavaShortcode] WHERE [Guid] IN (&apos;D8B431AA-13EA-4F5F-9D6E-85B6D26EB72A&apos;, &apos;B579B014-735E-4D9C-9DEF-00D4FBCECE21&apos;, &apos;4284B1C9-E73D-4162-8AEE-13A03CAF2938&apos;)
+        ///
+        ///-- YouTube
+        ///INSERT INTO [LavaShortCode]
+        ///	([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
+        ///	VALUES
+        ///	(&apos;YouTube&apos;,&apos;Creates a responsive YouTube embed from just a simple video id.&apos;,&apos;&lt;p&gt;Embedding a YouTube video is easy, ri [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710031453003_InitialShortcodesLoad {
+            get {
+                return ResourceManager.GetString("_201710031453003_InitialShortcodesLoad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @simpleCommunicationEntryBlockId INT = (
+        /// SELECT TOP 1 Id
+        /// FROM [Block]
+        /// WHERE [Guid] = &apos;BD9B2F32-AB18-4761-80C9-FDA4DBEEA9EC&apos;
+        /// )
+        ///DECLARE @wizardCommunicationEntryBlockId INT = (
+        /// SELECT TOP 1 Id
+        /// FROM [Block]
+        /// WHERE [Guid] = &apos;82D5B1A0-1C17-464E-9EC5-414549FB44C7&apos;
+        /// )
+        ///DECLARE @simpleCommunicationEntryBlockTypeId INT = (
+        /// SELECT TOP 1 Id
+        /// FROM [BlockType]
+        /// WHERE [Guid] = &apos;D9834641-7F39-4CFA-8CB2-E64068127565&apos;
+        /// );
+        ///DECLARE @wizardCommunicationEntryBlockTypeId INT = (
+        /// SELECT TOP 1 Id
+        /// F [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710051632496_Analytics3_CommunicationBlockSettings {
+            get {
+                return ResourceManager.GetString("_201710051632496_Analytics3_CommunicationBlockSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Update DefaultValue for Email Medium&apos;s Unsubscribe HTML
+        ///UPDATE Attribute
+        ///SET DefaultValue = &apos;
+        ///&lt;p style=&apos;&apos;float: right;&apos;&apos;&gt;
+        ///    &lt;small&gt;&lt;a href=&apos;&apos;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicApplicationRoot&apos;&apos; }}Unsubscribe/{{ Person | PersonTokenCreate:43200,3 }}?CommunicationId={{ Communication.Id }}&apos;&apos;&gt;Unsubscribe&lt;/a&gt;&lt;/small&gt;
+        ///&lt;/p&gt;
+        ///&apos;
+        ///WHERE [Guid] = &apos;2942EFCB-9BCF-4A16-9A78-D6149E2EAAD3&apos;
+        ///	AND DefaultValue = &apos;
+        ///&lt;p style=&apos;&apos;float: right;&apos;&apos;&gt;
+        ///    &lt;small&gt;&lt;a href=&apos;&apos;{{ &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicApplicationRoot&apos;&apos;  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710061805334_CommunicationListGroup_UpdateEmailMediumAttributeValues {
+            get {
+                return ResourceManager.GetString("_201710061805334_CommunicationListGroup_UpdateEmailMediumAttributeValues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsFactAttendance]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsFactAttendance
+        ///GO
+        ///
+        ///-- select top 10000 * from AnalyticsFactAttendance order by Id desc
+        ///CREATE VIEW AnalyticsFactAttendance
+        ///AS
+        ///SELECT asa.*
+        ///    ,adphPerson.PrimaryFamilyKey [FamilyKey]
+        ///	,adpcPerson.PrimaryFamilyKey [CurrentFamilyKey]
+        ///    ,isnull(at.NAME, &apos;None&apos;) [AttendanceTypeName]
+        ///    ,isnull(l.NAME, &apos;None&apos;) [LocationName]
+        ///    ,isnull(c.NAME, &apos;None&apos;) [CampusName]
+        ///    ,isnull(c.ShortCode, &apos;None&apos;) [CampusSho [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710131721219_InteractionRelatedEntity_AnalyticsFactAttendance {
+            get {
+                return ResourceManager.GetString("_201710131721219_InteractionRelatedEntity_AnalyticsFactAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsFactFinancialTransaction]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsFactFinancialTransaction
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsFactFinancialTransaction
+        ///AS
+        ///SELECT asft.*
+        ///    ,isnull(tt.Value, &apos;None&apos;) [TransactionType]
+        ///    ,isnull(ts.Value, &apos;None&apos;) [TransactionSource]
+        ///    ,CASE asft.IsScheduled
+        ///        WHEN 1
+        ///            THEN &apos;Scheduled&apos;
+        ///        ELSE &apos;Non-Scheduled&apos;
+        ///        END [ScheduleType]
+        ///    ,adphAuthorizedPerson.PrimaryFamilyKey [AuthorizedFamilyKey]
+        ///	,adpcAuthorized [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710131721219_InteractionRelatedEntity_AnalyticsFactFinancialTransaction {
+            get {
+                return ResourceManager.GetString("_201710131721219_InteractionRelatedEntity_AnalyticsFactFinancialTransaction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF EXISTS (
+        ///        SELECT *
+        ///        FROM [sysobjects]
+        ///        WHERE [id] = OBJECT_ID(N&apos;[dbo].[spAnalytics_ETL_Family]&apos;)
+        ///            AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1
+        ///        )
+        ///    DROP PROCEDURE [dbo].spAnalytics_ETL_Family
+        ///GO
+        ///
+        ///-- EXECUTE [dbo].[spAnalytics_ETL_Family] 
+        ///CREATE PROCEDURE [dbo].spAnalytics_ETL_Family
+        ///AS
+        ///BEGIN
+        ///    DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
+        ///        ,@MaxExpireDate DATE = DateFromParts(9999, 1, 1)
+        ///        ,@RecordStatusActiveId INT = (
+        ///      [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family {
+            get {
+                return ResourceManager.GetString("_201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family", resourceCulture);
             }
         }
     }

@@ -97,12 +97,14 @@ namespace Rock.Model
             target.CampusName = source.CampusName;
             target.CampusShortCode = source.CampusShortCode;
             target.Count = source.Count;
+            target.CurrentFamilyKey = source.CurrentFamilyKey;
             target.CurrentPersonKey = source.CurrentPersonKey;
             target.DaysSinceLastAttendanceOfType = source.DaysSinceLastAttendanceOfType;
             target.DeviceId = source.DeviceId;
             target.DeviceName = source.DeviceName;
             target.DidAttend = source.DidAttend;
             target.EndDateTime = source.EndDateTime;
+            target.FamilyKey = source.FamilyKey;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;

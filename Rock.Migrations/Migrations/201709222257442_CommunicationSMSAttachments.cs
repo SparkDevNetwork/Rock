@@ -58,9 +58,7 @@ namespace Rock.Migrations
 	VALUES
 	(@ListGroupTypeId, 'Adult Members and Attendees', 1,'D3DC9A8E-43D9-43AB-BB48-94788F4B1A42', @DataViewId, 0, 0, 0)
 " );
-            
-            // JE: Youtube, Parallax,Panel Shortcodes
-            Sql( MigrationSQL._201709222257442_CommunicationSMSAttachments_AddLavaShortCodes );
+           
         }
 
         /// <summary>

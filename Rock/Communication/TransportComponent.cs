@@ -16,7 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Net.Mail;
+using System.Linq;
 
 using Rock.Extension;
 using Rock.Model;
@@ -92,6 +94,26 @@ namespace Rock.Communication
                     recipient.Status = CommunicationRecipientStatus.Failed;
                     recipient.StatusNote = "Communication Preference of 'No Bulk Communication'";
                     valid = false;
+                }
+                else if ( recipient.Communication.ListGroupId.HasValue  )
+                {
+                    // if this communication is begin sent to a list, make sure the recipient is still an active member of the list
+                    var groupMember = new GroupMemberService( new Rock.Data.RockContext() ).Queryable().Where( a => a.PersonId == person.Id ).AsNoTracking().FirstOrDefault();
+                    if ( groupMember != null )
+                    {
+                        if ( groupMember.GroupMemberStatus == GroupMemberStatus.Inactive )
+                        {
+                            recipient.Status = CommunicationRecipientStatus.Failed;
+                            recipient.StatusNote = "Person is not active member of communication list: " + recipient.Communication.ListGroup.Name;
+                            valid = false;
+                        }
+                    }
+                    else
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Person is not member of communication list: " + recipient.Communication.ListGroup.Name;
+                        valid = false;
+                    }
                 }
             }
 

@@ -70,8 +70,7 @@ namespace Rock.Model
         public int TransactionDateKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the authorized person key 
-        /// TODO Fix this so that this is: At the Time of the Transaction
+        /// Gets or sets the authorized person key for the person's record at the time of the transaction
         /// </summary>
         /// <value>
         /// The authorized person key.
@@ -80,8 +79,7 @@ namespace Rock.Model
         public int? AuthorizedPersonKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the authorized person key 
-        /// TODO Fix this so that this is: Current Personkey (ETL will have to maintain this )
+        /// Gets or sets the authorized person key for the person's current record
         /// </summary>
         /// <value>
         /// The authorized person key.
@@ -379,15 +377,6 @@ namespace Rock.Model
         public virtual AnalyticsDimFinancialBatch Batch { get; set; }
 
         /// <summary>
-        /// Gets or sets the transaction type value.
-        /// </summary>
-        /// <value>
-        /// The transaction type value.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimFinancialTransactionType TransactionTypeValue { get; set; }
-
-        /// <summary>
         /// Gets or sets the account.
         /// </summary>
         /// <value>
@@ -417,7 +406,6 @@ namespace Rock.Model
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
             this.HasOptional( t => t.Batch ).WithMany().HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
-            this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.Account ).WithMany().HasForeignKey( t => t.AccountId ).WillCascadeOnDelete( false );
         }
     }

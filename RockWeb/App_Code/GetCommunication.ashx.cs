@@ -61,7 +61,6 @@ namespace RockWeb
 
                 if ( communication != null )
                 {
-
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                     mergeFields.Add( "Communication", communication );
 
@@ -70,7 +69,7 @@ namespace RockWeb
                     string encodedKey = context.Request.QueryString["p"];
                     if ( !string.IsNullOrWhiteSpace( encodedKey ) )
                     {
-                        person = new PersonService( rockContext ).GetByUrlEncodedKey( encodedKey );
+                        person = new PersonService( rockContext ).GetByImpersonationToken( encodedKey, true, null );
                     }
 
                     if ( person == null )
@@ -84,6 +83,7 @@ namespace RockWeb
                             if ( userLogin != null )
                             {
                                 var currentPerson = userLogin.Person;
+                                // if a person wasn't specified in the URL, then only show it if the current person has EDIT auth to the communication
                                 if ( communication.IsAuthorized( Authorization.EDIT, currentPerson ) )
                                 {
                                     person = currentPerson;
@@ -117,6 +117,32 @@ namespace RockWeb
 
                         context.Response.ContentType = "text/html";
                         context.Response.Write( GetHtmlPreview( communication, mergeFields ) );
+
+                        if ( recipient != null )
+                        {
+                            // write an 'opened' interaction
+                            var interactionService = new InteractionService( rockContext );
+
+                            InteractionComponent interactionComponent = new InteractionComponentService( rockContext )
+                                                .GetComponentByEntityId( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid(),
+                                                    communication.Id, communication.Subject );
+                            rockContext.SaveChanges();
+
+                            var ipAddress = Rock.Web.UI.RockPage.GetClientIpAddress();
+
+                            var userAgent = context.Request.UserAgent ?? "";
+
+                            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( userAgent );
+                            var clientOs = client.OS.ToString();
+                            var clientBrowser = client.UserAgent.ToString();
+                            var clientType = InteractionDeviceType.GetClientType( userAgent );
+
+                            interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, RockDateTime.Now, clientBrowser, clientOs, clientType, userAgent, ipAddress, null );
+
+                            rockContext.SaveChanges();
+                            
+                        }
+
                         return;
                     }
                 }

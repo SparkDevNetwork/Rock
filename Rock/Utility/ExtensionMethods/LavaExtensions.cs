@@ -322,8 +322,8 @@ namespace Rock
                 {
                     try
                     {
-                        var parentVariable = ( keyValue.Value.GetType().GetInterface( "IList" ) != null ) ? keyValue.Key.ToLower().Singularize() : keyValue.Key;
-                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentVariable ) );
+                        var parentVariable = ( keyValue.Value?.GetType().GetInterface( "IList" ) != null ) ? keyValue.Key.ToLower().Singularize() : keyValue.Key;
+                        result.Add( keyValue.Key, keyValue.Value?.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentVariable ) );
                     }
                     catch ( Exception ex )
                     {
@@ -429,7 +429,7 @@ namespace Rock
 
                             sb.Append( "<div class='panel panel-default panel-lavadebug'>" );
 
-                            sb.Append( string.Format( "<div class='panel-heading clearfix collapsed' data-toggle='collapse' data-target='#collapse-{0}'>", panelId ) );
+                            sb.Append( string.Format( "<div class='panel-heading clearfix collapsed' data-toggle='collapse' data-target='#collapse-{0}' onclick='$(\"#collapse-{0}\").collapse(\"toggle\"); event.stopPropagation();'>", panelId ) );
                             sb.Append( string.Format( "<h5 class='panel-title pull-left'>{0}</h5> <div class='pull-right'><i class='fa fa-chevron-up'></i></div>", keyVal.Key.SplitCase() ) );
                             sb.Append( "</div>" );
 

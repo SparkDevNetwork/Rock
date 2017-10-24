@@ -23,59 +23,15 @@ using System.Web.Http;
 
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// TaggedItems REST API
     /// </summary>
-    public partial class TaggedItemsController : IHasCustomRoutes
+    public partial class TaggedItemsController
     {
-        /// <summary>
-        /// Add Custom route for flushing cached attributes
-        /// </summary>
-        /// <param name="routes"></param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "TaggedItemsByEntity",
-                routeTemplate: "api/taggeditems/{entityTypeId}/{ownerid}/{entityguid}/{entityqualifier}/{entityqualifiervalue}",
-                defaults: new
-                {
-                    controller = "taggeditems",
-                    entityqualifier = RouteParameter.Optional,
-                    entityqualifiervalue = RouteParameter.Optional
-                } );
-        }
-
-        /// <summary>
-        /// Posts the specified entity type identifier.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="ownerId">The owner identifier.</param>
-        /// <param name="entityGuid">The entity unique identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name )
-        {
-            return Post( entityTypeId, ownerId, entityGuid, name, string.Empty, string.Empty );
-        }
-
-        /// <summary>
-        /// Posts the specified entity type identifier.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="ownerId">The owner identifier.</param>
-        /// <param name="entityGuid">The entity unique identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="entityQualifier">The entity qualifier.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier )
-        {
-            return Post( entityTypeId, ownerId, entityGuid, name, entityQualifier, string.Empty );
-        }
 
         /// <summary>
         /// Posts the specified entity type identifier.
@@ -86,21 +42,32 @@ namespace Rock.Rest.Controllers
         /// <param name="name">The name.</param>
         /// <param name="entityQualifier">The entity qualifier.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="includeInactive">The include inactive.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
+        public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
             SetProxyCreation( true );
 
+            var person = GetPerson();
             var personAlias = GetPersonAlias();
 
             var tagService = new TagService( (Rock.Data.RockContext)Service.Context );
 
-            var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
-            if ( tag == null )
+            var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid, includeInactive );
+            if ( tag == null || !tag.IsAuthorized( "Tag", person ) )
             {
+                int? categoryId = null;
+                if ( categoryGuid.HasValue )
+                {
+                    var category = CategoryCache.Read( categoryGuid.Value );
+                    categoryId = category != null ? category.Id : (int?)null;
+                }
+
                 tag = new Tag();
                 tag.EntityTypeId = entityTypeId;
+                tag.CategoryId = categoryId;
                 tag.EntityTypeQualifierColumn = entityQualifier;
                 tag.EntityTypeQualifierValue = entityQualifierValue;
                 tag.OwnerPersonAliasId = new PersonAliasService( (Rock.Data.RockContext)Service.Context ).GetPrimaryAliasId( ownerId );
@@ -115,11 +82,12 @@ namespace Rock.Rest.Controllers
             {
                 taggedItem = new TaggedItem();
                 taggedItem.Tag = tag;
+                taggedItem.EntityTypeId = entityTypeId;
                 taggedItem.EntityGuid = entityGuid;
                 tag.TaggedItems.Add( taggedItem );
             }
 
-            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", person );
             Service.Context.SaveChanges();
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, tag.Id );
@@ -132,38 +100,15 @@ namespace Rock.Rest.Controllers
         /// <param name="ownerId">The owner identifier.</param>
         /// <param name="entityGuid">The entity unique identifier.</param>
         /// <param name="name">The name.</param>
-        [Authenticate, Secured]
-        public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name )
-        {
-            Delete( entityTypeId, ownerId, entityGuid, name, string.Empty, string.Empty );
-        }
-
-        /// <summary>
-        /// Deletes the specified entity type identifier.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="ownerId">The owner identifier.</param>
-        /// <param name="entityGuid">The entity unique identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="entityQualifier">The entity qualifier.</param>
-        [Authenticate, Secured]
-        public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier )
-        {
-            Delete( entityTypeId, ownerId, entityGuid, name, entityQualifier, string.Empty );
-        }
-
-        /// <summary>
-        /// Deletes the specified entity type identifier.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="ownerId">The owner identifier.</param>
-        /// <param name="entityGuid">The entity unique identifier.</param>
-        /// <param name="name">The name.</param>
         /// <param name="entityQualifier">The entity qualifier.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="includeInactive">The include inactive.</param>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
-        public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
+        public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
             SetProxyCreation( true );
 
@@ -174,21 +119,24 @@ namespace Rock.Rest.Controllers
                 name = name.Split( '^' )[0];
             }
 
-            var taggedItem = Service.Queryable()
-                .FirstOrDefault( i =>
-                    ( i.Tag.EntityTypeId == entityTypeId ) &&
-                    ( i.Tag.EntityTypeQualifierColumn == null || i.Tag.EntityTypeQualifierColumn == string.Empty || i.Tag.EntityTypeQualifierColumn == entityQualifier ) &&
-                    ( i.Tag.EntityTypeQualifierValue == null || i.Tag.EntityTypeQualifierValue == string.Empty || i.Tag.EntityTypeQualifierValue == entityQualifierValue ) &&
-                    ( i.Tag.OwnerPersonAlias == null || i.Tag.OwnerPersonAlias.PersonId == ownerId ) &&
-                    ( i.Tag.Name == name ) &&
-                    i.EntityGuid.Equals( entityGuid ) );
+            TaggedItem taggedItem = null;
+
+            var tagService = new TagService( (Rock.Data.RockContext)Service.Context );
+            var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid, includeInactive );
+            if ( tag != null )
+            {
+                taggedItem = tag.TaggedItems.Where( i => i.EntityGuid == entityGuid ).FirstOrDefault();
+            }
 
             if ( taggedItem == null )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            CheckCanEdit( taggedItem );
+            if ( !taggedItem.IsAuthorized( "Tag", GetPerson() ))
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
 
             Service.Delete( taggedItem );
 

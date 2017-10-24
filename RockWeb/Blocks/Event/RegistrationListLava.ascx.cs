@@ -115,19 +115,37 @@ namespace RockWeb.Blocks.Event
             
             List<Registration> hasDates = registrationList.Where(a => a.RegistrationInstance.Linkages.Any(x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue)).ToList();
             List<Registration> noDates = registrationList.Where( a => !hasDates.Any( d => d.Id == a.Id ) ).OrderBy( x => x.RegistrationInstance.Name ).ToList();
-            
-            hasDates = hasDates.OrderBy(a => a.RegistrationInstance.Linkages.OrderBy(b => b.EventItemOccurrence.NextStartDateTime).FirstOrDefault().EventItemOccurrence.NextStartDateTime).ToList();
+
+            hasDates = hasDates
+                .OrderBy( a => a.RegistrationInstance.Linkages
+                     .Where( x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue )
+                     .OrderBy( b => b.EventItemOccurrence.NextStartDateTime )
+                     .FirstOrDefault()
+                     .EventItemOccurrence.NextStartDateTime )
+                .ToList();
 
             // filter by date range
             var requestDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "DateRange" ) ?? "-1||" );
             if ( requestDateRange.Start.HasValue )
             {
-                hasDates = hasDates.Where( a => a.RegistrationInstance.Linkages.OrderBy( b => b.EventItemOccurrence.NextStartDateTime ).FirstOrDefault().EventItemOccurrence.NextStartDateTime >= requestDateRange.Start ).ToList();
+                hasDates = hasDates
+                    .Where( a => a.RegistrationInstance.Linkages
+                        .Where( x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue )
+                        .OrderBy( b => b.EventItemOccurrence.NextStartDateTime )
+                        .FirstOrDefault()
+                        .EventItemOccurrence.NextStartDateTime >= requestDateRange.Start )
+                    .ToList();
             }
 
             if ( requestDateRange.End.HasValue )
             {
-                hasDates = hasDates.Where( a => a.RegistrationInstance.Linkages.OrderBy( b => b.EventItemOccurrence.NextStartDateTime ).FirstOrDefault().EventItemOccurrence.NextStartDateTime < requestDateRange.End ).ToList();
+                hasDates = hasDates
+                    .Where( a => a.RegistrationInstance.Linkages
+                        .Where( x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue )
+                        .OrderBy( b => b.EventItemOccurrence.NextStartDateTime )
+                        .FirstOrDefault()
+                        .EventItemOccurrence.NextStartDateTime < requestDateRange.End )
+                    .ToList();
             }
             
             registrationList = hasDates;

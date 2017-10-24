@@ -171,14 +171,6 @@ namespace Rock.Data
         public DbSet<AnalyticsDimFinancialBatch> AnalyticsDimFinancialBatches { get; set; }
 
         /// <summary>
-        /// Gets or sets the analytics dim financial transaction types.
-        /// </summary>
-        /// <value>
-        /// The analytics dim financial transaction types.
-        /// </value>
-        public DbSet<AnalyticsDimFinancialTransactionType> AnalyticsDimFinancialTransactionTypes { get; set; }
-
-        /// <summary>
         /// Gets or sets the analytics dim person currents.
         /// </summary>
         /// <value>

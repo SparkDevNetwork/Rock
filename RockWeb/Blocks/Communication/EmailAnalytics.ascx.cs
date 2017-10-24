@@ -19,8 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Humanizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -36,7 +37,7 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Shows a graph of email statistics optionally limited to a specific communication or communication list." )]
 
-    [TextField("Series Colors", "A comma-delimited list of colors that the charts will use.", true, "#8498ab,#a4b4c4,#b9c7d5,#c6d2df,#d8e1ea", order:0) ]
+    [TextField( "Series Colors", "A comma-delimited list of colors that the Clients chart will use.", false, "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766", order: 0 )]
     public partial class EmailAnalytics : RockBlock
     {
         #region Properties that are used by the markup file
@@ -178,8 +179,8 @@ namespace RockWeb.Blocks.Communication
 
                 Literal lUrlProgressHTML = e.Item.FindControl( "lUrlProgressHTML" ) as Literal;
                 lUrlProgressHTML.Text = string.Format(
-                    @"<div class='progress'>
-                        <div class='progress-bar' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%'>
+                    @"<div class='progress margin-b-none'>
+                        <div class='progress-bar progress-bar-link' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%'>
                             <span class='sr-only'>{0}%</span>
                         </div>
                     </div>",
@@ -189,7 +190,12 @@ namespace RockWeb.Blocks.Communication
                 lUniquesCount.Text = topLinksInfo.UniquesCount.ToString();
 
                 Literal lCTRPercent = e.Item.FindControl( "lCTRPercent" ) as Literal;
-                lCTRPercent.Text = Math.Round( topLinksInfo.CTRPercent, 2 ) + "%";
+                HtmlGenericControl pnlCTRData = e.Item.FindControl( "pnlCTRData" ) as HtmlGenericControl;
+                pnlCTRData.Visible = topLinksInfo.CTRPercent.HasValue;
+                if ( topLinksInfo.CTRPercent.HasValue )
+                {
+                    lCTRPercent.Text = Math.Round( topLinksInfo.CTRPercent.Value, 2 ) + "%";
+                }
             }
         }
 
@@ -349,18 +355,21 @@ namespace RockWeb.Blocks.Communication
             List<int> openCountsList = interactionsSummary.Select( a => a.OpenCounts ).ToList();
             this.LineChartDataOpensJSON = openCountsList.ToJson();
 
-            int? totalRecipientCount = null;
+            int? deliveredRecipientCount = null;
+            int? failedRecipientCount = null;
 
             if ( communicationIdList != null )
             {
                 CommunicationRecipientStatus[] sentStatus = new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Opened, CommunicationRecipientStatus.Delivered };
-                totalRecipientCount = new CommunicationRecipientService( rockContext ).Queryable().Where( a => sentStatus.Contains( a.Status ) && communicationIdList.Contains( a.CommunicationId ) ).Count();
+                CommunicationRecipientStatus[] failedStatus = new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Failed };
+                deliveredRecipientCount = new CommunicationRecipientService( rockContext ).Queryable().Where( a => sentStatus.Contains( a.Status ) && communicationIdList.Contains( a.CommunicationId ) ).Count();
+                failedRecipientCount = new CommunicationRecipientService( rockContext ).Queryable().Where( a => failedStatus.Contains( a.Status ) && communicationIdList.Contains( a.CommunicationId ) ).Count();
             }
 
             List<int> unopenedCountsList = new List<int>();
-            if ( totalRecipientCount.HasValue )
+            if ( deliveredRecipientCount.HasValue )
             {
-                int unopenedRemaining = totalRecipientCount.Value;
+                int unopenedRemaining = deliveredRecipientCount.Value;
                 foreach ( var openCounts in openCountsList )
                 {
                     unopenedRemaining = unopenedRemaining - openCounts;
@@ -368,12 +377,15 @@ namespace RockWeb.Blocks.Communication
                     // NOTE: just in case we have more recipients activity then there are recipient records, don't let it go negative
                     unopenedCountsList.Add( Math.Max( unopenedRemaining, 0 ) );
                 }
+
+                this.LineChartDataUnOpenedJSON = unopenedCountsList.ToJson();
+            }
+            else
+            {
+                this.LineChartDataUnOpenedJSON = "null";
             }
 
-            this.LineChartDataUnOpenedJSON = unopenedCountsList.ToJson();
-
-            /* Opens/Clicks Pie Chart */
-
+            /* Actions Pie Chart and Stats */
             int totalOpens = interactionsList.Where( a => a.Operation == "Opened" ).Count();
             int totalClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).Count();
 
@@ -383,35 +395,55 @@ namespace RockWeb.Blocks.Communication
             // Unique Clicks is the number of times a Recipient clicked at least once in an email
             int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).GroupBy( a => a.CommunicationRecipientId ).Count();
 
-            lUniqueOpens.Text = uniqueOpens.ToString();
-            lTotalOpens.Text = totalOpens.ToString();
-            lTotalClicks.Text = totalClicks.ToString();
+            string actionsStatFormatNumber =  "<span>{0}</span><br><span class='js-actions-statistic' title='{1}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{2:#,##0}</span>";
+            string actionsStatFormatPercent = "<span>{0}</span><br><span class='js-actions-statistic' title='{1}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{2:P2}</span>";
+
+            if ( deliveredRecipientCount.HasValue  )
+            {
+                lDelivered.Text = string.Format( actionsStatFormatNumber, "Delivered", "The number of recipients that the email was successfully delivered to", deliveredRecipientCount );
+                lPercentOpened.Text = string.Format( actionsStatFormatPercent, "Percent Opened", "The percent of the delivered emails that were opened at least once", deliveredRecipientCount > 0 ? ( decimal) uniqueOpens  / deliveredRecipientCount : 0 );
+                lFailedRecipients.Text = string.Format( actionsStatFormatNumber, "Failed Recipients", "The number of emails that failed to get delivered", failedRecipientCount );
+
+                // just in case there are more opens then delivered, don't let it go negative
+                var unopenedCount = Math.Max( deliveredRecipientCount.Value - uniqueOpens, 0 );
+                lUnopened.Text = string.Format( actionsStatFormatNumber, "Unopened", "The number of emails that were delivered but not yet opened", unopenedCount );
+            }
+
+            lUniqueOpens.Text = string.Format( actionsStatFormatNumber, "Unique Opens", "The number of emails that were opened at least once", uniqueOpens );
+            lTotalOpens.Text = string.Format( actionsStatFormatNumber, "Total Opens", "The total number of times the emails were opened, including ones that were already opened once", totalOpens );
+
+            lUniqueClicks.Text = string.Format( actionsStatFormatNumber, "Unique Clicks", "The number of times a recipient clicked on a link at least once in any of the opened emails", uniqueClicks );
+            lTotalClicks.Text = string.Format( actionsStatFormatNumber, "Total Clicks", "The total number of times a link was clicked in any of the opened emails", totalClicks );
+
             if ( uniqueOpens > 0 )
             {
-                lClickThroughRate.Text = string.Format( "{0:P2}", ( decimal ) uniqueClicks / uniqueOpens );
+                lClickThroughRate.Text = string.Format( actionsStatFormatPercent, "Click Through Rate (CTR)", "The percent of emails that had at least one click", ( decimal ) uniqueClicks / uniqueOpens );
             }
             else
             {
-                lClickThroughRate.Text = "n/a";
+                lClickThroughRate.Text = string.Empty;
             }
 
-            var openClicksUnopenedDataList = new List<int>();
-            openClicksUnopenedDataList.Add( uniqueOpens );
-            openClicksUnopenedDataList.Add( uniqueClicks );
+            // action stats is [opens,clicks,unopened];
+            var actionsStats = new int?[3];
 
-            if ( totalRecipientCount.HasValue )
+            // "Opens" would be unique number that Clicked Or Opened, so subtract clicks so they aren't counted twice
+            actionsStats[0] = uniqueOpens - uniqueClicks;
+            actionsStats[1] = uniqueClicks;
+
+            if ( deliveredRecipientCount.HasValue )
             {
                 // NOTE: just in case we have more recipients activity then there are recipient records, don't let it go negative
-                openClicksUnopenedDataList.Add( Math.Max( totalRecipientCount.Value - uniqueOpens, 0 ) );
+                actionsStats[2] = Math.Max( deliveredRecipientCount.Value - uniqueOpens, 0 );
             }
             else
             {
-                openClicksUnopenedDataList.Add( 0 );
+                actionsStats[2] = null;
             }
 
-            this.PieChartDataOpenClicksJSON = openClicksUnopenedDataList.ToJson();
+            this.PieChartDataOpenClicksJSON = actionsStats.ToJson();
 
-            var pieChartOpenClicksHasData = openClicksUnopenedDataList.Sum() > 0;
+            var pieChartOpenClicksHasData = actionsStats.Sum() > 0;
             opensClicksPieChartCanvas.Style[HtmlTextWriterStyle.Display] = pieChartOpenClicksHasData ? string.Empty : "none";
             nbOpenClicksPieChartMessage.Visible = !pieChartOpenClicksHasData;
             nbOpenClicksPieChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
@@ -420,17 +452,19 @@ namespace RockWeb.Blocks.Communication
 
             /* Clients-In-Use (Client Type) Pie Chart*/
             var clientsUsageByClientType = interactionQuery
-            .GroupBy( a => a.InteractionSession.DeviceType.ClientType ).Select( a => new ClientTypeUsageInfo
-            {
-                ClientType = a.Key,
-                UsagePercent = a.Count() * 100.00M / interactionCount
-            } ).OrderByDescending( a => a.UsagePercent ).ToList().Select( a => new ClientTypeUsageInfo
-            {
-                ClientType = a.ClientType,
-                UsagePercent = Math.Round(a.UsagePercent, 2)
-            } ).ToList();
+                .GroupBy( a => ( a.InteractionSession.DeviceType.ClientType ?? "Unknown" ).ToLower() ).Select( a => new ClientTypeUsageInfo
+                {
+                    ClientType = a.Key,
+                    UsagePercent = a.Count() * 100.00M / interactionCount
+                } ).OrderByDescending( a => a.UsagePercent ).ToList()
+                .Where( a => !a.ClientType.Equals( "Robot", StringComparison.OrdinalIgnoreCase ) ) // no robots
+                .Select( a => new ClientTypeUsageInfo
+                {
+                    ClientType = a.ClientType,
+                    UsagePercent = Math.Round( a.UsagePercent, 2 )
+                } ).ToList();
 
-            this.PieChartDataClientLabelsJSON = clientsUsageByClientType.Select( a => string.IsNullOrEmpty( a.ClientType ) ? "Unknown" : a.ClientType ).ToList().ToJson();
+            this.PieChartDataClientLabelsJSON = clientsUsageByClientType.Select( a => string.IsNullOrEmpty( a.ClientType ) ? "Unknown" : a.ClientType.Transform( To.TitleCase ) ).ToList().ToJson();
             this.PieChartDataClientCountsJSON = clientsUsageByClientType.Select( a => a.UsagePercent ).ToList().ToJson();
 
             var clientUsageHasData = clientsUsageByClientType.Where( a => a.UsagePercent > 0 ).Any();
@@ -451,23 +485,38 @@ namespace RockWeb.Blocks.Communication
             rptClientApplicationUsage.DataBind();
 
             /* Most Popular Links from Clicks*/
-            var topClicks = interactionsList.Where( a => a.Operation == "Click" && !string.IsNullOrEmpty( a.InteractionData ) ).GroupBy( a => a.InteractionData ).Select( a => new
-            {
-                LinkUrl = a.Key,
-                UniqueClickCount = a.GroupBy( x => x.CommunicationRecipientId ).Count()
-            } ).OrderByDescending( a => a.UniqueClickCount ).Take( 100 ).ToList();
-            
+            var topClicks = interactionsList
+                                .Where( a =>
+                                    a.Operation == "Click"
+                                    && !string.IsNullOrEmpty( a.InteractionData )
+                                    && !a.InteractionData.Contains( "/Unsubscribe/" ) )
+                                .GroupBy( a => a.InteractionData )
+                                .Select( a => new
+                                {
+                                    LinkUrl = a.Key,
+                                    UniqueClickCount = a.GroupBy( x => x.CommunicationRecipientId ).Count()
+                                } )
+                                .OrderByDescending( a => a.UniqueClickCount )
+                                .Take( 100 )
+                                .ToList();
+
 
             if ( topClicks.Any() )
             {
                 int topLinkCount = topClicks.Max( a => a.UniqueClickCount );
+
+                // CTR really only makes sense if we are showing data for a single communication, so only show if it's a single communication
+                bool singleCommunication = communicationIdList != null && communicationIdList.Count == 1;
+
                 var mostPopularLinksData = topClicks.Select( a => new TopLinksInfo
                 {
                     PercentOfTop = ( decimal ) a.UniqueClickCount * 100 / topLinkCount,
                     Url = a.LinkUrl,
                     UniquesCount = a.UniqueClickCount,
-                    CTRPercent = a.UniqueClickCount * 100.00M / totalOpens
+                    CTRPercent = singleCommunication ? a.UniqueClickCount * 100.00M / deliveredRecipientCount : ( decimal? ) null
                 } ).ToList();
+
+                pnlCTRHeader.Visible = singleCommunication;
 
                 rptMostPopularLinks.DataSource = mostPopularLinksData;
                 rptMostPopularLinks.DataBind();
@@ -548,7 +597,7 @@ namespace RockWeb.Blocks.Communication
             /// <value>
             /// The CTR percent.
             /// </value>
-            public decimal CTRPercent { get; set; }
+            public decimal? CTRPercent { get; set; }
         }
 
         /// <summary>

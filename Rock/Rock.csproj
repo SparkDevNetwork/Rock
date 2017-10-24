@@ -345,6 +345,7 @@
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\CampusesFieldAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\CodeEditorFieldAttribute.cs" />
     <Compile Include="Attribute\CommunicationTemplateFieldAttribute .cs" />
@@ -493,6 +494,7 @@
     <Compile Include="Data\FieldTypeAttribute.cs" />
     <Compile Include="Data\AnalyticHistoryFieldAttribute.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
+    <Compile Include="Data\AnalyticsAttribute.cs" />
     <Compile Include="Data\IAnalyticHistorical.cs" />
     <Compile Include="Data\IAnalytic.cs" />
     <Compile Include="Data\ICategorized.cs" />
@@ -677,6 +679,7 @@
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
+    <Compile Include="Jobs\ProcessAnalyticsDimFamily.cs" />
     <Compile Include="Jobs\ProcessAnalyticsDimPerson.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
@@ -742,7 +745,6 @@
     <Compile Include="Model\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="Model\AnalyticsDimPersonCurrent.cs" />
     <Compile Include="Model\AnalyticsSourceDate.cs" />
-    <Compile Include="Model\AnalyticsDimFinancialTransactionType.cs" />
     <Compile Include="Model\AnalyticsFactAttendance.cs" />
     <Compile Include="Model\AnalyticsSourceAttendance.cs" />
     <Compile Include="Model\AnalyticsSourceFamilyHistorical.cs" />
@@ -1426,7 +1428,7 @@
     <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
-    <Compile Include="Web\UI\IAdditionalGridColumns.cs" />
+    <Compile Include="Web\UI\ICustomGridColumns.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />

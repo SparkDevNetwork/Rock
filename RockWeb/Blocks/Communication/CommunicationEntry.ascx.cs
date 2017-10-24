@@ -262,14 +262,24 @@ namespace RockWeb.Blocks.Communication
                     CommunicationId = communication.Id;
                 }
 
+                // If viewing a new, transient, draft, or denied communication, use this block
+                // otherwise, set this block visible=false and if there is a communication detail block on this page, it'll be shown instead
                 if ( communication == null ||
                     communication.Status == CommunicationStatus.Transient ||
                     communication.Status == CommunicationStatus.Draft ||
                     communication.Status == CommunicationStatus.Denied ||
                     ( communication.Status == CommunicationStatus.PendingApproval && _editingApproved ) )
                 {
-                    // If viewing a new, transient, draft, or denied communication, use this block
-                    ShowDetail( communication );
+                    // Make sure they are authorized to view
+                    if ( communication == null || communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
+                    {
+                        ShowDetail( communication );
+                    }
+                    else
+                    {
+                        // not authorized, so hide this block
+                        this.Visible = false;
+                    }
                 }
                 else
                 {

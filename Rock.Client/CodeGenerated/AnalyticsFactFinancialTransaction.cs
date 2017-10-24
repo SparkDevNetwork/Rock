@@ -41,6 +41,9 @@ namespace Rock.Client
         public decimal Amount { get; set; }
 
         /// <summary />
+        public int? AuthorizedCurrentFamilyKey { get; set; }
+
+        /// <summary />
         public int? AuthorizedCurrentPersonKey { get; set; }
 
         /// <summary />
@@ -102,6 +105,9 @@ namespace Rock.Client
 
         /// <summary />
         public string GivingId { get; set; }
+
+        /// <summary />
+        public int? GivingUnitCurrentKey { get; set; }
 
         /// <summary />
         public int? GivingUnitKey { get; set; }
@@ -178,6 +184,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AccountId = source.AccountId;
             this.Amount = source.Amount;
+            this.AuthorizedCurrentFamilyKey = source.AuthorizedCurrentFamilyKey;
             this.AuthorizedCurrentPersonKey = source.AuthorizedCurrentPersonKey;
             this.AuthorizedFamilyId = source.AuthorizedFamilyId;
             this.AuthorizedFamilyKey = source.AuthorizedFamilyKey;
@@ -199,6 +206,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.GivingGroupId = source.GivingGroupId;
             this.GivingId = source.GivingId;
+            this.GivingUnitCurrentKey = source.GivingUnitCurrentKey;
             this.GivingUnitKey = source.GivingUnitKey;
             this.IsFirstTransactionOfType = source.IsFirstTransactionOfType;
             this.IsScheduled = source.IsScheduled;
@@ -238,9 +246,6 @@ namespace Rock.Client
 
         /// <summary />
         public AnalyticsSourceDate TransactionDate { get; set; }
-
-        /// <summary />
-        public AnalyticsDimFinancialTransactionType TransactionTypeValue { get; set; }
 
     }
 }

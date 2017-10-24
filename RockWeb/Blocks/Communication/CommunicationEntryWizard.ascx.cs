@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -231,7 +232,16 @@ namespace RockWeb.Blocks.Communication
             CommunicationStatus[] editableStatuses = new CommunicationStatus[] { CommunicationStatus.Transient, CommunicationStatus.Draft, CommunicationStatus.Denied };
             if ( editableStatuses.Contains( communication.Status ) || ( communication.Status == CommunicationStatus.PendingApproval && editingApproved ) )
             {
-                // communication is either new or OK to edit
+                // Make sure they are authorized to view
+                if ( !communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
+                {
+                    // not authorized, so hide this block
+                    this.Visible = false;
+                }
+                else
+                {
+                    // communication is either new or OK to edit
+                }
             }
             else
             {
@@ -259,6 +269,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             this.IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
+            UpdateRecipientFromListCount();
             UpdateIndividualRecipientsCountText();
 
             // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
@@ -1109,15 +1120,8 @@ namespace RockWeb.Blocks.Communication
         protected void btnEmailEditorPrevious_Click( object sender, EventArgs e )
         {
             pnlEmailEditor.Visible = false;
-            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.RecipientPreference )
-            {
-                ShowMobileTextEditor();
-            }
-            else
-            {
-                ShowEmailSummary();
-            }
+            ShowEmailSummary();
+            
         }
 
         /// <summary>
@@ -1130,7 +1134,15 @@ namespace RockWeb.Blocks.Communication
             ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
             pnlEmailEditor.Visible = false;
 
-            ShowConfirmation();
+            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
+            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.RecipientPreference )
+            {
+                ShowMobileTextEditor();
+            }
+            else
+            {
+                ShowConfirmation();
+            }
         }
 
         /// <summary>
@@ -1313,7 +1325,54 @@ namespace RockWeb.Blocks.Communication
             sampleCommunicationRecipient.Communication = communication;
             var mergeFields = sampleCommunicationRecipient.CommunicationMergeValues( commonMergeFields );
 
-            ifEmailPreview.Attributes["srcdoc"] = hfEmailEditorHtml.Value.ResolveMergeFields( mergeFields );
+            Rock.Communication.MediumComponent emailMediumWithActiveTransport = Rock.Communication.MediumContainer.Instance.Components.Select( a => a.Value.Value )
+                .Where( x => x.Transport != null && x.Transport.IsActive )
+                .Where( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).FirstOrDefault();
+
+            string communicationHtml = hfEmailEditorHtml.Value;
+            
+            if ( emailMediumWithActiveTransport != null )
+            {
+                var mediumAttributes = new Dictionary<string, string>();
+                foreach ( var attr in emailMediumWithActiveTransport.Attributes.Select( a => a.Value ) )
+                {
+                    string value = emailMediumWithActiveTransport.GetAttributeValue( attr.Key );
+                    if ( value.IsNotNullOrWhitespace() )
+                    {
+                        mediumAttributes.Add( attr.Key, value );
+                    }
+                }
+
+                string publicAppRoot = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+
+                // Add Html view
+                // Get the unsubscribe content and add a merge field for it
+                if ( communication.IsBulkCommunication && mediumAttributes.ContainsKey( "UnsubscribeHTML" ) )
+                {
+                    string unsubscribeHtml = emailMediumWithActiveTransport.Transport.ResolveText( mediumAttributes["UnsubscribeHTML"], currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                    mergeFields.AddOrReplace( "UnsubscribeOption", unsubscribeHtml );
+                    communicationHtml = emailMediumWithActiveTransport.Transport.ResolveText( communicationHtml, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+
+                    // Resolve special syntax needed if option was included in global attribute
+                    if ( Regex.IsMatch( communicationHtml, @"\[\[\s*UnsubscribeOption\s*\]\]" ) )
+                    {
+                        communicationHtml = Regex.Replace( communicationHtml, @"\[\[\s*UnsubscribeOption\s*\]\]", unsubscribeHtml );
+                    }
+
+                    // Add the unsubscribe option at end if it wasn't included in content
+                    if ( !communicationHtml.Contains( unsubscribeHtml ) )
+                    {
+                        communicationHtml += unsubscribeHtml;
+                    }
+                }
+                else
+                {
+                    communicationHtml = emailMediumWithActiveTransport.Transport.ResolveText( communicationHtml, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
+                    communicationHtml = Regex.Replace( communicationHtml, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                }
+            }
+
+            ifEmailPreview.Attributes["srcdoc"] = communicationHtml;
 
             pnlEmailPreview.Visible = true;
             mdEmailPreview.Show();
@@ -1376,15 +1435,7 @@ namespace RockWeb.Blocks.Communication
 
             pnlEmailSummary.Visible = false;
 
-            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.RecipientPreference )
-            {
-                ShowMobileTextEditor();
-            }
-            else if ( communicationType == CommunicationType.Email )
-            {
-                ShowEmailEditor();
-            }
+            ShowEmailEditor();
         }
 
         /// <summary>
@@ -1629,7 +1680,7 @@ namespace RockWeb.Blocks.Communication
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
             if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
             {
-                ShowEmailSummary();
+                ShowEmailEditor();
             }
             else
             {
@@ -1645,15 +1696,7 @@ namespace RockWeb.Blocks.Communication
         protected void btnMobileTextEditorNext_Click( object sender, EventArgs e )
         {
             pnlMobileTextEditor.Visible = false;
-            Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
-            {
-                ShowEmailEditor();
-            }
-            else
-            {
-                ShowConfirmation();
-            }
+            ShowConfirmation();
         }
 
         /// <summary>
@@ -1763,13 +1806,13 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             pnlConfirmation.Visible = false;
 
             Rock.Model.CommunicationType communicationType = ( Rock.Model.CommunicationType ) hfMediumType.Value.AsInteger();
-            if ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference )
-            {
-                ShowEmailEditor();
-            }
-            else if ( communicationType == CommunicationType.SMS )
+            if ( communicationType == CommunicationType.SMS || communicationType == CommunicationType.RecipientPreference )
             {
                 ShowMobileTextEditor();
+            }
+            else if ( communicationType == CommunicationType.Email )
+            {
+                ShowEmailEditor();
             }
         }
 
@@ -1998,14 +2041,23 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             communication.Name = tbCommunicationName.Text;
             communication.IsBulkCommunication = tglBulkCommunication.Checked;
             communication.CommunicationType = ( CommunicationType ) hfMediumType.Value.AsInteger();
-            communication.ListGroupId = ddlCommunicationGroupList.SelectedValue.AsIntegerOrNull();
+
+            if ( tglRecipientSelection.Checked )
+            {
+                communication.ListGroupId = ddlCommunicationGroupList.SelectedValue.AsIntegerOrNull();
+            }
+            else
+            {
+                communication.ListGroup = null;
+                communication.ListGroupId = null;
+            }
 
             var emailMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
             var smsMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
             List<GroupMember> communicationListGroupMemberList = null;
             if ( communication.ListGroupId.HasValue )
             {
-                communicationListGroupMemberList = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == communication.ListGroupId.Value ).ToList();
+                communicationListGroupMemberList = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == communication.ListGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active ).ToList();
             }
 
             foreach ( var recipient in communication.Recipients )

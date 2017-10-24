@@ -43,7 +43,6 @@
     <Compile Include="CodeGenerated\AnalyticsDimFamilyHistorical.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFinancialAccount.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFinancialBatch.cs" />
-    <Compile Include="CodeGenerated\AnalyticsDimFinancialTransactionType.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimPersonCurrent.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="CodeGenerated\AnalyticsFactAttendance.cs" />

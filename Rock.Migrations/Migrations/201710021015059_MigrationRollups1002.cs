@@ -135,19 +135,23 @@ UPDATE [Block] SET [PageId] = @simpleCommunicationPageId where [Id] = @communica
             // Attrib Value for Block:New Communication, Attribute:Enabled Lava Commands Page: New Communication, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "82D5B1A0-1C17-464E-9EC5-414549FB44C7", "ADEF85D0-F870-4883-9694-396EC5BF8F52", @"" );
             RockMigrationHelper.UpdateFieldType( "Interaction Channel", "", "Rock", "Rock.Field.Types.InteractionChannelFieldType", "5EE5D193-60B6-4808-9BE9-C5FFDDF444E4" );
-            // Add Additional Columns to GroupList block for Communication List(Group)
-            RockMigrationHelper.UpdateBlockTypeAttribute( "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.AdditionalGridColumnsConfig", "core.AdditionalGridColumnsConfig", "", "", 0, @"", "1A6FD21C-720A-4EE1-9859-974A614F827F" );
-            RockMigrationHelper.AddBlockAttributeValue( "426EC86B-5784-411D-94ED-DD007E6DF783", "1A6FD21C-720A-4EE1-9859-974A614F827F", @"{
+
+            // Attrib for BlockType: Group List:core.CustomGridColumnsConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute( "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomGridColumnsConfig", "core.CustomGridColumnsConfig", "", "", 0, @"", "487A898B-2192-459D-9546-32AE3EE9A9C5" );
+
+            // Attrib Value for Block:Group List, Attribute:core.CustomGridColumnsConfig Page: Communication Lists, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "426EC86B-5784-411D-94ED-DD007E6DF783", "487A898B-2192-459D-9546-32AE3EE9A9C5", @"{
   ""ColumnsConfig"": [
     {
       ""HeaderText"": """",
       ""HeaderClass"": ""grid-columncommand"",
       ""ItemClass"": ""grid-columncommand"",
-      ""LavaTemplate"": ""<div class='text-center'>\n    <a href='~/EmailAnalytics?CommunicationListId={{Row.Id}}' class='btn btn-default btn-sm' title='Email Analytics'>\n        <i class='fa fa-line-chart'></i>\n    </a>\n</div>""
+      ""LavaTemplate"": ""<div class='text-center'>\n    <a href='~/EmailAnalytics?CommunicationListId={{Row.Id}}' class='btn btn-default btn-sm' title='Email Analytics'>\n        <i class='fa fa-line-chart'></i>\n    </a>\n</div>"",
+      ""PositionOffsetType"": 1,
+      ""PositionOffset"": 1
     }
   ]
 }" );
-
         }
 
         /// <summary>

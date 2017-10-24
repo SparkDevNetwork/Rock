@@ -65,6 +65,9 @@ namespace Rock.Client
         public bool IsSecured { get; set; }
 
         /// <summary />
+        public string LinkUrlLavaTemplate { get; set; }
+
+        /// <summary />
         public int? MultiValueFieldTypeId { get; set; }
 
         /// <summary />
@@ -96,6 +99,7 @@ namespace Rock.Client
             this.IsEntity = source.IsEntity;
             this.IsIndexingEnabled = source.IsIndexingEnabled;
             this.IsSecured = source.IsSecured;
+            this.LinkUrlLavaTemplate = source.LinkUrlLavaTemplate;
             this.MultiValueFieldTypeId = source.MultiValueFieldTypeId;
             this.Name = source.Name;
             this.SingleValueFieldTypeId = source.SingleValueFieldTypeId;

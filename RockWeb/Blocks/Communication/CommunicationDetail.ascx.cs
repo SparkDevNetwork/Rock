@@ -160,7 +160,15 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    ShowDetail( communication );
+                    // if they somehow got here and aren't authorized to View, hide everything
+                    if ( !communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    {
+                        this.Visible = false;
+                    }
+                    else
+                    {
+                        ShowDetail( communication );
+                    }
                 }
             }
         }
@@ -660,7 +668,7 @@ namespace RockWeb.Blocks.Communication
                                 btnDeny.Visible = true;
                                 btnEdit.Visible = true;
                             }
-                            btnCancel.Visible = true;
+                            btnCancel.Visible = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                             break;
                         }
                     case CommunicationStatus.Approved:
@@ -671,7 +679,7 @@ namespace RockWeb.Blocks.Communication
 
 
                             btnCancel.Visible = hasPendingRecipients;
-                            btnCopy.Visible = true;
+                            btnCopy.Visible = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                             break;
                         }
                 }

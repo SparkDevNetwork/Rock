@@ -41,7 +41,8 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "Person" )]
     [DataContract]
-    public partial class Person : Model<Person>, IRockIndexable, IAnalyticHistorical
+    [Analytics( true, true )]
+    public partial class Person : Model<Person>, IRockIndexable
     {
         #region Constants
 
@@ -1079,7 +1080,7 @@ namespace Rock.Model
                 }
                 if (age > 0)
                 {
-                    return age + (age == 1 ? " yr old " : " yrs old ");
+                    return age + (age == 1 ? " yr" : " yrs");
                 }
                 else if ( age < -1 )
                 {
@@ -1101,7 +1102,7 @@ namespace Rock.Model
                 }
                 if (months > 0)
                 {
-                    return months + (months == 1 ? " mo old " : " mos old ");
+                    return months + (months == 1 ? " mo" : " mos");
                 }
             }
 
@@ -1114,7 +1115,7 @@ namespace Rock.Model
                     var birthMonth = new DateTime(BirthYear.Value, BirthMonth.Value, 1);
                     days = days + birthMonth.AddMonths(1).AddDays(-1).Day;
                 }
-                return days + (days == 1 ? " day old " : " days old ");
+                return days + (days == 1 ? " day" : " days");
             }
             return string.Empty;
         }

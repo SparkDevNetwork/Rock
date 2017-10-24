@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Communication
                         var emailAnalyticsUrl = new PageReference( this.GetAttributeValue( "EmailAnalytics" ), qryParams ).BuildUrl();
                         if ( !string.IsNullOrEmpty( emailAnalyticsUrl ) )
                         {
-                            lEmailAnalyticsLink.Text = string.Format( "<a href='{0}' class='btn btn-default btn-xs' title='Email Analytics'><i class='fa fa-line-chart'></i></a>", emailAnalyticsUrl );
+                            lEmailAnalyticsLink.Text = string.Format( "<div class='text-center'><a href='{0}' class='btn btn-default btn-sm' title='Email Analytics'><i class='fa fa-line-chart'></i></a></div>", emailAnalyticsUrl );
                         }
                     }
                 }
@@ -368,7 +368,13 @@ namespace RockWeb.Blocks.Communication
 
             var recipients = new CommunicationRecipientService( rockContext ).Queryable();
 
-            var queryable = communications
+            // We want to limit to only communications that they are authorized to view, but if there are a large number of communications, that could be very slow. 
+            // So, since communication security is based on CommunicationTemplate, take a shortcut and just limit based on authorized communication templates
+            var authorizedCommunicationTemplateIds = new CommunicationTemplateService( rockContext ).Queryable()
+                .Where( a => communications.Where( x => x.CommunicationTemplateId.HasValue ).Select( x => x.CommunicationTemplateId.Value ).Distinct().Contains( a.Id ) )
+                .ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Id ).ToList();
+
+            var queryable = communications.Where(a => a.CommunicationTemplateId == null || authorizedCommunicationTemplateIds.Contains(a.CommunicationTemplateId.Value) )
                 .Select( c => new CommunicationItem {
                     Id = c.Id,
                     CommunicationType = c.CommunicationType,

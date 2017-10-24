@@ -724,14 +724,15 @@
 			                </div>
 		                </section>
 			
-		                <div id="editor-controls" style="display: none;">
-                            <div id="editor-toolbar-container" class="js-emaileditor-addon">
-			                    <div id="editor-toolbar-content">
+		                <%-- the contents editor-controls-markup is copied into the iframe --%>
+                        <div id="editor-controls-markup" style="display: none;">
+                            <div id="editor-controls" class="editor-toolbar-container js-emaileditor-addon">
+			                    <div class="js-editor-toolbar-content">
 				                    
                                     <div class="component component-text" data-content="<h1>Title</h1><p> Can't wait to see what you have to say!</p>" data-state="template">
 					                    <i class="fa fa-align-justify"></i><br /> Text
 				                    </div>
-				                    <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-width='full' />" data-state="template">
+				                    <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-imgcsswidth='full' />" data-state="template">
 					                    <i class="fa fa-picture-o"></i> <br /> Image
 				                    </div>
 				                
@@ -746,6 +747,8 @@
 				                    </div>
 			                        
                                     <div class="component-separator"></div>
+                                </div>
+                                <div class="js-editor-toolbar-structure">
 
                                     <div class="component component-section" data-content="<div class='dropzone'></div>" data-state="template">
 					                    <i class="rk rk-one-column"></i> <br /> One
@@ -770,8 +773,7 @@
                             </div>
 		                </div>	
                     </div>
-                    
-                    <%-- TODO: review css here... --%>
+
                     <div class="actions margin-t-lg">
                         <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-saveeditorhtml js-wizard-navigation" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
                         <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml js-wizard-navigation" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
@@ -927,7 +929,7 @@
                     <div class="row margin-b-md js-confirmation-datetime" style="display:none">
                         <div class="col-md-6">
                             <Rock:NotificationBox ID="nbSendDateTimeWarningConfirmation" runat="server" NotificationBoxType="Danger" Visible="false" />
-                            <Rock:Toggle ID="tglSendDateTimeConfirmation" runat="server" OnText="Send Immediately" OffText="Send at a Specific Date and Time" ActiveButtonCssClass="btn-primary" Checked="false" OnCheckedChanged="tglSendDateTimeConfirmation_CheckedChanged" />
+                            <Rock:Toggle ID="tglSendDateTimeConfirmation" runat="server" OnText="Send Immediately" ButtonSizeCssClass="btn-sm" OffText="Send at a Specific Date and Time" ActiveButtonCssClass="btn-info" Checked="false" OnCheckedChanged="tglSendDateTimeConfirmation_CheckedChanged" />
                             <Rock:DateTimePicker ID="dtpSendDateTimeConfirmation" runat="server" CssClass="margin-t-md" Visible="true" Required="true" ValidationGroup="vgConfirmation" />
                         </div>
                         <div class="col-md-6">
@@ -1005,7 +1007,9 @@
 
                 $('.js-show-additional-fields').off('click').on('click', function ()
                 {
-                    $('#<%=hfShowAdditionalFields.ClientID %>').val(!$('.js-addition-fields').is(':visible'));
+                    var isVisible = !$('.js-additional-fields').is(':visible');
+                    $('#<%=hfShowAdditionalFields.ClientID %>').val(isVisible);
+                    $('.js-show-additional-fields').text(isVisible ? 'Hide Additional Fields' : 'Show Additional Fields');
                     $('.js-additional-fields').slideToggle();
                     return false;
                 });
@@ -1013,6 +1017,7 @@
                 if ($('#<%=hfShowAdditionalFields.ClientID %>').val() == "true")
                 {
                     $('.js-additional-fields').show();
+                    $('.js-show-additional-fields').text('Hide Additional Fields');
                 }
 
                 $('.js-email-sendtest').off('click').on('click', function ()
@@ -1199,7 +1204,7 @@
                 editorScript.onload = function ()
                 {
                     $editorIframe[0].contentWindow.Rock.controls.emailEditor.initialize({
-                        id: 'editor-window',
+                        id: 'editor-controls',
                         componentSelected: loadPropertiesPage
                     });
                 };
@@ -1217,7 +1222,7 @@
                     var $this = $(this);
                     var contents = $this.contents();
 
-                    var editorMarkup = $('#editor-controls').contents();
+                    var editorMarkup = $('#editor-controls-markup').contents();
 
                     $(contents).find('body').prepend(editorMarkup);
                     $('#<%=pnlEmailEditor.ClientID%>').fadeTo(0, 1);

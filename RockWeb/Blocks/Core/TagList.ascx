@@ -13,12 +13,12 @@
 
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="rFilter" runat="server" >
+                        <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" EntityTypeName="Rock.Model.Tag" />
                         <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" EnhanceForLongLists="true" />
-                        <Rock:RockRadioButtonList ID="rblScope" runat="server" Label="Scope" RepeatDirection="Horizontal" 
-                            AutoPostBack="true" OnSelectedIndexChanged="rblScope_SelectedIndexChanged">
+                        <Rock:RockCheckBoxList ID="cblScope" runat="server" Label="Scope" RepeatDirection="Horizontal"  AutoPostBack="true" >
                             <asp:ListItem Value="Organization" Text="Organizational" Selected="True" />
                             <asp:ListItem Value="Personal" Text="Personal" />
-                        </Rock:RockRadioButtonList>
+                        </Rock:RockCheckBoxList>
                         <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner"  />
                     </Rock:GridFilter>
                     <Rock:Grid ID="rGrid" runat="server" RowItemText="Tag" OnRowSelected="rGrid_Edit" TooltipField="Description">
@@ -29,8 +29,14 @@
                             <Rock:RockBoundField DataField="EntityTypeName" HeaderText="Entity Type" />
                             <Rock:RockBoundField DataField="EntityTypeQualifierColumn" HeaderText="Qualifier Column" />
                             <Rock:RockBoundField DataField="EntityTypeQualifierValue" HeaderText="Qualifier Value" />
+                            <Rock:RockTemplateField HeaderText="Scope">
+                                <ItemTemplate>
+                                    <span class='<%# "label label-" + ( Eval("Scope").ToString() == "Organization" ? "primary" : "default" ) %>'><%# Eval("Scope") %></span>
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Owner" HeaderText="Owner" />
-
+                            <Rock:RockBoundField DataField="EntityCount" HeaderText="Entity Count" />
+                            <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                             <Rock:DeleteField OnClick="rGrid_Delete" />
                         </Columns>
                     </Rock:Grid>

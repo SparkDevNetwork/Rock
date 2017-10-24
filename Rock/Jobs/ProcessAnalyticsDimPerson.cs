@@ -265,8 +265,6 @@ UPDATE [AnalyticsSourcePersonHistorical]
         /// <returns></returns>
         private void UpdateAttributeValueUsingFormattedValue( List<AttributeCache> personAnalyticAttributes )
         {
-            List<string> updateAttributeValueUsingFormattedValueScripts = new List<string>();
-
             // Update Attributes using GetFormattedValue...
             using ( var rockContext = new RockContext() )
             {
@@ -735,9 +733,11 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                 }
 
                 // refresh the view definitions just in case the schema changed
+                // NOTE: Order is important!
                 rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonHistorical]" );
                 rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonCurrent]" );
                 rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimFamilyHeadOfHousehold]" );
+                
             }
         }
     }

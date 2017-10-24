@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                gScheduledJobs.DataSource = jobService.GetAllJobs().OrderByDescending( a => a.LastRunDateTime ).ToList();
+                gScheduledJobs.DataSource = jobService.GetAllJobs().OrderByDescending( a => a.LastRunDateTime ).ThenBy( a => a.Name ).ToList();
             }
             
             gScheduledJobs.DataBind();

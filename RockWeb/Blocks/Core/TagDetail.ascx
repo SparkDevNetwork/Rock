@@ -3,90 +3,100 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
 
-            <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
-                    
-                <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-tag"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
-                    
-                    <div class="panel-labels">
-                        <Rock:HighlightLabel ID="hlEntityType" runat="server" LabelType="Type" />
-                        <Rock:HighlightLabel ID="hlStatus" runat="server" />
-                    </div>
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-tag"></i>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlEntityType" runat="server" LabelType="Type" />
+                    <Rock:HighlightLabel ID="hlStatus" runat="server" />
                 </div>
-                <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
-                <div class="panel-body">
-                    
-                    <asp:HiddenField ID="hfId" runat="server" />
+            </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
+            <div class="panel-body">
 
-                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:HiddenField ID="hfId" runat="server" />
 
-                    <div id="pnlEditDetails" runat="server">
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                        <fieldset>
+                <div id="pnlEditDetails" runat="server">
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
-                                </div>
-                                <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
-                                </div>
+                    <fieldset>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
                             </div>
-                    
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="3" />
-                                </div>
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
                             </div>
-                    
-                            <asp:Panel ID="pnlAdvanced" runat="server" CssClass="row">
-                                <div class="col-md-6">
-                                    <Rock:RockRadioButtonList ID="rblScope" runat="server" Label="Scope" RepeatDirection="Horizontal"
-                                        AutoPostBack="true" OnSelectedIndexChanged="rblScope_SelectedIndexChanged">
-                                        <asp:ListItem Value="Organization" Text="Organizational" Selected="True" />
-                                        <asp:ListItem Value="Personal" Text="Personal" />
-                                    </Rock:RockRadioButtonList>
-                                    <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner" />
-                                    <Rock:CategoryPicker ID="cpCategory" runat="server" Required="false" Label="Category" EntityTypeName="Rock.Model.Tag" />
-                                </div>
-                                <div class="col-md-6">
-                                    <Rock:RockDropDownList id="ddlEntityType" runat="server" Label="Entity Type" EnhanceForLongLists="true" />
-                                    <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
-                                    <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
-                                </div>
-                            </asp:Panel>
-
-                            <Rock:NotificationBox ID="nbEditError" runat="server" NotificationBoxType="Danger" Visible="false"></Rock:NotificationBox>
-
-                            <div class="actions">
-                                <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                                <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
-                            </div>
-                        </fieldset>
-
-                    </div>
-
-                    <fieldset id="fieldsetViewDetails" runat="server">
-
-                        <p class="description">
-                            <asp:Literal ID="lDescription" runat="server"></asp:Literal></p>
-
-                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-
-                        <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
-                            <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                            <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
-                            
-                            <span class="pull-right">
-                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" Title="Secure Group" />
-                            </span>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="3" />
+                            </div>
+                        </div>
+
+                        <asp:Panel ID="pnlAdvanced" runat="server" CssClass="row">
+                            <div class="col-md-6">
+                                <Rock:CategoryPicker ID="cpCategory" runat="server" Required="false" Label="Category" EntityTypeName="Rock.Model.Tag" />
+                                <Rock:RockRadioButtonList ID="rblScope" runat="server" Label="Scope" RepeatDirection="Horizontal"
+                                    AutoPostBack="true" OnSelectedIndexChanged="rblScope_SelectedIndexChanged">
+                                    <asp:ListItem Value="Organization" Text="Organizational" Selected="True" />
+                                    <asp:ListItem Value="Personal" Text="Personal" />
+                                </Rock:RockRadioButtonList>
+                                <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" EnhanceForLongLists="true" />
+                                <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
+                                <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
+                            </div>
+                        </asp:Panel>
+
+                        <Rock:NotificationBox ID="nbEditError" runat="server" NotificationBoxType="Danger" Visible="false"></Rock:NotificationBox>
+
+                        <div class="actions">
+                            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                            <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        </div>
                     </fieldset>
+
                 </div>
-            </asp:Panel>
+
+                <fieldset id="fieldsetViewDetails" runat="server">
+
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
+                    <p class="description">
+                        <asp:Literal ID="lDescription" runat="server"></asp:Literal>
+                    </p>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <Rock:RockLiteral ID="lScope" runat="server" Label="Scope" />
+                        </div>
+                        <div class="col-sm-6">
+                            <Rock:RockLiteral ID="lOwner" runat="server" Label="Owner" />
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
+
+                        <span class="pull-right">
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" Title="Secure Group" />
+                        </span>
+                    </div>
+
+                </fieldset>
+            </div>
+        </asp:Panel>
 
     </ContentTemplate>
 </asp:UpdatePanel>

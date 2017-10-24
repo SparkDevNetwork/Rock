@@ -345,6 +345,26 @@
     <Compile Include="Migrations\201710021015059_MigrationRollups1002.Designer.cs">
       <DependentUpon>201710021015059_MigrationRollups1002.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201710031453003_InitialShortcodesLoad.cs" />
+    <Compile Include="Migrations\201710031453003_InitialShortcodesLoad.Designer.cs">
+      <DependentUpon>201710031453003_InitialShortcodesLoad.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710051632496_Analytics3.cs" />
+    <Compile Include="Migrations\201710051632496_Analytics3.Designer.cs">
+      <DependentUpon>201710051632496_Analytics3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710061805334_CommunicationListGroup.cs" />
+    <Compile Include="Migrations\201710061805334_CommunicationListGroup.Designer.cs">
+      <DependentUpon>201710061805334_CommunicationListGroup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710070331132_TagEntityUpdate.cs" />
+    <Compile Include="Migrations\201710070331132_TagEntityUpdate.Designer.cs">
+      <DependentUpon>201710070331132_TagEntityUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710131721219_InteractionRelatedEntity.cs" />
+    <Compile Include="Migrations\201710131721219_InteractionRelatedEntity.Designer.cs">
+      <DependentUpon>201710131721219_InteractionRelatedEntity.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2753,6 +2773,21 @@
     <EmbeddedResource Include="Migrations\201710021015059_MigrationRollups1002.resx">
       <DependentUpon>201710021015059_MigrationRollups1002.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710031453003_InitialShortcodesLoad.resx">
+      <DependentUpon>201710031453003_InitialShortcodesLoad.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710051632496_Analytics3.resx">
+      <DependentUpon>201710051632496_Analytics3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710061805334_CommunicationListGroup.resx">
+      <DependentUpon>201710061805334_CommunicationListGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710070331132_TagEntityUpdate.resx">
+      <DependentUpon>201710070331132_TagEntityUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710131721219_InteractionRelatedEntity.resx">
+      <DependentUpon>201710131721219_InteractionRelatedEntity.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4594,9 +4629,6 @@
     <Content Include="Migrations\201709222257442_CommunicationSMSAttachments_AddCommunicationTemplates.sql">
       <DependentUpon>201709222257442_CommunicationSMSAttachments.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201709222257442_CommunicationSMSAttachments_AddLavaShortCodes.sql">
-      <DependentUpon>201709222257442_CommunicationSMSAttachments.cs</DependentUpon>
-    </Content>
     <Content Include="Migrations\201709231340508_PersonicxCluster.txt">
       <DependentUpon>201709231340508_FixPersonicx.cs</DependentUpon>
     </Content>
@@ -4606,6 +4638,18 @@
     <Content Include="Migrations\201710021015059_BlankCommTemplate.sql">
       <DependentUpon>201710021015059_MigrationRollups1002.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201710031453003_InitialShortcodesLoad.sql">
+      <DependentUpon>201710031453003_InitialShortcodesLoad.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201710051632496_Analytics3_CommunicationBlockSettings.sql">
+      <DependentUpon>201710051632496_Analytics3.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201710061805334_CommunicationListGroup_UpdateEmailMediumAttributeValues.sql">
+      <DependentUpon>201710061805334_CommunicationListGroup.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201710131721219_InteractionRelatedEntity_AnalyticsFactAttendance.sql" />
+    <Content Include="Migrations\201710131721219_InteractionRelatedEntity_AnalyticsFactFinancialTransaction.sql" />
+    <Content Include="Migrations\201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />

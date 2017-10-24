@@ -343,6 +343,15 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets or sets the list group.
+        /// </summary>
+        /// <value>
+        /// The list group.
+        /// </value>
+        [DataMember]
+        public virtual Group ListGroup { get; set; }
+
+        /// <summary>
         /// Gets or sets the sender person alias.
         /// </summary>
         /// <value>
@@ -537,6 +546,23 @@ namespace Rock.Model
         public virtual CommunicationTemplate CommunicationTemplate { get; set; }
 
         #endregion
+
+        #region ISecured
+
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.CommunicationTemplate ?? base.ParentAuthority;
+            }
+        }
+
+        #endregion 
 
         #region Public Methods
 
@@ -766,7 +792,10 @@ namespace Rock.Model
             this.HasOptional( c => c.ReviewerPersonAlias ).WithMany().HasForeignKey( c => c.ReviewerPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SMSFromDefinedValue ).WithMany().HasForeignKey( c => c.SMSFromDefinedValueId ).WillCascadeOnDelete( false );
 
-            // the Migration will manually add a CASCADE DELETE SET NULL for CommunicationTemplateId
+            // the Migration will manually add a ON DELETE SET NULL for ListGroupId
+            this.HasOptional( c => c.ListGroup ).WithMany().HasForeignKey( c => c.ListGroupId ).WillCascadeOnDelete( false );
+
+            // the Migration will manually add a ON DELETE SET NULL for CommunicationTemplateId
             this.HasOptional( c => c.CommunicationTemplate ).WithMany().HasForeignKey( c => c.CommunicationTemplateId ).WillCascadeOnDelete( false );
         }
     }

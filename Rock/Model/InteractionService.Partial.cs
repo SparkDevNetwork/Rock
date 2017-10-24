@@ -43,9 +43,10 @@ namespace Rock.Model
         /// <param name="deviceClientType">Type of the device client.</param>
         /// <param name="deviceTypeData">The device type data.</param>
         /// <param name="ipAddress">The ip address.</param>
+        /// <param name="browserSessionId">The browser session identifier (RockSessionId).</param>
         /// <returns></returns>
         public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
-            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress )
+            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
         {
             Interaction interaction = new Interaction();
             interaction.InteractionComponentId = interactionComponentId;
@@ -56,12 +57,33 @@ namespace Rock.Model
             interaction.PersonAliasId = personAliasId;
 
             var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
-            var session = this.GetInteractionSession( null, ipAddress, deviceType.Id );
+            var session = this.GetInteractionSession( browserSessionId, ipAddress, deviceType.Id );
 
             interaction.InteractionSessionId = session.Id;
             this.Add( interaction );
 
             return interaction;
+        }
+
+        /// <summary>
+        /// Adds the interaction.
+        /// </summary>
+        /// <param name="interactionComponentId">The interaction component identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="interactionData">The interaction data.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="deviceApplication">The device application.</param>
+        /// <param name="deviceOs">The device os.</param>
+        /// <param name="deviceClientType">Type of the device client.</param>
+        /// <param name="deviceTypeData">The device type data.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <returns></returns>
+        public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
+            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress )
+        {
+            return AddInteraction( interactionComponentId, entityId, operation, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, null );
         }
 
         /// <summary>
@@ -99,7 +121,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the interaction session. If it can't be found, a new InteractionSession record will be created and returned.
         /// </summary>
-        /// <param name="browserSessionId">The browser session identifier.</param>
+        /// <param name="browserSessionId">The browser session identifier (RockSessionId).</param>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="interactionDeviceTypeId">The interaction device type identifier.</param>
         /// <returns></returns>
