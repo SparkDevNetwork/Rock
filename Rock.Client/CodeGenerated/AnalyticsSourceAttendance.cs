@@ -151,7 +151,7 @@ namespace Rock.Client
     public partial class AnalyticsSourceAttendance : AnalyticsSourceAttendanceEntity
     {
         /// <summary />
-        public AnalyticsDimDate AttendanceDate { get; set; }
+        public AnalyticsSourceDate AttendanceDate { get; set; }
 
         /// <summary />
         public AnalyticsDimAttendanceLocation Location { get; set; }

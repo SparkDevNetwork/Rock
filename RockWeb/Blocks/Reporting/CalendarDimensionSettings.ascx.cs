@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Reporting
     /// </summary>
     [DisplayName( "Calendar Dimension Settings" )]
     [Category( "Reporting" )]
-    [Description( "Helps configure and generate the AnalyticsDimDate table for BI Analytics" )]
+    [Description( "Helps configure and generate the AnalyticsSourceDate table for BI Analytics" )]
 
     [DateField( "StartDate", "", false, "", "CustomSetting", 0 )]
     [DateField( "EndDate", "", false, "", "CustomSetting", 0 )]
@@ -140,11 +140,11 @@ namespace RockWeb.Blocks.Reporting
             bool givingMonthUseSundayDate = cbGivingMonthUseSundayDate.Checked;
 
             // remove all the rows and rebuild
-            new RockContext().Database.ExecuteSqlCommand( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsDimDate ).GetCustomAttribute<TableAttribute>().Name ) );
+            new RockContext().Database.ExecuteSqlCommand( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
 
-            List<AnalyticsDimDate> generatedDates = new List<AnalyticsDimDate>();
+            List<AnalyticsSourceDate> generatedDates = new List<AnalyticsSourceDate>();
 
-            // NOTE: AnalyticsDimDate is not an Rock.Model.Entity table and therefore doesn't have a Service<T>, so just use update using rockContext.AnalyticsDimDates 
+            // NOTE: AnalyticsSourceDate is not an Rock.Model.Entity table and therefore doesn't have a Service<T>, so just use update using rockContext.AnalyticsDimDates 
             var generateDate = dpStartDate.SelectedDate.Value;
             var currentYear = generateDate.Year;
             var holidayDatesForYear = HolidayHelper.GetHolidayList( currentYear );
@@ -163,42 +163,42 @@ namespace RockWeb.Blocks.Reporting
                     christmasWeekNumberOfYear = new DateTime( currentYear, 12, 25 ).GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstDay, RockDateTime.FirstDayOfWeek );
                 }
 
-                AnalyticsDimDate analyticsDimDate = new AnalyticsDimDate();
-                analyticsDimDate.DateKey = generateDate.ToString( "yyyyMMdd" ).AsInteger();
-                analyticsDimDate.Date = generateDate.Date;
+                AnalyticsSourceDate analyticsSourceDate = new AnalyticsSourceDate();
+                analyticsSourceDate.DateKey = generateDate.ToString( "yyyyMMdd" ).AsInteger();
+                analyticsSourceDate.Date = generateDate.Date;
 
                 // Long Date (Monday January 1st, 2016)
-                analyticsDimDate.FullDateDescription = generateDate.ToLongDateString();
+                analyticsSourceDate.FullDateDescription = generateDate.ToLongDateString();
 
-                analyticsDimDate.DayOfWeek = generateDate.DayOfWeek.ConvertToInt();
-                analyticsDimDate.DayOfWeekName = generateDate.DayOfWeek.ConvertToString();
+                analyticsSourceDate.DayOfWeek = generateDate.DayOfWeek.ConvertToInt();
+                analyticsSourceDate.DayOfWeekName = generateDate.DayOfWeek.ConvertToString();
 
                 // luckily, DayOfWeek abbreviations are just the first 3 chars
-                analyticsDimDate.DayOfWeekAbbreviated = analyticsDimDate.DayOfWeekName.Substring( 0, 3 );
-                analyticsDimDate.DayNumberInCalendarMonth = generateDate.Day;
-                analyticsDimDate.DayNumberInCalendarYear = generateDate.DayOfYear;
+                analyticsSourceDate.DayOfWeekAbbreviated = analyticsSourceDate.DayOfWeekName.Substring( 0, 3 );
+                analyticsSourceDate.DayNumberInCalendarMonth = generateDate.Day;
+                analyticsSourceDate.DayNumberInCalendarYear = generateDate.DayOfYear;
 
                 // from http://stackoverflow.com/a/4655207/1755417
                 DateTime endOfMonth = new DateTime( generateDate.Year, generateDate.Month, DateTime.DaysInMonth( generateDate.Year, generateDate.Month ) );
 
-                analyticsDimDate.LastDayInMonthIndictor = generateDate == endOfMonth;
+                analyticsSourceDate.LastDayInMonthIndictor = generateDate == endOfMonth;
 
                 // note, this ends up doing the same thing as WeekOfMonth in https://www.mssqltips.com/sqlservertip/4054/creating-a-date-dimension-or-calendar-table-in-sql-server/, but with RockDateTime.FirstDayOfWeek
-                analyticsDimDate.WeekNumberInMonth = generateDate.GetWeekOfMonth( RockDateTime.FirstDayOfWeek );
+                analyticsSourceDate.WeekNumberInMonth = generateDate.GetWeekOfMonth( RockDateTime.FirstDayOfWeek );
 
-                analyticsDimDate.SundayDate = generateDate.SundayDate();
+                analyticsSourceDate.SundayDate = generateDate.SundayDate();
 
-                analyticsDimDate.CalendarWeek = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstDay, RockDateTime.FirstDayOfWeek );
-                analyticsDimDate.CalendarMonth = generateDate.Month;
-                analyticsDimDate.CalendarMonthName = generateDate.ToString( "MMMM" );
-                analyticsDimDate.CalendarMonthNameAbbrevated = generateDate.ToString( "MMM" );
+                analyticsSourceDate.CalendarWeek = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstDay, RockDateTime.FirstDayOfWeek );
+                analyticsSourceDate.CalendarMonth = generateDate.Month;
+                analyticsSourceDate.CalendarMonthName = generateDate.ToString( "MMMM" );
+                analyticsSourceDate.CalendarMonthNameAbbrevated = generateDate.ToString( "MMM" );
 
-                analyticsDimDate.CalendarYearMonth = generateDate.ToString( "yyyyMM" );
+                analyticsSourceDate.CalendarYearMonth = generateDate.ToString( "yyyyMM" );
                 int quarter = ( generateDate.Month + 2 ) / 3;
 
-                analyticsDimDate.CalendarQuarter = string.Format( "Q{0}", quarter );
-                analyticsDimDate.CalendarYearQuarter = string.Format( "{0} Q{1}", generateDate.Year, quarter );
-                analyticsDimDate.CalendarYear = generateDate.Year;
+                analyticsSourceDate.CalendarQuarter = string.Format( "Q{0}", quarter );
+                analyticsSourceDate.CalendarYearQuarter = string.Format( "{0} Q{1}", generateDate.Year, quarter );
+                analyticsSourceDate.CalendarYear = generateDate.Year;
 
                 /* Fiscal Calendar Stuff */
 
@@ -215,39 +215,39 @@ namespace RockWeb.Blocks.Reporting
                 int fiscalWeek = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek ) - fiscalWeekOffset;
                 fiscalWeek = fiscalWeek < 1 ? fiscalWeek + 52 : fiscalWeek;
 
-                analyticsDimDate.FiscalWeek = fiscalWeek;
-                analyticsDimDate.FiscalWeekNumberInYear = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek );
-                analyticsDimDate.FiscalMonth = generateDate.ToString( "MMMM" );
-                analyticsDimDate.FiscalMonthAbbrevated = generateDate.ToString( "MMM" );
-                analyticsDimDate.FiscalMonthNumberInYear = generateDate.Month;
-                analyticsDimDate.FiscalMonthYear = generateDate.ToString( "MM yyyy" );
-                analyticsDimDate.FiscalQuarter = string.Format( "Q{0}", fiscalQuarter );
-                analyticsDimDate.FiscalYearQuarter = string.Format( "{0} Q{1}", fiscalYear, fiscalQuarter );
-                analyticsDimDate.FiscalHalfYear = fiscalQuarter < 3 ? "First" : "Second";
-                analyticsDimDate.FiscalYear = fiscalYear;
+                analyticsSourceDate.FiscalWeek = fiscalWeek;
+                analyticsSourceDate.FiscalWeekNumberInYear = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek );
+                analyticsSourceDate.FiscalMonth = generateDate.ToString( "MMMM" );
+                analyticsSourceDate.FiscalMonthAbbrevated = generateDate.ToString( "MMM" );
+                analyticsSourceDate.FiscalMonthNumberInYear = generateDate.Month;
+                analyticsSourceDate.FiscalMonthYear = generateDate.ToString( "MM yyyy" );
+                analyticsSourceDate.FiscalQuarter = string.Format( "Q{0}", fiscalQuarter );
+                analyticsSourceDate.FiscalYearQuarter = string.Format( "{0} Q{1}", fiscalYear, fiscalQuarter );
+                analyticsSourceDate.FiscalHalfYear = fiscalQuarter < 3 ? "First" : "Second";
+                analyticsSourceDate.FiscalYear = fiscalYear;
 
                 // DayNumberInFiscalMonth is simply the same as DayNumberInCalendarMonth since we only let them pick a FiscalStartMonth ( not a Month and Day )
-                analyticsDimDate.DayNumberInFiscalMonth = analyticsDimDate.DayNumberInCalendarMonth;
+                analyticsSourceDate.DayNumberInFiscalMonth = analyticsSourceDate.DayNumberInCalendarMonth;
 
                 if ( fiscalStartMonth == 1 )
                 {
-                    analyticsDimDate.DayNumberInFiscalYear = analyticsDimDate.DayNumberInCalendarYear;
+                    analyticsSourceDate.DayNumberInFiscalYear = analyticsSourceDate.DayNumberInCalendarYear;
                 }
                 else
                 {
                     if ( fiscalStartDate <= generateDate )
                     {
                         // fiscal start is the same year as the generated date year
-                        analyticsDimDate.DayNumberInFiscalYear = ( generateDate - fiscalStartDate ).Days + 1;
+                        analyticsSourceDate.DayNumberInFiscalYear = ( generateDate - fiscalStartDate ).Days + 1;
                     }
                     else
                     {
                         // fiscal start is the year previous to the generated date year
-                        analyticsDimDate.DayNumberInFiscalYear = ( generateDate - fiscalStartDate.AddYears( -1 ) ).Days + 1;
+                        analyticsSourceDate.DayNumberInFiscalYear = ( generateDate - fiscalStartDate.AddYears( -1 ) ).Days + 1;
                     }
                 }
 
-                // NOTE: This is complicated, see comments on AnalyticsDimDate.GivingMonth
+                // NOTE: This is complicated, see comments on AnalyticsSourceDate.GivingMonth
                 if ( givingMonthUseSundayDate )
                 {
                     var givingMonthSundayDate = generateDate.SundayDate();
@@ -256,51 +256,51 @@ namespace RockWeb.Blocks.Reporting
                     if ( sundayFiscalYear != fiscalYear )
                     {
                         // if the SundayDate ends up landing in a different year, don't use the Sunday Date, just use the actual generate date
-                        analyticsDimDate.GivingMonth = generateDate.Month;
-                        analyticsDimDate.GivingMonthName = generateDate.ToString( "MMMM" );
+                        analyticsSourceDate.GivingMonth = generateDate.Month;
+                        analyticsSourceDate.GivingMonthName = generateDate.ToString( "MMMM" );
                     }
                     else
                     {
-                        analyticsDimDate.GivingMonth = givingMonthSundayDate.Month;
-                        analyticsDimDate.GivingMonthName = givingMonthSundayDate.ToString( "MMMM" );
+                        analyticsSourceDate.GivingMonth = givingMonthSundayDate.Month;
+                        analyticsSourceDate.GivingMonthName = givingMonthSundayDate.ToString( "MMMM" );
                     }
                 }
                 else
                 {
-                    analyticsDimDate.GivingMonth = generateDate.Month;
-                    analyticsDimDate.GivingMonthName = generateDate.ToString( "MMMM" );
+                    analyticsSourceDate.GivingMonth = generateDate.Month;
+                    analyticsSourceDate.GivingMonthName = generateDate.ToString( "MMMM" );
                 }
 
-                analyticsDimDate.EasterIndicator = generateDate == easterSundayForYear;
+                analyticsSourceDate.EasterIndicator = generateDate == easterSundayForYear;
 
                 // Traditional Easter Week starts the Sunday before Easter (Palm Sunday) and ends on Holy Saturday (the day before Easter Sunday),
                 // However, for the purposes of Rock Metrics, this is just week starting the Monday of or before the Holiday date
                 int daysUntilEaster = ( easterSundayForYear - generateDate ).Days;
-                analyticsDimDate.EasterWeekIndicator = easterWeekNumberOfYear == analyticsDimDate.CalendarWeek;
+                analyticsSourceDate.EasterWeekIndicator = easterWeekNumberOfYear == analyticsSourceDate.CalendarWeek;
 
-                analyticsDimDate.ChristmasIndicator = generateDate.Month == 12 && generateDate.Day == 25;
+                analyticsSourceDate.ChristmasIndicator = generateDate.Month == 12 && generateDate.Day == 25;
 
                 // Traditional Christmas week is 12/24-12/30
                 // However, for the purposes of Rock Metrics, this is just week starting the Monday of or before the Holiday date
-                analyticsDimDate.ChristmasWeekIndicator = christmasWeekNumberOfYear == analyticsDimDate.CalendarWeek;
+                analyticsSourceDate.ChristmasWeekIndicator = christmasWeekNumberOfYear == analyticsSourceDate.CalendarWeek;
 
-                analyticsDimDate.HolidayIndicator = holidayDatesForYear.Any( a => a.Date == generateDate ) || analyticsDimDate.ChristmasIndicator || analyticsDimDate.EasterIndicator;
+                analyticsSourceDate.HolidayIndicator = holidayDatesForYear.Any( a => a.Date == generateDate ) || analyticsSourceDate.ChristmasIndicator || analyticsSourceDate.EasterIndicator;
 
                 // Week Inclusive starting Monday for all holidays
-                analyticsDimDate.WeekHolidayIndicator = 
-                    analyticsDimDate.ChristmasWeekIndicator 
-                    || analyticsDimDate.EasterWeekIndicator 
-                    || holidayDatesForYear.Any( a => a.HolidayWeekNumberOfYear == analyticsDimDate.CalendarWeek );
+                analyticsSourceDate.WeekHolidayIndicator = 
+                    analyticsSourceDate.ChristmasWeekIndicator 
+                    || analyticsSourceDate.EasterWeekIndicator 
+                    || holidayDatesForYear.Any( a => a.HolidayWeekNumberOfYear == analyticsSourceDate.CalendarWeek );
 
-                generatedDates.Add( analyticsDimDate );
+                generatedDates.Add( analyticsSourceDate );
 
                 generateDate = generateDate.AddDays( 1 );
             }
 
             var rockContext = new RockContext();
-            AnalyticsDimDate.BulkInsert( rockContext, generatedDates );
+            AnalyticsSourceDate.BulkInsert( rockContext, generatedDates );
 
-            nbGenerateSuccess.Text = string.Format( "Successfully generated {0} AnalyticDimDate records", generatedDates.Count );
+            nbGenerateSuccess.Text = string.Format( "Successfully generated {0} AnalyticsSourceDate records", generatedDates.Count );
         }
 
         /// <summary>

@@ -12,18 +12,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimDate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyHeadOfHousehold.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFinancialAccount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFinancialBatch.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFinancialTransactionType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimPersonCurrent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsFactAttendance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceAttendance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceDate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
@@ -50,8 +49,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Campus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Category.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Communication.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionActivityType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityCampus.cs" />

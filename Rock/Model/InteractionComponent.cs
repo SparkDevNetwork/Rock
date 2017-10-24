@@ -55,6 +55,11 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the Id of the entity that this interaction component is related to.
+        /// For example:
+        ///  if this is a Page View:
+        ///     InteractionComponent.EntityId is the SiteId of the page that was viewed
+        ///  if this is a Communication Recipient activity:
+        ///     InteractionComponent.EntityId is the Communication.Id
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the entity (object) that this interaction component is related to.

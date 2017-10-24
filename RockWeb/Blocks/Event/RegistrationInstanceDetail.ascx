@@ -378,6 +378,7 @@
                         <h1 class="panel-title"><i class="fa fa-link"></i> Group Placement</h1>
                     </div>
                     <div class="panel-body">
+                        <Rock:NotificationBox ID="nbPlacementNotifiction" runat="server" Visible="false" />
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:GroupPicker ID="gpGroupPlacementParentGroup" runat="server" Label="Parent Group"

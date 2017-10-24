@@ -1,0 +1,337 @@
+﻿/*
+    Used to create devices using CSS.
+
+    1. Common
+    2. Mobile Phone
+    3. Tablet
+    4. Browser
+    5. SMS Sample
+
+*/
+
+// 1. Common
+// -------------------------
+.device {
+  position: relative;
+  margin: 0 auto;
+}
+
+
+// 2. Mobile Phone
+// -------------------------
+.device-mobile {
+  width: 435px;
+  border-top: solid 24px #ddd;
+  border-left: solid 12px #ddd;
+  border-right: solid 12px #ddd;
+  border-bottom: solid 48px #ddd;
+  border-radius: 12px;
+
+  &::before {
+    display: block;
+    position: absolute;
+    top: 12px;
+    left: -14px;
+    width: 2px;
+    height: 12px;
+    background-color: #bbb;
+    box-shadow: 0 0 0 0 #bbb, 0 24px 0 0 #bbb;
+    border-radius: 2px 0 0 2px;
+    content: "";
+  }
+
+  &::after {
+    display: block;
+    position: absolute;
+    bottom: -36px;
+    left: 50%;
+    margin-left: -12px;
+    width: 24px;
+    height: 24px;
+    background-color: #bbb;
+    border-radius: 12px;
+    content: "";
+  }
+
+  .email-wrapper {
+    padding-top: 10px;
+    position: relative;
+    border: 1px solid #ddd;
+    border-top: 0 none;
+    height: 525px;
+  }
+}
+
+
+@media all and (min-width: @screen-sm) {
+  .device-mobile {
+    width: 435px;
+    border-top: solid 36px #ddd;
+    border-left: solid 18px #ddd;
+    border-right: solid 18px #ddd;
+    border-bottom: solid 72px #ddd;
+    border-radius: 18px;
+
+    &::before {
+      top: 18px;
+      left: -21px;
+      width: 3px;
+      height: 18px;
+      background-color: #bbb;
+      box-shadow: 0 0 0 0 #bbb, 0 36px 0 0 #bbb;
+      border-radius: 3px 0 0 3px;
+      content: "";
+    }
+
+    &::after {
+      bottom: -54px;
+      margin-left: -18px;
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      content: "";
+    }
+  }
+}
+
+// 3. Tablet
+// -------------------------
+.device-tablet {
+  position: relative;
+  width: 264px;
+  border-top: solid 48px #ddd;
+  border-left: solid 12px #ddd;
+  border-right: solid 12px #ddd;
+  border-bottom: solid 48px #ddd;
+  border-radius: 12px;
+
+  &::before {
+    display: block;
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    margin-left: -2px;
+    width: 4px;
+    height: 4px;
+    background-color: #bbb;
+    border-radius: 4px;
+    content: "";
+  }
+
+  &::after {
+    display: block;
+    position: absolute;
+    bottom: -36px;
+    left: 50%;
+    margin-left: -12px;
+    width: 24px;
+    height: 24px;
+    background-color: #bbb;
+    border-radius: 12px;
+    content: "";
+  }
+}
+
+@media all and (min-width: @screen-sm) {
+  .device--tablet {
+    width: 396px;
+    border-top: solid 72px #ddd;
+    border-left: solid 18px #ddd;
+    border-right: solid 18px #ddd;
+    border-bottom: solid 72px #ddd;
+    border-radius: 18px;
+
+    &::before {
+      top: -39px;
+      margin-left: -3px;
+      width: 6px;
+      height: 6px;
+      border-radius: 6px;
+    }
+
+    &::after {
+      bottom: -54px;
+      margin-left: -18px;
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      content: "";
+    }
+  }
+}
+
+
+// 4. Browser
+// -------------------------
+.device-browser {
+  width: 100%;
+  /* max-width: 100%; set max width here if you need to. */
+  border-top: solid 36px #dfdfdf;
+  border-right: solid 2px #dfdfdf;
+  border-left: solid 2px #dfdfdf;
+  border-bottom: solid 2px #dfdfdf;
+  border-radius: 4px 4px 0 0;
+
+  &::before {
+    display: block;
+    position: absolute;
+    top: -24px;
+    left: 12px;
+    width: 12px;
+    height: 12px;
+    background-color: #ff3366;
+    border-radius: 12px;
+    box-shadow: 0 0 0 0 #ff3366, 16px 0 0 0 #ffcc99, 32px 0 0 0 #33ff66;
+    content: "";
+  }
+
+  &::after {
+    display: block;
+    overflow: hidden;
+    position: absolute;
+    top: -27px;
+    right: 12px;
+    padding: 0 4px;
+    width: 180px;
+    height: 18px;
+    color: #b3b3b3;
+    background-color: #fff;
+    font-size: 12px;
+    font-style: italic;
+    line-height: 18px;
+    border-radius: 2px;
+    content: attr(data-url);
+  }
+}
+
+@media all and (min-width: @screen-xs) {
+  .device-browser {
+    border-top: solid 48px #dfdfdf;
+
+    &::before {
+      top: -30px;
+      box-shadow: 0 0 0 0 #ff3366, 24px 0 0 0 #ffcc99, 48px 0 0 0 #33ff66;
+    }
+
+    &::after {
+      top: -36px;
+      right: 12px;
+      padding: 0 8px;
+      width: 240px;
+      height: 24px;
+      line-height: 24px;
+    }
+  }
+}
+
+
+// 5. SMS Sample
+// -------------------------
+.sms {
+  width: 400px;
+  overflow-X: hidden;
+  position: relative;
+  background: none repeat scroll 0 0 #fff;
+
+  .left {
+    position: absolute;
+    top: 0;
+    left: 20px;
+    font-size: 14px
+  }
+
+  .left:after {
+    border: 3px solid #2095FE;
+    border-right: 3px solid transparent;
+    border-top: 3px solid transparent;
+    content: " ";
+    height: 14px;
+    left: -12px;
+    position: absolute;
+    top: 22px;
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    transform: rotate(45deg);
+    width: 14px;
+  }
+
+  .right {
+    position: absolute;
+    top: 0;
+    right: 15px;
+    font-size: 14px
+  }
+
+  header {
+    color: #2095FE;
+    background: #eee;
+    border: 1px solid #ccc;
+    border-bottom: 1px solid #bbb;
+    box-shadow: 0 1px 2px rgba(1,1,1,0.2);
+    height: 60px;
+    text-align: center;
+    font-size: 20px;
+    line-height: 58px;
+    white-space: nowrap;
+  }
+
+  header h2 {
+    font-weight: bold;
+    color: #111111;
+    font-size: 16px;
+  }
+
+  .messages-wrapper {
+    padding-top: 10px;
+    position: relative;
+    border: 1px solid #ddd;
+    border-top: 0 none;
+    height: 525px;
+  }
+
+  .message {
+    border-radius: 20px 20px 20px 20px;
+    margin: 0 15px 10px;
+    padding: 15px 20px;
+    position: relative;
+    font-size: 16px;
+  }
+
+  .message.to {
+    background-color: #2095FE;
+    color: #fff;
+    margin-left: 80px;
+  }
+
+  .message.from {
+    background-color: #E5E4E9;
+    color: #363636;
+    margin-right: 80px;
+  }
+
+  .message.to + .message.to,
+  .message.from + .message.from {
+    margin-top: -7px;
+  }
+
+  .message:before {
+    border-color: #2095FE;
+    border-radius: 50% 50% 50% 50%;
+    border-style: solid;
+    border-width: 0 20px;
+    bottom: 0;
+    clip: rect(20px, 35px, 42px, 0px);
+    content: " ";
+    height: 40px;
+    position: absolute;
+    right: -50px;
+    width: 70px;
+    z-index: 1;
+  }
+
+  .message.from:before {
+    border-color: #E5E4E9;
+    left: -50px;
+    transform: rotateY(180deg);
+  }
+}

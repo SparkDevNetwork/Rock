@@ -19,6 +19,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Web;
+using System.Web.Security;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -44,6 +47,11 @@ namespace Rock.Security
         public const string EDIT = "Edit";
 
         /// <summary>
+        /// Authorization to delete object (only used in few places where delete needs to be securred differently that EDIT, i.e. Financial Batch )
+        /// </summary>
+        public const string DELETE = "Delete";
+
+        /// <summary>
         /// Authorization to administer object ( add child object, set security, etc)
         /// </summary>
         public const string ADMINISTRATE = "Administrate";
@@ -54,9 +62,14 @@ namespace Rock.Security
         public const string APPROVE = "Approve";
 
         /// <summary>
-        /// Authorization to interact with the object (content channgel item)
+        /// Authorization to interact with the object (content channel item)
         /// </summary>
         public const string INTERACT = "Interact";
+
+        /// <summary>
+        /// Authorization to refund a transaction
+        /// </summary>
+        public const string REFUND = "Refund";
 
         #endregion
 
@@ -730,22 +743,111 @@ namespace Rock.Security
         /// <param name="IsImpersonated">if set to <c>true</c> [is impersonated].</param>
         public static void SetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
         {
-            var ticket = new System.Web.Security.FormsAuthenticationTicket( 1, userName, RockDateTime.Now,
-                RockDateTime.Now.Add( System.Web.Security.FormsAuthentication.Timeout ), isPersisted,
-                IsImpersonated.ToString(), System.Web.Security.FormsAuthentication.FormsCookiePath );
+            var ticket = new FormsAuthenticationTicket( 1, userName, RockDateTime.Now,
+                RockDateTime.Now.Add( FormsAuthentication.Timeout ), isPersisted,
+                IsImpersonated.ToString(), FormsAuthentication.FormsCookiePath );
 
-            var encryptedTicket = System.Web.Security.FormsAuthentication.Encrypt( ticket );
-
-            var httpCookie = new System.Web.HttpCookie( System.Web.Security.FormsAuthentication.FormsCookieName, encryptedTicket );
-            httpCookie.HttpOnly = true;
-            httpCookie.Path = System.Web.Security.FormsAuthentication.FormsCookiePath;
-            httpCookie.Secure = System.Web.Security.FormsAuthentication.RequireSSL;
-            if ( System.Web.Security.FormsAuthentication.CookieDomain != null )
-                httpCookie.Domain = System.Web.Security.FormsAuthentication.CookieDomain;
+            var authCookie = GetAuthCookie( GetCookieDomain(), FormsAuthentication.Encrypt( ticket ) );
             if ( ticket.IsPersistent )
-                httpCookie.Expires = ticket.Expiration;
+            {
+                authCookie.Expires = ticket.Expiration;
+            }
+            HttpContext.Current.Response.Cookies.Add( authCookie );
 
-            System.Web.HttpContext.Current.Response.Cookies.Add( httpCookie );
+            // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly 
+            // when the user signs out.
+            if ( authCookie.Domain.IsNotNullOrWhitespace() )
+            {
+                var domainCookie = new HttpCookie( $"{FormsAuthentication.FormsCookieName}_DOMAIN", authCookie.Domain );
+                domainCookie.HttpOnly = true;
+                domainCookie.Domain = authCookie.Domain;
+                domainCookie.Path = FormsAuthentication.FormsCookiePath;
+                domainCookie.Secure = FormsAuthentication.RequireSSL;
+                domainCookie.Expires = authCookie.Expires;
+                HttpContext.Current.Response.Cookies.Add( domainCookie );
+            }
+
+        }
+
+        /// <summary>
+        /// Signs a user out of rock by deleting the appropriate forms authentication cookies
+        /// </summary>
+        public static void SignOut()
+        {
+            var domainCookie = HttpContext.Current.Request.Cookies[$"{FormsAuthentication.FormsCookieName}_DOMAIN"];
+            if ( domainCookie != null )
+            { 
+                var authCookie = GetAuthCookie( domainCookie.Value, null );
+                authCookie.Expires = DateTime.Now.AddDays( -1d );
+                HttpContext.Current.Response.Cookies.Remove( FormsAuthentication.FormsCookieName );
+                HttpContext.Current.Response.Cookies.Add( authCookie );
+
+                domainCookie = new HttpCookie( $"{FormsAuthentication.FormsCookieName}_DOMAIN" );
+                domainCookie.HttpOnly = true;
+                domainCookie.Domain = authCookie.Domain;
+                domainCookie.Path = FormsAuthentication.FormsCookiePath;
+                domainCookie.Secure = FormsAuthentication.RequireSSL;
+                domainCookie.Expires = DateTime.Now.AddDays( -1d );
+                HttpContext.Current.Response.Cookies.Remove( $"{FormsAuthentication.FormsCookieName}_DOMAIN" );
+                HttpContext.Current.Response.Cookies.Add( domainCookie );
+            }
+            else
+            {
+                FormsAuthentication.SignOut();
+            }
+        }
+
+        /// <summary>
+        /// Create a forms authentication cookie.
+        /// </summary>
+        /// <param name="domain">The domain.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        private static HttpCookie GetAuthCookie( string domain, string value )
+        {
+            var httpCookie = new HttpCookie( FormsAuthentication.FormsCookieName, value );
+            httpCookie.Domain = domain.IsNotNullOrWhitespace() ? domain : FormsAuthentication.CookieDomain;
+            httpCookie.HttpOnly = true;
+            httpCookie.Path = FormsAuthentication.FormsCookiePath;
+            httpCookie.Secure = FormsAuthentication.RequireSSL;
+            return httpCookie;
+        }
+
+
+        /// <summary>
+        /// Gets the domain for the forms authentication cookie. This is based on whether the current host name has an entry in the 'Domains Sharing Logins' defined type.
+        /// </summary>
+        /// <returns></returns>
+        private static string GetCookieDomain()
+        {
+            // Get the domains that should be saving cookies as domain level cookies instead of the default of subdomain level.
+            var dt = DefinedTypeCache.Read( SystemGuid.DefinedType.DOMAINS_SHARING_LOGINS.AsGuid() );
+            var domains = dt != null ? dt.DefinedValues.Select( v => v.Value ).ToList() : new List<string>();
+
+            // Get the first domain in the list that the current request's host name ends with
+            string domain  = domains.FirstOrDefault( d => System.Web.HttpContext.Current.Request.Url.Host.ToLower().EndsWith( d.ToLower() ) );
+            if ( domain.IsNotNullOrWhitespace() )
+            {
+                // Make sure domain name is prefixed with a '.'
+                domain = domain.StartsWith(".") ? domain : $".{domain}";
+
+                // Make sure there now at least two '.' characters (this is required for browser to store cookie).
+                return domain.Count( c => c == '.' ) >= 2 ? domain : string.Empty;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Checks to see if a person is authorized for entity
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public static bool? AuthorizedForEntity( ISecured entity, string action, Rock.Model.Person person )
+        {
+            return ItemAuthorized( entity, action, person, true, false );
         }
 
         #endregion

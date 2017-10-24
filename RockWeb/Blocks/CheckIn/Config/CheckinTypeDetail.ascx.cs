@@ -554,13 +554,18 @@ namespace RockWeb.Blocks.CheckIn.Config
                 {
                     leftDetailsDescList.Add( "Check-in Type", groupType.AttributeValues["core_checkin_CheckInType"].ValueFormatted );
                 }
+
                 if ( groupType.AttributeValues.ContainsKey( "core_checkin_SearchType" ) )
                 {
-                    rightDetailsDescList.Add( "Search Type", groupType.AttributeValues["core_checkin_SearchType"].ValueFormatted );
-                }
-                if ( groupType.AttributeValues.ContainsKey( "core_checkin_PhoneSearchType" ) )
-                {
-                    rightDetailsDescList.Add( "Phone Number Compare", groupType.AttributeValues["core_checkin_PhoneSearchType"].ValueFormatted );
+                    var searchType = groupType.AttributeValues["core_checkin_SearchType"];
+                    rightDetailsDescList.Add( "Search Type", searchType.ValueFormatted );
+
+                    var searchTypeGuid = searchType.Value.AsGuid();
+                    if ( searchTypeGuid.Equals( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME_AND_PHONE.AsGuid() ) ||
+                        searchTypeGuid.Equals( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid() ) )
+                    {
+                        rightDetailsDescList.Add( "Phone Number Compare", groupType.AttributeValues["core_checkin_PhoneSearchType"].ValueFormatted );
+                    }
                 }
 
                 lblMainDetails.Text = mainDetailsDescList.Html;

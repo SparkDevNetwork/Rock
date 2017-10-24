@@ -535,4 +535,58 @@
   <data name="_201708162105164_AnalyticsPerformance_TransactionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201708162105164_analyticsperformance_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201709082257551_Communications2_AddCommunicationTemplates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709082257551_communications2_addcommunicationtemplates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201709131136468_spAnalytics_ETL_Attendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709131136468_spanalytics_etl_attendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201709131136468_spAnalytics_ETL_FinancialTransaction" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709131136468_spanalytics_etl_financialtransaction.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201709191729044_Analytics2_AnalyticsDimAttendanceDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709191729044_analytics2_analyticsdimattendancedate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709191729044_analytics2_analyticsdimfamilyheadofhouseholdbirthdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709191729044_analytics2_analyticsdimfinancialtransactiondate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201709191729044_Analytics2_AnalyticsDimPersonCurrentBirthDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709191729044_analytics2_analyticsdimpersoncurrentbirthdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709191729044_analytics2_analyticsdimpersonhistoricalbirthdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201709222257442_CommunicationSMSAttachments_AddCommunicationTemplates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709222257442_communicationsmsattachments_addcommunicationtemplates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201709231340508_PersonicxCluster" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201709231340508_PersonicxCluster.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201710021015059_BackgroundCheckSSN" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201710021015059_backgroundcheckssn.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201710021015059_BlankCommTemplate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201710021015059_blankcommtemplate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201710031453003_InitialShortcodesLoad" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201710031453003_InitialShortcodesLoad.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201710051632496_Analytics3_CommunicationBlockSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201710051632496_analytics3_communicationblocksettings.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201710061805334_CommunicationListGroup_UpdateEmailMediumAttributeValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201710061805334_communicationlistgroup_updateemailmediumattributevalues.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201710131721219_InteractionRelatedEntity_AnalyticsFactAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201710131721219_interactionrelatedentity_analyticsfactattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201710131721219_InteractionRelatedEntity_AnalyticsFactFinancialTransaction" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201710131721219_interactionrelatedentity_analyticsfactfinancialtransaction.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201710131721219_interactionrelatedentity_spanalytics_etl_family.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

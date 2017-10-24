@@ -620,6 +620,7 @@ namespace Rock.Web.UI
             var stopwatchInitEvents = Stopwatch.StartNew();
             bool showDebugTimings = this.PageParameter( "ShowDebugTimings" ).AsBoolean();
             bool canAdministratePage = false;
+            bool canEditPage = false;
 
             if ( showDebugTimings )
             {
@@ -687,7 +688,7 @@ namespace Rock.Web.UI
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                 }
 
-                FormsAuthentication.SignOut();
+                Authorization.SignOut();
 
                 // After logging out check to see if an anonymous user is allowed to view the current page.  If so
                 // redirect back to the current page, otherwise redirect to the site's default page
@@ -972,8 +973,9 @@ namespace Rock.Web.UI
 
                     Page.Trace.Warn( "Checking if user can administer" );
                     canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                    canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
-                    if ( !canAdministratePage )
+                    if ( !canAdministratePage && !canEditPage )
                     {
                         // if the current user is impersonated by an Admin, then show the admin bar
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
@@ -981,6 +983,7 @@ namespace Rock.Web.UI
                         if ( impersonatedByUser != null && currentUserIsImpersonated )
                         {
                             canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, impersonatedByUser.Person );
+                            canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, impersonatedByUser.Person );
                         }
                     }
 
@@ -1204,7 +1207,7 @@ namespace Rock.Web.UI
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlockOnPage ) )
+                    if ( _pageCache.IncludeAdminFooter && ( canAdministratePage || canAdministrateBlockOnPage || canEditPage ) )
                     {
                         // Add the page admin script
                         AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin", false );
@@ -1223,7 +1226,7 @@ namespace Rock.Web.UI
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
                         if ( canAdministratePage && currentUserIsImpersonated && impersonatedByUser != null)
                         {
-                             HtmlGenericControl impersonatedByUserDiv = new HtmlGenericControl( "span" );
+                            HtmlGenericControl impersonatedByUserDiv = new HtmlGenericControl( "span" );
                             impersonatedByUserDiv.AddCssClass( "label label-default margin-l-md" );
                             _btnRestoreImpersonatedByUser = new LinkButton();
                             _btnRestoreImpersonatedByUser.ID = "_btnRestoreImpersonatedByUser";
@@ -1240,16 +1243,19 @@ namespace Rock.Web.UI
                         buttonBar.Attributes.Add( "class", "button-bar" );
 
                         // RockBlock Config
-                        HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
-                        buttonBar.Controls.Add( aBlockConfig );
-                        aBlockConfig.Attributes.Add( "class", "btn block-config" );
-                        aBlockConfig.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showBlockConfig();" );
-                        aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
-                        HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
-                        aBlockConfig.Controls.Add( iBlockConfig );
-                        iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
+                        if ( canAdministratePage || canAdministrateBlockOnPage )
+                        {
+                            HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aBlockConfig );
+                            aBlockConfig.Attributes.Add( "class", "btn block-config" );
+                            aBlockConfig.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showBlockConfig();" );
+                            aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
+                            HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
+                            aBlockConfig.Controls.Add( iBlockConfig );
+                            iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
+                        }
 
-                        if ( canAdministratePage )
+                        if ( canEditPage || canAdministratePage)
                         {
                             // RockPage Properties
                             HtmlGenericControl aPageProperties = new HtmlGenericControl( "a" );
@@ -1263,7 +1269,10 @@ namespace Rock.Web.UI
                             HtmlGenericControl iPageProperties = new HtmlGenericControl( "i" );
                             aPageProperties.Controls.Add( iPageProperties );
                             iPageProperties.Attributes.Add( "class", "fa fa-cog" );
+                        }
 
+                        if ( canAdministratePage )
+                        {
                             // Child Pages
                             HtmlGenericControl aChildPages = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aChildPages );
@@ -1437,7 +1446,7 @@ namespace Rock.Web.UI
             var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
             if ( impersonatedByUser != null )
             {
-                FormsAuthentication.SignOut();
+                Authorization.SignOut();
                 UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
                 Rock.Security.Authorization.SetAuthCookie( impersonatedByUser.UserName, false, false );
                 Response.Redirect( PageReference.BuildUrl( false ), false );
@@ -1472,7 +1481,7 @@ namespace Rock.Web.UI
                 Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, true, this.PageId );
                 if ( impersonatedPerson != null )
                 {
-                    FormsAuthentication.SignOut();
+                    Authorization.SignOut();
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPersonKeyParam, false, true );
                     CurrentUser = impersonatedPerson.GetImpersonatedUser();
                     UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
@@ -1484,7 +1493,7 @@ namespace Rock.Web.UI
                 else
                 {
                     // Attempting to use an impersonation token that doesn't exist or is no longer valid, so log them out
-                    FormsAuthentication.SignOut();
+                    Authorization.SignOut();
                     Session["InvalidPersonToken"] = true;
                     Response.Redirect( PageReference.BuildUrl( true ), false );
                     Context.ApplicationInstance.CompleteRequest();
@@ -1502,7 +1511,7 @@ namespace Rock.Web.UI
                         // attempting to use a page specific impersonation token for a different page, so log them out
                         if ( personToken.PageId.HasValue && personToken.PageId != this.PageId )
                         {
-                            FormsAuthentication.SignOut();
+                            Authorization.SignOut();
                             Session["InvalidPersonToken"] = true;
                             Response.Redirect( Request.RawUrl, false );
                             Context.ApplicationInstance.CompleteRequest();
@@ -2723,22 +2732,14 @@ Sys.Application.add_load(function () {
                 string stringHostName = System.Net.Dns.GetHostName();
                 if ( !string.IsNullOrWhiteSpace( stringHostName ) )
                 {
-                    var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
-                    if ( ipHostEntries != null )
+                    try
                     {
-                        try
-                        {
-                            var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
-                            if ( arrIpAddress != null )
-                            {
-                                ipAddress = arrIpAddress.ToString();
-                            }
-                        }
-                        catch
+                        var ipHostEntries = System.Net.Dns.GetHostEntry( stringHostName );
+                        if ( ipHostEntries != null )
                         {
                             try
                             {
-                                var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                                var arrIpAddress = ipHostEntries.AddressList.FirstOrDefault( i => !i.IsIPv6LinkLocal );
                                 if ( arrIpAddress != null )
                                 {
                                     ipAddress = arrIpAddress.ToString();
@@ -2746,9 +2747,24 @@ Sys.Application.add_load(function () {
                             }
                             catch
                             {
-                                ipAddress = "127.0.0.1";
+                                try
+                                {
+                                    var arrIpAddress = System.Net.Dns.GetHostAddresses( stringHostName ).FirstOrDefault( i => !i.IsIPv6LinkLocal );
+                                    if ( arrIpAddress != null )
+                                    {
+                                        ipAddress = arrIpAddress.ToString();
+                                    }
+                                }
+                                catch
+                                {
+                                    ipAddress = "127.0.0.1";
+                                }
                             }
                         }
+                    }
+                    catch ( System.Net.Sockets.SocketException ex )
+                    {
+                        ExceptionLogService.LogException( ex );
                     }
                 }
             }

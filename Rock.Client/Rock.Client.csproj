@@ -38,18 +38,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
-    <Compile Include="CodeGenerated\AnalyticsDimDate.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyHeadOfHousehold.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyHistorical.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFinancialAccount.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFinancialBatch.cs" />
-    <Compile Include="CodeGenerated\AnalyticsDimFinancialTransactionType.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimPersonCurrent.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="CodeGenerated\AnalyticsFactAttendance.cs" />
     <Compile Include="CodeGenerated\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceAttendance.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceDate.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
@@ -76,8 +75,10 @@
     <Compile Include="CodeGenerated\Campus.cs" />
     <Compile Include="CodeGenerated\Category.cs" />
     <Compile Include="CodeGenerated\Communication.cs" />
+    <Compile Include="CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="CodeGenerated\CommunicationRecipient.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplate.cs" />
+    <Compile Include="CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="CodeGenerated\ConnectionActivityType.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunity.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityCampus.cs" />

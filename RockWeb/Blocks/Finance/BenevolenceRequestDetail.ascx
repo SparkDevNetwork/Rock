@@ -23,7 +23,7 @@
                         </div>
                         <div class="col-md-3">
                             <Rock:PersonPicker ID="ppCaseWorker" runat="server" Label="Case Worker" Visible="false" />
-                            <Rock:RockDropDownList ID="ddlCaseWorker" runat="server" Label="Case Worker" />
+                            <Rock:RockDropDownList ID="ddlCaseWorker" runat="server" Label="Case Worker" EnhanceForLongLists="true" />
                         </div>
                         <div class="col-md-3">
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />

@@ -41,7 +41,8 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "Person" )]
     [DataContract]
-    public partial class Person : Model<Person>, IRockIndexable, IAnalyticHistorical
+    [Analytics( true, true )]
+    public partial class Person : Model<Person>, IRockIndexable
     {
         #region Constants
 
@@ -387,6 +388,15 @@ namespace Rock.Model
         public EmailPreference EmailPreference { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication preference.
+        /// </summary>
+        /// <value>
+        /// The communication preference.
+        /// </value>
+        [DataMember]
+        public CommunicationType CommunicationPreference { get; set; }
+
+        /// <summary>
         /// Gets or sets notes about why a person profile needs to be reviewed
         /// </summary>
         /// <value>
@@ -457,6 +467,7 @@ namespace Rock.Model
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
             _aliases = new Collection<PersonAlias>();
+            CommunicationPreference = CommunicationType.Email;
         }
 
         #endregion
@@ -1069,7 +1080,7 @@ namespace Rock.Model
                 }
                 if (age > 0)
                 {
-                    return age + (age == 1 ? " yr old " : " yrs old ");
+                    return age + (age == 1 ? " yr" : " yrs");
                 }
                 else if ( age < -1 )
                 {
@@ -1091,7 +1102,7 @@ namespace Rock.Model
                 }
                 if (months > 0)
                 {
-                    return months + (months == 1 ? " mo old " : " mos old ");
+                    return months + (months == 1 ? " mo" : " mos");
                 }
             }
 
@@ -1104,7 +1115,7 @@ namespace Rock.Model
                     var birthMonth = new DateTime(BirthYear.Value, BirthMonth.Value, 1);
                     days = days + birthMonth.AddMonths(1).AddDays(-1).Day;
                 }
-                return days + (days == 1 ? " day old " : " days old ");
+                return days + (days == 1 ? " day" : " days");
             }
             return string.Empty;
         }
@@ -1571,6 +1582,12 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
+            if ( entry.State == EntityState.Deleted )
+            {
+                // If PersonRecord is getting deleted, don't do any of the presavechanges
+                return;
+            }
+
             var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
             var deceased = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
 

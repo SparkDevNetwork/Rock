@@ -70,37 +70,10 @@
                 });
             });
 
-            // debouncing function from John Hann
-            // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
-            var debouncePersonPicker = function (func, threshold, execAsap)
-            {
-              var timeout;
-
-              return function debounced()
-              {
-                var obj = this, args = arguments;
-                function delayed()
-                {
-                  if (!execAsap)
-                    func.apply(obj, args);
-                  timeout = null;
-                };
-
-                if (timeout) {
-                  clearTimeout(timeout);
-                }
-                else if (execAsap)
-                  func.apply(obj, args);
-
-                timeout = setTimeout(delayed, threshold || 250);
-              };
-            }
-
-            $('#' + controlId + ' .picker-select').on('click mouseenter', '.picker-select-item', debouncePersonPicker(function (e)
-            {
+            $('#' + controlId + ' .picker-select').on('click', '.picker-select-item', function (e) {
                 if (e.type == 'click' && $(e.target).is(':input') == false) {
-                  // only process the click event if it has bubbled up to the input tag
-                  return;
+                    // only process the click event if it has bubbled up to the input tag
+                    return;
                 }
 
                 e.stopPropagation();
@@ -111,14 +84,26 @@
                 var selectedPersonId = $selectedItem.attr('data-person-id');
 
                 if ($itemDetails.is(':visible')) {
-                    
-                    if (selectedPersonId == lastSelectedPersonId && e.type == 'click' ) {
-                        // if they are clicking the same person twice in a row, assume that's the one they want to pick
+
+                    if (selectedPersonId == lastSelectedPersonId && e.type == 'click') {
+                        // if they are clicking the same person twice in a row (and the details are done expanding), assume that's the one they want to pick
                         $('#' + controlId + '_btnSelect').get(0).click();
                     } else {
+
                         // if it is already visible but isn't the same one twice, just leave it open
                     }
                 }
+
+                // hide other open details
+                $('#' + controlId + ' .picker-select-item-details').filter(':visible').each(function () {
+                    var $el = $(this),
+                        currentPersonId = $el.closest('.picker-select-item').attr('data-person-id');
+
+                    if (currentPersonId != selectedPersonId) {
+                        $el.slideUp();
+                        exports.personPickers[controlId].updateScrollbar();
+                    }
+                });
 
                 lastSelectedPersonId = selectedPersonId;
 
@@ -133,18 +118,22 @@
 
                         // hide then set the html so that we can get the slideDown effect
                         $itemDetails.stop().hide().html(responseText);
-                        $itemDetails.slideDown(function () {
-                            exports.personPickers[controlId].updateScrollbar();
-                        });
+                        showItemDetails($itemDetails);
 
                         $spinner.stop().fadeOut(200);
                     });
                 } else {
-                    $selectedItem.find('.picker-select-item-details:hidden').slideDown(function () {
+                    showItemDetails($selectedItem.find('.picker-select-item-details:hidden'));
+                }
+            });
+
+            var showItemDetails = function ($itemDetails) {
+                if ($itemDetails.length) {
+                    $itemDetails.slideDown(function () {
                         exports.personPickers[controlId].updateScrollbar();
                     });
                 }
-            }));
+            }
 
             $('#' + controlId).hover(
                 function () {
@@ -195,7 +184,7 @@
             $('#' + controlId + '_btnSelect').click(function () {
                 var radInput = $('#' + controlId).find('input:checked'),
                     selectedValue = radInput.val(),
-                    selectedText = radInput.closest('.picker-select-item').find('label').text();
+                    selectedText = radInput.closest('.picker-select-item').attr('data-person-name');
 
                 setSelectedPerson(selectedValue, selectedText);
             });
@@ -239,10 +228,29 @@
                             inactiveWarning = " <small>(" + item.RecordStatus + ")</small>";
                         }
 
+                        var quickSummaryInfo = "";
+                        if (item.FormattedAge || item.SpouseName) {
+                            quickSummaryInfo = " <small class='rollover-item text-muted'>";
+                            if (item.FormattedAge) {
+                                quickSummaryInfo += "Age: " + item.FormattedAge;
+                            }
+
+                            if (item.SpouseName) {
+                                if (item.FormattedAge) {
+                                    quickSummaryInfo += "; ";
+                                }
+
+                                quickSummaryInfo += "Spouse: " + item.SpouseName;
+                            }
+
+                            quickSummaryInfo += "</small>";
+                        }
+
                         var $div = $('<div/>').attr('class', 'radio'),
 
                             $label = $('<label/>')
-                                .html(item.Name + inactiveWarning + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
+                                .html(item.Name + inactiveWarning + quickSummaryInfo + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
+                                .addClass('rollover-container')
                                 .prependTo($div),
 
                             $radio = $('<input type="radio" name="person-id" />')
@@ -253,6 +261,7 @@
                             $li = $('<li/>')
                                 .addClass('picker-select-item')
                                 .attr('data-person-id', item.Id)
+                                .attr('data-person-name', item.Name)
                                 .html($div),
 
                             $resultSection = $(this.options.appendTo);

@@ -18,7 +18,7 @@
 
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                            <Rock:EntityTypePicker ID="ddlEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                            <Rock:EntityTypePicker ID="ddlEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" EnhanceForLongLists="true" />
                             <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
                             <Rock:RockCheckBox ID="cbAnalyticsEnabled" runat="server" Label="Show only attributes with Analytics Enabled" />
                         </Rock:GridFilter>
@@ -72,7 +72,7 @@
             <Content>
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <asp:panel ID="pnlEntityTypeQualifier" runat="server" Visible="false" class="well">
-                    <Rock:EntityTypePicker ID="ddlAttrEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlAttrEntityType_SelectedIndexChanged" />
+                    <Rock:EntityTypePicker ID="ddlAttrEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlAttrEntityType_SelectedIndexChanged" EnhanceForLongLists="true" />
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
@@ -82,7 +82,7 @@
                         </div>
                     </div>
                 </asp:panel>
-                <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" ShowInGridVisible="true" />
+                <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" IsShowInGridVisible="true" />
             </Content>
         </Rock:ModalDialog>
 

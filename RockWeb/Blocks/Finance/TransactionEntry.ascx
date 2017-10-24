@@ -33,9 +33,11 @@
                                         
                                         <asp:Repeater ID="rptAccountList" runat="server" OnItemDataBound="rptAccountList_ItemDataBound">
                                             <ItemTemplate>
+                                                <Rock:RockLiteral ID="txtAccountAmountLiteral" runat="server" Visible="false" />
                                                 <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Placeholder="0.00" CssClass="account-amount" />
                                             </ItemTemplate>
                                         </asp:Repeater>
+
                                         <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label=" "
                                             DataTextField="PublicName" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
 
@@ -45,9 +47,10 @@
                                         </div>
 
                                         <div id="divRepeatingPayments" runat="server" visible="false">
+                                            <Rock:RockLiteral ID="txtFrequency" runat="server" Label="Frequency" Visible="false" />
                                             <Rock:ButtonDropDownList ID="btnFrequency" runat="server" Label="Frequency"
                                                 DataTextField="Value" DataValueField="Id" AutoPostBack="true" OnSelectionChanged="btnFrequency_SelectionChanged" />
-                                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" />
+                                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" AutoPostBack="true" OnTextChanged="btnFrequency_SelectionChanged" />
                                         </div>
 
                                         <Rock:RockTextBox ID="txtCommentEntry" runat="server" Required="true" Label="Comment" />
@@ -169,7 +172,7 @@
                                     </div>
 
                                     <div id="divACHPaymentInfo" runat="server" visible="false" class="tab-pane">
-                                        <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Account Name" />
+                                        <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Name on Account" />
                                         <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing Number" />
                                         <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account Number" />
                                         <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">

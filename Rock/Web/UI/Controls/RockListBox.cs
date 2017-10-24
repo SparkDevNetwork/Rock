@@ -202,6 +202,14 @@ namespace Rock.Web.UI.Controls
         public HelpBlock HelpBlock { get; set; }
 
         /// <summary>
+        /// Gets or sets the placeholder text.
+        /// </summary>
+        /// <value>
+        /// The placeholder text.
+        /// </value>
+        public string Placeholder { get; set; }
+
+        /// <summary>
         /// Gets or sets the warning block.
         /// </summary>
         /// <value>
@@ -319,10 +327,10 @@ namespace Rock.Web.UI.Controls
             script.AppendFormat( @"
     $('#{0}').chosen({{
         width: '100%',
-        placeholder_text_multiple: ' ',
+        placeholder_text_multiple: '{1}',
         placeholder_text_single: ' '
     }});
-", this.ClientID );
+", this.ClientID, this.Placeholder.IsNotNullOrWhitespace() ? this.Placeholder : " " );
 
             if ( DisplayDropAsAbsolute )
             {
@@ -340,6 +348,43 @@ namespace Rock.Web.UI.Controls
             base.RenderControl( writer );
 
             RenderDataValidator( writer );
+        }
+
+        /// <summary>
+        /// Selects the values.
+        /// </summary>
+        /// <value>
+        /// The selected values.
+        /// </value>
+        public List<string> SelectedValues
+        {
+            get
+            {
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Selects the values as int.
+        /// </summary>
+        /// <value>
+        /// The selected values as int.
+        /// </value>
+        public List<int> SelectedValuesAsInt
+        {
+            get
+            {
+                var values = new List<int>();
+                foreach ( string stringValue in SelectedValues )
+                {
+                    int numValue = int.MinValue;
+                    if ( int.TryParse( stringValue, out numValue ) )
+                    {
+                        values.Add( numValue );
+                    }
+                }
+                return values;
+            }
         }
 
         /// <summary>

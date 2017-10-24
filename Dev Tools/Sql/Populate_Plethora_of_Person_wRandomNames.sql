@@ -1,6 +1,7 @@
 SET NOCOUNT ON
 
-DECLARE @i INT
+-- NOTE: Set @maxPerson to the number of people you want to add. Setting it as high as 99999 might take a minute or so
+DECLARE @maxPerson INT = 999
     ,@genderInt INT
     ,@personRecordType INT = (
         SELECT id
@@ -45,7 +46,6 @@ DECLARE @i INT
     ,@month INT
     ,@day INT
     ,@personCounter INT = 0
-    ,@maxPerson INT = 999
 	,@kidCountMax int
 	,@kidCounter int
 	,@kidPersonId int

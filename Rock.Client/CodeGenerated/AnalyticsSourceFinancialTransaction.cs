@@ -197,10 +197,7 @@ namespace Rock.Client
         public AnalyticsDimFinancialBatch Batch { get; set; }
 
         /// <summary />
-        public AnalyticsDimDate TransactionDate { get; set; }
-
-        /// <summary />
-        public AnalyticsDimFinancialTransactionType TransactionTypeValue { get; set; }
+        public AnalyticsSourceDate TransactionDate { get; set; }
 
     }
 }

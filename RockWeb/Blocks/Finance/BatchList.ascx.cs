@@ -345,7 +345,7 @@ namespace RockWeb.Blocks.Finance
             var batch = batchService.Get( e.RowKeyId );
             if ( batch != null )
             {
-                if ( UserCanEdit || batch.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
+                if ( batch.IsAuthorized( Rock.Security.Authorization.DELETE, CurrentPerson ) )
                 {
                     string errorMessage;
                     if ( !batchService.CanDelete( batch, out errorMessage ) )
@@ -372,6 +372,10 @@ namespace RockWeb.Blocks.Finance
 
                         rockContext.SaveChanges();
                     } );
+                }
+                else
+                {
+                    mdGridWarning.Show( "You are not authorized to delete the selected batch.", ModalAlertType.Warning);
                 }
             }
 

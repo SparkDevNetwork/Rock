@@ -84,13 +84,15 @@ namespace Rock.MergeTemplates
             // Start by creating a new document with the contents of the Template (so that Styles, etc get included)
             XDocument sourceTemplateDocX;
 
-            using ( MemoryStream outputDocStream = new MemoryStream() )
+            // NOTE: On using multiple IDisposable, see https://stackoverflow.com/a/12603126/1755417 and https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/using-statement
+            using ( MemoryStream sourceTemplateStream = new MemoryStream(), outputDocStream = new MemoryStream() )
             {
                 templateBinaryFile.ContentStream.CopyTo( outputDocStream );
                 outputDocStream.Seek( 0, SeekOrigin.Begin );
 
                 // now that we have the outputdoc started, simplify the sourceTemplate
-                var sourceTemplateStream = templateBinaryFile.ContentStream;
+                templateBinaryFile.ContentStream.CopyTo( sourceTemplateStream );
+                sourceTemplateStream.Seek( 0, SeekOrigin.Begin );
                 var simplifiedDoc = WordprocessingDocument.Open( sourceTemplateStream, true );
                 MarkupSimplifier.SimplifyMarkup( simplifiedDoc, this.simplifyMarkupSettingsAll );
 

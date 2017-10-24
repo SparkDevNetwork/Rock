@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -157,6 +158,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead") ]
         public bool IsAnalyticSupported
         {
             get
@@ -182,6 +184,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "Use EntityTypeCache.IsAnalyticHistoricalSupported(..) instead" )]
         public bool IsAnalyticHistoricalSupported
         {
             get
@@ -252,6 +255,14 @@ namespace Rock.Model
         /// The index document URL.
         /// </value>
         public string IndexDocumentUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a lava template that can be used for generating a link to view details for this entity (i.e. "~/person/{{ Entity.Id }}").
+        /// </summary>
+        /// <value>
+        /// The link URL.
+        /// </value>
+        public string LinkUrlLavaTemplate { get; set; }
 
         #endregion
 

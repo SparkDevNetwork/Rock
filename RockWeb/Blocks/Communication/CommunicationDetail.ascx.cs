@@ -160,7 +160,15 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    ShowDetail( communication );
+                    // if they somehow got here and aren't authorized to View, hide everything
+                    if ( !communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    {
+                        this.Visible = false;
+                    }
+                    else
+                    {
+                        ShowDetail( communication );
+                    }
                 }
             }
         }
@@ -321,7 +329,7 @@ namespace RockWeb.Blocks.Communication
                         {
                             communication.Status = CommunicationStatus.Denied;
                             communication.ReviewedDateTime = RockDateTime.Now;
-                            communication.ReviewerPersonAliasId = CurrentPersonAliasId; 
+                            communication.ReviewerPersonAliasId = CurrentPersonAliasId;
 
                             rockContext.SaveChanges();
 
@@ -357,7 +365,7 @@ namespace RockWeb.Blocks.Communication
                 var communication = service.Get( CommunicationId.Value );
                 if ( communication != null )
                 {
-                    if (communication.Status == CommunicationStatus.Approved || communication.Status == CommunicationStatus.PendingApproval)
+                    if ( communication.Status == CommunicationStatus.Approved || communication.Status == CommunicationStatus.PendingApproval )
                     {
                         if ( !communication.Recipients
                             .Where( r => r.Status == CommunicationRecipientStatus.Delivered )
@@ -377,7 +385,7 @@ namespace RockWeb.Blocks.Communication
                             rockContext.SaveChanges();
 
                             int delivered = communication.Recipients.Count( r => r.Status == CommunicationRecipientStatus.Delivered );
-                            ShowResult( string.Format("This communication has been cancelled, however the communication was delivered to {0} recipients!", delivered)
+                            ShowResult( string.Format( "This communication has been cancelled, however the communication was delivered to {0} recipients!", delivered )
                                 , communication, NotificationBoxType.Warning );
                         }
                     }
@@ -470,24 +478,10 @@ namespace RockWeb.Blocks.Communication
 
             pnlOpened.Visible = false;
 
-            lDetails.Text = communication.MediumDataJson;
-            if ( communication.MediumEntityTypeId.HasValue )
+            lDetails.Text = GetMediumData( communication );
+            if ( communication.UrlReferrer.IsNotNullOrWhitespace() )
             {
-                var mediumEntityType = EntityTypeCache.Read( communication.MediumEntityTypeId.Value );
-                if (mediumEntityType != null)
-                {
-                    var medium = MediumContainer.GetComponent( mediumEntityType.Name );
-                    if (medium != null && medium.Transport != null)
-                    {
-                        pnlOpened.Visible = medium.Transport.CanTrackOpens;
-                        lDetails.Text = medium.GetMessageDetails( communication );
-                    }
-                } 
-            }
-
-            if ( communication.MediumData != null && communication.MediumData.ContainsKey( "UrlReferrer" ) )
-            {
-                lDetails.Text += string.Format( "<small>Originated from <a href='{0}'>this page</a></small>", communication.MediumData["UrlReferrer"] );
+                lDetails.Text += string.Format( "<small>Originated from <a href='{0}'>this page</a></small>", communication.UrlReferrer );
             }
 
             BindRecipients();
@@ -509,7 +503,7 @@ namespace RockWeb.Blocks.Communication
         {
             if ( person != null )
             {
-                literal.Text = String.Format("<strong>{0}</strong> {1}", labelText, person.FullName);
+                literal.Text = String.Format( "<strong>{0}</strong> {1}", labelText, person.FullName );
 
                 if ( datetime.HasValue )
                 {
@@ -526,7 +520,7 @@ namespace RockWeb.Blocks.Communication
                 var recipients = new CommunicationRecipientService( rockContext )
                     .Queryable( "PersonAlias.Person" )
                     .Where( r => r.CommunicationId == CommunicationId.Value );
-                
+
                 SetRecipients( pnlPending, aPending, lPending, gPending,
                     recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ) );
                 SetRecipients( pnlDelivered, aDelivered, lDelivered, gDelivered,
@@ -544,7 +538,7 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
-        private void SetRecipients( Panel pnl, HtmlAnchor htmlAnchor, Literal literalControl, 
+        private void SetRecipients( Panel pnl, HtmlAnchor htmlAnchor, Literal literalControl,
             Grid grid, IQueryable<CommunicationRecipient> qryRecipients )
         {
             pnl.CssClass = pnlOpened.Visible ? "col-md-2-10 margin-b-md" : "col-md-3 margin-b-md";
@@ -562,12 +556,12 @@ namespace RockWeb.Blocks.Communication
 
             literalControl.Text = count.ToString( "N0" );
 
-            
+
             var sortProperty = grid.SortProperty;
             if ( sortProperty != null )
             {
                 qryRecipients = qryRecipients.AsQueryable().Sort( sortProperty );
-                    
+
             }
             else
             {
@@ -586,7 +580,7 @@ namespace RockWeb.Blocks.Communication
                 Guid interactionChannelGuid = Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid();
                 var interactions = new InteractionService( rockContext )
                     .Queryable()
-                    .Include( a => a.PersonAlias.Person)
+                    .Include( a => a.PersonAlias.Person )
                     .Where( r => r.InteractionComponent.Channel.Guid == interactionChannelGuid && r.InteractionComponent.EntityId == CommunicationId.Value );
 
                 var sortProperty = gInteractions.SortProperty;
@@ -644,7 +638,7 @@ namespace RockWeb.Blocks.Communication
         /// Shows the actions.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        private void ShowActions(Rock.Model.Communication communication)
+        private void ShowActions( Rock.Model.Communication communication )
         {
             bool canApprove = IsUserAuthorized( "Approve" );
 
@@ -674,7 +668,7 @@ namespace RockWeb.Blocks.Communication
                                 btnDeny.Visible = true;
                                 btnEdit.Visible = true;
                             }
-                            btnCancel.Visible = true;
+                            btnCancel.Visible = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                             break;
                         }
                     case CommunicationStatus.Approved:
@@ -685,7 +679,7 @@ namespace RockWeb.Blocks.Communication
 
 
                             btnCancel.Visible = hasPendingRecipients;
-                            btnCopy.Visible = true;
+                            btnCopy.Visible = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                             break;
                         }
                 }
@@ -720,8 +714,89 @@ namespace RockWeb.Blocks.Communication
 
         }
 
-        #endregion
+        private string GetMediumData( Rock.Model.Communication communication )
+        {
+            StringBuilder sb = new StringBuilder();
 
+            switch ( communication.CommunicationType )
+            {
+                case CommunicationType.Email:
+                    {
+                        sb.AppendLine( "<div class='row'>" );
+                        sb.AppendLine( "<div class='col-md-6'>" );
+
+                        AppendMediumData( sb, "From Name", communication.FromName );
+                        AppendMediumData( sb, "From Address", communication.FromEmail );
+                        AppendMediumData( sb, "Reply To", communication.ReplyToEmail );
+                        AppendMediumData( sb, "CC", communication.CCEmails );
+                        AppendMediumData( sb, "BCC", communication.BCCEmails );
+                        AppendMediumData( sb, "Subject", communication.Subject );
+
+                        sb.AppendLine( "</div>" );
+
+                        sb.AppendLine( "<div class='col-md-6'>" );
+                        var emailAttachments = communication.GetAttachments( CommunicationType.Email );
+                        if ( emailAttachments.Any() )
+                        {
+                            sb.Append( "<ul>" );
+                            foreach ( var binaryFile in emailAttachments.Select( a => a.BinaryFile ).ToList() )
+                            {
+                                sb.AppendFormat( "<li><a target='_blank' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
+                                    System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFile.Id, binaryFile.FileName );
+                            }
+                            sb.Append( "</ul>" );
+                        }
+                        sb.AppendLine( "</div>" );
+
+                        sb.AppendLine( "</div>" );
+
+                        if ( communication.Message.IsNotNullOrWhitespace() )
+                        {
+                            AppendMediumData( sb, "HtmlMessage", string.Format( @"
+                        <iframe id='js-email-body-iframe' class='email-body'></iframe>
+                        <script id='email-body' type='text/template'>{0}</script>
+                        <script type='text/javascript'>
+                            var doc = document.getElementById('js-email-body-iframe').contentWindow.document;
+                            doc.open();
+                            doc.write('<html><head><title></title></head><body>' +  $('#email-body').html() + '</body></html>');
+                            doc.close();
+                        </script>
+                    ", communication.Message ) );
+                        }
+
+                        break;
+                    }
+
+                case CommunicationType.SMS:
+                    {
+                        AppendMediumData( sb, "From Value", communication.SMSFromDefinedValue != null ? communication.SMSFromDefinedValue.Value : string.Empty );
+                        AppendMediumData( sb, "Message", communication.SMSMessage );
+
+                        break;
+                    }
+
+                case CommunicationType.PushNotification:
+                    {
+                        AppendMediumData( sb, "Title", communication.PushTitle );
+                        AppendMediumData( sb, "Message", communication.PushMessage );
+                        AppendMediumData( sb, "Sound", communication.PushSound );
+
+                        break;
+                    }
+            }
+
+            return sb.ToString();
+        }
+    
+        private void AppendMediumData( StringBuilder sb, string key, string value )
+        {
+            if ( key.IsNotNullOrWhitespace() && value.IsNotNullOrWhitespace() )
+            {
+                sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>", key, value );
+            }
+        }
+
+        #endregion
 
         protected void gInteractions_RowDataBound( object sender, GridViewRowEventArgs e )
         {

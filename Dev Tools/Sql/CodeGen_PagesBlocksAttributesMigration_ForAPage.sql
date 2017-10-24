@@ -1,10 +1,15 @@
+-- NOTE: if you have SSMS 2012 or newer, you might what to turn on Options > Query Results > Sql Server > Results to Grid > 'Retain CR/LF on copy or save'
+-- This will allow you to Copy and Paste directly from the Grid results
+
 set nocount on
 declare
 @crlf varchar(2) = char(13) + char(10)
 
 begin
 
-DECLARE @PageId int = 226
+-- This will generate migrations for *all* the stuff on this specific page only, not just the new stuff
+-- Set this to a pageid that you want to specifically generate all the migration code for, then you can edit out the stuff that you don't need
+DECLARE @PageId int = 492
 
 IF OBJECT_ID('tempdb..#codeTable') IS NOT NULL
     DROP TABLE #codeTable
@@ -71,6 +76,8 @@ create table #codeTable (
     -- blocks
     insert into #codeTable
     SELECT 
+		'            // Add Block to ' + ISNULL('Page: ' + p.[InternalName],'') + ISNULL('Layout: ' + l.[Name], '') + ISNULL(', Site: ' + s.[Name], '') +
+        @crlf + 
 		'            RockMigrationHelper.AddBlock("'+
         ISNULL(CONVERT(nvarchar(50), [p].[Guid]),'') + '","'+ 
         ISNULL(CONVERT(nvarchar(50), [l].[Guid]),'') + '","'+
@@ -99,7 +106,9 @@ create table #codeTable (
 
     insert into #codeTable
     SELECT 
-        '            RockMigrationHelper.UpdateBlockTypeAttribute("'+ 
+        '            // Attrib for BlockType: ' + bt.Name + ':'+ a.Name+
+        @crlf +
+		'            RockMigrationHelper.UpdateBlockTypeAttribute("'+ 
         CONVERT(nvarchar(50), bt.Guid)+ '","'+   
         CONVERT(nvarchar(50), ft.Guid)+ '","'+     
         a.Name+ '","'+  
@@ -129,10 +138,12 @@ create table #codeTable (
     -- attributes values (just Block Attributes)    
     insert into #codeTable
     SELECT 
-        '            RockMigrationHelper.AddBlockAttributeValue("'+     
+        '            // Attrib Value for Block:'+ b.Name + ', Attribute:'+ a.Name + ' ' + ISNULL('Page: ' + p.InternalName,'') + ISNULL(', Layout: ' + l.Name, '') +  ISNULL(', Site: ' + s.Name, '') +
+        @crlf +
+		'            RockMigrationHelper.AddBlockAttributeValue("'+     
         CONVERT(nvarchar(50), b.Guid)+ '","'+ 
         CONVERT(nvarchar(50), a.Guid)+ '",@"'+ 
-        ISNULL(av.Value,'')+ '"); // '+ a.[Name] + 
+        ISNULL(replace(av.Value, '"', '""'),'')+ '");'+
         @crlf
     from [AttributeValue] [av]
     join Block b on b.Id = av.EntityId

@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -35,6 +36,7 @@ using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
 using Humanizer.Localisation;
+using ImageResizer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Rock;
@@ -1727,6 +1729,15 @@ namespace Rock.Lava
         {
             if ( input != null )
             {
+                if ( input is IDictionary<string, object> )
+                {
+                    var dictionaryObject = input as IDictionary<string, object>;
+                    if ( dictionaryObject.ContainsKey( propertyKey ) )
+                    {
+                        return dictionaryObject[ propertyKey];
+                    }
+                }
+
                 return input.GetPropertyValue( propertyKey );
             }
 
@@ -3734,9 +3745,9 @@ namespace Rock.Lava
                     else if ( value is IDictionary<string, object> ) 
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( selectKey ) && dictionaryObject[selectKey].Equals( selectKey ) )
+                        if ( dictionaryObject.ContainsKey( selectKey ) )
                         {
-                            result.Add( dictionaryObject );
+                            result.Add( dictionaryObject[selectKey] );
                         }
                     }
                 }
@@ -3755,6 +3766,19 @@ namespace Rock.Lava
         /// <param name="attributeKey">The attribute key.</param>
         /// <returns></returns>
         public static object SortByAttribute( DotLiquid.Context context, object input, string attributeKey )
+        {
+            return SortByAttribute( context, input, attributeKey, "asc" );
+        }
+        
+        /// <summary>
+        /// Sorts the list of items by the specified attribute's value
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="sortOrder">asc or desc for sort order.</param>
+        /// <returns></returns>
+        public static object SortByAttribute( DotLiquid.Context context, object input, string attributeKey, string sortOrder )
         {
             if ( input is IEnumerable )
             {
@@ -3778,7 +3802,14 @@ namespace Rock.Lava
                         var item2AttributeValue = item2.AttributeValues.Where( a => a.Key == attributeKey ).FirstOrDefault().Value.SortValue;
                         if ( item1AttributeValue is IComparable && item2AttributeValue is IComparable )
                         {
-                            return ( item1AttributeValue as IComparable ).CompareTo( item2AttributeValue as IComparable );
+                            if (sortOrder.ToLower() == "desc")
+                            {
+                                return ( item2AttributeValue as IComparable ).CompareTo( item1AttributeValue as IComparable );
+                            }
+                            else
+                            {
+                                return ( item1AttributeValue as IComparable ).CompareTo( item2AttributeValue as IComparable );
+                            }
                         }
                         else
                         {
@@ -4047,6 +4078,60 @@ namespace Rock.Lava
             }
 
             return currentPerson;
+        }
+
+        /// <summary>
+        /// Base64 encodes a binary file
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="resizeSettings">The resize settings.</param>
+        /// <returns></returns>
+        public static string Base64Encode( DotLiquid.Context context, object input, string resizeSettings )
+        {
+            BinaryFile binaryFile = null;
+
+            if ( input is int )
+            {
+                binaryFile = new BinaryFileService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is BinaryFile )
+            {
+                binaryFile = (BinaryFile)input;
+            }
+
+            if ( binaryFile != null )
+            {
+                using ( var stream = GetResized( resizeSettings, binaryFile.ContentStream ) )
+                {
+                    byte[] imageBytes = stream.ReadBytesToEnd();
+                    return Convert.ToBase64String( imageBytes );
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private static Stream GetResized( string resizeSettings, Stream fileContent )
+        {
+            try
+            {
+                if ( resizeSettings.IsNullOrWhiteSpace() )
+                {
+                    return fileContent;
+                }
+
+                ResizeSettings settings = new ResizeSettings( HttpUtility.ParseQueryString( resizeSettings ) );
+                MemoryStream resizedStream = new MemoryStream();
+
+                ImageBuilder.Current.Build( fileContent, resizedStream, settings );
+                return resizedStream;
+            }
+            catch
+            {
+                // if resize failed, just return original content
+                return fileContent;
+            }
         }
 
         #endregion

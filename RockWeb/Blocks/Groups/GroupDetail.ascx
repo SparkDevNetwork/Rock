@@ -83,7 +83,7 @@
                                     <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" />
+                                    <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                                     <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document" 
                                         Help="If members of this group need to have signed a document, select that document type here." />
                                 </div>
@@ -195,7 +195,7 @@
                         <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Group Sync Settings">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:DataViewPicker ID="dvpSyncDataview" Label="Sync Data View" runat="server"></Rock:DataViewPicker>
+                                    <Rock:DataViewPicker ID="dvpSyncDataview" Label="Sync Data View" runat="server" EnhanceForLongLists="true" ></Rock:DataViewPicker>
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="rbCreateLoginDuringSync" runat="server" Label="Create Login During Sync" Help="If the individual does not have a login should one be created during the sync process?" />

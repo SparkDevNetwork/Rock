@@ -67,12 +67,35 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the Id of the entity that this interaction component is related to.
+        /// For example:
+        ///  if this is a Page View:
+        ///     Interaction.EntityId is the Page.Id of the page that was viewed
+        ///  if this is a Communication Recipient activity:
+        ///     Interaction.EntityId is the CommunicationRecipient.Id that did the click or open
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the entity (object) that this interaction component is related to.
         /// </value>
         [DataMember]
         public int? EntityId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the related entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The related entity type identifier.
+        /// </value>
+        [DataMember]
+        public int? RelatedEntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the related entity identifier.
+        /// </summary>
+        /// <value>
+        /// The related entity identifier.
+        /// </value>
+        [DataMember]
+        public int? RelatedEntityId { get; set; }
 
         /// <summary>
         /// Gets or sets the person alias identifier.
@@ -134,6 +157,15 @@ namespace Rock.Model
         public virtual InteractionComponent InteractionComponent { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the related entity.
+        /// </summary>
+        /// <value>
+        /// The type of the related entity.
+        /// </value>
+        [DataMember]
+        public virtual EntityType RelatedEntityType { get; set; }
+
+        /// <summary>
         /// Gets or sets the person alias.
         /// </summary>
         /// <value>
@@ -180,6 +212,7 @@ namespace Rock.Model
             this.HasRequired( r => r.InteractionComponent ).WithMany().HasForeignKey( r => r.InteractionComponentId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.InteractionSession ).WithMany( r => r.Interactions ).HasForeignKey( r => r.InteractionSessionId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.PersonalDevice ).WithMany().HasForeignKey( r => r.PersonalDeviceId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.RelatedEntityType ).WithMany().HasForeignKey( r => r.RelatedEntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -3,7 +3,10 @@
 
 declare
 -- set to 1 to include any block attribute values updated in the last 60 minutes, even if their BlockType Attribute is IsSystem=1
-@forceIncludeRecentlyUpdatedBlockAttributeValues bit = 0
+@forceIncludeRecentlyUpdatedBlockAttributeValues bit = 0,
+
+-- set to a specific pageId if you want to generate 'AddBlockAttributeValue' migrations for all the block attribute values on the page, not just the new ones
+@forceIncludeBlockAttributesValuesForPageId int = null;
 
 set nocount on
 declare
@@ -587,14 +590,19 @@ create table #codeTable (
 	left outer join [Layout] [l] on [l].[Id] = [b].[LayoutId]
 	left outer join [Layout] [pl] on [pl].[Id] = [p].[LayoutId]
 	join [site] [s] on [s].[Id] = [l].[siteId] or [s].[Id] = [pl].[siteId]
-    where ([av].[AttributeId] in (select [Id] from #attributeIds) 
+    where (([av].[AttributeId] in (select [Id] from #attributeIds) 
           -- also include AttributeValues for non-system/non-shipping blocks
           or ((b.IsSystem = 0 and [b].[Guid] not in (select [Guid] from #knownGuidsToIgnore) ) and a.EntityTypeQualifierColumn = 'BlockTypeId' )
 
 		  -- if enabled, include all block attribute values updated in the last 60 minutes, even if their BlockType Attribute is already IsSystem=1
 		  or (@forceIncludeRecentlyUpdatedBlockAttributeValues = 1 and DATEDIFF(minute, SYSDATETIME(),av.ModifiedDateTime) <= 60)
           )
-    and [av].[Guid] not in (select [Guid] from #knownGuidsToIgnore) 
+    and [av].[Guid] not in (select [Guid] from #knownGuidsToIgnore))
+	or (@forceIncludeBlockAttributesValuesForPageId is not null and b.[Id] in (
+		SELECT b.[Id]
+		FROM [block] b
+		WHERE b.[PageId] = @forceIncludeBlockAttributesValuesForPageId
+	))
     order by b.Id
     
     drop table #attributeIds

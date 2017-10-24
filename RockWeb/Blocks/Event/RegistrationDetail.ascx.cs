@@ -57,6 +57,9 @@ namespace RockWeb.Blocks.Event
 
         private Registration Registration = null;
 
+        // The URL for the Step-2 Iframe Url
+        protected string Step2IFrameUrl { get; set; }
+
         #endregion
 
         #region Properties
@@ -760,6 +763,7 @@ namespace RockWeb.Blocks.Event
                 pnlCosts.Visible = false;
                 pnlPaymentDetails.Visible = false;
                 pnlPaymentInfo.Visible = true;
+                phPaymentAmount.Visible = true;
                 phManualDetails.Visible = true;
                 phCCDetails.Visible = false;
             }
@@ -815,8 +819,26 @@ namespace RockWeb.Blocks.Event
                     pnlCosts.Visible = false;
                     pnlPaymentDetails.Visible = false;
                     pnlPaymentInfo.Visible = true;
+                    phPaymentAmount.Visible = true;
                     phManualDetails.Visible = false;
-                    phCCDetails.Visible = true;
+
+                    lbSubmitPayment.Visible = true;
+                    aStep2Submit.Visible = false;
+
+                    var threeStepGateway = component as ThreeStepGatewayComponent;
+                    bool using3StepGateway = ( threeStepGateway != null );
+                    phCCDetails.Visible = !using3StepGateway;
+                    if ( using3StepGateway )
+                    {
+                        phCCDetails.Visible = false;
+                        lbSubmitPayment.Text = "Next";
+                    }
+                    else
+                    {
+                        phCCDetails.Visible = true;
+                        lbSubmitPayment.Text = "Submit";
+                    }
+
                     return;
                 }
             }
@@ -840,22 +862,32 @@ namespace RockWeb.Blocks.Event
                     rockContext.WrapTransaction( () =>
                     {
                         string errorMessage = string.Empty;
-                        if ( !ProcessPayment( phCCDetails.Visible, rockContext, Registration, personAliasId, pmtAmount, out errorMessage ) )
+                        if ( !ProcessPayment( !phManualDetails.Visible, rockContext, Registration, personAliasId, pmtAmount, out errorMessage ) )
                         {
                             throw new Exception( errorMessage );
                         }
                     } );
 
-                    // reload registration
-                    Registration = GetRegistration( Registration.Id, rockContext );
+                    if ( lbSubmitPayment.Text == "Submit" )
+                    {
+                        // reload registration
+                        Registration = GetRegistration( Registration.Id, rockContext );
 
-                    RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
+                        RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
 
-                    ShowReadonlyDetails( Registration );
+                        ShowReadonlyDetails( Registration );
 
-                    pnlCosts.Visible = false;
-                    pnlPaymentDetails.Visible = true;
-                    pnlPaymentInfo.Visible = false;
+                        pnlCosts.Visible = false;
+                        pnlPaymentDetails.Visible = true;
+                        pnlPaymentInfo.Visible = false;
+                    }
+                    else
+                    {
+                        phPaymentAmount.Visible = false;
+                        phCCDetails.Visible = true;
+                        lbSubmitPayment.Visible = false;
+                        aStep2Submit.Visible = true;
+                    }
                 }
                 catch ( Exception ex )
                 {
@@ -882,6 +914,52 @@ namespace RockWeb.Blocks.Event
             pnlCosts.Visible = false;
             pnlPaymentDetails.Visible = true;
             pnlPaymentInfo.Visible = false;
+        }
+
+        protected void lbStep2Return_Click( object sender, EventArgs e )
+        {
+            int? personAliasId = ppPayee.PersonAliasId;
+
+            decimal pmtAmount = cbPaymentAmount.Text.AsDecimal();
+            if ( Registration != null )
+            {
+                if ( !personAliasId.HasValue && Registration.PersonAliasId.HasValue )
+                {
+                    personAliasId = Registration.PersonAliasId;
+                }
+            }
+
+            try
+            {
+                var rockContext = new RockContext();
+                rockContext.WrapTransaction( () =>
+                {
+                    string errorMessage = string.Empty;
+                    if ( !ProcessStep3( hfStep2ReturnQueryString.Value, rockContext, Registration, personAliasId, pmtAmount, out errorMessage ) )
+                    {
+                        throw new Exception( errorMessage );
+                    }
+                } );
+
+                // reload registration
+                Registration = GetRegistration( Registration.Id, rockContext );
+
+                RockPage.UpdateBlocks( "~/Blocks/Finance/TransactionList.ascx" );
+
+                ShowReadonlyDetails( Registration );
+
+                pnlCosts.Visible = false;
+                pnlPaymentDetails.Visible = true;
+                pnlPaymentInfo.Visible = false;
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
+
+                nbPaymentError.Heading = "Error Processing Payment";
+                nbPaymentError.Text = ex.Message;
+                nbPaymentError.Visible = true;
+            }
         }
 
         #endregion
@@ -1517,6 +1595,99 @@ namespace RockWeb.Blocks.Event
     });
 ";
             ScriptManager.RegisterStartupScript( btnDelete, btnDelete.GetType(), "deleteRegistrationScript", deleteScript, true );
+
+
+            string scriptFormat = @"
+    // Posts the iframe (step 2)
+    $('#aStep2Submit').on('click', function(e) {{
+        e.preventDefault();
+        if (typeof (Page_ClientValidate) == 'function') {{
+            if (Page_IsValid && Page_ClientValidate('{3}') ) {{
+                $(this).prop('disabled', true);
+                $('#updateProgress').show();
+                var src = $('#{0}').val();
+                var $form = $('#iframeStep2').contents().find('#Step2Form');
+
+                $form.find('.js-billing-address1').val( $('#{8}_tbStreet1').val() );
+                $form.find('.js-billing-city').val( $('#{8}_tbCity').val() );
+                if ( $('#{8}_ddlState').length ) {{
+                    $form.find('.js-billing-state').val( $('#{8}_ddlState').val() );
+                }} else {{
+                    $form.find('.js-billing-state').val( $('#{8}_tbState').val() );
+                }}
+                $form.find('.js-billing-postal').val( $('#{8}_tbPostalCode').val() );
+                $form.find('.js-billing-country').val( $('#{8}_ddlCountry').val() );
+
+                $form.find('.js-cc-first-name').val( $('#{9}').val() );
+                $form.find('.js-cc-last-name').val( $('#{10}').val() );
+                $form.find('.js-cc-full-name').val( $('#{11}').val() );
+                $form.find('.js-cc-number').val( $('#{4}').val() );
+                var mm = $('#{5}_monthDropDownList').val();
+                var yy = $('#{5}_yearDropDownList_').val();
+                mm = mm.length == 1 ? '0' + mm : mm;
+                yy = yy.length == 4 ? yy.substring(2,4) : yy;
+                $form.find('.js-cc-expiration').val( mm + yy );
+                $form.find('.js-cc-cvv').val( $('#{6}').val() );
+
+                $form.attr('action', src );
+                $form.submit();
+            }}
+        }}
+    }});
+
+    // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
+    // The qry parameter value is saved to a hidden field and a post back is performed
+    $('#iframeStep2').on('load', function(e) {{
+        var location = this.contentWindow.location;
+        var qryString = this.contentWindow.location.search;
+        if ( qryString && qryString != '' && qryString.startsWith('?token-id') ) {{
+            $('#{1}').val(qryString);
+            {2};
+        }} else {{
+            if ( $('#{7}').val() == 'true' ) {{
+                $('#updateProgress').show();
+                var src = $('#{0}').val();
+                var $form = $('#iframeStep2').contents().find('#Step2Form');
+                $form.attr('action', src );
+                $form.submit();
+            }}
+        }}
+    }});
+
+";
+            string pmntScript = string.Format(
+                scriptFormat,
+                hfStep2Url.ClientID,            // {0}
+                hfStep2ReturnQueryString.ClientID,   // {1}
+                this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ), // {2}
+                this.BlockValidationGroup,      // {3}
+                txtCreditCard.ClientID,         // {4}
+                mypExpiration.ClientID,         // {5}
+                txtCVV.ClientID,                // {6}
+                hfStep2AutoSubmit.ClientID,     // {7}
+                acBillingAddress.ClientID,      // {8}
+                txtCardFirstName.ClientID,      // {9}
+                txtCardLastName.ClientID,       // {10}
+                txtCardName.ClientID            // {11}
+            );
+
+            ScriptManager.RegisterStartupScript( upnlRegistrationDetail, this.GetType(), "payment-script", pmntScript, true );
+
+            string submitScript = string.Format( @"
+    if ( $('#{0}').val() != '' ) {{
+        $('#{1}').val('');
+        $('#{2}_monthDropDownList').val('');
+        $('#{2}_yearDropDownList_').val('');
+        $('#{3}').val('');
+    }}
+",
+                hfStep2Url.ClientID,     // {0}
+                txtCreditCard.ClientID,  // {1}
+                mypExpiration.ClientID,  // {2}
+                txtCVV.ClientID          // {3}
+            );
+
+            ScriptManager.RegisterOnSubmitStatement( Page, Page.GetType(), "clearCCFields", submitScript );
         }
 
         #endregion
@@ -1539,9 +1710,6 @@ namespace RockWeb.Blocks.Event
 
             var registrationChanges = new List<string>();
 
-            DefinedValueCache dvCurrencyType = null;
-            DefinedValueCache dvCredCardType = null;
-
             if ( submitToGateway )
             {
                 GatewayComponent gateway = null;
@@ -1556,13 +1724,15 @@ namespace RockWeb.Blocks.Event
                     return false;
                 }
 
+                var threeStepGateway = gateway as ThreeStepGatewayComponent;
+
                 if ( registration == null || registration.RegistrationInstance == null || !registration.RegistrationInstance.AccountId.HasValue || registration.RegistrationInstance.Account == null )
                 {
                     errorMessage = "There was a problem with the account configuration for this registration.";
                     return false;
                 }
 
-                var paymentInfo = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
+                var paymentInfo = threeStepGateway != null ? new CreditCardPaymentInfo() : new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
                 paymentInfo.NameOnCard = gateway != null && gateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
                 paymentInfo.LastNameOnCard = txtCardLastName.Text;
 
@@ -1581,34 +1751,168 @@ namespace RockWeb.Blocks.Event
 
                 paymentInfo.Comment1 = string.Format( "{0} ({1})", registration.RegistrationInstance.Name, registration.RegistrationInstance.Account.GlCode );
 
-                transaction = gateway.Charge( RegistrationTemplateState.FinancialGateway, paymentInfo, out errorMessage );
-                if ( transaction != null )
+                if ( threeStepGateway == null )
                 {
-                    transaction.FinancialGatewayId = RegistrationTemplateState.FinancialGatewayId;
-                    if ( transaction.FinancialPaymentDetail == null )
+                    transaction = ProcessTransaction( gateway, rockContext, paymentInfo, amount, registrationChanges, out errorMessage );
+                    if ( transaction == null )
                     {
-                        transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                        return false;
                     }
-                    transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
-
-                    dvCurrencyType = paymentInfo.CurrencyTypeValue;
-                    dvCredCardType = paymentInfo.CreditCardTypeValue;
-
-                    registrationChanges.Add( string.Format( "Processed payment of {0}.", amount.FormatAsCurrency() ) );
+                }
+                else
+                {
+                    if ( !ProcessStep1( threeStepGateway, rockContext, paymentInfo, amount, registrationChanges, out errorMessage ) )
+                    {
+                        return false;
+                    }
                 }
             }
             else
             {
-                errorMessage = string.Empty;
-                transaction = new FinancialTransaction();
-                transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
-                transaction.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
-                transaction.FinancialPaymentDetail.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
-                transaction.TransactionCode = tbTransactionCode.Text;
-
-                registrationChanges.Add( string.Format( "Manually added payment of {0}.", amount.FormatAsCurrency() ) );
+                transaction = ProcessManualTransaction( amount, registrationChanges );
             }
 
+            if ( transaction != null )
+            {
+                SaveTransaction( rockContext, registration, transaction, personAliasId, amount );
+            }
+
+            if ( registrationChanges.Any() )
+            {
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( Registration ),
+                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                    registration.Id,
+                    registrationChanges
+                );
+            }
+
+            errorMessage = string.Empty;
+            return true;
+        }
+
+        private FinancialTransaction ProcessTransaction( GatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, List<string> registrationChanges, out string errorMessage )
+        {
+            var transaction = gateway.Charge( RegistrationTemplateState.FinancialGateway, paymentInfo, out errorMessage );
+            if ( transaction != null )
+            {
+                transaction.FinancialGatewayId = RegistrationTemplateState.FinancialGatewayId;
+                if ( transaction.FinancialPaymentDetail == null )
+                {
+                    transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                }
+                transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
+
+                registrationChanges.Add( string.Format( "Processed payment of {0}.", amount.FormatAsCurrency() ) );
+            }
+
+            return transaction;
+        }
+
+        private bool ProcessStep1( ThreeStepGatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, List<string> registrationChanges, out string errorMessage )
+        {
+            paymentInfo.IPAddress = GetClientIpAddress();
+            paymentInfo.AdditionalParameters = gateway.GetStep1Parameters( ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ) );
+
+            string result = gateway.ChargeStep1( RegistrationTemplateState.FinancialGateway, paymentInfo, out errorMessage );
+            if ( string.IsNullOrWhiteSpace( errorMessage ) && !string.IsNullOrWhiteSpace( result ) )
+            {
+                Step2IFrameUrl = ResolveRockUrl( gateway.Step2FormUrl );
+                hfStep2Url.Value = result;
+            }
+
+            return string.IsNullOrWhiteSpace( errorMessage );
+        }
+
+        private bool ProcessStep3( string resultQueryString, RockContext rockContext, Registration registration, int? personAliasId, decimal amount, out string errorMessage )
+        {
+            ThreeStepGatewayComponent gateway = null;
+            if ( RegistrationTemplateState != null && RegistrationTemplateState.FinancialGateway != null )
+            {
+                gateway = RegistrationTemplateState.FinancialGateway.GetGatewayComponent() as ThreeStepGatewayComponent;
+            }
+
+            if ( gateway == null )
+            {
+                errorMessage = "There was a problem creating the payment gateway information";
+                return false;
+            }
+
+            // Set this again in case an error occurred.
+            Step2IFrameUrl = ResolveRockUrl( gateway.Step2FormUrl );
+
+            if ( registration == null || registration.RegistrationInstance == null || !registration.RegistrationInstance.AccountId.HasValue || registration.RegistrationInstance.Account == null )
+            {
+                errorMessage = "There was a problem with the account configuration for this registration.";
+                return false;
+            }
+
+            PaymentInfo paymentInfo = new CreditCardPaymentInfo();
+            if ( paymentInfo == null )
+            {
+                errorMessage = "There was a problem creating the payment information";
+                return false;
+            }
+
+            paymentInfo.FirstName = registration.FirstName;
+            paymentInfo.LastName = registration.LastName;
+            paymentInfo.Comment1 = string.Format( "{0} ({1})", registration.RegistrationInstance.Name, registration.RegistrationInstance.Account.GlCode );
+
+            var transaction = gateway.ChargeStep3( RegistrationTemplateState.FinancialGateway, resultQueryString, out errorMessage );
+            if ( transaction == null  )
+            {
+                string realMessage = errorMessage;
+
+                paymentInfo.Amount = amount;
+                paymentInfo.Email = registration.ConfirmationEmail;
+                paymentInfo.FirstName = registration.FirstName;
+                paymentInfo.LastName = registration.LastName;
+                paymentInfo.Comment1 = string.Format( "{0} ({1})", registration.RegistrationInstance.Name, registration.RegistrationInstance.Account.GlCode );
+                paymentInfo.IPAddress = GetClientIpAddress();
+                paymentInfo.AdditionalParameters = gateway.GetStep1Parameters( ResolveRockUrlIncludeRoot( "~/GatewayStep2Return.aspx" ) );
+
+                string result = gateway.ChargeStep1( RegistrationTemplateState.FinancialGateway, paymentInfo, out errorMessage );
+                if ( string.IsNullOrWhiteSpace( errorMessage ) && !string.IsNullOrWhiteSpace( result ) )
+                {
+                    hfStep2Url.Value = result;
+                }
+
+                errorMessage = realMessage;
+                return false;
+            }
+
+            SaveTransaction( rockContext, registration, transaction, personAliasId, amount );
+
+            var registrationChanges = new List<string>();
+            registrationChanges.Add( string.Format( "Processed payment of {0}.", amount.FormatAsCurrency() ) );
+            HistoryService.SaveChanges(
+                rockContext,
+                typeof( Registration ),
+                Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                registration.Id,
+                registrationChanges
+            );
+
+            errorMessage = string.Empty;
+            return true;
+        }
+
+        private FinancialTransaction ProcessManualTransaction( decimal amount, List<string> registrationChanges )
+        {
+            var transaction = new FinancialTransaction();
+            transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+            transaction.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
+            transaction.FinancialPaymentDetail.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
+            transaction.TransactionCode = tbTransactionCode.Text;
+
+            registrationChanges.Add( string.Format( "Manually added payment of {0}.", amount.FormatAsCurrency() ) );
+
+            return transaction;
+        }
+
+        private bool SaveTransaction( RockContext rockContext, Registration registration, FinancialTransaction transaction, int? personAliasId, decimal amount )
+        {
             if ( transaction != null )
             {
                 transaction.Summary = tbSummary.Text;
@@ -1648,6 +1952,11 @@ namespace RockWeb.Blocks.Event
                     batchPrefix = GetAttributeValue( "BatchNamePrefix" );
                 }
 
+                DefinedValueCache dvCurrencyType = ( transaction.FinancialPaymentDetail != null && transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue ) ?
+                    DefinedValueCache.Read( transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) : null;
+                DefinedValueCache dvCredCardType = ( transaction.FinancialPaymentDetail != null && transaction.FinancialPaymentDetail.CreditCardTypeValueId.HasValue ) ?
+                    DefinedValueCache.Read( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value ) : null;
+
                 // Get the batch
                 var batch = batchService.Get(
                     batchPrefix,
@@ -1684,21 +1993,12 @@ namespace RockWeb.Blocks.Event
                     batchChanges
                 );
 
-                HistoryService.SaveChanges(
-                    rockContext,
-                    typeof( Registration ),
-                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                    registration.Id,
-                    registrationChanges
-                );
-                    
                 return true;
             }
             else
             {
                 return false;
             }
-
         }
 
         #endregion

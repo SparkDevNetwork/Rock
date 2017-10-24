@@ -2674,7 +2674,7 @@ WHERE [EntityTypeId] = @EntityTypeId
         }
 
         /// <summary>
-        /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
+        /// Adds the page security authentication (or ignores if it already exists). Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="pageGuid">The page unique identifier.</param>
         /// <param name="order">The order.</param>
@@ -3565,9 +3565,9 @@ END
                     ( showInNavigation ? "1" : "0" ),
                     iconCssClass,
                     order,
-                    ( inheritedGroupTypeGuid == null ) ? "NULL" : "'" + inheritedGroupTypeGuid + "'",
+                    ( string.IsNullOrEmpty( inheritedGroupTypeGuid ) ) ? "NULL" : "'" + inheritedGroupTypeGuid + "'",
                     locationSelectionMode,
-                    ( groupTypePurposeValueGuid == null ) ? "NULL" : "'" + groupTypePurposeValueGuid + "'"
+                    ( string.IsNullOrEmpty( groupTypePurposeValueGuid ) ) ? "NULL" : "'" + groupTypePurposeValueGuid + "'"
             ) );
         }
 
@@ -3681,7 +3681,7 @@ END
         }
 
         /// <summary>
-        /// Adds the group type group attribute.
+        /// Adds (or Updates) a new GroupType "Group Attribute" for the given GroupType using the given values.
         /// </summary>
         /// <param name="groupTypeGuid">The group type unique identifier.</param>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>

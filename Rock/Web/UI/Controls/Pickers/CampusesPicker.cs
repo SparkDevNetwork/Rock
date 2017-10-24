@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
@@ -35,6 +36,48 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             Label = "Campuses";
+            CampusIds = CampusCache.All().Select( c => c.Id ).ToList();
+        }
+
+        /// <summary>
+        /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            if ( !Page.IsPostBack )
+            {
+                LoadItems( null );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the campus ids.
+        /// </summary>
+        /// <value>
+        /// The campus ids.
+        /// </value>
+        private List<int> CampusIds
+        {
+            get { return ViewState["CampusIds"] as List<int> ?? new List<int>(); }
+            set { ViewState["CampusIds"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include inactive].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include inactive]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeInactive
+        {
+            get { return ViewState["IncludeInactive"] as bool? ?? true; }
+            set
+            {
+                ViewState["IncludeInactive"] = value;
+                LoadItems( null );
+            }
         }
 
         /// <summary>
@@ -47,14 +90,8 @@ namespace Rock.Web.UI.Controls
         {
             set
             {
-                this.Items.Clear();
-                foreach ( CampusCache campus in value )
-                {
-                    ListItem campusItem = new ListItem();
-                    campusItem.Value = campus.Id.ToString();
-                    campusItem.Text = campus.Name;
-                    this.Items.Add( campusItem );
-                }
+                CampusIds = value != null ? value.Select( c => c.Id ).ToList() : new List<int>();
+                LoadItems( null );
             }
         }
 
@@ -82,15 +119,62 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).AsIntegerList();
+                return this.Items.OfType<ListItem>()
+                    .Where( l => l.Selected )
+                    .Select( a => a.Value ).AsIntegerList();
             }
 
             set
             {
+                CheckItems( value );
+
                 foreach ( ListItem campusItem in this.Items )
                 {
                     campusItem.Selected = value.Exists( a => a.Equals( campusItem.Value.AsInteger() ) );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Checks the items.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        public void CheckItems( List<int> values )
+        {
+            if ( values.Any() )
+            {
+                foreach ( int value in values )
+                {
+                    if ( this.Items.FindByValue( value.ToString() ) == null &&
+                    CampusCache.Read( value ) != null )
+                    {
+                        LoadItems( values );
+                        return;
+                    }
+                }
+            }
+        }
+
+        private void LoadItems( List<int> selectedValues )
+        {
+            var selectedItems = Items.Cast<ListItem>()
+                .Where( i => i.Selected )
+                .Select( i => i.Value ).AsIntegerList();
+
+            Items.Clear();
+
+            var campuses = CampusCache.All()
+                .Where( c =>
+                    ( CampusIds.Contains( c.Id ) && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive ) ) ||
+                    ( selectedValues != null && selectedValues.Contains( c.Id ) ) )
+                .OrderBy( c => c.Name )
+                .ToList();
+
+            foreach ( CampusCache campus in campuses )
+            {
+                var li = new ListItem( campus.Name, campus.Id.ToString() );
+                li.Selected = selectedItems.Contains( campus.Id );
+                Items.Add( li );
             }
         }
     }

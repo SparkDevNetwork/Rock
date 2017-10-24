@@ -34,12 +34,12 @@ namespace Rock.Rest.Controllers
         /// Renders the template.
         /// </summary>
         /// <param name="template">The template.</param>
+        /// <param name="additionalMergeObjects">Any additional merge objects as a comma-delimited-list of EntityTypeId|MergeKey|EntityId</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/Lava/RenderTemplate" )]
         [HttpPost]
-        [RequireHttps]
         [Authenticate, Secured]
-        public string RenderTemplate( [NakedBody] string template )
+        public string RenderTemplate( [NakedBody] string template, [FromUri] string additionalMergeObjects = null )
         {
             Rock.Lava.CommonMergeFieldsOptions lavaOptions = new Lava.CommonMergeFieldsOptions();
             lavaOptions.GetPageContext = false;
@@ -47,10 +47,51 @@ namespace Rock.Rest.Controllers
             lavaOptions.GetCurrentPerson = true;
             lavaOptions.GetCampuses = true;
             lavaOptions.GetLegacyGlobalMergeFields = false;
+            var currentPerson = GetPerson();
 
-            Dictionary<string, object> mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(null, GetPerson(), lavaOptions);
-            
-            return template.ResolveMergeFields( mergeFields );
+            Dictionary<string, object> mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson, lavaOptions );
+
+            if ( additionalMergeObjects != null )
+            {
+                var additionalMergeObjectList = additionalMergeObjects.Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 3 ).Select( a => new
+                {
+                    EntityTypeId = a[0].AsInteger(),
+                    MergeKey = a[1],
+                    EntityId = a[2].AsInteger()
+                } ).ToList();
+
+                foreach ( var additionalMergeObject in additionalMergeObjectList )
+                {
+                    var entityTypeType = EntityTypeCache.Read( additionalMergeObject.EntityTypeId )?.GetEntityType();
+                    if ( entityTypeType != null )
+                    {
+                        var dbContext = Rock.Reflection.GetDbContextForEntityType( entityTypeType );
+                        var serviceInstance = Rock.Reflection.GetServiceForEntityType( entityTypeType, dbContext );
+                        if ( serviceInstance != null )
+                        {
+                            System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                            var mergeObjectEntity = getMethod.Invoke( serviceInstance, new object[] { additionalMergeObject.EntityId } ) as Rock.Data.IEntity;
+
+                            if ( mergeObjectEntity != null )
+                            {
+                                bool canView = true;
+                                if ( mergeObjectEntity is Rock.Security.ISecured )
+                                {
+                                    canView = ( mergeObjectEntity as Rock.Security.ISecured ).IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson );
+                                }
+
+                                if ( canView )
+                                {
+                                    mergeFields.Add( additionalMergeObject.MergeKey, mergeObjectEntity );
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            return template.ResolveMergeFields( mergeFields, currentPerson );
         }
     }
 }

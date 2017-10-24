@@ -35,6 +35,7 @@
                             <Rock:DateTimeField DataField="DateAdded" HeaderText="Added" SortExpression="DateAdded" FormatAsElapsedTime="true" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActiveOrder" />
+                            <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gGroups_Delete" />
                         </Columns>
                     </Rock:Grid>
@@ -46,7 +47,7 @@
             <Content>
                 <div class="row">
                     <div class="col-md-4">
-                        <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" />
+                        <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" EnhanceForLongLists="true" />
                     </div>
                 </div>
 

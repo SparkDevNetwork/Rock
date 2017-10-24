@@ -99,6 +99,8 @@ namespace Rock.Model
             target.Operation = source.Operation;
             target.PersonalDeviceId = source.PersonalDeviceId;
             target.PersonAliasId = source.PersonAliasId;
+            target.RelatedEntityId = source.RelatedEntityId;
+            target.RelatedEntityTypeId = source.RelatedEntityTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

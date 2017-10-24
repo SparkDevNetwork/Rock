@@ -245,6 +245,8 @@ namespace RockWeb.Blocks.Event
         {
             base.OnLoad( e );
 
+            nbPlacementNotifiction.Visible = false;
+
             if ( !Page.IsPostBack )
             {
                 int? tab = PageParameter( "Tab" ).AsIntegerOrNull();
@@ -1871,7 +1873,7 @@ namespace RockWeb.Blocks.Event
                         int? groupId = gp.SelectedValueAsInt();
                         if ( groupId.HasValue )
                         {
-                            int registrantId = (int)gGroupPlacements.DataKeys[row.RowIndex].Value;
+                            int registrantId = ( int ) gGroupPlacements.DataKeys[row.RowIndex].Value;
                             placements.AddOrIgnore( groupId.Value, new List<int>() );
                             placements[groupId.Value].Add( registrantId );
                         }
@@ -1880,46 +1882,78 @@ namespace RockWeb.Blocks.Event
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var groupMemberService = new GroupMemberService( rockContext );
-
-                    // Get all the registrants that were selected
-                    var registrantIds = placements.SelectMany( p => p.Value ).ToList();
-                    var registrants = new RegistrationRegistrantService( rockContext )
-                        .Queryable( "PersonAlias" ).AsNoTracking()
-                        .Where( r => registrantIds.Contains( r.Id ) )
-                        .ToList();
-
-                    // Get any groups that were selected
-                    var groupIds = placements.Keys.ToList();
-                    foreach ( var group in new GroupService( rockContext )
-                        .Queryable( "GroupType" ).AsNoTracking()
-                        .Where( g => groupIds.Contains( g.Id ) ) )
+                    try
                     {
-                        foreach ( int registrantId in placements[group.Id] )
+                        rockContext.WrapTransaction( () =>
                         {
-                            int? roleId = group.GroupType.DefaultGroupRoleId;
-                            if ( !roleId.HasValue )
+                            var groupMemberService = new GroupMemberService( rockContext );
+
+                            // Get all the registrants that were selected
+                            var registrantIds = placements.SelectMany( p => p.Value ).ToList();
+                            var registrants = new RegistrationRegistrantService( rockContext )
+                                .Queryable( "PersonAlias" ).AsNoTracking()
+                                .Where( r => registrantIds.Contains( r.Id ) )
+                                .ToList();
+
+                            // Get any groups that were selected
+                            var groupIds = placements.Keys.ToList();
+                            foreach ( var group in new GroupService( rockContext )
+                                .Queryable( "GroupType" ).AsNoTracking()
+                                .Where( g => groupIds.Contains( g.Id ) ) )
                             {
-                                roleId = group.GroupType.Roles
-                                    .OrderBy( r => r.Order )
-                                    .Select( r => r.Id )
-                                    .FirstOrDefault();
+                                foreach ( int registrantId in placements[group.Id] )
+                                {
+                                    int? roleId = group.GroupType.DefaultGroupRoleId;
+                                    if ( !roleId.HasValue )
+                                    {
+                                        roleId = group.GroupType.Roles
+                                            .OrderBy( r => r.Order )
+                                            .Select( r => r.Id )
+                                            .FirstOrDefault();
+                                    }
+
+                                    var registrant = registrants.FirstOrDefault( r => r.Id == registrantId );
+                                    if ( registrant != null && roleId.HasValue && roleId.Value > 0 )
+                                    {
+                                        var groupMember = groupMemberService.Queryable().AsNoTracking()
+                                            .FirstOrDefault( m =>
+                                                m.PersonId == registrant.PersonAlias.PersonId &&
+                                                m.GroupId == group.Id &&
+                                                m.GroupRoleId == roleId.Value );
+                                        if ( groupMember == null )
+                                        {
+                                            groupMember = new GroupMember();
+                                            groupMember.PersonId = registrant.PersonAlias.PersonId;
+                                            groupMember.GroupId = group.Id;
+                                            groupMember.GroupRoleId = roleId.Value;
+                                            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+
+                                            if ( !groupMember.IsValidGroupMember( rockContext ) )
+                                            {
+                                                throw new Exception( string.Format( "Placing '{0}' in the '{1}' group is not valid for the following reason: {2}",
+                                                    registrant.Person.FullName, group.Name,
+                                                    groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" ) ) );
+                                            }
+                                            groupMemberService.Add( groupMember );
+                                            rockContext.SaveChanges();
+                                        }
+                                    }
+
+                                }
                             }
 
-                            var registrant = registrants.FirstOrDefault( r => r.Id == registrantId );
-                            if ( registrant != null && roleId.HasValue && roleId.Value > 0 )
-                            {
-                                var groupMember = new GroupMember();
-                                groupMember.PersonId = registrant.PersonAlias.PersonId;
-                                groupMember.GroupId = group.Id;
-                                groupMember.GroupRoleId = roleId.Value;
-                                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                                groupMemberService.Add( groupMember );
-                            }
-                        }
+                        } );
+
+                        nbPlacementNotifiction.NotificationBoxType = NotificationBoxType.Success;
+                        nbPlacementNotifiction.Text = "Registrants were successfully placed in the selected groups.";
+                        nbPlacementNotifiction.Visible = true;
                     }
-
-                    rockContext.SaveChanges();
+                    catch ( Exception ex )
+                    {
+                        nbPlacementNotifiction.NotificationBoxType = NotificationBoxType.Danger;
+                        nbPlacementNotifiction.Text = ex.Message;
+                        nbPlacementNotifiction.Visible = true;
+                    }
                 }
             }
 
@@ -4238,7 +4272,7 @@ namespace RockWeb.Blocks.Event
 
                         var existingPeopleInGroups = new GroupMemberService( rockContext )
                             .Queryable().AsNoTracking()
-                            .Where( m => validGroupIds.Contains( m.GroupId ) )
+                            .Where( m => validGroupIds.Contains( m.GroupId ) && m.Group.IsActive && m.GroupMemberStatus == GroupMemberStatus.Active )
                             .Select( m => m.PersonId )
                             .ToList();
 

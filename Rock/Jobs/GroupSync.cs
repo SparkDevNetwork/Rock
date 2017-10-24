@@ -237,8 +237,9 @@ namespace Rock.Jobs
                         mergeFields.Add( "CreateLogin", createLogin );
                         recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
 
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-                        Email.Send( systemEmail.Guid, recipients, appRoot );
+                        var emailMessage = new RockEmailMessage( systemEmail.Guid );
+                        emailMessage.SetRecipients( recipients );
+                        emailMessage.Send();
                     }
                 }
             }
@@ -256,20 +257,16 @@ namespace Rock.Jobs
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    SystemEmailService emailService = new SystemEmailService( rockContext );
-
-                    var systemEmail = emailService.Get( systemEmailId );
-
+                    var systemEmail = new SystemEmailService( rockContext ).Get( systemEmailId );
                     if ( systemEmail != null )
                     {
-                        var recipients = new List<RecipientData>();
                         var mergeFields = new Dictionary<string, object>();
                         mergeFields.Add( "Group", syncGroup );
                         mergeFields.Add( "Person", recipient );
-                        recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
 
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-                        Email.Send( systemEmail.Guid, recipients, appRoot );
+                        var emailMessage = new RockEmailMessage( systemEmail );
+                        emailMessage.AddRecipient( new RecipientData( recipient.Email, mergeFields ) );
+                        emailMessage.Send();
                     }
                 }
             }

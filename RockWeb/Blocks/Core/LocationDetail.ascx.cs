@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Core
                         if ( location != null )
                         {
                             location.LoadAttributes();
-                            BuildAttributeEdits( location, false );
+                            BuildAttributeEdits( location, true );
                         }
                     }
                    

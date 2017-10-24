@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Cms
                     var contentChannel = GetAttributeValue("ContentChannel").AsGuid();
                     ShowDetail(PageParameter("contentItemId").AsInteger(), new ContentChannelService(new RockContext()).Get(GetAttributeValue("ContentChannel").AsGuid()).Id);
                 }
-                
+
             }
             else
             {
@@ -298,10 +298,13 @@ namespace RockWeb.Blocks.Cms
                     return;
                 }
 
-                rockContext.WrapTransaction( () =>
-                {
+                //rockContext.WrapTransaction( () =>
+                //{
                     rockContext.SaveChanges();
                     contentItem.SaveAttributeValues( rockContext );
+
+                    taglTags.EntityGuid = contentItem.Guid;
+                    taglTags.SaveTagValues( CurrentPersonAlias );
 
                     int? eventItemOccurrenceId = PageParameter( "EventItemOccurrenceId" ).AsIntegerOrNull();
                     if ( eventItemOccurrenceId.HasValue )
@@ -324,7 +327,7 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
 
-                } );
+                //} );
 
                 ReturnToParentPage();
             }
@@ -693,6 +696,20 @@ namespace RockWeb.Blocks.Cms
             hfChannelId.Value = contentChannelId.HasValue ? contentChannelId.Value.ToString() : string.Empty;
 
             ContentChannelItem contentItem = GetContentItem();
+
+            if ( contentItem == null )
+            {
+                // this block requires a valid ContentChannel in order to know which channel the ContentChannelItem belongs to, so if ContentChannel wasn't specified, don't show this block
+                this.Visible = false;
+                return;
+            }
+
+            taglTags.EntityTypeId = EntityTypeCache.Read( typeof( ContentChannelItem ) ).Id;
+            taglTags.CategoryGuid = ( contentItem.ContentChannel != null && contentItem.ContentChannel.ItemTagCategory != null ) ?
+                 contentItem.ContentChannel.ItemTagCategory.Guid : (Guid?)null;
+            taglTags.EntityGuid = contentItem.Guid;
+            taglTags.DelaySave = true;
+            taglTags.GetTagValues( CurrentPersonId );
 
             pdAuditDetails.SetEntity( contentItem, ResolveRockUrl( "~" ) );
 

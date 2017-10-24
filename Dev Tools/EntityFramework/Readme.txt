@@ -1,0 +1,1 @@
+This will update the EntityFramework Powershell script to avoid long delay at the start of Add-Migration or Update-Database. It changes the default powershell script so it doesn't try to compile the entire RockWeb website. To use this, run CopyToPackage.bat then restart Visual Studio. If you restore nuget packages, you'll need to run it again.

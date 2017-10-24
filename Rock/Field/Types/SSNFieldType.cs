@@ -217,7 +217,12 @@ namespace Rock.Field.Types
 
         #endregion
 
-        private string UnencryptAndClean( string encryptedValue )
+        /// <summary>
+        /// Unencrypts and strips any non-numeric characters from value.
+        /// </summary>
+        /// <param name="encryptedValue">The encrypted value.</param>
+        /// <returns></returns>
+        public static string UnencryptAndClean( string encryptedValue )
         {
             if ( encryptedValue.IsNotNullOrWhitespace() )
             {

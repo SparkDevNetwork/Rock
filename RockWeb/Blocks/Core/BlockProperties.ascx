@@ -37,6 +37,41 @@
                         <asp:PlaceHolder ID="phAdvancedAttributes" runat="server"></asp:PlaceHolder>
                     </asp:Panel>
 
+                    <asp:Panel ID="pnlCustomGridColumns" runat="server" Visible="false">
+                        <asp:LinkButton ID="lbAddColumns" runat="server" CssClass="btn btn-default" Text="Add Column" OnClick="lbAddColumns_Click" />
+                        <asp:Repeater ID="rptCustomGridColumns" runat="server" OnItemDataBound="rptCustomGridColumns_ItemDataBound">
+                            <ItemTemplate>
+                                <hr />
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <Rock:RockDropDownList ID="ddlOffsetType" runat="server" Label="Column Position" Help="Enter the relative position of the custom column. For example, to make it the 2nd to the last column, select Last Column with an Offset of 1." AutoPostBack="true" OnSelectedIndexChanged="ddlOffsetType_SelectedIndexChanged">
+                                                        <asp:ListItem Text="First Column" Value="0" />
+                                                        <asp:ListItem Text="Last Column" Value="1" />
+                                                    </Rock:RockDropDownList>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <Rock:NumberBox ID="nbRelativeOffset" runat="server" Label="Offset" PrependText="-/+" Required="true" />
+                                                </div>
+                                            </div>
+                                        
+                                        <Rock:RockTextBox ID="tbHeaderText" runat="server" Label="Header Text" />
+                                        <Rock:RockTextBox ID="tbHeaderClass" runat="server" Label="Header Class" />
+                                        <Rock:RockTextBox ID="tbItemClass" runat="server" Label="Item Class" />
+                                    </div>
+                                    <div class="col-md-7">
+                                        <Rock:CodeEditor ID="ceLavaTemplate" runat="server" Label="Lava Template" EditorMode="Lava" EditorHeight="275" />
+                                    </div>
+                                    <div class="col-md-1">
+                                    <asp:LinkButton ID="btnDeleteColumn" runat="server" CssClass="btn btn-danger btn-sm" OnClick="btnDeleteColumn_Click" ><i class="fa fa-times"></i></asp:LinkButton>    
+                                    </div>
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </asp:Panel>
+
                 </div>
 
             </asp:PlaceHolder>

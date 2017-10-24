@@ -12,10 +12,10 @@
             <p>
                 {% if ScheduledTransactions[0].DaysTillNextPayment > 0 %}
                     Next gift is in {{ ScheduledTransactions[0].DaysTillNextPayment }} days.
-                {% else %}
-                    Next gift is scheduled for today.
                 {% endif %}
-                
+					      {% if ScheduledTransactions[0].DaysTillNextPayment == 0 %}
+						      Next donation is scheduled for today.
+					      {% endif %}
                 {% if ScheduledTransactions[0].LastPaymentDate != null %}
                     {% if ScheduledTransactions[0].DaysSinceLastPayment > 0 %}
                         Last gift was {{ ScheduledTransactions[0].DaysSinceLastPayment }} days ago.

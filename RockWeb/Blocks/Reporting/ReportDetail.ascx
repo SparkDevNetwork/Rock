@@ -31,8 +31,8 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" EntityTypeName="Rock.Model.Report" Label="Category" />
-                                    <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" Required="true" AutoPostBack="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged"/>
-                                    <Rock:DataViewPicker ID="ddlDataView" runat="server" Label="Data View" Required="false" />
+                                    <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" Required="true" AutoPostBack="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged" EnhanceForLongLists="true" />
+                                    <Rock:DataViewPicker ID="ddlDataView" runat="server" Label="Data View" Required="false" EnhanceForLongLists="true" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:KeyValueList ID="kvSortFields" runat="server" Label="Sorting" />
@@ -101,7 +101,9 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
 
+                    <div class="panel panel-block">
                         <div class="panel-heading">
                             <div class="row margin-t-sm">
                                 <div class="col-md-6">

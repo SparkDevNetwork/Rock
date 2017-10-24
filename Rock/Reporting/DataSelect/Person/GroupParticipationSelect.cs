@@ -279,7 +279,7 @@ namespace Rock.Reporting.DataSelect.Person
             // Define Control: Role Type DropDown List
             var ddlRoleType = new RockDropDownList();
             ddlRoleType.ID = parentControl.GetChildControlInstanceName( _CtlRoleType );
-            ddlRoleType.Label = "with Group Role Type";
+            ddlRoleType.Label = "with Group Member Type";
             ddlRoleType.Help = "Specifies the type of Group Role the Member must have to be included in the result. If no value is selected, Members in any Role will be included.";
             ddlRoleType.Items.Add( new ListItem( string.Empty, RoleTypeSpecifier.Any.ToString() ) );
             ddlRoleType.Items.Add( new ListItem( "Leader", RoleTypeSpecifier.Leader.ToString() ) );

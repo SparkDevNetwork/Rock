@@ -58,6 +58,16 @@ namespace Rock.Model
         [DataMember]
         public int CommunicationId { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the medium entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The medium entity type identifier.
+        /// </value>
+        [DataMember]
+        public int? MediumEntityTypeId { get; set; }
+
         /// <summary>
         /// Gets or sets the status of the Communication submission to the recipient.
         /// </summary>
@@ -182,7 +192,14 @@ namespace Rock.Model
         [LavaInclude]
         public virtual Communication Communication { get; set; }
 
-
+        /// <summary>
+        /// Gets or sets the type of the medium entity.
+        /// </summary>
+        /// <value>
+        /// The type of the medium entity.
+        /// </value>
+        [DataMember]
+        public virtual EntityType MediumEntityType { get; set; }
 
         /// <summary>
         /// Gets or sets a dictionary containing the Additional Merge values for this communication
@@ -379,6 +396,7 @@ namespace Rock.Model
         {
             this.HasRequired( r => r.PersonAlias).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.Communication ).WithMany( c => c.Recipients ).HasForeignKey( r => r.CommunicationId ).WillCascadeOnDelete( true );
+            this.HasOptional( c => c.MediumEntityType ).WithMany().HasForeignKey( c => c.MediumEntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

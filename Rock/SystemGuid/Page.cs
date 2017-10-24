@@ -534,6 +534,11 @@ namespace Rock.SystemGuid
         public const string EDIT_SCHEDULED_TRANSACTION_SCHEDULED_TRANSACTION = "F1C3BBD3-EE91-4DDD-8880-1542EBCD8041";
 
         /// <summary>
+        /// Gets the Email Analytics page guid
+        /// </summary>
+        public const string EMAIL_ANALYTICS = "DF014200-72A3-48A0-A953-E594E5410E36";
+
+        /// <summary>
         /// Gets the Email Preference page guid
         /// ParentPage: Support Pages
         /// </summary>

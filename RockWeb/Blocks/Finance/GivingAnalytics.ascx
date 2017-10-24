@@ -56,7 +56,7 @@
                         <Rock:HiddenFieldWithClass ID="hfAdvancedVisible" runat="server" CssClass="js-advanced-visible" Value="false" />
                         <div id="divAdvancedSettings" runat="server" class="js-advanced-settings clearfix" >
                             <Rock:NumberRangeEditor ID="nreAmount" runat="server" CssClass="input-width-sm" NumberType="Currency" Label="Total Amount" />
-                            <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by Data View" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" />
+                            <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by Data View" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" EnhanceForLongLists="true" />
                             <Rock:RockControlWrapper ID="rcwAccounts" runat="server" Label="Available Accounts">
                             <div class="row">
                                 <div class="col-sm-5">
