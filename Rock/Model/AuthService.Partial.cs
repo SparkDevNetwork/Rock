@@ -38,11 +38,11 @@ namespace Rock.Model
         public IQueryable<Auth> Get( int entityTypeId, int? entityId )
         {
             return Queryable( "PersonAlias" )
-                .Where( t => 
-                    t.EntityTypeId == entityTypeId && 
-                    ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) 
+                .Where( t =>
+                    t.EntityTypeId == entityTypeId &&
+                    ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) )
                 )
-                .OrderBy( t => t.Order );
+                .OrderBy( t => t.Order ).ThenBy( t => t.Id );
         }
 
         /// <summary>
