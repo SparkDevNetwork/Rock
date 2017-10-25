@@ -965,6 +965,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.PersonSignal">PersonSignal</see> entities representing the signals that are associated with this person.
         /// </value>
+        [LavaIgnore]
         public virtual ICollection<PersonSignal> Signals { get; set; }
 
         /// <summary>
@@ -1681,6 +1682,8 @@ namespace Rock.Model
                 }
             }
 
+            CalculateSignals();
+
             if ( this.IsValid )
             {
                 var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
@@ -1740,6 +1743,27 @@ namespace Rock.Model
                 .Select( f => f.CampusId.Value )
                 .Distinct()
                 .ToList();
+        }
+
+        /// <summary>
+        /// Calcualates the top-most signal and updates the person properties.
+        /// </summary>
+        public void CalculateSignals()
+        {
+            // TODO: Implement SignalTypeCache.
+            var rockContext = new RockContext();
+            var topSignal = Signals
+                .Select( s => new
+                {
+                    Id = s.Id,
+                    SignalType = s.SignalType ?? new SignalTypeService( rockContext ).Get( s.SignalTypeId )
+                } )
+                .OrderBy( s => s.SignalType.Order )
+                .ThenBy( s => s.SignalType.Id )
+                .FirstOrDefault();
+
+            TopSignalId = topSignal?.Id;
+            TopSignalColor = topSignal?.SignalType.SignalColor;
         }
 
         #endregion
