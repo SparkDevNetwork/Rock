@@ -33,6 +33,17 @@ using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
 
+/// <summary>
+/// ALTER TABLE [dbo].[Person]
+///	ADD [TopSignalColor] [nvarchar](100) NULL,
+///	[TopSignalId] [int] NULL
+///
+/// ALTER TABLE [dbo].[Person] WITH CHECK ADD CONSTRAINT [FK_dbo.Person_dbo.PersonSignal_Id] FOREIGN KEY( [TopSignalId])
+/// REFERENCES [dbo].[PersonSignal] ([Id])
+/// GO
+/// ALTER TABLE [dbo].[Person] CHECK CONSTRAINT [FK_dbo.Person_dbo.PersonSignal_Id]
+/// GO
+/// </summary>
 namespace Rock.Model
 {
     /// <summary>
