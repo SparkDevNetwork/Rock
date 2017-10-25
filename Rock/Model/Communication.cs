@@ -192,7 +192,18 @@ namespace Rock.Model
         /// A Json formatted <see cref="System.String"/> that contains any additional merge fields for the Communication.
         /// </value>
         [DataMember]
-        public string AdditionalMergeFieldsJson { get; set; }
+        public string AdditionalMergeFieldsJson
+        {
+            get
+            {
+                return AdditionalMergeFields.ToJson();
+            }
+
+            set
+            {
+                AdditionalMergeFields = value.FromJsonOrNull<List<string>>() ?? new List<string>();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the enabled lava commands.
