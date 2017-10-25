@@ -1147,6 +1147,7 @@
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
+    <Compile Include="PersonProfile\Badge\TopPersonSignal.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialPledgeDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialTransactionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
@@ -1177,6 +1178,7 @@
     <Compile Include="Transactions\ShortLinkTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReceipts.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
+    <Compile Include="Transactions\UpdatePersonsTopSignal.cs" />
     <Compile Include="UniversalSearch\Crawler\Crawler.cs" />
     <Compile Include="UniversalSearch\Crawler\CrawledPage.cs" />
     <Compile Include="UniversalSearch\Crawler\RobotsTxt\AccessRule.cs" />

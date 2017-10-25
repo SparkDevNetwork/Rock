@@ -70,8 +70,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> that represents the SignalType icon class.
         /// </value>
-        [Required]
         [MaxLength( 100 )]
+        [DataMember]
         public string SignalIconCssClass { get; set; }
 
         /// <summary>
