@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
@@ -167,9 +168,17 @@ namespace Rock.Utility
                     {
                         var personIds = selectExpandList.Select( a => ( a.GetPropertyValue( "Instance" ) as Rock.Model.Person ).Id ).ToList();
 
-                        // NOTE: If this is a really long list of PersonIds (50000+ or so), this might time out or get an error, 
-                        // but it would probably time out anyway due to all the data that would need to be serialized and returned to the client
-                        personAliasLookup = new Rock.Model.PersonAliasService( rockContext ).Queryable().Where( a => personIds.Contains( a.PersonId ) && a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
+                        // NOTE: If this is a really long list of PersonIds (20000+ or so), this might time out or get an error, 
+                        // so if it is more than 20000 just get *all* the personalias records which would probably be much faster than a giant where clause
+                        var personAliasQry = new Rock.Model.PersonAliasService( rockContext ).Queryable().AsNoTracking();
+                        if ( personIds.Count < 20000 )
+                        {
+                            personAliasLookup = personAliasQry.Where( a => personIds.Contains( a.PersonId ) && a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
+                        }
+                        else
+                        {
+                            personAliasLookup = personAliasQry.Where( a => a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
+                        }
                     }
 
                     foreach ( var selectExpandItem in selectExpandList )

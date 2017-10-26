@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 using System.Web.UI;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -167,6 +169,8 @@ namespace Rock.Field.Types
 
             var values = new List<string>();
             string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray(); // url decode array items
+
             foreach ( string nameValue in nameValues )
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' } );
@@ -306,6 +310,8 @@ namespace Rock.Field.Types
             bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsIntegerOrNull().HasValue;
 
             string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray(); // url decode array items
+
             foreach ( string nameValue in nameValues )
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' } );
