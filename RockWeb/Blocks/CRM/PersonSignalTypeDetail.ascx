@@ -32,7 +32,7 @@
                     </div>
 
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.SignalType, Rock" PropertyName="SignalIconCssClass" />
+                        <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.SignalType, Rock" PropertyName="SignalIconCssClass" Label="Icon CSS Class" />
                     </div>
                 </div>
 
