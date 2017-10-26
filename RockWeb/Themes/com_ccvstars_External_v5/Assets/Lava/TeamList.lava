@@ -14,7 +14,10 @@
                 {% else %}
                         <h4>{{ CurrentPerson.NickName }} {{ CurrentPerson.LastName }} <small>({{ group.Role }})</small></h4>
                 {% endif %}
-                <p><b>Team:</b> {{ group.Group.Name }}</p>
+                <p>
+                    <b>{{ group.Group | Attribute:'Sport' }}</b><br />
+                    <b>Team:</b> {{ group.Group.Name }}
+                </p>
                 <ul class="margin-b-md">
                     {% if color != "" and color %}<li><b>Color:</b> {{ group.Group | Attribute:'Color' }}</li> {% endif %}
                     {% if practiceLocation != "" and practiceLocation %}<li><b>Practice Location:</b> {{ group.Group | Attribute:'PracticeLocation' }}</li> {% endif %}
@@ -42,7 +45,10 @@
                 {% assign practiceDays = group.Group | Attribute:'PracticeDays' %}
                 {% assign practiceTime = group.Group | Attribute:'PracticeTime' %}
                 <h4>{{ child.NickName }} {{ child.LastName }} <small>(Player)</small></h4>
-                <p><b>Team:</b> {{ group.Group.Name }}</p>
+                <p>
+                    <b>{{ group.Group | Attribute:'Sport' }}</b><br />    
+                    <b>Team:</b> {{ group.Group.Name }}
+                </p>
                 <ul class="margin-b-md">
                     {% if color != "" and color %}<li><b>Color:</b> {{ group.Group | Attribute:'Color' }}</li> {% endif %}
                     {% if practiceLocation != "" and practiceLocation %}<li><b>Practice Location:</b> {{ group.Group | Attribute:'PracticeLocation' }}</li> {% endif %}
