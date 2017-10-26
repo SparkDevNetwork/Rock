@@ -2398,19 +2398,22 @@ namespace RockWeb.Blocks.Event
         private void BindRegistrationsGrid()
         {
             int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
-            if ( instanceId.HasValue )
+            if ( instanceId.HasValue && instanceId > 0)
             {
                 using ( var rockContext = new RockContext() )
                 {
                     var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
 
                     var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
-                    decimal cost = instance.RegistrationTemplate.Cost;
-                    if ( instance.RegistrationTemplate.SetCostOnInstance ?? false )
+                    if ( instance != null )
                     {
-                        cost = instance.Cost ?? 0.0m;
+                        decimal cost = instance.RegistrationTemplate.Cost;
+                        if ( instance.RegistrationTemplate.SetCostOnInstance ?? false )
+                        {
+                            cost = instance.Cost ?? 0.0m;
+                        }
+                        _instanceHasCost = cost > 0.0m;
                     }
-                    _instanceHasCost = cost > 0.0m;
 
                     var qry = new RegistrationService( rockContext )
                         .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee" )
