@@ -295,10 +295,24 @@ namespace Rock.Data
         public virtual Dictionary<string, object> ToDictionary()
         {
             var dictionary = new Dictionary<string, object>();
+            HashSet<string> virtualPropsWhiteList = new HashSet<string>
+            {
+                "Id",
+                "Guid",
+                "ForeignId",
+                "ForeignKey",
+                "ForeignGuid",
+                "Order",
+                "IsActive",
+                "CreatedByPersonAliasId",
+                "CreatedDateTime",
+                "ModifiedByPersonAliasId",
+                "ModifiedDateTime"
+            };
 
             foreach ( var propInfo in this.GetType().GetProperties() )
             {
-                if ( !propInfo.GetGetMethod().IsVirtual || propInfo.Name == "Id" || propInfo.Name == "Guid" || propInfo.Name == "Order" || propInfo.Name == "IsActive" )
+                if ( !propInfo.GetGetMethod().IsVirtual || virtualPropsWhiteList.Contains(propInfo.Name) )
                 {
                     dictionary.Add( propInfo.Name, propInfo.GetValue( this, null ) );
                 }
