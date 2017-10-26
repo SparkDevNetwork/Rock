@@ -11434,6 +11434,29 @@ html,body{
     background-color: red;
 }
 
-.loginstatus-login-entry {
-    background: rgba(0,0,0,0.6);
+/* Formatting for select a day event block */
+.event-item-list-container {
+	display: flex;
+	justify-content: space-around;
+}
+
+.event-item-container {
+    display: flex;
+    border: 2px solid #E4E4E4;
+    border-radius: 7.5px;
+    width: 150px;
+    height: 150px;
+    box-shadow: 0px 0px 1px #E5E5E5;
+    padding:15px;
+    margin: 5px;
+}
+
+.event-item-container:hover {
+    background-color: #7A1315;
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
+.event-item {
+    align-self: flex-end;
 }
