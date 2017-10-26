@@ -1409,9 +1409,10 @@ namespace Rock.Model
         public override Dictionary<string, object> ToDictionary()
         {
             var dictionary = base.ToDictionary();
-            dictionary.Add( "Age", AgePrecise );
-            dictionary.Add( "DaysToBirthday", DaysToBirthday );
+            dictionary.AddOrIgnore( "Age", AgePrecise );
+            dictionary.AddOrIgnore( "DaysToBirthday", DaysToBirthday );
             dictionary.AddOrIgnore( "FullName", FullName );
+            dictionary.AddOrIgnore( "PrimaryAliasId", this.PrimaryAliasId );
             return dictionary;
         }
 
