@@ -103,6 +103,12 @@ declare @LastMonthEnd datetime= DATEADD(day, -1,DATEADD(mm, 1, @LastMonthStart))
 declare @LastYearMonthStart datetime= DATEADD(wk, -52, @ThisMonthStart);
 declare @LastYearMonthEnd datetime= DATEADD(day, -1,DATEADD(mm, 1, @LastYearMonthStart));
 
+declare @ThisMinistryYearStart datetime = DateAdd(mm, 7, DATEADD(yy,DATEDIFF(yy,0,@ThisWeekEnd),0));
+if(@ThisWeekEnd < @ThisMinistryYearStart)
+	set @ThisMinistryYearStart = DateAdd(yy,-1, @ThisMinistryYearStart);
+
+declare @LastMinistryYearStart datetime = DateAdd(yy,-1, @ThisMinistryYearStart);
+
 ----------------------------------------------------------------------------
 -- DETERMINE IF CURRENT DATE TIME IS THE WEEKEND
 ----------------------------------------------------------------------------
@@ -660,9 +666,9 @@ From (
 	Select titleTable.Campus as 'Campus'
 	, titleTable.[Order] as 'Order'
 	, Format(currentWeekService.Attendance,'N0')  as 'ThisWeek'
-	, Format(lastWeekService.Attendance,'N0')  as 'LastWeek'
-	, Format(lastYearWeekService.Attendance,'N0')  as 'LastYear'
-	, Case When (lastYearWeekService.Attendance != 0 and lastYearWeekService.Attendance is not null) then (currentWeekService.Attendance - lastYearWeekService.Attendance) / lastYearWeekService.Attendance  else null end As 'Growth'
+	, Format(thisYearToDate.Attendance,'N0')  as 'ThisYearToDate'
+	, Format(lastYearToDate.Attendance,'N0')  as 'LastYearToDate'
+	, Case When (lastYearToDate.Attendance != 0 and lastYearToDate.Attendance is not null) then (thisYearToDate.Attendance - lastYearToDate.Attendance) / lastYearToDate.Attendance  else null end As 'Growth'
 	From 
 	(
 		select CASE GROUPING(CampusId) WHEN 1 THEN 'Total' ELSE Max(CampusName) END as 'Campus'
@@ -684,25 +690,25 @@ From (
 		select CASE GROUPING(CampusId) WHEN 1 THEN 'Total' ELSE Max(CampusName) END as 'Campus'
 		,Sum(Attendance) as 'Attendance'
 		From @BaptismsMetricValues
-		where MetricValueDateTime >= @LastWeekStart and MetricValueDateTime <= @LastWeekEnd
+		where MetricValueDateTime >= @ThisMinistryYearStart and MetricValueDateTime <= @ThisWeekEnd
 		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(CampusId)
-	) as lastWeekService
-	on titleTable.Campus = lastWeekService.Campus
+	) as thisYearToDate
+	on titleTable.Campus = thisYearToDate.Campus
 	left join 
 	(
 		select CASE GROUPING(CampusId) WHEN 1 THEN 'Total' ELSE Max(CampusName) END as 'Campus'
 		,Sum(Attendance) as 'Attendance'
 		From @BaptismsMetricValues
-		where MetricValueDateTime >= @LastYearWeekStart and MetricValueDateTime <= @LastYearWeekEnd
+		where MetricValueDateTime >= @LastMinistryYearStart and MetricValueDateTime <= @LastYearWeekEnd
 		and (@IsServicesOngoing = 0 or MetricKeyString in (select * from @CurrentMetrics))
 		group by Rollup(CampusId)
-	) as lastYearWeekService
-	on titleTable.Campus = lastYearWeekService.Campus
+	) as lastYearToDate
+	on titleTable.Campus = lastYearToDate.Campus
 	) innerTable
 where innerTable.ThisWeek is not null
-or innerTable.LastWeek is not null
-or innerTable.LastYear is not null
+or innerTable.ThisYearToDate is not null
+or innerTable.LastYearToDate is not null
 Order By [Order], Campus
 ----------------------------------------------------------------------------
 -- GRAB THE DISCOVER CENTRAL
@@ -808,3 +814,5 @@ where innerTable.ThisWeek is not null
 or innerTable.LastWeek is not null
 or innerTable.LastYear is not null
 Order By [Order], Campus
+
+Select @LastMinistryYearStart, @LastYearWeekEnd, @ThisMinistryYearStart, @ThisWeekEnd

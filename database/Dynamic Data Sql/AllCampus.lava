@@ -228,3 +228,36 @@
 	</table></div>
 </div>
 </div>
+<div class='row'>
+<div class='col-md-4'>
+<h2>Baptisms</h2>
+<div class="grid">
+<table class="grid-table table table-bordered table-striped table-hover">
+		<thead>
+			<tr align="left" data-original-title="" title="">
+				<th data-priority="1" scope="col">Campus</th>
+				<th data-priority="1" scope="col">This Week</th>
+				<th data-priority="1" scope="col">This YTD</th>
+				<th data-priority="1" scope="col">Last YTD</th>
+				<th data-priority="1" scope="col">Growth (YoY)</th>
+			</tr>
+		</thead><tbody>
+		{%for row in table7.rows %}
+			<tr align="left" data-original-title="" title="">
+				<td class="grid-select-cell text-nowrap" data-priority="1">{{row.Campus}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.ThisWeek }}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.ThisYearToDate}}</td>
+				<td class="grid-select-cell" data-priority="1">{{row.LastYearToDate}}</td>
+				{% if row.Growth < 0 %}
+				{% assign color = "#ff6666" %}
+				{% else %}
+				{% assign color = "#66ff66" %}
+				{% endif %}
+				<td class="grid-select-cell" data-priority="1" {% if row.Growth > 0 or row.Growth < 0 %}style="background-color:{{color}};"{% endif %}><p style="color:black">{{row.Growth | Format:'p1' }}</p></td>
+			</tr>
+			{% endfor %}
+		</tbody><tfoot>
+		</tfoot>
+	</table></div>
+</div>
+</div>
