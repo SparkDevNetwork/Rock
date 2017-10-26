@@ -15,8 +15,8 @@
                     <Rock:Grid ID="gPersonSignalType" runat="server" AllowSorting="false">
                         <Columns>
                             <Rock:ReorderField />
-                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:ColorField DataField="SignalColor" HeaderText="Color" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gPersonSignalType_Delete" />
