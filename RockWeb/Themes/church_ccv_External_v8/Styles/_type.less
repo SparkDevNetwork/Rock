@@ -1,0 +1,114 @@
+
+
+//
+// TYPE
+// --------------------------------------------------
+
+
+// Bootstrap/default overrides
+// -------------------------
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  text-transform: uppercase;
+}
+
+.lead-din {
+  .din(floor(@headings-font-size-base * 1.15), 1.3);
+  margin-bottom: @line-height-computed;
+  font-weight: 300;
+
+  @media (min-width: @screen-sm-min) {
+    font-size: floor(@headings-font-size-base * 1.3);
+  }
+}
+
+
+// Additions
+// -------------------------
+
+.underline {
+  border-bottom: 2px solid @gray-lighter;
+  padding-bottom: .25em;
+}
+
+.text-responsive {
+  .text-aa();
+  line-height: 1.5;
+  p, p& {
+    margin-bottom: 1em;
+  }
+  @media @sm{
+    font-size: 1.2em;
+    blockquote {
+      font-size: 1.2em;
+    }
+    .lead {
+      font-size: 1.4em;
+    }
+  }
+}
+
+.text-inverse {
+  color: #fff;
+}
+
+.text-faded {
+  color: fade(@text-color, 50%);
+  &.text-inverse {
+    color: fade(#fff, 50%);
+  }
+}
+
+.text-aa { .text-aa(); }
+.text-noaa { .text-noaa(); }
+
+
+// Lists (used on the watch page)
+
+.list-2col-wrapper {
+  -moz-column-count: 2;
+  -webkit-column-count: 2;
+  column-count: 2;
+  > ol > li,
+  > ul > li {
+    -webkit-column-break-inside: avoid;
+              page-break-inside: avoid;
+                   break-inside: avoid;
+  }
+  > ol > li:only-child,
+  > ul > li:only-child {
+    -webkit-column-span: all;
+            column-span: all;
+    margin-left: @line-height-computed;
+  }
+}
+
+// used on watch page popovers
+.list-flush {
+  padding-left: @line-height-computed;
+}
+
+// Comma list (for service times on /locations)
+.commalist-item {
+  margin-right: -.15em;
+  & + & {
+    // background: red;
+    &:before {
+      content: ', '
+    }
+  }
+  & + & + & {
+    &:before {
+      margin-left: .15em;
+      content: ' & '
+    }
+  }
+}
+
+
+// MISC - don't have a better spot for this yet
+.is-loading > .fa {
+  .fa-spin;
+  &:before { content: "\f013"; }
+}

@@ -1,0 +1,58 @@
+{% if member.Member.Person %}
+  {% assign person = member.Member.Person %}
+{% else %}
+  {% assign person = member %}
+{% endif %}
+
+<div class="col-xs-12 col-sm-6 margin-b-md rollover-container">
+
+  <a class="pull-left margin-r-sm img-popover" role="button" data-toggle="popover" title="{{ person.FullName }}" data-placement="auto right">
+    <img src="{{ person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" width="60" />
+    <div class="hide js-popup-content">
+      <ul class="list-unstyled">
+        {% if person.BirthDate %}
+          <li>{{ person.BirthDate | Date:'M/d/yyyy' }} <small>({{ person.Age }} yrs. old)</small></li>
+        {% endif %}
+        <li>{{ person.Gender }}</li>
+        {% if person.MaritalStatusValue.Value %}
+          <li>{{ person.MaritalStatusValue.Value }} {% if person.AnniversaryDate %}<small>({{ person.AnniversaryDate | Date:'M/d/yyyy' }})</small>{% endif %}</li>
+        {% endif %}
+        {% for phone in person.PhoneNumbers %}
+          {% if phone.NumberFormatted != empty %}
+            <li>{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small></li>
+          {% endif %}
+        {% endfor %}
+		{% assign personFirstVisit = person | Attribute:'FirstVisit' %}
+        {% if personFirstVisit %}
+          <li><small>First visited on {{ personFirstVisit }}</small></li>
+        {% endif %}
+      </ul>
+    </div>
+  </a>
+
+  <div class="pull-left">
+
+    {% if linkToDetailPage %}
+      <a href="{{ memberDetailPage }}?GroupMemberId={{ member.Member.Id }}&AdminPersonId={{ CurrentPerson.Id }}">
+        <strong>{{ person.FullName }}</strong>
+      </a>
+    {% else %}
+      <strong>{{ person.FullName }}</strong>
+    {% endif %}
+
+    {% if member.Member.GroupMemberStatus == 'Pending' and showTUpVideoButton %}
+      <a class="btn btn-link btn-xs" href="{{ videoPage }}?person={{ person.Id }}" title="Send T-Up Video"><i class="fa fa-video-camera"></i></a>
+    {% endif %}
+
+    <br />
+    <a href="{{ communicationPage }}?person={{ person.Id }}">
+      {{ person.Email }}
+    </a>
+
+    {% if showBadgeBar %}
+      <div class="js-badge-bar-holder" data-id="{{ person.Id }}"><small class="text-muted">loading...</small></div>
+    {% endif %}
+
+  </div>
+
+</div>

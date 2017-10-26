@@ -1,0 +1,30 @@
+{% comment %}
+
+  {% assign detailPage = '/story' %}
+  {% include '~~/Assets/Lava/Stories/List.lava' %}
+
+{% endcomment %}
+
+{% assign detailPage = detailPage | Default: '/story' %}
+
+{% assign firstItem = Items[0] %}
+
+<header>
+  <a class="storythumb storythumb-featured storythumb-link" href="{{ detailPage }}/{{ firstItem | Attribute:'ShortUrl' }}" style="background-image: url('{{ firstItem | Attribute: 'Image', 'Url' }}&maxwidth=1140'); background-position: {{ firstItem | Attribute: 'ImageFocalPoint', 'RawValue' }};">
+    <div class="storythumb-title">
+      <span>{{ firstItem.Title }}</span>
+    </div>
+  </a>
+</header>
+
+<div class="row">
+  {% for item in Items offset: 1 %}
+    <div class="col-sm-6">
+      <a class="storythumb storythumb-link" href="{{ detailPage }}/{{ item | Attribute:'ShortUrl' }}" style="background-image: url('{{ item | Attribute: 'Image', 'Url' }}&maxwidth=555'); background-position: {{ item | Attribute: 'ImageFocalPoint', 'RawValue' }};">
+        <div class="storythumb-title">
+          <span>{{ item.Title }}</span>
+        </div>
+      </a>
+    </div>
+  {% endfor %}
+</div>

@@ -1,0 +1,79 @@
+
+
+//
+// SCAFFOLDING
+// --------------------------------------------------
+
+
+// High Level
+// -------------------------
+
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  position: relative; // required by full menu overlay
+}
+
+img {
+  // .img-responsive without setting as block
+  width: 100% \9;
+  max-width: 100%;
+  height: auto;
+}
+// Fix Google Map infowindow close mark being affected by img-responsive
+.gm-style img { max-width: none; }
+// Fix Photo upload being affected by img-responsive
+.image-editor-crop-container img { max-width: none; }
+
+body {
+  max-width: 1920px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// Because maroon doesn't stand out enough in a paragraph of regular text.
+// Not changing Bootstrap variable as we still want maroon for btn-primary and other things.
+a {
+  color: lighten(@brand-primary, 15%);
+  &:hover {
+    color: @brand-primary;
+  }
+}
+
+
+// Extensions
+// -------------------------
+
+.img-full {
+  width: 100%;
+  height: auto;
+}
+
+.link-plain {
+  color: inherit;
+  &:hover {
+    color: inherit;
+    text-decoration: inherit;
+  }
+}
+
+.container-sm {
+  max-width: 40em;
+  margin-left: auto;
+  margin-right: auto;
+}
+.container-md {
+  max-width: 50em;
+  margin-left: auto;
+  margin-right: auto;
+}
+// Override bootstrap
+// Should probably make 50em a variable and move this selector somewhere else
+.jumbotron .container-md {
+  max-width: 50em;
+}

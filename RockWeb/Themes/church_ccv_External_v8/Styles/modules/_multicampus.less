@@ -1,0 +1,36 @@
+
+//
+// MULTI CAMPUS (like campus list on easter or christmas pages)
+// --------------------------------------------------
+
+
+.multicampus {
+  .make-row();
+}
+  .multicampus-item {
+    // col-sm-10 col-sm-offset-1 col-md-6 col-md-offset-0
+    .make-sm-column(10);
+    .make-sm-column-offset(1);
+    .make-md-column(6);
+    .make-md-column-offset(0);
+    &.is-active {
+      .make-md-column(8);
+      .make-md-column-offset(2);
+    }
+  }
+    .multicampus-iteminner {
+      border: 3px solid @gray-lighter;
+      padding: 0 @line-height-computed;
+      margin-bottom: @grid-gutter-width;
+      border-radius: @border-radius-large;
+    }
+      .multicampus-title {
+        cursor: pointer;
+        margin: @line-height-computed 0;
+      }
+        .multicampus-title > .fa {
+          opacity: .5;
+        }
+        .is-open .multicampus-title > .fa {
+          transform: rotate(180deg);
+        }

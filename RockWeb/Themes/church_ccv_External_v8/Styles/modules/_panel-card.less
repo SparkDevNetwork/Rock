@@ -1,0 +1,100 @@
+
+
+//
+// CARD PANELS (Used by /events)
+// --------------------------------------------------
+
+// Base
+// -------------------------
+
+.panel-card {
+  border-width: 0;
+  margin-bottom: @grid-gutter-width;
+  .panel-body {
+    display: block;
+    height: @grid-gutter-width*9-3px;
+    position: relative;
+    background: @gray-light;
+    color: #fff;
+    border-radius: @border-radius-base @border-radius-base 0 0;
+    a { color: inherit; }
+  }
+    .panel-title {
+      font-size: @font-size-h3;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      overflow: hidden;
+      margin: @grid-gutter-width/2;
+      line-height: @grid-gutter-width;
+    }
+  .panel-footer {
+    border-top: none;
+    border-left: 2px solid @panel-default-border;
+    border-bottom: 2px solid @panel-default-border;
+    border-right: 2px solid @panel-default-border;
+    line-height: @grid-gutter-width + 5px;
+  }
+}
+
+
+// Modifiers
+// -------------------------
+
+.panel-card-withimg {
+  .panel-card-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center center;
+    border-radius: @border-radius-base @border-radius-base 0 0;
+    &:before {
+      background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.8) 100%);
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+  }
+  .panel-title {
+    top: auto;
+    bottom: 0;
+  }
+}
+
+.panel-card-withimg.panel-card-hideoverlay {
+  .panel-card-img:before {
+    display: none;
+  }
+  .panel-title {
+    .sr-only();
+  }
+}
+
+// Size
+
+.panel-card-half {
+  .panel-body {
+    height: @grid-gutter-width*3;
+  }
+}
+
+// Color
+
+.panel-card-primary {
+  .panel-body {
+    background-color: @brand-primary;
+  }
+}
+
+.panel-card-black {
+  .panel-body {
+    background-color: @gray-darker;
+  }
+}

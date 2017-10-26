@@ -1,0 +1,39 @@
+
+//
+// CARD - incomplete implementation of
+// https://github.com/twbs/bootstrap/blob/v4-dev/scss/_card.scss
+// --------------------------------------------------
+
+@card-border-width: 2px;
+
+.card {
+  position: relative;
+  display: block;
+  margin-bottom: @grid-gutter-width;
+  // border: $card-border-width solid $card-border-color;
+  border-radius: @border-radius-large;
+  border: @card-border-width solid @table-border-color;
+}
+
+  .card-block {
+    .clearfix();
+    padding: @line-height-computed;
+  }
+
+  .card-img-top {
+    margin-left: -@card-border-width;
+    margin-right: -@card-border-width;
+    margin-top: -@card-border-width;
+    img {
+      .border-top-radius(@border-radius-large);
+      width: 100%;
+    }
+  }
+
+  .card-title {
+    margin-top: 0;
+  }
+
+  .card-text:last-child {
+    margin-bottom: 0;
+  }
