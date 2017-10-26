@@ -11481,3 +11481,7 @@ html,body{
 .event-item {
     align-self: flex-end;
 }
+
+.btn-event-campus-selection {
+    width: auto;
+}
