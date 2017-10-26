@@ -7685,7 +7685,7 @@ h1.page-header:empty {
 .sub-feature .nav-pills a:hover {
   background: #555555;
 }
-.sub-feature .nav-pills li:first-child {
+/*.sub-feature .nav-pills li:first-child {
   float: right;
 }
 .sub-feature .nav-pills li:first-child a {
@@ -7694,7 +7694,7 @@ h1.page-header:empty {
 }
 .sub-feature .nav-pills li:first-child a:hover {
   background: #777777;
-}
+}*/
 h2 {
   font-family: "masqueregular", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -7920,4 +7920,11 @@ h2 {
 }
 .panel.panel-block > .panel-body .grid.grid-panel {
   margin: 0;
+}
+.header-login-item {
+    color: black;
+    padding: 0px 10px;
+}
+.header-login-item:hover {
+    color: #e43d35;
 }
