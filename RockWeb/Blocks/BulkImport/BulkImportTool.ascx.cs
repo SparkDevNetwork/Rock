@@ -280,9 +280,8 @@ namespace RockWeb.Blocks.BulkImport
                     importUpdateType = BulkImporter.ImportUpdateType.AlwaysUpdate;
                 }
 
-                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text, importUpdateType );
+                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text, importUpdateType, _importer_OnProgress );
                 _importer.FinancialTransactionChunkSize = 100000;
-                _importer.OnProgress += _importer_OnProgress;
 
                 if ( importType == ImportType.Import || importType == ImportType.All )
                 {
@@ -314,10 +313,13 @@ namespace RockWeb.Blocks.BulkImport
                     foreach ( var exception in t.Exception.InnerExceptions )
                     {
                         LogException( exception );
-                        _importer.Exceptions.Add( exception.GetBaseException() );
+                        if ( _importer.Exceptions != null )
+                        {
+                            _importer.Exceptions.Add( exception.GetBaseException() );
+                        }
                     }
 
-                    _importer_OnProgress( _importer, "ERROR" );
+                    _importer_OnProgress( _importer, "ERROR: " + t.Exception.Message );
                 }
                 else
                 {
@@ -348,7 +350,15 @@ namespace RockWeb.Blocks.BulkImport
             var exceptionsCopy = _importer.Exceptions.ToArray();
             if ( exceptionsCopy.Any() )
             {
-                progressResults.Add( "Exception", string.Join( Environment.NewLine, exceptionsCopy.Select( a => a.Message ).ToArray() ) );
+                if ( exceptionsCopy.Count() > 50 )
+                {
+                    var exceptionsSummary = exceptionsCopy.GroupBy( a => a.GetBaseException().Message ).Select( a => a.Key + "(" + a.Count().ToString() + ")" );
+                    progressResults.Add( "Exceptions", string.Join( Environment.NewLine, exceptionsSummary ) );
+                }
+                else
+                {
+                    progressResults.Add( "Exception", string.Join( Environment.NewLine, exceptionsCopy.Select( a => a.Message ).ToArray() ) );
+                }
             }
 
             var resultsCopy = _importer.Results.ToArray();

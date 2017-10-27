@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 
+using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Slingshot.Model;
@@ -1493,8 +1494,11 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
 
             List<BinaryFile> binaryFilesToInsert = new List<BinaryFile>();
             Dictionary<PhotoImport.PhotoImportType, Dictionary<int, Guid>> photoTypeForeignIdBinaryFileGuidDictionary = new Dictionary<PhotoImport.PhotoImportType, Dictionary<int, Guid>>();
-            photoTypeForeignIdBinaryFileGuidDictionary.Add( PhotoImport.PhotoImportType.Person, new Dictionary<int, Guid>() );
-            photoTypeForeignIdBinaryFileGuidDictionary.Add( PhotoImport.PhotoImportType.Family, new Dictionary<int, Guid>() );
+            foreach( var photoImportType in Enum.GetValues(typeof(PhotoImport.PhotoImportType)).OfType<PhotoImport.PhotoImportType>() )
+            {
+                photoTypeForeignIdBinaryFileGuidDictionary.Add( photoImportType, new Dictionary<int, Guid>() );
+            }
+            
             var binaryFileService = new BinaryFileService( rockContext );
 
             HashSet<string> alreadyExists = new HashSet<string>( binaryFileService.Queryable().Where( a => a.ForeignKey != null && a.ForeignKey != "" ).Select( a => a.ForeignKey ).Distinct().ToList() );
@@ -1644,6 +1648,25 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
 		)
 " );
             }
+
+            // Insert Financial Transaction Images (note: some transactions might have multiple images)
+            rockContext.Database.ExecuteSqlCommand(
+            $@"
+INSERT INTO [FinancialTransactionImage]
+    ([TransactionId]
+    ,[BinaryFileId]
+    ,[Guid]
+    ,[Order]
+)
+select
+    ft.Id [TransactionId],
+    bf.Id[BinaryFileId],
+    NEWID()[Guid],
+    ROW_NUMBER() OVER (partition by bf.ForeignKey order by bf.[FileName] ) - 1 as [Order]
+        FROM FinancialTransaction ft
+        INNER JOIN BinaryFile bf ON ft.ForeignId = Replace( bf.ForeignKey, 'FinancialTransactionForeignId_{foreignSystemKey}_', '')
+WHERE bf.ForeignKey LIKE 'FinancialTransactionForeignId_{foreignSystemKey}_%'
+and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
 
             stopwatchTotal.Stop();
 
