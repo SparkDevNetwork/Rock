@@ -3445,6 +3445,7 @@ namespace RockWeb.Blocks.Event
                                     emailField3.HeaderText = "Email";
                                     emailField3.SortExpression = dataFieldExpression;
                                     gWaitList.Columns.Add( emailField3 );
+                                    _dynamicallyAddedColumns.Add( emailField3 );
 
                                     break;
                                 }
@@ -3583,7 +3584,7 @@ namespace RockWeb.Blocks.Event
                                     ddlWaitlistGenderFilter.BindToEnum<Gender>( true );
                                     ddlWaitlistGenderFilter.ID = "ddlWaitlistGenderFilter";
                                     ddlWaitlistGenderFilter.Label = "Gender";
-                                    ddlWaitlistGenderFilter.SetValue( fRegistrants.GetUserPreference( "WL-Gender" ) );
+                                    ddlWaitlistGenderFilter.SetValue( fWaitList.GetUserPreference( "WL-Gender" ) );
                                     phWaitListFormFieldFilters.Controls.Add( ddlWaitlistGenderFilter );
 
                                     string dataFieldExpression = "PersonAlias.Person.Gender";
