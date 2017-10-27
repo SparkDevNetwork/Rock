@@ -20,7 +20,8 @@
         public enum PhotoImportType
         {
             Person = 1,
-            Family = 2
+            Family = 2,
+            FinancialTransaction = 3
         }
 
         /// <summary>
