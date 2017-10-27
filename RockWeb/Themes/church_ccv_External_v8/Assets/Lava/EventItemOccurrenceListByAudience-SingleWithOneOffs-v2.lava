@@ -52,7 +52,7 @@ list, but marked differently.
 
 {% else %}
 
-  {% assign selectCampusBtnClasses = 'btn btn-primary btn-event-campus-selection' %}
+  {% assign selectCampusBtnClasses = 'btn btn-primary' %}
   {% include '~~/Assets/Lava/SelectACampus.lava' %}
 
 {% endif %}

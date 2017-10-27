@@ -11223,17 +11223,9 @@ legend {
 
 .page-background {
     
-    background: url(https://localhost:44347/Themes/church_ccv_External_v8/Assets/Images/hero-1.jpg) no-repeat fixed;
+    background: url(~/Themes/church_ccv_External_v8/Assets/Images/hero-1.jpg) no-repeat fixed;
     background-size: 100%;
     background-color: black;
-}
-
-.contextsetter-campus-event li a {
-	margin-top: 12px;
-	font-size: 24px;
-	font-weight: bold;
-	color: #6f1315;
-    margin-right: inherit;
 }
 
 #subnavbar {
@@ -11382,6 +11374,7 @@ html,body{
     border-radius: 5px 5px;
     position: relative;
     padding: 0px;
+    font-size: 14px;
 }
 
 /*.contextsetter-campus-navbar .navbar-nav .dropdown-menu: {
@@ -11397,6 +11390,13 @@ html,body{
     color: #999999;
 }
 
+.contextsetter-campus-navbar {
+    padding: 0px 8px;
+    color: #FFFFFF;
+    font-family: akrobat;
+    font-weight: bold;
+    font-size: 14px;
+}
 
 /* sytle for login block*/
 .loginstatus {
@@ -11408,18 +11408,14 @@ html,body{
     font-size: 14px;
 }
 
+.loginstatus .dropdown-menu {
+    font-size: 14px;
+}
+
 .masthead-navbar-flex {
     display: flex;
     justify-content: space-between;
     padding-left: 10px;
-}
-
-.contextsetter-campus-navbar {
-    padding: 0px 8px;
-    color: #FFFFFF;
-    font-family: akrobat;
-    font-weight: bold;
-    font-size: 14px;
 }
 
 /* highlight on mouse hover */ 
@@ -11484,4 +11480,24 @@ html,body{
 
 .btn-event-campus-selection {
     width: auto;
+}
+
+/* Formatting for select a day campus selector */
+.contextsetter-campus-event a {
+    color: #7A1315;
+    font-family: akrobat;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 8px;
+}
+
+.contextsetter-campus-event .navbar-nav .dropdown-menu {
+    border-radius: 5px 5px;
+    padding: 0px;
+}
+
+.contextsetter-campus-event .navbar-nav .dropdown-menu a {
+    font-size: 18px;
+    color: #7A1315;
+    margin: 0px;
 }
