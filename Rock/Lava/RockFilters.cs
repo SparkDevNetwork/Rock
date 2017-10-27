@@ -2896,6 +2896,62 @@ namespace Rock.Lava
 
         #endregion Person
 
+        #region Group Filters
+
+        /// <summary>
+        /// Loads a Group record from the database from it's GUID.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Rock.Model.Group GroupByGuid( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Guid? groupGuid = input.ToString().AsGuidOrNull();
+
+            if ( groupGuid.HasValue )
+            {
+                var rockContext = new RockContext();
+
+                return new GroupService( rockContext ).Get( groupGuid.Value );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Loads a Group record from the database from it's Identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Rock.Model.Group GroupById( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            int groupId = -1;
+
+            if ( !Int32.TryParse( input.ToString(), out groupId ) )
+            {
+                return null;
+            }
+
+            var rockContext = new RockContext();
+
+            return new GroupService( rockContext ).Get( groupId );
+        }
+
+        #endregion
+
         #region Misc Filters
 
         /// <summary>
