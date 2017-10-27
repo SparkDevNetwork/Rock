@@ -48,6 +48,38 @@ namespace Rock.Slingshot
                 ZipFile.ExtractToDirectory( this.SlingshotFileName, slingshotFilesDirectory.FullName );
             }
 
+            this.SlingshotImageFileNames = new List<string>();
+
+            // list any matching images.slingshot files that either got uploaded or manually placed in the SlingshotDirectory
+            var mainFileNamePrefix = Path.GetFileNameWithoutExtension( this.SlingshotFileName );
+            var imageSlingshotFiles = Directory.EnumerateFiles( Path.GetDirectoryName( this.SlingshotFileName ), mainFileNamePrefix + "*.images.slingshot" ).ToList();
+            var extractedImagesFolder = Path.Combine( slingshotFilesDirectory.FullName, "Images" );
+            if ( !Directory.Exists( extractedImagesFolder ) )
+            {
+                Directory.CreateDirectory( extractedImagesFolder );
+            }
+
+            foreach ( var imageSlingshotFile in imageSlingshotFiles )
+            {
+                var imageZipFile =  ZipFile.Open( imageSlingshotFile, ZipArchiveMode.Read );
+
+                // extract one at a time just in case some of them are corrupt
+                imageZipFile.Entries.ToList().ForEach( a =>
+                 {
+                     try
+                     {
+                         a.ExtractToFile( Path.Combine( extractedImagesFolder, Path.GetFileName( a.FullName ) ) );
+                     }
+                     catch( Exception ex)
+                     {
+                         System.Diagnostics.Debug.WriteLine( ex.Message );
+                     }
+                 } );
+
+                var imageFilesInFolder = Directory.EnumerateFiles( extractedImagesFolder );
+                this.SlingshotImageFileNames.AddRange( imageFilesInFolder );
+            }
+
             this.Results = new Dictionary<string, string>();
 
             BulkImporter = new BulkImporter();
@@ -209,6 +241,14 @@ namespace Rock.Slingshot
         private string SlingshotDirectoryName { get; set; }
 
         /// <summary>
+        /// Gets or sets list of Images found in *.images.slingshot folders
+        /// </summary>
+        /// <value>
+        /// The slingshot image file names.
+        /// </value>
+        private List<string> SlingshotImageFileNames { get; set; }
+
+        /// <summary>
         /// Gets or sets the results.
         /// </summary>
         /// <value>
@@ -254,6 +294,7 @@ namespace Rock.Slingshot
         public event EventHandler<object> OnProgress;
 
         private BulkImporter BulkImporter { get; set; }
+        
 
         /// <summary>
         /// Does the import.
@@ -323,6 +364,18 @@ namespace Rock.Slingshot
         /// </summary>
         public void DoImportPhotos()
         {
+            // NOTE: Images can either be a URL or FileName specified in Person or Family import, 
+            // or in *.images.slingshot folders in the following format:
+            /*  
+                exportfilename.slingshot
+                exportfilename_1.images.slingshot( max size 100MB )
+                  - FinancialTransaction_{ Id}[_{ImageNum}].jpg/dif
+                  - Person_{ForeignPersonId}.jpg/dif
+                  - Family_{ForeignFamilyId}Id}.jpg/dif
+                exportfilename_2.images.slingshot
+                exportfilename_n.images.slingshot
+            */
+
             BulkImporter.OnProgress = BulkImporter_OnProgress;
 
             this.Results.Clear();
@@ -361,9 +414,13 @@ namespace Rock.Slingshot
                 }
             }
 
-            var slingshotPersonsWithPhotoList = this.SlingshotPersonList.Where( a => !string.IsNullOrEmpty( a.PersonPhotoUrl ) || !string.IsNullOrEmpty( a.FamilyImageUrl ) ).ToList();
-
             var photoImportList = new ConcurrentBag<Rock.Slingshot.Model.PhotoImport>();
+            foreach( var imageFileName in this.SlingshotImageFileNames )
+            {
+                // TODO
+            }
+
+            var slingshotPersonsWithPhotoList = this.SlingshotPersonList.Where( a => !string.IsNullOrEmpty( a.PersonPhotoUrl ) || !string.IsNullOrEmpty( a.FamilyImageUrl ) ).ToList();
 
             HashSet<int> importedFamilyPhotos = new HashSet<int>();
 
@@ -496,6 +553,12 @@ namespace Rock.Slingshot
             else
             {
                 FileInfo photoFile = new FileInfo( photoUrl );
+                if ( !photoFile.Exists )
+                {
+                    // if the file doesn't exist, it might be a relative path
+                    photoFile = new FileInfo( Path.Combine( this.SlingshotDirectoryName, photoUrl ) );
+                }
+
                 if ( photoFile.Exists )
                 {
                     photoImport.MimeType = System.Web.MimeMapping.GetMimeMapping( photoFile.FullName );

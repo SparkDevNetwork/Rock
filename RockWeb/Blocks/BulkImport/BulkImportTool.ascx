@@ -54,8 +54,10 @@
                 <asp:LinkButton ID="btnCheckForeignSystemKey" runat="server" CssClass="btn btn-xs btn-action margin-b-md" Text="Check Foreign System Key" CausesValidation="false" OnClick="btnCheckForeignSystemKey_Click" />
                 <Rock:NotificationBox ID="nbCheckForeignSystemKey" runat="server" CssClass="margin-b-md" NotificationBoxType="Warning" Visible="false" Dismissable="true" />
 
-                <Rock:FileUploader ID="fupSlingshotFile" runat="server" Label="Select Slingshot File" IsBinaryFile="false" RootFolder="~/App_Data/SlingshotFiles" DisplayMode="DropZone" OnFileUploaded="fupSlingshotFile_FileUploaded" OnFileRemoved="fupSlingshotFile_FileRemoved" />
-                <asp:Literal ID="lSlingshotFileInfo" runat="server" Text="" />
+                <asp:HiddenField ID="hfMainSlingshotFileName" runat="server" />
+                <Rock:FileUploader ID="fupSlingshotFile" runat="server" Label="Select Slingshot File" IsBinaryFile="false" RootFolder="~/App_Data/SlingshotFiles" DisplayMode="DropZone" OnFileUploaded="fupSlingshotFile_FileUploaded" AllowMultipleUploads="true" OnFileRemoved="fupSlingshotFile_FileRemoved" />
+                <asp:Label ID="lSlingshotFileInfo" runat="server" Text="" />
+                <asp:Label ID="lAdditionalSlingshotFilesInfo" runat="server" Text="" />
 
                 <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
                     <Rock:RockControlWrapper ID="rcwImportOptions" runat="server" Label="Import Options">
@@ -83,7 +85,8 @@
                             <Rock:HelpBlock ID="hbPostImportHelp" runat="server"><pre>
 Before Importing
 -- Backup the Customer’s Database
--- Verify that Rock > Home / General Settings / File Types / ‘Person Image’, has the Storage Type set to what you want.  Slingshot will use that when importing Photos
+-- Verify that Rock > Home / General Settings / File Types / ‘Person Image’, has the Storage Type set to what you want.  Slingshot will use that when importing Person and Family Photos
+-- Verify that Rock > Home / General Settings / File Types / ‘Transaction Image’, has the Storage Type set to what you want.  Slingshot will use that when importing FinancialTransaction Images
 
 After Importing
 -- Go the General Settings / Group Types and filter by Check-in Template. This will show you the group types that already a Check-in Template

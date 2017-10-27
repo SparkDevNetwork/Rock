@@ -1501,7 +1501,8 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
 
             List<BinaryFileData> binaryFileDatasToInsert = new List<BinaryFileData>();
 
-            var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+            var personFamilyBinaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+            var financialTransactionBinaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid() );
 
             bool useBulkInsertForPhotos = false;
 
@@ -1509,6 +1510,16 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
 
             foreach ( var photoImport in photoImports )
             {
+                BinaryFileType binaryFileType;
+                if ( photoImport.PhotoType == PhotoImport.PhotoImportType.FinancialTransaction )
+                {
+                    binaryFileType = financialTransactionBinaryFileType;
+                }
+                else
+                {
+                    binaryFileType = personFamilyBinaryFileType;
+                }
+
                 var binaryFileToInsert = new BinaryFile()
                 {
                     FileName = photoImport.FileName,
@@ -1533,6 +1544,10 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                 else if ( photoImport.PhotoType == PhotoImport.PhotoImportType.Family )
                 {
                     binaryFileToInsert.ForeignKey = $"FamilyForeignId_{foreignSystemKey}_{photoImport.ForeignId}";
+                }
+                else if ( photoImport.PhotoType == PhotoImport.PhotoImportType.FinancialTransaction )
+                {
+                    binaryFileToInsert.ForeignKey = $"FinancialTransactionForeignId_{foreignSystemKey}_{photoImport.ForeignId}";
                 }
 
                 if ( !alreadyExists.Contains( binaryFileToInsert.ForeignKey ) )
