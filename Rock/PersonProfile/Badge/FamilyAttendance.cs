@@ -65,7 +65,7 @@ namespace Rock.PersonProfile.Badge
             var groupTypeRole = Person.GetFamilyRole();
             if ( groupTypeRole != null && groupTypeRole.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() )
             {
-                tooltip = string.Format( "{0}&apos;s attendance for the last 24 months. Each bar is a month.", Person.NickName );
+                tooltip = $"{Person.NickName.ToPossesive().EncodeHtml()} attendance for the last 24 months. Each bar is a month.";
             }
             else
             {
