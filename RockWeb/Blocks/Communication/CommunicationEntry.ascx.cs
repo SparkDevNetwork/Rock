@@ -870,7 +870,7 @@ namespace RockWeb.Blocks.Communication
                 lbShowAllRecipients.Visible = false;
             }
 
-            lbRemoveAllRecipients.Visible = Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ).Any();
+            lbRemoveAllRecipients.Visible = _fullMode && Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ).Any();
 
             rptRecipients.DataBind();
 
