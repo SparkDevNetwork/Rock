@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Event
         private List<Registration> PaymentRegistrations;
         private bool _instanceHasCost = false;
         private Dictionary<int, Location>  _homeAddresses = new Dictionary<int, Location>();
-        private List<DataControlField> _dynamicallyAddedColumns = new List<DataControlField>();
+        private List<DataControlField> _staticGridColumns = new List<DataControlField>();
         
         #endregion
 
@@ -119,6 +119,12 @@ namespace RockWeb.Blocks.Event
 
             ActiveTab = ( ViewState["ActiveTab"] as string ) ?? "";
             RegistrantFields = ViewState["RegistrantFields"] as List<RegistrantFormField>;
+
+            _staticGridColumns = new List<DataControlField>();
+            foreach ( var grid in this.ControlsOfTypeRecursive<Grid>())
+            {
+                _staticGridColumns.AddRange( grid.ColumnsOfType<DataControlField>() );
+            }
 
             AddDynamicControls();
         }
@@ -2783,16 +2789,16 @@ namespace RockWeb.Blocks.Event
             phRegistrantsRegistrantFormFieldFilters.Controls.Clear();
             phGroupPlacementsFormFieldFilters.Controls.Clear();
             var allGrids = this.ControlsOfTypeRecursive<Grid>().ToList();
-            foreach ( var col in this._dynamicallyAddedColumns )
+
+            foreach ( var grid in allGrids )
             {
-                foreach ( var grid in allGrids )
+                var dynamicCols = grid.Columns.OfType<DataControlField>().Where( a => !_staticGridColumns.Contains( a ) ).ToList();
+                foreach ( var col in dynamicCols  )
                 {
-                    if ( grid.Columns.Contains( col ) )
-                    {
-                        grid.Columns.Remove( col );
-                    }
+                    grid.Columns.Remove( col );
                 }
             }
+
 
             // Remove any of the dynamic person fields
             var dynamicColumns = new List<string> {
@@ -2883,14 +2889,12 @@ namespace RockWeb.Blocks.Event
                                     templateField.ID = "lRegistrantsCampus";
                                     templateField.HeaderText = "Campus";
                                     gRegistrants.Columns.Add( templateField );
-                                    _dynamicallyAddedColumns.Add( templateField );
 
                                     var templateField2 = new RockLiteralField();
                                     templateField2.ID = "lGroupPlacementsCampus";
                                     templateField2.HeaderText = "Campus";
                                     gGroupPlacements.Columns.Add( templateField2 );
-                                    _dynamicallyAddedColumns.Add( templateField2 );
-
+                                    
                                     break;
                                 }
 
@@ -2914,14 +2918,12 @@ namespace RockWeb.Blocks.Event
                                     emailField.HeaderText = "Email";
                                     emailField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( emailField );
-                                    _dynamicallyAddedColumns.Add( emailField );
 
                                     var emailField2 = new RockBoundField();
                                     emailField2.DataField = dataFieldExpression;
                                     emailField2.HeaderText = "Email";
                                     emailField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( emailField2 );
-                                    _dynamicallyAddedColumns.Add( emailField2 );
 
                                     break;
                                 }
@@ -2946,14 +2948,12 @@ namespace RockWeb.Blocks.Event
                                     birthdateField.HeaderText = "Birthdate";
                                     birthdateField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( birthdateField );
-                                    _dynamicallyAddedColumns.Add( birthdateField );
 
                                     var birthdateField2 = new DateField();
                                     birthdateField2.DataField = dataFieldExpression;
                                     birthdateField2.HeaderText = "Birthdate";
                                     birthdateField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( birthdateField2 );
-                                    _dynamicallyAddedColumns.Add( birthdateField2 );
 
                                     break;
                                 }
@@ -2997,13 +2997,11 @@ namespace RockWeb.Blocks.Event
                                     gradeField.HeaderText = "Grade";
                                     gradeField.SortExpression = "PersonAlias.Person.GraduationYear";
                                     gRegistrants.Columns.Add( gradeField );
-                                    _dynamicallyAddedColumns.Add( gradeField );
 
                                     var gradeField2 = new RockBoundField();
                                     gradeField2.DataField = dataFieldExpression;
                                     gradeField2.HeaderText = "Grade";
                                     gGroupPlacements.Columns.Add( gradeField2 );
-                                    _dynamicallyAddedColumns.Add( gradeField2 );
 
                                     break;
                                 }
@@ -3030,14 +3028,12 @@ namespace RockWeb.Blocks.Event
                                     genderField.HeaderText = "Gender";
                                     genderField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( genderField );
-                                    _dynamicallyAddedColumns.Add( genderField );
-
+                                    
                                     var genderField2 = new EnumField();
                                     genderField2.DataField = dataFieldExpression;
                                     genderField2.HeaderText = "Gender";
                                     genderField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( genderField2 );
-                                    _dynamicallyAddedColumns.Add( genderField2 );
 
                                     break;
                                 }
@@ -3064,14 +3060,12 @@ namespace RockWeb.Blocks.Event
                                     maritalStatusField.HeaderText = "MaritalStatus";
                                     maritalStatusField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( maritalStatusField );
-                                    _dynamicallyAddedColumns.Add( maritalStatusField );
 
                                     var maritalStatusField2 = new RockBoundField();
                                     maritalStatusField2.DataField = dataFieldExpression;
                                     maritalStatusField2.HeaderText = "MaritalStatus";
                                     maritalStatusField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( maritalStatusField2 );
-                                    _dynamicallyAddedColumns.Add( maritalStatusField2 );
 
                                     break;
                                 }
@@ -3094,13 +3088,11 @@ namespace RockWeb.Blocks.Event
                                     phoneNumbersField.DataField = "PersonAlias.Person.PhoneNumbers";
                                     phoneNumbersField.HeaderText = "Phone(s)";
                                     gRegistrants.Columns.Add( phoneNumbersField );
-                                    _dynamicallyAddedColumns.Add( phoneNumbersField );
 
                                     var phoneNumbersField2 = new PhoneNumbersField();
                                     phoneNumbersField2.DataField = "PersonAlias.Person.PhoneNumbers";
                                     phoneNumbersField2.HeaderText = "Phone(s)";
                                     gGroupPlacements.Columns.Add( phoneNumbersField2 );
-                                    _dynamicallyAddedColumns.Add( phoneNumbersField2 );
 
                                     break;
                                 }
@@ -3196,9 +3188,7 @@ namespace RockWeb.Blocks.Event
                             }
 
                             gRegistrants.Columns.Add( boundField );
-                            _dynamicallyAddedColumns.Add( boundField );
                             gGroupPlacements.Columns.Add( boundField2 );
-                            _dynamicallyAddedColumns.Add( boundField2 );
                         }
                     }
                 }
@@ -3209,18 +3199,15 @@ namespace RockWeb.Blocks.Event
             feeField.ID = "lFees";
             feeField.HeaderText = "Fees";
             gRegistrants.Columns.Add( feeField );
-            _dynamicallyAddedColumns.Add( feeField );
 
             var deleteField = new DeleteField();
             gRegistrants.Columns.Add( deleteField );
-            _dynamicallyAddedColumns.Add( deleteField );
             deleteField.Click += gRegistrants_Delete;
 
             var groupPickerField = new GroupPickerField();
             groupPickerField.HeaderText = "Group";
             groupPickerField.RootGroupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
             gGroupPlacements.Columns.Add( groupPickerField );
-            _dynamicallyAddedColumns.Add( groupPickerField );
         }
 
         #endregion
