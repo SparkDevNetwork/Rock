@@ -28,6 +28,7 @@
                 dropZone: $('#' + options.controlId).closest('.fileupload-dropzone'),
                 autoUpload: true,
                 submit: options.submitFunction,
+                sequentialUploads: true,
                 start: function (e, data) {
                     var $el = $('#' + options.controlId).closest('.fileupload-group');
                     $el.find('.js-upload-progress').rockFadeIn();
@@ -36,7 +37,7 @@
                     try {
                         if (data.total > 0) {
                             var $el = $('#' + options.controlId).closest('.fileupload-group');
-                            var $progressPercent = $el.find('.progress-percent');
+                            var $progressPercent = $el.find('.js-upload-progress-percent');
                             if (!$progressPercent.length) {
                                 return;
                             }
@@ -46,7 +47,7 @@
                                 $progressPercent.text(percent + "%");
                             }
                             else {
-                                $progressPercent.text("uploading");
+                                $progressPercent.text("");
                             }
                         }
                     }
