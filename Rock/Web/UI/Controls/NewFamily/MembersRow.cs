@@ -492,6 +492,7 @@ namespace Rock.Web.UI.Controls
 
             _dpBirthdate.StartView = DatePicker.StartViewOption.decade;
             _dpBirthdate.ForceParse = false;
+            _dpBirthdate.AllowFutureDateSelection = false;
             _dpBirthdate.RequiredErrorMessage = "Birthdate is required for all group members";
             _dpBirthdate.Required = false;
 
