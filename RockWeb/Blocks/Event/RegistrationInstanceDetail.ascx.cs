@@ -59,6 +59,8 @@ namespace RockWeb.Blocks.Event
         private List<Registration> PaymentRegistrations;
         private bool _instanceHasCost = false;
         private Dictionary<int, Location>  _homeAddresses = new Dictionary<int, Location>();
+        private List<DataControlField> _dynamicallyAddedColumns = new List<DataControlField>();
+        
         #endregion
 
         #region Properties
@@ -551,6 +553,17 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Handles the ClearFilterClick event of the fRegistrations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void fRegistrations_ClearFilterClick( object sender, EventArgs e )
+        {
+            fRegistrants.DeleteUserPreferences();
+            BindRegistrationsFilter();
+        }
+
+        /// <summary>
         /// Fs the registrations_ display filter value.
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -891,6 +904,30 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Handles the ClearFilterClick event of the fRegistrants control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void fRegistrants_ClearFilterClick( object sender, EventArgs e )
+        {
+            fRegistrants.DeleteUserPreferences();
+
+            // rebuild dynamic controls since some of those are set from user preferences 
+            AddDynamicControls();
+            foreach ( var control in phRegistrantsRegistrantFormFieldFilters.ControlsOfTypeRecursive<Control>().Where( a => a.ID != null && a.ID.StartsWith( "filter" ) && a.ID.Contains( "_" ) ) )
+            {
+                var attributeId = control.ID.Split( '_' )[1].AsInteger();
+                var attribute = AttributeCache.Read( attributeId );
+                if ( attribute != null )
+                {
+                    attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, new List<string>() );
+                }
+            }
+
+            BindRegistrantsFilter( null );
+        }
+
+        /// <summary>
         /// Fs the registrants_ display filter value.
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -1184,6 +1221,17 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Handles the ClearFilterClick event of the fPayments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void fPayments_ClearFilterClick( object sender, EventArgs e )
+        {
+            fPayments.DeleteUserPreferences();
+            BindPaymentsFilter();
+        }
+
+        /// <summary>
         /// Fs the payments_ display filter value.
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -1281,6 +1329,17 @@ namespace RockWeb.Blocks.Event
             fLinkages.SaveUserPreference( "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
 
             BindLinkagesGrid();
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the fLinkages control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void fLinkages_ClearFilterClick( object sender, EventArgs e )
+        {
+            fLinkages.DeleteUserPreferences();
+            BindLinkagesFilter();
         }
 
         /// <summary>
@@ -2722,6 +2781,18 @@ namespace RockWeb.Blocks.Event
         private void AddDynamicControls()
         {
             phRegistrantsRegistrantFormFieldFilters.Controls.Clear();
+            phGroupPlacementsFormFieldFilters.Controls.Clear();
+            var allGrids = this.ControlsOfTypeRecursive<Grid>().ToList();
+            foreach ( var col in this._dynamicallyAddedColumns )
+            {
+                foreach ( var grid in allGrids )
+                {
+                    if ( grid.Columns.Contains( col ) )
+                    {
+                        grid.Columns.Remove( col );
+                    }
+                }
+            }
 
             // Remove any of the dynamic person fields
             var dynamicColumns = new List<string> {
@@ -2812,11 +2883,13 @@ namespace RockWeb.Blocks.Event
                                     templateField.ID = "lRegistrantsCampus";
                                     templateField.HeaderText = "Campus";
                                     gRegistrants.Columns.Add( templateField );
+                                    _dynamicallyAddedColumns.Add( templateField );
 
                                     var templateField2 = new RockLiteralField();
                                     templateField2.ID = "lGroupPlacementsCampus";
                                     templateField2.HeaderText = "Campus";
                                     gGroupPlacements.Columns.Add( templateField2 );
+                                    _dynamicallyAddedColumns.Add( templateField2 );
 
                                     break;
                                 }
@@ -2841,12 +2914,14 @@ namespace RockWeb.Blocks.Event
                                     emailField.HeaderText = "Email";
                                     emailField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( emailField );
+                                    _dynamicallyAddedColumns.Add( emailField );
 
                                     var emailField2 = new RockBoundField();
                                     emailField2.DataField = dataFieldExpression;
                                     emailField2.HeaderText = "Email";
                                     emailField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( emailField2 );
+                                    _dynamicallyAddedColumns.Add( emailField2 );
 
                                     break;
                                 }
@@ -2871,12 +2946,14 @@ namespace RockWeb.Blocks.Event
                                     birthdateField.HeaderText = "Birthdate";
                                     birthdateField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( birthdateField );
+                                    _dynamicallyAddedColumns.Add( birthdateField );
 
                                     var birthdateField2 = new DateField();
                                     birthdateField2.DataField = dataFieldExpression;
                                     birthdateField2.HeaderText = "Birthdate";
                                     birthdateField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( birthdateField2 );
+                                    _dynamicallyAddedColumns.Add( birthdateField2 );
 
                                     break;
                                 }
@@ -2920,11 +2997,13 @@ namespace RockWeb.Blocks.Event
                                     gradeField.HeaderText = "Grade";
                                     gradeField.SortExpression = "PersonAlias.Person.GraduationYear";
                                     gRegistrants.Columns.Add( gradeField );
+                                    _dynamicallyAddedColumns.Add( gradeField );
 
                                     var gradeField2 = new RockBoundField();
                                     gradeField2.DataField = dataFieldExpression;
                                     gradeField2.HeaderText = "Grade";
                                     gGroupPlacements.Columns.Add( gradeField2 );
+                                    _dynamicallyAddedColumns.Add( gradeField2 );
 
                                     break;
                                 }
@@ -2951,12 +3030,14 @@ namespace RockWeb.Blocks.Event
                                     genderField.HeaderText = "Gender";
                                     genderField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( genderField );
+                                    _dynamicallyAddedColumns.Add( genderField );
 
                                     var genderField2 = new EnumField();
                                     genderField2.DataField = dataFieldExpression;
                                     genderField2.HeaderText = "Gender";
                                     genderField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( genderField2 );
+                                    _dynamicallyAddedColumns.Add( genderField2 );
 
                                     break;
                                 }
@@ -2983,12 +3064,14 @@ namespace RockWeb.Blocks.Event
                                     maritalStatusField.HeaderText = "MaritalStatus";
                                     maritalStatusField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( maritalStatusField );
+                                    _dynamicallyAddedColumns.Add( maritalStatusField );
 
                                     var maritalStatusField2 = new RockBoundField();
                                     maritalStatusField2.DataField = dataFieldExpression;
                                     maritalStatusField2.HeaderText = "MaritalStatus";
                                     maritalStatusField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( maritalStatusField2 );
+                                    _dynamicallyAddedColumns.Add( maritalStatusField2 );
 
                                     break;
                                 }
@@ -3011,11 +3094,13 @@ namespace RockWeb.Blocks.Event
                                     phoneNumbersField.DataField = "PersonAlias.Person.PhoneNumbers";
                                     phoneNumbersField.HeaderText = "Phone(s)";
                                     gRegistrants.Columns.Add( phoneNumbersField );
+                                    _dynamicallyAddedColumns.Add( phoneNumbersField );
 
                                     var phoneNumbersField2 = new PhoneNumbersField();
                                     phoneNumbersField2.DataField = "PersonAlias.Person.PhoneNumbers";
                                     phoneNumbersField2.HeaderText = "Phone(s)";
                                     gGroupPlacements.Columns.Add( phoneNumbersField2 );
+                                    _dynamicallyAddedColumns.Add( phoneNumbersField2 );
 
                                     break;
                                 }
@@ -3111,7 +3196,9 @@ namespace RockWeb.Blocks.Event
                             }
 
                             gRegistrants.Columns.Add( boundField );
+                            _dynamicallyAddedColumns.Add( boundField );
                             gGroupPlacements.Columns.Add( boundField2 );
+                            _dynamicallyAddedColumns.Add( boundField2 );
                         }
                     }
                 }
@@ -3122,15 +3209,18 @@ namespace RockWeb.Blocks.Event
             feeField.ID = "lFees";
             feeField.HeaderText = "Fees";
             gRegistrants.Columns.Add( feeField );
+            _dynamicallyAddedColumns.Add( feeField );
 
             var deleteField = new DeleteField();
             gRegistrants.Columns.Add( deleteField );
+            _dynamicallyAddedColumns.Add( deleteField );
             deleteField.Click += gRegistrants_Delete;
 
             var groupPickerField = new GroupPickerField();
             groupPickerField.HeaderText = "Group";
             groupPickerField.RootGroupId = gpGroupPlacementParentGroup.SelectedValueAsInt();
             gGroupPlacements.Columns.Add( groupPickerField );
+            _dynamicallyAddedColumns.Add( groupPickerField );
         }
 
         #endregion
@@ -3911,6 +4001,30 @@ namespace RockWeb.Blocks.Event
             }
 
             BindGroupPlacementGrid();
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the fGroupPlacements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void fGroupPlacements_ClearFilterClick( object sender, EventArgs e )
+        {
+            fGroupPlacements.DeleteUserPreferences();
+
+            // rebuild dynamic controls since some of those are set from user preferences 
+            AddDynamicControls();
+            foreach ( var control in phGroupPlacementsFormFieldFilters.ControlsOfTypeRecursive<Control>().Where(a => a.ID != null && a.ID.StartsWith( "filter" ) && a.ID.Contains("_") ))
+            {
+                var attributeId = control.ID.Split('_')[1].AsInteger();
+                var attribute = AttributeCache.Read( attributeId );
+                if ( attribute != null )
+                {
+                    attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, new List<string>() );
+                }
+            }
+            
+            BindGroupPlacementsFilter( null );
         }
 
         /// <summary>
