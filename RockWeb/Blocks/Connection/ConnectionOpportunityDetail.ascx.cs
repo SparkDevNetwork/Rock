@@ -498,19 +498,32 @@ namespace RockWeb.Blocks.Connection
 
                     connectionOpportunity.SaveAttributeValues( rockContext );
 
-                    if ( orphanedPhotoId.HasValue )
+                    if ( orphanedPhotoId.HasValue || connectionOpportunity.PhotoId.HasValue)
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-                        var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
-                        if ( binaryFile != null )
+
+                        if ( orphanedPhotoId.HasValue )
                         {
-                            string errorMessage;
-                            if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
+                            var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
+                            if ( binaryFile != null )
                             {
-                                binaryFileService.Delete( binaryFile );
-                                rockContext.SaveChanges();
+                                string errorMessage;
+                                if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
+                                {
+                                    binaryFileService.Delete( binaryFile );
+                                }
                             }
                         }
+
+                        if ( connectionOpportunity.PhotoId.HasValue )
+                        {
+                            var binaryFile = binaryFileService.Get( connectionOpportunity.PhotoId.Value );
+                            if ( binaryFile != null )
+                            {
+                                binaryFile.IsTemporary = false;
+                            }
+                        }
+                        rockContext.SaveChanges();
                     }
                 } );
 
