@@ -20,16 +20,17 @@ list, but marked differently.
 
   {% if EventItemOccurrences != empty %}
       <div class="event-item-list-container">
-        {% for occurrence in EventItemOccurrences %}
+        {% for occurrence in EventItemOccurrences limit:6 %}
+          {% assign linkage = occurrence.Linkages | First %}
           {% if occurrence.EventItemId == regularEventId %}              
-				<a class="event-item-container" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
+				<a class="event-item-container" href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ occurrence.Id }}">
                     <div class="event-item">
                         {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'ddd, MMM d'  }}<br />
                         {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'h:mmtt'  }}
                     </div>
 				</a>
           {% else %}
-            <a class="event-item-container" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
+            <a class="event-item-container" href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ occurrence.Id }}">
                 <div class="event-item">
                     <small class="text-muted" style="display: inline-block;">{{ occurrence.EventItem.Name }}</small><br />
                     {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'ddd, MMM d'  }}<br />
