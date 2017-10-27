@@ -233,7 +233,8 @@ namespace RockWeb.Blocks.Communication
             if ( editableStatuses.Contains( communication.Status ) || ( communication.Status == CommunicationStatus.PendingApproval && editingApproved ) )
             {
                 // Make sure they are authorized to view
-                if ( !communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
+                bool isCreator = ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value );
+                if ( !communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) && !isCreator )
                 {
                     // not authorized, so hide this block
                     this.Visible = false;
