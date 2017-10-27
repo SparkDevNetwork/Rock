@@ -50,7 +50,7 @@
                                             <Rock:RockLiteral ID="txtFrequency" runat="server" Label="Frequency" Visible="false" />
                                             <Rock:ButtonDropDownList ID="btnFrequency" runat="server" Label="Frequency"
                                                 DataTextField="Value" DataValueField="Id" AutoPostBack="true" OnSelectionChanged="btnFrequency_SelectionChanged" />
-                                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" AutoPostBack="true" OnTextChanged="btnFrequency_SelectionChanged" />
+                                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" AutoPostBack="true" AllowPastDateSelection="false" OnTextChanged="btnFrequency_SelectionChanged" />
                                         </div>
 
                                         <Rock:RockTextBox ID="txtCommentEntry" runat="server" Required="true" Label="Comment" />
