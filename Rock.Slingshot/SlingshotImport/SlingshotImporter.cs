@@ -2,6 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -30,18 +32,27 @@ namespace Rock.Slingshot
         /// Initializes a new instance of the <see cref="Importer"/> class.
         /// </summary>
         /// <param name="slingshotFileName">Name of the slingshot file.</param>
-        public SlingshotImporter( string slingshotFileName, string foreignSystemKey, BulkImporter.ImportUpdateType importUpdateType )
+        public SlingshotImporter( string slingshotFileName, string foreignSystemKey, BulkImporter.ImportUpdateType importUpdateType, EventHandler<object> onProgress = null )
         {
+            this.Results = new Dictionary<string, string>();
+
+            if ( onProgress != null )
+            {
+                this.OnProgress = onProgress;
+            }
+
             SlingshotFileName = slingshotFileName;
             ForeignSystemKey = foreignSystemKey;
             SlingshotDirectoryName = Path.Combine( Path.GetDirectoryName( this.SlingshotFileName ), "slingshots", Path.GetFileNameWithoutExtension( this.SlingshotFileName ) );
 
+            ReportProgress( 0, "Preparing Slingshot..." );
             var slingshotFilesDirectory = new DirectoryInfo( this.SlingshotDirectoryName );
             if ( slingshotFilesDirectory.Exists )
             {
                 slingshotFilesDirectory.Delete( true );
             }
 
+            ReportProgress( 0, "Extracting Main Slingshot File..." );
             slingshotFilesDirectory.Create();
             if ( File.Exists( this.SlingshotFileName ) )
             {
@@ -61,8 +72,9 @@ namespace Rock.Slingshot
 
             foreach ( var imageSlingshotFile in imageSlingshotFiles )
             {
-                var imageZipFile =  ZipFile.Open( imageSlingshotFile, ZipArchiveMode.Read );
+                var imageZipFile = ZipFile.Open( imageSlingshotFile, ZipArchiveMode.Read );
 
+                ReportProgress( 0, $"Extracting Image Slingshot File: {Path.GetFileName( imageSlingshotFile )}" );
                 // extract one at a time just in case some of them are corrupt
                 imageZipFile.Entries.ToList().ForEach( a =>
                  {
@@ -70,17 +82,15 @@ namespace Rock.Slingshot
                      {
                          a.ExtractToFile( Path.Combine( extractedImagesFolder, Path.GetFileName( a.FullName ) ) );
                      }
-                     catch( Exception ex)
+                     catch ( Exception ex )
                      {
-                         System.Diagnostics.Debug.WriteLine( ex.Message );
+                         System.Diagnostics.Debug.WriteLine( $"Unable to extract {a.FullName} from imageZipFile: {ex.Message}");
                      }
                  } );
 
                 var imageFilesInFolder = Directory.EnumerateFiles( extractedImagesFolder );
                 this.SlingshotImageFileNames.AddRange( imageFilesInFolder );
             }
-
-            this.Results = new Dictionary<string, string>();
 
             BulkImporter = new BulkImporter();
             BulkImporter.ImportUpdateOption = importUpdateType;
@@ -291,10 +301,18 @@ namespace Rock.Slingshot
             }
         }
 
+        /// <summary>
+        /// Occurs when [on progress].
+        /// </summary>
         public event EventHandler<object> OnProgress;
 
+        /// <summary>
+        /// Gets or sets the bulk importer.
+        /// </summary>
+        /// <value>
+        /// The bulk importer.
+        /// </value>
         private BulkImporter BulkImporter { get; set; }
-        
 
         /// <summary>
         /// Does the import.
@@ -414,19 +432,15 @@ namespace Rock.Slingshot
                 }
             }
 
-            var photoImportList = new ConcurrentBag<Rock.Slingshot.Model.PhotoImport>();
-            foreach( var imageFileName in this.SlingshotImageFileNames )
-            {
-                // TODO
-            }
-
             var slingshotPersonsWithPhotoList = this.SlingshotPersonList.Where( a => !string.IsNullOrEmpty( a.PersonPhotoUrl ) || !string.IsNullOrEmpty( a.FamilyImageUrl ) ).ToList();
+            var photoImportList = new ConcurrentBag<Rock.Slingshot.Model.PhotoImport>();
 
-            HashSet<int> importedFamilyPhotos = new HashSet<int>();
+            Dictionary<Guid, string> mimetypeLookup = ImageCodecInfo.GetImageDecoders().ToDictionary( k => k.FormatID, v => v.MimeType );
 
+            int slingshotImageCount = this.SlingshotImageFileNames.Count();
             long photoLoadProgress = 0;
             long photoImportProgress = 0;
-            int totalCount = slingshotPersonsWithPhotoList.Where( a => !string.IsNullOrWhiteSpace( a.PersonPhotoUrl ) ).Count()
+            int totalCount = slingshotImageCount + slingshotPersonsWithPhotoList.Where( a => !string.IsNullOrWhiteSpace( a.PersonPhotoUrl ) ).Count()
                 + slingshotPersonsWithPhotoList.Where( a => a.FamilyId.HasValue && !string.IsNullOrWhiteSpace( a.FamilyImageUrl ) ).Select( a => a.FamilyId ).Distinct().Count();
 
             int totalPhotoDataBytes = 0;
@@ -436,6 +450,91 @@ namespace Rock.Slingshot
             }
 
             int maxPhotoBatchSize = this.PhotoBatchSizeMB.Value * 1024 * 1024;
+
+            foreach ( var imageFileInfo in this.SlingshotImageFileNames.Select( a => new FileInfo( a ) ).ToList() )
+            {
+                var photoImport = new Rock.Slingshot.Model.PhotoImport();
+
+                // NOTE: Use full filename for now so we can load the PhotoData later as needed
+                photoImport.FileName = imageFileInfo.Name;
+
+                using ( var fileStream = File.OpenRead( imageFileInfo.FullName ) )
+                {
+                    photoImport.PhotoData = Convert.ToBase64String( fileStream.ReadBytesToEnd() );
+                    Interlocked.Increment( ref photoLoadProgress );
+                    try
+                    {
+                        using ( var image = new Bitmap( fileStream ) )
+                        {
+                            photoImport.MimeType = mimetypeLookup.GetValueOrNull( image.RawFormat.Guid );
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        // ignore and just get mimetype from filename instead
+                        System.Diagnostics.Debug.WriteLine( "Error Getting MimeType from FileData: " + ex.Message );
+                    }
+                    if ( string.IsNullOrEmpty( photoImport.MimeType ) )
+                    {
+                        photoImport.MimeType = System.Web.MimeMapping.GetMimeMapping( imageFileInfo.FullName );
+                    }
+                }
+
+                if ( photoImport.FileName.StartsWith( "FinancialTransaction_" ) )
+                {
+                    photoImport.PhotoType = Slingshot.Model.PhotoImport.PhotoImportType.FinancialTransaction;
+
+                }
+                else if ( photoImport.FileName.StartsWith( "Person_" ) )
+                {
+                    photoImport.PhotoType = Slingshot.Model.PhotoImport.PhotoImportType.Person;
+                }
+                else if ( photoImport.FileName.StartsWith( "Family_" ) )
+                {
+                    photoImport.PhotoType = Slingshot.Model.PhotoImport.PhotoImportType.Family;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine( "Unknown PhotoType: " + photoImport.FileName );
+                    continue;
+                }
+
+                photoImport.ForeignId = Path.GetFileNameWithoutExtension( photoImport.FileName ).Split( '_' )[1].AsInteger();
+                if ( photoImport.ForeignId == 0 )
+                {
+                    throw new Exception( "Unable to determine ForeignId for Photo" + photoImport.FileName );
+                }
+
+                photoImportList.Add( photoImport );
+
+                totalPhotoDataBytes = photoImportList.Sum( a => a.PhotoData.Length );
+
+                this.Results[PREPARE_PHOTO_DATA] = $"{Interlocked.Read( ref photoLoadProgress )} of {totalCount}";
+                this.Results[IMPORTING_PHOTO_DATA] = $"{Interlocked.Read( ref photoImportProgress )} of {totalCount}";
+
+                this.ReportProgress( 0, Results );
+
+                if ( this.CancelPhotoImport )
+                {
+                    return;
+                }
+
+                if ( totalPhotoDataBytes > maxPhotoBatchSize )
+                {
+                    this.ReportProgress( 0, "Importing Images..." );
+                    var uploadList = photoImportList.ToList();
+                    photoImportList = new ConcurrentBag<Rock.Slingshot.Model.PhotoImport>();
+                    photoImportProgress += uploadList.Count();
+                    UploadPhotoImports( uploadList );
+                    this.Results[PREPARE_PHOTO_DATA] = $"{Interlocked.Read( ref photoLoadProgress )} of {totalCount}";
+                    this.Results[IMPORTING_PHOTO_DATA] = $"{Interlocked.Read( ref photoImportProgress )} of {totalCount}";
+                    this.ReportProgress( 0, Results );
+
+                    GC.Collect();
+                }
+            }
+
+            HashSet<int> importedFamilyPhotos = new HashSet<int>();
             foreach ( var slingshotPerson in slingshotPersonsWithPhotoList )
             {
                 this.ReportProgress( 0, "Preparing Photos..." );
