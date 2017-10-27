@@ -218,6 +218,7 @@ namespace RockWeb.Blocks.Communication
             string mode = GetAttributeValue( "Mode" );
             _fullMode = string.IsNullOrWhiteSpace( mode ) || mode != "Simple";
             ppAddPerson.Visible = _fullMode;
+            lbRemoveAllRecipients.Visible = _fullMode;
             cbBulk.Visible = _fullMode;
             ddlTemplate.Visible = _fullMode;
             dtpFutureSend.Visible = _fullMode;
@@ -938,7 +939,7 @@ namespace RockWeb.Blocks.Communication
                 lbShowAllRecipients.Visible = false;
             }
 
-            lbRemoveAllRecipients.Visible = Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ).Any();
+            lbRemoveAllRecipients.Visible = Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ).Any() && _fullMode;
 
             rptRecipients.DataBind();
 
