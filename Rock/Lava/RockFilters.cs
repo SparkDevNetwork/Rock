@@ -148,7 +148,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Possessives the specified input.
+        /// convert string to possessive ('s)
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
@@ -159,14 +159,7 @@ namespace Rock.Lava
                 return input;
             }
 
-            if ( input.EndsWith( "s" ) )
-            {
-                return input + "'";
-            }
-            else
-            {
-                return input + "'s";
-            }
+            return input.ToPossessive();
         }
 
         /// <summary>
