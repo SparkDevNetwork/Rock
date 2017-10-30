@@ -26,7 +26,6 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.PersonProfile;
 using Rock.Security;
 
 namespace RockWeb.Blocks.Crm
@@ -66,7 +65,6 @@ namespace RockWeb.Blocks.Crm
             SecurityField securityField = gPersonSignalType.Columns[4] as SecurityField;
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.SignalType ) ).Id;
         }
-
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -134,11 +132,35 @@ namespace RockWeb.Blocks.Crm
 
                 signalTypeService.Delete( signalType );
                 rockContext.SaveChanges();
+
+                //
+                // If less than 250 people with this signal type then just update them all now,
+                // otherwise put something in the rock queue to take care of it.
+                //
+                if ( people.Count < 250 )
+                {
+                    new PersonService( rockContext ).Queryable()
+                        .Where( p => people.Contains( p.Id ) )
+                        .ToList()
+                        .ForEach( p => p.CalculateSignals() );
+
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    var transaction = new Rock.Transactions.UpdatePersonsTopSignal( people );
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
             }
 
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the GridReorder event of the gPersonSignalType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs" /> instance containing the event data.</param>
         void gPersonSignalType_GridReorder( object sender, GridReorderEventArgs e )
         {
             var rockContext = new RockContext();

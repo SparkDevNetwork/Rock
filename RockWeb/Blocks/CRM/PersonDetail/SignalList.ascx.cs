@@ -20,8 +20,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
-using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -189,6 +189,11 @@ namespace RockWeb.Blocks.CRM.PersonDetail
 
         #region Events
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdEditSignal control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void mdEditSignal_SaveClick( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
