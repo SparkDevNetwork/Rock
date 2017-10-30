@@ -201,7 +201,7 @@ function() {
             var ddlDataView = new DataViewPicker();
             ddlDataView.ID = filterControl.GetChildControlInstanceName( _CtlDataView );
             ddlDataView.Label = "In Personal Device DataView";
-            ddlDataView.Help = "A User Login Data View that provides the set of possible users.";
+            ddlDataView.Help = "A Personal Device Data View that provides the set of possible people with personal devices.";
 
             filterControl.Controls.Add( ddlDataView );
 
