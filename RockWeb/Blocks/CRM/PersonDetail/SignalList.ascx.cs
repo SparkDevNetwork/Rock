@@ -96,6 +96,7 @@ namespace RockWeb.Blocks.CRM.PersonDetail
             ddlSignalType.SelectedValue = string.Empty;
             dpExpirationDate.SelectedDate = null;
             tbNote.Text = string.Empty;
+            ppSignalOwner.SetValue( CurrentPerson );
             hfEditSignalId.Value = "0";
 
             mdEditSignal.Title = "Add Signal";
@@ -111,6 +112,12 @@ namespace RockWeb.Blocks.CRM.PersonDetail
         {
             var signal = new PersonSignalService( new RockContext() ).Get( e.RowKeyId );
 
+            if ( !signal.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                mdGridWarning.Show( "Not authorized to make changes to this signal.", ModalAlertType.Information );
+                return;
+            }
+
             ddlSignalType.Items.Clear();
             ddlSignalType.Items.Add( new ListItem() );
 
@@ -125,6 +132,7 @@ namespace RockWeb.Blocks.CRM.PersonDetail
             ddlSignalType.SelectedValue = signal.SignalTypeId.ToString();
             dpExpirationDate.SelectedDate = signal.ExpirationDate;
             tbNote.Text = signal.Note;
+            ppSignalOwner.SetValue( signal.OwnerPersonAlias.Person );
             hfEditSignalId.Value = signal.Id.ToString();
 
             mdEditSignal.Title = "Edit Signal";
@@ -248,8 +256,8 @@ namespace RockWeb.Blocks.CRM.PersonDetail
                     a.SignalType.Order,
                     a.SignalType.Name,
                     a.OwnerPersonAlias,
-                    Note = a.IsAuthorized( Authorization.EDIT, CurrentPerson ) ? a.Note : string.Empty,
-                    ExpirationDate = a.IsAuthorized( Authorization.EDIT, CurrentPerson ) ? a.ExpirationDate : null
+                    Note = a.IsAuthorized( Authorization.VIEW, CurrentPerson ) ? a.Note : string.Empty,
+                    ExpirationDate = a.IsAuthorized( Authorization.VIEW, CurrentPerson ) ? a.ExpirationDate : null
                 } ).AsQueryable();
 
             if ( gSignal.SortProperty != null )
