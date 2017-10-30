@@ -39,6 +39,12 @@
             </Content>
         </Rock:ModalDialog>
 
+        <Rock:ModalDialog ID="mdCopyQuestions" runat="server" Title="Copy Questions" OnSaveClick="mdCopyQuestions_SaveClick" OnCancelScript="clearActiveDialog();">
+            <Content>
+                Copy from resource: <Rock:RockDropDownList ID="ddlCopySource" runat="server" EnhanceForLongLists="true"></Rock:RockDropDownList>
+            </Content>
+        </Rock:ModalDialog>
+
         <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 
     </ContentTemplate>
