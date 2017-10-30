@@ -104,7 +104,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
-
         /// <summary>
         /// Handles the GridRebind event of the gResources control.
         /// </summary>
@@ -115,7 +114,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             BindGrid();
         }
 
-
         /// <summary>
         /// Rs the filter_ display filter value.
         /// </summary>
@@ -123,8 +121,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The e.</param>
         protected void gfSettings_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-
-            if ( e.Key != "Category" )
+            if ( e.Key == "Category" )
             {
                 int? categoryId = e.Value.AsIntegerOrNull();
                 if ( categoryId.HasValue )

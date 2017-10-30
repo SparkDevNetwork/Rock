@@ -13,8 +13,8 @@
 
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gfSettings" runat="server">
-                        <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" Required="false" EntityTypeName="com.centralaz.RoomManagement.Model.Resource" />
                         <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus"/>
+                        <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" Required="false" EntityTypeName="com.centralaz.RoomManagement.Model.Resource" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gResources" runat="server" RowItemText="Resource" OnRowSelected="gResources_Edit" TooltipField="Description">
                         <Columns>
