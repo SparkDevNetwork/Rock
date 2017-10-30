@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -38,6 +39,23 @@ namespace Rock.Communication.Medium
     public class Sms : MediumComponent
     {
         const int TOKEN_REUSE_DURATION = 30; // number of days between token reuse
+
+        /// <summary>
+        /// The highest value an SMS Response Code can contain. If you change this above 5 digits
+        /// then you must also change the regular expression in the ProcessResponse method.
+        /// </summary>
+        private const int RESPONSE_CODE_MAX = 90000;
+
+        /// <summary>
+        /// Define a key to use in the cache for storing our available response code list.
+        /// </summary>
+        private const string RESPONSE_CODE_CACHE_KEY = "Rock:Communication:Sms:ResponseCodeCache";
+
+        /// <summary>
+        /// Used by the GenerateResponseCode method to ensure exclusive access to the cached
+        /// available response code list.
+        /// </summary>
+        private static readonly object _responseCodesLock = new object();
 
         /// <summary>
         /// Gets the type of the communication.
@@ -102,7 +120,7 @@ namespace Rock.Communication.Medium
                     if ( toPerson.Id == fromPerson.Id ) // message from the medium recipient
                     {
                         // look for response code in the message
-                        Match match = Regex.Match( message, @"@\d{3}" );
+                        Match match = Regex.Match( message, @"@\d{3,5}" );
                         if ( match.Success )
                         {
                             string responseCode = match.ToString();
@@ -180,37 +198,91 @@ namespace Rock.Communication.Medium
         }
 
         /// <summary>
+        /// Generate a randomized list of available response codes that can be used for SMS tracking.
+        /// </summary>
+        /// <param name="rockContext">A context to use for database calls.</param>
+        /// <returns>A randomized <see cref="List{T}"/> of strings that are available for use.</returns>
+        static private List<string> GenerateAvailableResponseCodeList( Rock.Data.RockContext rockContext )
+        {
+            DateTime tokenStartDate = RockDateTime.Now.Subtract( new TimeSpan( TOKEN_REUSE_DURATION, 0, 0, 0 ) );
+            int[] blacklist = new int[] { 666, 911 };
+            int chunkSize = 100;
+
+            //
+            // Generate a list of codes that are currently active in the database.
+            //
+            var activeCodes = new CommunicationRecipientService( rockContext ).Queryable()
+                                    .Where( c => c.ResponseCode.StartsWith( "@" ) && c.CreatedDateTime > tokenStartDate )
+                                    .Select( c => c.ResponseCode )
+                                    .ToList();
+
+            //
+            // Starting at code 100, try to generate a list of available codes in small chunks until
+            // we have a list with atleast 1 available code.
+            //
+            for ( int startValue = 100; startValue < RESPONSE_CODE_MAX - chunkSize; startValue += chunkSize )
+            {
+                var availableCodes = Enumerable.Range( startValue, chunkSize )
+                    .Where( i => !blacklist.Contains( i ) )
+                    .Select( i => string.Format( "@{0}", i ) )
+                    .Where( c => !activeCodes.Contains( c ) )
+                    .ToList();
+
+                if ( availableCodes.Any() )
+                {
+                    availableCodes.OrderBy( c => Guid.NewGuid() ).ToList();
+                    return availableCodes;
+                }
+            }
+
+            throw new Exception( "No available response codes." );
+        }
+
+        /// <summary>
         /// Creates a recipient token to help track conversations.
         /// </summary>
         /// <param name="rockContext">A context to use for database calls.</param>
         /// <returns>String token</returns>
         private string GenerateResponseCode( Rock.Data.RockContext rockContext )
         {
-            bool isUnique = false;
-            int randomNumber = -1;
             DateTime tokenStartDate = RockDateTime.Now.Subtract( new TimeSpan( TOKEN_REUSE_DURATION, 0, 0, 0 ) );
+            var communicationRecipientService = new CommunicationRecipientService( rockContext );
+            var cache = RockMemoryCache.Default;
 
-            Random rnd = new Random();
-
-            while ( isUnique == false )
+            lock ( _responseCodesLock )
             {
-                randomNumber = rnd.Next( 100, 1000 );
+                var availableResponseCodes = cache[RESPONSE_CODE_CACHE_KEY] as List<string>;
 
-                if ( randomNumber != 666 ) // just because
+                //
+                // Try up to 1,000 times to find a code. This really should never go past the first
+                // loop but we will give the benefit of the doubt in case a code is issued via SQL.
+                //
+                for ( int attempts = 0; attempts < 1000; attempts++ )
                 {
-
-                    // check if token has been used recently
-                    var communication = new CommunicationRecipientService( rockContext ).Queryable()
-                                            .Where( c => c.ResponseCode == "@" + randomNumber.ToString() && c.CreatedDateTime > tokenStartDate )
-                                            .FirstOrDefault();
-                    if ( communication == null )
+                    if ( availableResponseCodes == null || !availableResponseCodes.Any() )
                     {
-                        isUnique = true;
+                        availableResponseCodes = GenerateAvailableResponseCodeList( rockContext );
+                    }
+
+                    var code = availableResponseCodes[0];
+                    availableResponseCodes.RemoveAt( 0 );
+
+                    //
+                    // Verify that the code is still unused.
+                    //
+                    var isUsed = communicationRecipientService.Queryable()
+                            .Where( c => c.ResponseCode == code && c.CreatedDateTime > tokenStartDate )
+                            .Any();
+
+                    if ( !isUsed )
+                    {
+                        cache[RESPONSE_CODE_CACHE_KEY] = availableResponseCodes;
+                        return code;
                     }
                 }
             }
 
-            return "@" + randomNumber.ToString();
+            throw new Exception( "Could not find an available response code." );
         }
 
         /// <summary>
