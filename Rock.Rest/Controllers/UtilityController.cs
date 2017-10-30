@@ -125,7 +125,7 @@ namespace Rock.Rest.Controllers
         /// <param name="toNumber">To number.</param>
         /// <param name="message">The message.</param>
         /// <returns></returns>
-        [Authenticate, Secured]
+        //[Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Utility/TextToWorkflow/{fromNumber}/{toNumber}/{message}" )]
         public string TextToWorkflow( string fromNumber, string toNumber, string message )

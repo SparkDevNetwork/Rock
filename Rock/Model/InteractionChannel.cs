@@ -110,6 +110,15 @@ namespace Rock.Model
         [DataMember]
         public int? RetentionDuration { get; set; }
 
+        /// <summary>
+        /// Gets or sets the length of time that components of this channel should be cached
+        /// </summary>
+        /// <value>
+        /// The duration of the component cache.
+        /// </value>
+        [DataMember]
+        public int? ComponentCacheDuration { get; set; }
+
         #endregion
 
         #region Virtual Properties

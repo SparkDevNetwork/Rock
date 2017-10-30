@@ -17,6 +17,7 @@
 using System;
 using System.Data.Entity;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -228,6 +229,55 @@ namespace Rock.Web.Cache
                 () => LoadByModel( interactionComponentModel ) );
         }
 
+        /// <summary>
+        /// Gets the or add existing.
+        /// </summary>
+        /// <remarks>
+        /// Because ComponentCacheDuration is determined by the channel, this class needs it's own GetOrAddExisting
+        /// method.
+        /// </remarks>
+        /// <param name="key">The key.</param>
+        /// <param name="valueFactory">The value factory.</param>
+        /// <returns></returns>
+        private static InteractionComponentCache GetOrAddExisting( string key, Func<InteractionComponentCache> valueFactory )
+        {
+            RockMemoryCache cache = RockMemoryCache.Default;
+
+            InteractionComponentCache cacheValue = cache.Get( key ) as InteractionComponentCache;
+            if ( cacheValue != null )
+            {
+                return cacheValue;
+            }
+
+            InteractionComponentCache value = valueFactory();
+            if ( value != null )
+            {
+                // Because the cache policy for interaction components is defined on the channel, get the channel.
+                int? cacheDuration = null;
+                var channel = InteractionChannelCache.Read( value.ChannelId );
+                if ( channel != null )
+                {
+                    cacheDuration = channel.ComponentCacheDuration;
+                }
+
+                if ( !cacheDuration.HasValue || cacheDuration.Value > 0 )
+                {
+                    var cacheItemPolicy = new CacheItemPolicy();
+                    if ( cacheDuration.HasValue )
+                    {
+                        cacheItemPolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration.Value );
+                    }
+                    cache.Set( key, value, cacheItemPolicy );
+                }
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Loads by model.
+        /// </summary>
+        /// <param name="interactionComponentModel">The interaction component model.</param>
+        /// <returns></returns>
         private static InteractionComponentCache LoadByModel( InteractionComponent interactionComponentModel )
         {
             if ( interactionComponentModel != null )

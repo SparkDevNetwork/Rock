@@ -255,7 +255,7 @@ namespace Rock.Workflow.Action
         /// <returns></returns>
         private int? GetPersonAliasId( RockContext rockContext, string identifier )
         {
-            int? personAliasId = identifier.AsInteger();
+            int? personAliasId = identifier.AsIntegerOrNull();
             if ( personAliasId.HasValue )
             {
                 return personAliasId.Value;
