@@ -19,6 +19,9 @@ using System.Linq.Expressions;
 
 namespace Rock.Reporting
 {
+    /// <summary>
+    /// Interface for Data Select components that can be used as a communication recipient column
+    /// </summary>
     public interface IRecipientDataSelect
     {
         /// <summary>
