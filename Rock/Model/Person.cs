@@ -36,6 +36,7 @@ using Rock.Web.Cache;
 /// <summary>
 /// ALTER TABLE [dbo].[Person]
 ///	ADD [TopSignalColor] [nvarchar](100) NULL,
+///	ADD [TopSignalIconCssClass] [nvarchar](100) NULL,
 ///	[TopSignalId] [int] NULL
 ///
 /// ALTER TABLE [dbo].[Person] WITH CHECK ADD CONSTRAINT [FK_dbo.Person_dbo.PersonSignal_Id] FOREIGN KEY( [TopSignalId])
@@ -464,7 +465,18 @@ namespace Rock.Model
         public int? MetaPersonicxLifestageGroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the top signal CSS class. This property is used to display a small color bar
+        /// Gets or sets the name of the top signal color. This property is used to indicate the icon color
+        /// on a person if they have a related signal.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the CSS color.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string TopSignalColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the top signal CSS class. This property is used to indicate which icon to display
         /// on a person if they have a related signal.
         /// </summary>
         /// <value>
@@ -472,7 +484,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string TopSignalColor { get; set; }
+        public string TopSignalIconCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the highest priority PersonSignal associated with this person.
@@ -1774,6 +1786,7 @@ namespace Rock.Model
                 .FirstOrDefault();
 
             TopSignalId = topSignal?.Id;
+            TopSignalIconCssClass = topSignal?.SignalType.SignalIconCssClass;
             TopSignalColor = topSignal?.SignalType.SignalColor;
         }
 
@@ -2586,12 +2599,17 @@ namespace Rock.Model
             return string.Format( "<img src='{0}'{1}{2}{3}/>", photoUrl.ToString(), styleString, altString, classString );
         }
 
-
+        /// <summary>
+        /// Gets the HTML markup to use for displaying the top-most signal icon for this person.
+        /// </summary>
+        /// <returns>A string that represents the Icon to display or an empty string if no signal is active.</returns>
         public string GetSignalMarkup()
         {
             if ( !string.IsNullOrWhiteSpace( TopSignalColor ) )
             {
-                return string.Format( "<i class='fa fa-flag' style='color: {0};'></i>", TopSignalColor );
+                return string.Format( "<i class='{1}' style='color: {0};'></i>",
+                    TopSignalColor,
+                    !string.IsNullOrWhiteSpace( TopSignalIconCssClass ) ? TopSignalIconCssClass : "fa fa-flag" );
             }
 
             return string.Empty;

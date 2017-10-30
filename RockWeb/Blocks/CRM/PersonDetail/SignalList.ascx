@@ -29,11 +29,17 @@
         <Rock:ModalDialog ID="mdEditSignal" runat="server" Title="Edit Signal" OnSaveClick="mdEditSignal_SaveClick" ValidationGroup="EditSignal">
             <Content>
                 <asp:HiddenField ID="hfEditSignalId" runat="server" />
-                <asp:ValidationSummary ID="vsEditSignal" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddSignal" />
+                <asp:ValidationSummary ID="vsEditSignal" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="EditSignal" />
 
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlSignalType" runat="server" Label="Signal Type" Required="true" ValidationGroup="EditSignal" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:PersonPicker ID="ppSignalOwner" runat="server" Label="Owner" Help="The person who should be contacted for futher information about this signal." ValidationGroup="EditSignal" Required="true" />
                     </div>
 
                     <div class="col-md-6">
