@@ -42,8 +42,9 @@ namespace Rock.Jobs
     [BooleanField( "Process Family BI Analytics", "Do the BI Analytics tasks related to the Family Analytics tables", true, "", 2 )]
     [BooleanField( "Process Financial Transaction BI Analytics", "Do the BI Analytics tasks related to the Financial Transaction Analytics tables", true, "", 3 )]
     [BooleanField( "Process Attendance BI Analytics", "Do the BI Analytics tasks related to the Attendance Analytics tables", true, "", 4 )]
-    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (3600 seconds). Note that some of the tasks might take a while on larger databases, so you might need to set it higher.", false, 60 * 60, "General", 5, "CommandTimeout" )]
-    [BooleanField( "Save SQL for Debug", "Save the SQL that is used in the Person and Family related parts of the this job to App_Data\\Logs", false, "Advanced", 6, "SaveSQLForDebug" )]
+    [BooleanField( "Refresh Power BI Account Tokens", "Refresh any Power BI Account Tokens to prevent them from expiring.", true, "", 5 )]
+    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (3600 seconds). Note that some of the tasks might take a while on larger databases, so you might need to set it higher.", false, 60 * 60, "General", 6, "CommandTimeout" )]
+    [BooleanField( "Save SQL for Debug", "Save the SQL that is used in the Person and Family related parts of the this job to App_Data\\Logs", false, "Advanced", 7, "SaveSQLForDebug" )]
     public class ProcessBIAnalytics : IJob
     {
         #region Constructor
@@ -66,12 +67,12 @@ namespace Rock.Jobs
         /// <summary>
         /// The person job stats
         /// </summary>
-        private JobStats PersonJobStats = new JobStats();
+        private JobStats _personJobStats = new JobStats();
 
         /// <summary>
         /// The family job stats
         /// </summary>
-        private JobStats FamilyJobStats = new JobStats();
+        private JobStats _familyJobStats = new JobStats();
 
         private int? _commandTimeout = null;
         private List<string> _sqlLogs = new List<string>();
@@ -98,16 +99,16 @@ namespace Rock.Jobs
             // Do the stuff for Person related BI Tables
             if ( dataMap.GetString( "ProcessPersonBIAnalytics" ).AsBoolean() )
             {
-                ProcessPersonBIAnalytics( context, dataMap);
+                ProcessPersonBIAnalytics( context, dataMap );
 
-                results.AppendLine("Person BI Results:");
+                results.AppendLine( "Person BI Results:" );
 
-                if ( PersonJobStats.ColumnsAdded != 0 || PersonJobStats.ColumnsModified != 0 || PersonJobStats.ColumnsRemoved != 0 )
+                if ( _personJobStats.ColumnsAdded != 0 || _personJobStats.ColumnsModified != 0 || _personJobStats.ColumnsRemoved != 0 )
                 {
-                    results.AppendLine( $"-- Added {PersonJobStats.ColumnsAdded}, modified {PersonJobStats.ColumnsModified}, and removed {PersonJobStats.ColumnsRemoved} Person attribute columns." );
+                    results.AppendLine( $"-- Added {_personJobStats.ColumnsAdded}, modified {_personJobStats.ColumnsModified}, and removed {_personJobStats.ColumnsRemoved} Person attribute columns." );
                 }
 
-                results.AppendLine( $"-- Marked {PersonJobStats.RowsMarkedAsHistory} records as History, updated {PersonJobStats.RowsUpdated} records, updated {PersonJobStats.AttributeFieldsUpdated} attribute formatted values, and inserted {PersonJobStats.RowsInserted} records.");
+                results.AppendLine( $"-- Marked {_personJobStats.RowsMarkedAsHistory} records as History, updated {_personJobStats.RowsUpdated} records, updated {_personJobStats.AttributeFieldsUpdated} attribute formatted values, and inserted {_personJobStats.RowsInserted} records." );
 
                 context.UpdateLastStatusMessage( results.ToString() );
             }
@@ -119,13 +120,12 @@ namespace Rock.Jobs
 
                 results.AppendLine( "Family BI Results:" );
 
-                if ( FamilyJobStats.ColumnsAdded != 0 || FamilyJobStats.ColumnsModified != 0 || FamilyJobStats.ColumnsRemoved != 0 )
+                if ( _familyJobStats.ColumnsAdded != 0 || _familyJobStats.ColumnsModified != 0 || _familyJobStats.ColumnsRemoved != 0 )
                 {
-                    results.AppendLine( $"-- Added {FamilyJobStats.ColumnsAdded}, modified {FamilyJobStats.ColumnsModified}, and removed {FamilyJobStats.ColumnsRemoved} attribute columns." );
+                    results.AppendLine( $"-- Added {_familyJobStats.ColumnsAdded}, modified {_familyJobStats.ColumnsModified}, and removed {_familyJobStats.ColumnsRemoved} attribute columns." );
                 }
 
-                results.AppendLine( $"-- Marked {FamilyJobStats.RowsMarkedAsHistory} records as History, updated {FamilyJobStats.RowsUpdated} records, and updated {FamilyJobStats.AttributeFieldsUpdated} attribute values, and inserted {FamilyJobStats.RowsInserted} records." );
-
+                results.AppendLine( $"-- Marked {_familyJobStats.RowsMarkedAsHistory} records as History, updated {_familyJobStats.RowsUpdated} records, and updated {_familyJobStats.AttributeFieldsUpdated} attribute values, and inserted {_familyJobStats.RowsInserted} records." );
 
                 context.UpdateLastStatusMessage( results.ToString() );
             }
@@ -136,7 +136,7 @@ namespace Rock.Jobs
                 try
                 {
                     int rows = DbService.ExecuteCommand( "EXEC [dbo].[spAnalytics_ETL_FinancialTransaction]", System.Data.CommandType.Text, null, commandTimeout );
-                    results.AppendLine( "FinancialTransaction ETL completed.");
+                    results.AppendLine( "FinancialTransaction ETL completed." );
 
                     context.UpdateLastStatusMessage( results.ToString() );
                 }
@@ -163,6 +163,28 @@ namespace Rock.Jobs
                     HttpContext context2 = HttpContext.Current;
                     ExceptionLogService.LogException( ex, context2 );
                     throw;
+                }
+            }
+
+            // "Refresh Power BI Account Tokens"
+            if ( dataMap.GetString( "RefreshPowerBIAccountTokens" ).AsBoolean() )
+            {
+                var powerBiAccountsDefinedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
+                if ( powerBiAccountsDefinedType?.DefinedValues?.Any() == true )
+                {
+                    foreach ( var powerBiAccount in powerBiAccountsDefinedType.DefinedValues )
+                    {
+                        string message;
+                        var token = PowerBiUtilities.GetAccessToken( powerBiAccount.Guid, out message );
+                        if ( token.IsNullOrWhiteSpace() )
+                        {
+                            results.AppendLine( $"Unable to refresh Power BI Access token for {powerBiAccount.Value}: {message}." );
+                        }
+                        else
+                        {
+                            results.AppendLine( $"Refreshed Power BI Access token for {powerBiAccount.Value}." );
+                        }
+                    }
                 }
             }
 
@@ -265,8 +287,6 @@ namespace Rock.Jobs
                 // finish up by updating Attribute Values in the Analytic tables for attributes 
                 // that have to use FormatValue to get the value instead of directly in the DB
                 UpdatePersonAttributeValueUsingFormattedValue( personAnalyticAttributes );
-
-                
             }
             finally
             {
@@ -325,7 +345,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@personAttributeValue", personAttributeValue );
                             parameters.Add( "@formattedValue", formattedValue );
-                            this.PersonJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
+                            this._personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
 
                             _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
                         }
@@ -375,7 +395,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@personAttributeValue", personAttributeValue );
                             parameters.Add( "@formattedValue", formattedValue );
-                            PersonJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters );
+                            _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters );
 
                             _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
                         }
@@ -490,14 +510,13 @@ DECLARE
                 _sqlLogs.Add( "/* ProcessINSERTScript */\n" + scriptDeclares + processINSERTScript );
 
                 // Move Records To History that have changes in any of fields that trigger history
-                PersonJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( scriptDeclares + markAsHistoryScript, CommandType.Text, null, _commandTimeout );
+                _personJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( scriptDeclares + markAsHistoryScript, CommandType.Text, null, _commandTimeout );
 
                 // Update existing records that have CurrentRowIndicator=1 to match what is in the live tables
-                PersonJobStats.RowsUpdated += DbService.ExecuteCommand( scriptDeclares + updateETLScript, CommandType.Text, null, _commandTimeout );
+                _personJobStats.RowsUpdated += DbService.ExecuteCommand( scriptDeclares + updateETLScript, CommandType.Text, null, _commandTimeout );
 
                 // Insert new Person Records that aren't in there yet
-                PersonJobStats.RowsInserted += DbService.ExecuteCommand( scriptDeclares + processINSERTScript, CommandType.Text, null, _commandTimeout );
-
+                _personJobStats.RowsInserted += DbService.ExecuteCommand( scriptDeclares + processINSERTScript, CommandType.Text, null, _commandTimeout );
             }
         }
 
@@ -726,7 +745,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                     if ( databaseColumn == null )
                     {
                         // doesn't exist as a field on the AnalyticsSourcePersonHistorical table, so create it
-                        PersonJobStats.ColumnsAdded++;
+                        _personJobStats.ColumnsAdded++;
                         rockContext.Database.ExecuteSqlCommand( addColumnSQL );
                     }
                     else
@@ -754,7 +773,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                         if ( dropCreate )
                         {
                             // the attribute fieldtype must have changed. Drop and recreate the column
-                            PersonJobStats.ColumnsModified++;
+                            _personJobStats.ColumnsModified++;
                             rockContext.Database.ExecuteSqlCommand( dropColumnSql );
                             rockContext.Database.ExecuteSqlCommand( addColumnSQL );
                         }
@@ -769,7 +788,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                     {
                         var dropColumnSql = $"ALTER TABLE [AnalyticsSourcePersonHistorical] DROP COLUMN [{databaseAttributeField.ColumnName}]";
 
-                        PersonJobStats.ColumnsRemoved++;
+                        _personJobStats.ColumnsRemoved++;
                         rockContext.Database.ExecuteSqlCommand( dropColumnSql );
                     }
                 }
@@ -779,7 +798,6 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                 rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonHistorical]" );
                 rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonCurrent]" );
                 rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimFamilyHeadOfHousehold]" );
-
             }
         }
 
@@ -819,14 +837,12 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                 var etlResult = DbService.GetDataTable( "EXEC [dbo].[spAnalytics_ETL_Family]", CommandType.Text, null );
                 if ( etlResult.Rows.Count == 1 )
                 {
-                    FamilyJobStats.RowsInserted = etlResult.Rows[0]["RowsInserted"] as int? ?? 0;
-                    FamilyJobStats.RowsUpdated = etlResult.Rows[0]["RowsUpdated"] as int? ?? 0;
+                    _familyJobStats.RowsInserted = etlResult.Rows[0]["RowsInserted"] as int? ?? 0;
+                    _familyJobStats.RowsUpdated = etlResult.Rows[0]["RowsUpdated"] as int? ?? 0;
                 }
 
                 // finish up by updating Attribute Values in the Analytic tables for attributes 
                 UpdateFamilyAttributeValues( familyAnalyticAttributes );
-
-                
             }
             finally
             {
@@ -850,8 +866,6 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                 foreach ( var attribute in familyAnalyticAttributes.Where( a => a.IsAnalyticHistory ) )
                 {
                     var columnName = attribute.Key.RemoveSpecialCharacters();
-
-
                     var attributeValuesQry = attributeValueService.Queryable()
                             .Where( a => a.AttributeId == attribute.Id )
                             .Select( a => a.Value );
@@ -889,11 +903,10 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                         var parameters = new Dictionary<string, object>();
                         parameters.Add( "@familyAttributeValue", familyAttributeValue );
                         parameters.Add( "@attributeValue", attributeValue );
-                        this.FamilyJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
+                        this._familyJobStats.RowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
 
                         _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
                     }
-
                 }
             }
         }
@@ -944,7 +957,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@familyAttributeValue", familyAttributeValue );
                             parameters.Add( "@attributeValue", attributeValue );
-                            FamilyJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters );
+                            _familyJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters );
 
                             _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
                         }
@@ -1010,7 +1023,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                     if ( databaseColumn == null )
                     {
                         // doesn't exist as a field on the AnalyticsSourceFamilyHistorical table, so create it
-                        FamilyJobStats.ColumnsAdded++;
+                        _familyJobStats.ColumnsAdded++;
                         rockContext.Database.ExecuteSqlCommand( addColumnSQL );
                     }
                     else
@@ -1038,7 +1051,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                         if ( dropCreate )
                         {
                             // the attribute fieldtype must have changed. Drop and recreate the column
-                            FamilyJobStats.ColumnsModified++;
+                            _familyJobStats.ColumnsModified++;
                             rockContext.Database.ExecuteSqlCommand( dropColumnSql );
                             rockContext.Database.ExecuteSqlCommand( addColumnSQL );
                         }
@@ -1053,7 +1066,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                     {
                         var dropColumnSql = $"ALTER TABLE [AnalyticsSourceFamilyHistorical] DROP COLUMN [{databaseAttributeField.ColumnName}]";
 
-                        FamilyJobStats.ColumnsRemoved++;
+                        _familyJobStats.ColumnsRemoved++;
                         rockContext.Database.ExecuteSqlCommand( dropColumnSql );
                     }
                 }
