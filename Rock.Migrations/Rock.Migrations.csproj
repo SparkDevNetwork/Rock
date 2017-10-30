@@ -377,9 +377,9 @@
     <Compile Include="Migrations\201710242108391_ReportCommunication.Designer.cs">
       <DependentUpon>201710242108391_ReportCommunication.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710302119072_CommunicationTemplateLogo.cs" />
-    <Compile Include="Migrations\201710302119072_CommunicationTemplateLogo.Designer.cs">
-      <DependentUpon>201710302119072_CommunicationTemplateLogo.cs</DependentUpon>
+    <Compile Include="Migrations\201710302139137_CommunicationTemplateLogo.cs" />
+    <Compile Include="Migrations\201710302139137_CommunicationTemplateLogo.Designer.cs">
+      <DependentUpon>201710302139137_CommunicationTemplateLogo.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -2813,8 +2813,8 @@
     <EmbeddedResource Include="Migrations\201710242108391_ReportCommunication.resx">
       <DependentUpon>201710242108391_ReportCommunication.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710302119072_CommunicationTemplateLogo.resx">
-      <DependentUpon>201710302119072_CommunicationTemplateLogo.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201710302139137_CommunicationTemplateLogo.resx">
+      <DependentUpon>201710302139137_CommunicationTemplateLogo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
