@@ -883,11 +883,11 @@
                                 <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required"/>
                                 <Rock:NotificationBox ID="nbSMSTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test SMS has been sent." Visible="false" />
                                 <div class="actions margin-t-sm pull-right">
-                                    <a class="btn btn-sm btn-default js-sms-sendtest" href="#">Send Test</a>
+                                    <a class="btn btn-xs btn-default js-sms-sendtest" href="#">Send Test</a>
                                     <div class="js-sms-sendtest-inputs" style="display:none">
                                         <Rock:RockTextBox ID="tbTestSMSNumber" runat="server" Label="SMS Number" ValidationGroup="vgMobileTextEditorSendTest" Required="true" />
-                                        <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-sm btn-default" Text="Send" CausesValidation="true" ValidationGroup="vgMobileTextEditorSendTest" OnClick="btnSMSSendTest_Click" />
-                                        <a class="btn btn-sm btn-default js-sms-sendtest-cancel" href="#">Cancel</a>
+                                        <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-xs btn-primary" Text="Send" CausesValidation="true" ValidationGroup="vgMobileTextEditorSendTest" OnClick="btnSMSSendTest_Click" />
+                                        <a class="btn btn-xs btn-link js-sms-sendtest-cancel" href="#">Cancel</a>
                                     </div>
                                 </div>
                             </Rock:RockControlWrapper>
