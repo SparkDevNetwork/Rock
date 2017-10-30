@@ -16,20 +16,14 @@
 //
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 
-using Newtonsoft.Json;
-
 using Rock;
-using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 using Rock.Security;
 
 namespace RockWeb.Blocks.Crm
@@ -42,6 +36,9 @@ namespace RockWeb.Blocks.Crm
     {
         #region Properties
 
+        /// <summary>
+        /// The identifier of the signal type that we are currently editing.
+        /// </summary>
         public int SignalTypeId
         {
             get { return ViewState["SignalTypeId"] as int? ?? 0; }
