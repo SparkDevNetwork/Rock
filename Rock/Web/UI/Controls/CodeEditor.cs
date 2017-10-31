@@ -403,6 +403,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the javascript that will get executed when the codeeditor 'on blur' event occurs
+        /// </summary>
+        /// <value>
+        /// The on change press script.
+        /// </value>
+        public string OnBlurScript
+        {
+            get
+            {
+                return ViewState["OnBlurScript"] as string;
+            }
+
+            set
+            {
+                ViewState["OnBlurScript"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the merge field help.
         /// </summary>
         /// <value>
@@ -539,6 +558,10 @@ namespace Rock.Web.UI.Controls
                 ce_{0}.$blockScrolling = Infinity;
 
                 ce_{0}.setReadOnly({4});
+
+                ce_{0}.on('blur', function(e) {{
+                    {5}
+                }});
 ";
 
             string script = string.Format( 
@@ -547,7 +570,8 @@ namespace Rock.Web.UI.Controls
                 EditorThemeAsString( this.EditorTheme ),  // {1}
                 EditorModeAsString( this.EditorMode ),  // {2} 
                 this.OnChangeScript,  // {3}
-                this.ReadOnly.ToTrueFalse().ToLower()  // {4}
+                this.ReadOnly.ToTrueFalse().ToLower(),  // {4}
+                this.OnBlurScript // {5}
             );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ClientID, script, true );

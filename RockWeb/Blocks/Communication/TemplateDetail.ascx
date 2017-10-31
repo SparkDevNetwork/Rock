@@ -33,6 +33,14 @@
 
                 <div class="row">
                     <div class="col-md-6">
+                        <Rock:CategoryPicker ID="cpCategory" runat="server" Required="false" Label="Category" EntityTypeName="Rock.Model.CommunicationTemplate" />
+                    </div>
+                    <div class="col-md-6">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
                         <Rock:ImageUploader ID="imgTemplatePreview" runat="server" Label="Template Preview Image" Help="The preview of this template to show when selecting a template for a new communication" />
                     </div>
                 </div>
@@ -85,7 +93,6 @@
                         </div>
                     </div>
 
-
                     <label class="control-label">Message Template</label>
 
                     <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>
@@ -93,6 +100,12 @@
 
                     <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-xs btn-default pull-right" Text="Preview" OnClick="btnEmailPreview_Click" />
                     <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:ImageUploader ID="imgTemplateLogo" runat="server" Label="Logo" Help="The Logo that can be included in the contents of the message" />
+                        </div>
+                    </div>
 
                 </asp:Panel>
 
