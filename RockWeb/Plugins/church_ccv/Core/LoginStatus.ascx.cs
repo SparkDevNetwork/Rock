@@ -156,8 +156,6 @@ namespace RockWeb.Plugins.church_ccv.Core
             }
             else
             {
-
-
                 phHello.Visible = false;
                 phMyAccount.Visible = false;
                 phMyProfile.Visible = false;

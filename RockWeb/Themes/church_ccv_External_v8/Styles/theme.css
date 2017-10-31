@@ -11155,36 +11155,6 @@ legend {
 	 text-transform: uppercase;
 	 font-family: heebo;
 }
-/*
-.registrationentry-intro h1 {
-	font-size: 32px;
-	font-weight: bold;
-	color: #6f1315;
-	font-family: akrobat;
-}
-
-.registrationentry-registrant h1 {
-	font-size: 32px;
-	font-weight: bold;
-	color: #6f1315;
-	font-family: akrobat;
-}
-
-.registrationentry-summary h1 {
-	font-size: 32px;
-	font-weight: bold;
-	color: #6f1315;
-	font-family: akrobat;
-}
-
-.registrationentry-summary h4 {
-	font-size: 24px;
-	font-weight: bold;
-	font-family: akrobat;
-	color: #7c7c7c;
-	margin-top: -30px;
-}
-*/
 
 .registrationentry-summary p {
 	color: #7c7c7c;
@@ -11226,10 +11196,6 @@ legend {
     background: url(~/Themes/church_ccv_External_v8/Assets/Images/hero-1.jpg) no-repeat fixed;
     background-size: 100%;
     background-color: black;
-}
-
-#subnavbar {
-	/*z-index: 999;*/
 }
 
 #subnavbar ul li a {
@@ -11500,4 +11466,100 @@ html,body{
     font-size: 18px;
     color: #7A1315;
     margin: 0px;
+}
+
+/* Defines for the inVision screens */
+.small-paragraph-bold {
+    color: #707270;
+    font-family: heebo;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 21px;
+	text-align: center;
+}
+
+.small-paragraph {
+    color: #707270;
+    font-family: heebo;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 21px;
+	text-align: center;
+}
+
+.v-center {
+   display: flex;
+   align-items: center;
+}
+
+/* Formatting for the Login Pop Up */
+.login-form-title {
+    font-family: akrobat;
+    font-weight: 900;
+    text-transform: uppercase;
+	color: #7A1315;
+	font-size: 6.2rem;
+	line-height: 110%;
+    margin: 2.1rem 0 1.68rem 0;
+}
+
+.login-form-label .control-label{
+    text-transform: uppercase;
+    font-family: Akrobat;
+    font-size: 16px;
+    font-weight: bold;
+	box-sizing: border-box;
+}
+
+.login-form-label input{
+    height: 50px;
+    width: 100%;
+    border-radius: 5px;
+    background-color: #eee;
+    border-width: 0;
+    font-family: heebo;
+    font-size: 20px;
+    color: #707270;
+	line-height: inherit;
+	margin: 0;
+	box-sizing: border-box;
+    background-image: none;
+    color: rgb(0, 0, 0);
+	-webkit-appearance: textfield;
+    -webkit-rtl-ordering: logical;
+    user-select: text;
+    cursor: auto;
+    padding: 1px;
+    border-width: 0px;
+}
+
+.login-form-button {
+	height: 55px;
+    width: 94px;
+    border-radius: 5px;
+    background-color: #7A1315;
+    text-transform: uppercase;
+    color: #FFF;
+    font-family: akrobat;
+    font-size: 16px;
+    font-style: bold;
+    border-width: 0;
+}
+
+.login-form-forgot {
+	border-bottom: 0;
+}
+
+.login-form-register {
+	width: 100%;
+	padding: 16px;
+	font-family: akrobat;
+	font-weight: normal;
+	border-width: 0px;
+	margin: 0 0 24px 0;
+}
+
+#login-main-panel {
+	visibility: hidden;
+	height: 0px;
 }
