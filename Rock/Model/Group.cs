@@ -674,6 +674,21 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Get a list of all inherited Attributes that should be applied to this entity.
+        /// </summary>
+        /// <returns>A list of all inherited AttributeCache objects.</returns>
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        {
+            var groupTypeService = new GroupTypeService( rockContext );
+            var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( TypeId );
+
+            var groupType = this.GroupType ?? groupTypeService
+                .Queryable().AsNoTracking().FirstOrDefault( t => t.Id == this.GroupTypeId );
+
+            return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </summary>
         /// <returns>
@@ -683,6 +698,7 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
         #endregion
 
         #region Indexing Methods
