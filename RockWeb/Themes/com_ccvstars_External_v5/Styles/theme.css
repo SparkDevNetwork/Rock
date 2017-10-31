@@ -7922,9 +7922,16 @@ h2 {
   margin: 0;
 }
 .header-login-item {
-    color: black;
-    padding: 0px 10px;
+    color: white;
+    padding: 3px 12px 5px 12px;
+    margin-top: 10px;
+    background-color: #e43d35;
+    border: solid 1px #e43d35;
+    border-radius: 6px;
 }
 .header-login-item:hover {
     color: #e43d35;
+    background-color: white;
+    border: solid 1px #e34d35;
+    text-decoration: none;
 }
