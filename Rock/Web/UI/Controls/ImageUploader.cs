@@ -778,16 +778,16 @@ Rock.controls.imageUploader.initialize({{
         {
             if ( eventArgument == "ImageUploaded" && ImageUploaded != null )
             {
-                ImageUploaded( this, new ImageUploaderEventArgs( this.BinaryFileId ) );
+                ImageUploaded( this, new ImageUploaderEventArgs( this.BinaryFileId, ImageUploaderEventArgs.ArgumentType.ImageUploaded ) );
             }
 
             if ( eventArgument == "ImageRemoved" )
             {
                 if ( ImageRemoved != null )
                 {
-                    ImageRemoved( this, new ImageUploaderEventArgs( this.BinaryFileId ) );
-
+                    ImageRemoved( this, new ImageUploaderEventArgs( this.BinaryFileId, ImageUploaderEventArgs.ArgumentType.ImageRemoved ) );
                 }
+
                 this.BinaryFileId = 0;
             }
         }
@@ -800,20 +800,50 @@ Rock.controls.imageUploader.initialize({{
     public class ImageUploaderEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets the field value.
+        /// Gets the binary file identifier of the Image that was Uploaded or Removed (see EventArgument)
         /// </summary>
         /// <value>
-        /// The field value.
+        /// The binary file identifier.
         /// </value>
         public int? BinaryFileId { get; private set; }
+
+        /// <summary>
+        /// Gets the event argument.
+        /// </summary>
+        /// <value>
+        /// The event argument.
+        /// </value>
+        public ArgumentType EventArgument { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum ArgumentType
+        {
+            ImageUploaded,
+            ImageRemoved
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageUploaderEventArgs"/> class.
         /// </summary>
         /// <param name="binaryFileId">The binary file identifier.</param>
-        public ImageUploaderEventArgs(int? binaryFileId) : base()
+        [Obsolete( "ImageUploaderEventArgs(binaryFileId, eventArgument) instead" )]
+        public ImageUploaderEventArgs( int? binaryFileId ) : base()
         {
             BinaryFileId = binaryFileId;
+            EventArgument = ArgumentType.ImageUploaded;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageUploaderEventArgs" /> class.
+        /// </summary>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        /// <param name="eventArgument">The event argument.</param>
+        public ImageUploaderEventArgs(int? binaryFileId, ArgumentType eventArgument ) : base()
+        {
+            BinaryFileId = binaryFileId;
+            EventArgument = eventArgument;
         }
     }
 }
