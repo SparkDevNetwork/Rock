@@ -226,7 +226,7 @@ namespace Rock.Web.UI.Controls
         public string ValidationGroup
         {
             get { return ViewState["ValidationGroup"] as string; }
-            set { ViewState["ValidationGroup"] = value; }
+            set { ViewState["ValidationGroup"] = value; this.RequiredFieldValidator.ValidationGroup = value; }
         }
 
         /// <summary>
