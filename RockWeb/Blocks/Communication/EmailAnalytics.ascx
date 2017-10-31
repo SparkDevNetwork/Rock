@@ -46,13 +46,13 @@
                         <div class="row">
                             <div class="col-sm-4">
                                 <Rock:RockLiteral ID="lDelivered" runat="server" />
-                                <Rock:RockLiteral ID="lPercentOpened" runat="server" />
+                                <Rock:RockLiteral ID="lUnopened" runat="server" />
                                 <Rock:RockLiteral ID="lFailedRecipients" runat="server" />
                             </div>
                             <div class="col-sm-4">
                                 <Rock:RockLiteral ID="lUniqueOpens" runat="server" />
                                 <Rock:RockLiteral ID="lTotalOpens" runat="server" />
-                                <Rock:RockLiteral ID="lUnopened" runat="server" />
+                                <Rock:RockLiteral ID="lPercentOpened" runat="server" />
                             </div>
                             <div class="col-sm-4">
                                 <Rock:RockLiteral ID="lUniqueClicks" runat="server" />

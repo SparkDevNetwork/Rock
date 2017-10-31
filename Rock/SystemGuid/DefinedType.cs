@@ -235,6 +235,11 @@ namespace Rock.SystemGuid
         public const string PERSONAL_DEVICE_PLATFORM = "A55849D7-5C7B-4B36-9024-A672169E4C9C";
 
         /// <summary>
+        /// The PowerBI Accounts Defined Type guid
+        /// </summary>
+        public const string POWERBI_ACCOUNTS = "497DE3E6-66BD-D4A1-4A41-78A2FED2D0DF";
+
+        /// <summary>
         /// Protect My Ministry MVR jurisdiction codes
         /// </summary>
         public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";

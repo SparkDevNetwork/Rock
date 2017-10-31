@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>6</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -134,6 +135,12 @@
     <Reference Include="Microsoft.AspNet.SignalR.SystemWeb, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.SystemWeb.2.2.0\lib\net45\Microsoft.AspNet.SignalR.SystemWeb.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory, Version=2.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.21.301221612\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms, Version=2.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.21.301221612\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Logging, Version=1.1.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Logging.1.1.2\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
@@ -665,6 +672,7 @@
     <Compile Include="Follow\EventComponent.cs" />
     <Compile Include="Follow\EventContainer.cs" />
     <Compile Include="Follow\Event\PersonAnniversary.cs" />
+    <Compile Include="Follow\Event\PersonPrayerRequest.cs" />
     <Compile Include="Follow\Event\PersonBaptized.cs" />
     <Compile Include="Follow\Event\PersonBirthday.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
@@ -1168,6 +1176,7 @@
     <Compile Include="Reporting\DataTransform\Person\GrandparentTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\MotherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\SpouseTransform.cs" />
+    <Compile Include="Reporting\PowerBiUtilities.cs" />
     <Compile Include="Search\Other\Universal.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
     <Compile Include="SystemGuid\Communication.cs" />
@@ -1273,6 +1282,8 @@
     <Compile Include="Plugin\HotFixes\028_CheckinTextSettings.cs" />
     <Compile Include="Plugin\HotFixes\033_ConnectionOpportunityCounts.cs" />
     <Compile Include="Plugin\HotFixes\034_FinancialSecurityActions.cs" />
+    <Compile Include="Plugin\HotFixes\035_TransactionListSummary.cs" />
+    <Compile Include="Plugin\HotFixes\036_PrayerRequestFollowingEvent.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1414,6 +1425,9 @@
     <Compile Include="Utility\IRockOwinStartup.cs" />
     <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Web\Cache\ContentChannelCache.cs" />
+    <Compile Include="Web\Cache\LavaTemplateCache.cs" />
+    <Compile Include="Web\Cache\InteractionChannelCache.cs" />
+    <Compile Include="Web\Cache\InteractionComponentCache.cs" />
     <Compile Include="Web\Cache\LavaShortcodeCache.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\Cache\WorkflowActionFormAttributeCache.cs" />
@@ -1924,6 +1938,7 @@
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
     <Compile Include="Workflow\Action\Utility\SetEntityAttribute.cs" />
     <Compile Include="Workflow\Action\Utility\SetEntityProperty.cs" />
+    <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
     <Compile Include="Workflow\Action\Utility\RunSQL.cs" />

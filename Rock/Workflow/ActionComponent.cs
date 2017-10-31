@@ -119,14 +119,14 @@ namespace Rock.Workflow
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="key">The key.</param>
-        /// <param name="checkWorflowAttributeValue">if set to <c>true</c> and the returned value is a guid, check to see if the workflow 
+        /// <param name="checkWorkflowAttributeValue">if set to <c>true</c> and the returned value is a guid, check to see if the workflow 
         /// or activity contains an attribute with that guid. This is useful when using the WorkflowTextOrAttribute field types to get the 
         /// actual value or workflow value.</param>
         /// <returns></returns>
-        protected string GetAttributeValue( WorkflowAction action, string key, bool checkWorflowAttributeValue )
+        protected string GetAttributeValue( WorkflowAction action, string key, bool checkWorkflowAttributeValue )
         {
             string value = GetActionAttributeValue( action, key );
-            if ( checkWorflowAttributeValue )
+            if ( checkWorkflowAttributeValue )
             {
                 Guid? attributeGuid = value.AsGuidOrNull();
                 if ( attributeGuid.HasValue )

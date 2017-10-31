@@ -2173,7 +2173,7 @@ namespace Rock.Model
                         ( v.Attribute.EntityTypeQualifierValue == null || v.Attribute.EntityTypeQualifierValue == string.Empty ) &&
                         v.EntityId == person.Id ) )
                 {
-                    values.Add( attributeValue.Attribute.Key, attributeValue.Value );
+                    values.AddOrReplace( attributeValue.Attribute.Key, attributeValue.Value );
                 }
             }
 

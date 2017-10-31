@@ -22,7 +22,7 @@
                                         <Rock:NotificationBox ID="nbGroupNotification" runat="server" Visible="false" />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:Toggle ID="tglCommunicationPreference" runat="server" OnText="Email" OffText="SMS" OnCheckedChanged="tglCommunicationPreference_CheckedChanged" />
+                                        <Rock:Toggle ID="tglCommunicationPreference" runat="server" OnText="Email" OffText="SMS" ButtonSizeCssClass="btn-xs" OnCssClass="btn-info" OffCssClass="btn-info" OnCheckedChanged="tglCommunicationPreference_CheckedChanged" />
                                     </div>
                                 </div>
                             </ItemTemplate>
