@@ -983,7 +983,15 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
 
-            var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().Where( a => a.IsActive ).OrderBy( a => a.Name );
+            var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().Where( a => a.IsActive );
+
+            int? categoryId = cpCommunicationTemplate.SelectedValue.AsIntegerOrNull();
+            if (categoryId.HasValue && categoryId > 0)
+            {
+                templateQuery = templateQuery.Where( a => a.CategoryId == categoryId );
+            }
+
+            templateQuery = templateQuery.OrderBy( a => a.Name );
 
             // get list of templates that the current user is authorized to View
             IEnumerable<CommunicationTemplate> templateList = templateQuery.AsNoTracking().ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
@@ -1140,6 +1148,16 @@ namespace RockWeb.Blocks.Communication
             {
                 ShowMobileTextEditor();
             }
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the cpCommunicationTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cpCommunicationTemplate_SelectItem( object sender, EventArgs e )
+        {
+            BindTemplatePicker();
         }
 
         #endregion Template Selection
@@ -2243,6 +2261,8 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         }
 
         #endregion
+
+
 
         
     }
