@@ -618,7 +618,8 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Adds a new PageRoute to the given page but only if the given route name does not exist.
+        /// Adds a new PageRoute to the given page but only if the given route name does not exist for the specified page
+        /// **NOTE**: If a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
@@ -628,7 +629,8 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Adds a new PageRoute to the given page but only if the given route name does not exist.
+        /// Adds a new PageRoute to the given page but only if the given route name does not exist for the specified page
+        /// **NOTE**: If a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
@@ -1971,7 +1973,7 @@ BEGIN
         }
 
         /// <summary>
-        /// Adds the defined type attribute.
+        /// Adds the defined type attribute, or updates it if it already exists
         /// </summary>
         /// <param name="definedTypeGuid">The defined type unique identifier.</param>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
