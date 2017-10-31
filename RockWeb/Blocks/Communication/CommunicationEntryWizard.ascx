@@ -143,7 +143,17 @@
 
                 <%-- Template Selection --%>
                 <asp:Panel ID="pnlTemplateSelection" CssClass="js-navigation-panel" runat="server" Visible="false">
-                    <h1 class="step-title">Communication Template</h1>
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <h1 class="step-title">Communication Template</h1>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="pull-right">
+                                <Rock:CategoryPicker ID="cpCommunicationTemplate" runat="server" AllowMultiSelect="false" Label="Category Filter" EntityTypeName="Rock.Model.CommunicationTemplate" OnSelectItem="cpCommunicationTemplate_SelectItem" />
+                            </div>
+                        </div>
+                    </div>
+                    
                     <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
                     <div class="row margin-t-lg template-selection">
                         <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
