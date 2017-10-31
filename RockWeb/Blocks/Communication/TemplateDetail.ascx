@@ -101,9 +101,9 @@
                     <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-xs btn-default pull-right" Text="Preview" OnClick="btnEmailPreview_Click" />
                     <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" />
 
-                    <div class="row">
+                    <div class="row" id="pnlTemplateLogo" runat="server">
                         <div class="col-md-6">
-                            <Rock:ImageUploader ID="imgTemplateLogo" runat="server" Label="Logo" Help="The Logo that can be included in the contents of the message" />
+                            <Rock:ImageUploader ID="imgTemplateLogo" runat="server" Label="Logo" Help="The Logo that can be included in the contents of the message" OnImageUploaded="imgTemplateLogo_ImageUploaded" OnImageRemoved="imgTemplateLogo_ImageUploaded" />
                         </div>
                     </div>
 
@@ -232,6 +232,38 @@
                     }
                 });
             });
+
+            // wait for everything to load (especially the codeeditor, then updateTemplateLogoVisibility)
+            setTimeout(function () {
+                updateTemplateLogoVisibility();
+            }, 0);
+            
+
+            // only show the template logo uploader if there is a div with id='template-logo'
+            // then update the help-message on the loader based on the template-logo's data-instuctions attribute and width and height
+            // this gets called on page load and when the cursor blurs out of the template code editor
+            function updateTemplateLogoVisibility() {
+                var $logoPnl = $('#<%=pnlTemplateLogo.ClientID%>');
+                var templateEditor = $('#codeeditor-div-<%=ceEmailTemplate.ClientID%>').data('aceEditor');
+                var templateDom = $.parseHTML(templateEditor.getValue());
+                var templateLogo = $(templateDom).find('#template-logo');
+                if (templateLogo.length) {
+                    // if the templateLog has special instructions, use those
+                    var helpText = templateLogo.attr('data-instructions') || 'The Logo that can be included in the contents of the message';
+
+                    var helpWidth = templateLogo.attr('width');
+                    var helpHeight = templateLogo.attr('height');
+                    if (helpWidth && helpHeight)
+                    {
+                        helpText += ' (Image size: ' + helpWidth + ' x ' + helpHeight + ')';
+                    }
+                    var helpDiv = $logoPnl.find('.help-message');
+                    helpDiv.html('<small>' + helpText + '</small>');
+                    $logoPnl.show();
+                } else {
+                    $logoPnl.hide();
+                }
+            }
 
             function removeAttachment(source, hf, fileId)
             {
