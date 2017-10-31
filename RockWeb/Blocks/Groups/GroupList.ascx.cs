@@ -472,7 +472,7 @@ namespace RockWeb.Blocks.Groups
                             Description = m.Group.Description, 
                             IsSystem = m.Group.IsSystem, 
                             GroupRole = m.GroupMember.GroupRole.Name, 
-                            DateAdded = m.GroupMember.CreatedDateTime, 
+                            DateAdded = m.GroupMember.DateTimeAdded ?? m.GroupMember.CreatedDateTime, 
                             IsActive = m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ), 
                             IsActiveOrder = ( m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ) ? 1 : 2 ), 
                             MemberCount = 0
