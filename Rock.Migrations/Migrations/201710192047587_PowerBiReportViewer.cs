@@ -44,13 +44,13 @@ namespace Rock.Migrations
             Sql( string.Format( "UPDATE [DefinedType] SET [IsSystem] = 0 WHERE [Guid] = '{0}'",  Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS ) );
 
             // register add account block
-            RockMigrationHelper.AddBlockType( "Power Bi Account Register", "This block registers a Power BI account for Rock to use.", "~/Plugins/com_mineCartStudio/Bi/PowerBiAccountRegister.ascx", "Mine Cart Studio > BI",  Rock.SystemGuid.BlockType.POWERBI_ACCOUNT_REGISTRATION );
+            RockMigrationHelper.UpdateBlockType( "Power Bi Account Register", "This block registers a Power BI account for Rock to use.", "~/Plugins/com_mineCartStudio/Bi/PowerBiAccountRegister.ascx", "Mine Cart Studio > BI",  Rock.SystemGuid.BlockType.POWERBI_ACCOUNT_REGISTRATION );
 
-            // create a new page for the block
-            RockMigrationHelper.AddPage( "5B6DBC42-8B03-4D15-8D92-AAFA28FD8616", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Power BI Register Account", "",  Rock.SystemGuid.Page.POWERBI_ACCOUNT_REGISTRATION, "fa fa-bar-chart" );
+            // create a new page for the block (if it doesn't already exist)
+            RockMigrationHelper.AddPage( true, "5B6DBC42-8B03-4D15-8D92-AAFA28FD8616", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Power BI Register Account", "",  Rock.SystemGuid.Page.POWERBI_ACCOUNT_REGISTRATION, "fa fa-bar-chart" );
 
-            // add block to page
-            RockMigrationHelper.AddBlock(  Rock.SystemGuid.Page.POWERBI_ACCOUNT_REGISTRATION, "",  Rock.SystemGuid.BlockType.POWERBI_ACCOUNT_REGISTRATION, "Account Register", "Main", "", "", 0, "A530FD84-95D2-288C-453C-999DF71D40AE" );
+            // add block to page (if it doesn't already exist)
+            RockMigrationHelper.AddBlock( true, Rock.SystemGuid.Page.POWERBI_ACCOUNT_REGISTRATION, "",  Rock.SystemGuid.BlockType.POWERBI_ACCOUNT_REGISTRATION, "Account Register", "Main", "", "", 0, "A530FD84-95D2-288C-453C-999DF71D40AE" );
 
             // add route to page for redirect usage
             RockMigrationHelper.AddPageRoute(  Rock.SystemGuid.Page.POWERBI_ACCOUNT_REGISTRATION, "PowerBiAccountRedirect" );
