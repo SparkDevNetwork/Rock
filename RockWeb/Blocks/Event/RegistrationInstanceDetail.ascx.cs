@@ -1935,7 +1935,19 @@ namespace RockWeb.Blocks.Event
                                                     groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" ) ) );
                                             }
                                             groupMemberService.Add( groupMember );
+
+			                                if ( cbSetGroupAttributes.Checked )
+			                                {
+			                                    registrant.LoadAttributes( rockContext );
+			                                    groupMember.LoadAttributes( rockContext );
+			                                    foreach( var attr in groupMember.Attributes.Where( m => registrant.Attributes.Keys.Contains( m.Key ) ) )
+			                                    {
+			                                        groupMember.SetAttributeValue( attr.Key, registrant.GetAttributeValue( attr.Key ) );
+			                                    }
+			                                }
+                                            
                                             rockContext.SaveChanges();
+			                                groupMember.SaveAttributeValues( rockContext );
                                         }
                                     }
 
@@ -2281,6 +2293,7 @@ namespace RockWeb.Blocks.Event
                     {
                         liGroupPlacement.AddCssClass( "active" );
                         pnlGroupPlacement.Visible = true;
+                        cbSetGroupAttributes.Checked = true;
                         BindGroupPlacementGrid();
                         break;
                     }

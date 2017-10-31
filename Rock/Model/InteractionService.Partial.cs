@@ -52,14 +52,22 @@ namespace Rock.Model
             interaction.InteractionComponentId = interactionComponentId;
             interaction.EntityId = entityId;
             interaction.Operation = operation;
-            interaction.InteractionData = PersonToken.ObfuscateRockMagicToken( interactionData );
+            interaction.InteractionData = interactionData.IsNotNullOrWhitespace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
             interaction.InteractionDateTime = dateTime;
             interaction.PersonAliasId = personAliasId;
 
-            var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
-            var session = this.GetInteractionSession( browserSessionId, ipAddress, deviceType.Id );
+            if ( browserSessionId.HasValue )
+            {
+                int? deviceTypeId = null;
+                if ( deviceApplication.IsNotNullOrWhitespace() && deviceOs.IsNotNullOrWhitespace() && deviceClientType.IsNotNullOrWhitespace() )
+                {
+                    var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
+                    deviceTypeId = deviceType != null ? deviceType.Id : (int?)null;
+                }
+                var session = this.GetInteractionSession( browserSessionId, ipAddress, deviceTypeId );
+                interaction.InteractionSessionId = session.Id;
+            }
 
-            interaction.InteractionSessionId = session.Id;
             this.Add( interaction );
 
             return interaction;
@@ -125,7 +133,7 @@ namespace Rock.Model
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="interactionDeviceTypeId">The interaction device type identifier.</param>
         /// <returns></returns>
-        public InteractionSession GetInteractionSession( Guid? browserSessionId, string ipAddress, int interactionDeviceTypeId )
+        public InteractionSession GetInteractionSession( Guid? browserSessionId, string ipAddress, int? interactionDeviceTypeId )
         {
             using ( var rockContext = new RockContext() )
             {

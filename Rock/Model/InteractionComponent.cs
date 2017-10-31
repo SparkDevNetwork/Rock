@@ -16,6 +16,7 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
@@ -81,7 +82,6 @@ namespace Rock.Model
 
         #region Virtual Properties
 
-
         /// <summary>
         /// Gets or sets the channel.
         /// </summary>
@@ -91,9 +91,51 @@ namespace Rock.Model
         [DataMember]
         public virtual InteractionChannel Channel { get; set; }
 
+        [NotMapped]
+        private System.Data.Entity.EntityState SaveState { get; set; }
+
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
+        {
+            this.SaveState = entry.State;
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            Web.Cache.InteractionComponentCache.Flush( this.Id );
+
+            if ( this.SaveState == System.Data.Entity.EntityState.Added ||
+                this.SaveState == System.Data.Entity.EntityState.Deleted )
+            {
+                var channel = Web.Cache.InteractionChannelCache.Read( this.ChannelId );
+                if ( channel != null )
+                {
+                    if ( this.SaveState == System.Data.Entity.EntityState.Added )
+                    {
+                        channel.AddComponentId( this.Id );
+                    }
+                    else
+                    {
+                        channel.RemoveComponentId( this.Id );
+                    }
+                }
+            }
+
+            base.PostSaveChanges( dbContext );
+        }
 
         #endregion
 

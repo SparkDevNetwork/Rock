@@ -380,11 +380,13 @@
                     <div class="panel-body">
                         <Rock:NotificationBox ID="nbPlacementNotifiction" runat="server" Visible="false" />
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-sm-6">
                                 <Rock:GroupPicker ID="gpGroupPlacementParentGroup" runat="server" Label="Parent Group"
                                     OnSelectItem="gpGroupPlacementParentGroup_SelectItem" />
                             </div>
-                            <div>
+                            <div class="col-sm-6">
+                                <Rock:RockCheckBox ID="cbSetGroupAttributes" runat="server" Label="Set Group Member Attributes" Text="Yes"
+                                    Help="If there are group member attributes on the target group that have the same key as a registrant attribute, should the registrant attribute value be copied to the group member attribute value?" />
                             </div>
                         </div>
                         <Rock:ModalAlert ID="mdGroupPlacementGridWarning" runat="server" />

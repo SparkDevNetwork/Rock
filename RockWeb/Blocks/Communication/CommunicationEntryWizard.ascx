@@ -80,6 +80,11 @@
                                     <Rock:DeleteField OnClick="gIndividualRecipients_DeleteClick" />
                                 </Columns>
                             </Rock:Grid>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <asp:LinkButton ID="btnDeleteSelectedRecipients" runat="server" CssClass="btn btn-action btn-xs margin-t-sm pull-right" OnClick="btnDeleteSelectedRecipients_Click" Text="Remove Selected Recipients" />
+                                </div>
+                            </div>
                         </Content>
                     </Rock:ModalDialog>
 
@@ -110,10 +115,9 @@
                                     <a id="btnMediumEmail" runat="server" class="btn btn-default btn-sm js-medium-email" data-val="1" >Email</a>
                                     <a id="btnMediumSMS" runat="server" class="btn btn-default btn-sm js-medium-sms" data-val="2" >SMS</a>
                                 </div>
+                                <span class="margin-t-md label label-info js-medium-recipientpreference-notification">Selecting 'Recipient Preference' will require adding content for all active mediums.</span>
                             </div>
                         </div>
-
-                        <Rock:NotificationBox ID="nbRecipientPreferenceInfo" runat="server" CssClass="margin-t-md js-medium-recipientpreference-notification" NotificationBoxType="Info" Title="Heads Up!" Text="Selecting 'Recipient Preference' will require adding content for all active mediums." />
                     </Rock:RockControlWrapper>
                     
                     
@@ -892,14 +896,16 @@
                             <Rock:NotificationBox ID="nbMobileAttachmentFileTypeWarning" runat="server" NotificationBoxType="Warning" Text="" Dismissable="true" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <div class="device device-mobile hidden-md">
+                            <div class="device device-mobile hidden-sm hidden-xs">
                                 <div class="sms">
                                     <header><span class="left">Messages</span><h2><asp:Literal ID="lSMSChatPerson" runat="server" Text="Ted Decker" /></h2><span class="right">Contacts</span></header>
                                     <div class="messages-wrapper">
-                                      <div class="js-sms-chatoutput message to">
-                                          <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
-                                      </div>
-                                        <asp:Image ID="imgSMSImageAttachment" runat="server" CssClass="pull-right margin-r-md" width="50%" />
+                                        <div class="js-sms-chatoutput message to">
+                                            <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
+                                        </div>
+
+                                        <div id="divAttachmentLoadError" runat="server" style="display: none" class="alert alert-danger margin-all-md" />
+                                        <asp:Image ID="imgSMSImageAttachment" runat="server" CssClass="pull-right margin-r-md" onerror="showSMSAttachmentLoadError()" Width="50%" />
                                     </div>
                                 </div>
                             </div>
@@ -1390,6 +1396,10 @@
 			    else {
 			        $('.js-sms-chatoutput').hide();
 			    }
+            }
+
+            function showSMSAttachmentLoadError() {
+                $('#<%=divAttachmentLoadError.ClientID%>').show();
             }
 
             function setActiveMediumTypeButton($activeBtn)

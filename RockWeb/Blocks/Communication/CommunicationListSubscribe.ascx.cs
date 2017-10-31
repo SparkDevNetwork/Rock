@@ -38,7 +38,8 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "Communication List Subscribe" )]
     [Category( "Communication" )]
     [Description( "Block that allows a person to manage the communication lists that they are subscribed to" )]
-    [GroupCategoryField( "Communication List Categories", "Select the categories of the communication lists to display, or select none to show all that the user is authorized to view.", true, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, required: false, order: 1 )]
+    [GroupCategoryField( "Communication List Categories", "Select the categories of the communication lists to display, or select none to show all that the user is authorized to view.", true, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, defaultValue: Rock.SystemGuid.Category.GROUPTYPE_COMMUNICATIONLIST_PUBLIC, required: false, order: 1 )]
+    [BooleanField( "Show Medium Preference", "Show the user's current medium preference for each list and allow them to change it.", true, order: 2 )]
     public partial class CommunicationListSubscribe : RockBlock
     {
         #region fields
@@ -47,6 +48,11 @@ namespace RockWeb.Blocks.Communication
         /// The person's group member record for each CommunicationListId
         /// </summary>
         Dictionary<int, GroupMember> personCommunicationListsMember = null;
+
+        /// <summary>
+        /// The show medium preference
+        /// </summary>
+        bool showMediumPreference = true;
 
         #endregion
 
@@ -138,6 +144,7 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 tglCommunicationPreference.Checked = communicationType == CommunicationType.Email;
+                tglCommunicationPreference.Visible = showMediumPreference;
             }
         }
 
@@ -332,6 +339,8 @@ namespace RockWeb.Blocks.Communication
 
             var groupIds = viewableCommunicationLists.Select( a => a.Id ).ToList();
             var personId = this.CurrentPersonId.Value;
+
+            showMediumPreference = this.GetAttributeValue( "ShowMediumPreference" ).AsBoolean();
 
             personCommunicationListsMember = new GroupMemberService( rockContext ).Queryable()
                 .Where( a => groupIds.Contains( a.GroupId ) && a.PersonId == personId )

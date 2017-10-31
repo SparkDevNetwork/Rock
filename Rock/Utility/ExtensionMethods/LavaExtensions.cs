@@ -21,9 +21,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
+
 using DotLiquid;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -549,9 +550,9 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
-                Template template = Template.Parse( content );
-                template.Registers.Add( "EnabledCommands", enabledLavaCommands );
-                template.InstanceAssigns.Add( "CurrentPerson", currentPersonOverride );
+                Template template = GetTemplate( content );
+                template.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
+                template.InstanceAssigns.AddOrReplace( "CurrentPerson", currentPersonOverride );
                 return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
             catch ( Exception ex )
@@ -620,8 +621,8 @@ namespace Rock
                     }
                 }
 
-                Template template = Template.Parse( content );
-                template.Registers.Add( "EnabledCommands", enabledLavaCommands );
+                Template template = GetTemplate( content );
+                template.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
 
                 string result;
 
@@ -664,6 +665,28 @@ namespace Rock
                     return "Error resolving Lava merge fields: " + ex.Message;
                 }
             }
+        }
+
+        /// <summary>
+        /// Looks for a parsed template in cache (if the content is 100 characters or less).
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        private static Template GetTemplate(string content)
+        {
+            // Do not cache any content over 100 characters in length
+            if ( content.Length > 100 )
+            {
+                return Template.Parse( content );
+            }
+
+            // Get template from cache
+            var template = LavaTemplateCache.Read( content ).Template;
+
+            // Clear any previous errors
+            template.Errors.Clear();
+
+            return template;
         }
 
         /// <summary>
