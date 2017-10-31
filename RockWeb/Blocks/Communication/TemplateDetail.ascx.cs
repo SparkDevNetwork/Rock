@@ -64,6 +64,13 @@ namespace RockWeb.Blocks.Communication
             {
                 ShowDetail( PageParameter( "TemplateId" ).AsInteger() );
             }
+            else
+            {
+                if ( this.Request.Params["__EVENTTARGET"] == ceEmailTemplate.UniqueID && this.Request.Params["__EVENTARGUMENT"] == "CodeEditorBlur" )
+                {
+                    UpdateTemplateLogoVisibility();
+                }
+            }
 
             // set the email preview visible = false on every load so that it doesn't stick around after closing the preview
             pnlEmailPreview.Visible = false;
@@ -137,6 +144,7 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.IsActive = cbIsActive.Checked;
                 communicationTemplate.Description = tbDescription.Text;
                 communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
+                communicationTemplate.LogoBinaryFileId = imgTemplateLogo.BinaryFileId;
 
                 communicationTemplate.FromName = tbFromName.Text;
                 communicationTemplate.FromEmail = tbFromAddress.Text;
@@ -164,6 +172,8 @@ namespace RockWeb.Blocks.Communication
 
                 communicationTemplate.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
                 communicationTemplate.SMSMessage = tbSMSTextMessage.Text;
+
+                communicationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
 
                 if ( communicationTemplate != null )
                 {
@@ -229,8 +239,10 @@ namespace RockWeb.Blocks.Communication
             tbName.Text = communicationTemplate.Name;
             cbIsActive.Checked = communicationTemplate.IsActive;
             tbDescription.Text = communicationTemplate.Description;
+            cpCategory.SetValue( communicationTemplate.CategoryId );
+
             imgTemplatePreview.BinaryFileId = communicationTemplate.ImageFileId;
-            // TODO imgTemplatePreview.BinaryFileTypeGuid = 
+            imgTemplateLogo.BinaryFileId = communicationTemplate.LogoBinaryFileId;
 
             // Email Fields
             tbFromName.Text = communicationTemplate.FromName;
@@ -292,6 +304,10 @@ namespace RockWeb.Blocks.Communication
 
             ceEmailTemplate.Text = communicationTemplate.Message;
 
+            ceEmailTemplate.OnBlurScript = this.Page.ClientScript.GetPostBackEventReference( ceEmailTemplate, "CodeEditorBlur" );
+
+            UpdateTemplateLogoVisibility();
+
             hfAttachedBinaryFileIds.Value = communicationTemplate.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
             UpdateAttachedFiles( false );
 
@@ -322,6 +338,33 @@ namespace RockWeb.Blocks.Communication
             mfpSMSMessage.Visible = !communicationTemplate.IsSystem;
             ddlSMSFrom.Enabled = !communicationTemplate.IsSystem;
             tbSMSTextMessage.ReadOnly = communicationTemplate.IsSystem;
+        }
+
+        /// <summary>
+        /// Updates the template logo visibility based on the existance of a 'template-logo' element in the html
+        /// </summary>
+        private void UpdateTemplateLogoVisibility()
+        {
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( ceEmailTemplate.Text );
+            var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
+            imgTemplateLogo.Visible = templateLogoNode != null;
+            if ( templateLogoNode != null )
+            {
+                if ( templateLogoNode.Attributes["data-instructions"] != null )
+                {
+                    imgTemplateLogo.Help = templateLogoNode.Attributes["data-instructions"].Value;
+                }
+                else
+                {
+                    imgTemplateLogo.Help = "Provide an image for the logo.";
+                }
+
+                if ( templateLogoNode.Attributes["width"] != null && templateLogoNode.Attributes["height"] != null )
+                {
+                    imgTemplateLogo.Help += string.Format( " (Image size: {0} x {1})", templateLogoNode.Attributes["width"].Value, templateLogoNode.Attributes["height"].Value );
+                }
+            }
         }
 
         /// <summary>
@@ -414,7 +457,21 @@ namespace RockWeb.Blocks.Communication
         {
             upnlEmailPreview.Update();
 
-            ifEmailPreview.Attributes["srcdoc"] = ceEmailTemplate.Text;
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( ceEmailTemplate.Text );
+            var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
+            imgTemplateLogo.Visible = templateLogoNode != null;
+            string previewHtml = ceEmailTemplate.Text;
+            if ( templateLogoNode != null && templateLogoNode.Attributes["src"] != null )
+            {
+                if (imgTemplateLogo.BinaryFileId != null)
+                {
+                    templateLogoNode.Attributes["src"].Value = this.ResolveRockUrl( string.Format( "~/GetImage.ashx?Id={0}", imgTemplateLogo.BinaryFileId ) );
+                }
+            }
+
+            ifEmailPreview.Attributes["srcdoc"] = templateDoc.DocumentNode.OuterHtml;
+            
             pnlEmailPreview.Visible = true;
             mdEmailPreview.Show();
         }

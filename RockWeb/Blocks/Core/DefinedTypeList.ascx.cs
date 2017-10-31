@@ -108,7 +108,12 @@ namespace RockWeb.Blocks.Core
             gDefinedType_Bind();
         }
 
-        void tFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        /// <summary>
+        /// ts the filter display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void tFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             if ( e.Key == "Category" )
             {

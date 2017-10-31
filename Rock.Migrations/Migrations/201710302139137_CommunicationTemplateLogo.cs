@@ -81,6 +81,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            // Delete the 'Process BI Analytics' job
+            Sql( "DELETE FROM [ServiceJob] where [Guid] = 'B6C89428-3ECA-49CC-87FD-C22EE6B38630'" );
+
             DropForeignKey("dbo.CommunicationTemplate", "LogoBinaryFileId", "dbo.BinaryFile");
             DropForeignKey("dbo.CommunicationTemplate", "CategoryId", "dbo.Category");
             DropIndex("dbo.CommunicationTemplate", new[] { "CategoryId" });
