@@ -1399,7 +1399,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Plus( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null )
             {
                 return input;
             }
@@ -1432,7 +1432,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Minus( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null  )
             {
                 return input;
             }
@@ -1465,7 +1465,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Times( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null )
             {
                 return input;
             }
