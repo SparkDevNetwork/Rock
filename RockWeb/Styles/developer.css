@@ -135,3 +135,25 @@ span.data-view-filter-label {
 table th[align='right'] {
   text-align: right;
 }
+
+
+/* SK Personal Device Badge */
+.badge-personaldevice .badge-content {
+    position: relative;
+    color: #4f89bd
+}
+
+.badge-personaldevice .badge-content span.deviceCount {
+    position: absolute;
+    top: 15px;
+    right: 50%;
+    width: 36px;
+    margin-right: -17px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+
+}
+    .badge-personaldevice .badge-content i {
+        font-size: 47px
+    }
