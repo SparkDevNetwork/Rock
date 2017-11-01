@@ -3720,5 +3720,28 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [CommunicationTemplate] set [Message] = &apos;&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Strict//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd&quot;&gt;
+        ///&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+        ///
+        ///
+        ///&lt;head&gt;
+        ///
+        ///
+        ///  &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
+        ///  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+        ///  &lt;title&gt;My Basic Email Template Subject&lt;/title&gt;
+        ///  &lt;!-- &lt;style&gt; --&gt;
+        ///&lt;/head&gt;
+        ///
+        ///
+        ///&lt;body style=&quot;-moz-box-sizing: border-box; -ms-text-size-adjust: 100%; -webkit-box-s [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate {
+            get {
+                return ResourceManager.GetString("_201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate", resourceCulture);
+            }
+        }
     }
 }
