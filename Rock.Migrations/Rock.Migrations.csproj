@@ -385,6 +385,10 @@
     <Compile Include="Migrations\201711011841422_GatewayTransactionKey.Designer.cs">
       <DependentUpon>201711011841422_GatewayTransactionKey.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711012305567_AddGroupMemberFieldType.cs" />
+    <Compile Include="Migrations\201711012305567_AddGroupMemberFieldType.Designer.cs">
+      <DependentUpon>201711012305567_AddGroupMemberFieldType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2822,6 +2826,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201711011841422_GatewayTransactionKey.resx">
       <DependentUpon>201711011841422_GatewayTransactionKey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711012305567_AddGroupMemberFieldType.resx">
+      <DependentUpon>201711012305567_AddGroupMemberFieldType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
