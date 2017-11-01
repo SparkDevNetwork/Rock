@@ -11420,7 +11420,7 @@ html,body{
 /* Formatting for select a day event block */
 .event-item-list-container {
 	display: flex;
-	justify-content: space-around;
+	justify-content: flex-start;
 }
 
 .event-item-container {

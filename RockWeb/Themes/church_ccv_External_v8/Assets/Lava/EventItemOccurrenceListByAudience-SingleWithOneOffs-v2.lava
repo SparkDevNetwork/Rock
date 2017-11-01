@@ -21,26 +21,33 @@ list, but marked differently.
   {% if EventItemOccurrences != empty %}
       <div class="event-item-list-container">
         {% for occurrence in EventItemOccurrences limit:6 %}
-          {% assign linkage = occurrence.Linkages | First %}
-          {% if occurrence.EventItemId == regularEventId %}              
-				<a class="event-item-container" href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ occurrence.Id }}">
-                    <div class="event-item">
-                        {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'ddd, MMM d'  }}<br />
-                        {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'h:mmtt'  }}
-                    </div>
-				</a>
-          {% else %}
-            <a class="event-item-container" href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ occurrence.Id }}">
-                <div class="event-item">
-                    <small class="text-muted" style="display: inline-block;">{{ occurrence.EventItem.Name }}</small><br />
-                    {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'ddd, MMM d'  }}<br />
-                    {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'h:mmtt'  }}
-                    <small class="text-muted" style="display: inline-block;">
-                        {{ occurrence.EventItem.Name }}
-                    </small>
-                </div>
-            </a>
-          {% endif %}
+            {% assign linkage = occurrence.Linkages | First %}
+            {% registrationinstance where:'Id == {{ linkage.RegistrationInstanceId }}' %}
+            {% for instance in registrationinstanceItems %}
+                {% assign currentDateTime = 'Now' | Date:'yyyy/MM/dd hh:mm:ss tt' %}
+                {% if instance.StartDateTime <= currentDateTime %}
+                    {% if occurrence.EventItemId == regularEventId %}              
+				        <a class="event-item-container" href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ occurrence.Id }}">
+                            <div class="event-item">
+                                {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'ddd, MMM d'  }}<br />
+                                {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'h:mmtt'  }}
+                            </div>
+				        </a>
+                    {% else %}
+                    <a class="event-item-container" href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ occurrence.Id }}">
+                        <div class="event-item">
+                            <small class="text-muted" style="display: inline-block;">{{ occurrence.EventItem.Name }}</small><br />
+                            {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'ddd, MMM d'  }}<br />
+                            {{ occurrence.Schedule.iCalendarContent | DatesFromICal| First | Date: 'h:mmtt'  }}
+                            <small class="text-muted" style="display: inline-block;">
+                                {{ occurrence.EventItem.Name }}
+                            </small>
+                        </div>
+                    </a>
+                    {% endif %}          
+                {% endif %}
+            {% endfor %}
+            {% endregistrationinstance %}
         {% endfor %}
       </div>
   {% else %}

@@ -1,0 +1,200 @@
+{% comment %}
+
+{% assign calendarId = 1 %}
+{% assign tierAttributeName = 'TierLevel' %}
+<!-- baptism details page info -->
+{% assign baptismDetailsPage = 'baptism' %}
+{% assign baptismEventId = 6 %}
+<!-- starting point details page info -->
+{% assign startingpointDetailsPage = 'startingpoint' %}
+{% assign startingpointEventId = 1 %}
+{% include '~~/Assets/Lava/EventItemList-v2.lava' %}
+
+{% endcomment %}
+
+
+{% if Context.Campus %}
+  {% assign firstEventOccurrenceSummary = EventOccurrenceSummaries | First %}
+  {% assign firstMonth = firstEventOccurrenceSummary.DateTime | Date: 'MMMM' %}
+  {% assign currentMonth = firstMonth %}
+
+  {% unless calendarId %}
+    {% assign calendarId = 1 %}
+  {% endunless %}
+  {% assign tierAttributeName = tierAttributeName | Default: 'TierLevel' %}
+
+  {% assign tier1Classes = "panel panel-card panel-card-half" %}
+  {% assign tier2Classes = "panel panel-card panel-card-half panel-card-black" %}
+  {% assign tier3Classes = "panel panel-card panel-card-half panel-card-primary" %}
+  {% assign tier4Classes = "panel panel-default panel-card" %}
+
+  {% assign fullSizeClasses = "masonry-item col-xs-12 col-sm-12 col-md-8 col-lg-6" %}
+  {% assign halfSizeClasses = "masonry-item col-xs-12 col-sm-6 col-md-4 col-lg-3" %}
+
+  <h2 class="page-header">{{ firstMonth }}</h2>
+
+  <div class="row masonry">
+
+    {% assign firstBaptismOfMonth = true %}
+    {% assign firstStartingPointOfMonth = true %}
+
+    {% for eventOccurrenceSummary in EventOccurrenceSummaries %}
+      {% if eventOccurrenceSummary.EventItem.IsApproved %}
+        {% assign linkage = eventOccurrenceSummary.EventItemOccurrence.Linkages | First %}
+            {% if linkage %}
+                {% assign startDateTime = linkage.RegistrationInstance.StartDateTime %}
+            {% else %}
+                {% assign startDateTime = 'Now' | Date:'yyyy/MM/dd hh:mm:ss tt' %}
+            {% endif %}
+
+            {% assign currentDateTime = 'Now' | Date:'yyyy/MM/dd hh:mm:ss tt' %}
+
+            {% if startDateTime <= currentDateTime %}
+
+                {% comment %} EventCalendarId 1 is public calendar {% endcomment %}
+                {% assign eventCalendarItem = eventOccurrenceSummary.EventItem.EventCalendarItems | Where: 'EventCalendarId', calendarId | First %}
+
+                {% assign tierLevel = 0 %} {% comment %} Reset {% endcomment %}
+                {% assign tierLevel = eventCalendarItem | Attribute: tierAttributeName %}
+
+                {% case tierLevel %}
+                    {% when 1 %}
+                    {% assign cardClasses = tier1Classes %}
+                    {% assign wrapperClasses = halfSizeClasses %}
+                    {% when 2 %}
+                    {% assign cardClasses = tier2Classes %}
+                    {% assign wrapperClasses = halfSizeClasses %}
+                    {% when 3 %}
+                    {% assign cardClasses = tier3Classes %}
+                    {% assign wrapperClasses = halfSizeClasses %}
+                    {% when 4 %}
+                    {% assign cardClasses = tier4Classes %}
+                    {% assign wrapperClasses = fullSizeClasses %}
+                    {% else %}
+                    {% assign cardClasses = tier1Classes %}
+                    {% assign wrapperClasses = halfSizeClasses %}
+                {% endcase %}
+
+                {% assign panelCardImg = "" %}
+                {% if eventOccurrenceSummary.EventItem.Photo and tierLevel == 4 %}
+                    {% capture cardClasses %}{{ cardClasses }} panel-card-withimg{% endcapture %}
+                    {% assign showTextOverlay = eventCalendarItem | Attribute: 'ShowTextOverlay' %}
+                    {% if showTextOverlay == 'No' %}
+                    {% capture cardClasses %}{{ cardClasses }} panel-card-hideoverlay{% endcapture %}
+                    {% endif %}
+                    {% capture panelCardImg %}<div class="panel-card-img" style="background-image: url('{{ eventOccurrenceSummary.EventItem.Photo.Url }}');"></div>{% endcapture %}
+                {% endif %}
+
+                {% assign overlayTextColor = "" %} {% comment %} Reset {% endcomment %}
+                {% assign overlayTextColor = eventCalendarItem | Attribute: 'OverlayTextColor' %}
+                {% if overlayTextColor == "dark" %}
+                    {% capture cardClasses %}{{ cardClasses }} panel-card-light{% endcapture %}
+                {% endif %}
+
+                {% if eventOccurrenceSummary.EventItem.DetailsUrl != empty %}
+                    {% assign detailUrl = eventOccurrenceSummary.EventItem.DetailsUrl %}
+                {% elseif eventOccurrenceSummary.EventItem.Id == startingpointEventId %}
+                    {% assign detailUrl = startingpointDetailsPage %}
+                {% elseif eventOccurrenceSummary.EventItem.Id == baptismEventId %}
+                    {% assign detailUrl = baptismDetailsPage %}
+                {% else %}
+                    {% capture detailUrl %}{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}{% endcapture %}
+                {% endif %}
+                    
+
+                {% assign thisMonth = eventOccurrenceSummary.DateTime | Date: 'MMMM' %}
+
+                {% if thisMonth != currentMonth %}
+            <div class="masonry-sizer {{ halfSizeClasses }}"></div>
+            </div>
+            <h2 class="page-header">{{ thisMonth }}</h2>
+
+            <div class="row masonry">
+      
+                {% assign firstBaptismOfMonth = true %}
+                {% assign firstStartingPointOfMonth = true %}  
+
+                {% endif %}
+        
+                {% if eventOccurrenceSummary.EventItem.Id == startingpointEventId or eventOccurrenceSummary.EventItem.Id == baptismEventId %}
+                    {% if firstBaptismOfMonth == true or firstStartingPointOfMonth == true %}
+                        {% if eventOccurrenceSummary.EventItem.Id == startingpointEventId %}
+                            {% assign firstStartingPointOfMonth = false %}
+                        {% elseif eventOccurrenceSummary.EventItem.Id == baptismEventId %}
+                            {% assign firstBaptismOfMonth = false %}
+                        {% endif %}
+                    <div class="{{ wrapperClasses }}">
+                        <div class="{{ cardClasses }}">
+                            <a class="panel-body" href="{{ detailUrl }}" title="{{ eventOccurrenceSummary.Name }}">
+                                {{ panelCardImg }}
+                                <h3 class="panel-title">{{ eventOccurrenceSummary.Name }}</h3>
+                            </a>
+                            <div class="panel-footer clearfix">
+                                {% if DetailsPage != empty %}
+                                <a class="btn btn-default btn-sm pull-right" href="{{ detailUrl }}">More <i class="fa fa-caret-right"></i></a>
+                                {% endif %}
+                                Click for Dates
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="{{ wrapperClasses }}">
+                        <div class="{{ cardClasses }}">
+                            <a class="panel-body" href="{{ detailUrl }}" title="{{ eventOccurrenceSummary.Name }}">
+                                {{ panelCardImg }}
+                                <h3 class="panel-title">{{ eventOccurrenceSummary.Name }}</h3>
+                            </a>
+                        <div class="panel-footer clearfix">
+                            {% if DetailsPage != empty %}
+                            <a class="btn btn-default btn-sm pull-right" href="{{ detailUrl }}">More <i class="fa fa-caret-right"></i></a>
+                            {% endif %}
+                            {% if eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate != eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate %}
+                            {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d'}}
+			                {% elseif eventOccurrenceSummary.Time == '12:00 AM' %}
+				            {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d' }}
+                            {% else %}
+                            {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
+                            {% endif %}
+
+                        </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% assign currentMonth = thisMonth %}
+
+            {% endif %}
+      {% endif %}
+    {% endfor %}
+
+    <div class="masonry-sizer {{ halfSizeClasses }}"></div>
+
+  </div>
+  {% comment %} TODO: package these together {% endcomment %}
+  <script src="/Themes/church_ccv_External_v7/Scripts/Vendor/clamp.min.js"></script>
+  <script src="/Themes/church_ccv_External_v7/Scripts/Vendor/masonry.pkgd.min.js"></script>
+  <script>
+    $('.panel-title').each(function(){
+      $clamp(this, {clamp: 2})
+    })
+    $('.masonry').masonry({
+      itemSelector: '.masonry-item',
+      columnWidth: '.masonry-sizer',
+      percentPosition: true
+    })
+  </script>
+{% else %}
+  <p class="hidden-xs">&nbsp;</p>
+  <p class="hidden-xs">&nbsp;</p>
+  <p class="hidden-xs">&nbsp;</p>
+  <div class="text-center">
+    <p class="lead">Select a campus to view upcoming events.</p>
+    {% assign selectCampusBtnClasses = 'btn btn-primary btn-lg' %}
+    {% assign selectCampusBtnShowDescription = false %}
+    {% include '~~/Assets/Lava/SelectACampus.lava' %}
+  </div>
+  <p class="hidden-xs">&nbsp;</p>
+  <p class="hidden-xs">&nbsp;</p>
+{% endif %}
