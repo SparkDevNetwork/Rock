@@ -1,9 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Login.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Core.Login" %>
 
 <asp:Panel ID="mdLoginShell" runat="server">
-    <div ID="login-main-panel" style="box-sizing: border-box; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; position: relative; width: 75%; max-width: 768px; margin: 0px auto; z-index: 1500; opacity: 1; transform: translate(0px, 64px);">
-        <div style="color: rgba(0, 0, 0, 0.87); background-color: rgb(255, 255, 255); transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; box-sizing: border-box; font-family: Roboto, sans-serif; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 45px, rgba(0, 0, 0, 0.22) 0px 10px 18px; border-radius: 2px;">
-            <div style="font-size: 16px; color: rgba(0, 0, 0, 0.6); padding: 24px; box-sizing: border-box; overflow-y: hidden; border-top: none; border-bottom: none; background-color: rgb(255, 255, 255);">
+
+<div ID="bg-screen" class="bg-screen-hidden">
+    <div ID="login-main-panel" class="login-main-panel-hidden">
+        <div ID="login-inner-panel">
+			<div ID="login-secondary-inner-panel">
                 <div class="row">
                     <div id="divOrgLogin" runat="server" class="col-sm-12">
                         <div>
@@ -50,29 +52,59 @@
             </div>
         </div>
     </div>
-
+</div>
     <p style="visibility: hidden;" id="locked-out-message"><%=GetLockedOutMessage() %></p>
 </asp:Panel>
 
 <asp:Panel ID="pnlTempLoginTrigger" runat="server">
 
     <div class="alert alert-danger">
-        <asp:Button ID="ButtonTempLoginTrigger" runat="server" Text="Login" CssClass="btn btn-primary" OnClientClick="return displayLoginPanel();" />
+        <asp:Button ID="ButtonTempLoginTrigger" runat="server" Text="Login" CssClass="btn btn-primary" OnClientClick="displayLoginPanel(); return false;" />
     </div>
 
 </asp:Panel>
 
 <script type="text/javascript">
+	$(document).keydown(function(e) {
+		// ESCAPE key pressed
+		if (e.keyCode == 27) {
+			hideLoginPanel();
+		}
+	});
+	
+	var modal = document.querySelector('#bg-screen');
+		modal.addEventListener('click', function(e) {
+		hideLoginPanel();
+	}, false);
+
+	modal.children[0].addEventListener('click', function(e) {
+		e.stopPropagation();
+	}, false);
+	
+	function hideLoginPanel() {
+
+	    // fade OUT the bg screen (the grey overlay)
+	    var bgScreen = $("#bg-screen");
+	    bgScreen.removeClass("bg-screen-visible");
+	    bgScreen.addClass("bg-screen-hidden");
+
+	    // fly OUT the actual login panel
+	    var loginPanel = $("#login-main-panel");
+	    loginPanel.removeClass("login-main-panel-visible");
+	    loginPanel.addClass("login-main-panel-hidden");
+	}
+
     function displayLoginPanel() {
 
+        // fade in the bg screen (the grey overlay)
+        var bgScreen = $("#bg-screen");
+        bgScreen.removeClass("bg-screen-hidden");
+        bgScreen.addClass("bg-screen-visible");
+
+        // fly in the actual login panel
         var loginPanel = $("#login-main-panel");
-        loginPanel.css("visibility", "visible");
-        loginPanel.css("height", "");
-
-        //loginPanel.css("animation-name", "fly-in");
-        //loginPanel.css("animation-duration", "2s");
-
-        return false;
+        loginPanel.removeClass("login-main-panel-hidden");
+        loginPanel.addClass("login-main-panel-visible");
     }
 
     function tryLogin() {

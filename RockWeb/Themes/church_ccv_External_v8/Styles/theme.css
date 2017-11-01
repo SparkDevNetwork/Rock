@@ -11493,6 +11493,75 @@ html,body{
 }
 
 /* Formatting for the Login Pop Up */
+#bg-screen {
+	position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1499;
+	
+    -webkit-transition: opacity 100ms;
+    -moz-transition: opacity 100ms;
+    transition: opacity 100ms;
+}
+
+.bg-screen-hidden {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.bg-screen-visible {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+#login-main-panel {
+	box-sizing: border-box; 
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
+	position: relative;
+	width: 75%; 
+	max-width: 768px; 
+	margin: 0px auto; 
+	opacity: 1;
+	
+	transition: top 175ms ease-in;
+	-moz-transition: top 175ms ease-in;
+	-webkit-transition: top 175ms ease-in;
+}
+
+.login-main-panel-hidden {
+	opacity: 1;
+	top: -300px;
+}
+
+.login-main-panel-visible {
+	opacity: 1;
+	top: 100px;
+}
+
+#login-inner-panel {
+	color: rgba(0, 0, 0, 0.87); 
+	background-color: rgb(255, 255, 255); 
+	box-sizing: border-box; 
+	font-family: Roboto, sans-serif; 
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
+	box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 45px, rgba(0, 0, 0, 0.22) 0px 10px 18px; 
+	border-radius: 2px;
+}
+
+#login-secondary-inner-panel {
+	font-size: 16px; 
+	color: rgba(0, 0, 0, 0.6); 
+	padding: 24px; 
+	box-sizing: border-box; 
+	overflow-y: hidden; 
+	border-top: none; 
+	border-bottom: none; 
+	background-color: rgb(255, 255, 255);
+}
+
 .login-form-title {
     font-family: akrobat;
     font-weight: 900;
@@ -11557,9 +11626,4 @@ html,body{
 	font-weight: normal;
 	border-width: 0px;
 	margin: 0 0 24px 0;
-}
-
-#login-main-panel {
-	visibility: hidden;
-	height: 0px;
 }
