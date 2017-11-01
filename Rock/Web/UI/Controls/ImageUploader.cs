@@ -820,7 +820,14 @@ Rock.controls.imageUploader.initialize({{
         /// </summary>
         public enum ArgumentType
         {
+            /// <summary>
+            /// The image uploaded
+            /// </summary>
             ImageUploaded,
+            
+            /// <summary>
+            /// The image removed
+            /// </summary>
             ImageRemoved
         }
 
