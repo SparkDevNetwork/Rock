@@ -32,6 +32,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using RestSharp;
 using System.Net;
+using System.Web.Services;
 
 namespace RockWeb.Plugins.church_ccv.Core
 {
@@ -65,9 +66,6 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            
-            tbUserName.FormGroupCssClass = "login-form-label";
-            tbPassword.FormGroupCssClass = "login-form-label";
         }
 
         /// <summary>
@@ -78,113 +76,38 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            if ( Page.IsPostBack )
             {
-                tbUserName.Focus();
+                // parse the event args so we know what we need to handle
+                string postbackArgs = Request.Params["__EVENTARGUMENT"];
+                if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
+                {
+                    string[] splitArgs = postbackArgs.Split( new char[] { ':' } );
+
+                    // the first should always be the action
+                    switch( splitArgs[0] )
+                    {
+                        case "__LOGIN_SUCCEEDED":
+                        {
+                            string returnUrl = Request.QueryString["returnurl"];
+                            TryRedirectUser( returnUrl );
+
+                            break;
+                        }
+                            
+                        default:
+                        {
+                            // ignore unknown actions
+                            break;
+                        }
+                    }
+                }
             }
-            
-            pnlMessage.Visible = false;
         }
         #endregion
 
         #region Events
 
-        protected void btnTempLoginTrigger_Click( object sender, EventArgs e )
-        {
-        }
-
-
-        /// <summary>
-        /// Handles the Click event of the btnLogin control.
-        /// NOTE: This is the btnLogin for Internal Auth
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void btnLogin_Click( object sender, EventArgs e )
-        {
-            // assume an error, and let any of the success conditions toggle it off
-            bool displayLoginError = true;
-
-            if ( Page.IsValid )
-            {
-                // first get the appropriate login service
-                var rockContext = new RockContext();
-                var userLoginService = new UserLoginService(rockContext);
-                var userLogin = userLoginService.GetByUserName( tbUserName.Text );
-                if ( userLogin != null && userLogin.EntityType != null)
-                {
-                    var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
-                    if (component != null && component.IsActive && !component.RequiresRemoteAuthentication)
-                    {
-                        // see if the credentials are valid
-                        if ( component.Authenticate( userLogin, tbPassword.Text ) )
-                        {
-                            // if the account isn't locked or needing confirmation
-                            if ( ( userLogin.IsConfirmed ?? true ) && !(userLogin.IsLockedOut ?? false ) )
-                            {
-                                // then proceed to the final step, validating them with PMG2's site
-                                if ( TryPMG2Login( tbUserName.Text, tbPassword.Text ) )
-                                {
-                                    string returnUrl = Request.QueryString["returnurl"];
-                                    LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
-
-                                    // no need for an error
-                                    displayLoginError = false;
-                                }
-                            }
-                            else
-                            {
-                                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-
-                                if ( userLogin.IsLockedOut ?? false )
-                                {
-                                    lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
-                                    
-                                    pnlLockedOut.Visible = true;
-
-                                    // no need for an error
-                                    displayLoginError = false;
-                                }
-                                else
-                                {
-                                    SendConfirmation( userLogin );
-
-                                    lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
-                                    
-                                    pnlConfirmation.Visible = true;
-
-                                    // no need for an error
-                                    displayLoginError = false;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
-            if ( displayLoginError )
-            {
-                DisplayError( "Sorry, we couldn't find an account matching that username/password." );
-            }
-        }
-
-        protected bool TryPMG2Login( string username, string password )
-        {
-            // contact PMG2's site and attempt to login with the same credentials
-            var restClient = new RestClient(
-                string.Format( "https://apistaging.ccv.church/auth?user[username]={0}&user[password]={1}", username, password ) );
-
-            var restRequest = new RestRequest( Method.POST );
-            var restResponse = restClient.Execute( restRequest );
-
-            if ( restResponse.StatusCode == HttpStatusCode.OK )
-            {
-                return true;
-            }
-
-            return false;
-        }
-        
         /// <summary>
         /// Handles the Click event of the btnLogin control.
         /// </summary>
@@ -240,31 +163,21 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Displays the error.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        private void DisplayError( string message )
+        public string GetLockedOutMessage( )
         {
-            pnlMessage.Controls.Clear();
-            pnlMessage.Controls.Add( new LiteralControl( message ) );
-            pnlMessage.Visible = true;
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            return GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
         }
-
+        
         /// <summary>
         /// Logs in the user.
         /// </summary>
         /// <param name="userName">Name of the user.</param>
         /// <param name="returnUrl">The return URL.</param>
         /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
-        private void LoginUser( string userName, string returnUrl, bool rememberMe )
+        protected void TryRedirectUser( string returnUrl )
         {
             string redirectUrlSetting = LinkedPageUrl( "RedirectPage" );
-
-            UserLoginService.UpdateLastLogin( userName );
-
-            Rock.Security.Authorization.SetAuthCookie( userName, rememberMe, false );
 
             if (!string.IsNullOrWhiteSpace(returnUrl))
             {
@@ -310,7 +223,4 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
 
         #endregion
     }
-
-    // helpful links
-    //  http://blog.prabir.me/post/Facebook-CSharp-SDK-Writing-your-first-Facebook-Application.aspx
 }

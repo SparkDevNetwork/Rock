@@ -10,32 +10,32 @@
                             <h1 class="login-form-title text-center">Log In</h1>
                             <p style="margin-top: -.75em; margin-bottom: 3em;" class="small-paragraph-bold">Fill out the form below to securely access your account.</p>
                         </div>
+                        
+                        <div id="login-form-result-panel" style="visibility: hidden;" class="">
+                            <p id="login-form-result-message"></p>
+                        </div>
 
-                        <asp:Panel ID="pnlLockedOut" runat="server" Visible="false">
-                            <div class="alert alert-danger">
-                                <asp:Literal ID="lLockedOutCaption" runat="server" />
+                        <div class="col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2 col-xs-12">    
+                            <div class="form-group rock-text-box login-form-label">
+                                <label class="control-label" for="tbUserName">Username</label>
+                                <input class="form-control" name="tbUserName" type="text" id="tbUserName">
                             </div>
-                        </asp:Panel>
 
-                        <asp:Panel ID="pnlConfirmation" runat="server" Visible="false">
-                            <div class="alert alert-warning">
-                                <asp:Literal ID="lConfirmCaption" runat="server" />
-                            </div>
-                        </asp:Panel>
-
-                        <div class="col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2 col-xs-12">
-                            <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
-                                
-                            <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:RockTextBox>
-
+                            
                             <div style="margin: 25px 0 25px 0;"></div>
 
-                            <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" autocomplete="off" Required="true" DisplayRequiredIndicator="false" ValidateRequestMode="Disabled" TextMode="Password" ></Rock:RockTextBox>
-                            <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Remember Me" />
+                            <div class="form-group rock-text-box login-form-label">
+                                <label class="control-label" for="tbPassword">Password</label>
+                                <input class="form-control" name="tbPassword" type="password" id="tbPassword">
+                            </div>
+                            
+                            <div class="checkbox ">
+				                <label><input id="cbRememberMe" type="checkbox" name="cbRememberMe">Remember Me</label>
+			                </div>
 
                             <div class="row v-center" style="margin: 25px 0 25px 0;">
                                 <div class="col-md-4 col-sm-4 col-xs-6" style="padding: 0;">
-                                    <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="login-form-button btn btn-primary" OnClick="btnLogin_Click" />
+                                    <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="login-form-button btn btn-primary" OnClientClick="return tryLogin();"/>
                                 </div>
 
                                 <div class="col-md-8 col-sm-4 col-xs-6">
@@ -44,14 +44,14 @@
                             </div>
                                 
                             <asp:Button ID="btnNewAccount" runat="server" Text="Create Account" CssClass="login-form-register btn btn-action" OnClick="btnNewAccount_Click" CausesValidation="false" />
-
-                            <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-warning block-message margin-t-md"/>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <p style="visibility: hidden;" id="locked-out-message"><%=GetLockedOutMessage() %></p>
 </asp:Panel>
 
 <asp:Panel ID="pnlTempLoginTrigger" runat="server">
@@ -69,6 +69,74 @@
         loginPanel.css("visibility", "visible");
         loginPanel.css("height", "");
 
+        //loginPanel.css("animation-name", "fly-in");
+        //loginPanel.css("animation-duration", "2s");
+
         return false;
+    }
+
+    function tryLogin() {
+
+        // hide the response panel
+        hideResponsePanel();
+
+        // get the inputted username / password and whether it's checked or not
+        var username = $("#tbUserName").val();
+        var password = $("#tbPassword").val();
+        var rememberMe = $("#cbRememberMe").is(":checked");
+
+        // attempt to login
+        var xmlRequest = new XMLHttpRequest();
+        xmlRequest.onreadystatechange = function () { if (this.readyState == 4 && this.status == 200) { return handleLoginResponse(this); } }
+        xmlRequest.open("POST", "/api/Web/Login?username=" + username + "&password=" + password + "&persist=" + rememberMe, true);
+        xmlRequest.send();
+
+        return false;
+    }
+
+    function handleLoginResponse(xmlRequest) {
+
+        switch (xmlRequest.responseText) {
+            case "Success": handleLoginSucceeded(); break;
+            
+            case "Invalid": showResponsePanel("Invalid username or password"); break;
+            case "LockedOut": showResponsePanel($("#locked-out-message").text()); break;
+            case "Confirm": showResponsePanel("This account needs to be confirmed"); break;
+            default: showResponsePanel("An unknown error has occurred"); break;
+        }
+    }
+
+    function handleLoginSucceeded() {
+        // invoke a postback so the server can redirect us if needed
+        __doPostBack("btnLogin", "__LOGIN_SUCCEEDED" + ":");
+    }
+
+    function hideResponsePanel() {
+
+        var responsePanel = $("#login-form-result-panel");
+        responsePanel.removeClass("alert alert-warning block-message margin-t-md");
+        responsePanel.css("visibility", "none");
+        responsePanel.css("height", "");
+        responsePanel.css("margin", "");
+        responsePanel.css("padding", "");
+
+        var responseMessage = $("#login-form-result-message");
+        responseMessage.css("height", "");
+        responseMessage.css("margin", "");
+        responseMessage.css("padding", "");
+        responseMessage.css("visibility", "none");
+        responseMessage.text("");
+    }
+
+    function showResponsePanel(errorMsg) {
+
+        // reveal the panel
+        var responsePanel = $("#login-form-result-panel");
+        responsePanel.css("visibility", "visible");
+        responsePanel.addClass( "alert alert-warning block-message margin-t-md" );
+
+        // display the appropriate message
+        var responseMessage = $("#login-form-result-message");
+        responseMessage.text(errorMsg);
     }
 </script>
