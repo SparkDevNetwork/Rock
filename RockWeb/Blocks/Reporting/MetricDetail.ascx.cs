@@ -301,7 +301,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             }
             else
             {
-                metric.SourceSql = string.Empty;
+                metric.SourceLava = string.Empty;
             }
 
             if ( metric.SourceValueTypeId == sourceTypeDataView )
