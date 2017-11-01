@@ -157,3 +157,58 @@ table th[align='right'] {
     .badge-personaldevice .badge-content i {
         font-size: 47px
     }
+/* SK Personal Device Card*/
+.list-as-cards ul {
+    list-style:none;
+    padding:0;
+    margin-top:10px;
+}
+
+    .list-as-cards ul li {
+        position: relative;
+        float: left;
+        width: 47.5%;
+        margin: 0 1.25% 15px;
+    }
+
+.well-card {
+    padding: 10px;
+}
+
+.well-card .fixed-card{
+    min-height:250px;
+}
+
+     .well-card .delete-device {
+        color: #bb5454;
+    }
+
+@media (min-width: 992px) {
+    .list-as-cards ul li {
+        width:23.0%;
+        margin:0 1% 15px;
+    }
+
+    .list-as-cards ul li:nth-child(4n+1) {
+        margin-left:0px;
+    }
+
+        .list-as-cards ul li:nth-child(4n) {
+            margin-right: 0px;
+        }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .list-as-cards ul li {
+        width: 31.0%;
+        
+    }
+
+        .list-as-cards ul li:nth-child(3n+1) {
+            margin-left: 0px;
+        }
+
+        .list-as-cards ul li:nth-child(3n) {
+            margin-right: 0px;
+        }
+}
