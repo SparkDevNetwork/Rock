@@ -56,14 +56,17 @@ namespace Rock.Model
             interaction.InteractionDateTime = dateTime;
             interaction.PersonAliasId = personAliasId;
 
-            if ( browserSessionId.HasValue )
+            int? deviceTypeId = null;
+            if ( deviceApplication.IsNotNullOrWhitespace() && deviceOs.IsNotNullOrWhitespace() && deviceClientType.IsNotNullOrWhitespace() )
             {
-                int? deviceTypeId = null;
-                if ( deviceApplication.IsNotNullOrWhitespace() && deviceOs.IsNotNullOrWhitespace() && deviceClientType.IsNotNullOrWhitespace() )
-                {
-                    var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
-                    deviceTypeId = deviceType != null ? deviceType.Id : (int?)null;
-                }
+                var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
+                deviceTypeId = deviceType != null ? deviceType.Id : ( int? ) null;
+            }
+
+            // If we don't have an BrowserSessionId, IPAddress or a devicetype, there is nothing useful about the session
+            // but at least one of these has a value, then we should lookup or create a session
+            if ( browserSessionId.HasValue || ipAddress.IsNotNullOrWhitespace() || deviceTypeId.HasValue )
+            { 
                 var session = this.GetInteractionSession( browserSessionId, ipAddress, deviceTypeId );
                 interaction.InteractionSessionId = session.Id;
             }
@@ -127,7 +130,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the interaction session. If it can't be found, a new InteractionSession record will be created and returned.
+        /// Gets the interaction session. If browserSessionId isn't specified, or it can't be found, a new InteractionSession record will be created and returned.
         /// </summary>
         /// <param name="browserSessionId">The browser session identifier (RockSessionId).</param>
         /// <param name="ipAddress">The ip address.</param>
