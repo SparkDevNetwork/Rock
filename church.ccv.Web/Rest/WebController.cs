@@ -29,11 +29,36 @@ using Rock.Rest.Filters;
 using RestSharp;
 using Rock.Communication;
 using System;
+using Rock.Web.Cache;
+using System.Web.Configuration;
 
 namespace church.ccv.Web.Rest
 {
     public class WebController : Rock.Rest.ApiControllerBase
     {
+        public bool AuthenticateRequest( )
+        {
+            //CompilationSection compilationSection = (CompilationSection)System.Configuration.ConfigurationManager.GetSection(@"system.web/compilation");
+
+            // ensure that the request comes only from known and trusted domains. (or anything if we're running in debug)
+            //string internalAppUrl = GlobalAttributesCache.Value( "InternalApplicationRoot" );
+
+            // convert this to a URI and compare our trusted host with the request's host
+            //Uri applicationUri = new Uri( internalAppUrl );
+
+            //if( System.Web.HttpContext.Current.Request.UserHostAddress == "::1" )
+            //if ( Request.Headers.Host.StartsWith( applicationUri.Host, true, System.Globalization.CultureInfo.CurrentCulture ) || compilationSection.Debug == true )
+            {
+                return true;
+            }
+
+            //return false;
+        }
+
+        /// <summary>
+        /// This should only be called by Rock Blocks.
+        /// See "RockWeb\Plugins\church_ccv\Core\Login.ascx" for an example.
+        /// </summary>
         public enum LoginResponse
         {
             Invalid,
@@ -42,63 +67,62 @@ namespace church.ccv.Web.Rest
             Success
         }
 
-        /// <summary>
-        /// This should only be called by Rock Blocks.
-        /// See "RockWeb\Plugins\church_ccv\Core\Login.ascx" for an example.
-        /// </summary>
         [System.Web.Http.HttpPost]
         [System.Web.Http.Route( "api/Web/Login" )]
-        //[Authenticate, Secured]
         public HttpResponseMessage Login( string username, string password, bool persist )
         {
             HttpStatusCode statusCode = HttpStatusCode.OK;
             StringContent restContent = null;
-            
-            LoginResponse loginResponse = LoginResponse.Invalid;
+         
+            if( AuthenticateRequest( ) )
+            {   
+                LoginResponse loginResponse = LoginResponse.Invalid;
 
-            RockContext rockContext = new RockContext( );
-            var userLoginService = new UserLoginService(rockContext);
+                RockContext rockContext = new RockContext( );
+                var userLoginService = new UserLoginService(rockContext);
 
-            var userLogin = userLoginService.GetByUserName( username );
-            if ( userLogin != null && userLogin.EntityType != null)
-            {
-                var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
-                if (component != null && component.IsActive && !component.RequiresRemoteAuthentication)
+                var userLogin = userLoginService.GetByUserName( username );
+                if ( userLogin != null && userLogin.EntityType != null)
                 {
-                    // see if the credentials are valid
-                    if ( component.Authenticate( userLogin, password ) )
+                    var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
+                    if (component != null && component.IsActive && !component.RequiresRemoteAuthentication)
                     {
-                        // if the account isn't locked or needing confirmation
-                        if ( ( userLogin.IsConfirmed ?? true ) && !(userLogin.IsLockedOut ?? false ) )
+                        // see if the credentials are valid
+                        if ( component.Authenticate( userLogin, password ) )
                         {
-                            // then proceed to the final step, validating them with PMG2's site
-                            if ( TryPMG2Login( username, password ) )
+                            // if the account isn't locked or needing confirmation
+                            if ( ( userLogin.IsConfirmed ?? true ) && !(userLogin.IsLockedOut ?? false ) )
                             {
-                                // generate their cookie
-                                UserLoginService.UpdateLastLogin( username );
-                                Rock.Security.Authorization.SetAuthCookie( username, persist, false );
+                                // then proceed to the final step, validating them with PMG2's site
+                                if ( TryPMG2Login( username, password ) )
+                                {
+                                    // generate their cookie
+                                    UserLoginService.UpdateLastLogin( username );
+                                    Rock.Security.Authorization.SetAuthCookie( username, persist, false );
 
-                                // no issues!
-                                loginResponse = LoginResponse.Success;
-                            }
-                        }
-                        else
-                        {
-                            if ( userLogin.IsLockedOut ?? false )
-                            {
-                                loginResponse = LoginResponse.LockedOut;
+                                    // no issues!
+                                    loginResponse = LoginResponse.Success;
+                                }
                             }
                             else
                             {
-                                loginResponse = LoginResponse.Confirm;
+                                if ( userLogin.IsLockedOut ?? false )
+                                {
+                                    loginResponse = LoginResponse.LockedOut;
+                                }
+                                else
+                                {
+                                    loginResponse = LoginResponse.Confirm;
+                                }
                             }
                         }
                     }
                 }
+
+                restContent = new StringContent( loginResponse.ToString( ), Encoding.UTF8, "text/plain");
             }
 
             // build and return the response
-            restContent = new StringContent( loginResponse.ToString( ), Encoding.UTF8, "text/plain");
             HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = statusCode, Content = restContent };
 
             return response;
@@ -107,8 +131,10 @@ namespace church.ccv.Web.Rest
         protected bool TryPMG2Login( string username, string password )
         {
             // contact PMG2's site and attempt to login with the same credentials
+            string pmg2RootSite = GlobalAttributesCache.Value( "PMG2Server" );
+            
             var restClient = new RestClient(
-                string.Format( "https://apistaging.ccv.church/auth?user[username]={0}&user[password]={1}", username, password ) );
+                string.Format( pmg2RootSite + "auth?user[username]={0}&user[password]={1}", username, password ) );
 
             var restRequest = new RestRequest( Method.POST );
             var restResponse = restClient.Execute( restRequest );
@@ -123,26 +149,28 @@ namespace church.ccv.Web.Rest
 
         [System.Web.Http.HttpGet]
         [System.Web.Http.Route( "api/Web/SendConfirmationEmail" )]
-        //[Authenticate, Secured]
-        public void SendConfirmation( string confirmationUrl, string confirmAccountTemplate, string appUrl, string themeUrl, string username )
+        public void SendConfirmation( string confirmationUrl, string confirmAccountTemplate, string appRoot, string themeRoot, string username )
         {
-            RockContext rockContext = new RockContext( );
-            var userLoginService = new UserLoginService(rockContext);
-
-            var userLogin = userLoginService.GetByUserName( username );
-            if( userLogin != null )
+            if ( AuthenticateRequest( ) )
             {
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
-                mergeFields.Add( "ConfirmAccountUrl", confirmationUrl );
+                RockContext rockContext = new RockContext( );
+                var userLoginService = new UserLoginService(rockContext);
 
-                var personDictionary = userLogin.Person.ToLiquid() as Dictionary<string, object>;
-                mergeFields.Add( "Person", personDictionary );
-                mergeFields.Add( "User", userLogin );
+                var userLogin = userLoginService.GetByUserName( username );
+                if ( userLogin != null )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+                    mergeFields.Add( "ConfirmAccountUrl", confirmationUrl );
 
-                var recipients = new List<RecipientData>();
-                recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
+                    var personDictionary = userLogin.Person.ToLiquid() as Dictionary<string, object>;
+                    mergeFields.Add( "Person", personDictionary );
+                    mergeFields.Add( "User", userLogin );
 
-                Email.Send( new Guid( confirmAccountTemplate ), recipients, appUrl, themeUrl, false );
+                    var recipients = new List<RecipientData>();
+                    recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
+
+                    Email.Send( new Guid( confirmAccountTemplate ), recipients, appRoot, themeRoot, false );
+                }
             }
         }
     }

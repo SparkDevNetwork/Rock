@@ -56,3 +56,76 @@ function updateSubNavbarForScroll( )
 	}
 }
 
+// Spinning Loader
+// To use this, include the following HTML divs
+/*
+<div class="loader-bg loader-bg-hidden">
+	<div class="loader loader-hidden"></div>
+</div>
+
+// and CSS
+.loader {
+	border: 16px solid #f3f3f3;
+	border-top: 16px solid #7A1315;
+	border-radius: 50%;
+	width: 120px;
+	height: 120px;
+	animation: spin 2s linear infinite;
+	position: relative;
+	margin: 0 auto;
+	top: 200px;
+}
+
+@keyframes spin {
+	0% 		{ transform: rotate(0deg); }
+	100% 	{ transform: rotate(360deg); }
+}
+
+.loader-bg {
+	background: rgba(0, 0, 0, .45);
+	position: absolute;
+	padding: 0;
+	margin: 0;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1500;
+}
+
+.loader-bg-visible {
+	visibility: visible;
+}
+
+.loader-bg-hidden {
+	visibility: hidden;
+}
+
+.loader-visible {
+	visibility: visible;	
+}
+
+.loader-hidden {
+	visibility: hidden;
+}
+*/
+ function displayLoader() {
+	var loaderBg = $(".loader-bg");
+	loaderBg.removeClass("loader-bg-hidden");
+	loaderBg.addClass("loader-bg-visible");
+
+	var loader = $(".loader");
+	loader.removeClass("loader-hidden");
+	loader.addClass("loader-visible");
+}
+
+function hideLoader() {
+	var loaderBg = $(".loader-bg");
+	loaderBg.removeClass("loader-bg-visible");
+	loaderBg.addClass("loader-bg-hidden");
+
+	var loader = $(".loader");
+	loader.removeClass("loader-visible");
+	loader.addClass("loader-hidden");
+}
+//

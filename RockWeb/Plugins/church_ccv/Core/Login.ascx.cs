@@ -42,7 +42,7 @@ namespace RockWeb.Plugins.church_ccv.Core
     [DisplayName( "Login" )]
     [Category( "CCV > Core" )]
     [Description( "Prompts user for login credentials." )]
-
+    
     [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
         @"Sorry, your account has been locked.  Please contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email {{ 'Global' | Attribute:'OrganizationEmail' }} to resolve this.  Thank-you.", "", 5 )]
 

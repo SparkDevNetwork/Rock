@@ -68,27 +68,7 @@
 </asp:Panel>
 
 <script type="text/javascript">
-    function displayLoader() {
-        var loaderBg = $(".loader-bg");
-        loaderBg.removeClass("loader-bg-hidden");
-        loaderBg.addClass("loader-bg-visible");
-
-        var loader = $(".loader");
-        loader.removeClass("loader-hidden");
-        loader.addClass("loader-visible");
-    }
-
-    function hideLoader() {
-        var loaderBg = $(".loader-bg");
-        loaderBg.removeClass("loader-bg-visible");
-        loaderBg.addClass("loader-bg-hidden");
-
-        var loader = $(".loader");
-        loader.removeClass("loader-visible");
-        loader.addClass("loader-hidden");
-    }
-
-	$(document).keydown(function(e) {
+   $(document).keydown(function(e) {
 		// ESCAPE key pressed
 		if (e.keyCode == 27) {
 			hideLoginPanel();
@@ -188,16 +168,14 @@
                 var themeUrl = "<%=GetThemeUrl( ) %>";
                 var username = $("#tbUserName").val();
 
-                //todo: fix the url below, getting a 405.
-
                 // invoke the send email api
                 var xmlRequest = new XMLHttpRequest();
                 xmlRequest.onreadystatechange = function () { if (this.readyState == 4 && this.status == 200) { return handleLoginResponse(this); } }
-                xmlRequest.open("POST", "/api/Web/SendConfirmationEmail" +
+                xmlRequest.open("GET",  "/api/Web/SendConfirmationEmail" +
                                         "?confirmationUrl=" + encodeURI(confirmationUrl) +
                                         "&confirmAccountTemplate=" + confirmAccountTemplate +
-                                        "&appUrl=" + appUrl +
-                                        "&themeUrl=" + themeUrl +
+                                        "&appRoot=" + encodeURI(appUrl) +
+                                        "&themeRoot=" + encodeURI(themeUrl) +
                                         "&username=" + username
                                         , true);
                 xmlRequest.send();
