@@ -99,7 +99,7 @@
                     <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>
 
                     <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-xs btn-default pull-right" Text="Preview" OnClick="btnEmailPreview_Click" />
-                    <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" />
+                    <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" OnLoadCompleteScript="updateTemplateLogoVisibility()" />
 
                     <div class="row" id="pnlTemplateLogo" runat="server">
                         <div class="col-md-6">
@@ -233,15 +233,9 @@
                 });
             });
 
-            // wait for everything to load (especially the codeeditor, then updateTemplateLogoVisibility)
-            setTimeout(function () {
-                updateTemplateLogoVisibility();
-            }, 0);
-            
-
             // only show the template logo uploader if there is a div with id='template-logo'
             // then update the help-message on the loader based on the template-logo's data-instuctions attribute and width and height
-            // this gets called on page load and when the cursor blurs out of the template code editor
+            // this gets called when the codeeditor is done initializing and when the cursor blurs out of the template code editor
             function updateTemplateLogoVisibility() {
                 var $logoPnl = $('#<%=pnlTemplateLogo.ClientID%>');
                 var templateEditor = $('#codeeditor-div-<%=ceEmailTemplate.ClientID%>').data('aceEditor');
