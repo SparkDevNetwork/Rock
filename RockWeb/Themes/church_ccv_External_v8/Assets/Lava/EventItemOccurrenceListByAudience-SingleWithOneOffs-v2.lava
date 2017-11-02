@@ -22,10 +22,9 @@ list, but marked differently.
       <div class="event-item-list-container">
         {% for occurrence in EventItemOccurrences limit:6 %}
             {% assign linkage = occurrence.Linkages | First %}
-            {% registrationinstance where:'Id == {{ linkage.RegistrationInstanceId }}' %}
-            {% for instance in registrationinstanceItems %}
+            {% if linkage.RegistrationInstance.IsActive %}
                 {% assign currentDateTime = 'Now' | Date:'yyyy/MM/dd hh:mm:ss tt' %}
-                {% if instance.StartDateTime <= currentDateTime %}
+                {% if linkage.RegistrationInstance.StartDateTime <= currentDateTime %}
                     {% if occurrence.EventItemId == regularEventId %}              
 				        <a class="event-item-container" href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ occurrence.Id }}">
                             <div class="event-item">
@@ -46,8 +45,7 @@ list, but marked differently.
                     </a>
                     {% endif %}          
                 {% endif %}
-            {% endfor %}
-            {% endregistrationinstance %}
+            {% endif %}
         {% endfor %}
       </div>
   {% else %}
