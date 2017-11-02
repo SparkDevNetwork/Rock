@@ -361,18 +361,25 @@ namespace Rock.Model
         public static string GetInteractionDetails( Interaction interaction )
         {
             string interactionDetails = string.Empty;
-            string deviceTypeDetails = $"{interaction.InteractionSession.DeviceType.OperatingSystem} {interaction.InteractionSession.DeviceType.DeviceTypeData} {interaction.InteractionSession.DeviceType.Application} {interaction.InteractionSession.DeviceType.ClientType}";
+            string ipAddress = interaction?.InteractionSession?.IpAddress ?? "'unknown'";
+
             if ( interaction.Operation == "Opened" )
             {
-                interactionDetails = $"Opened from {interaction.InteractionSession.IpAddress} using {deviceTypeDetails}";
+                interactionDetails = $"Opened from {ipAddress}";
             }
             else if ( interaction.Operation == "Click" )
             {
-                interactionDetails = $"Clicked the address {interaction.InteractionData} from {interaction.InteractionSession.IpAddress} using {deviceTypeDetails}";
+                interactionDetails = $"Clicked the address {interaction?.InteractionData} from {ipAddress}";
             }
             else
             {
-                interactionDetails = $"{interaction.Operation} using {deviceTypeDetails}";
+                interactionDetails = $"{interaction?.Operation}";
+            }
+
+            string deviceTypeDetails = $"{interaction?.InteractionSession?.DeviceType?.OperatingSystem} {interaction?.InteractionSession?.DeviceType?.DeviceTypeData} {interaction?.InteractionSession?.DeviceType?.Application} {interaction?.InteractionSession?.DeviceType?.ClientType}";
+            if ( deviceTypeDetails.IsNotNullOrWhitespace() )
+            {
+                interactionDetails += $" using {deviceTypeDetails}";
             }
 
             return interactionDetails;
