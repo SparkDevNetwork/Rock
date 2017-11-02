@@ -46,6 +46,30 @@
                         Also, be patient when updating. It takes anywhere from a few seconds
                         to several minutes depending on the update size and your download speed.</Rock:NotificationBox>
 
+                    <!-- Early Access Messages -->
+                    <div class="row margin-b-lg">
+                        <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2">
+                            <Rock:HighlightLabel runat="server" ID="hlblEarlyAccess" LabelType="Warning" Text="Early Access: Not Enabled" CssClass="padding-all-sm"></Rock:Highlightlabel>
+                        </div>
+                        <div class="col-xs-8 col-sm-10 col-md-10 col-lg-10">
+                            <!-- Early Access Not Enabled -->
+                            <asp:Literal runat="server" ID="lEarlyAccessNotEnabled" Visible="true"><div class="padding-l-md">
+                                <p>
+                                    Oops! It looks like you aren't able to update to the latest version of Rock right now.  Find out
+                                <a href="http://www.rockrms.com/earlyaccess" class="text-warning">how to get early access to releases as a Community Contributor</a>.
+                                </p>
+                                <p>
+                                    If you are already a Community Contributor and are having trouble with your access, 
+                                    <a href="http://www.rockrms.com/earlyaccessissues" class="text-warning">let us know so we can resolve the problem</a>.
+                                </p>
+                                </div>
+                            </asp:Literal>
+                            <!-- Early Access is Enabled -->
+                            <asp:Literal runat="server" ID="lEarlyAccessEnabled" Visible="false"><a href="http://www.rockrms.com/earlyaccess" class="text-warning">Learn more about the Early Access program</a>.
+                            </asp:Literal>
+                        </div>
+                    </div>
+                    
                     <div class="row margin-b-md">
                         <div class="col-md-6 margin-v-sm">
                             <asp:Literal ID="lRockVersion" runat="server"></asp:Literal>
