@@ -18,12 +18,29 @@
 
 
 .metriccard {
-  border: 1px solid #d8d1c8;
-  border-top: 4px solid blue;
+  border: 1px solid @panel-border;
+  border-top: 4px solid @brand-primary;
   position: relative;
   overflow: hidden;
+  padding: 2px;
   padding-bottom: 24px;
   margin-bottom: 24px;
+
+  &.metriccard-info {
+    border-top-color: @brand-info;
+  }
+
+  &.metriccard-warning {
+    border-top-color: @brand-warning;
+  }
+
+  &.metriccard-danger {
+    border-top-color: @brand-danger;
+  }
+
+  &.metriccard-success {
+    border-top-color: @brand-success;
+  }
 
   h1 {
     font-size: 16px;
