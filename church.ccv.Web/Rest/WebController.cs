@@ -27,6 +27,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Rock.Rest.Filters;
 using RestSharp;
+using Rock.Communication;
+using System;
 
 namespace church.ccv.Web.Rest
 {
@@ -117,6 +119,31 @@ namespace church.ccv.Web.Rest
             }
 
             return false;
+        }
+
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route( "api/Web/SendConfirmationEmail" )]
+        //[Authenticate, Secured]
+        public void SendConfirmation( string confirmationUrl, string confirmAccountTemplate, string appUrl, string themeUrl, string username )
+        {
+            RockContext rockContext = new RockContext( );
+            var userLoginService = new UserLoginService(rockContext);
+
+            var userLogin = userLoginService.GetByUserName( username );
+            if( userLogin != null )
+            {
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+                mergeFields.Add( "ConfirmAccountUrl", confirmationUrl );
+
+                var personDictionary = userLogin.Person.ToLiquid() as Dictionary<string, object>;
+                mergeFields.Add( "Person", personDictionary );
+                mergeFields.Add( "User", userLogin );
+
+                var recipients = new List<RecipientData>();
+                recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
+
+                Email.Send( new Guid( confirmAccountTemplate ), recipients, appUrl, themeUrl, false );
+            }
         }
     }
 }

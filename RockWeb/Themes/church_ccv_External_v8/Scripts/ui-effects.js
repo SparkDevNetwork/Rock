@@ -55,3 +55,4 @@ function updateSubNavbarForScroll( )
 		subNavbar.css( "top", subNavbarStartingPos + "px" );
 	}
 }
+

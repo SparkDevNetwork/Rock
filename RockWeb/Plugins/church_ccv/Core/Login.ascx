@@ -4,6 +4,10 @@
 
 <div ID="bg-screen" class="bg-screen-hidden">
     <div ID="login-main-panel" class="login-main-panel-hidden">
+        <div class="loader-bg loader-bg-hidden">
+            <div class="loader loader-hidden"></div>
+        </div>
+
         <div ID="login-inner-panel">
 			<div ID="login-secondary-inner-panel">
                 <div class="row">
@@ -53,7 +57,6 @@
         </div>
     </div>
 </div>
-    <p style="visibility: hidden;" id="locked-out-message"><%=GetLockedOutMessage() %></p>
 </asp:Panel>
 
 <asp:Panel ID="pnlTempLoginTrigger" runat="server">
@@ -65,6 +68,26 @@
 </asp:Panel>
 
 <script type="text/javascript">
+    function displayLoader() {
+        var loaderBg = $(".loader-bg");
+        loaderBg.removeClass("loader-bg-hidden");
+        loaderBg.addClass("loader-bg-visible");
+
+        var loader = $(".loader");
+        loader.removeClass("loader-hidden");
+        loader.addClass("loader-visible");
+    }
+
+    function hideLoader() {
+        var loaderBg = $(".loader-bg");
+        loaderBg.removeClass("loader-bg-visible");
+        loaderBg.addClass("loader-bg-hidden");
+
+        var loader = $(".loader");
+        loader.removeClass("loader-visible");
+        loader.addClass("loader-hidden");
+    }
+
 	$(document).keydown(function(e) {
 		// ESCAPE key pressed
 		if (e.keyCode == 27) {
@@ -105,12 +128,18 @@
         var loginPanel = $("#login-main-panel");
         loginPanel.removeClass("login-main-panel-hidden");
         loginPanel.addClass("login-main-panel-visible");
+
+        // make sure the loader is hidden
+        hideLoader();
     }
 
     function tryLogin() {
 
         // hide the response panel
         hideResponsePanel();
+
+        // show the spinner
+        displayLoader();
 
         // get the inputted username / password and whether it's checked or not
         var username = $("#tbUserName").val();
@@ -128,12 +157,54 @@
 
     function handleLoginResponse(xmlRequest) {
 
+        hideLoader();
+
         switch (xmlRequest.responseText) {
-            case "Success": handleLoginSucceeded(); break;
+            case "Success":
+            {
+                handleLoginSucceeded();
+                break;
+            }
             
-            case "Invalid": showResponsePanel("Invalid username or password"); break;
-            case "LockedOut": showResponsePanel($("#locked-out-message").text()); break;
-            case "Confirm": showResponsePanel("This account needs to be confirmed"); break;
+            case "Invalid":
+            {
+                showResponsePanel("Invalid username or password");
+                break;
+            }
+
+            case "LockedOut":
+            {
+                showResponsePanel("<%=GetLockedOutCaption( ) %>");
+                break;
+            }
+
+            case "Confirm":
+            {
+                showResponsePanel("<%=GetConfirmCaption( ) %>"); 
+                
+                var confirmationUrl = "<%=GetConfirmationUrl( ) %>";
+                var confirmAccountTemplate = "<%=GetConfirmAccountTemplate( ) %>";
+                var appUrl = "<%=GetAppUrl( ) %>";
+                var themeUrl = "<%=GetThemeUrl( ) %>";
+                var username = $("#tbUserName").val();
+
+                //todo: fix the url below, getting a 405.
+
+                // invoke the send email api
+                var xmlRequest = new XMLHttpRequest();
+                xmlRequest.onreadystatechange = function () { if (this.readyState == 4 && this.status == 200) { return handleLoginResponse(this); } }
+                xmlRequest.open("POST", "/api/Web/SendConfirmationEmail" +
+                                        "?confirmationUrl=" + encodeURI(confirmationUrl) +
+                                        "&confirmAccountTemplate=" + confirmAccountTemplate +
+                                        "&appUrl=" + appUrl +
+                                        "&themeUrl=" + themeUrl +
+                                        "&username=" + username
+                                        , true);
+                xmlRequest.send();
+
+                break;
+            }
+
             default: showResponsePanel("An unknown error has occurred"); break;
         }
     }

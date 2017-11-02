@@ -43,17 +43,18 @@ namespace RockWeb.Plugins.church_ccv.Core
     [Category( "CCV > Core" )]
     [Description( "Prompts user for login credentials." )]
 
-    [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)", false, "", "", 0 )]
-    [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)", false, "", "", 1 )]
-    [CodeEditorField( "Confirm Caption", "The text (HTML) to display when a user's account needs to be confirmed.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
-Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.
-", "", 2 )]
+    [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
+        @"Sorry, your account has been locked.  Please contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email {{ 'Global' | Attribute:'OrganizationEmail' }} to resolve this.  Thank-you.", "", 5 )]
+
+
+    [CodeEditorField( "Confirm Caption", "The text (HTML) to display when a user's account needs to be confirmed.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
+        @"Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "", 2 )]
+
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "", 3 )]
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
-    [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
-Sorry, your account has been locked.  Please contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email {{ 'Global' | Attribute:'OrganizationEmail' }} to resolve this.  Thank-you. 
-", "", 5 )]
-    
+
+    [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)", false, "", "", 0 )]
+    [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)", false, "", "", 1 )]
     [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 10 )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
@@ -163,12 +164,44 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
         #endregion
 
         #region Methods
-        public string GetLockedOutMessage( )
+        public string GetLockedOutCaption( )
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             return GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
         }
-        
+
+        public string GetConfirmCaption( )
+        {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            return GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
+        }
+
+        public string GetConfirmationUrl( )
+        {
+            string url = LinkedPageUrl( "ConfirmationPage" );
+            if ( string.IsNullOrWhiteSpace( url ) )
+            {
+                url = ResolveRockUrl( "~/ConfirmAccount" );
+            }
+
+            return RootPath + url;
+        }
+
+        public string GetConfirmAccountTemplate( )
+        {
+            return GetAttributeValue( "ConfirmAccountTemplate" );
+        }
+
+        public string GetAppUrl( )
+        {
+            return ResolveRockUrl( "~/" );
+        }
+
+        public string GetThemeUrl( )
+        {
+            return ResolveRockUrl( "~~/" );
+        }
+
         /// <summary>
         /// Logs in the user.
         /// </summary>
@@ -195,32 +228,6 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                 RockPage.Layout.Site.RedirectToDefaultPage();
             }
         }
-
-        /// <summary>
-        /// Sends the confirmation.
-        /// </summary>
-        /// <param name="userLogin">The user login.</param>
-        private void SendConfirmation( UserLogin userLogin )
-        {
-            string url = LinkedPageUrl( "ConfirmationPage" );
-            if ( string.IsNullOrWhiteSpace( url ) )
-            {
-                url = ResolveRockUrl( "~/ConfirmAccount" );
-            }
-
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
-
-            var personDictionary = userLogin.Person.ToLiquid() as Dictionary<string, object>;
-            mergeFields.Add( "Person", personDictionary );
-            mergeFields.Add( "User", userLogin );
-
-            var recipients = new List<RecipientData>();
-            recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
-
-            Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
-        }
-
         #endregion
     }
 }
