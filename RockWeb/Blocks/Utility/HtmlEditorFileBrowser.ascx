@@ -75,7 +75,7 @@
                         }
 
                         // init the file list RockList on every load
-                        //$('.js-file-list .js-listview').rockList();
+                        $('.js-file-list .js-listview').rockList();
                         new IScroll('#<%=pnlListViewPort.ClientID%>', {
                             mouseWheel: true,
                             indicators: {
