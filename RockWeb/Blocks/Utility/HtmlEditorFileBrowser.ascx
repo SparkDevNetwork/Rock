@@ -26,21 +26,22 @@
                 <div>
                     <div class="scroll-container scroll-container-vertical scroll-container-picker js-folder-treeview">
                         <div class="scrollbar">
-                            <div class="track">
+                            <asp:Panel ID="pnlTreeTrack" runat="server" CssClass="track">
                                 <div class="thumb">
                                     <div class="end"></div>
                                 </div>
-                            </div>
+                            </asp:Panel>
                         </div>
-                        <div class="viewport">
+                        <asp:Panel ID="pnlTreeViewPort" runat="server" CssClass="viewport">
                             <div class="overview">
                                 <asp:Label ID="lblFolders" CssClass="treeview treeview-items" runat="server" />
                             </div>
-                        </div>
+                        </asp:Panel>
                     </div>
                 </div>
-
+                 
                 <script type="text/javascript">
+                    var <%=pnlTreeViewPort.ClientID%>IScroll = null;
                     Sys.Application.add_load(function () {
 
                         var folderTreeData = $('.js-folder-treeview .treeview').data('rockTree');
@@ -54,17 +55,37 @@
                             });
 
                             // init scroll bars for folder divs
-                            $('.js-folder-treeview').tinyscrollbar({ size: $('.js-folder-treeview').innerHeight(), sizethumb: 20 });
+                            <%=pnlTreeViewPort.ClientID%>IScroll = new IScroll('#<%=pnlTreeViewPort.ClientID%>', {
+                                mouseWheel: true,
+                                indicators: {
+                                    el: '#<%=pnlTreeTrack.ClientID%>',
+                                    interactive: true,
+                                    resize: false,
+                                    listenY: true,
+                                    listenX: false,
+                                }
+                            });
 
                             $('.js-folder-treeview .treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
                                 // update the folder treeview scroll bar
-                                $('.js-folder-treeview').tinyscrollbar_update('relative');
+                                if (<%=pnlTreeViewPort.ClientID%>IScroll) {
+                                    <%=pnlTreeViewPort.ClientID%>IScroll.refresh();
+                                }
                             });
                         }
 
                         // init the file list RockList on every load
-                        $('.js-file-list .js-listview').rockList();
-                        $('.js-file-list').tinyscrollbar({ size: $('.js-file-list').innerHeight(), sizethumb: 20 });
+                        //$('.js-file-list .js-listview').rockList();
+                        new IScroll('#<%=pnlListViewPort.ClientID%>', {
+                            mouseWheel: true,
+                            indicators: {
+                                el: '#<%=pnlListTrack.ClientID%>',
+                                    interactive: true,
+                                    resize: false,
+                                    listenY: true,
+                                    listenX: false,
+                                }
+                        });
 
                         // js for when a file delete is clicked
                         $('.js-file-list .js-delete-file').off('click');
@@ -170,18 +191,18 @@
                 <div>
                     <div class="scroll-container scroll-container-vertical scroll-container-picker js-file-list">
                         <div class="scrollbar">
-                            <div class="track">
+                            <asp:Panel ID="pnlListTrack" runat="server" CssClass="track">
                                 <div class="thumb">
                                     <div class="end"></div>
                                 </div>
-                            </div>
+                            </asp:Panel>
                         </div>
-                        <div class="viewport">
+                        <asp:Panel ID="pnlListViewPort" runat="server" CssClass="viewport">
                             <div class="overview">
                                 <Rock:NotificationBox ID="nbNoFilesInfo" runat="server" Text="No Files Found" Visible="false" NotificationBoxType="Info" />
                                 <asp:Label ID="lblFiles" CssClass="js-listview" runat="server" />
                             </div>
-                        </div>
+                        </asp:Panel>
                     </div>
                 </div>
 
