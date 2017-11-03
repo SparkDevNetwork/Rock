@@ -24,7 +24,7 @@ list, but marked differently.
             {% assign linkage = occurrence.Linkages | First %}
             {% if linkage.RegistrationInstance.IsActive %}
                 {% assign currentDateTime = 'Now' | Date:'yyyy/MM/dd hh:mm:ss tt' %}
-                {% if linkage.RegistrationInstance.StartDateTime <= currentDateTime %}
+                {% if linkage.RegistrationInstance.StartDateTime <= currentDateTime and linkage.RegistrationInstance.EndDateTime >= currentDateTime %}
                     {% if occurrence.EventItemId == regularEventId %}              
 				        <a class="event-item-container" href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ occurrence.Id }}">
                             <div class="event-item">
