@@ -410,9 +410,7 @@ validity of the request before completing this merge." :
                         primaryPerson.SystemNote = GetNewStringValue( "InactiveReasonNote", changes );
                         primaryPerson.SystemNote = GetNewStringValue( "SystemNote", changes );
 
-                        var peopleIds = MergeData.People.Select( a => a.Id ).ToList();
-                        primaryPerson.CreatedDateTime = personService.Queryable()
-                                                        .Where( p => peopleIds.Contains( p.Id ) )
+                        primaryPerson.CreatedDateTime = MergeData.People
                                                         .Min( a => a.CreatedDateTime );
 
                         // Update phone numbers
@@ -1302,6 +1300,7 @@ validity of the request before completing this merge." :
         public int Id { get; set; }
         public string FullName { get; set; }
         public DateTime? ModifiedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         public string ModifiedBy { get; set; }
         public string Email { get; set; }
         public bool HasLogins { get; set; }
@@ -1312,6 +1311,7 @@ validity of the request before completing this merge." :
             Id = person.Id;
             FullName = person.FullName;
             ModifiedDateTime = person.ModifiedDateTime;
+            CreatedDateTime = person.CreatedDateTime;
             Email = person.Email;
             HasLogins = person.Users.Any();
             Guid = person.Guid;
