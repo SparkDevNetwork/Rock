@@ -1773,13 +1773,12 @@ namespace Rock.Model
         /// </summary>
         public void CalculateSignals()
         {
-            // TODO: Implement SignalTypeCache.
             var rockContext = new RockContext();
             var topSignal = Signals
                 .Select( s => new
                 {
                     Id = s.Id,
-                    SignalType = s.SignalType ?? new SignalTypeService( rockContext ).Get( s.SignalTypeId )
+                    SignalType = Rock.Web.Cache.SignalTypeCache.Read( s.SignalTypeId )
                 } )
                 .OrderBy( s => s.SignalType.Order )
                 .ThenBy( s => s.SignalType.Id )
