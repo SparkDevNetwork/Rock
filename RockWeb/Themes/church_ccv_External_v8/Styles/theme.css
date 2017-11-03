@@ -10238,6 +10238,19 @@ legend {
 	background: #ffffff;
 }
 
+#subnavbar-bg {
+	background-color: #FFFFFF;
+	z-index: 999;
+}
+
+.subnavbar {
+    margin: 0px;
+    background: #FFFFFF;
+    border: 0px;
+    height: 70px;
+    width: 100%;
+}
+
 #subnavbar ul li a {
 	color: #7c7c7c;
 	font-family: akrobat;
@@ -10747,12 +10760,4 @@ html,body{
 	font-weight: normal;
 	border-width: 0px;
 	margin: 0 0 24px 0;
-}
-
-.subnavbar {
-    margin: 0px;
-    background: #FFFFFF;
-    border: 0px;
-    height: 70px;
-    width: 100%;
 }

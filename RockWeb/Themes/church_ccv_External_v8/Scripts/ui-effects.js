@@ -25,34 +25,39 @@ function updateNavbarForScroll( )
    navBar.css( "background-color", 'rgba( 0, 0, 0,' +  alpha + ')' );
 }
 
-var subNavbarStartingPos = null;
+var subNavbarStartingPos = 0;
+
 function updateSubNavbarForScroll( )
 {
-	var subNavbar = $("#subnavbar");
+	// get the "section A" element, which is where the body content starts
+	var sectionA = document.getElementById("section-a-bg");
 	
-	// if we haven't gotten its starting position, do so now.
-	// I hate doing this here, but I don't have access to OnLoad()
-	if( subNavbarStartingPos == null )
+	// seed the navbar starting position on first update (since we don't have OnLoad() access)
+	var subNavbar = document.getElementById("subnavbar-bg");
+	if ( subNavbarStartingPos == 0 )
 	{
-		subNavbarStartingPos = subNavbar.offset().top;
+		subNavbarStartingPos = subNavbar.offsetTop;
 	}
-	
-	var windowPos = $(window).scrollTop();
-	
-	if( windowPos + (subNavbar.outerHeight() * 1.5) > subNavbarStartingPos )
+
+	// if the top navbar has clipped the sub navbar, we've gone far enough to snap
+	var topNavbar = document.getElementById("masthead");	
+	if( window.pageYOffset + topNavbar.offsetHeight >= subNavbarStartingPos )
 	{
-		var topNavbar = $(".masthead");
+		// snap the sub navbar to underneath the top navbar
+		subNavbar.style.top = topNavbar.offsetHeight + "px";
+		subNavbar.style.position = "fixed";
+		subNavbar.style.width = "100%";
 		
-		// get the height of the top navbar
-		var navbarHeight = topNavbar.outerHeight( );
-		
-		subNavbar.css( "position", "fixed" );
-		subNavbar.css( "top", navbarHeight + "px" );
+		// add the sub navbars height to the page so the page doesn't jump
+		sectionA.style.paddingTop = subNavbar.offsetHeight + "px";
 	}
 	else
 	{
-		subNavbar.css( "position", "static" );
-		subNavbar.css( "top", subNavbarStartingPos + "px" );
+		// clear all styling to effectively put things like they were when the page loaded.
+		subNavbar.style.top = "";
+		subNavbar.style.position = "";
+		
+		sectionA.style.paddingTop = "";	
 	}
 }
 
