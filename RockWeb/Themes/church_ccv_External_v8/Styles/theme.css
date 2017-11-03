@@ -10418,8 +10418,22 @@ html,body{
 }
 
 /* highlight on mouse hover */ 
+.masthead-navitem:not(:hover) {
+    
+    transition: .25s;
+	background: rgba( 255, 255, 255, 0);
+	border-radius: 4px;
+}
+
 .masthead-navitem:hover {
     color: #FFFFFF;
+    transition: .25s;
+	background: rgba( 255, 255, 255, .15);
+	border-radius: 4px;
+}
+
+.masthead-navitem.active {
+    border-bottom: 2px solid #555;
 }
 
 /* not sure */
