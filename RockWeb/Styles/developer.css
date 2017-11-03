@@ -138,11 +138,3 @@ table th[align='right'] {
 
 
 
-.panel-persondetails .panel-body .form-group.static-control.matrix-attribute label {
-    width: 100%;
-    text-align: left;
-}
-
-.panel-persondetails .panel-body .form-group.static-control.matrix-attribute .form-control-static{
-    display:none;
-}
