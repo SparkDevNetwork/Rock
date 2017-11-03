@@ -527,7 +527,7 @@ TransactionAccountDetails: [
             }
 
             // Update the total amount
-            lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
+            lblTotalAmount.Text = GlobalAttributesCache.Value("CurrencySymbol") + SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
 
             // Set the frequency date label based on if 'One Time' is selected or not
             if ( btnFrequency.Items.Count > 0 )
@@ -608,6 +608,12 @@ TransactionAccountDetails: [
             if ( !oneTime && ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate.Value.Date <= RockDateTime.Today ) )
             {
                 dtpStartDate.SelectedDate = RockDateTime.Today.AddDays( 1 );
+            }
+
+            if ( oneTime && dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate.Value.Date != RockDateTime.Today )
+            {
+                // A future "one-time" transaction is not really a one-time transaction. It's processed as a scheduled transaction
+                oneTime = false;
             }
 
             using ( var rockContext = new RockContext() )
@@ -3315,7 +3321,10 @@ TransactionAccountDetails: [
                 mergeFields.Add( "Account", account );
                 txtAccountAmount.Label = accountHeaderTemplate.ResolveMergeFields( mergeFields );
 
-                txtAccountAmount.Text = accountItem.Amount.ToString( "N2" );
+                if ( accountItem.Amount != 0 )
+                {
+                    txtAccountAmount.Text = accountItem.Amount.ToString( "N2" );
+                }
 
                 if ( !accountItem.Enabled )
                 {

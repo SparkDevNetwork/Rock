@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Block for displaying logins.  By default displays all logins, but can be configured to use person context to display logins for a specific person." )]
     [ContextAware]
-    public partial class UserLoginList : Rock.Web.UI.RockBlock
+    public partial class UserLoginList : RockBlock, ICustomGridColumns
     {
         #region Fields
 
@@ -65,8 +65,12 @@ namespace RockWeb.Blocks.Security
             {
                 _personId = person.Id;
 
-                // Hide the person name column
-                gUserLogins.Columns[1].Visible = false;
+                var personNameField = gUserLogins.ColumnsOfType<HyperLinkField>().FirstOrDefault( a => a.HeaderText == "Person" );
+                if ( personNameField != null )
+                {
+                    // Hide the person name column
+                    personNameField.Visible = false;
+                }
                 ppPerson.Visible = false;
             }
 

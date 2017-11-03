@@ -41,8 +41,9 @@ namespace RockWeb.Blocks.Finance
     [Description( "Used to match transactions to an individual and allocate the transaction amount to financial account(s)." )]
 
     [AccountsField( "Accounts", "Select the accounts that transaction amounts can be allocated to.  Leave blank to show all accounts", false, "", "", 0 )]
-    [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", false, "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7", "", 1 )]
-    [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked", false, "", "", 2 )]
+    [BooleanField("Show Selected Accounts Only", "If transaction already has allocated amounts, should only the accounts that transaction is allocated to be displayed by default?", false, "", 1 )]
+    [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", false, "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7", "", 2 )]
+    [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked", false, "", "", 3 )]
     [LinkedPage( "Batch Detail Page", "Select the page for displaying batch details", false, "", "", 3)]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
@@ -103,14 +104,22 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            string script = @"
-    $('.transaction-image-thumbnail').click( function() {
+            string script = string.Format( @"
+    $('.transaction-image-thumbnail').click( function() {{
         var $primaryImg = $('.transaction-image');
         var primarySrc = $primaryImg.attr('src');
         $primaryImg.attr('src', $(this).attr('src'));
         $(this).attr('src', primarySrc);
-    });
-";
+    }});
+
+    $('.js-add-account').on('change', function (evt, params) {{
+        console.log(evt.type);
+        console.log(params);
+        $('#{0}').attr('disabled', 'disabled');
+        __doPostBack('{1}', '');
+    }});
+", btnNext.ClientID, ddlAddAccount.ClientID );
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -225,7 +234,7 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    // if no personal accounts are selected, and but there are optional accountsr, only show the optional accounts
+                    // if no personal accounts are selected, but there are optional accounts, only show the optional accounts
                     accountQry = accountQry.Where( a => false );
                 }
             }
@@ -566,16 +575,27 @@ namespace RockWeb.Blocks.Finance
                         accountBox.Text = string.Empty;
                     }
 
+                    bool existingAmounts = false;
                     foreach ( var detail in transactionToMatch.TransactionDetails )
                     {
                         var accountBox = rptAccounts.ControlsOfTypeRecursive<CurrencyBox>().Where( a => a.Attributes["data-account-id"].AsInteger() == detail.AccountId ).FirstOrDefault();
                         if ( accountBox != null )
                         {
+                            existingAmounts = true;
                             accountBox.Text = detail.Amount.ToString();
                         }
                     }
 
-                    UpdateVisibleAccountBoxes();
+                    if ( existingAmounts )
+                    {
+                        string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+                        bool onlyShowSelectedAccounts = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
+                        UpdateVisibleAccountBoxes( onlyShowSelectedAccounts );
+                    }
+                    else
+                    {
+                        UpdateVisibleAccountBoxes();
+                    }
 
                     tbSummary.Text = transactionToMatch.Summary;
 
@@ -640,7 +660,7 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        private void UpdateVisibleAccountBoxes()
+        private void UpdateVisibleAccountBoxes( bool onlyShowSelectedAccounts = false )
         {
             List<int> _sortedAccountIds = _visibleDisplayedAccountIds.ToList();
             _sortedAccountIds.AddRange( _visibleOptionalAccountIds );
@@ -650,7 +670,7 @@ namespace RockWeb.Blocks.Finance
             foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
             {
                 int accountBoxAccountId = accountBox.Attributes["data-account-id"].AsInteger();
-                accountBox.Visible = _visibleDisplayedAccountIds.Contains( accountBoxAccountId ) || _visibleOptionalAccountIds.Contains( accountBoxAccountId );
+                accountBox.Visible = !onlyShowSelectedAccounts && ( _visibleDisplayedAccountIds.Contains( accountBoxAccountId ) || _visibleOptionalAccountIds.Contains( accountBoxAccountId ) );
 
                 if ( !accountBox.Visible && accountBox.Text.AsDecimal() != 0 )
                 {
@@ -700,6 +720,8 @@ namespace RockWeb.Blocks.Finance
             var optionalAccountIdList = apOptionalPersonalAccounts.SelectedValuesAsInt().ToList();
             var optionalAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( optionalAccountIdList ).Select( a => a.Guid ).ToList();
             this.SetUserPreference( keyPrefix + "optional-account-list", optionalAccountGuidList.AsDelimited( "," ) );
+
+            this.SetUserPreference( keyPrefix + "only-show-selected-accounts", cbOnlyShowSelectedAccounts.Checked.ToString() );
 
             int? campusId = cpAccounts.SelectedCampusId;
             this.SetUserPreference( keyPrefix + "account-campus", campusId.HasValue ? campusId.Value.ToString() : "" );
@@ -757,6 +779,8 @@ namespace RockWeb.Blocks.Finance
                 .Where( a => a.IsActive )
                 .ToList();
             apOptionalPersonalAccounts.SetValues( optionalAccountList );
+
+            cbOnlyShowSelectedAccounts.Checked = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
 
             cpAccounts.Campuses = Rock.Web.Cache.CampusCache.All();
             cpAccounts.SelectedCampusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();

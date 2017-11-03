@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -134,6 +135,7 @@ namespace Rock.Web.UI.Controls
             foreach ( string nameValue in nameValues )
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' } );
+                nameAndValue = nameAndValue.Select( s => HttpUtility.UrlDecode( s ) ).ToArray(); // url decode array items
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls controls-row form-control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -243,7 +245,7 @@ namespace Rock.Web.UI.Controls
                 ddl.DataBind();
                 if ( nameAndValue.Length >= 2 )
                 {
-                    ddl.SelectedValue = nameAndValue[1];
+                    ddl.SelectedValue = HttpUtility.UrlDecode( nameAndValue[1] );
                 }
                 ddl.RenderControl( writer );
             }
@@ -315,7 +317,7 @@ namespace Rock.Web.UI.Controls
             if ( newValue !== ''){
                 newValue += '|';
             }
-            newValue += $(this).children('.key-value-key:first').val() + '^' + $(this).children('.key-value-value:first').val()
+            newValue += encodeURI($(this).children('.key-value-key:first').val()) + '^' + encodeURI($(this).children('.key-value-value:first').val())
         });
         $span.children('input:first').val(newValue);            
     }

@@ -392,47 +392,47 @@ namespace Rock.Data
             IEntity entity = item.Entity;
             Dictionary<string, PropertyInfo> properties = null;
 
-            using ( var rockContext = new RockContext() )
+            // Look at each trigger for this entity and for the given trigger type
+            // and see if it's a match.
+            foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
             {
-                var workflowService = new WorkflowService( rockContext );
+                bool match = true;
 
-                // Look at each trigger for this entity and for the given trigger type
-                // and see if it's a match.
-                foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
+                // If a qualifier column was given, then we need to check the previous or current qualifier value
+                // otherwise it's just an automatic match.
+                if ( !string.IsNullOrWhiteSpace( trigger.EntityTypeQualifierColumn ) )
                 {
-                    bool match = true;
-
-                    // If a qualifier column was given, then we need to check the previous or current qualifier value
-                    // otherwise it's just an automatic match.
-                    if ( !string.IsNullOrWhiteSpace( trigger.EntityTypeQualifierColumn ) )
+                    // Get and cache the properties https://lotsacode.wordpress.com/2010/04/13/reflection-type-getproperties-and-performance/
+                    // (Note: its possible that none of the triggers need them, so future TODO could be to
+                    // bypass all this in that case.
+                    if ( properties == null )
                     {
-                        // Get and cache the properties https://lotsacode.wordpress.com/2010/04/13/reflection-type-getproperties-and-performance/
-                        // (Note: its possible that none of the triggers need them, so future TODO could be to
-                        // bypass all this in that case.
-                        if ( properties == null )
+                        properties = new Dictionary<string, PropertyInfo>();
+                        foreach ( PropertyInfo propertyInfo in entity.GetType().GetProperties() )
                         {
-                            properties = new Dictionary<string, PropertyInfo>();
-                            foreach ( PropertyInfo propertyInfo in entity.GetType().GetProperties() )
-                            {
-                                properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
-                            }
+                            properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
                         }
-
-                        match = IsQualifierMatch( item, properties, trigger );
                     }
 
-                    // If we found a matching trigger, then fire it; otherwise do nothing.
-                    if ( match )
-                    {
-                        // If it's one of the pre or immediate triggers, fire it immediately; otherwise queue it.
-                        if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
-                        {
-                            var workflowType = Web.Cache.WorkflowTypeCache.Read( trigger.WorkflowTypeId );
-                            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
-                            {
-                                var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
+                    match = IsQualifierMatch( item, properties, trigger );
+                }
 
-                                List<string> workflowErrors;
+                // If we found a matching trigger, then fire it; otherwise do nothing.
+                if ( match )
+                {
+                    // If it's one of the pre or immediate triggers, fire it immediately; otherwise queue it.
+                    if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
+                    {
+                        var workflowType = Web.Cache.WorkflowTypeCache.Read( trigger.WorkflowTypeId );
+                        if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                        {
+                            var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
+
+                            List<string> workflowErrors;
+
+                            using ( var rockContext = new RockContext() )
+                            {
+                                var workflowService = new WorkflowService( rockContext );
                                 if ( !workflowService.Process( workflow, entity, out workflowErrors ) )
                                 {
                                     SaveErrorMessages.AddRange( workflowErrors );
@@ -440,17 +440,18 @@ namespace Rock.Data
                                 }
                             }
                         }
-                        else
-                        {
-                            var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
-                            transaction.Trigger = trigger;
-                            transaction.Entity = entity.Clone();
-                            transaction.PersonAlias = personAlias;
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                        }
+                    }
+                    else
+                    {
+                        var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
+                        transaction.Trigger = trigger;
+                        transaction.Entity = entity.Clone();
+                        transaction.PersonAlias = personAlias;
+                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
                 }
             }
+
 
             return true;
         }

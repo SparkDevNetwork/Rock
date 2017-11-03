@@ -23,6 +23,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Event
 {
@@ -34,7 +35,7 @@ namespace RockWeb.Blocks.Event
     [Description( "Block to display active Registration Instances." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class RegistrationInstanceActiveList : Rock.Web.UI.RockBlock
+    public partial class RegistrationInstanceActiveList : RockBlock, ICustomGridColumns
     {
 
         #region Base Control Methods

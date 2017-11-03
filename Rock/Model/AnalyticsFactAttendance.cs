@@ -53,6 +53,26 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
+        /// This is the FamilyKey (AnalyticsDimFamilyCurrent.Id) of the family of the Person that attendend
+        /// Note that this is the family that the person was in at the time of the attendance
+        /// </summary>
+        /// <value>
+        /// The authorized family key.
+        /// </value>
+        [DataMember]
+        public int? FamilyKey { get; set; }
+
+        /// <summary>
+        /// This is the FamilyKey (AnalyticsDimFamilyCurrent.Id) of the family of the Person that attendend
+        /// Note that this is the family that the person is in now
+        /// </summary>
+        /// <value>
+        /// The authorized family key.
+        /// </value>
+        [DataMember]
+        public int? CurrentFamilyKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the location.
         /// </summary>
         /// <value>

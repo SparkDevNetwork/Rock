@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for viewing list of financial gateways." )]
     [LinkedPage( "Detail Page" )]
-    public partial class GatewayList : RockBlock
+    public partial class GatewayList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

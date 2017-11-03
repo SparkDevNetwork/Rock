@@ -97,6 +97,7 @@ namespace Rock.Model
             target.ChannelData = source.ChannelData;
             target.ChannelEntityId = source.ChannelEntityId;
             target.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
+            target.ComponentCacheDuration = source.ComponentCacheDuration;
             target.ComponentEntityTypeId = source.ComponentEntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

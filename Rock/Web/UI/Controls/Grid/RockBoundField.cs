@@ -67,6 +67,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Formats the data value.
+        /// </summary>
+        /// <param name="dataValue">The data value.</param>
+        /// <returns></returns>
+        public string FormatDataValue( object dataValue )
+        {
+            return this.FormatDataValue( dataValue, false );
+        }
+
+        /// <summary>
         /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
         /// </summary>
         /// <param name="dataValue">The field value to format.</param>

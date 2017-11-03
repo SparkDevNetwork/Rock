@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Finance
     [CustomDropdownListField( "Default Transaction View", "Select whether you want to initially see Transactions or Transaction Details", "Transactions,Transaction Details", false, "Transactions", "", 6 )]
     [LinkedPage( "Batch Page", required:false, order: 7 )]
     [BooleanField( "Show Account Summary", "Should the account summary be displayed at the bottom of the list?", false, order: 8 )]
-    public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
+    public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
         private bool _isExporting = false;
 
@@ -112,8 +112,11 @@ namespace RockWeb.Blocks.Finance
             this._batchPageRoute = LinkedPageRoute( "BatchPage" );
 
             // enable delete transaction
-            gTransactions.Columns[gTransactions.Columns.Count - 1].Visible = true;
-
+            var deleteField = gTransactions.ColumnsOfType<DeleteField>().FirstOrDefault();
+            if ( deleteField != null )
+            {
+                deleteField.Visible = true;
+            }
             int currentBatchId = PageParameter( "batchId" ).AsInteger();
 
             if ( _canEdit )

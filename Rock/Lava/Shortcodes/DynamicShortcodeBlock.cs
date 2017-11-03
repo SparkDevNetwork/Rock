@@ -47,6 +47,8 @@ namespace Rock.Lava.Shortcodes
 
         StringBuilder _blockMarkup = new StringBuilder();
 
+        const int _maxRecursionDepth = 10;
+
         /// <summary>
         /// Method that will be run at Rock startup
         /// </summary>
@@ -162,7 +164,21 @@ namespace Rock.Lava.Shortcodes
                 var parms = ParseMarkup( _markup, context );
 
                 // add a unique id so shortcodes have easy access to one
-                parms.Add( "uniqueid", "id-" + Guid.NewGuid().ToString() );
+                parms.AddOrReplace( "uniqueid", "id-" + Guid.NewGuid().ToString() );
+
+                // keep track of the recurrsion depth
+                int currentRecurrsionDepth = 0;
+                if ( parms.ContainsKey( "RecursionDepth" ) )
+                {
+                    currentRecurrsionDepth = parms["RecursionDepth"].ToString().AsInteger() + 1;
+
+                    if (currentRecurrsionDepth > _maxRecursionDepth )
+                    {
+                        result.Write( "A recursive loop was dected and processing of this shortcode has stopped." );
+                        return;
+                    }
+                }
+                parms.AddOrReplace( "RecursionDepth", currentRecurrsionDepth );
 
                 var lavaTemplate = shortcode.Markup;
                 var blockMarkup = _blockMarkup.ToString().ResolveMergeFields( _internalMergeFields, _enabledSecurityCommands );

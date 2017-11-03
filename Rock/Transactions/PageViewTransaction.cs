@@ -78,7 +78,7 @@ namespace Rock.Transactions
         public string UserAgent { get; set; }
 
         /// <summary>
-        /// Gets or sets the session id.
+        /// Gets or sets the Rock SessionId Guid ( RockSessionId )
         /// </summary>
         /// <value>
         /// Session Id.
@@ -158,7 +158,7 @@ namespace Rock.Transactions
                             var clientBrowser = client.UserAgent.ToString();
 
                             new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", Url, PersonAliasId, DateViewed,
-                                clientBrowser, clientOs, clientType, userAgent, IPAddress );
+                                clientBrowser, clientOs, clientType, userAgent, IPAddress, this.SessionId?.AsGuidOrNull() );
                             rockContext.SaveChanges();
                         }
                     }

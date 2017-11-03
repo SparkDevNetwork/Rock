@@ -33,6 +33,14 @@
 
                 <div class="row">
                     <div class="col-md-6">
+                        <Rock:CategoryPicker ID="cpCategory" runat="server" Required="false" Label="Category" EntityTypeName="Rock.Model.CommunicationTemplate" />
+                    </div>
+                    <div class="col-md-6">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
                         <Rock:ImageUploader ID="imgTemplatePreview" runat="server" Label="Template Preview Image" Help="The preview of this template to show when selecting a template for a new communication" />
                     </div>
                 </div>
@@ -85,14 +93,19 @@
                         </div>
                     </div>
 
-
                     <label class="control-label">Message Template</label>
 
                     <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>
                     <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>
 
                     <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-xs btn-default pull-right" Text="Preview" OnClick="btnEmailPreview_Click" />
-                    <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" />
+                    <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" OnLoadCompleteScript="updateTemplateLogoVisibility()" />
+
+                    <div class="row" id="pnlTemplateLogo" runat="server">
+                        <div class="col-md-6">
+                            <Rock:ImageUploader ID="imgTemplateLogo" runat="server" Label="Logo" Help="The Logo that can be included in the contents of the message" OnImageUploaded="imgTemplateLogo_ImageUploaded" OnImageRemoved="imgTemplateLogo_ImageUploaded" />
+                        </div>
+                    </div>
 
                 </asp:Panel>
 
@@ -219,6 +232,32 @@
                     }
                 });
             });
+
+            // only show the template logo uploader if there is a div with id='template-logo'
+            // then update the help-message on the loader based on the template-logo's data-instuctions attribute and width and height
+            // this gets called when the codeeditor is done initializing and when the cursor blurs out of the template code editor
+            function updateTemplateLogoVisibility() {
+                var $logoPnl = $('#<%=pnlTemplateLogo.ClientID%>');
+                var templateEditor = $('#codeeditor-div-<%=ceEmailTemplate.ClientID%>').data('aceEditor');
+                var templateDom = $.parseHTML(templateEditor.getValue());
+                var templateLogo = $(templateDom).find('#template-logo');
+                if (templateLogo.length) {
+                    // if the templateLog has special instructions, use those
+                    var helpText = templateLogo.attr('data-instructions') || 'The Logo that can be included in the contents of the message';
+
+                    var helpWidth = templateLogo.attr('width');
+                    var helpHeight = templateLogo.attr('height');
+                    if (helpWidth && helpHeight)
+                    {
+                        helpText += ' (Image size: ' + helpWidth + ' x ' + helpHeight + ')';
+                    }
+                    var helpDiv = $logoPnl.find('.help-message');
+                    helpDiv.html('<small>' + helpText + '</small>');
+                    $logoPnl.show();
+                } else {
+                    $logoPnl.hide();
+                }
+            }
 
             function removeAttachment(source, hf, fileId)
             {

@@ -30,6 +30,18 @@ namespace Rock.Model
     {
 
         /// <summary>
+        /// Gets components by channel identifier.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <returns></returns>
+        public IOrderedQueryable<InteractionComponent> GetByChannelId( int channelId )
+        {
+            return Queryable()
+                .Where( c => c.ChannelId == channelId )
+                .OrderBy( c => c.Name );
+        }
+
+        /// <summary>
         /// Gets the component by entity identifier, and creates it if it doesn't exist
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
@@ -38,6 +50,7 @@ namespace Rock.Model
         /// <returns></returns>
         public InteractionComponent GetComponentByEntityId( int channelId, int entityId, string name )
         {
+
             var component = this.Queryable()
                 .FirstOrDefault( c =>
                     c.ChannelId == channelId &&
