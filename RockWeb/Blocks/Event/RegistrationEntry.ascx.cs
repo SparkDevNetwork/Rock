@@ -1575,14 +1575,14 @@ namespace RockWeb.Blocks.Event
                 var registrationService = new RegistrationService( rockContext );
 
                 bool isNewRegistration = true;
-                var previousRegistrantIds = new List<int>();
+                var previousRegistrantPersonIds = new List<int>();
                 if ( RegistrationState.RegistrationId.HasValue )
                 {
                     var previousRegistration = registrationService.Get( RegistrationState.RegistrationId.Value );
                     if ( previousRegistration != null )
                     {
                         isNewRegistration = false;
-                        previousRegistrantIds = previousRegistration.Registrants
+                        previousRegistrantPersonIds = previousRegistration.Registrants
                             .Where( r => r.PersonAlias != null )
                             .Select( r => r.PersonAlias.PersonId )
                             .ToList();
@@ -1620,7 +1620,7 @@ namespace RockWeb.Blocks.Event
                         // If there is a valid registration, and nothing went wrong processing the payment, add registrants to group and send the notifications
                         if ( registration != null && !registration.IsTemporary )
                         {
-                            ProcessPostSave( isNewRegistration, registration, previousRegistrantIds, rockContext );
+                            ProcessPostSave( isNewRegistration, registration, previousRegistrantPersonIds, rockContext );
                         }
                     }
 
@@ -1667,11 +1667,11 @@ namespace RockWeb.Blocks.Event
             return registration != null ? registration.Id : (int?)null;
         }
 
-        private void ProcessPostSave( bool isNewRegistration, Registration registration, List<int> previousRegistrantIds, RockContext rockContext )
+        private void ProcessPostSave( bool isNewRegistration, Registration registration, List<int> previousRegistrantPersonIds, RockContext rockContext )
         {
             try
             {
-                SavePersonNotes( rockContext, previousRegistrantIds, registration );
+                registration.SavePersonNotesAndHistory( this.CurrentPerson, this.CurrentPersonAliasId, previousRegistrantPersonIds );
                 AddRegistrantsToGroup( rockContext, registration );
 
                 string appRoot = ResolveRockUrl( "~/" );
@@ -2596,133 +2596,6 @@ namespace RockWeb.Blocks.Event
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Saves the person notes.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="previousRegistrantIds">The previous registrants.</param>
-        /// <param name="registration">The registration.</param>
-        private void SavePersonNotes( RockContext rockContext, List<int> previousRegistrantIds, Registration registration )
-        {
-            // Setup Note settings
-            NoteTypeCache noteType = null;
-            if ( RegistrationTemplate != null && RegistrationTemplate.AddPersonNote )
-            {
-                noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
-                if ( noteType != null )
-                {
-                    var noteService = new NoteService( rockContext );
-                    var personAliasService = new PersonAliasService( rockContext );
-
-                    Person registrar = null;
-                    if ( registration.PersonAliasId.HasValue )
-                    {
-                        registrar = personAliasService.GetPerson( registration.PersonAliasId.Value );
-                    }
-
-                    var registrantNames = new List<string>();
-
-                    // Get each registrant
-                    foreach ( var registrantPersonAliasId in registration.Registrants
-                        .Where( r => r.PersonAliasId.HasValue )
-                        .Select( r => r.PersonAliasId.Value )
-                        .ToList() )
-                    {
-                        var registrant = personAliasService.GetPerson( registrantPersonAliasId );
-                        if ( registrant != null && !previousRegistrantIds.Contains( registrant.Id ) )
-                        {
-                            var noteText = new StringBuilder();
-                            noteText.AppendFormat( "Registered for {0}", RegistrationInstanceState.Name );
-
-                            string registrarFullName = string.Empty;
-
-                            if ( registrar != null && registrar.Id != registrant.Id )
-                            {
-                                registrarFullName = string.Format( " by {0}", registrar.FullName );
-                                registrantNames.Add( registrant.FullName );
-                            }
-
-                            if ( registrar != null && ( RegistrationState.FirstName != registrar.NickName || RegistrationState.LastName != registrar.LastName ) )
-                            {
-                                registrarFullName = string.Format( " by {0}", RegistrationState.FirstName + " " + RegistrationState.LastName );
-                            }
-
-                            noteText.Append( registrarFullName );
-
-                            if ( noteText.Length > 0 )
-                            {
-                                var note = new Note();
-                                note.NoteTypeId = noteType.Id;
-                                note.IsSystem = false;
-                                note.IsAlert = false;
-                                note.IsPrivateNote = false;
-                                note.EntityId = registrant.Id;
-                                note.Caption = string.Empty;
-                                note.Text = noteText.ToString();
-                                noteService.Add( note );
-                            }
-
-                            var changes = new List<string> { "Registered for" };
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
-                                registrant.Id,
-                                changes,
-                                RegistrationInstanceState.Name,
-                                typeof( Registration ),
-                                registration.Id,
-                                false,
-                                registration.PersonAliasId );
-                        }
-                    }
-
-                    if ( registrar != null && registrantNames.Any() )
-                    {
-                        string namesText = string.Empty;
-                        if ( registrantNames.Count >= 2 )
-                        {
-                            int lessOne = registrantNames.Count - 1;
-                            namesText = registrantNames.Take( lessOne ).ToList().AsDelimited( ", " ) +
-                                " and " +
-                                registrantNames.Skip( lessOne ).Take( 1 ).First() + " ";
-                        }
-                        else
-                        {
-                            namesText = registrantNames.First() + " ";
-                        }
-
-                        var note = new Note();
-                        note.NoteTypeId = noteType.Id;
-                        note.IsSystem = false;
-                        note.IsAlert = false;
-                        note.IsPrivateNote = false;
-                        note.EntityId = registrar.Id;
-                        note.Caption = string.Empty;
-                        note.Text = string.Format( "Registered {0} for {1}", namesText, RegistrationInstanceState.Name );
-                        noteService.Add( note );
-
-                        var changes = new List<string> { string.Format( "Registered {0} for", namesText ) };
-
-                        HistoryService.SaveChanges(
-                            rockContext,
-                            typeof( Person ),
-                            Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
-                            registrar.Id,
-                            changes,
-                            RegistrationInstanceState.Name,
-                            typeof( Registration ),
-                            registration.Id,
-                            false,
-                            registration.PersonAliasId );
-                    }
-
-                    rockContext.SaveChanges();
-                }
-            }
-
         }
 
         /// <summary>

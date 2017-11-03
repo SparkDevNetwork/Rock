@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace Rock
 {
@@ -357,6 +358,10 @@ namespace Rock
         {
             var dictionary = new System.Collections.Generic.Dictionary<string, string>();
             string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+
+            // url decode array items just in case they were UrlEncoded (See KeyValueListFieldType and the KeyValueList controls)
+            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray(); 
+            
             // If we haven't found any pipes, check for commas
             if ( nameValues.Count() == 1 && nameValues[0] == str )
             {

@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
@@ -34,7 +35,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Lists all businesses and provides filtering by business name and owner" )]
     [LinkedPage( "Detail Page" )]
-    public partial class BusinessList : Rock.Web.UI.RockBlock
+    public partial class BusinessList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

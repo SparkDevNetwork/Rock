@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Model;
 using Rock.Security;
 
@@ -23,6 +24,7 @@ namespace Rock.Data
     /// Represents a model that has an Analytic Table, 
     /// and an Analytic Historical Table that stores previous versions of each record
     /// </summary>
+    [Obsolete( "Decorate with [Analytics] instead" )]
     public interface IAnalyticHistorical : IAnalytic
     {
 

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Event
     [Description( "Lists all the event items in the given calendar." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class EventItemList : RockBlock, ISecondaryBlock
+    public partial class EventItemList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Private Variables
 

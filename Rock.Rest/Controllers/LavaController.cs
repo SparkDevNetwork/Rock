@@ -91,7 +91,7 @@ namespace Rock.Rest.Controllers
 
             }
 
-            return template.ResolveMergeFields( mergeFields );
+            return template.ResolveMergeFields( mergeFields, currentPerson );
         }
     }
 }

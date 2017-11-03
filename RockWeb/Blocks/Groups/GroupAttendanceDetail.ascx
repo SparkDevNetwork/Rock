@@ -27,7 +27,7 @@
                     <div class="row">
                         <div class="col-sm-3">
                             <Rock:RockLiteral ID="lOccurrenceDate" runat="server" Label="Attendance For" />
-                            <Rock:DatePicker ID="dpOccurrenceDate" runat="server" Label="Attendance For" Required="true" />
+                            <Rock:DatePicker ID="dpOccurrenceDate" runat="server" Label="Attendance For" AllowFutureDateSelection="false"  Required="true" />
                         </div>
                         <div class="col-sm-3">
                             <Rock:RockLiteral ID="lLocation" runat="server" Label="Location" />

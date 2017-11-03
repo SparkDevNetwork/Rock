@@ -362,6 +362,7 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
 
+            this.Attributes["data-required"] = this.Required.ToTrueFalse().ToLower();
             this.Attributes["data-requireyear"] = this.RequireYear.ToTrueFalse().ToLower();
             this.Attributes["data-allowFuture"] = this.AllowFutureDates.ToTrueFalse().ToLower();
 
@@ -474,6 +475,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( "class", "form-control-group js-datepartspicker" );
 
+            writer.AddAttribute( "data-required", this.Required.ToTrueFalse().ToLower() );
             writer.AddAttribute( "data-requireyear", this.RequireYear.ToTrueFalse().ToLower() );
             writer.AddAttribute( "data-allowFuture", this.AllowFutureDates.ToTrueFalse().ToLower() );
             writer.AddAttribute( "data-itemlabel", this.Label );

@@ -392,7 +392,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             
                             if ( !string.IsNullOrWhiteSpace( formattedValue ) )
                             {
-                                fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue } );
+                                if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MatrixFieldType ).FullName )
+                                {
+                                    fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue, CssClass= "matrix-attribute" } );
+                                    }
+                                else
+                                {
+                                    fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue } );
+                                }
                             }
                         }
                     }

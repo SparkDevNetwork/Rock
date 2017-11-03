@@ -196,7 +196,8 @@ namespace Rock.Rest.Swagger
                          //
                          c.ResolveConflictingActions( apiDescriptions =>
                            {
-                               return apiDescriptions.First();
+                               // If there are multiple, show the one the shortest "RelativePath", which would hopefully be the most common one they would need
+                               return apiDescriptions.OrderBy(a => a.RelativePath.Length).First();
                            } );
                          // Wrap the default SwaggerGenerator with additional behavior (e.g. caching) or provide an
                          // alternative implementation for ISwaggerProvider with the CustomProvider option.

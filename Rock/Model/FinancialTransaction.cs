@@ -33,7 +33,8 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransaction" )]
     [DataContract]
-    public partial class FinancialTransaction : Model<FinancialTransaction>, IAnalytic
+    [Analytics(false, false)]
+    public partial class FinancialTransaction : Model<FinancialTransaction>
     {
         #region Entity Properties
 
@@ -104,6 +105,17 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string TransactionCode { get; set; }
+
+        /// <summary>
+        /// For Credit Card transactions, this is the Gateway's Transaction Key
+        /// </summary>
+        /// <value>
+        /// The gateway transaction key.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        [Index( "IX_GatewayTransactionKey" )]
+        public string GatewayTransactionKey { get; set; }
 
         /// <summary>
         /// Gets or sets a summary of the transaction.

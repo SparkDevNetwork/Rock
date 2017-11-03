@@ -41,7 +41,8 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "Person" )]
     [DataContract]
-    public partial class Person : Model<Person>, IRockIndexable, IAnalyticHistorical
+    [Analytics( true, true )]
+    public partial class Person : Model<Person>, IRockIndexable
     {
         #region Constants
 
@@ -1568,9 +1569,10 @@ namespace Rock.Model
         public override Dictionary<string, object> ToDictionary()
         {
             var dictionary = base.ToDictionary();
-            dictionary.Add( "Age", AgePrecise );
-            dictionary.Add( "DaysToBirthday", DaysToBirthday );
+            dictionary.AddOrIgnore( "Age", AgePrecise );
+            dictionary.AddOrIgnore( "DaysToBirthday", DaysToBirthday );
             dictionary.AddOrIgnore( "FullName", FullName );
+            dictionary.AddOrIgnore( "PrimaryAliasId", this.PrimaryAliasId );
             return dictionary;
         }
 
@@ -1658,6 +1660,8 @@ namespace Rock.Model
                 var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
+
+            base.PreSaveChanges( dbContext, entry );
         }
 
         /// <summary>
@@ -2455,7 +2459,7 @@ namespace Rock.Model
             {
                 if ( recordTypeValueGuid.HasValue && recordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
                 {
-                    photoUrl.Append( "/Assets/Images/business-no-photo.svg?" );
+                    photoUrl.Append( "Assets/Images/business-no-photo.svg?" );
                 }
                 else if ( age.HasValue && age.Value < 18 )
                 {

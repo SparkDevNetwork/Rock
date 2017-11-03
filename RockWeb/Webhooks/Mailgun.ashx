@@ -143,7 +143,7 @@ public class Mailgun : IHttpHandler
                                 if ( interactionComponent != null )
                                 {
                                     interactionService.AddInteraction( interactionComponent.Id, communicationRecipient.Id, "Opened", "", communicationRecipient.PersonAliasId, ts,
-                                        request.Form["client-name"], request.Form["client-os"], request.Form["client-type"], request.Form["device-type"], request.Form["ip"] );
+                                        request.Form["client-name"], request.Form["client-os"], request.Form["client-type"], request.Form["device-type"], request.Form["ip"], null );
                                 }
                                 break;
 
@@ -151,7 +151,7 @@ public class Mailgun : IHttpHandler
                                 if ( interactionComponent != null )
                                 {
                                     interactionService.AddInteraction( interactionComponent.Id, communicationRecipient.Id, "Click", request.Form["url"], communicationRecipient.PersonAliasId, ts,
-                                        request.Form["client-name"], request.Form["client-os"], request.Form["client-type"], request.Form["device-type"], request.Form["ip"] );
+                                        request.Form["client-name"], request.Form["client-os"], request.Form["client-type"], request.Form["device-type"], request.Form["ip"], null );
                                 }
                                 break;
 

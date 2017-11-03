@@ -40,7 +40,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Shows a list of people who have a specified type of relationship with a person." )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Related People" )]
-    public class RelatedPeopleSelect : DataSelectComponent
+    public class RelatedPeopleSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Support Classes
 
@@ -219,6 +219,21 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
+            var allRelatedPeopleQuery = GetAllRelatedPeopleQuery( context, entityIdProperty, selection );
+            var personQuery = new PersonService( context ).Queryable().Select( p => allRelatedPeopleQuery.Where( rpi => rpi.RelatedToPersonId == p.Id ).AsEnumerable() );
+            var selectExpression = SelectExpressionExtractor.Extract( personQuery, entityIdProperty, "p" );
+            return selectExpression;
+        }
+
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        private IQueryable<RelatedPersonInfo> GetAllRelatedPeopleQuery( RockContext context, MemberExpression entityIdProperty, string selection )
+        {
             var settings = new RelatedPeopleSelectSettings( selection );
 
             bool showRelationship = ( settings.ListFormat == ListFormatSpecifier.NameAndRelationship );
@@ -308,14 +323,7 @@ namespace Rock.Reporting.DataSelect.Person
                 allRelatedPeopleQuery = GetRelatedPeopleUnionQuery( allRelatedPeopleQuery, knownPersonsQuery );
             }
 
-            //
-            // Create a Select Expression to return the requested values.
-            //
-            var personQuery = new PersonService( context ).Queryable().Select( p => allRelatedPeopleQuery.Where( rpi => rpi.RelatedToPersonId == p.Id ).AsEnumerable() );
-
-            var selectExpression = SelectExpressionExtractor.Extract( personQuery, entityIdProperty, "p" );
-
-            return selectExpression;
+            return allRelatedPeopleQuery;
         }
 
         /// <summary>
@@ -593,6 +601,42 @@ namespace Rock.Reporting.DataSelect.Person
 
                 return settings;
             }
+        }
+
+        #endregion
+
+        #region IRecipientDataSelect implementation
+
+        /// <summary>
+        /// Gets the type of the recipient column field.
+        /// </summary>
+        /// <value>
+        /// The type of the recipient column field.
+        /// </value>
+        public Type RecipientColumnFieldType
+        {
+            get { return typeof( IEnumerable<int> ); }
+        }
+
+        /// <summary>
+        /// Gets the recipient person identifier expression.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public Expression GetRecipientPersonIdExpression( System.Data.Entity.DbContext dbContext, MemberExpression entityIdProperty, string selection )
+        {
+            var rockContext = dbContext as RockContext;
+            if ( rockContext != null )
+            {
+                var allRelatedPeopleQuery = GetAllRelatedPeopleQuery( rockContext, entityIdProperty, selection );
+                var personQuery = new PersonService( rockContext ).Queryable().Select( p => allRelatedPeopleQuery.Where( rpi => rpi.RelatedToPersonId == p.Id ).Select( rpi => rpi.PersonId ).AsEnumerable() );
+                var selectExpression = SelectExpressionExtractor.Extract( personQuery, entityIdProperty, "p" );
+                return selectExpression;
+            }
+
+            return null;
         }
 
         #endregion

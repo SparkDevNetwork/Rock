@@ -282,6 +282,20 @@ namespace Rock.Web.UI.Controls
                     return string.Format( "{{{{ 'Global' | Attribute:'{0}' }}}}", idParts[1] );
                 }
 
+                if ( idParts.Count == 1 && idParts[0].StartsWith( "AdditionalMergeField" ) ) 
+                {
+                    string mFields = idParts[0].Replace( "AdditionalMergeField_", "" ).Replace( "AdditionalMergeFields_", "" );
+                    if ( mFields.IsNotNullOrWhitespace() )
+                    {
+                        string beginFor = "{% for field in AdditionalFields %}";
+                        string endFor = "{% endfor %}";
+                        var mergeFields = String.Join( "", mFields.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries )
+                            .Select( f => "{{ field." + f + "}}" ) );
+
+                        return $"{beginFor}{mergeFields}{endFor}";
+                    }
+                }
+
                 if ( idParts.Count == 1 )
                 {
                     if ( idParts[0] == "Campuses" )
@@ -323,6 +337,7 @@ namespace Rock.Web.UI.Controls
                     {
                         return "{{ PageParameter.[Enter Page Parameter Name Here] }}";
                     }
+
                 }
 
                 var workingParts = new List<string>();

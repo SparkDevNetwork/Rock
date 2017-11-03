@@ -104,6 +104,14 @@ namespace Rock.Data
         void PostSaveChanges( Rock.Data.DbContext dbContext );
 
         /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state );
+
+        /// <summary>
         /// Gets the Created By audit HTML details.
         /// </summary>
         /// <param name="rootUrl">The root URL.</param>

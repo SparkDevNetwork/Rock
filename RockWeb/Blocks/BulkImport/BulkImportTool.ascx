@@ -41,7 +41,10 @@
     })
 </script>
 
-<asp:UpdatePanel ID="upnlContent" runat="server">
+<asp:UpdatePanel ID="upnlContent" runat="server" ChildrenAsTriggers="false" UpdateMode="Conditional">
+    <Triggers>
+        <asp:AsyncPostBackTrigger ControlID="btnCheckForeignSystemKey" />
+    </Triggers>
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
@@ -50,12 +53,20 @@
                 <h1 class="panel-title"><i class="fa fa-upload"></i>&nbsp;Bulk Import Tool</h1>
             </div>
             <div class="panel-body">
+                <asp:ValidationSummary ID="vsBulkImport" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
                 <Rock:RockTextBox ID="tbForeignSystemKey" runat="server" Required="true" Label="Foreign System Key" Help="The Key used to uniquely identify the source system. For example, use the domain of the the source system's website: 'somechurch.ccbchurch.com'. Click 'Check Foreign System Key' to see what keys have already been used or to see if the key has already been used." />
                 <asp:LinkButton ID="btnCheckForeignSystemKey" runat="server" CssClass="btn btn-xs btn-action margin-b-md" Text="Check Foreign System Key" CausesValidation="false" OnClick="btnCheckForeignSystemKey_Click" />
                 <Rock:NotificationBox ID="nbCheckForeignSystemKey" runat="server" CssClass="margin-b-md" NotificationBoxType="Warning" Visible="false" Dismissable="true" />
 
-                <Rock:FileUploader ID="fupSlingshotFile" runat="server" Label="Select Slingshot File" IsBinaryFile="false" RootFolder="~/App_Data/SlingshotFiles" DisplayMode="DropZone" OnFileUploaded="fupSlingshotFile_FileUploaded" OnFileRemoved="fupSlingshotFile_FileRemoved" />
-                <asp:Literal ID="lSlingshotFileInfo" runat="server" Text="" />
+                <asp:UpdatePanel ID="upnlFileUpload" runat="server">
+                    <ContentTemplate>
+                        <asp:HiddenField ID="hfMainSlingshotFileName" runat="server" />
+                        <Rock:HiddenFieldValidator ID="hfMainSlingshotFileNameValidator" runat="server" ControlToValidate="hfMainSlingshotFileName" CssClass="danger" ErrorMessage="Slingshot File must be specified" Display="None" />
+                        <Rock:FileUploader ID="fupSlingshotFile" runat="server" Label="Select Slingshot File" IsBinaryFile="false" RootFolder="~/App_Data/SlingshotFiles" DisplayMode="DropZone" OnFileUploaded="fupSlingshotFile_FileUploaded" AllowMultipleUploads="true" OnFileRemoved="fupSlingshotFile_FileRemoved" />
+                        <asp:Label ID="lSlingshotFileInfo" runat="server" Text="" />
+                        <asp:Label ID="lAdditionalSlingshotFilesInfo" runat="server" Text="" />
+                    </ContentTemplate>
+                </asp:UpdatePanel>
 
                 <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
                     <Rock:RockControlWrapper ID="rcwImportOptions" runat="server" Label="Import Options">
@@ -83,7 +94,8 @@
                             <Rock:HelpBlock ID="hbPostImportHelp" runat="server"><pre>
 Before Importing
 -- Backup the Customer’s Database
--- Verify that Rock > Home / General Settings / File Types / ‘Person Image’, has the Storage Type set to what you want.  Slingshot will use that when importing Photos
+-- Verify that Rock > Home / General Settings / File Types / ‘Person Image’, has the Storage Type set to what you want.  Slingshot will use that when importing Person and Family Photos
+-- Verify that Rock > Home / General Settings / File Types / ‘Transaction Image’, has the Storage Type set to what you want.  Slingshot will use that when importing FinancialTransaction Images
 
 After Importing
 -- Go the General Settings / Group Types and filter by Check-in Template. This will show you the group types that already a Check-in Template
@@ -155,7 +167,7 @@ order by Gt.Id, Gt.Name, g.Name
                     </div>
                 </asp:Panel>
 
-                <asp:Panel ID="pnlActions" runat="server" CssClass="actions" Visible="false">
+                <asp:Panel ID="pnlActions" runat="server" CssClass="actions">
                     <asp:LinkButton ID="btnImport" runat="server" CssClass="btn btn-primary" Text="Import" OnClick="btnImport_Click" />
                     <asp:LinkButton ID="btnImportPhotos" runat="server" CssClass="btn btn-primary" Text="Import Photos" OnClick="btnImportPhotos_Click" />
                 </asp:Panel>

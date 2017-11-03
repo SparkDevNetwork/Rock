@@ -15,3 +15,55 @@
 
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 }
+
+
+.metriccard {
+  border: 1px solid @panel-border;
+  border-top: 4px solid @brand-primary;
+  position: relative;
+  overflow: hidden;
+  padding: 2px;
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+
+  &.metriccard-info {
+    border-top-color: @brand-info;
+  }
+
+  &.metriccard-warning {
+    border-top-color: @brand-warning;
+  }
+
+  &.metriccard-danger {
+    border-top-color: @brand-danger;
+  }
+
+  &.metriccard-success {
+    border-top-color: @brand-success;
+  }
+
+  h1 {
+    font-size: 16px;
+    margin-top: 4px;
+    margin-bottom: 0;
+  }
+
+  .value {
+    font-size: 45px;
+    display: block;
+    text-align: center;
+    line-height: 72px;
+
+    &.large {
+      font-size: 65px;
+    }
+  }
+
+  i {
+    position: absolute;
+    bottom: 0;
+    right: 4px;
+    font-size: 80px;
+    opacity: .1;
+  }
+}

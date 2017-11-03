@@ -185,7 +185,7 @@ WHERE AttributeId IN (
             RockMigrationHelper.UpdateBlockTypeAttribute( "1FEA697F-DD12-4FE0-BC58-EE896123E7F1", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Progress Lava Template", "ProgressLavaTemplate", "", "Lava template for how the progress bar should be displayed ", 2, @"{% include '~~/Assets/Lava/FundraisingParticipantProgress.lava' %}", "C412D0FE-B533-410F-A964-BF54D44BD33A" );
 
             // Attrib for BlockType: Tags By Letter:User-Selectable Entity Type
-            RockMigrationHelper.UpdateBlockTypeAttribute( "784C84CF-28B0-45B5-A3ED-D7D9B2A26A5B", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "User-Selectable Entity Type", "ShowEntityType", "", "Should user be able to select the entity type to show tags for?", 0, @"False", "CA3A8DD3-C700-4878-A110-BCF780A739F5" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "784C84CF-28B0-45B5-A3ED-D7D9B2A26A5B", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "User-Selectable Entity Type", "ShowEntityType", "", "Should user be able to select the entity type to show tags for?", 0, @"True", "CA3A8DD3-C700-4878-A110-BCF780A739F5" );
             // Attrib for BlockType: Tag List:Show Qualifier Columns
             RockMigrationHelper.UpdateBlockTypeAttribute( "C6DFE5AE-8C4C-49AD-8EC9-11CE03146F53", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Qualifier Columns", "ShowQualifierColumns", "", "Should the 'Qualifier Column' and 'Qualifier Value' fields be displayed in the grid?", 0, @"False", "92042339-E73A-4B09-81E9-BDA57382E28F" );
             // Attrib for BlockType: Tags By Letter:Entity Type

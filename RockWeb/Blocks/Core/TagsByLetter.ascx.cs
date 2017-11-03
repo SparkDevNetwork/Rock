@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Lists tags grouped by the first letter of the name with counts for people to select." )]
 
     [LinkedPage("Detail Page")]
-    [BooleanField("User-Selectable Entity Type", "Should user be able to select the entity type to show tags for?", false, "", 0, "ShowEntityType" )]
+    [BooleanField("User-Selectable Entity Type", "Should user be able to select the entity type to show tags for?", true, "", 0, "ShowEntityType" )]
     [EntityTypeField("Entity Type", false, "The entity type to display tags for. If entity type is user-selectable, this will be the default entity type", false, "", DefaultValue = Rock.SystemGuid.EntityType.PERSON )]
     public partial class TagsByLetter : Rock.Web.UI.RockBlock
     {

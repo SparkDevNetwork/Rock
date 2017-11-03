@@ -9,6 +9,7 @@
             this.restUrl = options.restUrl;
             this.restDetailUrl = options.restDetailUrl;
             this.defaultText = options.defaultText || '';
+            this.iScroll = null;
         };
 
         PersonPicker.prototype.initializeEventHandlers = function () {
@@ -277,11 +278,15 @@
         };
 
         PersonPicker.prototype.updateScrollbar = function () {
+            var self = this;
+
             // first, update this control's scrollbar, then the modal's
             var $container = $('#' + this.controlId).find('.scroll-container')
 
             if ($container.is(':visible')) {
-                $container.tinyscrollbar_update('relative');
+                if (self.iScroll) {
+                    self.iScroll.refresh();
+                }
             }
 
             // update the outer modal scrollbar
@@ -289,8 +294,17 @@
         }
 
         PersonPicker.prototype.initialize = function () {
-            var $control = $('#' + this.controlId);
-            $control.find('.scroll-container').tinyscrollbar({ size: 120, sizethumb: 20 });
+
+            this.iScroll = new IScroll('#personpicker-scroll-container_' + this.controlId + ' .viewport', {
+                mouseWheel: true,
+                indicators: {
+                    el: '#personpicker-scroll-container_' + this.controlId + ' .track',
+                    interactive: true,
+                    resize: false,
+                    listenY: true,
+                    listenX: false,
+                }
+            });
 
             this.initializeEventHandlers();
         };

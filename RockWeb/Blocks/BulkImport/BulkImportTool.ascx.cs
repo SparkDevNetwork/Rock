@@ -103,19 +103,39 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void fupSlingshotFile_FileUploaded( object sender, EventArgs e )
         {
-            pnlActions.Visible = false;
+            pnlActions.Visible = hfMainSlingshotFileName.Value != string.Empty;
             var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
             if ( File.Exists( physicalSlingshotFile ) )
             {
                 FileInfo fileInfo = new FileInfo( physicalSlingshotFile );
                 if ( fileInfo.Extension.Equals( ".slingshot", StringComparison.OrdinalIgnoreCase ) )
                 {
-                    lSlingshotFileInfo.Text = new DescriptionList()
-                        .Add( "File Name", fileInfo.Name )
-                        .Add( "Date/Time", fileInfo.CreationTime )
-                        .Add( "Size (MB) ", Math.Round( ( ( decimal ) fileInfo.Length / 1024 / 1024 ), 2 ) )
-                        .Html;
-                    pnlActions.Visible = true;
+                    if ( !fileInfo.FullName.EndsWith( ".images.slingshot", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        hfMainSlingshotFileName.Value = fupSlingshotFile.UploadedContentFilePath;
+                        lSlingshotFileInfo.Text = new DescriptionList()
+                            .Add( "File Name", fileInfo.Name )
+                            .Add( "Date/Time", fileInfo.CreationTime )
+                            .Add( "Size (MB) ", Math.Round( ( ( decimal ) fileInfo.Length / 1024 / 1024 ), 2 ) )
+                            .Html;
+                        pnlActions.Visible = true;
+                        
+                    }
+
+                    if ( hfMainSlingshotFileName.Value != string.Empty )
+                    {
+                        // list any matching images.slingshot files that either got uploaded or manually placed in the ~/App_Data/SlingshotFiles folder
+                        var mainFileNamePrefix = Path.GetFileNameWithoutExtension( hfMainSlingshotFileName.Value );
+                        var imageFiles = Directory.EnumerateFiles( Path.GetDirectoryName( fileInfo.FullName ), mainFileNamePrefix + "*.images.slingshot" );
+                        if ( imageFiles.Any() )
+                        {
+                            lAdditionalSlingshotFilesInfo.Text = "<label>Additional Files</label>: " + imageFiles.Select( a => Path.GetFileName( a ) ).ToList().AsDelimited( ", " );
+                        }
+                        else
+                        {
+                            lAdditionalSlingshotFilesInfo.Text = string.Empty;
+                        }
+                    }
                 }
                 else
                 {
@@ -126,6 +146,7 @@ namespace RockWeb.Blocks.BulkImport
             else
             {
                 lSlingshotFileInfo.Text = "-";
+                lAdditionalSlingshotFilesInfo.Text = "";
             }
         }
 
@@ -137,7 +158,9 @@ namespace RockWeb.Blocks.BulkImport
         protected void fupSlingshotFile_FileRemoved( object sender, FileUploaderEventArgs e )
         {
             pnlActions.Visible = false;
+            hfMainSlingshotFileName.Value = "";
             lSlingshotFileInfo.Text = "";
+            lAdditionalSlingshotFilesInfo.Text = "";
         }
 
         /// <summary>
@@ -146,7 +169,8 @@ namespace RockWeb.Blocks.BulkImport
         private enum ImportType
         {
             Import,
-            ImportPhotos
+            Photos,
+            All
         }
 
         /// <summary>
@@ -166,7 +190,7 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnImportPhotos_Click( object sender, EventArgs e )
         {
-            StartImport( ImportType.ImportPhotos );
+            StartImport( ImportType.Photos );
         }
 
         /// <summary>
@@ -228,7 +252,7 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="importType">Type of the import.</param>
         private void StartImport( ImportType importType )
         {
-            var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
+            var physicalSlingshotFile = this.Request.MapPath( hfMainSlingshotFileName.Value );
             long totalMilliseconds = 0;
 
             Rock.Slingshot.SlingshotImporter _importer = null;
@@ -256,18 +280,18 @@ namespace RockWeb.Blocks.BulkImport
                     importUpdateType = BulkImporter.ImportUpdateType.AlwaysUpdate;
                 }
 
-                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text, importUpdateType );
+                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text, importUpdateType, _importer_OnProgress );
                 _importer.FinancialTransactionChunkSize = 100000;
-                _importer.OnProgress += _importer_OnProgress;
 
-                if ( importType == ImportType.ImportPhotos )
+                if ( importType == ImportType.Import || importType == ImportType.All )
+                {
+                    _importer.DoImport();
+                }
+
+                if ( importType == ImportType.Photos || importType == ImportType.All )
                 {
                     _importer.TEST_UseSampleLocalPhotos = false;
                     _importer.DoImportPhotos();
-                }
-                else
-                {
-                    _importer.DoImport();
                 }
 
                 stopwatch.Stop();
@@ -289,10 +313,13 @@ namespace RockWeb.Blocks.BulkImport
                     foreach ( var exception in t.Exception.InnerExceptions )
                     {
                         LogException( exception );
-                        _importer.Exceptions.Add( exception.GetBaseException() );
+                        if ( _importer.Exceptions != null )
+                        {
+                            _importer.Exceptions.Add( exception.GetBaseException() );
+                        }
                     }
 
-                    _importer_OnProgress( _importer, "ERROR" );
+                    _importer_OnProgress( _importer, "ERROR: " + t.Exception.Message );
                 }
                 else
                 {
@@ -323,7 +350,15 @@ namespace RockWeb.Blocks.BulkImport
             var exceptionsCopy = _importer.Exceptions.ToArray();
             if ( exceptionsCopy.Any() )
             {
-                progressResults.Add( "Exception", string.Join( Environment.NewLine, exceptionsCopy.Select( a => a.Message ).ToArray() ) );
+                if ( exceptionsCopy.Count() > 50 )
+                {
+                    var exceptionsSummary = exceptionsCopy.GroupBy( a => a.GetBaseException().Message ).Select( a => a.Key + "(" + a.Count().ToString() + ")" );
+                    progressResults.Add( "Exceptions", string.Join( Environment.NewLine, exceptionsSummary ) );
+                }
+                else
+                {
+                    progressResults.Add( "Exception", string.Join( Environment.NewLine, exceptionsCopy.Select( a => a.Message ).ToArray() ) );
+                }
             }
 
             var resultsCopy = _importer.Results.ToArray();
@@ -341,8 +376,6 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="message">The message.</param>
         private void WriteProgressMessage( string message, string results )
         {
-            System.Diagnostics.Debug.WriteLine( message );
-            System.Diagnostics.Debug.WriteLine( results );
             _hubContext.Clients.All.receiveNotification( this.SignalRNotificationKey, message, results.ConvertCrLfToHtmlBr() );
         }
 

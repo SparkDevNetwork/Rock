@@ -214,6 +214,42 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the attribute entity type qualifier column.
+        /// </summary>
+        /// <value>
+        /// The attribute entity type qualifier column.
+        /// </value>
+        private string AttributeEntityTypeQualifierColumn
+        {
+            get
+            {
+                return ViewState["AttributeEntityTypeQualifierColumn"] as string;
+            }
+            set
+            {
+                ViewState["AttributeEntityTypeQualifierColumn"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the attribute entity type qualifier value.
+        /// </summary>
+        /// <value>
+        /// The attribute entity type qualifier value.
+        /// </value>
+        private string AttributeEntityTypeQualifierValue
+        {
+            get
+            {
+                return ViewState["AttributeEntityTypeQualifierValue"] as string;
+            }
+            set
+            {
+                ViewState["AttributeEntityTypeQualifierValue"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show actions].
         /// </summary>
         /// <value>
@@ -1076,8 +1112,8 @@ namespace Rock.Web.UI.Controls
                 var entityType = EntityTypeCache.Read( this.AttributeEntityTypeId.Value );
                 if ( entityType != null )
                 {
-                    _cbIsAnalytic.Visible = entityType.IsAnalyticSupported;
-                    _cbIsAnalyticHistory.Visible = entityType.IsAnalyticHistoricalSupported;
+                    _cbIsAnalytic.Visible = entityType.IsAnalyticAttributesSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue );
+                    _cbIsAnalyticHistory.Visible = entityType.IsAnalyticsHistoricalSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue ) ;
                 }
             }
 
@@ -1305,6 +1341,8 @@ namespace Rock.Web.UI.Controls
             {
                 this.AttributeId = attribute.Id;
                 this.AttributeGuid = attribute.Guid;
+                this.AttributeEntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn;
+                this.AttributeEntityTypeQualifierValue = attribute.EntityTypeQualifierValue;
                 this.Name = attribute.Name;
                 this.Key = attribute.Key;
                 this.IconCssClass = attribute.IconCssClass;

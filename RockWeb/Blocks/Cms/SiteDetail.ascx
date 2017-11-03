@@ -24,7 +24,7 @@
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <div id="pnlEditDetails" runat="server">
 
@@ -56,7 +56,7 @@
                             <Rock:PagePicker ID="ppPageNotFoundPage" runat="server" Label="404 Page" Required="false" PromptForPageRoute="true" Help="Page to use instead of the server's 404 message." />
                         </div>
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Domain(s)" Help="A comma delimited list of domain values that are associated with this site.  These values are used by Rock to load the correct site whenever a specific page or route is not provided in the url. Rock will determine the site to use by finding the first site with a domain value that is contained by the current request's hostname in the url.  It will then display that site's default page." />
+                            <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Domain(s)" Help="A list of domains that are associated with this site (list can be either comma delimited or each on a separate line).  These values are used by Rock to load the correct site whenever a specific page or route is not provided in the url. Rock will determine the site to use by finding the first site with a domain value that is contained by the current request's hostname in the url.  It will then display that site's default page." />
                             <Rock:DataTextBox ID="tbErrorPage" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="ErrorPage" Help="The url that user will be redirected to if an error occurs on site" />
                             <Rock:DataTextBox ID="tbGoogleAnalytics" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="GoogleAnalyticsCode" Help="Optional Google Analytics Code.  If specified, the Google Analytics script with this code will be added to every page rendered for this site." />
                             <Rock:RockCheckBox ID="cbRequireEncryption" runat="server" Label="Require Encryption" Help="Ensures that the site is loaded over SSL by redirecting to https." />
