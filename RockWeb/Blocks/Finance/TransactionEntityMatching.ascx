@@ -19,16 +19,10 @@
                     </div>
                 </div>
                 <div class="grid grid-panel">
-                    <asp:Panel ID="pnlTransactions" runat="server" ViewStateMode="Disabled">
+                    <asp:Panel ID="pnlTransactions" runat="server">
                         <table class="grid-table table table-striped">
                             <thead>
-                                <th>Person</th>
-                                <th>Amount</th>
-                                <th>Account</th>
-                                <th>Transaction Type</th>
-                                <asp:Literal ID="thTransactionDateTime" runat="server"><th>Date/Time</th></asp:Literal>
-                                <th>
-                                    <asp:Literal ID="lEntityHeaderText" runat="server" /></th>
+                                <asp:Literal ID="lHeaderHtml" runat="server" />
                             </thead>
                             <tbody>
                                 <asp:PlaceHolder ID="phTableRows" runat="server" />
