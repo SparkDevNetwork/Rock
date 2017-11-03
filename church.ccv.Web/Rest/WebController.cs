@@ -31,6 +31,8 @@ using Rock.Communication;
 using System;
 using Rock.Web.Cache;
 using System.Web.Configuration;
+using church.ccv.Web.Model;
+using church.ccv.Web.Data;
 
 namespace church.ccv.Web.Rest
 {
@@ -58,26 +60,15 @@ namespace church.ccv.Web.Rest
         /// <summary>
         /// This should only be called by Rock Blocks.
         /// See "RockWeb\Plugins\church_ccv\Core\Login.ascx" for an example.
-        /// </summary>
-        public enum LoginResponse
-        {
-            Invalid,
-            LockedOut,
-            Confirm,
-            Success
-        }
-
         [System.Web.Http.HttpPost]
         [System.Web.Http.Route( "api/Web/Login" )]
         public HttpResponseMessage Login( string username, string password, bool persist )
         {
             HttpStatusCode statusCode = HttpStatusCode.OK;
-            StringContent restContent = null;
-         
+            LoginResponse loginResponse = LoginResponse.Invalid;
+
             if( AuthenticateRequest( ) )
             {   
-                LoginResponse loginResponse = LoginResponse.Invalid;
-
                 RockContext rockContext = new RockContext( );
                 var userLoginService = new UserLoginService(rockContext);
 
@@ -118,11 +109,10 @@ namespace church.ccv.Web.Rest
                         }
                     }
                 }
-
-                restContent = new StringContent( loginResponse.ToString( ), Encoding.UTF8, "text/plain");
             }
 
             // build and return the response
+            StringContent restContent = new StringContent( loginResponse.ToString( ), Encoding.UTF8, "text/plain");
             HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = statusCode, Content = restContent };
 
             return response;
@@ -172,6 +162,53 @@ namespace church.ccv.Web.Rest
                     Email.Send( new Guid( confirmAccountTemplate ), recipients, appRoot, themeRoot, false );
                 }
             }
+        }
+        
+        [System.Web.Http.HttpPost]
+        [System.Web.Http.Route( "api/Web/RegisterNewUser" )]
+        public HttpResponseMessage RegisterNewUser( [FromBody]RegAccountData regAccountData )
+        {
+            // default to an internal error
+            HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+            HttpContent httpContent = null;
+
+            do
+            {
+                RockContext rockContext = new RockContext( );
+
+                if( AuthenticateRequest( ) == false ) break;
+
+                // require reg parameters
+                if( regAccountData == null ) break;
+
+                // make sure this person doesn't already exist. If they do, we need to deny
+                // this registration so we don't end up with duplicates (they can deal with this using the website)
+                PersonService personService = new PersonService( rockContext );
+                IEnumerable<Person> personList = personService.GetByMatch( regAccountData.FirstName, regAccountData.LastName, regAccountData.Email );
+                if( personList.Count( ) > 0 ) { statusCode = HttpStatusCode.Conflict; break; }
+
+                // since we know they don't exist, we can now make sure their username isn't already taken
+                // if it is, we'll call it a conflict so the client app knows
+                UserLoginService userLoginService = new UserLoginService( rockContext );
+                UserLogin userLogin = userLoginService.GetByUserName( regAccountData.Username );
+                if( userLogin != null ) { statusCode = HttpStatusCode.NotAcceptable; break; }
+
+
+                // we know we can create the person. So first, begin tracking who made these changes, and then
+                // create the person with their login
+                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                statusCode = WebUtil.RegisterNewPerson( regAccountData );
+                if( statusCode != HttpStatusCode.Created ) break;
+                
+                
+                // all good! build and return the response
+                statusCode = HttpStatusCode.OK;
+            }
+            while( false );
+            
+            // build and return the response
+            HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = statusCode, Content = httpContent };
+            return response;
         }
     }
 }

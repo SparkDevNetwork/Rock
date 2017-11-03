@@ -10577,7 +10577,7 @@ html,body{
 	visibility: hidden;
 }
 
-/* Formatting for the Login Pop Up */
+/* Formatting for the Login Modal */
 #bg-screen {
 	position: fixed;
     top: 0;
@@ -10602,7 +10602,7 @@ html,body{
 	pointer-events: auto;
 }
 
-#login-main-panel {
+#login-modal {
 	box-sizing: border-box; 
 	-webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
 	position: relative;
@@ -10614,19 +10614,18 @@ html,body{
 	transition: top 175ms ease-in;
 	-moz-transition: top 175ms ease-in;
 	-webkit-transition: top 175ms ease-in;
+	overflow-x: hidden;
 }
 
-.login-main-panel-hidden {
-	opacity: 1;
+.login-modal-hidden {
 	top: -300px;
 }
 
-.login-main-panel-visible {
-	opacity: 1;
+.login-modal-visible {
 	top: 100px;
 }
 
-#login-inner-panel {
+.lm-base-panel {
 	color: rgba(0, 0, 0, 0.87); 
 	background-color: rgb(255, 255, 255); 
 	box-sizing: border-box; 
@@ -10634,20 +10633,43 @@ html,body{
 	-webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
 	box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 45px, rgba(0, 0, 0, 0.22) 0px 10px 18px; 
 	border-radius: 2px;
+	padding-bottom: 25px;
 }
 
-#login-secondary-inner-panel {
-	font-size: 16px; 
-	color: rgba(0, 0, 0, 0.6); 
-	padding: 24px; 
-	box-sizing: border-box; 
+#login-panel {
+	font-size: 16px;
+	color: rgba(0, 0, 0, 0.6);
+	padding: 24px;
+	box-sizing: border-box;
 	overflow-y: hidden;
-	border-top: none; 
-	border-bottom: none; 
+	border-top: none;
+	border-bottom: none;
 	background-color: rgb(255, 255, 255);
 }
 
-.login-form-title {
+#createaccount-panel {
+	font-size: 16px;
+	color: rgba(0, 0, 0, 0.6);
+	padding: 24px;
+	box-sizing: border-box;
+	height: 100%;
+	transition: left 250ms ease-in;
+	width: 100%;
+	top: 0px;
+	position: absolute;
+	background-color: rgb(255, 255, 255);
+	overflow-y: hidden;
+}
+
+.createaccount-panel-hidden {	
+	left: 800px;
+}
+
+.createaccount-panel-visible {
+	left: 0px;
+}
+
+.lm-form-title {
     font-family: akrobat;
     font-weight: 900;
     text-transform: uppercase;
@@ -10657,7 +10679,7 @@ html,body{
     margin: 2.1rem 0 1.68rem 0;
 }
 
-.login-form-label .control-label{
+.lm-form-label .control-label{
     text-transform: uppercase;
     font-family: Akrobat;
     font-size: 16px;
@@ -10665,7 +10687,7 @@ html,body{
 	box-sizing: border-box;
 }
 
-.login-form-label input{
+.lm-form-label input{
     height: 50px;
     width: 100%;
     border-radius: 5px;
@@ -10687,7 +10709,7 @@ html,body{
     border-width: 0px;
 }
 
-.login-form-button {
+.lm-button {
 	height: 55px;
     width: 94px;
     border-radius: 5px;
@@ -10700,11 +10722,11 @@ html,body{
     border-width: 0;
 }
 
-.login-form-forgot {
+.lm-form-forgot {
 	border-bottom: 0;
 }
 
-.login-form-register {
+.lm-form-register {
 	width: 100%;
 	padding: 16px;
 	font-family: akrobat;

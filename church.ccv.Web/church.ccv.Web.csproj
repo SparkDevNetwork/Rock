@@ -94,6 +94,8 @@
     <Compile Include="Cms\BaseContentBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Data\WebUtil.cs" />
+    <Compile Include="Model\Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\WebController.cs" />
   </ItemGroup>

@@ -48,7 +48,6 @@ namespace RockWeb.Plugins.church_ccv.Core
         @"Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "", 2 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "", 3 )]
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
-    [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)", false, "", "", 0 )]
     [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)", false, "", "", 1 )]
     public partial class LoginWrapper : Rock.Web.UI.RockBlock
     {
@@ -235,6 +234,15 @@ namespace RockWeb.Plugins.church_ccv.Core
                             break;
                         }
 
+                        case "__REGISTRATION_SUCCEEDED":
+                        {
+                            // for now, do the same as when a login succeeds
+                            string returnUrl = Request.QueryString["returnurl"];
+                            LoginModal_TryRedirectUser( returnUrl );
+
+                            break;
+                        }
+
                         default:
                         {
                             // ignore unknown actions
@@ -272,36 +280,7 @@ namespace RockWeb.Plugins.church_ccv.Core
                 Context.ApplicationInstance.CompleteRequest();
             }   
         }
-
-        protected void LoginModal_btnNewAccount_Click( object sender, EventArgs e )
-        {
-            string returnUrl = Request.QueryString["returnurl"];
-
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "NewAccountPage" ) ) )
-            {
-                var parms = new Dictionary<string, string>();
                 
-                if ( !string.IsNullOrWhiteSpace( returnUrl ) )
-                {
-                    parms.Add( "returnurl", returnUrl );
-                }
-
-                NavigateToLinkedPage( "NewAccountPage", parms );
-            }
-            else
-            {
-                string url = "~/NewAccount";
-
-                if ( !string.IsNullOrWhiteSpace( returnUrl ) )
-                {
-                    url += "?returnurl=" + returnUrl;
-                } 
-
-                Response.Redirect( url, false );
-                Context.ApplicationInstance.CompleteRequest();
-            }   
-        }
-        
         public string LoginModal_GetThemeUrl( )
         {
             return ResolveRockUrl( "~~/" );
