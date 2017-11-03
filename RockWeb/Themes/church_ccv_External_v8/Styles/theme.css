@@ -10396,6 +10396,11 @@ html,body{
     font-size: 14px;
 }
 
+.loginstatus .masthead-navitem {
+    padding: 8px 2px 0px 2px;
+    font-size: 14px;
+}
+
 .loginstatus .dropdown-menu {
     font-size: 14px;
     background: rgba(0,0,0,0.6);
