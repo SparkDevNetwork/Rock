@@ -107,7 +107,6 @@ namespace RockWeb.Blocks.Crm
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/Kiosk/kiosk-core.js" );
         }
 

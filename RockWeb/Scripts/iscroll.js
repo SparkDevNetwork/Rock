@@ -1987,6 +1987,8 @@ Indicator.prototype = {
 			this.indicatorStyle.display = this.scroller.hasHorizontalScroll || this.scroller.hasVerticalScroll ? 'block' : 'none';
 		}
 
+        this.wrapperStyle.display = this.indicatorStyle.display;
+
 		if ( this.scroller.hasHorizontalScroll && this.scroller.hasVerticalScroll ) {
 			utils.addClass(this.wrapper, 'iScrollBothScrollbars');
 			utils.removeClass(this.wrapper, 'iScrollLoneScrollbar');
@@ -2032,7 +2034,7 @@ Indicator.prototype = {
 				this.maxBoundaryX = this.maxPosX;
 			}
 
-			this.sizeRatioX = this.options.speedRatioX || (this.scroller.maxScrollX && (this.maxPosX / this.scroller.maxScrollX));
+			this.sizeRatioX = this.options.speedRatioX || (this.scroller.maxScrollX && (this.maxPosX / this.scroller.maxScrollX)) || 1;
 		}
 
 		if ( this.options.listenY ) {
@@ -2055,7 +2057,7 @@ Indicator.prototype = {
 			}
 
 			this.maxPosY = this.wrapperHeight - this.indicatorHeight;
-			this.sizeRatioY = this.options.speedRatioY || (this.scroller.maxScrollY && (this.maxPosY / this.scroller.maxScrollY));
+			this.sizeRatioY = this.options.speedRatioY || (this.scroller.maxScrollY && (this.maxPosY / this.scroller.maxScrollY)) || 1;
 		}
 
 		this.updatePosition();
