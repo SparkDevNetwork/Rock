@@ -10240,7 +10240,7 @@ legend {
 
 #subnavbar-bg {
 	background-color: #FFFFFF;
-	z-index: 999;
+	z-index: 998;
 }
 
 .subnavbar {
@@ -10259,6 +10259,10 @@ legend {
 
 #subnavbar ul li:hover a {
 	color: #6f1315;
+}
+
+.subnavbar-anchor-active {
+	color: #6f1315 !important;
 }
 
 h1, h2, h3, h4, h5, h6 {

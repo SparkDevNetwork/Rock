@@ -29,6 +29,14 @@ var subNavbarStartingPos = 0;
 
 function updateSubNavbarForScroll( )
 {
+	updateSubNavbarSnap( );
+	
+	updateSubNavbarLinks( );
+}
+
+// "Snaps" the sub navbar to underneath the primary navbar when scrolling the page
+function updateSubNavbarSnap( )
+{
 	// get the "section A" element, which is where the body content starts
 	var sectionA = document.getElementById("section-a-bg");
 	
@@ -56,10 +64,68 @@ function updateSubNavbarForScroll( )
 		// clear all styling to effectively put things like they were when the page loaded.
 		subNavbar.style.top = "";
 		subNavbar.style.position = "";
+		subNavbar.style.width = "";
 		
 		sectionA.style.paddingTop = "";	
 	}
 }
+
+// "Highlights" the appropriate sub navbar link based on where the user has scrolled in the page
+// To make this work:
+// Ensure the items in the subnavbar have the following ID naming convention:
+// subnav-ID-NAME (ex: subnav-the-details)
+// The actual anchor should have the same ID, but without "subnav" prefixed.
+var subnavIdList = [];
+function updateSubNavbarLinks( )
+{
+	// seed the list array if we haven't yet (since we don't have OnLoad() access)
+	if( subnavIdList.length == 0 )
+	{
+		// first get all subnav links
+		var navLinks = $("#subnavbar ul li").children();
+		
+		for( var i = 0; i < navLinks.length; i++ ) {
+			// get the anchor element
+			var aElem = navLinks[ i ];
+			
+			// get the ID each element links to
+			var idVal = $(aElem).attr("href");
+			subnavIdList.push( idVal );
+		}
+	}
+	
+	// clear the color of each element
+	for( var i = 0; i < subnavIdList.length; i++ ) {
+		
+		var navAnchor = $(subnavIdList[i]);
+		
+		var subnavAnchorElem = $("#subnav-" + navAnchor[0].id);
+		subnavAnchorElem.removeClass( "subnavbar-anchor-active" );
+	}
+	
+	// get the scroll position of the window
+	var scrollOffset = $(window).scrollTop();
+	
+	var nearestDist = 9999;
+	var nearestElem = null;
+		
+	for( var i = 0; i < subnavIdList.length; i++ ) {
+		var navAnchor = $(subnavIdList[i]);
+		
+		// get the delta from the scroll position to each element
+		var deltaPos = Math.abs( scrollOffset - navAnchor.offset().top );
+		if( deltaPos < nearestDist )
+		{
+			nearestDist = deltaPos;
+			nearestElem = navAnchor;
+		}
+	}
+	
+	// now color the link associated with this nav anchor
+	var subnavAnchorElem = $("#subnav-" + nearestElem[0].id);
+	subnavAnchorElem.addClass( "subnavbar-anchor-active");
+}
+
 
 // Spinning Loader
 // To use this, include the following HTML divs
