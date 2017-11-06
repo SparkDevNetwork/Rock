@@ -10376,14 +10376,15 @@ html,body{
 .contextsetter-campus-navbar .navbar-nav .dropdown-menu {
     background: rgba(0,0,0,0.6);
     border-radius: 5px 5px;
-    position: relative;
     padding: 0px;
     font-size: 14px;
 }
 
 .contextsetter-campus-navbar .contextsetter-campus {
-    margin-top: 4px;
+    margin-top: 6px;
     margin-right: 0px;
+	min-width: 145px;
+	text-transform: uppercase;
 }
 
 .contextsetter-campus-navbar .contextsetter .navbar-link, .contextsetter-campus-navbar .contextsetter .navbar-link:hover {
@@ -10411,10 +10412,15 @@ html,body{
     font-family: akrobat;
     font-weight: bold;
     font-size: 14px;
+	text-transform: uppercase;
+}
+
+.loginstatus a {
+	text-decoration: none;
 }
 
 .loginstatus .masthead-navitem {
-    padding: 8px 2px 0px 2px;
+    padding: 10px;
     font-size: 14px;
 }
 
@@ -10426,6 +10432,10 @@ html,body{
 
 .loginstatus .dropdown-menu li a {
     color: #999999;
+}
+
+.loginstatus .dropdown-menu li a:hover {
+	background-color: #7A1315;
 }
 
 .masthead-navbar-flex {
@@ -10537,6 +10547,18 @@ html,body{
     font-size: 18px;
     color: #7A1315;
     margin: 0px;
+
+}
+/*this effects all nav classes, but we only have one, so, whatever.*/
+.nav .open>a, .nav .open>a:hover, .nav .open>a:focus
+{
+	background-color: rgba( 0, 0, 0, 0 );
+}
+
+.contextsetter-campus .dropdown-menu>li>a:hover, 
+.contextsetter-campus .dropdown-menu>li>a:focus
+{
+	background-color: #7A1315;
 }
 
 /* Defines for the inVision screens */
