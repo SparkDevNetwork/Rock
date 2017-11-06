@@ -139,13 +139,16 @@ namespace RockWeb.Blocks.Core
                     try
                     {
                         _isEarlyAccessOrganization = CheckEarlyAccess();
+
+                        btnIssues.NavigateUrl = string.Format( "http://www.rockrms.com/earlyaccessissues?RockInstanceId={0}", Rock.Web.SystemSettings.GetRockInstanceId() );
+
                         if ( _isEarlyAccessOrganization )
                         {
                             hlblEarlyAccess.LabelType = Rock.Web.UI.Controls.LabelType.Success;
                             hlblEarlyAccess.Text = "Early Access: Enabled";
 
-                            lEarlyAccessNotEnabled.Visible = false;
-                            lEarlyAccessEnabled.Visible = true;
+                            pnlEarlyAccessNotEnabled.Visible = false;
+                            pnlEarlyAccessEnabled.Visible = true;
                         }
 
                         VersionCheckResult result = CheckFrameworkVersion();
