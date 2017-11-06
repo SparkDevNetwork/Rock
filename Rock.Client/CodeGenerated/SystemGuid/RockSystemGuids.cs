@@ -370,6 +370,7 @@ namespace Rock.Client.SystemGuid
         public const string FINANCIAL_ACCOUNTS = "17033CDD-EF97-4413-A483-7B85A787A87F";
         public const string GROUP = "F4399CEF-827B-48B2-A735-F7806FCFE8E8";
         public const string GROUP_LOCATION_TYPE = "48624B0B-6A58-45B8-9E47-B67B67898D25";
+        public const string GROUP_MEMBER = "D092B5BB-A7F4-45B7-AB01-72CC4FC589A9";
         public const string GROUP_ROLE = "3BB25568-E793-4D12-AE80-AC3FDA6FD8A8";
         public const string GROUP_TYPE = "18E29E23-B43B-4CF7-AE41-C85672C09F50";
         public const string GROUP_TYPE_GROUP = "CC34CE2C-0B0E-4BB3-9549-454B2A7DF218";
