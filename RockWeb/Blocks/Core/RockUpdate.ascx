@@ -47,26 +47,26 @@
                         to several minutes depending on the update size and your download speed.</Rock:NotificationBox>
 
                     <!-- Early Access Messages -->
-                    <div class="row margin-b-lg">
-                        <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2">
-                            <Rock:HighlightLabel runat="server" ID="hlblEarlyAccess" LabelType="Warning" Text="Early Access: Not Enabled" CssClass="padding-all-sm"></Rock:Highlightlabel>
-                        </div>
-                        <div class="col-xs-8 col-sm-10 col-md-10 col-lg-10">
-                            <!-- Early Access Not Enabled -->
-                            <asp:Literal runat="server" ID="lEarlyAccessNotEnabled" Visible="true"><div class="padding-l-md">
-                                <p>
-                                    Oops! It looks like you aren't able to update to the latest version of Rock right now.  Find out
-                                <a href="http://www.rockrms.com/earlyaccess" class="text-warning">how to get early access to releases as a Community Contributor</a>.
-                                </p>
-                                <p>
-                                    If you are already a Community Contributor and are having trouble with your access, 
-                                    <a href="http://www.rockrms.com/earlyaccessissues" class="text-warning">let us know so we can resolve the problem</a>.
-                                </p>
-                                </div>
-                            </asp:Literal>
-                            <!-- Early Access is Enabled -->
-                            <asp:Literal runat="server" ID="lEarlyAccessEnabled" Visible="false"><a href="http://www.rockrms.com/earlyaccess" class="text-warning">Learn more about the Early Access program</a>.
-                            </asp:Literal>
+                    <div class="well">
+                        <div class="row margin-b-lg">
+                            <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2">
+                                <Rock:HighlightLabel runat="server" ID="hlblEarlyAccess" LabelType="Warning" Text="Early Access: Not Enabled" CssClass="padding-all-sm"></Rock:Highlightlabel>
+                            </div>
+                            <div class="col-xs-8 col-sm-10 col-md-10 col-lg-10">
+                                <!-- Early Access Not Enabled -->
+                                <asp:Panel runat="server" ID="pnlEarlyAccessNotEnabled" Visible="true"> 
+                                    <p>
+                                        Community Contributors have early access to major releases of Rock. Find out
+                                    <a href="http://www.rockrms.com/earlyaccess">how to get early access to releases as a Community Contributor</a>.
+                                   
+                                        If you are already a Community Contributor and are having trouble with your access, 
+                                        <asp:Hyperlink ID="btnIssues" runat="server">let us know so we can resolve the problem</asp:Hyperlink>.
+                                    </p>
+                                </asp:Panel>
+                                <!-- Early Access is Enabled -->
+                                <asp:Panel runat="server" ID="pnlEarlyAccessEnabled" Visible="false"> Thank you for being a Community Contributor! <a href="http://www.rockrms.com/earlyaccess">Learn more about the Early Access program</a>.
+                                </asp:Panel>
+                            </div>
                         </div>
                     </div>
                     
