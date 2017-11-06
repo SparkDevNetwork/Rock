@@ -393,6 +393,10 @@
     <Compile Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.Designer.cs">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711062339545_DuplicateFinderAddSuffix.cs" />
+    <Compile Include="Migrations\201711062339545_DuplicateFinderAddSuffix.Designer.cs">
+      <DependentUpon>201711062339545_DuplicateFinderAddSuffix.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2837,6 +2841,9 @@
     <EmbeddedResource Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.resx">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711062339545_DuplicateFinderAddSuffix.resx">
+      <DependentUpon>201711062339545_DuplicateFinderAddSuffix.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4705,6 +4712,7 @@
     <Content Include="Migrations\201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family.sql">
       <DependentUpon>201710131721219_InteractionRelatedEntity.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201711062339545_DuplicateFinderAddSuffix.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />

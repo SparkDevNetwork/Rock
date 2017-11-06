@@ -3743,5 +3743,27 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCrm_PersonDuplicateFinder]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A- [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711062339545_DuplicateFinderAddSuffix {
+            get {
+                return ResourceManager.GetString("_201711062339545_DuplicateFinderAddSuffix", resourceCulture);
+            }
+        }
     }
 }
