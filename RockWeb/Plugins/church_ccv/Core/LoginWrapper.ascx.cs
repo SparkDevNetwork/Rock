@@ -46,9 +46,10 @@ namespace RockWeb.Plugins.church_ccv.Core
         @"Sorry, your account has been locked.  Please contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email {{ 'Global' | Attribute:'OrganizationEmail' }} to resolve this.  Thank-you.", "", 5 )]
     [CodeEditorField( "Confirm Caption", "The text (HTML) to display when a user's account needs to be confirmed.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
         @"Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "", 2 )]
+    [CodeEditorField( "Forgot Password Caption", "The text (HTML) to display on the forgot password panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
+        @"Enter the email address associated with your account. If you do not receive an email containing reset instructions, please call us at: {{ 'Global' | Attribute:'OrganizationPhone' }}", "", 5 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "", 3 )]
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
-    [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)", false, "", "", 1 )]
     public partial class LoginWrapper : Rock.Web.UI.RockBlock
     {
         #region LoginWrapper
@@ -234,14 +235,17 @@ namespace RockWeb.Plugins.church_ccv.Core
                             break;
                         }
 
+                        // for now, do the same as when a login succeeds
+                        case "__FORGOT_PASSWORD_SUCCEEDED":
                         case "__REGISTRATION_SUCCEEDED":
                         {
-                            // for now, do the same as when a login succeeds
                             string returnUrl = Request.QueryString["returnurl"];
                             LoginModal_TryRedirectUser( returnUrl );
 
                             break;
                         }
+
+
 
                         default:
                         {
@@ -266,19 +270,6 @@ namespace RockWeb.Plugins.church_ccv.Core
                 // without a return URL, just reload the existing page.
                 Response.Redirect(Request.RawUrl);
             }
-        }
-
-        protected void LoginModal_btnHelp_Click( object sender, EventArgs e )
-        {
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "HelpPage" ) ) )
-            {
-                NavigateToLinkedPage( "HelpPage" );
-            }
-            else
-            {
-                Response.Redirect( "~/ForgotUserName", false );
-                Context.ApplicationInstance.CompleteRequest();
-            }   
         }
                 
         public string LoginModal_GetThemeUrl( )
@@ -317,6 +308,12 @@ namespace RockWeb.Plugins.church_ccv.Core
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
             return GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
+        }
+
+        public string LoginModal_GetForgotPasswordCaption( )
+        {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
+            return GetAttributeValue( "ForgotPasswordCaption" ).ResolveMergeFields( mergeFields );
         }
         #endregion
     }

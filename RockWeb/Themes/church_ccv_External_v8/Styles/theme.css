@@ -10700,7 +10700,7 @@ html,body{
 	background-color: rgb(255, 255, 255);
 }
 
-#createaccount-panel {
+#createaccount-panel, #forgotpassword-panel {
 	font-size: 16px;
 	color: rgba(0, 0, 0, 0.6);
 	padding: 24px;
@@ -10714,11 +10714,11 @@ html,body{
 	overflow-y: hidden;
 }
 
-.createaccount-panel-hidden {	
+.createaccount-panel-hidden, .forgotpassword-panel-hidden {	
 	left: 800px;
 }
 
-.createaccount-panel-visible {
+.createaccount-panel-visible, .forgotpassword-panel-visible {
 	left: 0px;
 }
 

@@ -83,7 +83,7 @@
                                     </div>
 
                                     <div class="col-md-8 col-sm-4 col-xs-6">
-                                        <asp:Button ID="btnHelp" runat="server" Text="Forgot username or password?" CssClass="small-paragraph lm-form-forgot" OnClick="LoginModal_btnHelp_Click" CausesValidation="false" />
+                                        <asp:Button ID="btnHelp" runat="server" Text="Forgot username or password?" CssClass="small-paragraph lm-form-forgot" OnClientClick="displayForgotPasswordPanel(); return false;" CausesValidation="false" />
                                     </div>
                                 </div>
                                 
@@ -171,7 +171,45 @@
                 </div>
             </div>
             <%-- END CREATE ACCOUNT PANEL--%>
+
+            <%-- FORGOT PASSWORD PANEL--%>
+            <div id="forgotpassword-panel" class="forgotpassword-panel-hidden">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div>
+                            <h1 class="lm-form-title text-center">FORGOT PASSWORD</h1>
+                            <p style="margin-top: -.75em; margin-bottom: 3em;" class="small-paragraph-bold"><%=LoginModal_GetForgotPasswordCaption( ) %></p>
+                        </div>
+                        
+                        <div id="fp-form-result-panel" style="visibility: hidden;">
+                            <p id="fp-form-result-message"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 col-sm-12 col-xs-12">    
+                        <div class="form-group rock-text-box lm-form-label">
+                            <label class="control-label" for="tb-fp-email">Email</label>
+                            <input class="form-control" name="tb-fp-email" type="text" id="tb-fp-email">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 col-sm-8 col-xs-12">
+                        <div style="margin: 25px 0 25px 0;"></div>
+                        <asp:Button runat="server" Text="Cancel" CssClass="lm-form-button btn btn-action" OnClientClick="hideForgotPasswordPanel(); return false;" CausesValidation="false" />
+                    </div>
+
+                    <div class="text-right col-md-6 col-sm-8 col-xs-12">
+                        <div style="margin: 25px 0 25px 0;"></div>
+                        <asp:Button runat="server" Text="Confirm" CssClass="lm-form-button btn btn-primary" OnClientClick="trySendForgotPasswordEmail(); return false;" CausesValidation="false" />
+                    </div>
+                </div>
+            </div>
         </div>
+        <%-- END FORGOT PASSWORD PANEL--%>
 
     </div>
 </asp:Panel>
@@ -233,8 +271,19 @@
         createAccountPanel.addClass("createaccount-panel-hidden");
     }
 
-    function tryLogin() {
+    function displayForgotPasswordPanel() {
+        var forgotPasswordPanel = $("#forgotpassword-panel");
+        forgotPasswordPanel.removeClass("forgotpassword-panel-hidden");
+        forgotPasswordPanel.addClass("forgotpassword-panel-visible");
+    }
 
+    function hideForgotPasswordPanel() {
+        var forgotPasswordPanel = $("#forgotpassword-panel");
+        forgotPasswordPanel.removeClass("forgotpassword-panel-visible");
+        forgotPasswordPanel.addClass("forgotpassword-panel-hidden");
+    }
+
+    function tryLogin() {
         // hide the response panel
         hideResponsePanel("#lp-form-result-panel", "#lp-form-result-message");
 
@@ -308,8 +357,33 @@
         }, 250);
     }
 
-    function validateEmail( emailText )
-    {
+    function trySendForgotPasswordEmail() {
+
+        // hide the response panel
+        hideResponsePanel("#fp-form-result-panel", "#fp-form-result-message");
+
+        // show the spinner
+        displayLoader();
+
+        var email = $("#tb-fp-email").val();
+
+        // force a timer so that if they didn't enter a valid password / email,
+        // we can still show them the loader and give them the feel that they pressed 'Register'
+        setTimeout(function () {
+            // if their email is invalid, warn them
+            if (email.length == 0 || validateEmail(email) == false) {
+                hideLoader();
+
+                showResponsePanel("#fp-form-result-panel", "#fp-form-result-message", "Your email address isn't valid.");
+            }
+            else {
+                // todo: actually invoke the email REST endpoint
+                handleForgotPasswordResponse(null);
+            }
+        });
+    }
+
+    function validateEmail( emailText ) {
         var mailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
         if (emailText.match(mailFormat)) {
@@ -323,7 +397,14 @@
         hideLoader();
 
         // invoke a postback so the server can redirect us if needed
-        __doPostBack("btnLogin", "__REGISTRATION_SUCCEEDED" + ":");
+        __doPostBack("", "__REGISTRATION_SUCCEEDED" + ":");
+    }
+
+    function handleForgotPasswordResponse(xmlRequest) {
+        hideLoader();
+
+        // invoke a postback so the server can redirect us if needed
+        __doPostBack("", "__FORGOT_PASSWORD_SUCCEEDED" + ":");
     }
 
     function handleLoginResponse(xmlRequest) {
