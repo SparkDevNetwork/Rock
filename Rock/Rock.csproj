@@ -535,6 +535,7 @@
     <Compile Include="Follow\Event\PersonFirstJoinedGroupType.cs" />
     <Compile Include="Follow\SuggestionComponent.cs" />
     <Compile Include="Follow\SuggestionContainer.cs" />
+    <Compile Include="Follow\Suggestion\InFollowedGroup.cs" />
     <Compile Include="Follow\Suggestion\InGroupTogether.cs" />
     <Compile Include="Jobs\CalculateFamilyAnalytics.cs" />
     <Compile Include="Jobs\CalculateGroupRequirements.cs" />
