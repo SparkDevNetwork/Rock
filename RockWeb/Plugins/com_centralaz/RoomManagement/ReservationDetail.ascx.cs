@@ -52,6 +52,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
     [BooleanField( "Require Setup & Cleanup Time", "Should the setup and cleanup time be required to be supplied?", true, "", 3, "RequireSetupCleanupTime" )]
     [IntegerField( "Defatult Setup & Cleanup Time", "If you wish to default to a particular setup and cleanup time, you can supply a value here. (Use -1 to indicate no default value)", false, -1, "", 4, "DefaultSetupCleanupTime" )]
     [BooleanField( "Require Number Attending", "Should the Number Attending be required to be supplied?", true, "", 5 )]
+    [BooleanField( "Require Contact Details", "Should the Event and Administrative Contact be required to be supplied?", true, "", 6 )]
 
     public partial class ReservationDetail : Rock.Web.UI.RockBlock
     {
@@ -1245,6 +1246,18 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             Reservation reservation = null;
             nbSetupTime.Required = nbCleanupTime.Required = GetAttributeValue( "RequireSetupCleanupTime" ).AsBoolean();
             nbAttending.Required = GetAttributeValue( "RequireNumberAttending" ).AsBoolean();
+            bool requireContactDetails = GetAttributeValue( "RequireContactDetails" ).AsBoolean();
+
+            if ( requireContactDetails )
+            {
+                ppAdministrativeContact.Required = true;
+                pnAdministrativeContactPhone.Required = true;
+                tbAdministrativeContactEmail.Required = true;
+
+                ppEventContact.Required = true;
+                pnEventContactPhone.Required = true;
+                tbEventContactEmail.Required = true;
+            }
 
             if ( PageParameter( "ReservationId" ).AsIntegerOrNull() != null )
             {
@@ -1394,7 +1407,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             ddlMinistry.Items.Clear();
             ddlMinistry.Items.Add( new ListItem( string.Empty, string.Empty ) );
 
-            foreach ( var ministry in new ReservationMinistryService( rockContext ).Queryable().ToList() )
+            foreach ( var ministry in new ReservationMinistryService( rockContext ).Queryable().AsNoTracking().OrderBy( m => m.Name ).ToList() )
             {
                 ddlMinistry.Items.Add( new ListItem( ministry.Name, ministry.Id.ToString().ToUpper() ) );
             }
@@ -1574,12 +1587,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         } )
                         .FirstOrDefault();
 
-                    if ( string.IsNullOrWhiteSpace( tbEventContactEmail.Text ) && contactInfo != null )
+                    if ( contactInfo != null && !string.IsNullOrWhiteSpace( contactInfo.Email ) )
                     {
                         tbEventContactEmail.Text = contactInfo.Email;
                     }
 
-                    if ( string.IsNullOrWhiteSpace( pnEventContactPhone.Text ) && contactInfo != null )
+                    if ( contactInfo != null && !string.IsNullOrWhiteSpace( contactInfo.Phone ) )
                     {
                         pnEventContactPhone.Text = contactInfo.Phone;
                     }
@@ -1612,12 +1625,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         } )
                         .FirstOrDefault();
 
-                    if ( string.IsNullOrWhiteSpace( tbAdministrativeContactEmail.Text ) && contactInfo != null )
+                    if ( contactInfo != null && ! string.IsNullOrWhiteSpace( contactInfo.Email ) )
                     {
                         tbAdministrativeContactEmail.Text = contactInfo.Email;
                     }
 
-                    if ( string.IsNullOrWhiteSpace( pnAdministrativeContactPhone.Text ) && contactInfo != null )
+                    if ( contactInfo != null && ! string.IsNullOrWhiteSpace( contactInfo.Phone ) )
                     {
                         pnAdministrativeContactPhone.Text = contactInfo.Phone;
                     }
