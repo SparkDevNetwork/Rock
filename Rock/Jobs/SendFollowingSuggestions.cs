@@ -217,8 +217,8 @@ namespace Rock.Jobs
                                                                 {
                                                                     // If found, and it has not been ignored, and it's time to promote again, update the promote date
                                                                     if ( suggestion.Status != FollowingSuggestedStatus.Ignored &&
+                                                                        suggestionType.ReminderDays.HasValue &&
                                                                         (
-                                                                            !suggestionType.ReminderDays.HasValue ||
                                                                             !suggestion.LastPromotedDateTime.HasValue ||
                                                                             suggestion.LastPromotedDateTime.Value.AddDays( suggestionType.ReminderDays.Value ) <= timestamp
                                                                         ) )
