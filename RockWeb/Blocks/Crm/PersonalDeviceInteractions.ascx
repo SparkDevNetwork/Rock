@@ -5,7 +5,10 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-mobile"></i> Personal Device Interaction</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-mobile"></i>
+                    <asp:Label ID="lblHeading" runat="server" />
+                </h1>
             </div>
             <div class="panel-body">
                 <Rock:ModalAlert ID="mdGridWarning" runat="server" />

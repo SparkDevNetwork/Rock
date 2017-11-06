@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.PersonProfile;
 using Rock.Security;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -111,20 +112,41 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindGrid()
         {
-            var interactions = new InteractionService( new RockContext() )
-                .Queryable().Where( a => a.PersonalDeviceId == _personalDeviceId );
-            SortProperty sortProperty = gInteractions.SortProperty;
-            if ( sortProperty != null )
+            if ( _personalDeviceId.HasValue )
             {
-                interactions = interactions.Sort( sortProperty );
-            }
-            else
-            {
-                interactions = interactions.OrderByDescending( p => p.InteractionDateTime );
-            }
+                using ( var rockContext = new RockContext() )
+                {
+                    var personalDevice = new PersonalDeviceService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( d => d.Id == _personalDeviceId.Value )
+                        .FirstOrDefault();
+                    if ( personalDevice.PersonAlias != null )
+                    {
+                        lblHeading.Text = string.Format( "{0} Device Interactions", personalDevice.PersonAlias.Person.FullName );
+                    }
+                    else
+                    {
+                        lblHeading.Text = "Personal Device Interactions";
+                    }
 
-            gInteractions.DataSource = interactions.ToList();
-            gInteractions.DataBind();
+                    var interactions = new InteractionService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( a => a.PersonalDeviceId == _personalDeviceId );
+
+                    SortProperty sortProperty = gInteractions.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        interactions = interactions.Sort( sortProperty );
+                    }
+                    else
+                    {
+                        interactions = interactions.OrderByDescending( p => p.InteractionDateTime );
+                    }
+
+                    gInteractions.SetLinqDataSource<Interaction>( interactions );
+                    gInteractions.DataBind();
+                }
+            }
         }
 
         #endregion

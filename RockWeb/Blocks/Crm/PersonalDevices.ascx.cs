@@ -35,58 +35,51 @@ namespace RockWeb.Blocks.Crm
     [Description( "Shows a list of all person devices." )]
 
     [LinkedPage( "Interactions Page", "The interactions associated with a specific personal device." )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"<div class=""panel panel-block""> 
+    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
+<div class=""panel panel-block"">       
     <div class=""panel-heading"">
-       <h4 class=""panel-title""><i class=""fa fa-mobile""></i> Personal Devices</h4>
+        <h4 class=""panel-title"">
+            <i class=""fa fa-mobile""></i>
+            {{ Person.FullName }}
+        </h4>
     </div>
     <div class=""panel-body"">
         <div class=""row row-eq-height-md"">
-        {% for item in PersonalDevices %}
-            <div class=""col-md-3 col-sm-4"">
-                <div class=""well margin-b-none rollover-container"">
-
-                    <a class=""pull-right rollover-item btn btn-xs btn-danger"" href = ""#"" onclick = ""Rock.dialogs.confirm('Are you sure you want to delete this Device?', function (result) { if (result ){{ item.PersonalDevice.Id | Postback:'DeleteDevice' }}}) "">
-                        <i class=""fa fa-times""></i>
-			        </a>
-                    <div style=""min-height: 120px;"">
-                        <h3 class=""margin-v-none"">
-                            {% if item.DeviceIconCssClass != '' %}
-                            <i class=""fa {{ item.DeviceIconCssClass }}""></i> 
-                            {% endif %} 
-                            {% if item.PersonalDevice.NotificationsEnabled == true %}  <i class=""fa fa-comment-o""></i> {% endif %}
-                        </h3>
-        
-        
-                        <dl>
-                            {% if item.PlatformValue != '' %}
-                                <dt>{{ item.PlatformValue }} {{ item.PersonalDevice.DeviceVersion }}</dt>
-                            {% endif %}
-                            {% if item.PersonalDevice.CreatedDateTime != null %}
-                                <dt>Discovered</dt><dd>{{ item.PersonalDevice.CreatedDateTime }} </dd>
-                            {% endif %}
-                            {% if item.PersonalDevice.MACAddress != '' and item.PersonalDevice.MACAddress != null %}
-                                <dt>MAC Address</dt><dd>{{ item.PersonalDevice.MACAddress }}</dd>
-                            {% endif %}
-                       </dl>
+            {% for item in PersonalDevices %}
+                <div class=""col-md-3 col-sm-4"">                  
+                    <div class=""well margin-b-none rollover-container"">                        
+                        <a class=""pull-right rollover-item btn btn-xs btn-danger"" href=""#"" onclick=""Rock.dialogs.confirm('Are you sure you want to delete this Device?', function (result) { if (result ){{ item.PersonalDevice.Id | Postback:'DeleteDevice' }}}) ""><i class=""fa fa-times""></i></a>
+                        <div style=""min-height: 120px;"">
+                            <h3 class=""margin-v-none"">
+                                {% if item.DeviceIconCssClass != '' %}
+                                    <i class=""fa {{ item.DeviceIconCssClass }}""></i>
+                                {% endif %}
+                                {% if item.PersonalDevice.NotificationsEnabled == true %}
+                                    <i class=""fa fa-comment-o""></i>
+                                {% endif %}
+                            </h3>
+                            <dl>
+                                {% if item.PlatformValue != '' %}<dt>{{ item.PlatformValue }} {{ item.PersonalDevice.DeviceVersion }}</dt>{% endif %}
+                                {% if item.PersonalDevice.CreatedDateTime != null %}<dt>Discovered</dt><dd>{{ item.PersonalDevice.CreatedDateTime }}</dd>{% endif %}                              
+                                {% if item.PersonalDevice.MACAddress != '' and item.PersonalDevice.MACAddress != null %}<dt>MAC Address</dt><dd>{{ item.PersonalDevice.MACAddress }}</dd>{% endif %}
+                            </dl>
+                        </div>
+                        {% if LinkUrl != '' %}
+                            <a href=""{{ LinkUrl | Replace:'[Id]',item.PersonalDevice.Id }}"" class=""btn btn-default btn-xs""> Interactions</a>
+                        {% endif %}
                     </div>
-    
-                    {% if LinkUrl != '' %}
-                        <a href=""{{ LinkUrl | Replace:'[Id]',item.PersonalDevice.Id }}"" class=""btn btn-default btn-xs""> Interactions</a>
-                    {% endif %}
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
         </div>
-    </div>  
+    </div>
 </div>
-
 ", "", 2, "LavaTemplate" )]
     [ContextAware( typeof( Person ) )]
     public partial class PersonalDevices : RockBlock
     {
         #region Fields
 
-        private int? personId = null;
+        private Person _person = null;
 
         #endregion
 
@@ -101,21 +94,14 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             Guid? personGuid = PageParameter( "PersonGuid" ).AsGuidOrNull();
-            Person person = null;
             if ( personGuid.HasValue )
             {
-                person = new PersonService( new RockContext() ).Get( personGuid.Value );
+                _person = new PersonService( new RockContext() ).Get( personGuid.Value );
             }
             else if ( this.ContextEntity<Person>() != null )
             {
-                person = this.ContextEntity<Person>();
+                _person = this.ContextEntity<Person>();
             }
-
-            if ( person != null )
-            {
-                personId = person.Id;
-            }
-
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -159,14 +145,15 @@ namespace RockWeb.Blocks.Crm
 
         protected void LoadContent()
         {
-            if ( personId.HasValue )
+            if ( _person != null )
             {
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "Person", _person );
 
                 RockContext rockContext = new RockContext();
 
                 var personalDeviceService = new PersonalDeviceService( rockContext );
-                var personalDevices = personalDeviceService.Queryable().Where( a => a.PersonAlias.PersonId == personId );
+                var personalDevices = personalDeviceService.Queryable().Where( a => a.PersonAlias != null && a.PersonAlias.PersonId == _person.Id );
 
                 var items = personalDevices.Select( a => new PersonalDeviceItem
                 {
@@ -187,6 +174,7 @@ namespace RockWeb.Blocks.Crm
 
                     }
                 }
+
                 mergeFields.Add( "PersonalDevices", items );
 
                 var queryParams = new Dictionary<string, string>();
