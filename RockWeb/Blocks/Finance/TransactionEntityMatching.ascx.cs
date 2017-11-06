@@ -46,8 +46,9 @@ namespace RockWeb.Blocks.Finance
     [TextField( "EntityTypeQualifierValue", category: "CustomSetting" )]
     [TextField( "Panel Title", "Set a specific title, or leave blank to have it based on the EntityType selection", required: false, order: 0 )]
     [TextField( "Entity Column Heading", "Set a column heading, or leave blank to have it based on the EntityType selection", required: false, order: 1 )]
-    [BooleanField( "Show Dataview Filter", "", false, key: "ShowDataviewFilter", order: 2 )]
+    [BooleanField( "Show Dataview Filter", "Show a DataView filter that lists Dataviews that are based on Rock.Model.FinancialTranasactionDetail.", false, key: "ShowDataviewFilter", order: 2 )]
     [BooleanField( "Show Batch Filter", "", true, key: "ShowBatchFilter", order: 3 )]
+    [IntegerField( "Max Number of Results", "", false, 1000, order: 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "TransactionTypeGuid", category: "CustomSetting" )]
     public partial class TransactionEntityMatching : RockBlockCustomSettings, ICustomGridColumns
     {
@@ -138,7 +139,7 @@ namespace RockWeb.Blocks.Finance
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
-            dvpDataView.EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialTransaction>();
+            dvpDataView.EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialTransactionDetail>();
 
             ApplyBlockProperties();
 
@@ -461,8 +462,8 @@ namespace RockWeb.Blocks.Finance
                 {
                     var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
                     List<string> errorMessages;
-                    var transactionIdsQry = dataView.GetQuery( null, rockContext, null, out errorMessages ).Select( a => a.Id );
-                    financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => transactionIdsQry.Contains( a.TransactionId ) );
+                    var transactionDetailIdsQry = dataView.GetQuery( null, rockContext, null, out errorMessages ).Select( a => a.Id );
+                    financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => transactionDetailIdsQry.Contains( a.Id ) );
                 }
 
                 if ( transactionId.HasValue )
@@ -470,7 +471,8 @@ namespace RockWeb.Blocks.Finance
                     financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => transactionId == a.TransactionId );
                 }
 
-                _financialTransactionDetailList = financialTransactionDetailQuery.OrderByDescending( a => a.Transaction.TransactionDateTime ).ToList();
+                int maxResults = this.GetAttributeValue( "MaxNumberofResults" ).AsIntegerOrNull() ?? 1000;
+                _financialTransactionDetailList = financialTransactionDetailQuery.OrderByDescending( a => a.Transaction.TransactionDateTime ).Take( maxResults) .ToList();
                 phTableRows.Controls.Clear();
                 btnSave.Visible = _financialTransactionDetailList.Any();
                 string appRoot = this.ResolveRockUrl( "~/" );
