@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -47,10 +48,12 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Entity Column Heading", "Set a column heading, or leave blank to have it based on the EntityType selection", required: false, order: 1 )]
     [BooleanField( "Show Dataview Filter", "", false, key: "ShowDataviewFilter", order: 2 )]
     [BooleanField( "Show Batch Filter", "", true, key: "ShowBatchFilter", order: 3 )]
-    [BooleanField( "Show Transaction Date/Time", "", false, key: "ShowTransactionDateTime", order: 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "TransactionTypeGuid", category: "CustomSetting" )]
-    public partial class TransactionEntityMatching : RockBlockCustomSettings
+    public partial class TransactionEntityMatching : RockBlockCustomSettings, ICustomGridColumns
     {
+        private List<FinancialTransactionDetail> _financialTransactionDetailList;
+        private int? _blockTransactionTypeId = null;
+
         /// <summary>
         /// Gets the type of the transaction entity.
         /// </summary>
@@ -145,7 +148,7 @@ namespace RockWeb.Blocks.Finance
                 if ( this.Request.Params["__EVENTTARGET"] != ddlBatch.UniqueID && this.Request.Params["__EVENTTARGET"] != dvpDataView.UniqueID )
                 {
                     // Bind the Grid so that the dynamic controls for the Entity get created on every postback
-                    CreateTableControls( this.Request.Form[hfBatchId.UniqueID].AsIntegerOrNull(), this.Request.Form[hfDataViewId.UniqueID].AsIntegerOrNull() );
+                    BindHtmlGrid( this.Request.Form[hfBatchId.UniqueID].AsIntegerOrNull(), this.Request.Form[hfDataViewId.UniqueID].AsIntegerOrNull() );
                 }
             }
         }
@@ -161,7 +164,7 @@ namespace RockWeb.Blocks.Finance
             if ( !Page.IsPostBack )
             {
                 LoadDropDowns();
-                CreateTableControls( null, null );
+                BindHtmlGrid( null, null );
                 LoadEntityDropDowns();
             }
         }
@@ -211,6 +214,13 @@ namespace RockWeb.Blocks.Finance
                 nbBlockConfigurationWarning.Text = "Please set the Entity Type in block settings";
                 nbBlockConfigurationWarning.Visible = true;
             }
+
+            Guid? blockTransactionTypeGuid = this.GetAttributeValue( "TransactionTypeGuid" ).AsGuidOrNull();
+            if ( blockTransactionTypeGuid.HasValue )
+            {
+                var transactionType = DefinedValueCache.Read( blockTransactionTypeGuid.Value );
+                _blockTransactionTypeId = transactionType != null ? transactionType.Id : ( int? ) null;
+            }
         }
 
         /// <summary>
@@ -239,8 +249,15 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadEntityDropDowns()
         {
+            if ( _financialTransactionDetailList == null )
+            {
+                return;
+            }
+
             int? entityTypeQualifierValue = this.GetAttributeValue( "EntityTypeQualifierValue" ).AsIntegerOrNull();
             var rockContext = new RockContext();
+
+            Dictionary<int, int?> entityLookup = _financialTransactionDetailList.Where( a => a.EntityId.HasValue ).ToDictionary( k => k.Id, v => v.EntityId );
 
             if ( _transactionEntityType != null )
             {
@@ -261,7 +278,7 @@ namespace RockWeb.Blocks.Finance
                         var financialTransactionDetailId = ddlGroup.ID.Replace( "ddlGroup_", string.Empty ).AsInteger();
                         var ddlGroupMember = phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID == "ddlGroupMember_" + financialTransactionDetailId.ToString() ).FirstOrDefault() as RockDropDownList;
 
-                        var groupMemberId = new FinancialTransactionDetailService( rockContext ).Queryable().Where( a => a.Id == financialTransactionDetailId && a.EntityTypeId == _transactionEntityType.Id ).Select( a => ( int? ) a.EntityId ).FirstOrDefault();
+                        var groupMemberId = entityLookup.GetValueOrNull( financialTransactionDetailId );
                         if ( groupMemberId.HasValue )
                         {
                             var groupMember = new GroupMemberService( rockContext ).Get( groupMemberId.Value );
@@ -292,7 +309,7 @@ namespace RockWeb.Blocks.Finance
 
                         var financialTransactionDetailId = ddlGroup.ID.Replace( "ddlGroup_", string.Empty ).AsInteger();
 
-                        var groupId = new FinancialTransactionDetailService( rockContext ).Queryable().Where( a => a.Id == financialTransactionDetailId && a.EntityTypeId == _transactionEntityType.Id ).Select( a => ( int? ) a.EntityId ).FirstOrDefault();
+                        var groupId = entityLookup.GetValueOrNull( financialTransactionDetailId );
                         if ( groupId.HasValue )
                         {
                             ddlGroup.SetValue( groupId );
@@ -310,7 +327,7 @@ namespace RockWeb.Blocks.Finance
 
                         var financialTransactionDetailId = ddlDefinedValue.ID.Replace( "ddlDefinedValue_", string.Empty ).AsInteger();
 
-                        var definedValueId = new FinancialTransactionDetailService( rockContext ).Queryable().Where( a => a.Id == financialTransactionDetailId && a.EntityTypeId == _transactionEntityType.Id ).Select( a => ( int? ) a.EntityId ).FirstOrDefault();
+                        var definedValueId = entityLookup.GetValueOrNull( financialTransactionDetailId );
                         if ( definedValueId.HasValue )
                         {
                             ddlDefinedValue.SetValue( definedValueId );
@@ -323,7 +340,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         var financialTransactionDetailId = entityPicker.ID.Replace( "entityPicker_", string.Empty ).AsInteger();
 
-                        var entityId = new FinancialTransactionDetailService( rockContext ).Queryable().Where( a => a.Id == financialTransactionDetailId && a.EntityTypeId == _transactionEntityType.Id ).Select( a => ( int? ) a.EntityId ).FirstOrDefault();
+                        var entityId = entityLookup.GetValueOrNull( financialTransactionDetailId );
 
                         ( _transactionEntityType.SingleValueFieldType.Field as IEntityFieldType ).SetEditValueFromEntityId( entityPicker, new Dictionary<string, ConfigurationValue>(), entityId );
                     }
@@ -355,7 +372,7 @@ namespace RockWeb.Blocks.Finance
         {
             hfBatchId.Value = ddlBatch.SelectedValue;
             hfDataViewId.Value = dvpDataView.SelectedValue;
-            CreateTableControls( hfBatchId.Value.AsIntegerOrNull(), hfDataViewId.Value.AsIntegerOrNull() );
+            BindHtmlGrid( hfBatchId.Value.AsIntegerOrNull(), hfDataViewId.Value.AsIntegerOrNull() );
             LoadEntityDropDowns();
         }
 
@@ -367,32 +384,74 @@ namespace RockWeb.Blocks.Finance
         /// Creates the table controls.
         /// </summary>
         /// <param name="batchId">The batch identifier.</param>
-        private void CreateTableControls( int? batchId, int? dataViewId )
+        /// <param name="dataViewId">The data view identifier.</param>
+        private void BindHtmlGrid( int? batchId, int? dataViewId )
         {
+            _financialTransactionDetailList = null;
             RockContext rockContext = new RockContext();
             nbSaveSuccess.Visible = false;
             btnSave.Visible = false;
+
+            List<DataControlField> tableColumns = new List<DataControlField>();
+            tableColumns.Add( new RockLiteralField { ID = "lPerson", HeaderText = "Person" } );
+            tableColumns.Add( new RockLiteralField { ID = "lAmount", HeaderText = "Amount" } );
+            tableColumns.Add( new RockLiteralField { ID = "lAccount", HeaderText = "Account" } );
+            tableColumns.Add( new RockLiteralField { ID = "lTransactionType", HeaderText = "Transaction Type" } );
 
             string entityColumnHeading = this.GetAttributeValue( "EntityColumnHeading" );
             if ( string.IsNullOrEmpty( entityColumnHeading ) )
             {
                 if ( _transactionEntityType != null )
                 {
-                    lEntityHeaderText.Text = _entityTypeQualifiedName;
+                    entityColumnHeading = _entityTypeQualifiedName;
                 }
             }
-            else
+
+            tableColumns.Add( new RockLiteralField { ID = "lEntityColumn", HeaderText = entityColumnHeading } );
+
+            var additionalColumns = this.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ).FromJsonOrNull<CustomGridColumnsConfig>();
+            if ( additionalColumns != null )
             {
-                lEntityHeaderText.Text = entityColumnHeading;
+                foreach ( var columnConfig in additionalColumns.ColumnsConfig )
+                {
+                    int insertPosition;
+                    if ( columnConfig.PositionOffsetType == CustomGridColumnsConfig.ColumnConfig.OffsetType.LastColumn )
+                    {
+                        insertPosition = tableColumns.Count - columnConfig.PositionOffset;
+                    }
+                    else
+                    {
+                        insertPosition = columnConfig.PositionOffset;
+                    }
+
+                    var column = columnConfig.GetGridColumn();
+                    tableColumns.Insert( insertPosition, column );
+                    insertPosition++;
+                }
             }
 
-            bool showTransactionDateTime = this.GetAttributeValue( "ShowTransactionDateTime" ).AsBoolean();
-            thTransactionDateTime.Visible = showTransactionDateTime;
+            StringBuilder headers = new StringBuilder();
+            foreach ( var tableColumn in tableColumns )
+            {
+                if ( tableColumn.HeaderStyle.CssClass.IsNotNullOrWhitespace() )
+                {
+                    headers.AppendFormat( "<th class='{0}'>{1}</th>", tableColumn.HeaderStyle.CssClass, tableColumn.HeaderText );
+                }
+                else
+                {
+                    headers.AppendFormat( "<th>{0}</th>", tableColumn.HeaderText );
+                }
+            }
+
+            lHeaderHtml.Text = headers.ToString();
+
             int? transactionId = this.PageParameter( "TransactionId" ).AsIntegerOrNull();
 
             if ( batchId.HasValue || dataViewId.HasValue || transactionId.HasValue )
             {
-                var financialTransactionDetailQuery = new FinancialTransactionDetailService( rockContext ).Queryable();
+                var financialTransactionDetailQuery = new FinancialTransactionDetailService( rockContext ).Queryable()
+                    .Include( a => a.Transaction )
+                    .Include( a => a.Transaction.AuthorizedPersonAlias.Person );
                 if ( batchId.HasValue )
                 {
                     financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => a.Transaction.BatchId == batchId.Value );
@@ -411,57 +470,99 @@ namespace RockWeb.Blocks.Finance
                     financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => transactionId == a.TransactionId );
                 }
 
-                var financialTransactionDetailList = financialTransactionDetailQuery.OrderByDescending( a => a.Transaction.TransactionDateTime ).ToList();
+                _financialTransactionDetailList = financialTransactionDetailQuery.OrderByDescending( a => a.Transaction.TransactionDateTime ).ToList();
                 phTableRows.Controls.Clear();
-                btnSave.Visible = financialTransactionDetailList.Any();
-                foreach ( var financialTransactionDetail in financialTransactionDetailList )
+                btnSave.Visible = _financialTransactionDetailList.Any();
+                string appRoot = this.ResolveRockUrl( "~/" );
+                string themeRoot = this.ResolveRockUrl( "~~/" );
+
+                foreach ( var financialTransactionDetail in _financialTransactionDetailList )
                 {
                     var tr = new HtmlGenericContainer( "tr" );
-                    tr.Controls.Add( new LiteralControl { Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.AuthorizedPersonAlias ) } );
-                    tr.Controls.Add( new LiteralControl { Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Amount.FormatAsCurrency() ) } );
-                    tr.Controls.Add( new LiteralControl { Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Account ) } );
-                    tr.Controls.Add( new LiteralControl
+                    foreach ( var tableColumn in tableColumns )
                     {
-                        ID = "lTransactionType_" + financialTransactionDetail.Id.ToString(),
-                        Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.TransactionTypeValue )
-                    } );
+                        var literalControl = new LiteralControl();
+                        if ( tableColumn is RockLiteralField )
+                        {
+                            tr.Controls.Add( literalControl );
+                            var literalTableColumn = tableColumn as RockLiteralField;
+                            if ( literalTableColumn.ID == "lPerson" )
+                            {
+                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.AuthorizedPersonAlias );
+                            }
+                            else if ( literalTableColumn.ID == "lAmount" )
+                            {
+                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Amount.FormatAsCurrency() );
+                            }
+                            else if ( literalTableColumn.ID == "lAccount" )
+                            {
+                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Account.ToString() );
+                            }
+                            else if ( literalTableColumn.ID == "lTransactionType" )
+                            {
+                                literalControl.ID = "lTransactionType_" + financialTransactionDetail.Id.ToString();
+                                literalControl.Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.TransactionTypeValue );
+                            }
+                            else if ( literalTableColumn.ID == "lEntityColumn" )
+                            {
+                                var tdEntityControls = new HtmlGenericContainer( "td" ) { ID = "pnlEntityControls_" + financialTransactionDetail.Id.ToString() };
+                                tdEntityControls.ViewStateMode = ViewStateMode.Disabled;
+                                tr.Controls.Add( tdEntityControls );
 
-                    if ( showTransactionDateTime )
-                    {
-                        tr.Controls.Add( new LiteralControl { Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.TransactionDateTime.Value.ToShortDateTimeString() ) } );
-                    }
+                                if ( _transactionEntityType != null )
+                                {
+                                    if ( _transactionEntityType.Id == EntityTypeCache.GetId<GroupMember>() )
+                                    {
+                                        var ddlGroup = new RockDropDownList { ID = "ddlGroup_" + financialTransactionDetail.Id.ToString(), EnhanceForLongLists = true };
+                                        ddlGroup.Label = "Group";
+                                        ddlGroup.AutoPostBack = true;
+                                        ddlGroup.SelectedIndexChanged += ddlGroup_SelectedIndexChanged;
+                                        tdEntityControls.Controls.Add( ddlGroup );
+                                        var ddlGroupMember = new RockDropDownList { ID = "ddlGroupMember_" + financialTransactionDetail.Id.ToString(), Visible = false, EnhanceForLongLists = true };
+                                        ddlGroupMember.Label = "Group Member";
+                                        tdEntityControls.Controls.Add( ddlGroupMember );
+                                    }
+                                    else if ( _transactionEntityType.Id == EntityTypeCache.GetId<Group>() )
+                                    {
+                                        var ddlGroup = new RockDropDownList { ID = "ddlGroup_" + financialTransactionDetail.Id.ToString(), EnhanceForLongLists = true };
+                                        ddlGroup.AutoPostBack = false;
+                                        tdEntityControls.Controls.Add( ddlGroup );
+                                    }
+                                    else if ( _transactionEntityType.Id == EntityTypeCache.GetId<DefinedValue>() )
+                                    {
+                                        var ddlDefinedValue = new DefinedValuePicker { ID = "ddlDefinedValue_" + financialTransactionDetail.Id.ToString(), EnhanceForLongLists = true };
+                                        tdEntityControls.Controls.Add( ddlDefinedValue );
+                                    }
+                                    else if ( _transactionEntityType.SingleValueFieldType != null )
+                                    {
+                                        var entityPicker = _transactionEntityType.SingleValueFieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), "entityPicker_" + financialTransactionDetail.Id.ToString() );
+                                        tdEntityControls.Controls.Add( entityPicker );
+                                    }
+                                }
+                            }
 
-                    var tdEntityControls = new HtmlGenericContainer( "td" ) { ID = "pnlEntityControls_" + financialTransactionDetail.Id.ToString() };
-                    tr.Controls.Add( tdEntityControls );
+                        }
+                        else if ( tableColumn is LavaField )
+                        {
+                            tr.Controls.Add( literalControl );
+                            var lavaField = tableColumn as LavaField;
 
-                    if ( _transactionEntityType != null )
-                    {
-                        if ( _transactionEntityType.Id == EntityTypeCache.GetId<GroupMember>() )
-                        {
-                            var ddlGroup = new RockDropDownList { ID = "ddlGroup_" + financialTransactionDetail.Id.ToString(), EnhanceForLongLists = true };
-                            ddlGroup.Label = "Group";
-                            ddlGroup.AutoPostBack = true;
-                            ddlGroup.SelectedIndexChanged += ddlGroup_SelectedIndexChanged;
-                            tdEntityControls.Controls.Add( ddlGroup );
-                            var ddlGroupMember = new RockDropDownList { ID = "ddlGroupMember_" + financialTransactionDetail.Id.ToString(), Visible = false, EnhanceForLongLists = true };
-                            ddlGroupMember.Label = "Group Member";
-                            tdEntityControls.Controls.Add( ddlGroupMember );
-                        }
-                        else if ( _transactionEntityType.Id == EntityTypeCache.GetId<Group>() )
-                        {
-                            var ddlGroup = new RockDropDownList { ID = "ddlGroup_" + financialTransactionDetail.Id.ToString(), EnhanceForLongLists = true };
-                            ddlGroup.AutoPostBack = false;
-                            tdEntityControls.Controls.Add( ddlGroup );
-                        }
-                        else if ( _transactionEntityType.Id == EntityTypeCache.GetId<DefinedValue>() )
-                        {
-                            var ddlDefinedValue = new DefinedValuePicker { ID = "ddlDefinedValue_" + financialTransactionDetail.Id.ToString(), EnhanceForLongLists = true };
-                            tdEntityControls.Controls.Add( ddlDefinedValue );
-                        }
-                        else if ( _transactionEntityType.SingleValueFieldType != null )
-                        {
-                            var entityPicker = _transactionEntityType.SingleValueFieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), "entityPicker_" + financialTransactionDetail.Id.ToString() );
-                            tdEntityControls.Controls.Add( entityPicker );
+                            Dictionary<string, object> mergeValues = new Dictionary<string, object>();
+                            mergeValues.Add( "Row", financialTransactionDetail );
+
+                            string lavaOutput = lavaField.LavaTemplate.ResolveMergeFields( mergeValues );
+
+                            // Resolve any dynamic url references
+                            lavaOutput = lavaOutput.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                            if ( lavaField.ItemStyle.CssClass.IsNotNullOrWhitespace() )
+                            {
+                                literalControl.Text = string.Format( "<td class='{0}'>{1}</td>", lavaField.ItemStyle.CssClass, lavaOutput );
+                            }
+                            else
+                            {
+                                literalControl.Text = string.Format( "<td>{0}</td>", lavaOutput );
+                            }
                         }
                     }
 
@@ -485,34 +586,28 @@ namespace RockWeb.Blocks.Finance
         {
             if ( financialTransactionDetailId.HasValue )
             {
-                var rockContext = new RockContext();
-                var financialTransactionDetail = new FinancialTransactionDetailService( rockContext ).Get( financialTransactionDetailId.Value );
-                financialTransactionDetail.EntityTypeId = _transactionEntityType.Id;
-                financialTransactionDetail.EntityId = entityId;
+                var financialTransactionDetailLookup = _financialTransactionDetailList.FirstOrDefault( a => a.Id == financialTransactionDetailId );
 
-                DefinedValueCache blockTransactionType = null;
-                Guid? blockTransactionTypeGuid = this.GetAttributeValue( "TransactionTypeGuid" ).AsGuidOrNull();
-                if ( blockTransactionTypeGuid.HasValue )
+                if ( financialTransactionDetailLookup.EntityTypeId != _transactionEntityType.Id
+                    || financialTransactionDetailLookup.EntityId != entityId
+                    || _blockTransactionTypeId.HasValue && _blockTransactionTypeId != financialTransactionDetailLookup.Transaction.TransactionTypeValueId )
                 {
-                    blockTransactionType = DefinedValueCache.Read( blockTransactionTypeGuid.Value );
-                }
+                    var rockContext = new RockContext();
+                    var financialTransactionDetail = new FinancialTransactionDetailService( rockContext ).Get( financialTransactionDetailId.Value );
+                    financialTransactionDetail.EntityTypeId = _transactionEntityType.Id;
+                    financialTransactionDetail.EntityId = entityId;
 
-                if ( blockTransactionType != null && blockTransactionType.Id != financialTransactionDetail.Transaction.TransactionTypeValueId )
-                {
-                    financialTransactionDetail.Transaction.TransactionTypeValueId = blockTransactionType.Id;
-                    var lTransactionType = phTableRows.ControlsOfTypeRecursive<LiteralControl>().Where( a => a.ID == "lTransactionType_" + financialTransactionDetail.Id.ToString() ).FirstOrDefault();
-                    if ( lTransactionType != null )
+                    if ( _blockTransactionTypeId.HasValue && _blockTransactionTypeId != financialTransactionDetail.Transaction.TransactionTypeValueId )
                     {
-                        lTransactionType.Text = string.Format( "<td>{0}</td>", DefinedValueCache.Read( financialTransactionDetail.Transaction.TransactionTypeValueId ) );
+                        financialTransactionDetail.Transaction.TransactionTypeValueId = _blockTransactionTypeId.Value;
+                        var lTransactionType = phTableRows.ControlsOfTypeRecursive<LiteralControl>().Where( a => a.ID == "lTransactionType_" + financialTransactionDetail.Id.ToString() ).FirstOrDefault();
+                        if ( lTransactionType != null )
+                        {
+                            lTransactionType.Text = string.Format( "<td>{0}</td>", DefinedValueCache.Read( financialTransactionDetail.Transaction.TransactionTypeValueId ) );
+                        }
                     }
-                }
 
-                rockContext.SaveChanges();
-
-                var btnSaveEntity = phTableRows.ControlsOfTypeRecursive<LinkButton>().Where( a => a.ID == "btnSaveEntity_" + financialTransactionDetail.Id.ToString() ).FirstOrDefault();
-                if ( btnSaveEntity != null )
-                {
-                    btnSaveEntity.ToolTip = "Last Modified at " + financialTransactionDetail.ModifiedDateTime.ToString();
+                    rockContext.SaveChanges();
                 }
             }
         }
@@ -643,7 +738,7 @@ namespace RockWeb.Blocks.Finance
                 blockTransactionType = DefinedValueCache.Read( blockTransactionTypeGuid.Value );
             }
 
-            ddlTransactionType.SetValue( blockTransactionType != null ? blockTransactionType.Id : (int?)null );
+            ddlTransactionType.SetValue( blockTransactionType != null ? blockTransactionType.Id : ( int? ) null );
 
             var rockContext = new RockContext();
 
@@ -669,7 +764,7 @@ namespace RockWeb.Blocks.Finance
             if ( entityTypeGuid.HasValue )
             {
                 var entityType = EntityTypeCache.Read( entityTypeGuid.Value );
-                etpEntityType.SetValue( entityType != null ? entityType.Id : (int?)null );
+                etpEntityType.SetValue( entityType != null ? entityType.Id : ( int? ) null );
             }
 
             UpdateControlsForEntityType();
