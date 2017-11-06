@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             // show/hide filters
-            apFilterAccount.Visible = GetAttributeValue( "ShowAccountFilter" ).AsBoolean();
+            apFilterAccount.Visible = GetAttributeValue( "ShowAccountFilter" ).AsBoolean() && string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) );
             drpDates.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
             drpLastModifiedDates.Visible = GetAttributeValue( "ShowLastModifiedFilter" ).AsBoolean();
 

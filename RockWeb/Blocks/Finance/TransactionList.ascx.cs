@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Finance
                 case "Account":
 
                     var accountIds = e.Value.SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
-                    if ( accountIds.Any() )
+                    if ( accountIds.Any() && apAccount.Visible )
                     {
                         var service = new FinancialAccountService( new RockContext() );
                         var accountNames = service.GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
@@ -905,6 +905,7 @@ namespace RockWeb.Blocks.Finance
             nreAmount.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
             tbTransactionCode.Text = gfTransactions.GetUserPreference( "Transaction Code" );
 
+            apAccount.Visible = string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) );
             apAccount.DisplayActiveOnly = GetAttributeValue( "ActiveAccountsOnlyFilter" ).AsBoolean();
 
             var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
@@ -1255,7 +1256,7 @@ namespace RockWeb.Blocks.Finance
                 var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
                 accountIds = accountIds.Distinct().ToList();
 
-                if ( accountIds.Any() )
+                if ( accountIds.Any() && apAccount.Visible )
                 {
                     if ( hfTransactionViewMode.Value == "Transactions" )
                     {
@@ -1435,7 +1436,7 @@ namespace RockWeb.Blocks.Finance
 
                 // check for filtered accounts
                 var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
-                if ( accountIds.Any() )
+                if ( accountIds.Any() && apAccount.Visible )
                 {
                     summaryQryList = summaryQryList.Where( a => accountIds.Contains( a.AccountId ) ).OrderBy( a => a.Order );
                     lbFiltered.Text = "Filtered Account List";

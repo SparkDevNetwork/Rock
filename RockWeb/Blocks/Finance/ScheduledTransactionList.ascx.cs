@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.Finance
                 case "Account":
 
                     int accountId = 0;
-                    if ( int.TryParse( e.Value, out accountId ) )
+                    if ( int.TryParse( e.Value, out accountId ) && ddlAccount.Visible )
                     {
                         var service = new FinancialAccountService( new RockContext() );
                         var account = service.Get( accountId );
@@ -162,6 +162,10 @@ namespace RockWeb.Blocks.Finance
                         {
                             e.Value = account.Name;
                         }
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
                     }
 
                     break;
@@ -235,6 +239,7 @@ namespace RockWeb.Blocks.Finance
                 .Queryable().AsNoTracking()
                 .Where( a => a.IsActive );
 
+            ddlAccount.Visible = string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) );
             ddlAccount.Items.Add( new ListItem( string.Empty, string.Empty ) );
             foreach ( FinancialAccount account in accounts.OrderBy( a => a.Order ) )
             {
@@ -321,7 +326,7 @@ namespace RockWeb.Blocks.Finance
 
                 // Account Id
                 int accountId = int.MinValue;
-                if ( int.TryParse( gfSettings.GetUserPreference( "Account" ), out accountId ) )
+                if ( int.TryParse( gfSettings.GetUserPreference( "Account" ), out accountId ) && ddlAccount.Visible )
                 {
                     qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => d.AccountId == accountId ) );
                 }
