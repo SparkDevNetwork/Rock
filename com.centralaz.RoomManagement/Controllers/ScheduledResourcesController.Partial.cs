@@ -144,7 +144,7 @@ namespace Rock.Rest.Controllers
 
                 if ( !includeAllCampuses )
                 {
-                    resourceQry = resourceQry.Where( r => r.CampusId == campusId );
+                    resourceQry = resourceQry.Where( r => r.CampusId == campusId || r.CampusId == null );
                 }
 
                 if ( resourceQry.Where( r => r.CategoryId == parentItemId ) != null )
@@ -166,7 +166,7 @@ namespace Rock.Rest.Controllers
 
                             var scheduledCategoryItem = new ScheduledCategoryItem();
                             scheduledCategoryItem.Id = categorizedItem.Id.ToString();
-                            scheduledCategoryItem.Name = String.Format( "{0} ({1}) [{2}]", categorizedItem.Name, availableQuantity, categorizedItem.Campus.Name );
+                            scheduledCategoryItem.Name = String.Format( "{0} ({1}) {2}", categorizedItem.Name, availableQuantity, categorizedItem.Campus != null ? string.Format( "[{0}]", categorizedItem.Campus.Name ) : "" );
                             scheduledCategoryItem.IsCategory = false;
                             scheduledCategoryItem.IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ) as string ?? defaultIconCssClass;
                             scheduledCategoryItem.IconSmallUrl = string.Empty;
