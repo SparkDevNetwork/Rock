@@ -29,9 +29,15 @@ var subNavbarStartingPos = 0;
 
 function updateSubNavbarForScroll( )
 {
-	updateSubNavbarSnap( );
+	// only do these things if there IS a subnav bar. (the actual zone will always exist,
+	// but the element ID won't if the page doesn't use one.)
+	var subNavbar = document.getElementById("subnavbar");
+	if( subNavbar != null )
+	{
+		updateSubNavbarSnap( );
 	
-	updateSubNavbarLinks( );
+		updateSubNavbarLinks( );
+	}
 }
 
 // "Snaps" the sub navbar to underneath the primary navbar when scrolling the page
