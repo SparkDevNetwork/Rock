@@ -104,7 +104,7 @@
                                     <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>        
                                     <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>                                
                                 </div>
-                                <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" OnLoadCompleteScript="updateTemplateLogoVisibility()" />
+                                <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" />
                             </div>
                             <div class="col-md-3">
                                 <Rock:KeyValueList ID="kvlMergeFields" runat="server" Label="Lava Fields" KeyPrompt="Key" ValuePrompt="Default Value" />
@@ -135,13 +135,15 @@
                                                 </div>
                                             </Rock:RockControlWrapper>
 
-                                            <div class="row" id="pnlTemplateLogo" runat="server">
+                                            <asp:Panel ID="pnlTemplateLogo" runat="server" class="row">
                                                 <div class="col-md-6">
                                                     <Rock:ImageUploader ID="imgTemplateLogo" runat="server" Label="Logo" Help="The Logo that can be included in the contents of the message" OnImageUploaded="imgTemplateLogo_ImageUploaded" OnImageRemoved="imgTemplateLogo_ImageUploaded" />
                                                 </div>
-                                            </div>
+                                            </asp:Panel>
 
+                                            <asp:HiddenField ID="hfLavaFieldsState" runat="server" />
                                             <asp:PlaceHolder ID="phLavaFieldsControls" runat="server" />
+                                            <asp:LinkButton ID="btnUpdateTemplatePreview" runat="server" CssClass="btn btn-default" Text="Update" OnClick="btnUpdateTemplatePreview_Click" />
                                         </div>
                                     </div>
                                 </asp:Panel>
@@ -250,31 +252,6 @@
                     }
                 });
             });
-
-            // only show the template logo uploader if there is a div with id='template-logo'
-            // then update the help-message on the loader based on the template-logo's data-instuctions attribute and width and height
-            // this gets called when the codeeditor is done initializing and when the cursor blurs out of the template code editor
-            function updateTemplateLogoVisibility() {
-                var $logoPnl = $('#<%=pnlTemplateLogo.ClientID%>');
-                var templateEditor = $('#codeeditor-div-<%=ceEmailTemplate.ClientID%>').data('aceEditor');
-                var templateDom = $.parseHTML(templateEditor.getValue());
-                var templateLogo = $(templateDom).find('#template-logo');
-                if (templateLogo.length) {
-                    // if the templateLog has special instructions, use those
-                    var helpText = templateLogo.attr('data-instructions') || 'The Logo that can be included in the contents of the message';
-
-                    var helpWidth = templateLogo.attr('width');
-                    var helpHeight = templateLogo.attr('height');
-                    if (helpWidth && helpHeight) {
-                        helpText += ' (Image size: ' + helpWidth + ' x ' + helpHeight + ')';
-                    }
-                    var helpDiv = $logoPnl.find('.help-message');
-                    helpDiv.html('<small>' + helpText + '</small>');
-                    $logoPnl.show();
-                } else {
-                    $logoPnl.hide();
-                }
-            }
 
             function removeAttachment(source, hf, fileId) {
                 // Get the attachment list
