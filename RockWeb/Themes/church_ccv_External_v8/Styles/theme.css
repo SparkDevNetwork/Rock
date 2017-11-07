@@ -10183,7 +10183,7 @@ legend {
 
 .btn-primary {
 	font-weight: normal;
-	width: 100px;
+	min-width: 100px;
 	font-family: akrobat;
 }
 
