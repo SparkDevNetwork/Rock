@@ -39,7 +39,7 @@ BEGIN
         ,@compareByGender BIT = 1
         ,@compareByCampus BIT = 1
         ,@compareByMaritalStatus BIT = 1
-		,@compareBySuffix BIT = 1
+        ,@compareBySuffix BIT = 1
     --
     -- Scores
     -- ones marked /**/ only added to score if already a potential match
@@ -54,7 +54,7 @@ BEGIN
         ,@cScoreWeightGender INT = 1 /**/
         ,@cScoreWeightCampus INT = 1 /**/
         ,@cScoreWeightMaritalStatus INT = 1 /**/
-		,@cScoreWeightSuffix INT = 4
+        ,@cScoreWeightSuffix INT = 4
     DECLARE @TotalCapacity INT = @cScoreWeightEmail + @cScoreWeightPartialName + @cScoreWeightFullFirstName + @cScoreWeightFullLastName + @cScoreWeightCellPhoneNumber + @cScoreWeightNonCellPhoneNumber + @cScoreWeightAddress + @cScoreWeightBirthdate + @cScoreWeightGender + @cScoreWeightCampus + @cScoreWeightMaritalStatus + @cScoreWeightSuffix
     --
     -- Guids that this proc uses
