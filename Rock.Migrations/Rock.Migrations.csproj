@@ -397,6 +397,10 @@
     <Compile Include="Migrations\201711071643407_GatewayTransactionKey2.Designer.cs">
       <DependentUpon>201711071643407_GatewayTransactionKey2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711072304394_CommunicationTemplateLavaFields.cs" />
+    <Compile Include="Migrations\201711072304394_CommunicationTemplateLavaFields.Designer.cs">
+      <DependentUpon>201711072304394_CommunicationTemplateLavaFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2844,6 +2848,9 @@
     <EmbeddedResource Include="Migrations\201711071643407_GatewayTransactionKey2.resx">
       <DependentUpon>201711071643407_GatewayTransactionKey2.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711072304394_CommunicationTemplateLavaFields.resx">
+      <DependentUpon>201711072304394_CommunicationTemplateLavaFields.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4712,6 +4719,9 @@
     <Content Include="Migrations\201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family.sql">
       <DependentUpon>201710131721219_InteractionRelatedEntity.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate.sql">
+      <DependentUpon>201711011841422_GatewayTransactionKey.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
@@ -4722,7 +4732,6 @@
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor_TransactionData.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201606231511599_RegistrationWorkflow_Indexes.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201607102235065_ScheduledTransactionType.sql" />
-    <Content Include="Migrations\201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate.sql" />
     <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP1.sql" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP2.sql" />

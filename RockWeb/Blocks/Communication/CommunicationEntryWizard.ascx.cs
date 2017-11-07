@@ -1091,7 +1091,7 @@ namespace RockWeb.Blocks.Communication
 
             tbEmailSubject.Text = communicationTemplate.Subject;
 
-            hfEmailEditorHtml.Value = communicationTemplate.Message;
+            hfEmailEditorHtml.Value = communicationTemplate.Message.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null) );
 
             hfEmailAttachedBinaryFileIds.Value = communicationTemplate.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
             UpdateEmailAttachedFiles( false );
