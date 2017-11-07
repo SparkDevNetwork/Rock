@@ -53,6 +53,14 @@
                             <Rock:RockLiteral ID="lPackages" runat="server" Label="Enabled Background Check Types" />
                         </div>
                     </div>
+
+                    <Rock:NotificationBox ID="nbSSLWarning" runat="server" CssClass="clearfix" NotificationBoxType="Danger">
+                        <i class="fa fa-2x fa-exclamation-triangle pull-left margin-t-sm"></i>
+                        Your current configuration will cause Protect My Ministry to send results to your server over an
+                        insecure connection. Please use a <code>https://</code> URL to ensure the data remains secure
+                        during transmission before using in production.
+                    </Rock:NotificationBox>
+
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click" />
                     </div>
