@@ -322,12 +322,15 @@ namespace RockWeb.Blocks.Groups
                     // Check for the spouse
                     if ( IsFullWithSpouse && !string.IsNullOrWhiteSpace(tbSpouseFirstName.Text) && !string.IsNullOrWhiteSpace(tbSpouseLastName.Text) )
                     {
-                        spouse = person.GetSpouse();
+                        spouse = person.GetSpouse( rockContext );
+                        bool isSpouseMatch = true;
+
                         if ( spouse == null ||
                             !tbSpouseFirstName.Text.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
                             !tbSpouseLastName.Text.Trim().Equals( spouse.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                         {
                             spouse = new Person();
+                            isSpouseMatch = false;
 
                             spouse.FirstName = tbSpouseFirstName.Text.FixCase();
                             History.EvaluateChange( spouseChanges, "First Name", string.Empty, spouse.FirstName );
@@ -355,8 +358,15 @@ namespace RockWeb.Blocks.Groups
                         History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
                         spouse.Email = tbSpouseEmail.Text;
 
-                        SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), spouseChanges );
-                        SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), spouseChanges );
+                        if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
+                        {
+                            SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), spouseChanges );
+                        }
+
+                        if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( pnSpouseCell.Number ) )
+                        {
+                            SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), spouseChanges );
+                        }
                     }
                 }
 
