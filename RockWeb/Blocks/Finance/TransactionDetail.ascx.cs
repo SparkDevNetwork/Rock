@@ -1482,29 +1482,38 @@ namespace RockWeb.Blocks.Finance
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var relatedTxns = new FinancialTransactionService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( t =>
-                                t.TransactionCode == txn.TransactionCode &&
-                                t.AuthorizedPersonAliasId == txn.AuthorizedPersonAliasId &&
-                                t.Id != txn.Id &&
-                                t.TransactionDateTime.HasValue )
-                            .OrderBy( t => t.TransactionDateTime.Value )
-                            .ToList();
-                        if ( relatedTxns.Any() )
+                        if ( txn.FinancialGatewayId.HasValue )
                         {
-                            pnlRelated.Visible = true;
-                            gRelated.DataSource = relatedTxns
-                                .Select( t => new
-                                {
-                                    Id = t.Id,
-                                    TransactionDateTime = t.TransactionDateTime.Value.ToShortDateString() + " " +
-                                        t.TransactionDateTime.Value.ToShortTimeString(),
-                                    TransactionCode = t.TransactionCode,
-                                    TotalAmount = t.TotalAmount
-                                } )
+                            var relatedTxns = new FinancialTransactionService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( t =>
+                                    t.FinancialGatewayId.HasValue &&
+                                    t.FinancialGatewayId.Value == txn.FinancialGatewayId.Value &&
+                                    t.TransactionCode == txn.TransactionCode &&
+                                    t.AuthorizedPersonAliasId == txn.AuthorizedPersonAliasId &&
+                                    t.Id != txn.Id &&
+                                    t.TransactionDateTime.HasValue )
+                                .OrderBy( t => t.TransactionDateTime.Value )
                                 .ToList();
-                            gRelated.DataBind();
+                            if ( relatedTxns.Any() )
+                            {
+                                pnlRelated.Visible = true;
+                                gRelated.DataSource = relatedTxns
+                                    .Select( t => new
+                                    {
+                                        Id = t.Id,
+                                        TransactionDateTime = t.TransactionDateTime.Value.ToShortDateString() + " " +
+                                            t.TransactionDateTime.Value.ToShortTimeString(),
+                                        TransactionCode = t.TransactionCode,
+                                        TotalAmount = t.TotalAmount
+                                    } )
+                                    .ToList();
+                                gRelated.DataBind();
+                            }
+                            else
+                            {
+                                pnlRelated.Visible = false;
+                            }
                         }
                         else
                         {
@@ -1767,14 +1776,18 @@ namespace RockWeb.Blocks.Finance
                     if ( txn != null && txn.IsAuthorized( "Refund", CurrentPerson ) )
                     {
                         var totalAmount = txn.TotalAmount;
+
                         var otherAmounts = new FinancialTransactionDetailService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
                                 d.Transaction != null &&
                                 (
                                     ( 
+                                        txn.FinancialGatewayId.HasValue &&
                                         txn.TransactionCode != null &&
                                         txn.TransactionCode != "" &&
+                                        d.Transaction.FinancialGatewayId.HasValue && 
+                                        d.Transaction.FinancialGatewayId.Value == txn.FinancialGatewayId.Value &&
                                         d.Transaction.TransactionCode == txn.TransactionCode && 
                                         d.TransactionId != txn.Id ) ||
                                     ( 
