@@ -524,8 +524,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            RegisterJavaScript();
-
             if ( this.Visible )
             {
                 RockControlHelper.RenderControl( this, writer );
@@ -630,6 +628,8 @@ namespace Rock.Web.UI.Controls
 
                 // picker picker-select picker-person
                 writer.RenderEndTag();
+
+                RegisterJavaScript();
             }
             else
             {
