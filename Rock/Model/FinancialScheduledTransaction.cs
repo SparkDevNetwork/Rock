@@ -178,6 +178,17 @@ namespace Rock.Model
         public string TransactionCode { get; set; }
 
         /// <summary>
+        /// For Credit Card transactions, this is the Gateway's Transaction Key
+        /// </summary>
+        /// <value>
+        /// The gateway transaction key.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        [Index( "IX_GatewayTransactionKey" )]
+        public string GatewayTransactionKey { get; set; }
+        
+        /// <summary>
         /// Gets or sets the payment gateway's payment schedule key/identifier.  This is the value that uniquely identifies the payment schedule on 
         /// with the payment gateway.
         /// </summary>

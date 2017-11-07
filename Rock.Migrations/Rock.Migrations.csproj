@@ -393,9 +393,9 @@
     <Compile Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.Designer.cs">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711061743404_CommunicationTemplateLavaFields.cs" />
-    <Compile Include="Migrations\201711061743404_CommunicationTemplateLavaFields.Designer.cs">
-      <DependentUpon>201711061743404_CommunicationTemplateLavaFields.cs</DependentUpon>
+    <Compile Include="Migrations\201711071643407_GatewayTransactionKey2.cs" />
+    <Compile Include="Migrations\201711071643407_GatewayTransactionKey2.Designer.cs">
+      <DependentUpon>201711071643407_GatewayTransactionKey2.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -2841,8 +2841,8 @@
     <EmbeddedResource Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.resx">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711061743404_CommunicationTemplateLavaFields.resx">
-      <DependentUpon>201711061743404_CommunicationTemplateLavaFields.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201711071643407_GatewayTransactionKey2.resx">
+      <DependentUpon>201711071643407_GatewayTransactionKey2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
