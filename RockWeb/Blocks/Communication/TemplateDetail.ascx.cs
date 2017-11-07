@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -64,9 +65,6 @@ namespace RockWeb.Blocks.Communication
             {
                 ShowDetail( PageParameter( "TemplateId" ).AsInteger() );
             }
-
-            // set the email preview visible = false on every load so that it doesn't stick around after closing the preview
-            pnlEmailPreview.Visible = false;
         }
 
         /// <summary>
@@ -144,6 +142,7 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.ReplyToEmail = tbReplyToAddress.Text;
                 communicationTemplate.CCEmails = tbCCList.Text;
                 communicationTemplate.BCCEmails = tbBCCList.Text;
+                communicationTemplate.LavaFields = kvlMergeFields.Value.AsDictionaryOrNull();
 
                 var binaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
 
@@ -200,6 +199,12 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="ImageUploaderEventArgs"/> instance containing the event data.</param>
         protected void imgTemplateLogo_ImageUploaded( object sender, ImageUploaderEventArgs e )
         {
+            if ( e.EventArgument == ImageUploaderEventArgs.ArgumentType.ImageRemoved )
+            {
+                // ensure that BinaryFileId is set to null if this is an ImageRemoved event
+                imgTemplateLogo.BinaryFileId = null;
+            }
+
             HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
             templateDoc.LoadHtml( ceEmailTemplate.Text );
             var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
@@ -208,7 +213,7 @@ namespace RockWeb.Blocks.Communication
             if ( templateLogoNode != null && templateLogoNode.Attributes["src"] != null )
             {
                 // if a template-logo exists in the template, update it's src attribute to whatever the uploaded logo is (or set it to the placeholder if it is not set)
-                if ( e.EventArgument != ImageUploaderEventArgs.ArgumentType.ImageRemoved && imgTemplateLogo.BinaryFileId != null && imgTemplateLogo.BinaryFileId > 0 )
+                if ( imgTemplateLogo.BinaryFileId != null && imgTemplateLogo.BinaryFileId > 0 )
                 {
                     templateLogoNode.Attributes["src"].Value = this.ResolveRockUrl( string.Format( "~/GetImage.ashx?Id={0}", imgTemplateLogo.BinaryFileId ) );
                 }
@@ -219,6 +224,8 @@ namespace RockWeb.Blocks.Communication
 
                 ceEmailTemplate.Text = templateDoc.DocumentNode.OuterHtml;
             }
+
+            ShowPreview();
         }
 
         #endregion
@@ -272,6 +279,7 @@ namespace RockWeb.Blocks.Communication
             tbReplyToAddress.Text = communicationTemplate.ReplyToEmail;
             tbCCList.Text = communicationTemplate.CCEmails;
             tbBCCList.Text = communicationTemplate.BCCEmails;
+            kvlMergeFields.Value = communicationTemplate.LavaFields.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
 
             hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( communicationTemplate.ReplyToEmail ) || !string.IsNullOrEmpty( communicationTemplate.CCEmails ) || !string.IsNullOrEmpty( communicationTemplate.BCCEmails ) ).ToTrueFalse().ToLower();
 
@@ -364,6 +372,9 @@ namespace RockWeb.Blocks.Communication
             mfpSMSMessage.Visible = !communicationTemplate.IsSystem;
             ddlSMSFrom.Enabled = !communicationTemplate.IsSystem;
             tbSMSTextMessage.ReadOnly = communicationTemplate.IsSystem;
+
+            tglPreviewAdvanced.Checked = true;
+            tglPreviewAdvanced_CheckedChanged( null, null );
         }
 
         /// <summary>
@@ -448,35 +459,92 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the tglPreviewAdvanced control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglPreviewAdvanced_CheckedChanged( object sender, EventArgs e )
+        {
+            if ( tglPreviewAdvanced.Checked )
+            {
+                pnlAdvanced.Visible = false;
+                pnlPreview.Visible = true;
+                ShowPreview();
+            }
+            else
+            {
+                pnlAdvanced.Visible = true;
+                pnlPreview.Visible = false;
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnEmailPreview control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnEmailPreview_Click( object sender, EventArgs e )
+        protected void ShowPreview()
         {
-            upnlEmailPreview.Update();
-
             HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
             templateDoc.LoadHtml( ceEmailTemplate.Text );
-            var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
-            imgTemplateLogo.Visible = templateLogoNode != null;
-            string previewHtml = ceEmailTemplate.Text;
-            if ( templateLogoNode != null && templateLogoNode.Attributes["src"] != null )
+            var lavaFieldsNode = templateDoc.GetElementbyId( "lava-fields" );
+            if ( lavaFieldsNode == null )
             {
-                if (imgTemplateLogo.BinaryFileId != null)
+                lavaFieldsNode = templateDoc.CreateElement( "div" );
+                lavaFieldsNode.Attributes.Add( "id", "lava-fields" );
+                lavaFieldsNode.Attributes.Add( "style", "display:none" );
+                var bodyNode = templateDoc.DocumentNode.SelectSingleNode( "//body" );
+                bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
+                bodyNode.PrependChild( lavaFieldsNode );
+                bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n\r\n  <!-- Lava Fields: Code-Generated from Template Editor -->\r\n  " ) );
+            }
+
+            var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhitespace() ).ToList();
+            var lavaFieldsDictionary = kvlMergeFields.Value.AsDictionary();
+
+            // add any new lava fields that were added to the KeyValueList editor
+            foreach ( var keyValue in lavaFieldsDictionary )
+            {
+                string pattern = string.Format( @"{{%\s+assign\s+{0}.*\s+=\s", keyValue.Key );
+                if ( !templateDocLavaFieldLines.Any( a => Regex.IsMatch( a, pattern ) ) )
                 {
-                    templateLogoNode.Attributes["src"].Value = this.ResolveRockUrl( string.Format( "~/GetImage.ashx?Id={0}", imgTemplateLogo.BinaryFileId ) );
+                    templateDocLavaFieldLines.Add( "{% assign " + keyValue.Key + " = '" + keyValue.Value + "' %}" );
                 }
             }
 
-            ifEmailPreview.Attributes["srcdoc"] = templateDoc.DocumentNode.OuterHtml;
-            
+            // remove any lava fields that are not in the KeyValueList editor
+            foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines.ToList() )
+            {
+                bool found = false;
+                foreach ( var keyValue in lavaFieldsDictionary )
+                {
+                    string pattern = string.Format( @"{{%\s+assign\s+{0}.*\s+=\s", keyValue.Key );
+                    if ( Regex.IsMatch( templateDocLavaFieldLine, pattern ) )
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                // if not found, delete it
+                if ( !found )
+                {
+                    templateDocLavaFieldLines.Remove( templateDocLavaFieldLine );
+                }
+            }
+
+            lavaFieldsNode.InnerHtml = Environment.NewLine;
+            lavaFieldsNode.InnerHtml += templateDocLavaFieldLines.Select( a => new string( ' ', 4 ) + a.Trim() ).ToList().AsDelimited( Environment.NewLine );
+            lavaFieldsNode.InnerHtml += Environment.NewLine;
+            lavaFieldsNode.InnerHtml += new string( ' ', 2 );
+
+            ceEmailTemplate.Text = templateDoc.DocumentNode.OuterHtml;
+
+            ifEmailPreview.Attributes["srcdoc"] = ceEmailTemplate.Text;
             pnlEmailPreview.Visible = true;
-            mdEmailPreview.Show();
+            upnlEmailPreview.Update();
         }
 
         #endregion
-
-        
     }
 }
