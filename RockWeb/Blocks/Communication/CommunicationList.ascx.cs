@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Communication
 
     [LinkedPage( "Detail Page", order: 1 )]
     [LinkedPage( "Email Analytics", defaultValue:Rock.SystemGuid.Page.EMAIL_ANALYTICS, order: 2 )]
-    public partial class CommunicationList : Rock.Web.UI.RockBlock
+    public partial class CommunicationList : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
         private bool canApprove = false;
 
@@ -67,7 +67,12 @@ namespace RockWeb.Blocks.Communication
             // The created by column/filter should only be displayed if user is allowed to approve
             canApprove = this.IsUserAuthorized( "Approve" );
             ppSender.Visible = canApprove;
-            gCommunication.Columns[2].Visible = canApprove;
+
+            var createdByBoundField = gCommunication.ColumnsOfType<RockBoundField>().FirstOrDefault(a=>a.HeaderText == "Created By" );
+            if ( createdByBoundField != null )
+            {
+                createdByBoundField.Visible = canApprove;
+            }
         }
 
         /// <summary>

@@ -150,7 +150,7 @@
                                 <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" />
                             </div>
                             <div class="col-md-4">
-                                <Rock:DatePicker ID="dpBirthdate" runat="server" Label="Birthdate" />
+                                <Rock:DatePicker ID="dpBirthdate" runat="server" AllowFutureDateSelection="false"  Label="Birthdate" />
                             </div>
                         </div>
 

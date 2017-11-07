@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Shows a list of all attribute matrix templates" )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class AttributeMatrixTemplateList : RockBlock
+    public partial class AttributeMatrixTemplateList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods
 

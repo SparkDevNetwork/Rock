@@ -373,6 +373,10 @@
     <Compile Include="Migrations\201710192047587_PowerBiReportViewer.Designer.cs">
       <DependentUpon>201710192047587_PowerBiReportViewer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201710242108391_ReportCommunication.cs" />
+    <Compile Include="Migrations\201710242108391_ReportCommunication.Designer.cs">
+      <DependentUpon>201710242108391_ReportCommunication.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2801,6 +2805,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201710192047587_PowerBiReportViewer.resx">
       <DependentUpon>201710192047587_PowerBiReportViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710242108391_ReportCommunication.resx">
+      <DependentUpon>201710242108391_ReportCommunication.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

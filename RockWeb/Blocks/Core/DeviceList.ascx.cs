@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Lists all the devices." )]
 
     [LinkedPage("Detail Page")]
-    public partial class DeviceList : RockBlock
+    public partial class DeviceList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

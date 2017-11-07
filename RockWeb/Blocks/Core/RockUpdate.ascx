@@ -32,7 +32,7 @@
 
                 <asp:Panel ID="pnlUpdatesAvailable" Visible="false" runat="server">
                     <div class="well well-message well-message-info">
-                        <h1>You're Missing Some Pieces</h1>
+                        <h1>New Pieces Available</h1>
                         <i class="fa fa-puzzle-piece"></i>
                         <p>We've expanded the puzzle, let's get you up-to-date.</p>
                     </div>

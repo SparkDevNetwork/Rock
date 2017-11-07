@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Crm
     [BooleanField( "Include Inactive", "Set to true to also include potential matches when both records are inactive.", false, order: 2 )]
     [BooleanField( "Include Businesses", "Set to true to also include potential matches when either record is a Business.", false, order: 3 )]
     [LinkedPage( "Detail Page", order: 4 )]
-    public partial class PersonDuplicateList : RockBlock
+    public partial class PersonDuplicateList : RockBlock, ICustomGridColumns
     {
         /// <summary>
         /// Gets the Confidence Score HTML include bootstrap label

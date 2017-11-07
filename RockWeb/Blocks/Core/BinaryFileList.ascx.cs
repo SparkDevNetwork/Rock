@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Core
 
     [LinkedPage("Detail Page")]
     [BinaryFileTypeField]
-    public partial class BinaryFileList : RockBlock
+    public partial class BinaryFileList : RockBlock, ICustomGridColumns
     {
         private BinaryFileType binaryFileType = null;
 

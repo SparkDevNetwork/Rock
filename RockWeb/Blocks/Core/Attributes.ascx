@@ -40,13 +40,13 @@
                                         <asp:Literal ID="lCategories" runat="server"></asp:Literal>
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
-                                <Rock:RockTemplateField>
+                                <Rock:RockTemplateField ID="rtDefaultValue">
                                     <HeaderTemplate>Default Value</HeaderTemplate>
                                     <ItemTemplate>
                                         <asp:Literal ID="lDefaultValue" runat="server"></asp:Literal>
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
-                                <Rock:RockTemplateField>
+                                <Rock:RockTemplateField ID="rtValue">
                                     <HeaderTemplate>Value</HeaderTemplate>
                                     <ItemTemplate>
                                         <asp:Literal ID="lValue" runat="server"></asp:Literal>

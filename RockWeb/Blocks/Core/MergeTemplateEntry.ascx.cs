@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Core
                     }
 
                     Guid familyGroupType = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                    var qryFamilyGroupMembers = new GroupMemberService( rockContext ).Queryable()
+                    var qryFamilyGroupMembers = new GroupMemberService( rockContext ).Queryable( "GroupRole,Person" ).AsNoTracking()
                         .Where( a => a.Group.GroupType.Guid == familyGroupType )
                         .Where( a => qryPersons.Any( aa => aa.Id == a.PersonId ) );
 
@@ -297,7 +297,17 @@ namespace RockWeb.Blocks.Core
                         .Select( x => new
                         {
                             GroupId = x.Key,
-                            Persons = x.Select( xx => xx.Person ).Distinct()
+                            // Order People to match ordering in the GroupMembers.ascx block.
+                            Persons =
+                                    // Adult Male 
+                                    x.Where( xx => xx.GroupMember.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
+                                    xx.GroupMember.Person.Gender == Gender.Male ).OrderByDescending( xx => xx.GroupMember.Person.BirthDate ).Select( xx => xx.Person )
+                                    // Adult Female
+                                    .Concat( x.Where( xx => xx.GroupMember.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
+                                    xx.GroupMember.Person.Gender != Gender.Male ).OrderByDescending( xx => xx.GroupMember.Person.BirthDate ).Select( xx => xx.Person ) )
+                                    // non-adults
+                                    .Concat( x.Where( xx => !xx.GroupMember.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
+                                    .OrderByDescending( xx => xx.GroupMember.Person.BirthDate ).Select( xx => xx.Person ) )
                         } );
 
                     foreach ( var combinedFamilyItem in qryCombined )

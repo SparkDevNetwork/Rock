@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.WorkFlow
     [LinkedPage( "Entry Page", "Page used to launch a new workflow of the selected type." )]
     [LinkedPage( "Detail Page", "Page used to display details about a workflow." )]
     [WorkflowTypeField("Default WorkflowType", "The default workflow type to use. If provided the query string will be ignored.")]
-    public partial class WorkflowList : RockBlock
+    public partial class WorkflowList : RockBlock, ICustomGridColumns
     {
         #region Fields
 

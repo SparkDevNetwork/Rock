@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Follow
     [Category( "Follow" )]
     [Description( "Block for displaying people that have been suggested to current person to follow." )]
 
-    public partial class PersonSuggestionList : Rock.Web.UI.RockBlock
+    public partial class PersonSuggestionList : RockBlock, ICustomGridColumns
     {
 
         #region Base Control Methods

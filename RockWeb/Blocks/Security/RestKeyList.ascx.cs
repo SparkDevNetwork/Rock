@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
@@ -34,7 +35,7 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Lists all the REST API Keys" )]
     [LinkedPage( "Detail Page" )]
-    public partial class RestKeyList : Rock.Web.UI.RockBlock
+    public partial class RestKeyList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

@@ -192,7 +192,18 @@ namespace Rock.Model
         /// A Json formatted <see cref="System.String"/> that contains any additional merge fields for the Communication.
         /// </value>
         [DataMember]
-        public string AdditionalMergeFieldsJson { get; set; }
+        public string AdditionalMergeFieldsJson
+        {
+            get
+            {
+                return AdditionalMergeFields.ToJson();
+            }
+
+            set
+            {
+                AdditionalMergeFields = value.FromJsonOrNull<List<string>>() ?? new List<string>();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the enabled lava commands.
@@ -676,6 +687,33 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( DbContext dbContext )
+        {
+            // ensure any attachments have the binaryFile.IsTemporary set to False
+            var attachmentBinaryFilesIds = this.Attachments.Select( a => a.BinaryFileId ).ToList();
+            if ( attachmentBinaryFilesIds.Any() )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var temporaryBinaryFiles = new BinaryFileService( rockContext ).GetByIds( attachmentBinaryFilesIds ).Where( a => a.IsTemporary == true ).ToList();
+                    {
+                        foreach ( var binaryFile in temporaryBinaryFiles )
+                        {
+                            binaryFile.IsTemporary = false;
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                }
+            }
+
+            base.PostSaveChanges( dbContext );
         }
 
         #endregion

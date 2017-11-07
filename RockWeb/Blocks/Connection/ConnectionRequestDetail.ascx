@@ -7,7 +7,10 @@
         <asp:HiddenField ID="hfConnectionRequestId" runat="server" />
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <div class="panel panel-block">
+        <Rock:NotificationBox ID="nbNoParameterMessage" runat="server" NotificationBoxType="Warning" Heading="Missing Parameter(s)"
+            Text="This block requires a valid connection request id and/or a connection opportunity id as query string parameters." />
+
+        <asp:Panel ID="pnlContents" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -21,7 +24,6 @@
                     <Rock:HighlightLabel ID="hlState" runat="server" Visible="false" />
                 </div>
             </div>
-
             <asp:Panel ID="pnlReadDetails" runat="server">
 
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -120,7 +122,7 @@
                         </div>
                         <div class="col-md-4 col-md-offset-2">
                             <Rock:RockRadioButtonList ID="rblState" runat="server" Label="State" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblState_SelectedIndexChanged" AutoPostBack="true" />
-                            <Rock:DatePicker ID="dpFollowUp" runat="server" Label="Follow-up Date" Visible="false" />
+                            <Rock:DatePicker ID="dpFollowUp" runat="server" Label="Follow-up Date" AllowPastDateSelection="false" Visible="false" />
                         </div>
                     </div>
 
@@ -187,7 +189,7 @@
 
             </asp:Panel>
 
-        </div>
+        </asp:Panel>
 
         <Rock:PanelWidget ID="wpConnectionRequestWorkflow" runat="server" Title="Workflows" CssClass="clickable">
             <div class="grid">

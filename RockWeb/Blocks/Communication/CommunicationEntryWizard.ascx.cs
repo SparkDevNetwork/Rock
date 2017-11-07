@@ -233,7 +233,8 @@ namespace RockWeb.Blocks.Communication
             if ( editableStatuses.Contains( communication.Status ) || ( communication.Status == CommunicationStatus.PendingApproval && editingApproved ) )
             {
                 // Make sure they are authorized to view
-                if ( !communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
+                bool isCreator = ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value );
+                if ( !communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) && !isCreator )
                 {
                     // not authorized, so hide this block
                     this.Visible = false;
@@ -1686,7 +1687,9 @@ namespace RockWeb.Blocks.Communication
                         }
                     }
 
-                    imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath;
+                    string publicAppRoot = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                    imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath.Replace( "~/", publicAppRoot );
+                    divAttachmentLoadError.InnerText = "Unable to load preview icon from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
                     imgSMSImageAttachment.Width = new Unit( 10, UnitType.Percentage );
                 }

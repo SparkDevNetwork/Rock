@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Core
 
     [LinkedPage( "Detail Page" )]
     [ContextAware( typeof( Person ) )]
-    public partial class SignatureDocumentList : RockBlock, ISecondaryBlock
+    public partial class SignatureDocumentList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Properties 
 
