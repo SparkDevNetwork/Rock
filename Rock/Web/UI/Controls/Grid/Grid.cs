@@ -1318,6 +1318,7 @@ namespace Rock.Web.UI.Controls
                 bool selectAll = !SelectedKeys.Any();
                 RebindGrid( e, selectAll, false, true );
 
+                // Create a dictionary of the additional merge fields that were created for the communicatoin
                 var communicationMergeFields = new Dictionary<string, string>();
                 foreach ( string mergeField in this.CommunicateMergeFields )
                 {
@@ -1328,7 +1329,9 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
+                // Get the data for the recipients
                 var recipients = GetPersonData( true, communicationMergeFields );
+
                 if ( recipients.Any() )
                 {
                     // Create communication 
@@ -1338,11 +1341,24 @@ namespace Rock.Web.UI.Controls
                     communication.IsBulkCommunication = true;
                     communication.Status = Model.CommunicationStatus.Transient;
 
+                    // Get a list of the mergefield names
                     List<string> mergeFields = communicationMergeFields.Select( f => f.Value ).Distinct().ToList();
-                    communication.AdditionalMergeFields = mergeFields;
 
-                    string mergeFieldList = mergeFields.AsDelimited( "^" );
-                    communication.AdditionalMergeFields.Add( $"AdditionalMergeFields|{mergeFieldList}" );
+                    if ( CommunicationRecipientPersonIdFields.Any() )
+                    {
+                        // If the grid has recipient person id fields, there could be multiple values(rows) for each merge fields.
+                        // If this is the case save them as 'AdditionalMergeFields'. The communication block will add the neccessary
+                        // Lava needed to access the multiple values.
+                        communication.AdditionalMergeFields = new List<string>();
+                        string mergeFieldList = mergeFields.AsDelimited( "^" );
+                        communication.AdditionalMergeFields.Add( $"AdditionalMergeFields|{mergeFieldList}" );
+                    }
+                    else
+                    {
+                        // Otherwise just save the name
+                        communication.AdditionalMergeFields = mergeFields;
+                    }
+
                     if ( rockPage.CurrentPerson != null )
                     {
                         communication.SenderPersonAliasId = rockPage.CurrentPersonAliasId;
@@ -2227,14 +2243,18 @@ namespace Rock.Web.UI.Controls
             var personData = new Dictionary<int, Dictionary<string, object>>();
 
             var personIdFields = new List<string>();
+
             if ( isForCommunication )
             {
+                // If the data is being queried for a communication, the person id fields can be configured to come from a different column or even 
+                // multiple columns rather than the primary id column
                 if ( this.CommunicationRecipientPersonIdFields.Any() )
                 {
                     personIdFields = new List<string>( this.CommunicationRecipientPersonIdFields );
                 }
                 else
                 {
+                    // If there were not any special columns for the communication, just use the column that was configured for the person id
                     if ( this.PersonIdField.IsNotNullOrWhitespace() )
                     {
                         personIdFields.Add( this.PersonIdField );
@@ -2265,10 +2285,15 @@ namespace Rock.Web.UI.Controls
                         object dataKey = row[dataKeyColumn];
                         if ( !keysSelected.Any() || keysSelected.Contains( dataKey ) )
                         {
+                            // Distinct list of person ids
                             List<int> personIds = new List<int>();
+
+                            // Merge values
                             var mergeValues = new Dictionary<string, object>();
+
                             for ( int i = 0; i < data.Columns.Count; i++ )
                             {
+                                // Add any new person id values from the selected person (or recipient) column(s)
                                 if ( personIdFields.Contains( data.Columns[i].ColumnName, StringComparer.OrdinalIgnoreCase ) )
                                 {
                                     int? personId = row[i] as int?;
@@ -2288,6 +2313,7 @@ namespace Rock.Web.UI.Controls
                                     }
                                 }
 
+                                // If this is a communication, add any merge values
                                 if ( isForCommunication )
                                 {
                                     var mergeField = communicationMergeFields.Where( f => f.Key.Equals( data.Columns[i].ColumnName, StringComparison.OrdinalIgnoreCase ) ).Select( f => f.Value ).FirstOrDefault();
