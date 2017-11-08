@@ -8544,7 +8544,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     margin-top: 0px;
     margin-bottom: 0px;
     margin-right: 30px;
-    padding: 4px 10px 0px 10px;
 }
 
     .masthead .navbar-toggle.collapsed {
@@ -8807,51 +8806,91 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     right: 0;
     bottom: 0;
     width: 100%;
-	padding-left: 30px;
-	padding-right: 20px;
     vertical-align: middle;
     background: #7A1315;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0px;
 }
 
 .mainfooterlogo {
-    display: flex;
-    justify-content: center;
     font-size: 70%;
     color: #FFFFFF;
+    text-align: center;
 }
 
 .mainfootercontent {
-    display: flex;
-    align-self: center;
-    margin-left: 30px;
-    letter-spacing: .5px; 
+    margin-top: 5px;
 }
 
 .mainfootercontent a {
     color: #FFFFFF;
 }
 
+.mainfooter-privacypolicy {
+    margin-top: 10px;
+}
+
+.mainfooter-privacypolicy a {
+    color: #FFFFFF;
+}
+
+.mainfooterlinks {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    align-content: space-between;
+}
+
 .mainfootersocial {
     color: #FFFFFF;
     font-size: 18px;
-    margin-right: 60px;
+    margin: 30px 15px;
 }
 
 .mainfootersocial a {
     color: #FFFFFF;
-    padding: 0px 5px;
 }
 
-.mainfooterlinks {
+.mainfooterweblinks {
     color: #FFFFFF;
     font-family: akrobat;
-    padding-top: 4px;
     font-size: 14px;
+    margin: 30px 15px;
 }
 
 .mainfooterlinks a {
     color: #FFFFFF;
-    padding: 0px 10px;
+}
+
+@media screen and (min-width: 1224px) {
+    .mainfooter {
+        padding: 10px 30px;
+        display: block;
+    }
+
+    .mainfooter-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .mainfooterlogo {
+        display: flex;
+        align-items: center;    
+    }
+
+    .mainfootercontent {
+        margin: 20px;
+    }
+
+    .mainfooter-privacypolicy {
+        margin-top: 0px;
+    }
 }
 
 .footernav {
@@ -10247,8 +10286,17 @@ legend {
     margin: 0px;
     background: #FFFFFF;
     border: 0px;
-    height: 70px;
     width: 100%;
+}
+
+#subnavbar ul {
+    margin: 5px;
+}
+
+@media screen and (min-width: 1224px) {
+    #subnavbar ul {
+        margin: 0px;
+    }
 }
 
 #subnavbar ul li a {
@@ -10469,23 +10517,32 @@ html,body{
 }
 
 .announcement-bar {
+    padding-top: 5px;
     background-color: #212121;
-    text-align: center;
-    padding: 20px 0px;
-    margin-bottom: 5px;
     color: #FFFFFF;
-    font-size: 20px;
     font-weight: normal;
     font-family: Heebo;
+    text-align: center
 }
 
 .announcement-bar a {
     color: #999999;
 }
 
-@media screen and (max-width: 375px){
-    .announcement-bar span:last-of-type {
-        display: block;
+.announcement-bar span {
+    display: block;
+}
+
+@media screen and (min-width: 1224px) {
+    .announcement-bar {
+        padding: 20px 0px;
+        margin-bottom: 5px;
+        font-size: 20px;
+    }
+
+    .announcement-bar span {
+        display: inline-block;
+        margin: 0px 5px;
     }
 }
 
@@ -10501,7 +10558,15 @@ html,body{
 /* Formatting for select a day event block */
 .event-item-list-container {
 	display: flex;
-	justify-content: flex-start;
+	justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media screen and (min-width: 1224px) {
+    .event-item-list-container {
+        justify-content: flex-start;
+        margin-left: 10px;
+    }
 }
 
 .event-item-container {
@@ -10786,4 +10851,27 @@ html,body{
 	font-weight: normal;
 	border-width: 0px;
 	margin: 0 0 24px 0;
+}
+
+.selectaday-flex {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-left: 15px;
+}
+
+/* Show Hamburger Menu on any device smaller than 768px */
+/* Overriding Bootstrap media query */
+@media (max-width: 768px) {
+    .navbar-toggle {
+        display: inline-block;
+    }
+
+    .collapse {
+        display: none;
+    }
+
+    .navbar-collapse.collapse {
+        display: none !important;
+    }
 }
