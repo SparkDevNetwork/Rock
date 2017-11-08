@@ -64,7 +64,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             rGrid.Actions.AddClick += rGrid_Add;
             rGrid.GridReorder += rGrid_GridReorder;
             rGrid.GridRebind += rGrid_GridRebind;
-            
+
             modalDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
 
             var lbCopyQuestions = new LinkButton();
@@ -125,7 +125,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 var question = questionService.Get( e.RowKeyId );
                 var attribute = question.Attribute;
                 if ( question != null )
-                {                   
+                {
                     questionService.Delete( question );
                     attributeService.Delete( attribute );
                     rockContext.SaveChanges();
@@ -277,7 +277,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             try
             {
-                var sourceResourceId = ddlCopySource.SelectedValue.AsIntegerOrNull();
+                var sourceId = ddlCopySource.SelectedValue.AsIntegerOrNull();
                 var rockContext = new RockContext();
                 var questionService = new QuestionService( rockContext );
                 var attributeService = new AttributeService( rockContext );
@@ -301,90 +301,175 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
 
                 // Copy from a source Resource
-                if ( sourceResourceId != null )
+                if ( sourceId != null )
                 {
-                    var sourceResource = new ResourceService( rockContext ).Get( sourceResourceId.Value );
-                    if ( sourceResource != null )
+                    if (ResourceId != 0 )
                     {
-                        var sourceQuestionList = questionService.Queryable().Where( q => q.ResourceId == sourceResourceId ).ToList();
-                        var resourceEntityTypeId = new EntityTypeService( rockContext ).Get( com.centralaz.RoomManagement.SystemGuid.EntityType.RESERVATION_RESOURCE.AsGuid() ).Id;
-
-                        foreach ( Question question in sourceQuestionList )
+                        var sourceResource = new ResourceService( rockContext ).Get( sourceId.Value );
+                        if ( sourceResource != null )
                         {
-                            var cloneQuestion = question.Clone() as Question;
-                            cloneQuestion.CreatedByPersonAlias = null;
-                            cloneQuestion.CreatedByPersonAliasId = CurrentPersonAliasId;
-                            cloneQuestion.CreatedDateTime = RockDateTime.Now;
-                            cloneQuestion.ModifiedByPersonAlias = null;
-                            cloneQuestion.ModifiedByPersonAliasId = CurrentPersonAliasId;
-                            cloneQuestion.ModifiedDateTime = RockDateTime.Now;
-                            cloneQuestion.Id = 0;
-                            cloneQuestion.Guid = Guid.NewGuid();
-                            //cloneQuestion.Attributes.Clear();
-                            // Set the cloned question to this resource's Id.
-                            cloneQuestion.Resource = null;
-                            cloneQuestion.ResourceId = ResourceId;
-                            cloneQuestion.Attribute = null;
+                            var sourceQuestionList = questionService.Queryable().Where( q => q.ResourceId == sourceId ).ToList();
+                            var resourceEntityTypeId = new EntityTypeService( rockContext ).Get( com.centralaz.RoomManagement.SystemGuid.EntityType.RESERVATION_RESOURCE.AsGuid() ).Id;
 
-                            // Make a copy of the question's corresponding attribute.
-                            var cloneAttribute = question.Attribute.Clone(false) as Rock.Model.Attribute;
-                            cloneAttribute.Id = 0;
-                            cloneAttribute.Guid = Guid.NewGuid();
-                            cloneAttribute.IsSystem = false;
-                            cloneAttribute.EntityTypeId = resourceEntityTypeId;
-                            cloneAttribute.AttributeQualifiers.Clear();
-
-                            foreach ( var qualifier in question.Attribute.AttributeQualifiers )
+                            foreach ( Question question in sourceQuestionList )
                             {
-                                var newQualifier = qualifier.Clone( false );
-                                newQualifier.Id = 0;
-                                newQualifier.Guid = Guid.NewGuid();
-                                newQualifier.IsSystem = false;
-                                newQualifier.Attribute = null;
-                                newQualifier.AttributeId = 0;
+                                var cloneQuestion = question.Clone() as Question;
+                                cloneQuestion.CreatedByPersonAlias = null;
+                                cloneQuestion.CreatedByPersonAliasId = CurrentPersonAliasId;
+                                cloneQuestion.CreatedDateTime = RockDateTime.Now;
+                                cloneQuestion.ModifiedByPersonAlias = null;
+                                cloneQuestion.ModifiedByPersonAliasId = CurrentPersonAliasId;
+                                cloneQuestion.ModifiedDateTime = RockDateTime.Now;
+                                cloneQuestion.Id = 0;
+                                cloneQuestion.Guid = Guid.NewGuid();
+                                //cloneQuestion.Attributes.Clear();
+                                // Set the cloned question to this resource's Id.
+                                cloneQuestion.Resource = null;
+                                cloneQuestion.ResourceId = ResourceId;
+                                cloneQuestion.Attribute = null;
 
-                                cloneAttribute.AttributeQualifiers.Add( newQualifier );
-                            }
+                                // Make a copy of the question's corresponding attribute.
+                                var cloneAttribute = question.Attribute.Clone( false ) as Rock.Model.Attribute;
+                                cloneAttribute.Id = 0;
+                                cloneAttribute.Guid = Guid.NewGuid();
+                                cloneAttribute.IsSystem = false;
+                                cloneAttribute.EntityTypeId = resourceEntityTypeId;
+                                cloneAttribute.AttributeQualifiers.Clear();
 
-                            // Verify the key is unique
-                            string key = cloneAttribute.Key;
-                            if ( keyMap.ContainsKey( key ) )
-                            {
-                                int count = 0;
-                                while ( keyMap.ContainsKey( key ) )
+                                var oldKey = cloneAttribute.Key;
+                                var index = oldKey.LastIndexOf( '_' );
+                                if ( index > 0 )
                                 {
-                                    count++;
-                                    key = cloneAttribute.Key + count;
+                                    oldKey = oldKey.Substring( 0, index );
                                 }
-                                cloneAttribute.Key = key;
+
+                                cloneAttribute.Key = String.Format( "{0}_ResourceId{1}", oldKey, ResourceId );
+
+                                foreach ( var qualifier in question.Attribute.AttributeQualifiers )
+                                {
+                                    var newQualifier = qualifier.Clone( false );
+                                    newQualifier.Id = 0;
+                                    newQualifier.Guid = Guid.NewGuid();
+                                    newQualifier.IsSystem = false;
+                                    newQualifier.Attribute = null;
+                                    newQualifier.AttributeId = 0;
+
+                                    cloneAttribute.AttributeQualifiers.Add( newQualifier );
+                                }
+
+                                // Verify the key is unique
+                                string key = cloneAttribute.Key;
+                                if ( keyMap.ContainsKey( key ) )
+                                {
+                                    int count = 0;
+                                    while ( keyMap.ContainsKey( key ) )
+                                    {
+                                        count++;
+                                        key = cloneAttribute.Key + count;
+                                    }
+                                    cloneAttribute.Key = key;
+                                }
+
+                                attributeService.Add( cloneAttribute );
+                                rockContext.SaveChanges();
+
+                                cloneQuestion.AttributeId = cloneAttribute.Id;
+                                questionService.Add( cloneQuestion );
+
                             }
 
-                            attributeService.Add( cloneAttribute );
                             rockContext.SaveChanges();
-
-                            cloneQuestion.AttributeId = cloneAttribute.Id;
-                            questionService.Add( cloneQuestion );
-                            
                         }
-
-                        rockContext.SaveChanges();
                     }
-                }
-                else
-                {
-                    // Copy from a source Location
+                    else if (LocationId != 0 )
+                    {
+                        var sourceLocation = new LocationService( rockContext ).Get( sourceId.Value );
+                        if ( sourceLocation != null )
+                        {
+                            var sourceQuestionList = questionService.Queryable().Where( q => q.ResourceId == sourceId ).ToList();
+                            var locationEntityTypeId = new EntityTypeService( rockContext ).Get( "0D6410AD-C83C-47AC-AF3D-616D09EDF63B".AsGuid() ).Id;
+
+                            foreach ( Question question in sourceQuestionList )
+                            {
+                                var cloneQuestion = question.Clone() as Question;
+                                cloneQuestion.CreatedByPersonAlias = null;
+                                cloneQuestion.CreatedByPersonAliasId = CurrentPersonAliasId;
+                                cloneQuestion.CreatedDateTime = RockDateTime.Now;
+                                cloneQuestion.ModifiedByPersonAlias = null;
+                                cloneQuestion.ModifiedByPersonAliasId = CurrentPersonAliasId;
+                                cloneQuestion.ModifiedDateTime = RockDateTime.Now;
+                                cloneQuestion.Id = 0;
+                                cloneQuestion.Guid = Guid.NewGuid();
+                                //cloneQuestion.Attributes.Clear();
+                                // Set the cloned question to this location's Id.
+                                cloneQuestion.Location = null;
+                                cloneQuestion.LocationId = LocationId;
+                                cloneQuestion.Attribute = null;
+
+                                // Make a copy of the question's corresponding attribute.
+                                var cloneAttribute = question.Attribute.Clone( false ) as Rock.Model.Attribute;
+                                cloneAttribute.Id = 0;
+                                cloneAttribute.Guid = Guid.NewGuid();
+                                cloneAttribute.IsSystem = false;
+                                cloneAttribute.EntityTypeId = locationEntityTypeId;
+                                cloneAttribute.AttributeQualifiers.Clear();
+
+                                var oldKey = cloneAttribute.Key;
+                                var index = oldKey.LastIndexOf( '_' );
+                                if ( index > 0 )
+                                {
+                                    oldKey = oldKey.Substring( 0, index );
+                                }
+
+                                cloneAttribute.Key = String.Format( "{0}_LocationId{1}", oldKey, LocationId );
+
+                                foreach ( var qualifier in question.Attribute.AttributeQualifiers )
+                                {
+                                    var newQualifier = qualifier.Clone( false );
+                                    newQualifier.Id = 0;
+                                    newQualifier.Guid = Guid.NewGuid();
+                                    newQualifier.IsSystem = false;
+                                    newQualifier.Attribute = null;
+                                    newQualifier.AttributeId = 0;
+
+                                    cloneAttribute.AttributeQualifiers.Add( newQualifier );
+                                }
+
+                                // Verify the key is unique
+                                string key = cloneAttribute.Key;
+                                if ( keyMap.ContainsKey( key ) )
+                                {
+                                    int count = 0;
+                                    while ( keyMap.ContainsKey( key ) )
+                                    {
+                                        count++;
+                                        key = cloneAttribute.Key + count;
+                                    }
+                                    cloneAttribute.Key = key;
+                                }
+
+                                attributeService.Add( cloneAttribute );
+                                rockContext.SaveChanges();
+
+                                cloneQuestion.AttributeId = cloneAttribute.Id;
+                                questionService.Add( cloneQuestion );
+
+                            }
+
+                            rockContext.SaveChanges();
+                        }
+                    }                  
                 }
 
                 BindGrid();
                 mdCopyQuestions.Hide();
             }
-            catch( Exception ex )
+            catch ( Exception ex )
             {
                 nbMessage.Text = ex.Message;
                 nbMessage.Visible = true;
             }
 
-            
         }
 
         #endregion
@@ -530,7 +615,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
             }
 
-            var savedAttribute = SaveAttributeEdits( edtQuestion, entityTypeId, null, null, rockContext );
+            var savedAttribute = SaveAttributeEdits( edtQuestion, entityTypeId, null, null, ResourceId, LocationId, rockContext );
             AttributeCache.FlushEntityAttributes();
             return savedAttribute;
         }
@@ -568,7 +653,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static Rock.Model.Attribute SaveAttributeEdits( SimpleAttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
+        public static Rock.Model.Attribute SaveAttributeEdits( SimpleAttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, int resourceId, int locationId, RockContext rockContext = null )
         {
             // Create and update a new attribute object with new values
             rockContext = rockContext ?? new RockContext();
@@ -588,10 +673,22 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
             else
             {
-                newAttribute.Order = internalAttributeService.Queryable().Max( a => a.Order ) + 1;
+                newAttribute.Order = internalAttributeService.Queryable().AsNoTracking().Max( a => a.Order ) + 1;
             }
 
             edtAttribute.GetAttributeProperties( newAttribute );
+
+            if ( !newAttribute.Key.Contains( "_ResourceId" ) && !newAttribute.Key.Contains( "_LocationId" ) )
+            {
+                if ( resourceId != 0 )
+                {
+                    newAttribute.Key = String.Format( "Q{0}_ResourceId{1}", newAttribute.Order, resourceId );
+                }
+                else if ( locationId != 0 )
+                {
+                    newAttribute.Key = String.Format( "Q{0}_LocationId{1}", newAttribute.Order, locationId );
+                }
+            }
 
             return Helper.SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
         }
