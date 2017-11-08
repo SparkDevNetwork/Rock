@@ -401,6 +401,10 @@
     <Compile Include="Migrations\201711072304394_CommunicationTemplateLavaFields.Designer.cs">
       <DependentUpon>201711072304394_CommunicationTemplateLavaFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711081825032_Analytics4.cs" />
+    <Compile Include="Migrations\201711081825032_Analytics4.Designer.cs">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2851,6 +2855,9 @@
     <EmbeddedResource Include="Migrations\201711072304394_CommunicationTemplateLavaFields.resx">
       <DependentUpon>201711072304394_CommunicationTemplateLavaFields.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711081825032_Analytics4.resx">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4721,6 +4728,22 @@
     </Content>
     <Content Include="Migrations\201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate.sql">
       <DependentUpon>201711011841422_GatewayTransactionKey.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimAttendanceLocation.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimFinancialAccount.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimFinancialBatch.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimPersonBirthDate.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimPersonHistorical.sql" />
+    <Content Include="Migrations\201711081825032_Analytics4_spAnalytics_ETL_Family.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />

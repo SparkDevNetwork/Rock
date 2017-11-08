@@ -57,10 +57,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddPageRoute(  Rock.SystemGuid.Page.POWERBI_ACCOUNT_REGISTRATION, "PowerBiAccountRedirect" );
             */
 
-            // MP: Populate AnalyticsSourceDate
-            var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
-            var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
-            Rock.Model.AnalyticsSourceDate.GenerateAnalyticsSourceDateData( 1, false, analyticsStartDate, analyticsEndDate );
+            
         }
 
         /// <summary>
