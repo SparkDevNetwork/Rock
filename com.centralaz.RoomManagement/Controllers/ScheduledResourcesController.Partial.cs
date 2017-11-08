@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -82,7 +83,7 @@ namespace Rock.Rest.Controllers
             int entityTypeId = EntityTypeCache.Read( com.centralaz.RoomManagement.SystemGuid.EntityType.RESOURCE.AsGuid() ).Id;
             defaultIconCssClass = defaultIconCssClass ?? "fa fa-list-ol";
 
-            IQueryable<Category> qry = Get();
+            IQueryable<Category> qry = Get().AsNoTracking();
 
             if ( id == 0 )
             {
@@ -140,7 +141,7 @@ namespace Rock.Rest.Controllers
 
                 var newReservation = new Reservation() { Id = reservationId ?? 0, Schedule = new Schedule() { iCalendarContent = iCalendarContent }, SetupTime = setupTime, CleanupTime = cleanupTime };
 
-                var resourceQry = resourceService.Queryable();
+                var resourceQry = resourceService.Queryable().AsNoTracking();
 
                 if ( !includeAllCampuses )
                 {
