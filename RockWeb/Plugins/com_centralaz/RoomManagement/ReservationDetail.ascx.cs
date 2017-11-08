@@ -476,9 +476,32 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 StringBuilder sb = new StringBuilder();
                 sb.Append( "<b>The Following items are already reserved for the scheduled times:<br><ul>" );
                 var reservedLocationIds = reservationService.GetReservedLocationIds( reservation );
+
+                // Check self
                 foreach ( var location in reservation.ReservationLocations.Where( l => reservedLocationIds.Contains( l.LocationId ) ) )
                 {
                     sb.AppendFormat( "<li>{0}</li>", location.Location.Name );
+                    hasConflict = true;
+                }
+
+                // Check parent
+                foreach ( var location in reservation.ReservationLocations.Where( l => l.Location.ParentLocationId.HasValue && reservedLocationIds.Contains( l.Location.ParentLocationId.Value ) ) )
+                {
+                    sb.AppendFormat( "<li>{0} ({1}{2})</li>", location.Location.ParentLocation.Name,
+                        location.Location.ParentLocation.LocationTypeValue != null ? location.Location.ParentLocation.LocationTypeValue.Value.ToLower() + " of " : "of ",
+                        location.Location.Name );
+                    hasConflict = true;
+                }
+
+                // Check grandparent
+                foreach ( var location in reservation.ReservationLocations.Where( l => l.Location.ParentLocation != null
+                && l.Location.ParentLocation.ParentLocation != null
+                && reservedLocationIds.Contains( l.Location.ParentLocation.ParentLocationId.Value ) )
+                    )
+                {
+                    sb.AppendFormat( "<li>{0} ({1}{2})</li>", location.Location.ParentLocation.ParentLocation.Name,
+                        location.Location.ParentLocation.ParentLocation.LocationTypeValue != null ? location.Location.ParentLocation.ParentLocation.LocationTypeValue.Value.ToLower() + " of " : "of ",
+                        location.Location.Name );
                     hasConflict = true;
                 }
 
