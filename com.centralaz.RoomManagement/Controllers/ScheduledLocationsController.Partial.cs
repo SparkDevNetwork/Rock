@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using com.centralaz.RoomManagement.Model;
@@ -67,7 +68,7 @@ namespace Rock.Rest.Controllers
             IQueryable<Location> qry;
             if ( id == 0 )
             {
-                qry = locationService.Queryable().Where( a => a.ParentLocationId == null );
+                qry = locationService.Queryable().AsNoTracking().Where( a => a.ParentLocationId == null );
                 if ( rootLocationId != 0 )
                 {
                     qry = qry.Where( a => a.Id == rootLocationId );
@@ -75,7 +76,7 @@ namespace Rock.Rest.Controllers
             }
             else
             {
-                qry = locationService.Queryable().Where( a => a.ParentLocationId == id );
+                qry = locationService.Queryable().AsNoTracking().Where( a => a.ParentLocationId == id );
             }
 
             // limit to only Named Locations (don't show home addresses, etc)
@@ -95,12 +96,17 @@ namespace Rock.Rest.Controllers
             {
                 if ( location.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
+                    var ancestorIds = locationService.GetAllAncestorIds( location.Id );
                     locationList.Add( location );
                     var treeViewItem = new TreeViewItem();
                     treeViewItem.Id = location.Id.ToString();
                     treeViewItem.Name = string.Format( "{0}<small style='color:grey;'>{1}</small>", System.Web.HttpUtility.HtmlEncode( location.Name ), location.FirmRoomThreshold != null ? "\t(" + location.FirmRoomThreshold + ")" : "" );
-                    treeViewItem.IsActive = !reservedLocationIds.Contains( location.Id ) &&
-                        ( attendeeCount == null || location.FirmRoomThreshold == null || attendeeCount.Value <= location.FirmRoomThreshold.Value );
+                    treeViewItem.IsActive = 
+                        // location isnt' reserved or it's parent (or grandparent) isn't reserved
+                        ! ( reservedLocationIds.Contains( location.Id ) || ( location.ParentLocationId.HasValue && reservedLocationIds.Contains( location.ParentLocationId.Value ) )
+                            || location.ParentLocation != null && location.ParentLocation.ParentLocation != null && reservedLocationIds.Contains( location.ParentLocation.ParentLocationId.Value ) )
+                        // and the attendee count is less than or equal to the room's capacity
+                        && ( attendeeCount == null || location.FirmRoomThreshold == null || attendeeCount.Value <= location.FirmRoomThreshold.Value );
                     locationNameList.Add( treeViewItem );
                 }
             }
@@ -108,7 +114,7 @@ namespace Rock.Rest.Controllers
             // try to quickly figure out which items have Children
             List<int> resultIds = locationList.Select( a => a.Id ).ToList();
 
-            var qryHasChildren = locationService.Queryable()
+            var qryHasChildren = locationService.Queryable().AsNoTracking()
                 .Where( l =>
                     l.ParentLocationId.HasValue &&
                     resultIds.Contains( l.ParentLocationId.Value ) )
