@@ -40,7 +40,7 @@ namespace Rock.Model
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="Rock.Model.AnalyticsSourceFamilyBase{T}" />
     [RockDomain( "Reporting" )]
-    public abstract class AnalyticsDimFamilyBase<T> : AnalyticsSourceFamilyBase<T>
+    public abstract class AnalyticsDimFamilyBase<T> : AnalyticsSourceFamilyBase<T>, IAnalyticsAddresses
         where T : AnalyticsDimFamilyBase<T>, new()
     {
         #region Denormalized Lookup Values

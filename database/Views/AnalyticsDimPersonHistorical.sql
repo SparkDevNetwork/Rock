@@ -30,6 +30,28 @@ SELECT asph.*
         ELSE 'Unknown'
         END [EmailPreferenceText]
 	,fc.Id [PrimaryFamilyKey] 
+	,fc.[MailingAddressStreet1]
+	,fc.[MailingAddressStreet2]
+	,fc.[MailingAddressCity]
+	,fc.[MailingAddressCounty]
+	,fc.[MailingAddressState]
+	,fc.[MailingAddressCountry]
+	,fc.[MailingAddressPostalCode]
+	,fc.[MailingAddressGeoPoint]
+	,fc.[MailingAddressGeoFence]
+	,fc.[MailingAddressLatitude]
+	,fc.[MailingAddressLongitude]
+	,fc.[MappedAddressStreet1]
+	,fc.[MappedAddressStreet2]
+	,fc.[MappedAddressCity]
+	,fc.[MappedAddressCounty]
+	,fc.[MappedAddressState]
+	,fc.[MappedAddressCountry]
+	,fc.[MappedAddressPostalCode]
+	,fc.[MappedAddressGeoPoint]
+	,fc.[MappedAddressGeoFence]
+	,fc.[MappedAddressLatitude]
+	,fc.[MappedAddressLongitude]
 FROM AnalyticsSourcePersonHistorical asph
 LEFT JOIN DefinedValue ms ON ms.Id = asph.MaritalStatusValueId
 LEFT JOIN DefinedValue cs ON cs.Id = asph.ConnectionStatusValueId

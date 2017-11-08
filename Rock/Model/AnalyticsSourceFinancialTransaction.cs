@@ -160,13 +160,13 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the count.
-        /// NOTE: this always has hardcode value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
+        /// NOTE: this always has a hardcoded value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
         /// </summary>
         /// <value>
         /// The count.
         /// </value>
         [DataMember]
-        public int Count { get; set; }
+        public int Count { get; set; } = 1;
 
         #endregion
 

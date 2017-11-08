@@ -425,7 +425,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
             List<ColumnInfo> populatePersonValueSELECTColumns = new List<ColumnInfo>();
             List<string> populateAttributeValueFROMClauses = new List<string>();
 
-            var analyticSpecificColumns = new string[] { "Id", "PersonId", "CurrentRowIndicator", "EffectiveDate", "ExpireDate", "PrimaryFamilyId", "BirthDateKey", "Age", "Guid" };
+            var analyticSpecificColumns = new string[] { "Id", "PersonId", "CurrentRowIndicator", "EffectiveDate", "ExpireDate", "PrimaryFamilyId", "BirthDateKey", "Age", "Guid", "Count" };
 
             foreach ( var item in analyticsSourcePersonHistoricalFields
                 .Where( a => !analyticSpecificColumns.Contains( a.Name ) ).OrderBy( a => a.Name ).ToList() )
@@ -538,6 +538,7 @@ INSERT INTO [dbo].[AnalyticsSourcePersonHistorical] (
         [PrimaryFamilyId],
         [BirthDateKey],
         [Age],
+        [Count],
 " + populatePersonValueSELECTClauses.Select( a => $"        [{a}]" ).ToList().AsDelimited( ",\n" ) + @",
         [Guid]";
 
@@ -588,6 +589,7 @@ WHERE p.Id NOT IN (
         family.GroupId [PrimaryFamilyId],
         convert(INT, (convert(CHAR(8), DateFromParts(BirthYear, BirthMonth, BirthDay), 112))) [BirthDateKey],
         dbo.ufnCrm_GetAge(p.BirthDate) [Age], 
+        1 [Count],
 " + populatePersonValueFROMClauses.Select( a => $"        [{a}]" ).ToList().AsDelimited( ",\n" ) + @",
         NEWID() [Guid]";
 
