@@ -68,6 +68,9 @@ namespace Rock.Client
         public bool IsSystem { get; set; }
 
         /// <summary />
+        public string LavaFieldsJson { get; set; }
+
+        /// <summary />
         public int? LogoBinaryFileId { get; set; }
 
         /// <summary />
@@ -152,6 +155,7 @@ namespace Rock.Client
             this.ImageFileId = source.ImageFileId;
             this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
+            this.LavaFieldsJson = source.LavaFieldsJson;
             this.LogoBinaryFileId = source.LogoBinaryFileId;
             this.Message = source.Message;
             this.MessageMetaData = source.MessageMetaData;
@@ -185,6 +189,9 @@ namespace Rock.Client
 
         /// <summary />
         public Category Category { get; set; }
+
+        /// <summary />
+        public Dictionary<string, string> LavaFields { get; set; }
 
         /// <summary />
         public BinaryFile LogoBinaryFile { get; set; }

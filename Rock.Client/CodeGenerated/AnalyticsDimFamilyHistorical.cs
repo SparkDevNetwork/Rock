@@ -53,6 +53,9 @@ namespace Rock.Client
         public string ConnectionStatus { get; set; }
 
         /// <summary />
+        public int Count { get; set; }
+
+        /// <summary />
         public bool CurrentRowIndicator { get; set; }
 
         /// <summary />
@@ -176,6 +179,7 @@ namespace Rock.Client
             this.CampusShortCode = source.CampusShortCode;
             this.ChildCount = source.ChildCount;
             this.ConnectionStatus = source.ConnectionStatus;
+            this.Count = source.Count;
             this.CurrentRowIndicator = source.CurrentRowIndicator;
             this.EffectiveDate = source.EffectiveDate;
             this.ExpireDate = source.ExpireDate;

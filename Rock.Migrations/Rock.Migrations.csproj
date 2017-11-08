@@ -4741,7 +4741,9 @@
     <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimPersonBirthDate.sql">
       <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimPersonHistorical.sql" />
+    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimPersonHistorical.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\201711081825032_Analytics4_spAnalytics_ETL_Family.sql">
       <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
     </Content>

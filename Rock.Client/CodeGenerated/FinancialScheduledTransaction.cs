@@ -59,6 +59,9 @@ namespace Rock.Client
         public string GatewayScheduleId { get; set; }
 
         /// <summary />
+        public string GatewayTransactionKey { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; }
 
         /// <summary />
@@ -134,6 +137,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GatewayScheduleId = source.GatewayScheduleId;
+            this.GatewayTransactionKey = source.GatewayTransactionKey;
             this.IsActive = source.IsActive;
             this.LastRemindedDate = source.LastRemindedDate;
             this.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
