@@ -354,6 +354,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool GroupAttendanceRequiresSchedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets a lava template that can be used for generating  view details for Group.
+        /// </summary>
+        /// <value>
+        /// The Group View Lava Template.
+        /// </value>
+        [DataMember]
+        public string GroupViewLavaTemplate { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -560,6 +570,12 @@ namespace Rock.Model
                             parentIds.Add( parent.Id );
                             parent = parent.InheritedGroupType;
                         }
+                    }
+
+                    if ( string.IsNullOrEmpty( GroupViewLavaTemplate ) )
+                    {
+                        this.ValidationResults.Add( new ValidationResult( "Lava template for group view is mandatory." ) );
+                        return false;
                     }
                 }
 

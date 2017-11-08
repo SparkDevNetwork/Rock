@@ -317,6 +317,15 @@ namespace Rock.Web.Cache
         public bool IgnorePersonInactivated { get; set; }
 
         /// <summary>
+        /// Gets or sets a lava template that can be used for generating  view details for Group.
+        /// </summary>
+        /// <value>
+        /// The Group View Lava Template.
+        /// </value>
+        [DataMember]
+        public string GroupViewLavaTemplate { get; set; }
+
+        /// <summary>
         /// Gets or sets the roles.
         /// </summary>
         /// <value>
@@ -479,7 +488,7 @@ namespace Rock.Web.Cache
                 this.GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
                 this.IgnorePersonInactivated = groupType.IgnorePersonInactivated;
                 this.IsIndexEnabled = groupType.IsIndexEnabled;
-
+                this.GroupViewLavaTemplate = groupType.GroupViewLavaTemplate;
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
 
                 this.Roles = new List<GroupTypeRoleCache>();
