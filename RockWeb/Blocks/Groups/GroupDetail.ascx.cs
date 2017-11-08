@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Copy Button", "Copies the group and all of its associated authorization rules", false, "", 10 )]
     [LinkedPage( "Group List Page", "The page to display related Group List.", false, "", "", 11 )]
     [LinkedPage( "Fundraising Progress Page", "The page to display fundraising progress for all its members.", false, "", "", 12 )]
-    [BooleanField( "Show Location Addresses", "Determines if the location address should be shown when viewing the group details.", true, order: 13)]
+    [BooleanField( "Show Location Addresses", "Determines if the location address should be shown when viewing the group details.", true, order: 13 )]
     [BooleanField( "Prevent Selecting Inactive Campus", "Should inactive campuses be excluded from the campus field when editing a group?.", false, "", 14 )]
 
     public partial class GroupDetail : RockBlock, IDetailBlock
@@ -1560,28 +1560,6 @@ namespace RockWeb.Blocks.Groups
 
             pdAuditDetails.SetEntity( group, ResolveRockUrl( "~" ) );
 
-            if ( !string.IsNullOrWhiteSpace( group.Description ) )
-            {
-                lGroupDescription.Text = string.Format( "<p class='description'>{0}</p>", group.Description );
-            }
-
-            DescriptionList descriptionList = new DescriptionList();
-
-            if ( group.ParentGroup != null )
-            {
-                descriptionList.Add( "Parent Group", group.ParentGroup.Name );
-            }
-
-            if ( group.RequiredSignatureDocumentTemplate != null )
-            {
-                descriptionList.Add( "Required Signed Document", group.RequiredSignatureDocumentTemplate.Name );
-            }
-
-            if ( group.Schedule != null )
-            {
-                descriptionList.Add( "Schedule", group.Schedule.ToString() );
-            }
-
             if ( group.Campus != null )
             {
                 hlCampus.Visible = true;
@@ -1592,152 +1570,33 @@ namespace RockWeb.Blocks.Groups
                 hlCampus.Visible = false;
             }
 
-            // configure group capacity
-            nbGroupCapacityMessage.Visible = false;
-            if ( group.GroupType != null && group.GroupType.GroupCapacityRule != GroupCapacityRule.None )
-            {
-                // check if we're over capacity and if so show warning
-                if ( group.GroupCapacity.HasValue )
-                {
-                    int activeGroupMemberCount = group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
-                    if ( activeGroupMemberCount > group.GroupCapacity )
-                    {
-                        nbGroupCapacityMessage.Text = string.Format( "This group is over capacity by {0}.", "individual".ToQuantity( ( activeGroupMemberCount - group.GroupCapacity.Value ) ) );
-                        nbGroupCapacityMessage.Visible = true;
-
-                        if ( group.GroupType != null && group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard )
-                        {
-                            nbGroupCapacityMessage.NotificationBoxType = NotificationBoxType.Danger;
-                        }
-                    }
-
-                    descriptionList.Add( "Capacity", group.GroupCapacity.ToString() );
-                }
-            }
-
-            lblMainDetails.Text = descriptionList.Html;
-
-            group.LoadAttributes();
-            var attributes = group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name )
-                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
-                .ToList();
-
-            var attributeCategories = Helper.GetAttributeCategories( attributes );
-
-            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes, null, false );
-
             var pageParams = new Dictionary<string, string>();
             pageParams.Add( "GroupId", group.Id.ToString() );
 
             hlAttendance.Visible = group.GroupType != null && group.GroupType.TakesAttendance;
             hlAttendance.NavigateUrl = LinkedPageUrl( "AttendancePage", pageParams );
 
-            var registrations = new Dictionary<int, string>();
-            var eventItemOccurrences = new Dictionary<int, string>();
-            var contentItems = new Dictionary<int, string>();
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "Group", group );
+            mergeFields.Add( "RegistrationInstancePage", LinkedPageRoute( "RegistrationInstancePage" ) );
+            mergeFields.Add( "EventItemOccurrencePage", LinkedPageRoute( "EventItemOccurrencePage" ) );
+            mergeFields.Add( "ContentItemPage", LinkedPageRoute( "ContentItemPage" ) );
+            mergeFields.Add( "ShowLocationAddresses", GetAttributeValue( "ShowLocationAddresses" ).AsBoolean() );
 
-            var linkages = group.Linkages.ToList();
-            if ( linkages.Any() )
+            var mapStyleValue = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ) );
+            if ( mapStyleValue == null )
             {
-                linkages
-                    .Where( l =>
-                        l.RegistrationInstanceId.HasValue )
-                    .ToList()
-                    .ForEach( l => registrations
-                        .AddOrIgnore( l.RegistrationInstanceId.Value, l.ToString( true, true, false ) ) );
-
-                linkages
-                    .Where( l =>
-                        l.EventItemOccurrence != null &&
-                        l.EventItemOccurrence.EventItem != null )
-                    .ToList()
-                    .ForEach( l => eventItemOccurrences
-                        .AddOrIgnore( l.EventItemOccurrence.Id, string.Format( "{0} - {1}", l.EventItemOccurrence.EventItem.Name, l.EventItemOccurrence.Campus != null ? l.EventItemOccurrence.Campus.Name : "All Campuses" ) ) );
-
-                linkages
-                    .Where( l =>
-                        l.EventItemOccurrence != null &&
-                        l.EventItemOccurrence.EventItem != null &&
-                        l.EventItemOccurrence.ContentChannelItems.Any() )
-                    .SelectMany( l => l.EventItemOccurrence.ContentChannelItems.Where( i => i.ContentChannelItem != null ) )
-                    .ToList()
-                    .ForEach( i => contentItems
-                        .AddOrIgnore( i.ContentChannelItem.Id, string.Format( "{0} <small>({1})</small>", i.ContentChannelItem.Title, i.ContentChannelItem.ContentChannelType.Name ) ) );
-
-                rptLinkedRegistrations.DataSource = registrations;
-                rptLinkedRegistrations.DataBind();
-
-                rptEventItemOccurrences.DataSource = eventItemOccurrences;
-                rptEventItemOccurrences.DataBind();
-
-                rptContentItems.DataSource = contentItems;
-                rptContentItems.DataBind();
+                mapStyleValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
             }
 
-            rcwLinkedRegistrations.Visible = registrations.Any();
-            rcwEventItemOccurrences.Visible = eventItemOccurrences.Any();
-            rcwContentItems.Visible = contentItems.Any();
-
-            // Get Map Style
-            phMaps.Controls.Clear();
+            mergeFields.Add( "MapStyle", mapStyleValue );
+            
 
             string groupMapUrl = LinkedPageUrl( "GroupMapPage", pageParams );
+            mergeFields.Add( "GroupMapUrl", groupMapUrl );
+
             if ( groupMapUrl.IsNotNullOrWhitespace() )
             {
-                var mapStyleValue = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ) );
-                if ( mapStyleValue == null )
-                {
-                    mapStyleValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
-                }
-
-                if ( mapStyleValue != null )
-                {
-                    string mapStyle = mapStyleValue.GetAttributeValue( "StaticMapStyle" );
-                    if ( !string.IsNullOrWhiteSpace( mapStyle ) )
-                    {
-                        foreach ( GroupLocation groupLocation in group.GroupLocations.OrderBy( gl => ( gl.GroupLocationTypeValue != null ) ? gl.GroupLocationTypeValue.Order : int.MaxValue ) )
-                        {
-                            if ( groupLocation.Location != null )
-                            {
-                                var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
-
-                                if ( groupLocation.Location.GeoPoint != null && !string.IsNullOrWhiteSpace( googleAPIKey ) )
-                                {
-                                    string markerPoints = string.Format( "{0},{1}", groupLocation.Location.GeoPoint.Latitude, groupLocation.Location.GeoPoint.Longitude );
-                                    string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
-                                    mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
-                                    mapLink += "&sensor=false&size=450x250&zoom=13&format=png&key=" + googleAPIKey;
-                                    var literalcontrol = new Literal()
-                                    {
-                                        Text = string.Format(
-                                        "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a>{3}</div>",
-                                        groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty, // 0
-                                        groupMapUrl, // 1
-                                        mapLink, //2
-                                        groupLocation.Location.GetFullStreetAddress().IsNotNullOrWhitespace() && GetAttributeValue( "ShowLocationAddresses" ).AsBoolean() ? string.Format("<div class='address'>{0}</div>", groupLocation.Location.GetFullStreetAddress() ) : "" // 3
-                                        ), // 2
-                                        Mode = LiteralMode.PassThrough
-                                    };
-                                    phMaps.Controls.Add( literalcontrol );
-                                }
-                                else if ( groupLocation.Location.GeoFence != null && !string.IsNullOrWhiteSpace( googleAPIKey ) )
-                                {
-                                    string polygonPoints = "enc:" + groupLocation.Location.EncodeGooglePolygon();
-                                    string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", string.Empty );
-                                    mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
-                                    mapLink += "&sensor=false&size=350x200&format=png&key=" + googleAPIKey;
-                                    phMaps.Controls.Add(
-                                        new LiteralControl( string.Format(
-                                            "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
-                                            groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
-                                            groupMapUrl,
-                                            mapLink ) ) );
-                                }
-                            }
-                        }
-                    }
-                }
-
                 hlMap.Visible = true;
                 hlMap.NavigateUrl = groupMapUrl;
             }
@@ -1745,6 +1604,9 @@ namespace RockWeb.Blocks.Groups
             {
                 hlMap.Visible = false;
             }
+            string template = group.GroupType.GroupViewLavaTemplate;
+
+            lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlGroupDetail.ClientID );
 
             string fundraisingProgressUrl = LinkedPageUrl( "FundraisingProgressPage", pageParams );
             var groupTypeIdFundraising = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
@@ -2128,7 +1990,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gLocations_Edit( object sender, RowEventArgs e )
         {
-            Guid locationGuid = (Guid)e.RowKeyValue;
+            Guid locationGuid = ( Guid ) e.RowKeyValue;
             gLocations_ShowEdit( locationGuid );
         }
 
@@ -2271,7 +2133,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gLocations_Delete( object sender, RowEventArgs e )
         {
-            Guid rowGuid = (Guid)e.RowKeyValue;
+            Guid rowGuid = ( Guid ) e.RowKeyValue;
             GroupLocationsState.RemoveEntity( rowGuid );
 
             BindLocationsGrid();
@@ -2410,7 +2272,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gGroupRequirements_Edit( object sender, RowEventArgs e )
         {
-            Guid groupRequirementGuid = (Guid)e.RowKeyValue;
+            Guid groupRequirementGuid = ( Guid ) e.RowKeyValue;
             gGroupRequirements_ShowEdit( groupRequirementGuid );
         }
 
@@ -2515,7 +2377,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gGroupRequirements_Delete( object sender, RowEventArgs e )
         {
-            Guid rowGuid = (Guid)e.RowKeyValue;
+            Guid rowGuid = ( Guid ) e.RowKeyValue;
             GroupRequirementsState.RemoveEntity( rowGuid );
 
             BindGroupRequirementsGrid();
@@ -2552,7 +2414,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupMemberAttributes_Edit( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             gGroupMemberAttributes_ShowEdit( attributeGuid );
         }
 
@@ -2603,7 +2465,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupMemberAttributes_Delete( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             GroupMemberAttributesState.RemoveEntity( attributeGuid );
 
             BindGroupMemberAttributesGrid();
@@ -2772,7 +2634,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gMemberWorkflowTriggers_Edit( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             gMemberWorkflowTriggers_ShowEdit( attributeGuid );
         }
 
@@ -2959,7 +2821,7 @@ namespace RockWeb.Blocks.Groups
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gMemberWorkflowTriggers_Delete( object sender, RowEventArgs e )
         {
-            Guid rowGuid = (Guid)e.RowKeyValue;
+            Guid rowGuid = ( Guid ) e.RowKeyValue;
             MemberWorkflowTriggersState.RemoveEntity( rowGuid );
 
             BindMemberWorkflowTriggersGrid();
