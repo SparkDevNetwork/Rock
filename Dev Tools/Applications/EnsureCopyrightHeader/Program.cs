@@ -10,7 +10,7 @@ namespace EnsureCopyrightHeader
         /// <summary>
         /// The ignore files
         /// </summary>
-        static string[] IgnoreFiles = new string[] { "DoubleMetaphone.cs" };
+        static string[] IgnoreFiles = new string[] { "\\DoubleMetaphone.cs", "\\Rock.Version\\AssemblySharedInfo.cs" };
 
         /// <summary>
         /// The ignore folders
@@ -130,7 +130,7 @@ namespace EnsureCopyrightHeader
 
                 foreach ( var f in IgnoreFiles )
                 {
-                    if ( Path.GetFileName( fileName ).Equals( f, StringComparison.OrdinalIgnoreCase ) )
+                    if ( Path.GetFullPath( fileName ).EndsWith( f, StringComparison.OrdinalIgnoreCase ) )
                     {
                         skipFile = true;
                     }
