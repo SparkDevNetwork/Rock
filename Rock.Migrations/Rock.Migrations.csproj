@@ -393,6 +393,10 @@
     <Compile Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.Designer.cs">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711081308214_AddGroupViewLavaTemplate.cs" />
+    <Compile Include="Migrations\201711081308214_AddGroupViewLavaTemplate.Designer.cs">
+      <DependentUpon>201711081308214_AddGroupViewLavaTemplate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2836,6 +2840,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.resx">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711081308214_AddGroupViewLavaTemplate.resx">
+      <DependentUpon>201711081308214_AddGroupViewLavaTemplate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
