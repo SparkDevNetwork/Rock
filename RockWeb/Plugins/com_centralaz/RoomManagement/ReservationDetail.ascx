@@ -132,7 +132,7 @@
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_OnClick" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_OnClick" CausesValidation="false" />
-                    <asp:LinkButton ID="btnDelete" runat="server" Visible="false" Text="<i class='fa fa-trash-o'></i> Delete" CssClass="btn btn-link text-danger" OnClick="btnDelete_OnClick" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Visible="false" Text="<i class='fa fa-trash-o'></i> Delete" CssClass="btn btn-link text-danger" OnClick="btnDelete_OnClick" CausesValidation="false" />
                 </div>
             </div>
         </asp:Panel>
