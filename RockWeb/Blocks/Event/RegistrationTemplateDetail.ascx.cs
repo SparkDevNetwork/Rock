@@ -2064,6 +2064,7 @@ namespace RockWeb.Blocks.Event
             lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
 
             rcwForms.Label = string.Format( "<strong>Forms</strong> ({0}) <i class='fa fa-caret-down'></i>", RegistrationTemplate.Forms.Count() );
+            lFormsReadonly.Text = string.Empty;
             if ( RegistrationTemplate.Forms.Any() )
             {
                 foreach ( var form in RegistrationTemplate.Forms.OrderBy( a => a.Order ) )
