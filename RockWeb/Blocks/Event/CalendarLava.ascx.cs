@@ -64,8 +64,8 @@ namespace RockWeb.Blocks.Event
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 14 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 15 )]
 
-    [TextField("Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order:16)]
-    [TextField("Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 17)]
+    [TextField( "Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order: 16 )]
+    [TextField( "Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 17 )]
 
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["ViewMode"]  = ViewMode;
+            ViewState["ViewMode"] = ViewMode;
             ViewState["SelectedDate"] = SelectedDate;
             ViewState["FilterStartDate"] = FilterStartDate;
             ViewState["FilterEndDate"] = FilterEndDate;
@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Event
                 pnlDetails.Visible = false;
             }
         }
-        
+
         #endregion
 
         #region Events
@@ -319,11 +319,11 @@ namespace RockWeb.Blocks.Event
                         m.EventItem.IsApproved );
 
             // Filter by campus
-            List<int> campusIds =  cblCampus.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
+            List<int> campusIds = cblCampus.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
             if ( campusIds.Any() )
             {
                 qry = qry
-                    .Where( c => 
+                    .Where( c =>
                         !c.CampusId.HasValue ||    // All
                         campusIds.Contains( c.CampusId.Value ) );
             }
@@ -370,7 +370,7 @@ namespace RockWeb.Blocks.Event
                     if ( eventItemOccurrence.Schedule.EffectiveEndDate.HasValue && ( eventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.Schedule.EffectiveEndDate ) )
                     {
                         var multiDate = eventItemOccurrence.Schedule.EffectiveStartDate;
-                        while ( multiDate.HasValue && ( multiDate.Value < eventItemOccurrence.Schedule.EffectiveEndDate.Value ))
+                        while ( multiDate.HasValue && ( multiDate.Value < eventItemOccurrence.Schedule.EffectiveEndDate.Value ) )
                         {
                             CalendarEventDates.Add( multiDate.Value.Date );
                             multiDate = multiDate.Value.AddDays( 1 );
@@ -468,7 +468,7 @@ namespace RockWeb.Blocks.Event
                 FilterStartDate = today.StartOfWeek( _firstDayOfWeek );
                 FilterEndDate = today.EndOfWeek( _firstDayOfWeek );
             }
-            else if ( ViewMode == "Month")
+            else if ( ViewMode == "Month" )
             {
                 FilterStartDate = new DateTime( today.Year, today.Month, 1 );
                 FilterEndDate = FilterStartDate.Value.AddMonths( 1 ).AddDays( -1 );
@@ -483,30 +483,31 @@ namespace RockWeb.Blocks.Event
             rcwCampus.Visible = GetAttributeValue( "CampusFilterDisplayMode" ).AsInteger() > 1;
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
-            
-	    //Check for Campus Parameter
-	    var campusId = PageParameter(GetAttributeValue("CampusParameterName")).AsIntegerOrNull();
-	    if (campusId.HasValue)
-	    {
-	        //check if there's a campus with this id.
-		if (CampusCache.Where(c => c.Id == campusId.Value).FirstOrDefault() != null)
-		{
-		    cblCampus.SetValue(campusId.Value);
-		}
-	    }
-	    else
-	    {
-	        if (GetAttributeValue("EnableCampusContext").AsBoolean())
-	        {
-		    var contextCampus = RockPage.GetCurrentContext(EntityTypeCache.Read("Rock.Model.Campus")) as Campus;
-		    if (contextCampus != null)
-		    {
-		        cblCampus.SetValue(contextCampus.Id);
-		    }
-		}
-	    }
-			
-	    // Setup Category Filter
+
+            //Check for Campus Parameter
+            var campusId = PageParameter( GetAttributeValue( "CampusParameterName" ) ).AsIntegerOrNull();
+            if ( campusId.HasValue )
+            {
+                //check if there's a campus with this id.
+                var campus = CampusCache.Read( campusId.Value );
+                if ( campus != null )
+                {
+                    cblCampus.SetValue( campusId.Value );
+                }
+            }
+            else
+            {
+                if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
+                {
+                    var contextCampus = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus;
+                    if ( contextCampus != null )
+                    {
+                        cblCampus.SetValue( contextCampus.Id );
+                    }
+                }
+            }
+
+            // Setup Category Filter
             var selectedCategoryGuids = GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
             rcwCategory.Visible = selectedCategoryGuids.Any() && GetAttributeValue( "CategoryFilterDisplayMode" ).AsInteger() > 1;
             var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
@@ -515,18 +516,18 @@ namespace RockWeb.Blocks.Event
                 cblCategory.DataSource = definedType.DefinedValues.Where( v => selectedCategoryGuids.Contains( v.Guid ) );
                 cblCategory.DataBind();
             }
-	    var categoryId = PageParameter(GetAttributeValue("CategoryParameterName")).AsIntegerOrNull(); ;
-	    if (categoryId.HasValue)
-	    {
-	        if (definedType.DefinedValues.Where(v => selectedCategoryGuids.Contains(v.Guid) && v.Id == categoryId.Value).FirstOrDefault() != null)
-		{
-		    cblCategory.SetValue(categoryId.Value);
-		}
-				
-	    }
-	    
-	    // Date Range Filter
-	    drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
+            var categoryId = PageParameter( GetAttributeValue( "CategoryParameterName" ) ).AsIntegerOrNull(); ;
+            if ( categoryId.HasValue )
+            {
+                if ( definedType.DefinedValues.Where( v => selectedCategoryGuids.Contains( v.Guid ) && v.Id == categoryId.Value ).FirstOrDefault() != null )
+                {
+                    cblCategory.SetValue( categoryId.Value );
+                }
+
+            }
+
+            // Date Range Filter
+            drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
             lbDateRangeRefresh.Visible = drpDateRange.Visible;
             drpDateRange.LowerValue = FilterStartDate;
             drpDateRange.UpperValue = FilterEndDate;
@@ -535,7 +536,7 @@ namespace RockWeb.Blocks.Event
             var viewsVisible = new List<bool> {
                 GetAttributeValue( "ShowDayView" ).AsBoolean(),
                 GetAttributeValue( "ShowWeekView" ).AsBoolean(),
-                GetAttributeValue( "ShowMonthView" ).AsBoolean() 
+                GetAttributeValue( "ShowMonthView" ).AsBoolean()
             };
             var howManyVisible = viewsVisible.Where( v => v ).Count();
             btnDay.Visible = howManyVisible > 1 && viewsVisible[0];
