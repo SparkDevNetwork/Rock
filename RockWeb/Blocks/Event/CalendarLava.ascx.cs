@@ -64,8 +64,8 @@ namespace RockWeb.Blocks.Event
 
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 15 )]
 
-	[TextField("Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order:16)]
-	[TextField("Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 17)]
+    [TextField("Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order:16)]
+    [TextField("Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 17)]
 
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
@@ -471,31 +471,30 @@ namespace RockWeb.Blocks.Event
             rcwCampus.Visible = GetAttributeValue( "CampusFilterDisplayMode" ).AsInteger() > 1;
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
-
-			//Check for Campus Parameter
-			var campusId = PageParameter(GetAttributeValue("CampusParameterName")).AsIntegerOrNull();
-			if (campusId.HasValue)
-			{
-
-				//check if there's a campus with this id.
-				if (CampusCache.Where(c => c.Id == campusId.Value).FirstOrDefault() != null)
-				{
-					cblCampus.SetValue(campusId.Value);
-				}
-			}
-			else
-			{
-				if (GetAttributeValue("EnableCampusContext").AsBoolean())
-				{
-					var contextCampus = RockPage.GetCurrentContext(EntityTypeCache.Read("Rock.Model.Campus")) as Campus;
-					if (contextCampus != null)
-					{
-						cblCampus.SetValue(contextCampus.Id);
-					}
-				}
-			}
+            
+	    //Check for Campus Parameter
+	    var campusId = PageParameter(GetAttributeValue("CampusParameterName")).AsIntegerOrNull();
+	    if (campusId.HasValue)
+	    {
+	        //check if there's a campus with this id.
+		if (CampusCache.Where(c => c.Id == campusId.Value).FirstOrDefault() != null)
+		{
+		    cblCampus.SetValue(campusId.Value);
+		}
+	    }
+	    else
+	    {
+	        if (GetAttributeValue("EnableCampusContext").AsBoolean())
+	        {
+		    var contextCampus = RockPage.GetCurrentContext(EntityTypeCache.Read("Rock.Model.Campus")) as Campus;
+		    if (contextCampus != null)
+		    {
+		        cblCampus.SetValue(contextCampus.Id);
+		    }
+		}
+	    }
 			
-			// Setup Category Filter
+	    // Setup Category Filter
             var selectedCategoryGuids = GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
             rcwCategory.Visible = selectedCategoryGuids.Any() && GetAttributeValue( "CategoryFilterDisplayMode" ).AsInteger() > 1;
             var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
