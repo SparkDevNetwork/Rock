@@ -241,15 +241,7 @@ namespace Rock.Model
         /// <returns>A list of all inherited AttributeCache objects.</returns>
         public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
-            var calendarIds = new List<int>();
-
-            //
-            // Find all the calendar Ids this event item is present on.
-            //
-            var calendarItems = this.EventCalendarItems.ToList() ?? new EventCalendarItemService( rockContext )
-                .Queryable().AsNoTracking().Where( c => c.EventItemId == this.Id ).ToList();
-            calendarIds = calendarItems.Select( c => c.EventCalendarId ).ToList();
-
+            var calendarIds = this.EventCalendarItems.Select( c => c.EventCalendarId ).ToList();
             if ( !calendarIds.Any() )
             {
                 return null;
@@ -299,10 +291,7 @@ namespace Rock.Model
             //
             // Find all the calendar Ids this event item is present on.
             //
-            var calendarItems = this.EventCalendarItems.ToList() ?? new EventCalendarItemService( rockContext )
-                .Queryable().AsNoTracking().Where( c => c.EventItemId == this.Id ).ToList();
-
-            return calendarItems.Select( c => c.Id ).ToList();
+            return this.EventCalendarItems.Select( c => c.Id ).ToList();
         }
 
         #endregion

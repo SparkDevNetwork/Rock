@@ -690,23 +690,33 @@ namespace Rock.Model
         /// <returns>A list of all inherited AttributeCache objects.</returns>
         public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
-            //
-            // Can't use GroupTypeCache here since it loads attributes and would
-            // result in a recursive stack overflow situation.
-            //
-            var groupTypeService = new GroupTypeService( rockContext );
-
-            GroupType groupType = null;
-
-            var group = this.Group ?? new GroupService( rockContext )
-                .Queryable().AsNoTracking().FirstOrDefault( g => g.Id == this.GroupId );
-            if ( group != null )
+            var group = this.Group;
+            if ( group == null && this.GroupId > 0 )
             {
-                groupType = group.GroupType ?? groupTypeService
-                    .Queryable().AsNoTracking().FirstOrDefault( t => t.Id == group.GroupTypeId );
+                group = new GroupService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .FirstOrDefault( g => g.Id == this.GroupId );
             }
 
-            return groupType?.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
+            if ( group != null )
+            {
+                var groupType = group.GroupType;
+                if ( groupType == null && group.GroupTypeId > 0 )
+                {
+                    // Can't use GroupTypeCache here since it loads attributes and would
+                    // result in a recursive stack overflow situation.
+                    groupType = new GroupTypeService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .FirstOrDefault( t => t.Id == group.GroupTypeId );
+                }
+
+                if ( groupType != null )
+                {
+                    return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
+                }
+            }
+
+            return null;
         }
 
         #endregion

@@ -679,13 +679,20 @@ namespace Rock.Model
         /// <returns>A list of all inherited AttributeCache objects.</returns>
         public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
-            var groupTypeService = new GroupTypeService( rockContext );
-            var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( TypeId );
+            var groupType = this.GroupType;
+            if ( groupType == null && this.GroupTypeId > 0 )
+            {
+                groupType = new GroupTypeService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .FirstOrDefault( t => t.Id == this.GroupTypeId );
+            }
 
-            var groupType = this.GroupType ?? groupTypeService
-                .Queryable().AsNoTracking().FirstOrDefault( t => t.Id == this.GroupTypeId );
+            if ( groupType != null )
+            {
+                return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
+            }
 
-            return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
+            return null;
         }
 
         /// <summary>
