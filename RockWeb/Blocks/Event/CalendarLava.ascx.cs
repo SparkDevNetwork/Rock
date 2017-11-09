@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Event
 	[TextField("Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order:16)]
 	[TextField("Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 17)]
 
-	public partial class CalendarLava : Rock.Web.UI.RockBlock
+    public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
         #region Fields
 
