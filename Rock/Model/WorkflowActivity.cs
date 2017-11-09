@@ -159,7 +159,7 @@ namespace Rock.Model
         {
             get
             {
-                return ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
+                return (this.ActivityType?.IsActive ?? true) && ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
             }
             private set { }
         }
