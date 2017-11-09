@@ -516,7 +516,6 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        [Obsolete("IDictionary extension method is more extensible")]
         public static void AddOrReplace<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
         {
             AddOrReplace( (IDictionary<TKey, TValue>)dictionary, key, value );
