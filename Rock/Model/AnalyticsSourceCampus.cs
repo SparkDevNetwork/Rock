@@ -1,49 +1,41 @@
-﻿// <copyright>
-// Copyright by the Spark Development Network
-//
-// Licensed under the Rock Community License (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.rockrms.com/license
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// </copyright>
-//
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a physical or virtual Campus/Site for an organization.  
+    /// Represents the source record for the AnalyticDimCampus view in Rock.
+    /// NOTE: Rock.Jobs.ProcessBIAnalytics dynamically adds additional columns to this table for any Attribute that is marked for Analytics
     /// </summary>
-    [RockDomain( "Core" )]
-    [Table( "Campus" )]
+    [RockDomain( "Reporting" )]
+    [Table( "AnalyticsSourceCampus" )]
     [DataContract]
-    [Analytics( false, true )]
-    public partial class Campus : Model<Campus>, IOrdered
+    [HideFromReporting]
+    public class AnalyticsSourceCampus : AnalyticsSourceCampusBase<AnalyticsSourceCampus>
+    {
+        // intentionally blank
+    }
+
+    /// <summary>
+    /// AnalyticSourceCampus is a real table, and AnalyticsFactCampus is a VIEW off of AnalyticSourceCampus, so they share lots of columns
+    /// </summary>
+    [RockDomain( "Reporting" )]
+    public abstract class AnalyticsSourceCampusBase<T> : Entity<T>
+        where T : AnalyticsSourceCampusBase<T>, new()
     {
         #region Entity Properties
 
-
         /// <summary>
-        /// Gets or sets a flag indicating if the Campus is a part of the Rock system/framework. This property is required.
+        /// Gets or sets the campus identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Block is part of the Rock core system/framework, otherwise is <c>false</c>.
+        /// The campus identifier.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public bool IsSystem { get; set; }
+        [DataMember]
+        public int CampusId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the Campus. This property is required.
@@ -73,7 +65,7 @@ namespace Rock.Model
         /// The is active.
         /// </value>
         [DataMember]
-        public bool? IsActive { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// Gets or sets an optional short code identifier for the campus.
@@ -143,62 +135,18 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Entity Properties specific to Analytics
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Location"/> entity that is associated with this campus.
+        /// Gets or sets the count.
+        /// NOTE: this always has a hardcoded value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Location"/> that is associated with this campus.
+        /// The count.
         /// </value>
         [DataMember]
-        public virtual Location Location { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Person"/> entity that is associated with the leader of the campus.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.Person"/> that is associated as the leader of the campus.
-        /// </value>
-        [DataMember]
-        public virtual PersonAlias LeaderPersonAlias { get; set; }
+        public int Count { get; set; }
 
         #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> containing the Location's Name that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> containing the Location's Name that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
-        #endregion
-
     }
-
-    #region Entity Configuration
-
-    /// <summary>
-    /// Campus Configuration class.
-    /// </summary>
-    public partial class CampusConfiguration : EntityTypeConfiguration<Campus>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CampusConfiguration"/> class.
-        /// </summary>
-        public CampusConfiguration()
-        {
-            this.HasOptional( c => c.Location ).WithMany().HasForeignKey( c => c.LocationId ).WillCascadeOnDelete( false );
-            this.HasOptional( c => c.LeaderPersonAlias ).WithMany().HasForeignKey( c => c.LeaderPersonAliasId ).WillCascadeOnDelete( false );
-        }
-    }
-
-    #endregion
-
 }

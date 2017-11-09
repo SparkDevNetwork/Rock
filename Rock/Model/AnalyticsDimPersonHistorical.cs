@@ -291,6 +291,15 @@ namespace Rock.Model
         [DataMember]
         public double? MailingAddressLongitude { get; set; }
 
+        /// <summary>
+        /// Gets or sets the full mailing address.
+        /// </summary>
+        /// <value>
+        /// The mailing address full.
+        /// </value>
+        [DataMember]
+        public string MailingAddressFull { get; set; }
+
         #endregion
 
         #region Primary Mailing Address (of the person's primary family)
@@ -413,6 +422,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public double? MappedAddressLongitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full mapped address.
+        /// </summary>
+        /// <value>
+        /// The mapped address full.
+        /// </value>
+        [DataMember]
+        public string MappedAddressFull { get; set; }
 
         #endregion
     }
