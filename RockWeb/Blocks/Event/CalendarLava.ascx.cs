@@ -64,6 +64,9 @@ namespace RockWeb.Blocks.Event
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 14 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 15 )]
 
+    [TextField("Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order:16)]
+    [TextField("Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 17)]
+
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -480,16 +483,30 @@ namespace RockWeb.Blocks.Event
             rcwCampus.Visible = GetAttributeValue( "CampusFilterDisplayMode" ).AsInteger() > 1;
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
-            if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
-            {
-                var contextCampus = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus;
-                if ( contextCampus != null )
-                {
-                    cblCampus.SetValue( contextCampus.Id );
-                }
-            }
-
-            // Setup Category Filter
+            
+	    //Check for Campus Parameter
+	    var campusId = PageParameter(GetAttributeValue("CampusParameterName")).AsIntegerOrNull();
+	    if (campusId.HasValue)
+	    {
+	        //check if there's a campus with this id.
+		if (CampusCache.Where(c => c.Id == campusId.Value).FirstOrDefault() != null)
+		{
+		    cblCampus.SetValue(campusId.Value);
+		}
+	    }
+	    else
+	    {
+	        if (GetAttributeValue("EnableCampusContext").AsBoolean())
+	        {
+		    var contextCampus = RockPage.GetCurrentContext(EntityTypeCache.Read("Rock.Model.Campus")) as Campus;
+		    if (contextCampus != null)
+		    {
+		        cblCampus.SetValue(contextCampus.Id);
+		    }
+		}
+	    }
+			
+	    // Setup Category Filter
             var selectedCategoryGuids = GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
             rcwCategory.Visible = selectedCategoryGuids.Any() && GetAttributeValue( "CategoryFilterDisplayMode" ).AsInteger() > 1;
             var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
@@ -498,9 +515,18 @@ namespace RockWeb.Blocks.Event
                 cblCategory.DataSource = definedType.DefinedValues.Where( v => selectedCategoryGuids.Contains( v.Guid ) );
                 cblCategory.DataBind();
             }
-
-            // Date Range Filter
-            drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
+	    var categoryId = PageParameter(GetAttributeValue("CategoryParameterName")).AsIntegerOrNull(); ;
+	    if (categoryId.HasValue)
+	    {
+	        if (definedType.DefinedValues.Where(v => selectedCategoryGuids.Contains(v.Guid) && v.Id == categoryId.Value).FirstOrDefault() != null)
+		{
+		    cblCategory.SetValue(categoryId.Value);
+		}
+				
+	    }
+	    
+	    // Date Range Filter
+	    drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
             lbDateRangeRefresh.Visible = drpDateRange.Visible;
             drpDateRange.LowerValue = FilterStartDate;
             drpDateRange.UpperValue = FilterEndDate;
@@ -620,5 +646,5 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-}
+    }
 }
