@@ -219,6 +219,9 @@ namespace RockWeb.Blocks.Communication
             if ( communication == null )
             {
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
+                communication.CreatedByPersonAlias = this.CurrentPersonAlias;
+                communication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
+                communication.SenderPersonAlias = this.CurrentPersonAlias;
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
                 communication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
 
