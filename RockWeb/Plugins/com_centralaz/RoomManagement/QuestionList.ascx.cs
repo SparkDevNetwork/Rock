@@ -300,6 +300,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     keyMap.AddOrReplace( attribute.Key, true );
                 }
 
+                var nextOrder = attributeService.Queryable().AsNoTracking().Max( a => a.Order ) + 1;
+
                 // Copy from a source Resource
                 if ( sourceId != null )
                 {
@@ -336,14 +338,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                                 cloneAttribute.EntityTypeId = resourceEntityTypeId;
                                 cloneAttribute.AttributeQualifiers.Clear();
 
-                                var oldKey = cloneAttribute.Key;
-                                var index = oldKey.LastIndexOf( '_' );
-                                if ( index > 0 )
-                                {
-                                    oldKey = oldKey.Substring( 0, index );
-                                }
-
-                                cloneAttribute.Key = String.Format( "{0}_ResourceId{1}", oldKey, ResourceId );
+                                cloneAttribute.Key = String.Format( "Q{0}_ResourceId{1}", nextOrder, ResourceId );
+                                nextOrder++;
 
                                 foreach ( var qualifier in question.Attribute.AttributeQualifiers )
                                 {
@@ -414,14 +410,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                                 cloneAttribute.EntityTypeId = locationEntityTypeId;
                                 cloneAttribute.AttributeQualifiers.Clear();
 
-                                var oldKey = cloneAttribute.Key;
-                                var index = oldKey.LastIndexOf( '_' );
-                                if ( index > 0 )
-                                {
-                                    oldKey = oldKey.Substring( 0, index );
-                                }
-
-                                cloneAttribute.Key = String.Format( "{0}_LocationId{1}", oldKey, LocationId );
+                                cloneAttribute.Key = String.Format( "Q{0}_LocationId{1}", nextOrder, LocationId );
+                                nextOrder++;
 
                                 foreach ( var qualifier in question.Attribute.AttributeQualifiers )
                                 {
