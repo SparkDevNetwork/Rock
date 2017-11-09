@@ -512,6 +512,7 @@ namespace RockWeb.Blocks.Event
 		}
 				
 	    }
+	    
 	    // Date Range Filter
 	    drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
             lbDateRangeRefresh.Visible = drpDateRange.Visible;
