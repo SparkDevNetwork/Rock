@@ -1596,6 +1596,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 using ( var rockContext = new RockContext() )
                 {
+                    Guid mobilePhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
+                    Guid homePhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid();
                     Guid workPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid();
                     var contactInfo = new PersonService( rockContext )
                         .Queryable().AsNoTracking()
@@ -1604,7 +1606,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         {
                             Email = p.Email,
                             Phone = p.PhoneNumbers
-                                .Where( n => n.NumberTypeValue.Guid.Equals( workPhoneGuid ) )
+                                .Where( n => n.NumberTypeValue.Guid.Equals( mobilePhoneGuid ) || n.NumberTypeValue.Guid.Equals( homePhoneGuid ) || n.NumberTypeValue.Guid.Equals( workPhoneGuid ) )
+                                .OrderBy( n => n.NumberTypeValue.Order )
                                 .Select( n => n.NumberFormatted )
                                 .FirstOrDefault()
                         } )
@@ -1634,6 +1637,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 using ( var rockContext = new RockContext() )
                 {
+                    Guid mobilePhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
+                    Guid homePhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid();
                     Guid workPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid();
                     var contactInfo = new PersonService( rockContext )
                         .Queryable().AsNoTracking()
@@ -1642,7 +1647,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         {
                             Email = p.Email,
                             Phone = p.PhoneNumbers
-                                .Where( n => n.NumberTypeValue.Guid.Equals( workPhoneGuid ) )
+                                .Where( n => n.NumberTypeValue.Guid.Equals( mobilePhoneGuid ) || n.NumberTypeValue.Guid.Equals( homePhoneGuid ) || n.NumberTypeValue.Guid.Equals( workPhoneGuid ) )
+                                .OrderBy( n => n.NumberTypeValue.Order )
                                 .Select( n => n.NumberFormatted )
                                 .FirstOrDefault()
                         } )
