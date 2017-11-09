@@ -251,8 +251,9 @@ namespace RockWeb.Blocks.Cms
                 channel = new ContentChannel();
             }
 
-            AddAttributeControls( channel );
+            SetInheritedAttributeKeys( ddlChannelType.SelectedValueAsInt() );
 
+            AddAttributeControls( channel );
         }
 
         /// <summary>
@@ -742,16 +743,31 @@ namespace RockWeb.Blocks.Cms
                 int newOrder = 0;
                 ItemAttributesState.ForEach( a => a.Order = newOrder++ );
 
-                ItemInheritedKey = new List<string>();
-                attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
-                     .Where( a =>
-                         a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                         a.EntityTypeQualifierValue.Equals( contentChannel.ContentChannelTypeId.ToString() ) )
-                     .ToList()
-                     .ForEach( a => ItemInheritedKey.Add( a.Key ) );
-
+                SetInheritedAttributeKeys( contentChannel.ContentChannelTypeId );
 
                 BindItemAttributesGrid();
+            }
+        }
+
+        /// <summary>
+        /// Sets the inherited attribute keys.
+        /// </summary>
+        /// <param name="contentChannelTypeId">The content channel type identifier.</param>
+        private void SetInheritedAttributeKeys( int? contentChannelTypeId )
+        {
+            ItemInheritedKey = new List<string>();
+            if ( contentChannelTypeId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    int entityTypeID = new ContentChannelItem().TypeId;
+                    string qualifierValue = contentChannelTypeId.Value.ToString();
+
+                    ItemInheritedKey = new AttributeService( rockContext )
+                        .Get( entityTypeID, "ContentChannelTypeId", qualifierValue )
+                        .Select( a => a.Key )
+                        .ToList();
+                }
             }
         }
 
