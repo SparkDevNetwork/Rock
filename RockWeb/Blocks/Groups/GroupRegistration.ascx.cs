@@ -207,6 +207,7 @@ namespace RockWeb.Blocks.Groups
                         tbLastName.Text.Trim().Equals( CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                     {
                         person = personService.Get( CurrentPerson.Id );
+                        isMatch = true;
                     }
                 }
 
