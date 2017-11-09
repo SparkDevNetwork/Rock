@@ -1,5 +1,5 @@
 IF OBJECT_ID(N'[dbo].[AnalyticsDimPersonHistorical]', 'V') IS NOT NULL
-	DROP VIEW AnalyticsDimPersonHistorical
+    DROP VIEW AnalyticsDimPersonHistorical
 GO
 
 CREATE VIEW AnalyticsDimPersonHistorical
@@ -29,6 +29,9 @@ SELECT asph.*
 			THEN 'Do Not Email'
 		ELSE 'Unknown'
 		END [EmailPreferenceText]
+	,fc.[CampusId]
+	,fc.[CampusName]
+	,fc.[CampusShortCode]
 	,fc.Id [PrimaryFamilyKey]
 	,fc.[MailingAddressStreet1]
 	,fc.[MailingAddressStreet2]

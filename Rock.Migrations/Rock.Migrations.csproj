@@ -4757,8 +4757,8 @@
     <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimAttendanceLocation.sql" />
     <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimCampus.sql" />
     <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimFamilyHistorical.sql" />
-    <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimPersonHistorical.sql" />
     <Content Include="Migrations\201711092125120_Analytics5_spAnalytics_ETL_Campus.sql" />
+    <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimPersonHistorical.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />

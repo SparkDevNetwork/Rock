@@ -170,6 +170,37 @@ namespace Rock.Model
 
         #endregion
 
+        #region Campus (of the person's primary family)
+
+        /// <summary>
+        /// Gets or sets the campus identifier (based on the Family's Address/Location record's CampusId)
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the campus.
+        /// </summary>
+        /// <value>
+        /// The name of the campus.
+        /// </value>
+        [DataMember]
+        public string CampusName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus short code.
+        /// </summary>
+        /// <value>
+        /// The campus short code.
+        /// </value>
+        [DataMember]
+        public string CampusShortCode { get; set; }
+
+        #endregion
+
         #region Primary Mailing Address (of the person's primary family)
 
         /// <summary>
