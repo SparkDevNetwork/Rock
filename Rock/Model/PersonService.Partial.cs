@@ -409,6 +409,14 @@ namespace Rock.Model
                         qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
                     }
 
+                    //
+                    // If searching for businesses, search by the full name as well to handle "," in the name
+                    //
+                    if ( includeBusinesses )
+                    {
+                        qry = qry.Union( GetByLastName( fullName, includeDeceased, includeBusinesses ) );
+                    }
+
                     return qry;
                 }
                 else
