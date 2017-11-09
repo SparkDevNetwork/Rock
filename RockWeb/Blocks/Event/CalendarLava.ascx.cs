@@ -478,7 +478,7 @@ namespace RockWeb.Blocks.Event
 			{
 
 				//check if there's a campus with this id.
-				if (CampusCache.All().Where(c => c.Id == campusId.Value).FirstOrDefault() != null)
+				if (CampusCache.Where(c => c.Id == campusId.Value).FirstOrDefault() != null)
 				{
 					cblCampus.SetValue(campusId.Value);
 				}
