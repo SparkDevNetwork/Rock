@@ -40,16 +40,6 @@ namespace RockWeb.Plugins.church_ccv.Core
     [LinkedPage( "Register Account Page", "Page for user to create an account (if blank option will not be displayed)", false )]
     [KeyValueListField( "Logged In Page List", "List of pages to show in the dropdown when the user is logged in. The link field takes Lava with the CurrentPerson merge fields. Place the text 'divider' in the title field to add a divider.", false, "", "Title", "Link" )]
     
-
-
-    [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
-        @"Sorry, your account has been locked.  Please contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email {{ 'Global' | Attribute:'OrganizationEmail' }} to resolve this.  Thank-you.", "", 5 )]
-    [CodeEditorField( "Confirm Caption", "The text (HTML) to display when a user's account needs to be confirmed.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
-        @"Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "", 2 )]
-    [CodeEditorField( "Forgot Password Caption", "The text (HTML) to display on the forgot password panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
-        @"Enter the email address associated with your account. If you do not receive an email containing reset instructions, please call us at: {{ 'Global' | Attribute:'OrganizationPhone' }}", "", 5 )]
-    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "", 3 )]
-    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
     public partial class LoginWrapper : Rock.Web.UI.RockBlock
     {
         #region LoginWrapper
@@ -65,7 +55,6 @@ namespace RockWeb.Plugins.church_ccv.Core
             base.OnLoad( e );
 
             LoginStatus_OnLoad( e );
-            LoginModal_OnLoad( e );
         }
         #endregion
         
@@ -209,111 +198,6 @@ namespace RockWeb.Plugins.church_ccv.Core
             {
                 RockPage.Layout.Site.RedirectToDefaultPage();
             }
-        }
-        #endregion
-
-        #region LoginModal
-        protected void LoginModal_OnLoad( EventArgs e )
-        {
-            // see if the login class needs to handle this
-            if ( Page.IsPostBack )
-            {
-                // parse the event args so we know what we need to handle
-                string postbackArgs = Request.Params["__EVENTARGUMENT"];
-                if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
-                {
-                    string[] splitArgs = postbackArgs.Split( new char[] { ':' } );
-
-                    // the first should always be the action
-                    switch ( splitArgs [ 0 ] )
-                    {
-                        case "__LOGIN_SUCCEEDED":
-                        {
-                            string returnUrl = Request.QueryString["returnurl"];
-                            LoginModal_TryRedirectUser( returnUrl );
-
-                            break;
-                        }
-
-                        // for now, do the same as when a login succeeds
-                        case "__FORGOT_PASSWORD_SUCCEEDED":
-                        case "__REGISTRATION_SUCCEEDED":
-                        {
-                            string returnUrl = Request.QueryString["returnurl"];
-                            LoginModal_TryRedirectUser( returnUrl );
-
-                            break;
-                        }
-
-
-
-                        default:
-                        {
-                            // ignore unknown actions
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        protected void LoginModal_TryRedirectUser( string returnUrl )
-        {
-            if ( !string.IsNullOrWhiteSpace( returnUrl ) )
-            {
-                string redirectUrl = Server.UrlDecode( returnUrl );
-                Response.Redirect( redirectUrl );
-                ApplicationInstance.CompleteRequest( );
-            }
-            else
-            {
-                // without a return URL, just reload the existing page.
-                Response.Redirect(Request.RawUrl);
-            }
-        }
-                
-        public string LoginModal_GetThemeUrl( )
-        {
-            return ResolveRockUrl( "~~/" );
-        }
-
-        public string LoginModal_GetAppUrl( )
-        {
-            return ResolveRockUrl( "~/" );
-        }
-
-        public string LoginModal_GetConfirmAccountTemplate( )
-        {
-            return GetAttributeValue( "ConfirmAccountTemplate" );
-        }
-
-        public string LoginModal_GetConfirmationUrl( )
-        {
-            string url = LinkedPageUrl( "ConfirmationPage" );
-            if ( string.IsNullOrWhiteSpace( url ) )
-            {
-                url = ResolveRockUrl( "~/ConfirmAccount" );
-            }
-
-            return RootPath + url;
-        }
-
-        public string LoginModal_GetConfirmCaption( )
-        {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
-            return GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
-        }
-
-        public string LoginModal_GetLockedOutCaption( )
-        {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
-            return GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
-        }
-
-        public string LoginModal_GetForgotPasswordCaption( )
-        {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
-            return GetAttributeValue( "ForgotPasswordCaption" ).ResolveMergeFields( mergeFields );
         }
         #endregion
     }
