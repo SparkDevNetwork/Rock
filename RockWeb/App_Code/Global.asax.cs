@@ -166,7 +166,23 @@ namespace RockWeb
                     
                     //// Run any needed Rock and/or plugin migrations
                     //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
-                    MigrateDatabase( rockContext );
+                    if ( MigrateDatabase( rockContext ) )
+                    {
+                        // If any migrations ran (version was likely updated)
+                        try
+                        {
+                            Rock.Utility.SparkLinkHelper.SendToSpark();
+                        }
+                        catch ( Exception ex )
+                        {
+                            // Just catch any exceptions, log it, and keep moving... 
+                            try
+                            {
+                                ExceptionLogService.LogException( ex, null );
+                            }
+                            catch { }
+                        }
+                    }
                     
                     // Preload the commonly used objects
                     stopwatch.Restart();
