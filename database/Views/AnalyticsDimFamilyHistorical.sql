@@ -1,5 +1,5 @@
 IF OBJECT_ID(N'[dbo].[AnalyticsDimFamilyHistorical]', 'V') IS NOT NULL
-	DROP VIEW AnalyticsDimFamilyHistorical
+    DROP VIEW AnalyticsDimFamilyHistorical
 GO
 
 CREATE VIEW AnalyticsDimFamilyHistorical

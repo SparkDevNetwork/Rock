@@ -771,11 +771,13 @@
     <Compile Include="Model\AttributeMatrix.cs" />
     <Compile Include="Model\AttributeMatrixItem.cs" />
     <Compile Include="Model\AttributeMatrixTemplate.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsDimCampusService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyCurrentService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyHeadOfHouseholdService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyHistoricalService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsFactAttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceAttendanceService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsSourceCampusService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
     <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationAttachmentService.cs" />

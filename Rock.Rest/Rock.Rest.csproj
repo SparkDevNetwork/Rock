@@ -111,6 +111,8 @@
     </Compile>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimCampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsSourceCampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaFirstNameGenderLookupsController.cs" />

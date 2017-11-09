@@ -95,6 +95,9 @@ namespace Rock.Client
         public string MailingAddressCounty { get; set; }
 
         /// <summary />
+        public string MailingAddressFull { get; set; }
+
+        /// <summary />
         public object MailingAddressGeoFence { get; set; }
 
         /// <summary />
@@ -129,6 +132,9 @@ namespace Rock.Client
 
         /// <summary />
         public string MappedAddressCounty { get; set; }
+
+        /// <summary />
+        public string MappedAddressFull { get; set; }
 
         /// <summary />
         public object MappedAddressGeoFence { get; set; }
@@ -193,6 +199,7 @@ namespace Rock.Client
             this.MailingAddressCity = source.MailingAddressCity;
             this.MailingAddressCountry = source.MailingAddressCountry;
             this.MailingAddressCounty = source.MailingAddressCounty;
+            this.MailingAddressFull = source.MailingAddressFull;
             this.MailingAddressGeoFence = source.MailingAddressGeoFence;
             this.MailingAddressGeoPoint = source.MailingAddressGeoPoint;
             this.MailingAddressLatitude = source.MailingAddressLatitude;
@@ -205,6 +212,7 @@ namespace Rock.Client
             this.MappedAddressCity = source.MappedAddressCity;
             this.MappedAddressCountry = source.MappedAddressCountry;
             this.MappedAddressCounty = source.MappedAddressCounty;
+            this.MappedAddressFull = source.MappedAddressFull;
             this.MappedAddressGeoFence = source.MappedAddressGeoFence;
             this.MappedAddressGeoPoint = source.MappedAddressGeoPoint;
             this.MappedAddressLatitude = source.MappedAddressLatitude;

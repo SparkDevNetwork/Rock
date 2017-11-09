@@ -286,6 +286,13 @@ namespace Rock.Model
             return attributes;
         }
 
+        /// <summary>
+        /// Get any alternate Ids that should be used when loading attribute value for this entity.
+        /// </summary>
+        /// <param name="rockContext"></param>
+        /// <returns>
+        /// A list of any alternate entity Ids that should be used when loading attribute values.
+        /// </returns>
         public override List<int> GetAlternateEntityIds( RockContext rockContext )
         {
             //

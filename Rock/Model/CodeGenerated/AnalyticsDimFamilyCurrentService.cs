@@ -108,6 +108,7 @@ namespace Rock.Model
             target.MailingAddressCity = source.MailingAddressCity;
             target.MailingAddressCountry = source.MailingAddressCountry;
             target.MailingAddressCounty = source.MailingAddressCounty;
+            target.MailingAddressFull = source.MailingAddressFull;
             target.MailingAddressGeoFence = source.MailingAddressGeoFence;
             target.MailingAddressGeoPoint = source.MailingAddressGeoPoint;
             target.MailingAddressLatitude = source.MailingAddressLatitude;
@@ -120,6 +121,7 @@ namespace Rock.Model
             target.MappedAddressCity = source.MappedAddressCity;
             target.MappedAddressCountry = source.MappedAddressCountry;
             target.MappedAddressCounty = source.MappedAddressCounty;
+            target.MappedAddressFull = source.MappedAddressFull;
             target.MappedAddressGeoFence = source.MappedAddressGeoFence;
             target.MappedAddressGeoPoint = source.MappedAddressGeoPoint;
             target.MappedAddressLatitude = source.MappedAddressLatitude;
