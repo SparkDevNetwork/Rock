@@ -265,6 +265,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="channel">The channel.</param>
         private void UpdateControlsForContentChannelType( ContentChannel channel )
         {
+            SetInheritedAttributeKeys( channel.Id );
+
             AddAttributeControls( channel );
 
             int contentChannelTypeId = ddlChannelType.SelectedValueAsInt() ?? 0;
@@ -786,16 +788,29 @@ namespace RockWeb.Blocks.Cms
                 int newOrder = 0;
                 ItemAttributesState.ForEach( a => a.Order = newOrder++ );
 
-                ItemInheritedKey = new List<string>();
-                attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
-                     .Where( a =>
-                         a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                         a.EntityTypeQualifierValue.Equals( contentChannel.ContentChannelTypeId.ToString() ) )
-                     .ToList()
-                     .ForEach( a => ItemInheritedKey.Add( a.Key ) );
-
-
                 BindItemAttributesGrid();
+            }
+        }
+
+        /// <summary>
+        /// Sets the inherited attribute keys.
+        /// </summary>
+        /// <param name="contentChannelTypeId">The content channel type identifier.</param>
+        private void SetInheritedAttributeKeys( int? contentChannelTypeId )
+        {
+            ItemInheritedKey = new List<string>();
+            if ( contentChannelTypeId.HasValue && contentChannelTypeId.Value > 0 )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    int entityTypeID = new ContentChannelItem().TypeId;
+                    string qualifierValue = contentChannelTypeId.Value.ToString();
+
+                    ItemInheritedKey = new AttributeService( rockContext )
+                        .Get( entityTypeID, "ContentChannelTypeId", qualifierValue )
+                        .Select( a => a.Key )
+                        .ToList();
+                }
             }
         }
 
