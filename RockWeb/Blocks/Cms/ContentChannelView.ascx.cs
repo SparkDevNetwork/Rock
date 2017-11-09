@@ -947,20 +947,26 @@ $(document).ready(function() {
                                                     a.EntityTypeQualifierColumn.Equals( "ContentChannelId", StringComparison.OrdinalIgnoreCase ) &&
                                                     a.EntityTypeQualifierValue.Equals( channel.Id.ToString() )
                                                 ) )
+                                            .OrderByDescending( a => a.EntityTypeQualifierColumn )
+                                            .ThenBy( a => a.Order )
                                             .ToList();
 
                     foreach ( var attribute in itemAttributes )
                     {
-                        kvlOrder.CustomKeys.Add( "Attribute:" + attribute.Key, attribute.Name );
-
-                        string computedKey = "I^" + attribute.Key;
-                        ddlMetaDescriptionAttribute.Items.Add( new ListItem( "Item: " + attribute.Name, computedKey ) );
-
-                        var field = attribute.FieldType.Name;
-
-                        if ( field == "Image" )
+                        string attrKey = "Attribute:" + attribute.Key;
+                        if ( !kvlOrder.CustomKeys.ContainsKey( attrKey ) )
                         {
-                            ddlMetaImageAttribute.Items.Add( new ListItem( "Item: " + attribute.Name, computedKey ) );
+                            kvlOrder.CustomKeys.Add( "Attribute:" + attribute.Key, attribute.Name );
+
+                            string computedKey = "I^" + attribute.Key;
+                            ddlMetaDescriptionAttribute.Items.Add( new ListItem( "Item: " + attribute.Name, computedKey ) );
+
+                            var field = attribute.FieldType.Name;
+
+                            if ( field == "Image" )
+                            {
+                                ddlMetaImageAttribute.Items.Add( new ListItem( "Item: " + attribute.Name, computedKey ) );
+                            }
                         }
                     }
 
