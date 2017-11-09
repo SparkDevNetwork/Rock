@@ -144,6 +144,10 @@
                             </div>
                         </div>
                     </div>
+
+                    <div id="ac-dup-form-result-panel" style="visibility: hidden;">
+                        <p id="ac-dup-form-result-message"></p>
+                    </div>
                     
                     <div class="row">
                         <div class="col-md-12 col-sm-8 col-xs-12">
@@ -159,30 +163,22 @@
                                     <p>BIRTHDAY</p>
                                 </div>
                             </div>
+
+                            <%--Intentionally left blank. This is filled procedurally in javascript.--%>
                             <div id="duplicates-form">
-                                <%--ITEM AS ITS OWN ROW--%>
-                                <div class="duplicates-form-item">
-                                    <div class="row">
-                                        <div class="col-md-4 col-sm-4 col-xs-4">
-                                            <input type="radio"  name="person" value="-1">None of the Above<br>
-                                        </div>
-                                    </div>
-                                </div>
-
-
+                                
                             </div>
-
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-12 col-sm-8 col-xs-12 text-center">
                             <div style="margin: 25px 0 25px 0;"></div>
-                            <asp:Button runat="server" Text="Done" CssClass="lm-form-button btn btn-primary" OnClientClick="hideLoginModal(); return false;" CausesValidation="false" />
+                            <asp:Button runat="server" Text="Submit" CssClass="lm-form-button btn btn-primary" OnClientClick="submitDuplicateResponse(); return false;" CausesValidation="false" />
                         </div>
                     </div>
                 </div>
-                <%-- ACCOUNT CREATION RESULT PANEL--%>
+                <%-- END ACCOUNT CREATION DUPLICATES PANEL--%>
 
                 <%-- ACCOUNT CREATION RESULT PANEL (This panel is used to explain the result of the account creation attempt; did it succeed, do they need to confirm, etc.--%>
                 <div id="accountcreationresult-panel" class="accountcreationresult-panel-hidden">
@@ -202,7 +198,7 @@
                         </div>
                     </div>
                 </div>
-                <%-- ACCOUNT CREATION RESULT PANEL--%>
+                <%-- END ACCOUNT CREATION RESULT PANEL--%>
 
                 <%-- FORGOT PASSWORD PANEL--%>
                 <div id="forgotpassword-panel" class="forgotpassword-panel-hidden">
@@ -248,6 +244,7 @@
 <%-- END LOGIN WRAPPER MODAL--%>
 
 <script type="text/javascript">
+    // ---- UTILITY ----
    $(document).keydown(function(e) {
 		// ESCAPE key pressed
 		if (e.keyCode == 27) {
@@ -261,7 +258,40 @@
 	        hideLoginModal();
 	    }
 	}, false);
+
+	function validateEmail(emailText) {
+	    var mailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,9})+$/;
+
+	    if (emailText.match(mailFormat)) {
+	        return true;
+	    }
+
+	    return false;
+	}
+    // ---- END UTILITY ----
 	
+	function displayLoginModal() {
+
+	    //todo: do this without animation so it's instant
+	    hideAccountCreationDuplicatesPanel();
+	    hideAccountCreationResultPanel();
+	    hideCreateAccountPanel();
+	    hideForgotPasswordPanel();
+
+	    // fade in the bg screen (the grey overlay)
+	    var bgScreen = $("#bg-screen");
+	    bgScreen.removeClass("bg-screen-hidden");
+	    bgScreen.addClass("bg-screen-visible");
+
+	    // fly in the actual login modal
+	    var loginModal = $("#login-modal");
+	    loginModal.removeClass("login-modal-hidden");
+	    loginModal.addClass("login-modal-visible");
+
+	    // make sure the loader is hidden
+	    hideLoader();
+	}
+
 	function hideLoginModal() {
 
 	    // fade OUT the bg screen (the grey overlay)
@@ -275,64 +305,36 @@
 	    loginModal.addClass("login-modal-hidden");
 	}
 
-    function displayLoginModal() {
+	function showResponsePanel(panelId, panelMessageId, errorMsg) {
 
-        //todo: do this without animation so it's instant
-        hideAccountCreationDuplicatesPanel();
-        hideAccountCreationResultPanel();
-        hideCreateAccountPanel();
-        hideForgotPasswordPanel();
+	    // reveal the panel
+	    var responsePanel = $(panelId);
+	    responsePanel.css("visibility", "visible");
+	    responsePanel.addClass("alert alert-warning block-message margin-t-md");
 
-        // fade in the bg screen (the grey overlay)
-        var bgScreen = $("#bg-screen");
-        bgScreen.removeClass("bg-screen-hidden");
-        bgScreen.addClass("bg-screen-visible");
+	    // display the appropriate message
+	    var responseMessage = $(panelMessageId);
+	    responseMessage.text(errorMsg);
+	}
 
-        // fly in the actual login modal
-        var loginModal = $("#login-modal");
-        loginModal.removeClass("login-modal-hidden");
-        loginModal.addClass("login-modal-visible");
+    function hideResponsePanel(panelId, panelMessageId) {
 
-        // make sure the loader is hidden
-        hideLoader();
+        var responsePanel = $(panelId);
+        responsePanel.removeClass("alert alert-warning block-message margin-t-md");
+        responsePanel.css("visibility", "none");
+        responsePanel.css("height", "");
+        responsePanel.css("margin", "");
+        responsePanel.css("padding", "");
+
+        var responseMessage = $(panelMessageId);
+        responseMessage.css("height", "");
+        responseMessage.css("margin", "");
+        responseMessage.css("padding", "");
+        responseMessage.css("visibility", "none");
+        responseMessage.text("");
     }
 
-    function displayCreateAccountPanel() {
-        var createAccountPanel = $("#createaccount-panel");
-        createAccountPanel.removeClass("createaccount-panel-hidden");
-        createAccountPanel.addClass("createaccount-panel-visible");
-    }
-
-    function hideCreateAccountPanel() {
-        var createAccountPanel = $("#createaccount-panel");
-        createAccountPanel.removeClass("createaccount-panel-visible");
-        createAccountPanel.addClass("createaccount-panel-hidden");
-    }
-
-    function displayAccountCreationResultPanel() {
-        var accountCreatedPanel = $("#accountcreationresult-panel");
-        accountCreatedPanel.removeClass("accountcreationresult-panel-hidden");
-        accountCreatedPanel.addClass("accountcreationresult-panel-visible");
-    }
-
-    function hideAccountCreationResultPanel() {
-        var panel = $("#accountcreationresult-panel");
-        panel.removeClass("accountcreationresult-panel-visible");
-        panel.addClass("accountcreationresult-panel-hidden");
-    }
-
-    function displayForgotPasswordPanel() {
-        var forgotPasswordPanel = $("#forgotpassword-panel");
-        forgotPasswordPanel.removeClass("forgotpassword-panel-hidden");
-        forgotPasswordPanel.addClass("forgotpassword-panel-visible");
-    }
-
-    function hideForgotPasswordPanel() {
-        var forgotPasswordPanel = $("#forgotpassword-panel");
-        forgotPasswordPanel.removeClass("forgotpassword-panel-visible");
-        forgotPasswordPanel.addClass("forgotpassword-panel-hidden");
-    }
-
+    // ---- LOGIN ----
     function tryLogin() {
         // hide the response panel
         hideResponsePanel("#lp-form-result-panel", "#lp-form-result-message");
@@ -370,203 +372,6 @@
         }, 250);
 
         return false;
-    }
-
-    function tryRegisterUser() {
-
-        // this function will validate all info inputted, and report any errors found.
-        // if no errors ARE found, it will actually try to register the user
-
-        // hide the response panel
-        hideResponsePanel("#ca-form-result-panel", "#ca-form-result-message");
-
-        // show the spinner
-        displayLoader();
-
-        // get the input fields
-        var username = $("#tb-ca-username").val();
-        var password = $("#tb-ca-password").val();
-        var confirmPassword = $("#tb-ca-confirmpassword").val();
-        var firstname = $("#tb-ca-firstname").val();
-        var lastname = $("#tb-ca-lastname").val();
-        var email = $("#tb-ca-email").val();
-
-        // force a timer so that if they didn't enter a valid password / email,
-        // we can still show them the loader and give them the feel that they pressed 'Register'
-        setTimeout(function () {
-            // make sure there aren't any blank fields
-            if (username.length == 0 || password.length == 0 || confirmPassword.length == 0 || firstname.length == 0 || lastname.length == 0 || email.length == 0) {
-                hideLoader();
-
-                showResponsePanel("#ca-form-result-panel", "#ca-form-result-message", "One or more fields are empty. Please fix and try again");
-            }
-            // make sure their passwords match
-            else if (password != confirmPassword) {
-                hideLoader();
-
-                showResponsePanel("#ca-form-result-panel", "#ca-form-result-message", "Your password doesn't match.");
-            }
-            // and their email is ok
-            else if ( validateEmail( email ) == false) {
-                hideLoader();
-
-                showResponsePanel("#ca-form-result-panel", "#ca-form-result-message", "Your email address isn't valid.");
-            }
-            else {
-
-                // before actually registering, see if their username is available
-                $.ajax({
-                    url: "api/userlogins/available/" + username,
-                    type: "GET"
-                }).done(function (returnData) {
-                    if (returnData == true) {
-                        // all is good. now actually register them
-                        sendUserRegistration(username, confirmPassword, firstname, lastname, email);
-                    }
-                    else {
-                        // let them know their username isn't available
-                        hideLoader();
-                        showResponsePanel("#ca-form-result-panel", "#ca-form-result-message", "That username is not available.");
-                    }
-                });
-            }
-        }, 250);
-    }
-
-    function sendUserRegistration() {
-
-        // get the input fields
-        var username = $("#tb-ca-username").val();
-        var confirmPassword = $("#tb-ca-confirmpassword").val();
-        var firstname = $("#tb-ca-firstname").val();
-        var lastname = $("#tb-ca-lastname").val();
-        var email = $("#tb-ca-email").val();
-
-        var confirmAccountUrl = "<%=LoginModal_GetConfirmAccountUrl( ) %>";
-        var accountCreatedEmailTemplateGuid = "<%=LoginModal_GetAccountCreatedEmailTemplateGuid( ) %>";
-        var appUrl = "<%=LoginModal_GetAppUrl( ) %>";
-        var themeUrl = "<%=LoginModal_GetThemeUrl( ) %>";
-
-        $.ajax({
-            url: "api/web/RegisterNewUser",
-            type: "POST",
-            dataType: "json",
-            contentType: "application/json",
-            data:
-                JSON.stringify({
-                    FirstName: firstname,
-                    LastName: lastname,
-                    Email: email,
-                    Username: username,
-                    Password: confirmPassword,
-                    ConfirmAccountUrl: confirmAccountUrl,
-                    AccountCreatedEmailTemplateGuid: accountCreatedEmailTemplateGuid,
-                    AppUrl: appUrl,
-                    ThemeUrl : themeUrl
-                })
-        }).done(function (returnData) {
-            handleRegistrationResponse(returnData);
-        });
-    }
-
-    function trySendForgotPasswordEmail() {
-
-        // hide the response panel
-        hideResponsePanel("#fp-form-result-panel", "#fp-form-result-message");
-
-        // show the spinner
-        displayLoader();
-
-        var email = $("#tb-fp-email").val();
-
-        var confirmAccountUrl = "<%=LoginModal_GetConfirmAccountUrl( ) %>";
-        var forgotPasswordEmailTemplateGuid = "<%=LoginModal_GetForgotPasswordEmailTemplateGuid( ) %>";
-        var appUrlWithRoot = "<%=LoginModal_GetAppUrlIncludeRoot( ) %>";
-        var themeUrlWithRoot = "<%=LoginModal_GetThemeUrlIncludeRoot( ) %>";
-        
-        // force a timer so that if they didn't enter a valid password / email,
-        // we can still show them the loader and give them the feel that they pressed 'Register'
-        setTimeout(function () {
-            // if their email is invalid, warn them
-            if (email.length == 0 || validateEmail(email) == false) {
-                hideLoader();
-
-                showResponsePanel("#fp-form-result-panel", "#fp-form-result-message", "Your email address isn't valid.");
-            }
-            else {
-
-                $.ajax({
-                    url: "/api/Web/SendForgotPasswordEmail" +
-                         "?confirmAccountUrl=" + encodeURI(confirmAccountUrl) +
-                         "&forgotPasswordEmailTemplateGuid=" + forgotPasswordEmailTemplateGuid +
-                         "&appUrlWithRoot=" + encodeURI(appUrlWithRoot) +
-                         "&themeUrlWithRoot=" + encodeURI(themeUrlWithRoot) +
-                         "&personEmail=" + email,
-                    type: "GET"
-                }).done(function (responseData) {
-                    handleForgotPasswordResponse(responseData);
-                });
-            }
-        });
-    }
-
-    function validateEmail( emailText ) {
-        var mailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,9})+$/;
-
-        if (emailText.match(mailFormat)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    function handleRegistrationResponse(responseData) {
-        hideLoader();
-
-        switch (responseData.RegisterStatus) {
-            case "Created": displayAccountCreationResultPanel(); break;
-            case "Duplicates": displayAccountCreationDuplicatesPanel( responseData.Duplicates ); break;
-            default: {
-                // invoke a postback so the server can redirect us if needed
-                __doPostBack("", "__REGISTRATION_SUCCEEDED" + ":");
-                break;
-            }
-        }
-    }
-
-    function displayAccountCreationDuplicatesPanel( duplicatesInfoList ) {
-        var panel = $("#accountcreationduplicates-panel");
-        panel.removeClass("accountcreationduplicates-panel-hidden");
-        panel.addClass("accountcreationduplicates-panel-visible");
-
-        // build a list with the duplicate people
-        var duplicateHtmlList = $("#duplicates-form");
-
-        for (var i = 0; i < duplicatesInfoList.length; i++) {
-            duplicateHtmlList.prepend(
-                "<div class=\"duplicates-form-item\">" +
-                    "<div class=\"row\">" + 
-                    "<div class=\"col-md-4\">" + "<input type=\"radio\" class=\"duplicates-form-item\" name=\"person\" value=\"" + duplicatesInfoList[i].Id + "\">" + duplicatesInfoList[i].FullName + "</div>" + 
-                    "<div class=\"col-md-4\">" + duplicatesInfoList[i].Gender + "</div>" +
-                    "<div class=\"col-md-4\">" + duplicatesInfoList[i].Birthday + "</div>" +
-                "</div>" + "<br>");
-        }
-
-        //todo: $("#duplicates-form input[type=radio]:checked")[0] use this to see what's checked
-        // need to finish handling these scenarios, and then should be done.
-    }
-
-    function hideAccountCreationDuplicatesPanel() {
-        var panel = $("#accountcreationduplicates-panel");
-        panel.removeClass("accountcreationduplicates-panel-visible");
-        panel.addClass("accountcreationduplicates-panel-hidden");
-    }
-
-    function handleForgotPasswordResponse(responseData) {
-        hideLoader();
-
-        // invoke a postback so the server can redirect us if needed
-        __doPostBack("", "__FORGOT_PASSWORD_SUCCEEDED" + ":");
     }
 
     function handleLoginResponse(responseData) {
@@ -619,34 +424,337 @@
         // invoke a postback so the server can redirect us if needed
         __doPostBack("btnLogin", "__LOGIN_SUCCEEDED" + ":");
     }
+    // ---- END LOGIN ----
 
-    function hideResponsePanel(panelId, panelMessageId) {
-
-        var responsePanel = $(panelId);
-        responsePanel.removeClass("alert alert-warning block-message margin-t-md");
-        responsePanel.css("visibility", "none");
-        responsePanel.css("height", "");
-        responsePanel.css("margin", "");
-        responsePanel.css("padding", "");
-
-        var responseMessage = $(panelMessageId);
-        responseMessage.css("height", "");
-        responseMessage.css("margin", "");
-        responseMessage.css("padding", "");
-        responseMessage.css("visibility", "none");
-        responseMessage.text("");
+    // ---- USER REGISTRATION ----
+    function displayCreateAccountPanel() {
+        var createAccountPanel = $("#createaccount-panel");
+        createAccountPanel.removeClass("createaccount-panel-hidden");
+        createAccountPanel.addClass("createaccount-panel-visible");
     }
 
-    function showResponsePanel(panelId, panelMessageId, errorMsg) {
-
-        // reveal the panel
-        var responsePanel = $(panelId);
-        responsePanel.css("visibility", "visible");
-        responsePanel.addClass( "alert alert-warning block-message margin-t-md" );
-
-        // display the appropriate message
-        var responseMessage = $(panelMessageId);
-        responseMessage.text(errorMsg);
+    function hideCreateAccountPanel() {
+        var createAccountPanel = $("#createaccount-panel");
+        createAccountPanel.removeClass("createaccount-panel-visible");
+        createAccountPanel.addClass("createaccount-panel-hidden");
     }
+
+    function displayAccountCreationResultPanel(createAccountResponse) {
+        var accountCreatedPanel = $("#accountcreationresult-panel");
+        accountCreatedPanel.removeClass("accountcreationresult-panel-hidden");
+        accountCreatedPanel.addClass("accountcreationresult-panel-visible");
+
+        // this panel is used for all account creation resolution.
+        // we'll use the createAccountResponse to know what text to show the user
+        var headerText = $("#accountcreationresult-header");
+        var subText = $("#accountcreationresult-details");
+
+        switch (createAccountResponse) {
+            case "True": {
+                subText.text("Your account has been created. A confirmation email has been sent, and you can now login.");
+                break;
+            }
+
+            case "Emailed": {
+                subText.text("<%=LoginModal_GetAccountHasLoginsCaption( ) %>");
+                break;
+            }
+
+            case "Created": {
+                subText.text("<%=LoginModal_GetConfirmCaption( ) %>");
+                break;
+            }
+        }
+    }
+
+    function hideAccountCreationResultPanel() {
+        var panel = $("#accountcreationresult-panel");
+        panel.removeClass("accountcreationresult-panel-visible");
+        panel.addClass("accountcreationresult-panel-hidden");
+    }
+
+    function tryRegisterUser() {
+
+        // this function will validate all info inputted, and report any errors found.
+        // if no errors ARE found, it will actually try to register the user
+
+        // hide the response panel
+        hideResponsePanel("#ca-form-result-panel", "#ca-form-result-message");
+
+        // show the spinner
+        displayLoader();
+
+        // get the input fields
+        var username = $("#tb-ca-username").val();
+        var password = $("#tb-ca-password").val();
+        var confirmPassword = $("#tb-ca-confirmpassword").val();
+        var firstname = $("#tb-ca-firstname").val();
+        var lastname = $("#tb-ca-lastname").val();
+        var email = $("#tb-ca-email").val();
+
+        // force a timer so that if they didn't enter a valid password / email,
+        // we can still show them the loader and give them the feel that they pressed 'Register'
+        setTimeout(function () {
+            // make sure there aren't any blank fields
+            if (username.length == 0 || password.length == 0 || confirmPassword.length == 0 || firstname.length == 0 || lastname.length == 0 || email.length == 0) {
+                hideLoader();
+
+                showResponsePanel("#ca-form-result-panel", "#ca-form-result-message", "One or more fields are empty. Please fix and try again");
+            }
+            // make sure their passwords match
+            else if (password != confirmPassword) {
+                hideLoader();
+
+                showResponsePanel("#ca-form-result-panel", "#ca-form-result-message", "Your password doesn't match.");
+            }
+            // and their email is ok
+            else if ( validateEmail( email ) == false) {
+                hideLoader();
+
+                showResponsePanel("#ca-form-result-panel", "#ca-form-result-message", "Your email address isn't valid.");
+            }
+            else {
+
+                // before actually registering, see if their username is available
+                $.ajax({
+                    url: "api/userlogins/available/" + username,
+                    type: "GET"
+                }).done(function (returnData) {
+                    if (returnData == true) {
+                        // all is good. now check for duplicates, or register them
+                        checkDuplicatesOrRegister();
+                    }
+                    else {
+                        // let them know their username isn't available
+                        hideLoader();
+                        showResponsePanel("#ca-form-result-panel", "#ca-form-result-message", "That username is not available.");
+                    }
+                });
+            }
+        }, 250);
+    }
+
+    function checkDuplicatesOrRegister() {
+
+        // get the input fields
+        var lastname = $("#tb-ca-lastname").val();
+        var email = $("#tb-ca-email").val();
+
+        // see if the given email and lastname are already registered with one or more people
+        $.ajax({
+            url: "api/web/CheckDuplicates?lastName=" + lastname + "&email=" + email,
+            type: "GET"
+        }).done(function (duplicatesList) {
+
+            // if there were no duplicates, just register them.
+            // if we did find duplicates, they need to decide what to do
+            if (duplicatesList.length == 0) {
+                createPersonWithLogin();
+            }
+            else {
+                hideLoader();
+                displayAccountCreationDuplicatesPanel( duplicatesList );
+            }
+        }); 
+    }
+
+    function createPersonWithLogin() {
+
+        // get the input fields
+        var username = $("#tb-ca-username").val();
+        var password = $("#tb-ca-password").val();
+        var confirmPassword = $("#tb-ca-confirmpassword").val();
+        var firstname = $("#tb-ca-firstname").val();
+        var lastname = $("#tb-ca-lastname").val();
+        var email = $("#tb-ca-email").val();
+
+        // get needed URLs
+        var confirmAccountUrl = "<%=LoginModal_GetConfirmAccountUrl( ) %>";
+        var accountCreatedEmailTemplateGuid = "<%=LoginModal_GetAccountCreatedEmailTemplateGuid( ) %>";
+        var appUrl = "<%=LoginModal_GetAppUrl( ) %>";
+        var themeUrl = "<%=LoginModal_GetThemeUrl( ) %>";
+
+        $.ajax({
+            url: "api/web/CreatePersonWithLogin",
+            type: "POST",
+            contentType: "application/json",
+            data:
+                JSON.stringify({
+                    FirstName: firstname,
+                    LastName: lastname,
+                    Email: email,
+                    Username: username,
+                    Password: confirmPassword,
+                    ConfirmAccountUrl: confirmAccountUrl,
+                    AccountCreatedEmailTemplateGuid: accountCreatedEmailTemplateGuid,
+                    AppUrl: appUrl,
+                    ThemeUrl : themeUrl
+                })
+        }).done(function (registerResponse) {
+            hideLoader();
+            displayAccountCreationResultPanel( registerResponse );
+        });
+    }
+
+    function tryCreateLogin(personId) {
+
+        // get the input fields
+        var username = $("#tb-ca-username").val();
+        var password = $("#tb-ca-password").val();
+        
+        // get needed URLs
+        var confirmAccountUrl = "<%=LoginModal_GetConfirmAccountUrl( ) %>";
+        var confirmAccountEmailTemplateGuid = "<%=LoginModal_GetConfirmAccountEmailTemplateGuid( ) %>";
+        var forgotPasswordEmailTemplateGuid = "<%=LoginModal_GetForgotPasswordEmailTemplateGuid( ) %>";
+        var appUrl = "<%=LoginModal_GetAppUrl( ) %>";
+        var themeUrl = "<%=LoginModal_GetThemeUrl( ) %>";
+
+        $.ajax({
+            url: "api/web/TryCreateLogin",
+            type: "POST",
+            contentType: "application/json",
+            data:
+                JSON.stringify({
+                    PersonId: personId,
+                    Username: username,
+                    Password: password,
+                    ConfirmAccountUrl: confirmAccountUrl,
+                    ConfirmAccountEmailTemplateGuid: confirmAccountEmailTemplateGuid,
+                    ForgotPasswordEmailTemplateGuid: forgotPasswordEmailTemplateGuid,
+                    AppUrl: appUrl,
+                    ThemeUrl : themeUrl
+                })
+        }).done(function (createLoginResponse) {
+            hideLoader();
+            displayAccountCreationResultPanel(createLoginResponse);
+        });
+    }
+
+    function displayAccountCreationDuplicatesPanel(duplicatesInfoList) {
+
+        hideResponsePanel("#ac-dup-form-result-panel", "#ac-dup-form-result-message");
+
+        var panel = $("#accountcreationduplicates-panel");
+        panel.removeClass("accountcreationduplicates-panel-hidden");
+        panel.addClass("accountcreationduplicates-panel-visible");
+
+        // build a list with the duplicate people
+        var duplicateHtmlList = $("#duplicates-form");
+
+        // reset any fields that were already there
+        duplicateHtmlList.empty();
+
+        // add the duplicate users
+        for (var i = 0; i < duplicatesInfoList.length; i++) {
+            duplicateHtmlList.prepend(
+                "<div class=\"duplicates-form-item\">" +
+                    "<div class=\"row\">" +
+                    "<div class=\"col-md-4\">" + "<input type=\"radio\" class=\"duplicates-form-item\" name=\"person\" value=\"" + duplicatesInfoList[i].Id + "\">" + duplicatesInfoList[i].FullName + "</div>" +
+                    "<div class=\"col-md-4\">" + duplicatesInfoList[i].Gender + "</div>" +
+                    "<div class=\"col-md-4\">" + duplicatesInfoList[i].Birthday + "</div>" +
+                "</div>" + "<br>");
+        }
+
+        // add the 'none of the above' option
+        duplicateHtmlList.append("<div class=\"duplicates-form-item\">" +
+                                    "<div class=\"row\">" +
+                                        "<div class=\"col-md-4\">" + "<input type=\"radio\"  name=\"person\" value=\"-1\">None of the Above</div>" +
+                                    "</div>" +
+                                  "</div>");
+    }
+
+    function submitDuplicateResponse() {
+        
+        // get the values they input on the registration page
+
+
+        // see which option they selected
+        var selectedOption = $("#duplicates-form input[type=radio]:checked")[0];
+        if (selectedOption != null) {
+
+            displayLoader();
+
+            // if they said none of the above, this will be easy. we can register them as we normally would.
+            if (selectedOption.value == -1) {
+                createPersonWithLogin();
+            }
+            else {
+                tryCreateLogin(selectedOption.value);
+            }
+        }
+        else {
+            // yell at them for not picking something.
+            showResponsePanel("#ac-dup-form-result-panel", "#ac-dup-form-result-message", "Please select an option.");
+        }
+    }
+
+    function hideAccountCreationDuplicatesPanel() {
+        var panel = $("#accountcreationduplicates-panel");
+        panel.removeClass("accountcreationduplicates-panel-visible");
+        panel.addClass("accountcreationduplicates-panel-hidden");
+    }
+    // ---- END USER REGISTRATION ----
+
+    // ---- FORGOT PASSWORD ----
+    function displayForgotPasswordPanel() {
+        var forgotPasswordPanel = $("#forgotpassword-panel");
+        forgotPasswordPanel.removeClass("forgotpassword-panel-hidden");
+        forgotPasswordPanel.addClass("forgotpassword-panel-visible");
+    }
+
+    function hideForgotPasswordPanel() {
+        var forgotPasswordPanel = $("#forgotpassword-panel");
+        forgotPasswordPanel.removeClass("forgotpassword-panel-visible");
+        forgotPasswordPanel.addClass("forgotpassword-panel-hidden");
+    }
+
+    function trySendForgotPasswordEmail() {
+
+        // hide the response panel
+        hideResponsePanel("#fp-form-result-panel", "#fp-form-result-message");
+
+        // show the spinner
+        displayLoader();
+
+        var email = $("#tb-fp-email").val();
+
+        var confirmAccountUrl = "<%=LoginModal_GetConfirmAccountUrl( ) %>";
+        var forgotPasswordEmailTemplateGuid = "<%=LoginModal_GetForgotPasswordEmailTemplateGuid( ) %>";
+        var appUrlWithRoot = "<%=LoginModal_GetAppUrlIncludeRoot( ) %>";
+        var themeUrlWithRoot = "<%=LoginModal_GetThemeUrlIncludeRoot( ) %>";
+        
+        // force a timer so that if they didn't enter a valid password / email,
+        // we can still show them the loader and give them the feel that they pressed 'Register'
+        setTimeout(function () {
+            // if their email is invalid, warn them
+            if (email.length == 0 || validateEmail(email) == false) {
+                hideLoader();
+
+                showResponsePanel("#fp-form-result-panel", "#fp-form-result-message", "Your email address isn't valid.");
+            }
+            else {
+
+                $.ajax({
+                    url: "/api/Web/SendForgotPasswordEmail" +
+                         "?confirmAccountUrl=" + encodeURI(confirmAccountUrl) +
+                         "&forgotPasswordEmailTemplateGuid=" + forgotPasswordEmailTemplateGuid +
+                         "&appUrlWithRoot=" + encodeURI(appUrlWithRoot) +
+                         "&themeUrlWithRoot=" + encodeURI(themeUrlWithRoot) +
+                         "&personEmail=" + email,
+                    type: "GET"
+                }).done(function (responseData) {
+                    handleForgotPasswordResponse(responseData);
+                });
+            }
+        });
+    }
+    
+    function handleForgotPasswordResponse(responseData) {
+        hideLoader();
+
+        // invoke a postback so the server can redirect us if needed
+        __doPostBack("", "__FORGOT_PASSWORD_SUCCEEDED" + ":");
+    }
+    // ---- END FORGOT PASSWORD ----
 </script>
 <%-- END LOGIN MODAL PANEL--%>

@@ -33,6 +33,7 @@ using Rock.Web.Cache;
 using System.Web.Configuration;
 using church.ccv.Web.Model;
 using church.ccv.Web.Data;
+using Rock;
 
 namespace church.ccv.Web.Rest
 {
@@ -163,76 +164,145 @@ namespace church.ccv.Web.Rest
                 }
             }
         }
-        
-        [System.Web.Http.HttpPost]
-        [System.Web.Http.Route( "api/Web/RegisterNewUser" )]
-        public HttpResponseMessage RegisterNewUser( [FromBody]RegAccountData regAccountData )
+
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route( "api/Web/CheckDuplicates" )]
+        public HttpResponseMessage CheckDuplicates( string lastName, string email )
         {
+            // this will test to see if the given lastname and email are already associated with one or more people,
+            // and return them if they are.
             StringContent restContent = null;
-            RegisterResponseData registrationResponse = new RegisterResponseData( );
+            List<DuplicatePersonInfo> duplicateList = new List<DuplicatePersonInfo>( );
 
             if ( AuthenticateRequest( ) )
             {
                 // first, see if there's already a person with this matching last name and email
                 PersonService personService = new PersonService( new RockContext() );
                 var matches = personService.Queryable().Where( p =>
-                        p.Email.ToLower() == regAccountData.Email.ToLower() && p.LastName.ToLower() == regAccountData.LastName.ToLower() ).ToList();
+                        p.Email.ToLower() == email.ToLower() && p.LastName.ToLower() == lastName.ToLower() ).ToList();
 
-                // we have matches, so we need to have the user decide what to do
-                if ( matches.Count > 0 )
+                // add all duplicates to our list
+                foreach ( Person match in matches )
                 {
-                    registrationResponse.RegisterStatus = RegisterResponseData.Status.Duplicates.ToString();
-
-                    registrationResponse.Duplicates = new List<DuplicatePersonInfo>( );
-                    foreach ( Person match in matches )
+                    DuplicatePersonInfo duplicateInfo = new DuplicatePersonInfo( )
                     {
-                        DuplicatePersonInfo duplicateInfo = new DuplicatePersonInfo( )
-                        {
-                            Id = match.Id,
-                            FullName = match.FullName,
-                            Gender = match.Gender.ToString( ),
-                            Birthday = match.BirthDay + " " + match.BirthMonth.ToString( )
-                        };
+                        Id = match.Id,
+                        FullName = match.FullName,
+                        Gender = match.Gender.ToString( ),
+                        Birthday = match.BirthDay + " " + match.BirthMonth.ToString( )
+                    };
 
-                        registrationResponse.Duplicates.Add( duplicateInfo );
-                    }
-                }
-                else
-                {
-                    Person newPerson;
-                    UserLogin newLogin;
-                    bool result = WebUtil.RegisterNewPerson( regAccountData, out newPerson, out newLogin );
-
-                    if ( result )
-                    {
-                        // email them confirmation
-                        var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
-                        mergeObjects.Add( "ConfirmAccountUrl", regAccountData.ConfirmAccountUrl );
-                        mergeObjects.Add( "Person", newPerson );
-                        mergeObjects.Add( "User", newLogin );
-
-                        var recipients = new List<RecipientData>();
-                        recipients.Add( new RecipientData( newPerson.Email, mergeObjects ) );
-
-                        Email.Send( new Guid( regAccountData.AccountCreatedEmailTemplateGuid ), recipients, regAccountData.AppUrl, regAccountData.ThemeUrl, false );
-
-                        registrationResponse.RegisterStatus = RegisterResponseData.Status.Created.ToString( );
-                    }
-                    else
-                    {
-                        // if there was an error for any reason, let the requester know they should contact CCV for help
-                        registrationResponse.RegisterStatus = RegisterResponseData.Status.Help.ToString( );
-                    }
+                    duplicateList.Add( duplicateInfo );
                 }
             }
-            
-            restContent = new StringContent( JsonConvert.SerializeObject( registrationResponse ), Encoding.UTF8, "application/json" );
+
+            // return a list of duplicates, which will be empty if there weren't any
+            restContent = new StringContent( JsonConvert.SerializeObject( duplicateList ), Encoding.UTF8, "application/json" );
 
             return new HttpResponseMessage()
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = restContent
             };
+        }
+        
+        [System.Web.Http.HttpPost]
+        [System.Web.Http.Route( "api/Web/CreatePersonWithLogin" )]
+        public HttpResponseMessage CreatePersonWithLogin( [FromBody]PersonWithLoginModel personWithLoginModel)
+        {
+            // creates a new person and user login FOR that person.
+            StringContent restContent = null;
+            bool success = false;
+
+            if ( AuthenticateRequest( ) )
+            {
+                // create the new person
+                Person newPerson;
+                UserLogin newLogin;
+                bool result = WebUtil.CreatePersonWithLogin( personWithLoginModel, out newPerson, out newLogin );
+
+                if ( result )
+                {
+                    // email them confirmation
+                    var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+                    mergeObjects.Add( "ConfirmAccountUrl", personWithLoginModel.ConfirmAccountUrl );
+                    mergeObjects.Add( "Person", newPerson );
+                    mergeObjects.Add( "User", newLogin );
+
+                    var recipients = new List<RecipientData>();
+                    recipients.Add( new RecipientData( newPerson.Email, mergeObjects ) );
+
+                    Email.Send( new Guid( personWithLoginModel.AccountCreatedEmailTemplateGuid ), recipients, personWithLoginModel.AppUrl, personWithLoginModel.ThemeUrl, false );
+
+                    success = true;
+                }
+            }
+            
+            // return OK, and whether we created their request or not
+            restContent = new StringContent( success.ToString( ), Encoding.UTF8, "text/plain" );
+            return new HttpResponseMessage() { StatusCode = HttpStatusCode.OK, Content = restContent };
+        }
+
+        [System.Web.Http.HttpPost]
+        [System.Web.Http.Route( "api/Web/TryCreateLogin" )]
+        public HttpResponseMessage TryCreateLogin( [FromBody]CreateLoginModel createLoginModel )
+        {
+            // IF there is no existing login for the given person, an unconfirmed account will be created.
+            // If the person already has accounts, we simply send a "forgot password" style email to the email of that person.
+            StringContent restContent = null;
+            CreateLoginModel.Response response = CreateLoginModel.Response.Failed;
+
+            if ( AuthenticateRequest( ) )
+            {
+                RockContext rockContext = new RockContext();
+
+                // start by getting the person being worked on
+                PersonService personService = new PersonService( rockContext );
+                Person person = personService.Get( createLoginModel.PersonId );
+                if ( person != null )
+                {
+                    // now, see if the person already has ANY logins attached
+                    var userLoginService = new Rock.Model.UserLoginService( rockContext );
+                    var userLogins = userLoginService.GetByPersonId( createLoginModel.PersonId ).ToList();
+                    if ( userLogins.Count == 0 )
+                    {
+                        // and create a new, UNCONFIRMED login for them.
+                        var newLogin = UserLoginService.Create(
+                                        rockContext,
+                                        person,
+                                        Rock.Model.AuthenticationServiceType.Internal,
+                                        EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                        createLoginModel.Username,
+                                        createLoginModel.Password,
+                                        false,
+                                        false );
+
+                        // send them an email asking them to confirm the account
+                        var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+                        mergeObjects.Add( "ConfirmAccountUrl", createLoginModel.ConfirmAccountUrl );
+                        mergeObjects.Add( "Person", person );
+                        mergeObjects.Add( "User", newLogin );
+
+                        var recipients = new List<RecipientData>();
+                        recipients.Add( new RecipientData( person.Email, mergeObjects ) );
+
+                        Email.Send( new Guid( createLoginModel.ConfirmAccountEmailTemplateGuid ), recipients, createLoginModel.AppUrlWithRoot, createLoginModel.ThemeUrlWithRoot, false );
+
+                        response = CreateLoginModel.Response.Created;
+                    }
+                    else
+                    {
+                        // they DO have a login, so simply email the person being worked on a list of them.
+                        response = CreateLoginModel.Response.Emailed;
+
+                        WebUtil.SendForgotPasswordEmail( createLoginModel.ConfirmAccountUrl, createLoginModel.ForgotPasswordEmailTemplateGuid, createLoginModel.AppUrlWithRoot, createLoginModel.ThemeUrlWithRoot, person.Email );
+                    }
+                }
+            }
+            
+            // return OK, and whether we created their request or not
+            restContent = new StringContent( response.ToString( ), Encoding.UTF8, "text/plain" );
+            return new HttpResponseMessage() { StatusCode = HttpStatusCode.OK, Content = restContent };
         }
 
         [System.Web.Http.HttpGet]
@@ -242,53 +312,7 @@ namespace church.ccv.Web.Rest
             // this will send a password reset email IF valid accounts are found tied to the email provided.
             if( AuthenticateRequest( ) )
             {
-                // setup merge fields
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
-                mergeFields.Add( "ConfirmAccountUrl", confirmAccountUrl );
-                var results = new List<IDictionary<string, object>>();
-
-                var rockContext = new RockContext();
-                var personService = new PersonService( rockContext );
-                var userLoginService = new UserLoginService( rockContext );
-
-                // get all the accounts associated with the person(s) using this email address
-                bool hasAccountWithPasswordResetAbility = false;
-                List<string> accountTypes = new List<string>();
-                
-                foreach ( Person person in personService.GetByEmail( personEmail )
-                    .Where( p => p.Users.Any()))
-                {
-                    var users = new List<UserLogin>();
-                    foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
-                    {
-                        if ( user.EntityType != null )
-                        {
-                            var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
-                            if ( !component.RequiresRemoteAuthentication )
-                            {
-                                users.Add( user );
-                                hasAccountWithPasswordResetAbility = true;
-                            }
-
-                            accountTypes.Add( user.EntityType.FriendlyName );
-                        }
-                    }
-
-                    var resultsDictionary = new Dictionary<string, object>();
-                    resultsDictionary.Add( "Person", person);
-                    resultsDictionary.Add( "Users", users );
-                    results.Add( resultsDictionary );
-                }
-
-                // if we found user accounts that were valid, send the email
-                if ( results.Count > 0 && hasAccountWithPasswordResetAbility )
-                {
-                    mergeFields.Add( "Results", results.ToArray() );
-                    var recipients = new List<RecipientData>();
-                    recipients.Add( new RecipientData( personEmail, mergeFields ) );
-
-                    Email.Send( new Guid( forgotPasswordEmailTemplateGuid ), recipients, appUrlWithRoot, themeUrlWithRoot, false );
-                }
+                WebUtil.SendForgotPasswordEmail( confirmAccountUrl, forgotPasswordEmailTemplateGuid, appUrlWithRoot, themeUrlWithRoot, personEmail );
             }
 
             HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = HttpStatusCode.OK };

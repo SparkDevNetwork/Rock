@@ -40,6 +40,8 @@ namespace RockWeb.Plugins.church_ccv.Core
         @"Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "", 2 )]
     [CodeEditorField( "Forgot Password Caption", "The text (HTML) to display on the forgot password panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
         @"Enter the email address associated with your account. If you do not receive an email containing reset instructions, please call us at: {{ 'Global' | Attribute:'OrganizationPhone' }}", "", 3 )]
+    [CodeEditorField( "Account Has Logins Caption", "The text (HTML) to display when an account already has logins, and the user tries to register another one.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
+        @"This account alread has an existing login. An email was sent to the address on file with instructions for logging in. If you no longer have access to this email, please call us at: {{ 'Global' | Attribute:'OrganizationPhone' }}", "", 3 )]
 
     [SystemEmailField( "Confirm Account Email Template Guid", "Used when the Confirmed option is UNCHECKED on a username.", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 4 )]
     [SystemEmailField( "Forgot Password Email Template Guid", "Used when they should receive a list of usernames with Reset Password links next to each.", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "Email Templates", 5 )]
@@ -175,6 +177,12 @@ namespace RockWeb.Plugins.church_ccv.Core
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
             return GetAttributeValue( "ForgotPasswordCaption" ).ResolveMergeFields( mergeFields );
+        }
+
+        public string LoginModal_GetAccountHasLoginsCaption( )
+        {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
+            return GetAttributeValue( "AccountHasLoginsCaption" ).ResolveMergeFields( mergeFields );
         }
         #endregion
     }

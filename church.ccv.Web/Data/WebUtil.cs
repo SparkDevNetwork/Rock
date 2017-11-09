@@ -1,7 +1,9 @@
 ﻿using church.ccv.Web.Model;
 using Rock;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
@@ -14,7 +16,7 @@ namespace church.ccv.Web.Data
 {
     class WebUtil
     {
-        public static bool RegisterNewPerson( RegAccountData regAccountData, out Person newPerson, out UserLogin newLogin )
+        public static bool CreatePersonWithLogin( PersonWithLoginModel personWithLoginModel, out Person newPerson, out UserLogin newLogin )
         {
             bool success = false;
 
@@ -39,10 +41,10 @@ namespace church.ccv.Web.Data
                 newPerson = new Person( );
                 
                 // for new people, copy the stuff sent by the Mobile App
-                newPerson.FirstName = regAccountData.FirstName.Trim();
-                newPerson.LastName = regAccountData.LastName.Trim();
+                newPerson.FirstName = personWithLoginModel.FirstName.Trim();
+                newPerson.LastName = personWithLoginModel.LastName.Trim();
 
-                newPerson.Email = regAccountData.Email.Trim();
+                newPerson.Email = personWithLoginModel.Email.Trim();
                 newPerson.IsEmailActive = string.IsNullOrWhiteSpace( newPerson.Email ) == false ? true : false;
                 newPerson.EmailPreference = EmailPreference.EmailAllowed;
                 
@@ -67,8 +69,8 @@ namespace church.ccv.Web.Data
                                     newPerson,
                                     Rock.Model.AuthenticationServiceType.Internal,
                                     EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
-                                    regAccountData.Username,
-                                    regAccountData.Password,
+                                    personWithLoginModel.Username,
+                                    personWithLoginModel.Password,
                                     true,
                                     false );
                 }
@@ -83,6 +85,57 @@ namespace church.ccv.Web.Data
             while( false );
 
             return success;
+        }
+
+        public static void SendForgotPasswordEmail( string confirmAccountUrl, string forgotPasswordEmailTemplateGuid, string appUrlWithRoot, string themeUrlWithRoot, string personEmail )
+        {
+            // setup merge fields
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+            mergeFields.Add( "ConfirmAccountUrl", confirmAccountUrl );
+            var results = new List<IDictionary<string, object>>();
+
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var userLoginService = new UserLoginService( rockContext );
+
+            // get all the accounts associated with the person(s) using this email address
+            bool hasAccountWithPasswordResetAbility = false;
+            List<string> accountTypes = new List<string>();
+                
+            foreach ( Person person in personService.GetByEmail( personEmail )
+                .Where( p => p.Users.Any()))
+            {
+                var users = new List<UserLogin>();
+                foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
+                {
+                    if ( user.EntityType != null )
+                    {
+                        var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
+                        if ( !component.RequiresRemoteAuthentication )
+                        {
+                            users.Add( user );
+                            hasAccountWithPasswordResetAbility = true;
+                        }
+
+                        accountTypes.Add( user.EntityType.FriendlyName );
+                    }
+                }
+
+                var resultsDictionary = new Dictionary<string, object>();
+                resultsDictionary.Add( "Person", person);
+                resultsDictionary.Add( "Users", users );
+                results.Add( resultsDictionary );
+            }
+
+            // if we found user accounts that were valid, send the email
+            if ( results.Count > 0 && hasAccountWithPasswordResetAbility )
+            {
+                mergeFields.Add( "Results", results.ToArray( ) );
+                var recipients = new List<RecipientData>();
+                recipients.Add( new RecipientData( personEmail, mergeFields ) );
+
+                Email.Send( new Guid( forgotPasswordEmailTemplateGuid ), recipients, appUrlWithRoot, themeUrlWithRoot, false );
+            }
         }
     }
 }

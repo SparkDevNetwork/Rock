@@ -23,7 +23,7 @@ namespace church.ccv.Web.Model
     }
     
     [Serializable]
-    public class RegAccountData
+    public class PersonWithLoginModel
     {
         public string FirstName;
         public string LastName;
@@ -39,17 +39,27 @@ namespace church.ccv.Web.Model
     }
 
     [Serializable]
-    public class RegisterResponseData
+    public class CreateLoginModel
     {
-        public enum Status
+        public enum Response
         {
-            Created, //Used when a new person and account is created
-            Duplicates, //Used when there's already a person with the given email address
-            Help //Used when there's an error in registering
+            Created, //Used if we did create a login for the user
+            Emailed, //Used if we emailed the user existing credentials
+            Failed //Used if something horrible happened
         }
 
-        public string RegisterStatus;
-        public List<DuplicatePersonInfo> Duplicates;
+        public int PersonId;
+        
+        public string Username;
+        public string Password;
+
+        public string ConfirmAccountUrl;
+        public string ConfirmAccountEmailTemplateGuid;
+        public string ForgotPasswordEmailTemplateGuid;
+
+        //TODO: Get all endpoints working consistently with either NO ROOT, or ALL ROOT
+        public string AppUrlWithRoot;
+        public string ThemeUrlWithRoot;
     }
 
     [Serializable]
@@ -59,5 +69,6 @@ namespace church.ccv.Web.Model
         public string FullName;
         public string Gender;
         public string Birthday;
+        public bool HasUsernames;
     }
 }
