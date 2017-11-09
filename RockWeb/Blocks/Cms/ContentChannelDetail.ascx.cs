@@ -49,6 +49,8 @@ namespace RockWeb.Blocks.Cms
 
         private List<int> ChildContentChannelsList { get; set; }
 
+        private List<string> ItemInheritedKey { get; set; }
+
         /// <summary>
         /// Gets or sets the state of the item attributes.
         /// </summary>
@@ -71,6 +73,7 @@ namespace RockWeb.Blocks.Cms
 
             ChildContentChannelsList = ViewState["ChildContentChannelList"] as List<int> ?? new List<int>();
 
+            ItemInheritedKey = ViewState["ItemInheritedKey"] as List<string> ?? new List<string>();
             string json = ViewState["ItemAttributesState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -170,6 +173,8 @@ namespace RockWeb.Blocks.Cms
         protected override object SaveViewState()
         {
             ViewState["ChildContentChannelList"] = ChildContentChannelsList;
+
+            ViewState["ItemInheritedKey"] = ItemInheritedKey;
 
             var jsonSetting = new JsonSerializerSettings
             {
@@ -455,7 +460,10 @@ namespace RockWeb.Blocks.Cms
                 edtItemAttributes.ActionTitle = ActionTitle.Edit( tbName.Text + " Item Attribute" );
             }
 
-            edtItemAttributes.ReservedKeyNames = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+        
+            List<string> reservedKeys = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+            reservedKeys.AddRange( ItemInheritedKey );
+            edtItemAttributes.ReservedKeyNames = reservedKeys;
 
             edtItemAttributes.SetAttributeProperties( attribute, typeof( ContentChannelItem ) );
 
@@ -777,6 +785,15 @@ namespace RockWeb.Blocks.Cms
                 // Set order 
                 int newOrder = 0;
                 ItemAttributesState.ForEach( a => a.Order = newOrder++ );
+
+                ItemInheritedKey = new List<string>();
+                attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
+                     .Where( a =>
+                         a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                         a.EntityTypeQualifierValue.Equals( contentChannel.ContentChannelTypeId.ToString() ) )
+                     .ToList()
+                     .ForEach( a => ItemInheritedKey.Add( a.Key ) );
+
 
                 BindItemAttributesGrid();
             }
