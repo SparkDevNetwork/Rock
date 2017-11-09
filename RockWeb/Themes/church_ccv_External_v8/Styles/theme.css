@@ -10759,7 +10759,7 @@ html,body{
 	background-color: rgb(255, 255, 255);
 }
 
-#createaccount-panel, #forgotpassword-panel {
+#createaccount-panel, #forgotpassword-panel, #accountcreationresult-panel, #accountcreationduplicates-panel {
 	font-size: 16px;
 	color: rgba(0, 0, 0, 0.6);
 	padding: 24px;
@@ -10773,12 +10773,17 @@ html,body{
 	overflow-y: hidden;
 }
 
-.createaccount-panel-hidden, .forgotpassword-panel-hidden {	
+.createaccount-panel-hidden, .forgotpassword-panel-hidden, .accountcreationresult-panel-hidden, .accountcreationduplicates-panel-hidden {	
 	left: 800px;
 }
 
-.createaccount-panel-visible, .forgotpassword-panel-visible {
+.createaccount-panel-visible, .forgotpassword-panel-visible, .accountcreationresult-panel-visible, .accountcreationduplicates-panel-visible {
 	left: 0px;
+}
+
+.duplicates-form-item {
+	color: #0f0;
+	padding: 0px;
 }
 
 .lm-form-title {

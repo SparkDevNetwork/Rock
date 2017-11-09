@@ -62,7 +62,7 @@ namespace church.ccv.Web.Rest
         /// See "RockWeb\Plugins\church_ccv\Core\Login.ascx" for an example.
         [System.Web.Http.HttpPost]
         [System.Web.Http.Route( "api/Web/Login" )]
-        public HttpResponseMessage Login( string username, string password, bool persist )
+        public HttpResponseMessage Login( [FromBody]LoginData loginData )
         {
             HttpStatusCode statusCode = HttpStatusCode.OK;
             LoginResponse loginResponse = LoginResponse.Invalid;
@@ -72,24 +72,24 @@ namespace church.ccv.Web.Rest
                 RockContext rockContext = new RockContext( );
                 var userLoginService = new UserLoginService(rockContext);
 
-                var userLogin = userLoginService.GetByUserName( username );
+                var userLogin = userLoginService.GetByUserName( loginData.Username );
                 if ( userLogin != null && userLogin.EntityType != null)
                 {
                     var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
                     if (component != null && component.IsActive && !component.RequiresRemoteAuthentication)
                     {
                         // see if the credentials are valid
-                        if ( component.Authenticate( userLogin, password ) )
+                        if ( component.Authenticate( userLogin, loginData.Password ) )
                         {
                             // if the account isn't locked or needing confirmation
                             if ( ( userLogin.IsConfirmed ?? true ) && !(userLogin.IsLockedOut ?? false ) )
                             {
                                 // then proceed to the final step, validating them with PMG2's site
-                                if ( TryPMG2Login( username, password ) )
+                                if ( TryPMG2Login( loginData.Username, loginData.Password) )
                                 {
                                     // generate their cookie
-                                    UserLoginService.UpdateLastLogin( username );
-                                    Rock.Security.Authorization.SetAuthCookie( username, persist, false );
+                                    UserLoginService.UpdateLastLogin( loginData.Username );
+                                    Rock.Security.Authorization.SetAuthCookie( loginData.Username, bool.Parse( loginData.Persist ), false );
 
                                     // no issues!
                                     loginResponse = LoginResponse.Success;
@@ -139,7 +139,7 @@ namespace church.ccv.Web.Rest
 
         [System.Web.Http.HttpGet]
         [System.Web.Http.Route( "api/Web/SendConfirmationEmail" )]
-        public void SendConfirmation( string confirmationUrl, string confirmAccountTemplate, string appRoot, string themeRoot, string username )
+        public void SendConfirmation( string confirmAccountUrl, string confirmAccountEmailTemplateGuid, string appUrl, string themeUrl, string username )
         {
             if ( AuthenticateRequest( ) )
             {
@@ -150,7 +150,7 @@ namespace church.ccv.Web.Rest
                 if ( userLogin != null )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
-                    mergeFields.Add( "ConfirmAccountUrl", confirmationUrl );
+                    mergeFields.Add( "ConfirmAccountUrl", confirmAccountUrl );
 
                     var personDictionary = userLogin.Person.ToLiquid() as Dictionary<string, object>;
                     mergeFields.Add( "Person", personDictionary );
@@ -159,7 +159,7 @@ namespace church.ccv.Web.Rest
                     var recipients = new List<RecipientData>();
                     recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
 
-                    Email.Send( new Guid( confirmAccountTemplate ), recipients, appRoot, themeRoot, false );
+                    Email.Send( new Guid( confirmAccountEmailTemplateGuid ), recipients, appUrl, themeUrl, false );
                 }
             }
         }
@@ -168,46 +168,130 @@ namespace church.ccv.Web.Rest
         [System.Web.Http.Route( "api/Web/RegisterNewUser" )]
         public HttpResponseMessage RegisterNewUser( [FromBody]RegAccountData regAccountData )
         {
-            // default to an internal error
-            HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
-            HttpContent httpContent = null;
+            StringContent restContent = null;
+            RegisterResponseData registrationResponse = new RegisterResponseData( );
 
-            do
+            if ( AuthenticateRequest( ) )
             {
-                RockContext rockContext = new RockContext( );
+                // first, see if there's already a person with this matching last name and email
+                PersonService personService = new PersonService( new RockContext() );
+                var matches = personService.Queryable().Where( p =>
+                        p.Email.ToLower() == regAccountData.Email.ToLower() && p.LastName.ToLower() == regAccountData.LastName.ToLower() ).ToList();
 
-                if( AuthenticateRequest( ) == false ) break;
+                // we have matches, so we need to have the user decide what to do
+                if ( matches.Count > 0 )
+                {
+                    registrationResponse.RegisterStatus = RegisterResponseData.Status.Duplicates.ToString();
 
-                // require reg parameters
-                if( regAccountData == null ) break;
+                    registrationResponse.Duplicates = new List<DuplicatePersonInfo>( );
+                    foreach ( Person match in matches )
+                    {
+                        DuplicatePersonInfo duplicateInfo = new DuplicatePersonInfo( )
+                        {
+                            Id = match.Id,
+                            FullName = match.FullName,
+                            Gender = match.Gender.ToString( ),
+                            Birthday = match.BirthDay + " " + match.BirthMonth.ToString( )
+                        };
 
-                // make sure this person doesn't already exist. If they do, we need to deny
-                // this registration so we don't end up with duplicates (they can deal with this using the website)
-                PersonService personService = new PersonService( rockContext );
-                IEnumerable<Person> personList = personService.GetByMatch( regAccountData.FirstName, regAccountData.LastName, regAccountData.Email );
-                if( personList.Count( ) > 0 ) { statusCode = HttpStatusCode.Conflict; break; }
+                        registrationResponse.Duplicates.Add( duplicateInfo );
+                    }
+                }
+                else
+                {
+                    Person newPerson;
+                    UserLogin newLogin;
+                    bool result = WebUtil.RegisterNewPerson( regAccountData, out newPerson, out newLogin );
 
-                // since we know they don't exist, we can now make sure their username isn't already taken
-                // if it is, we'll call it a conflict so the client app knows
-                UserLoginService userLoginService = new UserLoginService( rockContext );
-                UserLogin userLogin = userLoginService.GetByUserName( regAccountData.Username );
-                if( userLogin != null ) { statusCode = HttpStatusCode.NotAcceptable; break; }
+                    if ( result )
+                    {
+                        // email them confirmation
+                        var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+                        mergeObjects.Add( "ConfirmAccountUrl", regAccountData.ConfirmAccountUrl );
+                        mergeObjects.Add( "Person", newPerson );
+                        mergeObjects.Add( "User", newLogin );
 
+                        var recipients = new List<RecipientData>();
+                        recipients.Add( new RecipientData( newPerson.Email, mergeObjects ) );
 
-                // we know we can create the person. So first, begin tracking who made these changes, and then
-                // create the person with their login
-                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-                statusCode = WebUtil.RegisterNewPerson( regAccountData );
-                if( statusCode != HttpStatusCode.Created ) break;
-                
-                
-                // all good! build and return the response
-                statusCode = HttpStatusCode.OK;
+                        Email.Send( new Guid( regAccountData.AccountCreatedEmailTemplateGuid ), recipients, regAccountData.AppUrl, regAccountData.ThemeUrl, false );
+
+                        registrationResponse.RegisterStatus = RegisterResponseData.Status.Created.ToString( );
+                    }
+                    else
+                    {
+                        // if there was an error for any reason, let the requester know they should contact CCV for help
+                        registrationResponse.RegisterStatus = RegisterResponseData.Status.Help.ToString( );
+                    }
+                }
             }
-            while( false );
             
-            // build and return the response
-            HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = statusCode, Content = httpContent };
+            restContent = new StringContent( JsonConvert.SerializeObject( registrationResponse ), Encoding.UTF8, "application/json" );
+
+            return new HttpResponseMessage()
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = restContent
+            };
+        }
+
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route( "api/Web/SendForgotPasswordEmail" )]
+        public HttpResponseMessage SendForgotPasswordEmail( string confirmAccountUrl, string forgotPasswordEmailTemplateGuid, string appUrlWithRoot, string themeUrlWithRoot, string personEmail )
+        {
+            // this will send a password reset email IF valid accounts are found tied to the email provided.
+            if( AuthenticateRequest( ) )
+            {
+                // setup merge fields
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+                mergeFields.Add( "ConfirmAccountUrl", confirmAccountUrl );
+                var results = new List<IDictionary<string, object>>();
+
+                var rockContext = new RockContext();
+                var personService = new PersonService( rockContext );
+                var userLoginService = new UserLoginService( rockContext );
+
+                // get all the accounts associated with the person(s) using this email address
+                bool hasAccountWithPasswordResetAbility = false;
+                List<string> accountTypes = new List<string>();
+                
+                foreach ( Person person in personService.GetByEmail( personEmail )
+                    .Where( p => p.Users.Any()))
+                {
+                    var users = new List<UserLogin>();
+                    foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
+                    {
+                        if ( user.EntityType != null )
+                        {
+                            var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
+                            if ( !component.RequiresRemoteAuthentication )
+                            {
+                                users.Add( user );
+                                hasAccountWithPasswordResetAbility = true;
+                            }
+
+                            accountTypes.Add( user.EntityType.FriendlyName );
+                        }
+                    }
+
+                    var resultsDictionary = new Dictionary<string, object>();
+                    resultsDictionary.Add( "Person", person);
+                    resultsDictionary.Add( "Users", users );
+                    results.Add( resultsDictionary );
+                }
+
+                // if we found user accounts that were valid, send the email
+                if ( results.Count > 0 && hasAccountWithPasswordResetAbility )
+                {
+                    mergeFields.Add( "Results", results.ToArray() );
+                    var recipients = new List<RecipientData>();
+                    recipients.Add( new RecipientData( personEmail, mergeFields ) );
+
+                    Email.Send( new Guid( forgotPasswordEmailTemplateGuid ), recipients, appUrlWithRoot, themeUrlWithRoot, false );
+                }
+            }
+
+            HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = HttpStatusCode.OK };
             return response;
         }
     }

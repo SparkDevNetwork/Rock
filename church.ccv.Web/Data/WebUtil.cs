@@ -14,9 +14,12 @@ namespace church.ccv.Web.Data
 {
     class WebUtil
     {
-        public static HttpStatusCode RegisterNewPerson( RegAccountData regAccountData )
+        public static bool RegisterNewPerson( RegAccountData regAccountData, out Person newPerson, out UserLogin newLogin )
         {
-            HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+            bool success = false;
+
+            newPerson = null;
+            newLogin = null;
 
             do
             {
@@ -33,41 +36,35 @@ namespace church.ccv.Web.Data
                 if( cellPhoneType == null || connectionStatusWebProspect == null || recordStatusPending == null || recordTypePerson == null ) break;
                                 
                 // create a new person, which will give us a new Id
-                Person person = new Person( );
+                newPerson = new Person( );
                 
                 // for new people, copy the stuff sent by the Mobile App
-                person.FirstName = regAccountData.FirstName.Trim();
-                person.LastName = regAccountData.LastName.Trim();
+                newPerson.FirstName = regAccountData.FirstName.Trim();
+                newPerson.LastName = regAccountData.LastName.Trim();
 
-                person.Email = regAccountData.Email.Trim();
-                person.IsEmailActive = string.IsNullOrWhiteSpace( person.Email ) == false ? true : false;
-                person.EmailPreference = EmailPreference.EmailAllowed;
+                newPerson.Email = regAccountData.Email.Trim();
+                newPerson.IsEmailActive = string.IsNullOrWhiteSpace( newPerson.Email ) == false ? true : false;
+                newPerson.EmailPreference = EmailPreference.EmailAllowed;
                 
                 // now set values so it's a Person Record Type, and pending web prospect.
-                person.ConnectionStatusValueId = connectionStatusWebProspect.Id;
-                person.RecordStatusValueId = recordStatusPending.Id;
-                person.RecordTypeValueId = recordTypePerson.Id;
+                newPerson.ConnectionStatusValueId = connectionStatusWebProspect.Id;
+                newPerson.RecordStatusValueId = recordStatusPending.Id;
+                newPerson.RecordTypeValueId = recordTypePerson.Id;
 
                 // now, save the person so that all the extra stuff (known relationship groups) gets created.
-                Group newFamily = PersonService.SaveNewPerson( person, rockContext );
+                Group newFamily = PersonService.SaveNewPerson( newPerson, rockContext );
                 
-                // set the phone number (we only support Cell Phone for the Mobile App)
-                if( string.IsNullOrWhiteSpace( regAccountData.CellPhoneNumber ) == false )
-                {
-                    person.UpdatePhoneNumber( cellPhoneType.Id, PhoneNumber.DefaultCountryCode(), regAccountData.CellPhoneNumber, null, null, rockContext );
-                }
-
                 // save all changes
-                person.SaveAttributeValues( rockContext );
+                newPerson.SaveAttributeValues( rockContext );
                 rockContext.SaveChanges( );
                 
                 
                 // and now create the login for this person
                 try
                 {
-                    UserLogin login = UserLoginService.Create(
+                    newLogin = UserLoginService.Create(
                                     rockContext,
-                                    person,
+                                    newPerson,
                                     Rock.Model.AuthenticationServiceType.Internal,
                                     EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                                     regAccountData.Username,
@@ -81,12 +78,11 @@ namespace church.ccv.Web.Data
                     break;
                 }
                 
-                // report that we created the person / login
-                statusCode = HttpStatusCode.Created;
+                success = true;
             }
             while( false );
-            
-            return statusCode;
+
+            return success;
         }
     }
 }

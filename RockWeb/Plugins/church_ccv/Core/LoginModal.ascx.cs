@@ -35,69 +35,31 @@ namespace RockWeb.Plugins.church_ccv.Core
     [Description( "Javascript Modal window used to manage login, account creation and forgot password functionality." )]
    
     [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
-        @"Sorry, your account has been locked.  Please contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email {{ 'Global' | Attribute:'OrganizationEmail' }} to resolve this.  Thank-you.", "", 5 )]
+        @"Sorry, your account has been locked.  Please contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email {{ 'Global' | Attribute:'OrganizationEmail' }} to resolve this.  Thank-you.", "", 1 )]
     [CodeEditorField( "Confirm Caption", "The text (HTML) to display when a user's account needs to be confirmed.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
         @"Thank-you for logging in, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "", 2 )]
     [CodeEditorField( "Forgot Password Caption", "The text (HTML) to display on the forgot password panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, 
-        @"Enter the email address associated with your account. If you do not receive an email containing reset instructions, please call us at: {{ 'Global' | Attribute:'OrganizationPhone' }}", "", 5 )]
-    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
+        @"Enter the email address associated with your account. If you do not receive an email containing reset instructions, please call us at: {{ 'Global' | Attribute:'OrganizationPhone' }}", "", 3 )]
+
+    [SystemEmailField( "Confirm Account Email Template Guid", "Used when the Confirmed option is UNCHECKED on a username.", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 4 )]
+    [SystemEmailField( "Forgot Password Email Template Guid", "Used when they should receive a list of usernames with Reset Password links next to each.", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "Email Templates", 5 )]
+    [SystemEmailField( "Account Created Email Template Guid", "Used when a new account is created.", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 6 )]
     public partial class LoginModal : Rock.Web.UI.RockBlock
     {
         #region LoginModal
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            LoginStatus_OnInit( e );
         }
 
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
-            LoginStatus_OnLoad( e );
             LoginModal_OnLoad( e );
         }
         #endregion
         
-        #region LoginStatus
-        protected void LoginStatus_OnInit( EventArgs e )
-        {
-        }
-
-        protected void LoginStatus_OnLoad( EventArgs e )
-        {
-        }
-
-        // Will we need this later?
-        protected void LoginStatus_lbLogout_Click( object sender, EventArgs e )
-        {
-            if ( CurrentUser != null )
-            {
-                var transaction = new Rock.Transactions.UserLastActivityTransaction();
-                transaction.UserId = CurrentUser.Id;
-                transaction.LastActivityDate = RockDateTime.Now;
-                transaction.IsOnLine = false;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-            }
-
-            FormsAuthentication.SignOut();
-
-            // After logging out check to see if an anonymous user is allowed to view the current page.  If so
-            // redirect back to the current page, otherwise redirect to the site's default page
-            var currentPage = Rock.Web.Cache.PageCache.Read( RockPage.PageId );
-            if ( currentPage != null && currentPage.IsAuthorized(Authorization.VIEW, null))
-            {
-                Response.Redirect( CurrentPageReference.BuildUrl() );
-                Context.ApplicationInstance.CompleteRequest();
-            }
-            else
-            {
-                RockPage.Layout.Site.RedirectToDefaultPage();
-            }
-        }
-        #endregion
-
         #region LoginModal
         protected void LoginModal_OnLoad( EventArgs e )
         {
@@ -130,8 +92,6 @@ namespace RockWeb.Plugins.church_ccv.Core
 
                             break;
                         }
-
-
 
                         default:
                         {
@@ -168,19 +128,34 @@ namespace RockWeb.Plugins.church_ccv.Core
             return ResolveRockUrl( "~/" );
         }
 
-        public string LoginModal_GetConfirmAccountTemplate( )
+        public string LoginModal_GetThemeUrlIncludeRoot( )
         {
-            return GetAttributeValue( "ConfirmAccountTemplate" );
+            return ResolveRockUrlIncludeRoot( "~~/" );
         }
 
-        public string LoginModal_GetConfirmationUrl( )
+        public string LoginModal_GetAppUrlIncludeRoot( )
         {
-            string url = LinkedPageUrl( "ConfirmationPage" );
-            if ( string.IsNullOrWhiteSpace( url ) )
-            {
-                url = ResolveRockUrl( "~/ConfirmAccount" );
-            }
+            return ResolveRockUrlIncludeRoot( "~/" );
+        }
 
+        public string LoginModal_GetConfirmAccountEmailTemplateGuid( )
+        {
+            return GetAttributeValue( "ConfirmAccountEmailTemplateGuid" );
+        }
+
+        public string LoginModal_GetForgotPasswordEmailTemplateGuid( )
+        {
+            return GetAttributeValue( "ForgotPasswordEmailTemplateGuid" );
+        }
+
+        public string LoginModal_GetAccountCreatedEmailTemplateGuid( )
+        {
+            return GetAttributeValue( "AccountCreatedEmailTemplateGuid" );
+        }
+
+        public string LoginModal_GetConfirmAccountUrl( )
+        {
+            string url = ResolveRockUrl( "~/ConfirmAccount" );
             return RootPath + url;
         }
 
