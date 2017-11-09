@@ -45,8 +45,7 @@
                     </div>
                 </div>
 
-                <asp:Panel ID="pnlEmailTemplate" CssClass="js-email-template" runat="server">
-                    <h2>Email</h2>
+                <Rock:PanelWidget ID="pnlEmailTemplate" Title="Email" TitleIconCssClass="fa fa-envelope" CssClass="js-email-template" runat="server" Expanded="true">
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" />
@@ -95,18 +94,19 @@
 
                     <label class="control-label">Message Template</label>
                     
-                    <Rock:Toggle ID="tglPreviewAdvanced" runat="server" OnText="Preview" OffText="Advanced" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" OnCheckedChanged="tglPreviewAdvanced_CheckedChanged" />
+                    <div class="well">
+                    <Rock:Toggle ID="tglPreviewAdvanced" runat="server" CssClass="pull-right" OnText="Preview" OffText="Advanced" Checked="true" ButtonSizeCssClass="btn-xs" OnCssClass="btn-info" OffCssClass="btn-info" OnCheckedChanged="tglPreviewAdvanced_CheckedChanged" />
                     
                     <asp:Panel ID="pnlAdvanced" runat="server" CssClass="margin-t-md">
                         <div class="row">
-                            <div class="col-md-9">
+                            <div class="col-md-8">
                                 <div class="js-help-container">
                                     <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>        
                                     <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>                                
                                 </div>
                                 <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" />
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <Rock:KeyValueList ID="kvlMergeFields" runat="server" Label="Lava Fields" KeyPrompt="Key" ValuePrompt="Default Value" />
                             </div>
                         </div>
@@ -123,12 +123,13 @@
                                         </div>
                                         <div class="col-md-3">
                                             <Rock:RockControlWrapper ID="rcwPreviewMode" runat="server" Label="Preview Mode">
+                                                
                                                 <div class="btn-group" role="group">
-                                                    <button type="button" class="btn btn-default js-preview-desktop">
+                                                    <button type="button" class="btn btn-xs btn-default js-preview-desktop">
                                                         <i class="fa fa-desktop"></i>
                                                         Desktop
                                                     </button>
-                                                    <button type="button" class="btn btn-default js-preview-mobile">
+                                                    <button type="button" class="btn btn-xs btn-default js-preview-mobile">
                                                         <i class="fa fa-mobile"></i>
                                                         Mobile
                                                     </button>
@@ -143,7 +144,7 @@
 
                                             <asp:HiddenField ID="hfLavaFieldsState" runat="server" />
                                             <asp:PlaceHolder ID="phLavaFieldsControls" runat="server" />
-                                            <asp:LinkButton ID="btnUpdateTemplatePreview" runat="server" CssClass="btn btn-default" Text="Update" OnClick="btnUpdateTemplatePreview_Click" />
+                                            <asp:LinkButton ID="btnUpdateTemplatePreview" runat="server" CssClass="btn btn-xs btn-action" Text="Update" OnClick="btnUpdateTemplatePreview_Click" />
                                         </div>
                                     </div>
                                 </asp:Panel>
@@ -151,11 +152,11 @@
                         </asp:UpdatePanel>
                     </asp:Panel>
 
+                    </div>
 
+                </Rock:PanelWidget>
 
-                </asp:Panel>
-
-                <asp:Panel ID="pnlSMSTemplate" CssClass="js-sms-template" runat="server">
+                <Rock:PanelWidget ID="pnlSMSTemplate" Title="SMS" TitleIconCssClass="fa fa-mobile-phone" CssClass="js-sms-template" runat="server">
                     <h2>SMS</h2>
                     <div class="row">
                         <div class="col-md-6">
@@ -171,7 +172,7 @@
                         <div class="col-md-6">
                         </div>
                     </div>
-                </asp:Panel>
+                </Rock:PanelWidget>
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
