@@ -2177,6 +2177,10 @@ TransactionAcountDetails: [
 
             PaymentInfo paymentInfo = GetPaymentInfo();
 
+            // Set the payment type. This needs to be done since if a saved card was selected, the payment tab was not set in the UI and is still evaluated
+            // to determine the correct gateway to use on other places.
+            hfPaymentTab.Value = paymentInfo.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ? "CreditCard" : "ACH";
+
             if ( !givingAsBusiness )
             {
                 if ( txtCurrentName.Visible )
