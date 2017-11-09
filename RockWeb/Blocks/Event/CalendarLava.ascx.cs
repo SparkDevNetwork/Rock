@@ -503,17 +503,17 @@ namespace RockWeb.Blocks.Event
                 cblCategory.DataSource = definedType.DefinedValues.Where( v => selectedCategoryGuids.Contains( v.Guid ) );
                 cblCategory.DataBind();
             }
-			var categoryId = PageParameter(GetAttributeValue("CategoryParameterName")).AsIntegerOrNull(); ;
-			if (categoryId.HasValue)
-			{
-				if (definedType.DefinedValues.Where(v => selectedCategoryGuids.Contains(v.Guid) && v.Id == categoryId.Value).FirstOrDefault() != null)
-				{
-					cblCategory.SetValue(categoryId.Value);
-				}
+	    var categoryId = PageParameter(GetAttributeValue("CategoryParameterName")).AsIntegerOrNull(); ;
+	    if (categoryId.HasValue)
+	    {
+	        if (definedType.DefinedValues.Where(v => selectedCategoryGuids.Contains(v.Guid) && v.Id == categoryId.Value).FirstOrDefault() != null)
+		{
+		    cblCategory.SetValue(categoryId.Value);
+		}
 				
-			}
-			// Date Range Filter
-			drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
+	    }
+	    // Date Range Filter
+	    drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
             lbDateRangeRefresh.Visible = drpDateRange.Visible;
             drpDateRange.LowerValue = FilterStartDate;
             drpDateRange.UpperValue = FilterEndDate;
