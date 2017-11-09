@@ -241,8 +241,7 @@ namespace Rock
         public static string ReplaceLastOccurrence( this string Source, string Find, string Replace )
         {
             int Place = Source.LastIndexOf( Find );
-            string result = Source.Remove( Place, Find.Length ).Insert( Place, Replace );
-            return result;
+            return Place > 0 ? Source.Remove( Place, Find.Length ).Insert( Place, Replace ) : Source;
         }
 
         /// <summary>
