@@ -19,7 +19,7 @@
                     <h1 class="panel-title"><i class="fa fa-credit-card"></i> <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
                     
                     <div class="pull-right">                    
-                        <Rock:ButtonDropDownList ID="bddlOptions" runat="server" FormGroupCssClass="panel-options" Title="Options" SelectionStyle="Checkmark" OnSelectionChanged="bddlOptions_SelectionChanged">
+                        <Rock:ButtonDropDownList ID="bddlOptions" runat="server" FormGroupCssClass="panel-options pull-right" Title="Options" SelectionStyle="Checkmark" OnSelectionChanged="bddlOptions_SelectionChanged">
                             <asp:ListItem Text="Show Images" Value="1" />
                             <asp:ListItem Text="Show Summary" Value="0" />
                         </Rock:ButtonDropDownList>

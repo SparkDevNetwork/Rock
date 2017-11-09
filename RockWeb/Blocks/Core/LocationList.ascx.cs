@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
@@ -37,7 +38,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Block for viewing a list of locations." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class LocationList : Rock.Web.UI.RockBlock
+    public partial class LocationList : RockBlock, ICustomGridColumns
     {
         #region Fields
 

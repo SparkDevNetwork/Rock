@@ -367,6 +367,7 @@ namespace Rock.Web.UI.Controls
             }
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "value-list" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.WriteLine();
 
@@ -379,7 +380,7 @@ namespace Rock.Web.UI.Controls
             valueHtml.Append( @"<div class=""controls controls-row form-control-group"">");
             if ( definedValues != null && definedValues.Any() )
             {
-                valueHtml.Append( @"<select class=""form-control input-width-lg js-value-list-input""><option value=""""></option>" );
+                valueHtml.Append( @"<select class=""form-control input-width-lg js-value-list-input"">" );
                 foreach ( var definedValue in definedValues )
                 {
                     valueHtml.AppendFormat( @"<option value=""{0}"">{1}</option>", definedValue.Key, definedValue.Value );
@@ -417,7 +418,6 @@ namespace Rock.Web.UI.Controls
                     ddl.DataValueField = "Key";
                     ddl.DataSource = definedValues;
                     ddl.DataBind();
-                    ddl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                     ddl.SelectedValue = value;
                     ddl.RenderControl( writer );
                 }
@@ -489,6 +489,7 @@ namespace Rock.Web.UI.Controls
         e.preventDefault();
         var $ValueList = $(this).closest('.value-list');
         $ValueList.find('.value-list-rows').append($ValueList.find('.js-value-list-html').val());
+        updateKeyValues($(this));            
         Rock.controls.modal.updateSize($(this));
     });
 

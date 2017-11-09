@@ -80,6 +80,11 @@
                                     <Rock:DeleteField OnClick="gIndividualRecipients_DeleteClick" />
                                 </Columns>
                             </Rock:Grid>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <asp:LinkButton ID="btnDeleteSelectedRecipients" runat="server" CssClass="btn btn-action btn-xs margin-t-sm pull-right" OnClick="btnDeleteSelectedRecipients_Click" Text="Remove Selected Recipients" />
+                                </div>
+                            </div>
                         </Content>
                     </Rock:ModalDialog>
 
@@ -110,10 +115,9 @@
                                     <a id="btnMediumEmail" runat="server" class="btn btn-default btn-sm js-medium-email" data-val="1" >Email</a>
                                     <a id="btnMediumSMS" runat="server" class="btn btn-default btn-sm js-medium-sms" data-val="2" >SMS</a>
                                 </div>
+                                <span class="margin-t-md label label-info js-medium-recipientpreference-notification">Selecting 'Recipient Preference' will require adding content for all active mediums.</span>
                             </div>
                         </div>
-
-                        <Rock:NotificationBox ID="nbRecipientPreferenceInfo" runat="server" CssClass="margin-t-md js-medium-recipientpreference-notification" NotificationBoxType="Info" Title="Heads Up!" Text="Selecting 'Recipient Preference' will require adding content for all active mediums." />
                     </Rock:RockControlWrapper>
                     
                     
@@ -139,7 +143,17 @@
 
                 <%-- Template Selection --%>
                 <asp:Panel ID="pnlTemplateSelection" CssClass="js-navigation-panel" runat="server" Visible="false">
-                    <h1 class="step-title">Communication Template</h1>
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <h1 class="step-title">Communication Template</h1>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="pull-right">
+                                <Rock:CategoryPicker ID="cpCommunicationTemplate" runat="server" AllowMultiSelect="false" Label="Category Filter" EntityTypeName="Rock.Model.CommunicationTemplate" OnSelectItem="cpCommunicationTemplate_SelectItem" />
+                            </div>
+                        </div>
+                    </div>
+                    
                     <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
                     <div class="row margin-t-lg template-selection">
                         <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
@@ -879,11 +893,11 @@
                                 <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required"/>
                                 <Rock:NotificationBox ID="nbSMSTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test SMS has been sent." Visible="false" />
                                 <div class="actions margin-t-sm pull-right">
-                                    <a class="btn btn-sm btn-default js-sms-sendtest" href="#">Send Test</a>
+                                    <a class="btn btn-xs btn-default js-sms-sendtest" href="#">Send Test</a>
                                     <div class="js-sms-sendtest-inputs" style="display:none">
                                         <Rock:RockTextBox ID="tbTestSMSNumber" runat="server" Label="SMS Number" ValidationGroup="vgMobileTextEditorSendTest" Required="true" />
-                                        <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-sm btn-default" Text="Send" CausesValidation="true" ValidationGroup="vgMobileTextEditorSendTest" OnClick="btnSMSSendTest_Click" />
-                                        <a class="btn btn-sm btn-default js-sms-sendtest-cancel" href="#">Cancel</a>
+                                        <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-xs btn-primary" Text="Send" CausesValidation="true" ValidationGroup="vgMobileTextEditorSendTest" OnClick="btnSMSSendTest_Click" />
+                                        <a class="btn btn-xs btn-link js-sms-sendtest-cancel" href="#">Cancel</a>
                                     </div>
                                 </div>
                             </Rock:RockControlWrapper>
@@ -892,14 +906,16 @@
                             <Rock:NotificationBox ID="nbMobileAttachmentFileTypeWarning" runat="server" NotificationBoxType="Warning" Text="" Dismissable="true" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <div class="device device-mobile hidden-md">
+                            <div class="device device-mobile hidden-sm hidden-xs">
                                 <div class="sms">
                                     <header><span class="left">Messages</span><h2><asp:Literal ID="lSMSChatPerson" runat="server" Text="Ted Decker" /></h2><span class="right">Contacts</span></header>
                                     <div class="messages-wrapper">
-                                      <div class="js-sms-chatoutput message to">
-                                          <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
-                                      </div>
-                                        <asp:Image ID="imgSMSImageAttachment" runat="server" CssClass="pull-right margin-r-md" width="50%" />
+                                        <div class="js-sms-chatoutput message to">
+                                            <asp:Label ID="lblSMSPreview" runat="server" CssClass="js-sms-preview" />
+                                        </div>
+
+                                        <div id="divAttachmentLoadError" runat="server" style="display: none" class="alert alert-danger margin-all-md" />
+                                        <asp:Image ID="imgSMSImageAttachment" runat="server" CssClass="pull-right margin-r-md" onerror="showSMSAttachmentLoadError()" Width="50%" />
                                     </div>
                                 </div>
                             </div>
@@ -1390,6 +1406,10 @@
 			    else {
 			        $('.js-sms-chatoutput').hide();
 			    }
+            }
+
+            function showSMSAttachmentLoadError() {
+                $('#<%=divAttachmentLoadError.ClientID%>').show();
             }
 
             function setActiveMediumTypeButton($activeBtn)

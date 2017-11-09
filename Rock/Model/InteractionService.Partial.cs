@@ -52,14 +52,25 @@ namespace Rock.Model
             interaction.InteractionComponentId = interactionComponentId;
             interaction.EntityId = entityId;
             interaction.Operation = operation;
-            interaction.InteractionData = PersonToken.ObfuscateRockMagicToken( interactionData );
+            interaction.InteractionData = interactionData.IsNotNullOrWhitespace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
             interaction.InteractionDateTime = dateTime;
             interaction.PersonAliasId = personAliasId;
 
-            var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
-            var session = this.GetInteractionSession( browserSessionId, ipAddress, deviceType.Id );
+            int? deviceTypeId = null;
+            if ( deviceApplication.IsNotNullOrWhitespace() && deviceOs.IsNotNullOrWhitespace() && deviceClientType.IsNotNullOrWhitespace() )
+            {
+                var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
+                deviceTypeId = deviceType != null ? deviceType.Id : ( int? ) null;
+            }
 
-            interaction.InteractionSessionId = session.Id;
+            // If we don't have an BrowserSessionId, IPAddress or a devicetype, there is nothing useful about the session
+            // but at least one of these has a value, then we should lookup or create a session
+            if ( browserSessionId.HasValue || ipAddress.IsNotNullOrWhitespace() || deviceTypeId.HasValue )
+            { 
+                var session = this.GetInteractionSession( browserSessionId, ipAddress, deviceTypeId );
+                interaction.InteractionSessionId = session.Id;
+            }
+
             this.Add( interaction );
 
             return interaction;
@@ -119,13 +130,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the interaction session. If it can't be found, a new InteractionSession record will be created and returned.
+        /// Gets the interaction session. If browserSessionId isn't specified, or it can't be found, a new InteractionSession record will be created and returned.
         /// </summary>
         /// <param name="browserSessionId">The browser session identifier (RockSessionId).</param>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="interactionDeviceTypeId">The interaction device type identifier.</param>
         /// <returns></returns>
-        public InteractionSession GetInteractionSession( Guid? browserSessionId, string ipAddress, int interactionDeviceTypeId )
+        public InteractionSession GetInteractionSession( Guid? browserSessionId, string ipAddress, int? interactionDeviceTypeId )
         {
             using ( var rockContext = new RockContext() )
             {

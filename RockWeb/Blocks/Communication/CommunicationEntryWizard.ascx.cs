@@ -233,7 +233,8 @@ namespace RockWeb.Blocks.Communication
             if ( editableStatuses.Contains( communication.Status ) || ( communication.Status == CommunicationStatus.PendingApproval && editingApproved ) )
             {
                 // Make sure they are authorized to view
-                if ( !communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
+                bool isCreator = ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value );
+                if ( !communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) && !isCreator )
                 {
                     // not authorized, so hide this block
                     this.Visible = false;
@@ -431,6 +432,17 @@ namespace RockWeb.Blocks.Communication
             this.AddHistory( "navigationHistoryInstance", hfNavigationHistoryInstance.Value );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnUseSimpleEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnUseSimpleEditor_Click( object sender, EventArgs e )
+        {
+            int communicationId = hfCommunicationId.Value.AsInteger();
+            NavigateToLinkedPage( "SimpleCommunicationPage", "CommunicationId", communicationId );
+        }
+
         #endregion
 
         #region Recipient Selection
@@ -478,7 +490,7 @@ namespace RockWeb.Blocks.Communication
                 if ( communicationGroup != null )
                 {
                     communicationGroup.LoadAttributes();
-                    var segmentAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.GROUP_COMMUNICATION_SEGMENTS.AsGuid() );
+                    var segmentAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.GROUP_COMMUNICATION_LIST_SEGMENTS.AsGuid() );
                     segmentDataViewGuids = communicationGroup.GetAttributeValue( segmentAttribute.Key ).SplitDelimitedValues().AsGuidList();
                     var additionalSegmentDataViewList = dataviewService.GetByGuids( segmentDataViewGuids ).OrderBy( a => a.Name ).ToList();
 
@@ -805,6 +817,40 @@ namespace RockWeb.Blocks.Communication
             return groupMemberQuery;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnDeleteSelectedRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDeleteSelectedRecipients_Click( object sender, EventArgs e )
+        {
+            // get the selected personIds
+            bool removeAll = false;
+            var selectField = gIndividualRecipients.ColumnsOfType<SelectField>().First();
+            if ( selectField != null && selectField.HeaderCheckbox != null )
+            {
+                // if the 'Select All' checkbox in the header is checked, and they haven't unselected anything, then assume they want to remove all recipients
+                removeAll = selectField.HeaderCheckbox.Checked && gIndividualRecipients.SelectedKeys.Count == gIndividualRecipients.PageSize;
+            }
+
+            if ( removeAll )
+            {
+                IndividualRecipientPersonIds.Clear();
+            }
+            else
+            {
+                var selectedPersonIds = gIndividualRecipients.SelectedKeys.OfType<int>().ToList();
+                IndividualRecipientPersonIds.RemoveAll( a => selectedPersonIds.Contains( a ) );
+            }
+            
+            BindIndividualRecipientsGrid();
+
+            UpdateIndividualRecipientsCountText();
+
+            // upnlContent has UpdateMode = Conditional and this is a modal, so we have to update manually
+            upnlContent.Update();
+        }
+
         #endregion Recipient Selection
 
         #region Communication Delivery, Medium Selection
@@ -937,7 +983,15 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
 
-            var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().Where( a => a.IsActive ).OrderBy( a => a.Name );
+            var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().Where( a => a.IsActive );
+
+            int? categoryId = cpCommunicationTemplate.SelectedValue.AsIntegerOrNull();
+            if (categoryId.HasValue && categoryId > 0)
+            {
+                templateQuery = templateQuery.Where( a => a.CategoryId == categoryId );
+            }
+
+            templateQuery = templateQuery.OrderBy( a => a.Name );
 
             // get list of templates that the current user is authorized to View
             IEnumerable<CommunicationTemplate> templateList = templateQuery.AsNoTracking().ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
@@ -1037,7 +1091,7 @@ namespace RockWeb.Blocks.Communication
 
             tbEmailSubject.Text = communicationTemplate.Subject;
 
-            hfEmailEditorHtml.Value = communicationTemplate.Message;
+            hfEmailEditorHtml.Value = communicationTemplate.Message.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null) );
 
             hfEmailAttachedBinaryFileIds.Value = communicationTemplate.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
             UpdateEmailAttachedFiles( false );
@@ -1094,6 +1148,16 @@ namespace RockWeb.Blocks.Communication
             {
                 ShowMobileTextEditor();
             }
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the cpCommunicationTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cpCommunicationTemplate_SelectItem( object sender, EventArgs e )
+        {
+            BindTemplatePicker();
         }
 
         #endregion Template Selection
@@ -1172,6 +1236,15 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
+            try
+            {
+                CleanupOrphanedTestCommunications();
+            }
+            catch( Exception ex)
+            {
+                this.LogException( ex );
+            }
+
             Rock.Model.Communication communication = UpdateCommunication( new RockContext() );
 
             if ( communication != null )
@@ -1180,9 +1253,12 @@ namespace RockWeb.Blocks.Communication
                 {
                     // Using a new context (so that changes in the UpdateCommunication() are not persisted )
                     int? testPersonId = null;
+                    Rock.Model.Communication testCommunication = null;
+                    CommunicationService communicationService = null;
+
                     try
                     {
-                        var testCommunication = communication.Clone( false );
+                        testCommunication = communication.Clone( false );
                         testCommunication.Id = 0;
                         testCommunication.Guid = Guid.Empty;
                         testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
@@ -1232,7 +1308,10 @@ namespace RockWeb.Blocks.Communication
 
                         testPerson.ForeignGuid = null;
                         testPerson.ForeignId = null;
-                        testPerson.ForeignKey = null;
+
+                        // Just in case it doesn't get cleaned up, mark it so that we can try to clean it up next time
+                        testPerson.ForeignKey = "_ForTestCommunication_";
+
                         var personService = new PersonService( rockContext );
                         personService.Add( testPerson );
                         rockContext.SaveChanges();
@@ -1248,7 +1327,7 @@ namespace RockWeb.Blocks.Communication
 
                         testCommunication.Recipients.Add( testRecipient );
 
-                        var communicationService = new CommunicationService( rockContext );
+                        communicationService = new CommunicationService( rockContext );
                         communicationService.Add( testCommunication );
                         rockContext.SaveChanges();
 
@@ -1275,26 +1354,66 @@ namespace RockWeb.Blocks.Communication
 
                         nbResult.Dismissable = true;
                         nbResult.Visible = true;
-
-                        communicationService.Delete( testCommunication );
-                        rockContext.SaveChanges();
                     }
                     finally
                     {
-                        // make sure we delete the Person record we created to send the test email
+                        // make sure we delete the test communication record we created to send the test 
+                        if ( communicationService != null && testCommunication != null )
+                        {
+                            communicationService.Delete( testCommunication );
+                            rockContext.SaveChanges();
+                        }
+
+                        // make sure we delete the Person record we created to send the test 
                         using ( var deleteRockContext = new RockContext() )
                         {
+                            var personToDeleteService = new PersonService( deleteRockContext );
+                            var personAliasToDeleteService = new PersonAliasService( deleteRockContext );
+
                             if ( testPersonId.HasValue )
                             {
-                                var personToDeleteService = new PersonService( deleteRockContext );
-                                var personAliasToDeleteService = new PersonAliasService( deleteRockContext );
                                 var personToDelete = personToDeleteService.Get( testPersonId.Value );
                                 personAliasToDeleteService.DeleteRange( personToDelete.Aliases );
                                 personToDelete.Aliases = null;
                                 personToDeleteService.Delete( personToDelete );
                                 deleteRockContext.SaveChanges();
                             }
+}
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Shouldn't happen, but just in case...
+        /// this will cleanup any orphaned test communications artifacts
+        /// </summary>
+        private void CleanupOrphanedTestCommunications()
+        {
+            using ( RockContext deleteRockContext = new RockContext() )
+            {
+                PersonService personToDeleteService = new PersonService( deleteRockContext );
+                PersonAliasService personAliasToDeleteService = new PersonAliasService( deleteRockContext );
+                
+                // check for any test communication artifacts that didn't clean up correctly
+                var forTestCommunicationPersonQry = personToDeleteService.Queryable().Where( a => a.ForeignKey == "_ForTestCommunication_" );
+                if ( forTestCommunicationPersonQry.Any() )
+                {
+                    var communicationToDeleteService = new Rock.Model.CommunicationService( deleteRockContext );
+                    var communicationToDeleteQry = communicationToDeleteService.Queryable().Where( a => a.Recipients.Any( r => forTestCommunicationPersonQry.Any( p => p.Id == r.PersonAlias.PersonId ) ) );
+                    foreach ( var testCommunicationToDelete in communicationToDeleteQry.ToList() )
+                    {
+                        communicationToDeleteService.Delete( testCommunicationToDelete );
+                    }
+
+                    foreach ( var personToDelete in forTestCommunicationPersonQry )
+                    {
+                        foreach ( var personToDeleteAlias in personToDelete.Aliases.ToList() )
+                        {
+                            personAliasToDeleteService.Delete( personToDeleteAlias );
                         }
+
+                        personToDeleteService.Delete( personToDelete );
                     }
                 }
             }
@@ -1327,6 +1446,7 @@ namespace RockWeb.Blocks.Communication
             var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
             var sampleCommunicationRecipient = communication.Recipients.FirstOrDefault();
             sampleCommunicationRecipient.Communication = communication;
+            sampleCommunicationRecipient.PersonAlias = sampleCommunicationRecipient.PersonAlias ?? new PersonAliasService( rockContext ).Get( sampleCommunicationRecipient.PersonAliasId );
             var mergeFields = sampleCommunicationRecipient.CommunicationMergeValues( commonMergeFields );
 
             Rock.Communication.MediumComponent emailMediumWithActiveTransport = Rock.Communication.MediumContainer.Instance.Components.Select( a => a.Value.Value )
@@ -1373,6 +1493,11 @@ namespace RockWeb.Blocks.Communication
                 {
                     communicationHtml = emailMediumWithActiveTransport.Transport.ResolveText( communicationHtml, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
                     communicationHtml = Regex.Replace( communicationHtml, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                }
+
+                if ( emailMediumWithActiveTransport.Transport is Rock.Communication.Transport.SMTPComponent )
+                {
+                    communicationHtml =( emailMediumWithActiveTransport.Transport as Rock.Communication.Transport.SMTPComponent ).MoveCssInline( communicationHtml );
                 }
             }
 
@@ -1528,6 +1653,8 @@ namespace RockWeb.Blocks.Communication
             // make the PersonId of the First Recipient available to Javascript so that we can do some Lava processing using REST and Javascript
             var rockContext = new RockContext();
             Rock.Model.Communication communication = UpdateCommunication( rockContext );
+            var firstRecipient = communication.Recipients.First();
+            firstRecipient.PersonAlias = firstRecipient.PersonAlias ?? new PersonAliasService( rockContext ).Get( firstRecipient.PersonAliasId );
             hfSMSSampleRecipientPersonId.Value = communication.Recipients.First().PersonAlias.PersonId.ToString();
 
             nbSMSTestResult.Visible = false;
@@ -1616,7 +1743,9 @@ namespace RockWeb.Blocks.Communication
                         sizingPlugin.Limits.TotalBehavior = origLimit;
                     }
 
-                    imgSMSImageAttachment.ImageUrl = string.Format( "~/GetImage.ashx?guid={0}", binaryFile.Guid );
+                    string publicAppRoot = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                    imgSMSImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
+                    divAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
                     imgSMSImageAttachment.Width = new Unit( 50, UnitType.Percentage );
                 }
@@ -1636,7 +1765,9 @@ namespace RockWeb.Blocks.Communication
                         }
                     }
 
-                    imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath;
+                    string publicAppRoot = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                    imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath.Replace( "~/", publicAppRoot );
+                    divAttachmentLoadError.InnerText = "Unable to load preview icon from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
                     imgSMSImageAttachment.Width = new Unit( 10, UnitType.Percentage );
                 }
@@ -1742,6 +1873,15 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSMSSendTest_Click( object sender, EventArgs e )
         {
+            if (ddlSMSFrom.SelectedValue.IsNullOrWhiteSpace())
+            {
+                nbSMSTestResult.NotificationBoxType = NotificationBoxType.Danger;
+                nbSMSTestResult.Text = "A 'From' number must be specified.";
+                nbSMSTestResult.Dismissable = true;
+                nbSMSTestResult.Visible = true;
+                return;
+            }
+
             SendTestCommunication( EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id, nbSMSTestResult );
         }
 
@@ -2191,15 +2331,8 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
         #endregion
 
-        /// <summary>
-        /// Handles the Click event of the btnUseSimpleEditor control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnUseSimpleEditor_Click( object sender, EventArgs e )
-        {
-            int communicationId = hfCommunicationId.Value.AsInteger();
-            NavigateToLinkedPage( "SimpleCommunicationPage", "CommunicationId", communicationId );
-        }
+
+
+        
     }
 }

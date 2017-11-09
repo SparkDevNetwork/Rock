@@ -529,12 +529,12 @@ namespace Rock.Attribute
 
                 foreach ( var attributeGroup in inheritedAttributes )
                 {
-                    foreach ( var attribute in attributeGroup.Value )
+                    foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )
                     {
                         allAttributes.Add( attribute );
                     }
                 }
-                foreach ( var attribute in attributes )
+                foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
                 {
                     allAttributes.Add( attribute );
                 }

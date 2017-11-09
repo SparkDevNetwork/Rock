@@ -54,25 +54,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the ID of the Literal control that will be created for this field.
-        /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        public string ID
-        {
-            get
-            {
-                return ViewState["ID"] as string;
-            }
-
-            set
-            {
-                ViewState["ID"] = value;
-            }
-        }
-
-        /// <summary>
         /// 
         /// </summary>
         public class LiteralTemplate : ITemplate

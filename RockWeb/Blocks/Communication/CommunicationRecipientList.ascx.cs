@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Communication
 
     [ContextAware]
     [LinkedPage( "Detail Page" )]
-    public partial class CommunicationRecipientList : RockBlock
+    public partial class CommunicationRecipientList : RockBlock, ICustomGridColumns
     {
         #region Fields
 

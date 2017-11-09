@@ -1151,6 +1151,11 @@ namespace Rock.SystemGuid
         public const string PLEDGE_LIST = "1570D2AF-4FE2-4FC7-BED9-F20EBCBE9867";
 
         /// <summary>
+        /// The PowerBI Account Registration Page
+        /// </summary>
+        public const string POWERBI_ACCOUNT_REGISTRATION = "BB65848A-3EBD-D181-4150-956A39FFE57E";
+
+        /// <summary>
         /// Gets the Power Tools page guid
         /// ParentPage: Rock Settings
         /// </summary>

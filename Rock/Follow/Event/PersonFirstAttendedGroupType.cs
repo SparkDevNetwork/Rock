@@ -61,11 +61,6 @@ namespace Rock.Follow.Event
         /// <returns></returns>
         public override bool HasEventHappened( FollowingEventType followingEvent, IEntity entity, DateTime? lastNotified )
         {
-            if ( lastNotified.HasValue )
-            {
-                return false;
-            }
-
             Guid? groupTypeGuid = GetAttributeValue( followingEvent, "GroupType" ).AsGuidOrNull();
             if ( followingEvent != null && entity != null && groupTypeGuid.HasValue )
             {

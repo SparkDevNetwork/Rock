@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.Core
 
     [LinkedPage( "Detail Page" )]
     [EnumField( "Merge Templates Ownership", "Set this to limit to merge templates depending on ownership type. Note: If the user has EDIT authorization to this block, both Global and Personal templates will be shown regardless of this setting.", typeof( MergeTemplateOwnership ), true, "Personal" )]
-    public partial class MergeTemplateList : RockBlock
+    public partial class MergeTemplateList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

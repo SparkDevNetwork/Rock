@@ -55,7 +55,7 @@ We have saved your unsubscribed you from the following lists:
 </ul>", 
         order: 7 )]
     [TextField( "Reasons to Exclude", "A delimited list of the Inactive Reasons to exclude from Reason list", false, "No Activity,Deceased", "", 8 )]
-    [GroupCategoryField( "Communication List Categories", "Select the categories of the communication lists to display for unsubscribe, or select none to show all that the user is authorized to view.", true, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, required: false, order: 9 )]
+    [GroupCategoryField( "Communication List Categories", "Select the categories of the communication lists to display for unsubscribe, or select none to show all that the user is authorized to view.", true, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, defaultValue: Rock.SystemGuid.Category.GROUPTYPE_COMMUNICATIONLIST_PUBLIC, required: false, order: 9 )]
     public partial class EmailPreferenceEntry : RockBlock
     {
         #region Fields

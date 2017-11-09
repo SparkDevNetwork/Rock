@@ -59,7 +59,8 @@ namespace Rock
             /// <inheritdoc />
             public override void NonQueryExecuting( DbCommand command, DbCommandInterceptionContext<int> interceptionContext )
             {
-                this.CommandExecuting( command, interceptionContext, out object userState );
+                object userState;
+                this.CommandExecuting( command, interceptionContext, out userState );
                 interceptionContext.UserState = userState;
             }
 
@@ -80,7 +81,8 @@ namespace Rock
             /// <inheritdoc />
             public override void ScalarExecuting( DbCommand command, DbCommandInterceptionContext<object> interceptionContext )
             {
-                this.CommandExecuting( command, interceptionContext, out object userState );
+                object userState;
+                this.CommandExecuting( command, interceptionContext, out userState );
                 interceptionContext.UserState = userState;
             }
 
@@ -101,7 +103,8 @@ namespace Rock
             /// <inheritdoc />
             public override void ReaderExecuting( System.Data.Common.DbCommand command, DbCommandInterceptionContext<System.Data.Common.DbDataReader> interceptionContext )
             {
-                this.CommandExecuting( command, interceptionContext, out object userState );
+                object userState;
+                this.CommandExecuting( command, interceptionContext, out userState );
                 interceptionContext.UserState = userState;
             }
 
@@ -116,9 +119,11 @@ namespace Rock
             }
 
             /// <summary>
+            /// Commands the executing.
             /// </summary>
-            /// <param name="command"></param>
-            /// <param name="interceptionContext"></param>
+            /// <param name="command">The command.</param>
+            /// <param name="interceptionContext">The interception context.</param>
+            /// <param name="userState">State of the user.</param>
             /// <inheritdoc />
             private void CommandExecuting( DbCommand command, DbCommandInterceptionContext interceptionContext, out object userState )
             {
@@ -186,6 +191,7 @@ namespace Rock
             /// </summary>
             /// <param name="command">The command.</param>
             /// <param name="interceptionContext">The interception context.</param>
+            /// <param name="userState">State of the user.</param>
             public void CommandExecuted( System.Data.Common.DbCommand command, DbCommandInterceptionContext interceptionContext, object userState )
             {
                 var debugHelperUserState = userState as DebugHelperUserState;

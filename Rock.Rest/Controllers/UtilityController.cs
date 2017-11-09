@@ -21,6 +21,7 @@ using System.Linq;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.VersionInfo;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
@@ -115,6 +116,25 @@ namespace Rock.Rest.Controllers
         public string GetRockSemanticVersionNumber()
         {
             return VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
+        }
+
+        /// <summary>
+        /// Initiates a new workflow
+        /// </summary>
+        /// <param name="fromNumber">From number.</param>
+        /// <param name="toNumber">To number.</param>
+        /// <param name="message">The message.</param>
+        /// <returns></returns>
+        //[Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/Utility/TextToWorkflow/{fromNumber}/{toNumber}/{message}" )]
+        public string TextToWorkflow( string fromNumber, string toNumber, string message )
+        {
+            string processResponse = string.Empty;
+
+            Rock.Utility.TextToWorkflow.MessageRecieved( toNumber, fromNumber, message, out processResponse );
+
+            return processResponse;
         }
     }
 }

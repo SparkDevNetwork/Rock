@@ -638,7 +638,7 @@ namespace Rock.Web.UI
             // enable history on the ScriptManager
             _scriptManager.EnableHistory = true;
 
-            // TODO: Delete this line, only used for testing
+            // increase the postback timeout
             _scriptManager.AsyncPostBackTimeout = 180;
 
             // wire up navigation event
@@ -816,7 +816,7 @@ namespace Rock.Web.UI
                         }
                         else
                         {
-                            body.Attributes.Add( "class", "layout-class" );
+                            body.Attributes.Add( "class", this.BodyCssClass );
                         }
                     }
                 }

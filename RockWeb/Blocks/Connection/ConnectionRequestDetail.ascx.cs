@@ -160,6 +160,16 @@ namespace RockWeb.Blocks.Connection
 
             nbErrorMessage.Visible = false;
             nbRequirementsErrors.Visible = false;
+            nbNoParameterMessage.Visible = false;
+
+            if ( PageParameter( "ConnectionRequestId" ).AsInteger() == 0 && PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() == null )
+            {
+                nbNoParameterMessage.Visible = true;
+                pnlContents.Visible = false;
+                wpConnectionRequestWorkflow.Visible = false;
+                wpConnectionRequestActivities.Visible = false;
+                return;
+            }
 
             if ( !Page.IsPostBack )
             {
@@ -1216,7 +1226,11 @@ namespace RockWeb.Blocks.Connection
 
             if ( connectionRequest == null )
             {
-                connectionOpportunity = connectionOpportunityService.Get( connectionOpportunityId.Value );
+                if ( connectionOpportunityId.HasValue )
+                {
+                    connectionOpportunity = connectionOpportunityService.Get( connectionOpportunityId.Value );
+                }
+
                 if ( connectionOpportunity != null )
                 {
                     var connectionStatus = connectionStatusService

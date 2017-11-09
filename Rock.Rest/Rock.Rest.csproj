@@ -22,6 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Rock.Rest.XML</DocumentationFile>
+    <LangVersion>6</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -117,6 +118,7 @@
     <Compile Include="Controllers\CodeGenerated\MetaNickNameLookupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaPersonicxLifestageClustersController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaPersonicxLifestageGroupsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PageShortLinksController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
@@ -130,7 +132,6 @@
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationAttachmentsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\SiteUrlMapsController.cs" />
     <Compile Include="Controllers\CommunicationsController.Partial.cs" />
     <Compile Include="Controllers\AttributesController.Partial.cs" />
     <Compile Include="Controllers\AuthController.cs" />

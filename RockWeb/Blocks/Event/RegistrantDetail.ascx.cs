@@ -160,6 +160,11 @@ namespace RockWeb.Blocks.Event
                     registrant = registrantService.Get( RegistrantState.Id );
                 }
 
+                var previousRegistrantPersonIds = registrantService.Queryable().Where(a => a.RegistrationId == RegistrantState.RegistrationId)
+                                .Where( r => r.PersonAlias != null )
+                                .Select( r => r.PersonAlias.PersonId )
+                                .ToList();
+
                 bool newRegistrant = false;
                 var registrantChanges = new List<string>();
 
@@ -177,6 +182,7 @@ namespace RockWeb.Blocks.Event
                     string prevPerson = ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null ) ?
                         registrant.PersonAlias.Person.FullName : string.Empty;
                     string newPerson = ppPerson.PersonName;
+                    newRegistrant = true;
                     History.EvaluateChange( registrantChanges, "Person", prevPerson, newPerson );
                 }
                 int? personId = ppPerson.PersonId.Value;
@@ -423,26 +429,12 @@ namespace RockWeb.Blocks.Event
                                     registrantChanges.Add( string.Format( "Registrant group member reference updated to existing person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
                                 }
 
+                                // Record this to the Person's and Registrants Notes and History...
+                                reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.PersonAlias.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+
                                 reloadedRegistrant.GroupMemberId = groupMember.Id;
                                 newRockContext.SaveChanges();
                             }
-                        }
-
-                        // Record this to the Person's History...
-                        if ( reloadedRegistrant != null && reloadedRegistrant.Registration != null )
-                        { 
-                            var changes = new List<string> { "Registered for" };
-                            HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
-                                ppPerson.PersonId.Value,
-                                changes,
-                                reloadedRegistrant.Registration.RegistrationInstance.Name,
-                                typeof( Registration ),
-                                reloadedRegistrant.Registration.Id,
-                                true,
-                                CurrentPersonAliasId );
                         }
                     }
                 }

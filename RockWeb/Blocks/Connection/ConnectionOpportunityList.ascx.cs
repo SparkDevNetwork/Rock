@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Lists all the opportunities for a given connection type." )]
     [LinkedPage( "Detail Page" )]
-    public partial class ConnectionOpportunityList : RockBlock, ISecondaryBlock
+    public partial class ConnectionOpportunityList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Fields
 

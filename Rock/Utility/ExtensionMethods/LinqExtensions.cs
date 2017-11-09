@@ -516,7 +516,7 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void AddOrReplace<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        public static void AddOrReplace<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key, TValue value )
         {
             if ( !dictionary.ContainsKey( key ) )
             {

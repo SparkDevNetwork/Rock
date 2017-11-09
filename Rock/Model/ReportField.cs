@@ -124,6 +124,24 @@ namespace Rock.Model
         [DataMember]
         public string ColumnHeaderText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the is recipient field.
+        /// </summary>
+        /// <value>
+        /// The is recipient field.
+        /// </value>
+        [DataMember]
+        public bool? IsCommunicationRecipientField { get; set; }
+
+        /// <summary>
+        /// Gets or sets the is communication merge field.
+        /// </summary>
+        /// <value>
+        /// The is communication merge field.
+        /// </value>
+        [DataMember]
+        public bool? IsCommunicationMergeField { get; set; }
+
         #endregion
 
         #region Virtual Properties

@@ -94,6 +94,7 @@ namespace Rock.Model
             target.CampusShortCode = source.CampusShortCode;
             target.ChildCount = source.ChildCount;
             target.ConnectionStatus = source.ConnectionStatus;
+            target.Count = source.Count;
             target.CurrentRowIndicator = source.CurrentRowIndicator;
             target.EffectiveDate = source.EffectiveDate;
             target.ExpireDate = source.ExpireDate;

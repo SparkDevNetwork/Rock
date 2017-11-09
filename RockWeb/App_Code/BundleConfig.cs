@@ -53,7 +53,7 @@ public class BundleConfig
             "~/Scripts/chosen.jquery.min.js",
             "~/Scripts/typeahead.min.js",
             "~/Scripts/jquery.fileupload.js",
-            "~/Scripts/jquery.tinyscrollbar.js",
+            "~/Scripts/iscroll.js",
             "~/Scripts/jcrop.min.js",
             "~/Scripts/ResizeSensor.js",       
             "~/Scripts/ion.rangeSlider/js/ion-rangeSlider/ion.rangeSlider.min.js",

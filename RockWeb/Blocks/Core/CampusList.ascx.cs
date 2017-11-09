@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Displays a list of all campuses." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class Campuses : RockBlock
+    public partial class Campuses : RockBlock, ICustomGridColumns
     {
         #region fields
 

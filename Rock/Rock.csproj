@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>6</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -35,6 +36,9 @@
     <DocumentationFile>bin\Release\Rock.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AngleSharp, Version=0.9.9.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.0.9.9\lib\net45\AngleSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
       <Private>True</Private>
@@ -135,6 +139,12 @@
       <HintPath>..\packages\Microsoft.AspNet.SignalR.SystemWeb.2.2.0\lib\net45\Microsoft.AspNet.SignalR.SystemWeb.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory, Version=2.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.21.301221612\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms, Version=2.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.21.301221612\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.IdentityModel.Logging, Version=1.1.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Logging.1.1.2\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
       <Private>True</Private>
@@ -194,6 +204,9 @@
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="PreMailer.Net, Version=1.5.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\PreMailer.Net.1.5.5\lib\net45\PreMailer.Net.dll</HintPath>
     </Reference>
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
@@ -375,6 +388,7 @@
     <Compile Include="Attribute\DefinedValueFieldAttribute.cs" />
     <Compile Include="Attribute\DefinedValueRangeFieldAttribute.cs" />
     <Compile Include="Attribute\EmailFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupMemberFieldAttribute.cs" />
     <Compile Include="Attribute\MatrixFieldAttribute.cs" />
     <Compile Include="Attribute\SSNFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowFieldAttribute.cs" />
@@ -542,6 +556,7 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\GroupMemberFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelFieldType.cs" />
     <Compile Include="Field\Types\CommunicationPreferenceFieldType.cs" />
     <Compile Include="Field\Types\DataViewsFieldType.cs" />
@@ -661,6 +676,7 @@
     <Compile Include="Follow\EventComponent.cs" />
     <Compile Include="Follow\EventContainer.cs" />
     <Compile Include="Follow\Event\PersonAnniversary.cs" />
+    <Compile Include="Follow\Event\PersonPrayerRequest.cs" />
     <Compile Include="Follow\Event\PersonBaptized.cs" />
     <Compile Include="Follow\Event\PersonBirthday.cs" />
     <Compile Include="Follow\Event\PersonFirstAttendedGroupType.cs" />
@@ -668,6 +684,7 @@
     <Compile Include="Follow\Event\PersonHistory.cs" />
     <Compile Include="Follow\SuggestionComponent.cs" />
     <Compile Include="Follow\SuggestionContainer.cs" />
+    <Compile Include="Follow\Suggestion\InFollowedGroup.cs" />
     <Compile Include="Follow\Suggestion\InGroupTogether.cs" />
     <Compile Include="Jobs\CalculateFamilyAnalytics.cs" />
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
@@ -675,8 +692,7 @@
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
-    <Compile Include="Jobs\ProcessAnalyticsDimFamily.cs" />
-    <Compile Include="Jobs\ProcessAnalyticsDimPerson.cs" />
+    <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
     <Compile Include="Jobs\SendDataViewEmail.cs" />
@@ -776,6 +792,7 @@
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
+    <Compile Include="Data\IAnalyticsAddresses.cs" />
     <Compile Include="Model\InteractionComponent.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
@@ -1150,6 +1167,7 @@
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\LocationFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\PersonalDeviceDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PostalCodeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasNoteFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\UserLoginDataViewFilter.cs" />
@@ -1164,6 +1182,8 @@
     <Compile Include="Reporting\DataTransform\Person\GrandparentTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\MotherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\SpouseTransform.cs" />
+    <Compile Include="Reporting\IRecipientDataSelect.cs" />
+    <Compile Include="Reporting\PowerBiUtilities.cs" />
     <Compile Include="Search\Other\Universal.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
     <Compile Include="SystemGuid\Communication.cs" />
@@ -1269,6 +1289,8 @@
     <Compile Include="Plugin\HotFixes\028_CheckinTextSettings.cs" />
     <Compile Include="Plugin\HotFixes\033_ConnectionOpportunityCounts.cs" />
     <Compile Include="Plugin\HotFixes\034_FinancialSecurityActions.cs" />
+    <Compile Include="Plugin\HotFixes\035_TransactionListSummary.cs" />
+    <Compile Include="Plugin\HotFixes\036_PrayerRequestFollowingEvent.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1304,7 +1326,9 @@
     <Compile Include="Reporting\DataFilter\IUpdateSelectionFromPageParameters.cs" />
     <Compile Include="Reporting\DataFilter\OtherDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\AgeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\CampusesActiveFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusesFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\CampusActiveFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FirstContributionDateFilter.cs" />
@@ -1319,6 +1343,7 @@
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGeofenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InGroupSimpleFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\NotInGroupGroupTypeFilter.cs" />
@@ -1410,6 +1435,9 @@
     <Compile Include="Utility\IRockOwinStartup.cs" />
     <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Web\Cache\ContentChannelCache.cs" />
+    <Compile Include="Web\Cache\LavaTemplateCache.cs" />
+    <Compile Include="Web\Cache\InteractionChannelCache.cs" />
+    <Compile Include="Web\Cache\InteractionComponentCache.cs" />
     <Compile Include="Web\Cache\LavaShortcodeCache.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\Cache\WorkflowActionFormAttributeCache.cs" />
@@ -1422,6 +1450,8 @@
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupMemberPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupMembersPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
@@ -1584,6 +1614,7 @@
     <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Utility\SimpleModeJsonConverter.cs" />
+    <Compile Include="Utility\SparkLinkHelper.cs" />
     <Compile Include="Utility\StringAsLiteralJavascriptJsonConverter.cs" />
     <Compile Include="Web\Cache\AttributeCache.cs" />
     <Compile Include="Web\Cache\BlockCache.cs" />
@@ -1920,6 +1951,7 @@
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
     <Compile Include="Workflow\Action\Utility\SetEntityAttribute.cs" />
     <Compile Include="Workflow\Action\Utility\SetEntityProperty.cs" />
+    <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
     <Compile Include="Workflow\Action\Utility\RunSQL.cs" />

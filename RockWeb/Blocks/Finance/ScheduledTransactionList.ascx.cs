@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Add Page", "", false )]
     [AccountsField( "Accounts", "Limit the results to scheduled transactions that match the selected accounts.", false, "", "", 2 )]
     [ContextAware]
-    public partial class ScheduledTransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock
+    public partial class ScheduledTransactionList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         private bool _isExporting = false;
 

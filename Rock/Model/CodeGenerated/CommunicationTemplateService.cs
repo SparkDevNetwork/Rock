@@ -91,6 +91,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.BCCEmails = source.BCCEmails;
+            target.CategoryId = source.CategoryId;
             target.CCEmails = source.CCEmails;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
@@ -100,6 +101,8 @@ namespace Rock.Model
             target.ImageFileId = source.ImageFileId;
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
+            target.LavaFieldsJson = source.LavaFieldsJson;
+            target.LogoBinaryFileId = source.LogoBinaryFileId;
             target.Message = source.Message;
             target.MessageMetaData = source.MessageMetaData;
             target.Name = source.Name;

@@ -43,10 +43,12 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
     [GroupTypesField( "Group Types", "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance type's areas will be available.", false, "", "", 0 )]
-    [BooleanField( "Show All Groups", "Should all of the available groups be listed individually with checkboxes? If not, a group dropdown will be used instead for selecting the desired groups", true, "", 1)]
-    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true, "", 2 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, "", "", 3 )]
-    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false, "", "", 4 )]
+    [BooleanField( "Include Inactive Campuses", "Should campus filter include inactive campuses?", false, "", 1 )]
+    [BooleanField( "Show All Groups", "Should all of the available groups be listed individually with checkboxes? If not, a group dropdown will be used instead for selecting the desired groups", true, "", 2)]
+    [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true, "", 3 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, "", "", 4 )]
+    [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false, "", "", 5 )]
+
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", "", true, false, Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, "", 5 )]
     public partial class AttendanceAnalytics : RockBlock
     {
@@ -208,12 +210,14 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         public void LoadDropDowns()
         {
+            bool includeInactiveCampuses = GetAttributeValue( "IncludeInactiveCampuses" ).AsBoolean();
+
             clbCampuses.Items.Clear();
             var noCampusListItem = new ListItem();
             noCampusListItem.Text = "<span title='Include records that are not associated with a campus'>No Campus</span>";
             noCampusListItem.Value = "null";
             clbCampuses.Items.Add( noCampusListItem );
-            foreach ( var campus in CampusCache.All().OrderBy( a => a.Name ) )
+            foreach ( var campus in CampusCache.All( includeInactiveCampuses ).OrderBy( a => a.Name ) )
             {
                 var listItem = new ListItem();
                 listItem.Text = campus.Name;

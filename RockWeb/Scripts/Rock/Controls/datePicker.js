@@ -25,6 +25,7 @@
                     autoclose: true,
                     todayBtn: true,
                     forceParse: options.forceParse,
+                    startDate: options.startDate,
                     endDate: options.endDate || new Date(8640000000000000),
                     startView: options.startView,
                     todayHighlight: options.todayHighlight

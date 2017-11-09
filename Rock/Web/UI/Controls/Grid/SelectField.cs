@@ -210,6 +210,14 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the header checkbox.
+        /// </summary>
+        /// <value>
+        /// The header checkbox.
+        /// </value>
+        public CheckBox HeaderCheckbox { get; internal set; }
+
         #endregion
 
         #region Base Control Methods
@@ -418,11 +426,13 @@ namespace Rock.Web.UI.Controls
                     if ( selectField.SelectionMode == SelectionMode.Multiple && selectField.ShowHeader && selectField.ShowSelectAll )
                     {
                         string colIndex = selectField.ColumnIndex.ToString();
-                        CheckBox cb = new CheckBox();
+                        var cb = new CheckBox();
                         cb.ID = "cbSelectHead_" + colIndex;
                         cb.AddCssClass( "select-all" );
                         cell.AddCssClass( "grid-select-field" );
                         cell.Controls.Add( cb );
+
+                        selectField.HeaderCheckbox = cb;
                     }
                 }
             }

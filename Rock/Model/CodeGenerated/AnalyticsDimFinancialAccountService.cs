@@ -93,6 +93,7 @@ namespace Rock.Model
             target.ActiveStatus = source.ActiveStatus;
             target.CampusName = source.CampusName;
             target.CampusShortCode = source.CampusShortCode;
+            target.Count = source.Count;
             target.Description = source.Description;
             target.EndDate = source.EndDate;
             target.ForeignGuid = source.ForeignGuid;
