@@ -24,7 +24,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents the source record for the AnalyticsDimPersonHistorical and AnalyticsDimPersonCurrent views
+    /// Represents the source record for the AnalyticsDimPersonHistorical and AnalyticsDimPersonCurrent views.
+    /// NOTE: Rock.Jobs.ProcessBIAnalytics dynamically adds additional columns to this table for any Attribute that is marked for Analytics
     /// </summary>
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsSourcePersonHistorical" )]
@@ -461,12 +462,12 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public partial class AnalyticsDimPersonHistoricalConfiguration : EntityTypeConfiguration<AnalyticsSourcePersonHistorical>
+    public partial class AnalyticsSourcePersonHistoricalConfiguration : EntityTypeConfiguration<AnalyticsSourcePersonHistorical>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AnalyticsDimPersonHistoricalConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="AnalyticsSourcePersonHistoricalConfiguration"/> class.
         /// </summary>
-        public AnalyticsDimPersonHistoricalConfiguration()
+        public AnalyticsSourcePersonHistoricalConfiguration()
         {
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier birthdates 
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed

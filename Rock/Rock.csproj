@@ -750,6 +750,8 @@
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
     <Compile Include="MergeTemplates\WordDocumentMergeTemplateType.cs" />
     <Compile Include="Model\AnalyticsDimAttendanceLocation.cs" />
+    <Compile Include="Model\AnalyticsDimCampus.cs" />
+    <Compile Include="Model\AnalyticsSourceCampus.cs" />
     <Compile Include="Model\AnalyticsDimFinancialAccount.cs" />
     <Compile Include="Model\AnalyticsDimFinancialBatch.cs" />
     <Compile Include="Model\AnalyticsDimFamilyHistorical.cs" />

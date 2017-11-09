@@ -1,56 +1,43 @@
-﻿// <copyright>
-// Copyright by the Spark Development Network
-//
-// Licensed under the Rock Community License (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.rockrms.com/license
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// </copyright>
-//
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// AnalyticsDimAttendanceLocation is a SQL View off of the Location table
+    /// AnalyticsDimCampus is SQL View based on AnalyticsSourceCampus
     /// </summary>
     [RockDomain( "Reporting" )]
-    [Table( "AnalyticsDimAttendanceLocation" )]
+    [Table( "AnalyticsDimCampus" )]
     [DataContract]
-    [HideFromReporting]
-    public class AnalyticsDimAttendanceLocation
+    public class AnalyticsDimCampus : AnalyticsSourceCampusBase<AnalyticsDimCampus>
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the location identifier.
+        /// Gets or sets the full name of the leader (from LeaderAliasPerson.Person.FullName)
         /// </summary>
         /// <value>
-        /// The location identifier.
+        /// The full name of the leader.
         /// </value>
-        [Key]
-        public int LocationId { get; set; }
+        [DataMember]
+        public string LeaderFullName { get; set; }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the leader person identifier (from LeaderAliasPerson.PersonId)
         /// </summary>
         /// <value>
-        /// The name.
+        /// The leader person identifier.
         /// </value>
-        [MaxLength( 250 )]
-        [DataMember( IsRequired = true )]
-        public string Name { get; set; }
+        [DataMember]
+        public int? LeaderPersonId { get; set; }
+
+        #endregion
+
+        #region Address
 
         /// <summary>
         /// Gets or sets the first line of the Location's Street/Mailing Address.
@@ -61,7 +48,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string Street1 { get; set; }
+        public string AddressStreet1 { get; set; }
 
         /// <summary>
         /// Gets or sets the second line of the Location's Street/Mailing Address. 
@@ -72,7 +59,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string Street2 { get; set; }
+        public string AddressStreet2 { get; set; }
 
         /// <summary>
         /// Gets or sets the city component of the Location's Street/Mailing Address.
@@ -83,7 +70,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string City { get; set; }
+        public string AddressCity { get; set; }
 
         /// <summary>
         /// Gets or sets the county.
@@ -93,7 +80,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string County { get; set; }
+        public string AddressCounty { get; set; }
 
         /// <summary>
         /// Gets or sets the State component of the Location's Street/Mailing Address.
@@ -104,7 +91,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string State { get; set; }
+        public string AddressState { get; set; }
 
         /// <summary>
         /// Gets or sets the country component of the Location's Street/Mailing Address. 
@@ -115,7 +102,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string Country { get; set; }
+        public string AddressCountry { get; set; }
 
         /// <summary>
         /// Gets or sets the Zip/Postal Code component of the Location's Street/Mailing Address.
@@ -126,7 +113,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string PostalCode { get; set; }
+        public string AddressPostalCode { get; set; }
 
         /// <summary>
         /// Gets or sets the GeoPoint (geolocation) for the location
@@ -136,7 +123,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
-        public DbGeography GeoPoint { get; set; }
+        public DbGeography AddressGeoPoint { get; set; }
 
         /// <summary>
         /// Gets or sets the geographic parameter around the a Location's Geopoint. This can also be used to define a large area
@@ -151,48 +138,34 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
-        public DbGeography GeoFence { get; set; }
+        public DbGeography AddressGeoFence { get; set; }
 
-        /// <summary>
-        /// Gets or sets the latitude (From GeoPoint)
+        /// <summary> 
+        /// Gets or sets the latitude. (From AddressGeoPoint)
         /// </summary>
         /// <value>
         /// The latitude.
         /// </value>
         [DataMember]
-        public double? Latitude { get; set; }
+        public double? AddressLatitude { get; set; }
 
         /// <summary>
-        /// Gets or sets the longitude (From GeoPoint)
+        /// Gets or sets the longitude. (From AddressGeoPoint)
         /// </summary>
         /// <value>
         /// The longitude.
         /// </value>
         [DataMember]
-        public double? Longitude { get; set; }
+        public double? AddressLongitude { get; set; }
 
         /// <summary>
-        /// Gets or sets the full address.
+        /// Gets or sets the full  address.
         /// </summary>
         /// <value>
         /// The  address full.
         /// </value>
         [DataMember]
-        public string FullAddress { get; set; }
-
-        #endregion
-
-        #region Entity Properties specific to Analytics
-
-        /// <summary>
-        /// Gets or sets the count.
-        /// NOTE: this always has a hardcoded value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
-        /// </summary>
-        /// <value>
-        /// The count.
-        /// </value>
-        [DataMember]
-        public int Count { get; set; }
+        public string AddressFull { get; set; }
 
         #endregion
     }

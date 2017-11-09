@@ -18,14 +18,15 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents the source record for the AnalyticsDimFamilyHistorical and AnalyticsDimFamilyCurrent views
+    /// NOTE: Rock.Jobs.ProcessBIAnalytics dynamically adds additional columns to this table for any Attribute that is marked for Analytics
     /// </summary>
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsSourceFamilyHistorical" )]
@@ -216,12 +217,12 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public partial class AnalyticsDimFamilyHistoricalConfiguration : EntityTypeConfiguration<AnalyticsSourceFamilyHistorical>
+    public partial class AnalyticsSourceFamilyHistoricalConfiguration : EntityTypeConfiguration<AnalyticsSourceFamilyHistorical>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AnalyticsDimFamilyHistoricalConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="AnalyticsSourceFamilyHistorical"/> class.
         /// </summary>
-        public AnalyticsDimFamilyHistoricalConfiguration()
+        public AnalyticsSourceFamilyHistoricalConfiguration()
         {
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
 

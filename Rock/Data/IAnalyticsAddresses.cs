@@ -112,6 +112,14 @@ namespace Rock.Data
         string MailingAddressStreet2 { get; set; }
 
         /// <summary>
+        /// Gets or sets the full mailing address.
+        /// </summary>
+        /// <value>
+        /// The mailing address full.
+        /// </value>
+        string MailingAddressFull { get; set; }
+
+        /// <summary>
         /// Gets or sets the mapped address city.
         /// </summary>
         /// <value>
@@ -198,5 +206,13 @@ namespace Rock.Data
         /// The mapped address street2.
         /// </value>
         string MappedAddressStreet2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full mapped address.
+        /// </summary>
+        /// <value>
+        /// The mapped address full.
+        /// </value>
+        string MappedAddressFull { get; set; }
     }
 }
