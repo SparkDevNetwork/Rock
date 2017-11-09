@@ -24,32 +24,33 @@ namespace com.centralaz.RoomManagement.Migrations
         public override void Up()
         {
             Sql( @"
-                Update a
-                Set a.[Key] = innerTable.NewKey
-                From Attribute a 
-                inner join
+                UPDATE [a]
+                SET [a].[Key] = [innerTable].[NewKey]
+                FROM [Attribute] [a] 
+                INNER JOIN
                 (
-                Select 'Q'+Cast(a.[Order] as Nvarchar(20))+'_ResourceId'+Cast(ResourceId as nvarchar(20)) as 'NewKey',
-                a.Id as 'AttributeId'
-                From Attribute a
-                Join _com_centralaz_RoomManagement_Question q on a.Id = q.AttributeId
-                Where ResourceId is not null
-                ) as innerTable 
-                on innerTable.AttributeId = a.Id
+	                SELECT 'Q'+CAST([a].[Order] AS NVARCHAR(20))+'_ResourceId'+CAST([q].[ResourceId] AS NVARCHAR(20)) AS 'NewKey',
+	                [a].[Id] AS 'AttributeId'
+	                FROM [Attribute] [a]
+	                JOIN [_com_centralaz_RoomManagement_Question] [q] ON [a].[Id] = [q].[AttributeId]
+	                WHERE [q].[ResourceId] IS NOT NULL
+	                AND [a].[Key] NOT LIKE '%_ResourceId%'
+                ) AS [innerTable]
+                ON [innerTable].[AttributeId] = [a].[Id]
 
-
-                Update a
-                Set a.[Key] = innerTable.NewKey
-                From Attribute a 
-                inner join
+                UPDATE [a]
+                SET [a].[Key] = [innerTable].[NewKey]
+                FROM [Attribute] [a] 
+                INNER JOIN
                 (
-                Select 'Q'+Cast(a.[Order] as Nvarchar(20))+'_LocationId'+Cast(LocationId as nvarchar(20)) as 'NewKey',
-                a.Id as 'AttributeId'
-                From Attribute a
-                Join _com_centralaz_RoomManagement_Question q on a.Id = q.AttributeId
-                Where LocationId is not null
-                ) as innerTable 
-                on innerTable.AttributeId = a.Id
+	                SELECT 'Q'+CAST([a].[Order] AS NVARCHAR(20))+'_LocationId'+CAST([q].[LocationId] AS NVARCHAR(20)) AS 'NewKey',
+	                [a].[Id] AS 'AttributeId'
+	                FROM [Attribute] [a]
+	                JOIN [_com_centralaz_RoomManagement_Question] [q] ON [a].[Id] = [q].[AttributeId]
+	                WHERE [q].[LocationId] IS NOT NULL
+	                AND [a].[Key] NOT LIKE '%_LocationId%'
+                ) AS [innerTable]
+                ON [innerTable].[AttributeId] = [a].[Id]
                 " );
         }
         public override void Down()
