@@ -35,12 +35,20 @@ namespace com.centralaz.Finance.Transactions
         #region Properties
 
         /// <summary>
-        /// Gets or sets the merge template identifier.
+        /// Gets or sets the letter template.
         /// </summary>
         /// <value>
-        /// The merge template identifier.
+        /// The letter template.
         /// </value>
-        public MergeTemplate MergeTemplate { get; set; }
+        public MergeTemplate LetterTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the statement template.
+        /// </summary>
+        /// <value>
+        /// The statement template.
+        /// </value>
+        public MergeTemplate StatementTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the binary file.
@@ -188,35 +196,35 @@ namespace com.centralaz.Finance.Transactions
         {
             using ( var rockContext = new RockContext() )
             {
-                var binaryFileService = new BinaryFileService( rockContext );
-                MergeTemplateType mergeTemplateType = MergeTemplate.GetMergeTemplateType();
+                var givingIdCount = GetGivingIdCount();
+                if ( ChapterSize <= 0 )
+                {
+                    ChapterSize = 1;
+                }
 
-                if ( mergeTemplateType != null )
+                var totalChapters = 0;
+                for ( ChapterNumber = 1; ( ( ChapterNumber - 1 ) * ChapterSize ) < givingIdCount; ChapterNumber++ )
+                {
+                    totalChapters++;
+                }
+
+                var binaryFileService = new BinaryFileService( rockContext );
+
+                MergeTemplateType statementTemplateType = StatementTemplate.GetMergeTemplateType();
+                if ( statementTemplateType != null )
                 {
                     try
                     {
-                        var givingIdCount = GetGivingIdCount();
-                        if ( ChapterSize <= 0 )
-                        {
-                            ChapterSize = 1;
-                        }
-
-                        var totalChapters = 0;
-                        for ( ChapterNumber = 1; ( ( ChapterNumber - 1 ) * ChapterSize ) < givingIdCount; ChapterNumber++ )
-                        {
-                            totalChapters++;
-                        }
-
                         for ( ChapterNumber = 1; ( ( ChapterNumber - 1 ) * ChapterSize ) < givingIdCount; ChapterNumber++ )
                         {
                             var fileName = String.Format( "{0}_ContributionStatements_Chapter_{1:000}_of_{2:000}.html", DateTime.Now.ToString( "MMddyyyy" ), ChapterNumber, totalChapters );
-                            var mergeFields = GetMergeFields( rockContext );
+                            var mergeFields = GetStatementMergeFields( rockContext );
 
                             BinaryFile outputBinaryFileDoc = null;
                             var fileList = binaryFileService.Queryable().Where( b => b.FileName == fileName );
                             binaryFileService.DeleteRange( fileList );
 
-                            outputBinaryFileDoc = mergeTemplateType.CreateDocument( MergeTemplate, new List<object>(), mergeFields );
+                            outputBinaryFileDoc = statementTemplateType.CreateDocument( StatementTemplate, new List<object>(), mergeFields );
                             outputBinaryFileDoc = binaryFileService.Get( outputBinaryFileDoc.Id );
 
                             outputBinaryFileDoc.IsTemporary = false;
@@ -224,50 +232,86 @@ namespace com.centralaz.Finance.Transactions
                             outputBinaryFileDoc.FileName = fileName;
                             rockContext.SaveChanges();
 
-                            if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
+                            if ( statementTemplateType.Exceptions != null && statementTemplateType.Exceptions.Any() )
                             {
-                                if ( mergeTemplateType.Exceptions.Count == 1 )
+                                if ( statementTemplateType.Exceptions.Count == 1 )
                                 {
-                                    this.LogException( mergeTemplateType.Exceptions[0] );
+                                    this.LogException( statementTemplateType.Exceptions[0] );
                                 }
-                                else if ( mergeTemplateType.Exceptions.Count > 50 )
+                                else if ( statementTemplateType.Exceptions.Count > 50 )
                                 {
-                                    this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions for top 50.", MergeTemplate.Name ), mergeTemplateType.Exceptions.Take( 50 ).ToList() ) );
+                                    this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions for top 50.", StatementTemplate.Name ), statementTemplateType.Exceptions.Take( 50 ).ToList() ) );
                                 }
                                 else
                                 {
-                                    this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions", MergeTemplate.Name ), mergeTemplateType.Exceptions.ToList() ) );
+                                    this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions", StatementTemplate.Name ), statementTemplateType.Exceptions.ToList() ) );
                                 }
                             }
                         }
-
-                        // Send email
-                        if ( SystemEmailGuid.HasValue )
-                        {
-                            var emailMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                            emailMergeFields.Add( "Person", Requestor );
-
-                            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
-
-                            var recipients = new List<RecipientData>();
-                            recipients.Add( new RecipientData( Requestor.Email, emailMergeFields ) );
-
-                            Email.Send( SystemEmailGuid.Value, recipients, appRoot );
-                        }
-
                     }
                     catch ( Exception ex )
                     {
                         this.LogException( ex );
-                        if ( ex is System.FormatException )
+                    }
+                }
+
+                MergeTemplateType letterTemplateType = LetterTemplate.GetMergeTemplateType();
+                if ( letterTemplateType != null )
+                {
+                    try
+                    {
+                        ChapterNumber = 1;
+                        ChapterSize = givingIdCount + 1;
+                        var fileName = String.Format( "{0}_ContributionLetter.docx", DateTime.Now.ToString( "MMddyyyy" ) );
+                        var mergeObjectList = GetLetterMergeObjectList( rockContext ).Select( a => a.Value ).ToList();
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null,null );
+
+                        BinaryFile outputBinaryFileDoc = null;
+                        var fileList = binaryFileService.Queryable().Where( b => b.FileName == fileName );
+                        binaryFileService.DeleteRange( fileList );
+
+                        outputBinaryFileDoc = letterTemplateType.CreateDocument( LetterTemplate, mergeObjectList, mergeFields );
+                        outputBinaryFileDoc = binaryFileService.Get( outputBinaryFileDoc.Id );
+
+                        outputBinaryFileDoc.IsTemporary = false;
+                        outputBinaryFileDoc.BinaryFileTypeId = BinaryFileType.Id;
+                        outputBinaryFileDoc.FileName = fileName;
+                        rockContext.SaveChanges();
+
+                        if ( letterTemplateType.Exceptions != null && letterTemplateType.Exceptions.Any() )
                         {
-                            // nbMergeError.Text = "Error loading the merge template. Please verify that the merge template file is valid.";
-                        }
-                        else
-                        {
-                            // nbMergeError.Text = "An error occurred while merging";
+                            if ( letterTemplateType.Exceptions.Count == 1 )
+                            {
+                                this.LogException( letterTemplateType.Exceptions[0] );
+                            }
+                            else if ( letterTemplateType.Exceptions.Count > 50 )
+                            {
+                                this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions for top 50.", LetterTemplate.Name ), letterTemplateType.Exceptions.Take( 50 ).ToList() ) );
+                            }
+                            else
+                            {
+                                this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions", LetterTemplate.Name ), letterTemplateType.Exceptions.ToList() ) );
+                            }
                         }
                     }
+                    catch ( Exception ex )
+                    {
+                        this.LogException( ex );
+                    }
+                }
+
+                // Send email
+                if ( SystemEmailGuid.HasValue )
+                {
+                    var emailMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                    emailMergeFields.Add( "Person", Requestor );
+
+                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+
+                    var recipients = new List<RecipientData>();
+                    recipients.Add( new RecipientData( Requestor.Email, emailMergeFields ) );
+
+                    Email.Send( SystemEmailGuid.Value, recipients, appRoot );
                 }
             }
         }
@@ -319,7 +363,7 @@ DECLARE @cGROUPTYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB9
         /// <param name="rockContext">The rock context.</param>
         /// <param name="fetchCount">The fetch count.</param>
         /// <returns></returns>
-        private Dictionary<string, object> GetMergeFields( RockContext rockContext, int? fetchCount = null )
+        private Dictionary<string, object> GetStatementMergeFields( RockContext rockContext, int? fetchCount = null )
         {
             if ( DatabaseTimeout.HasValue )
             {
@@ -351,18 +395,19 @@ DECLARE @cGROUPTYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB9
                     } );
                 }
 
-                var addressDataTable = result.Tables[01];
+                var addressDataTable = result.Tables[1];
                 foreach ( var row in addressDataTable.Rows.OfType<DataRow>().ToList() )
                 {
                     addressList.Add( new AddressSummary
                     {
                         GivingId = row.ItemArray[0] as string,
-                        Names = row.ItemArray[1] as string,
-                        Street1 = row.ItemArray[3] as string,
-                        Street2 = row.ItemArray[4] as string,
-                        City = row.ItemArray[5] as string,
-                        State = row.ItemArray[6] as string,
-                        PostalCode = row.ItemArray[7] as string
+                        AddressNames = row.ItemArray[1] as string,
+                        GreetingNames = row.ItemArray[2] as string,
+                        Street1 = row.ItemArray[4] as string,
+                        Street2 = row.ItemArray[5] as string,
+                        City = row.ItemArray[6] as string,
+                        State = row.ItemArray[7] as string,
+                        PostalCode = row.ItemArray[8] as string
                     } );
                 }
             }
@@ -392,6 +437,43 @@ DECLARE @cGROUPTYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB9
             mergeFields.Add( "ChapterNumber", ChapterNumber );
             mergeFields.Add( "ChapterSize", ChapterSize );
             return mergeFields;
+        }
+
+
+        private Dictionary<int, object> GetLetterMergeObjectList( RockContext rockContext, int? fetchCount = null )
+        {
+            if ( DatabaseTimeout.HasValue )
+            {
+                rockContext.Database.CommandTimeout = DatabaseTimeout.Value;
+            }
+
+            // Get all transactions tied to the Giving Ids
+            Dictionary<string, object> parameters = GetSqlParameters();
+            var result = DbService.GetDataSet( "spFinance_GetGivingGroupAddresses", System.Data.CommandType.StoredProcedure, parameters );
+            Dictionary<int, object> mergeObjectsDictionary = new Dictionary<int, object>();
+            int dictionaryIndex = 0;
+
+            if ( result.Tables.Count > 0 )
+            {
+
+                var addressDataTable = result.Tables[0];
+                foreach ( var row in addressDataTable.Rows.OfType<DataRow>().ToList() )
+                {
+                    mergeObjectsDictionary.Add( dictionaryIndex, new AddressSummary
+                    {
+                        GivingId = row.ItemArray[0] as string,
+                        AddressNames = row.ItemArray[1] as string,
+                        GreetingNames = row.ItemArray[2] as string,
+                        Street1 = row.ItemArray[4] as string,
+                        Street2 = row.ItemArray[5] as string,
+                        City = row.ItemArray[6] as string,
+                        State = row.ItemArray[7] as string,
+                        PostalCode = row.ItemArray[8] as string
+                    } );
+                    dictionaryIndex++;
+                }
+            }
+            return mergeObjectsDictionary;
         }
 
         /// <summary>
@@ -607,7 +689,7 @@ DECLARE @cGROUPTYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB9
         /// <summary>
         /// The address summary for lava
         /// </summary>
-        [DotLiquid.LiquidType( "GivingId", "Names", "Street1", "Street2", "City", "State", "PostalCode" )]
+        [DotLiquid.LiquidType( "GivingId", "AddressNames", "GreetingNames", "Street1", "Street2", "City", "State", "PostalCode" )]
         public class AddressSummary
         {
             /// <summary>
@@ -619,12 +701,20 @@ DECLARE @cGROUPTYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB9
             public String GivingId { get; set; }
 
             /// <summary>
-            /// Gets or sets the names.
+            /// Gets or sets the address names.
             /// </summary>
             /// <value>
-            /// The names.
+            /// The address names.
             /// </value>
-            public String Names { get; set; }
+            public String AddressNames { get; set; }
+
+            /// <summary>
+            /// Gets or sets the greeting names.
+            /// </summary>
+            /// <value>
+            /// The greeting names.
+            /// </value>
+            public String GreetingNames { get; set; }
 
             /// <summary>
             /// Gets or sets the street1.

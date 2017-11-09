@@ -109,23 +109,8 @@ namespace RockWeb.Plugins.com_centralaz.Finance
 
             var rockContext = new RockContext();
 
-            MergeTemplate mergeTemplate = new MergeTemplateService( rockContext ).Get( mtpMergeTemplate.SelectedValue.AsInteger() );
-            if ( mergeTemplate == null )
-            {
-                nbWarningMessage.Text = "Unable to get merge template";
-                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbWarningMessage.Visible = true;
-                return;
-            }
-
-            MergeTemplateType mergeTemplateType = this.GetMergeTemplateType( rockContext, mergeTemplate );
-            if ( mergeTemplateType == null )
-            {
-                nbWarningMessage.Text = "Unable to get merge template type";
-                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbWarningMessage.Visible = true;
-                return;
-            }
+            MergeTemplate statementTemplate = new MergeTemplateService( rockContext ).Get( mtpStatement.SelectedValue.AsInteger() );
+            MergeTemplate letterTemplate = new MergeTemplateService( rockContext ).Get( mtpLetter.SelectedValue.AsInteger() );
 
             BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( GetAttributeValue( "FileType" ).AsGuid() );
             if ( binaryFileType == null )
@@ -176,7 +161,8 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             transaction.Campuses = cblCampus.SelectedValuesAsInt;
             transaction.StartDate = dateRange.Start;
             transaction.EndDate = dateRange.End;
-            transaction.MergeTemplate = mergeTemplate;
+            transaction.LetterTemplate = letterTemplate;
+            transaction.StatementTemplate = statementTemplate;
             transaction.BinaryFileType = binaryFileType;
             transaction.SystemEmailGuid = GetAttributeValue( "NotifyRequesterEmail" ).AsGuidOrNull();
             transaction.Requestor = CurrentPerson;
@@ -186,7 +172,8 @@ namespace RockWeb.Plugins.com_centralaz.Finance
 
             SetBlockUserPreference( "ChapterSize", nbChapterSize.Text );
             SetBlockUserPreference( "MinimumContribution", nbMinimumAmount.Text );
-            SetBlockUserPreference( "MergeTemplate", mtpMergeTemplate.SelectedValue );
+            SetBlockUserPreference( "StatementTemplate", mtpStatement.SelectedValue );
+            SetBlockUserPreference( "LetterTemplate", mtpLetter.SelectedValue );
             SetBlockUserPreference( "Account1", apAccount1.SelectedValue );
             SetBlockUserPreference( "Account2", apAccount2.SelectedValue );
             SetBlockUserPreference( "Account3", apAccount3.SelectedValue );
@@ -230,9 +217,14 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 nbMinimumAmount.Text = GetBlockUserPreference( "MinimumContribution" );
             }
 
-            if ( !String.IsNullOrWhiteSpace( GetBlockUserPreference( "MergeTemplate" ) ) )
+            if ( !String.IsNullOrWhiteSpace( GetBlockUserPreference( "StatementTemplate" ) ) )
             {
-                mtpMergeTemplate.SetValue( GetBlockUserPreference( "MergeTemplate" ).AsIntegerOrNull() );
+                mtpStatement.SetValue( GetBlockUserPreference( "StatementTemplate" ).AsIntegerOrNull() );
+            }
+
+            if ( !String.IsNullOrWhiteSpace( GetBlockUserPreference( "LetterTemplate" ) ) )
+            {
+                mtpLetter.SetValue( GetBlockUserPreference( "LetterTemplate" ).AsIntegerOrNull() );
             }
 
             if ( !String.IsNullOrWhiteSpace( GetBlockUserPreference( "Account1" ) ) )
@@ -272,7 +264,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
         /// <returns></returns>
         private MergeTemplateType GetMergeTemplateType( RockContext rockContext, MergeTemplate mergeTemplate )
         {
-            mergeTemplate = new MergeTemplateService( rockContext ).Get( mtpMergeTemplate.SelectedValue.AsInteger() );
+            mergeTemplate = new MergeTemplateService( rockContext ).Get( mtpStatement.SelectedValue.AsInteger() );
             if ( mergeTemplate == null )
             {
                 return null;
