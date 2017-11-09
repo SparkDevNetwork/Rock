@@ -444,7 +444,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         var phAttributes = headControl.FindControl( "phAttributes_" + reservationLocation.Guid.ToString() ) as PlaceHolder;
                         if ( phAttributes != null )
                         {
-                            reservationLocation.LoadAttributes( rockContext );
+                            reservationLocation.LoadReservationLocationAttributes();
                             Rock.Attribute.Helper.GetEditValues( phAttributes, reservationLocation );
                         }
                     }
@@ -458,7 +458,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         var phAttributes = headControl.FindControl( "phAttributes_" + reservationResource.Guid.ToString() ) as PlaceHolder;
                         if ( phAttributes != null )
                         {
-                            reservationResource.LoadAttributes( rockContext );
+                            reservationResource.LoadReservationResourceAttributes();
                             Rock.Attribute.Helper.GetEditValues( phAttributes, reservationResource );
                         }
                     }
@@ -1536,7 +1536,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         hfReservationLocationGuid.ID = "hfReservationLocationGuid_" + reservationLocation.Guid.ToString();
                         phAttributes.ID = "phAttributes_" + reservationLocation.Guid.ToString(); ;
 
-                        bool setValue = resourceList.Contains( reservationLocation.Guid );
+                        bool setValue = locationList.Contains( reservationLocation.Guid );
                         Rock.Attribute.Helper.AddEditControls( reservationLocation, phAttributes, setValue, BlockValidationGroup );
 
                         childControl.Controls.Add( headingTitle );
