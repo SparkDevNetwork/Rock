@@ -1494,6 +1494,11 @@ namespace RockWeb.Blocks.Communication
                     communicationHtml = emailMediumWithActiveTransport.Transport.ResolveText( communicationHtml, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
                     communicationHtml = Regex.Replace( communicationHtml, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
                 }
+
+                if ( emailMediumWithActiveTransport.Transport is Rock.Communication.Transport.SMTPComponent )
+                {
+                    communicationHtml =( emailMediumWithActiveTransport.Transport as Rock.Communication.Transport.SMTPComponent ).MoveCssInline( communicationHtml );
+                }
             }
 
             ifEmailPreview.Attributes["srcdoc"] = communicationHtml;

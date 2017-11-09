@@ -222,6 +222,7 @@ namespace Rock.Communication.Transport
                             // Body
                             string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
                             body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                            body = this.MoveCssInline( body );
 
                             message.Subject = subject;
                             message.Body = body;
@@ -440,6 +441,10 @@ namespace Rock.Communication.Transport
 
                                         if ( !string.IsNullOrWhiteSpace( htmlBody ) )
                                         {
+                                            // move styles inline to help it be compatible with more email clients
+                                            htmlBody = this.MoveCssInline( htmlBody );
+
+                                            // add the main Html content to the email
                                             AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
                                             message.AlternateViews.Add( htmlView );
                                         }
@@ -634,6 +639,16 @@ namespace Rock.Communication.Transport
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Moves the CSS inline using PreMailer.Net, which moves any stylesheets to inline style attributes, for maximum compatibility with E-mail clients
+        /// </summary>
+        /// <param name="html">The HTML.</param>
+        /// <returns></returns>
+        public string MoveCssInline( string html )
+        {
+            return PreMailer.Net.PreMailer.MoveCssInline( html, false, ".ignore" ).Html;
         }
 
         #region Obsolete

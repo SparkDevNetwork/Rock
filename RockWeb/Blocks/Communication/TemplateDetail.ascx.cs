@@ -545,10 +545,6 @@ namespace RockWeb.Blocks.Communication
                 lavaFieldsNode = templateDoc.CreateElement( "div" );
                 lavaFieldsNode.Attributes.Add( "id", "lava-fields" );
                 lavaFieldsNode.Attributes.Add( "style", "display:none" );
-                var bodyNode = templateDoc.DocumentNode.SelectSingleNode( "//body" );
-                bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
-                bodyNode.PrependChild( lavaFieldsNode );
-                bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n\r\n  <!-- Lava Fields: Code-Generated from Template Editor -->\r\n  " ) );
             }
 
             var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhitespace() ).ToList();
@@ -616,16 +612,43 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            StringBuilder lavaAssignsHtml = new StringBuilder();
-            lavaAssignsHtml.AppendLine();
-            foreach ( var lavaFieldsTemplateItem in lavaFieldsTemplateDictionary )
+            if ( lavaFieldsDefaultDictionary.Any() )
             {
-                lavaAssignsHtml.AppendLine( string.Format( "    {{% assign {0} = '{1}' %}}", lavaFieldsTemplateItem.Key, lavaFieldsTemplateItem.Value ) );
+                StringBuilder lavaAssignsHtml = new StringBuilder();
+                lavaAssignsHtml.AppendLine();
+                lavaAssignsHtml.AppendLine( "    <!-- Lava Fields: Code-Generated from Template Editor -->" );
+                foreach ( var lavaFieldsTemplateItem in lavaFieldsTemplateDictionary )
+                {
+                    lavaAssignsHtml.AppendLine( string.Format( "    {{% assign {0} = '{1}' %}}", lavaFieldsTemplateItem.Key, lavaFieldsTemplateItem.Value ) );
+                }
+
+                lavaAssignsHtml.Append( "  " );
+
+                lavaFieldsNode.InnerHtml = lavaAssignsHtml.ToString();
+
+                if ( lavaFieldsNode.ParentNode == null )
+                {
+                    var bodyNode = templateDoc.DocumentNode.SelectSingleNode( "//body" );
+
+                    // prepend a linefeed so that it is after the lava node (to make it pretty printed)
+                    bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
+
+                    bodyNode.PrependChild( lavaFieldsNode );
+
+                    // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
+                    bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
+                }
             }
+            else if ( lavaFieldsNode.ParentNode != null )
+            {
+                if ( lavaFieldsNode.NextSibling != null && lavaFieldsNode.NextSibling.Name == "#text" )
+                {
+                    // remove the extra line endings
+                    lavaFieldsNode.NextSibling.InnerHtml = lavaFieldsNode.NextSibling.InnerHtml.TrimStart( new char[] { ' ', '\r', '\n' } );
+                }
 
-            lavaAssignsHtml.Append( "  " );
-
-            lavaFieldsNode.InnerHtml = lavaAssignsHtml.ToString();
+                lavaFieldsNode.Remove();
+            }
 
             hfLavaFieldsState.Value = lavaFieldsTemplateDictionary.ToJson( Newtonsoft.Json.Formatting.None );
 
@@ -656,7 +679,6 @@ namespace RockWeb.Blocks.Communication
                 if ( keyValue.Key.EndsWith( "Color" ) )
                 {
                     lavaValueControl = new ColorPicker();
-
                 }
                 else
                 {
