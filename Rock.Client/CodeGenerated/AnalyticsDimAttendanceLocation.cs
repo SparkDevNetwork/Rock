@@ -44,6 +44,9 @@ namespace Rock.Client
         public string County { get; set; }
 
         /// <summary />
+        public string FullAddress { get; set; }
+
+        /// <summary />
         public object GeoFence { get; set; }
 
         /// <summary />
@@ -83,6 +86,7 @@ namespace Rock.Client
             this.Count = source.Count;
             this.Country = source.Country;
             this.County = source.County;
+            this.FullAddress = source.FullAddress;
             this.GeoFence = source.GeoFence;
             this.GeoPoint = source.GeoPoint;
             this.Latitude = source.Latitude;

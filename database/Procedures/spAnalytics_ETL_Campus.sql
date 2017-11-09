@@ -1,10 +1,10 @@
 IF EXISTS (
-		SELECT *
-		FROM [sysobjects]
-		WHERE [id] = OBJECT_ID(N'[dbo].[spAnalytics_ETL_Campus]')
-			AND OBJECTPROPERTY([id], N'IsProcedure') = 1
-		)
-	DROP PROCEDURE [dbo].spAnalytics_ETL_Campus
+        SELECT *
+        FROM [sysobjects]
+        WHERE [id] = OBJECT_ID(N'[dbo].[spAnalytics_ETL_Campus]')
+            AND OBJECTPROPERTY([id], N'IsProcedure') = 1
+        )
+    DROP PROCEDURE [dbo].spAnalytics_ETL_Campus
 GO
 
 -- EXECUTE [dbo].[spAnalytics_ETL_Campus] 
