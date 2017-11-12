@@ -58,6 +58,9 @@ namespace Rock.Migrations
             Sql( MigrationSQL._201711092125120_Analytics5_AnalyticsDimAttendanceLocation );
             Sql( MigrationSQL._201711092125120_Analytics5_AnalyticsDimCampus );
             Sql( MigrationSQL._201711092125120_Analytics5_AnalyticsDimFamilyHistorical );
+
+            Sql( @"exec sp_refreshview [AnalyticsDimFamilyCurrent]" );
+
             Sql( MigrationSQL._201711092125120_Analytics5_AnalyticsDimPersonHistorical );
             Sql( MigrationSQL._201711092125120_Analytics5_spAnalytics_ETL_Campus );
 
@@ -69,7 +72,6 @@ namespace Rock.Migrations
             Sql( @"exec sp_refreshview [AnalyticsDimPersonCurrent]" );
 
             Sql( @"exec sp_refreshview [AnalyticsDimFamilyHistorical]" );
-            Sql( @"exec sp_refreshview [AnalyticsDimFamilyCurrent]" );
 
             Sql( @"exec sp_refreshview [AnalyticsDimFamilyHeadOfHousehold]" );
             Sql( @"exec sp_refreshview [AnalyticsDimFamilyHeadOfHouseholdBirthDate]" );
