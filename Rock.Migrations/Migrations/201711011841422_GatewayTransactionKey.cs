@@ -29,8 +29,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.FinancialTransaction", "GatewayTransactionKey", c => c.String(maxLength: 100));
-            CreateIndex("dbo.FinancialTransaction", "GatewayTransactionKey");
+            // Columns are not needed and are deleted (if they exists) in later migration
+            //AddColumn( "dbo.FinancialTransaction", "GatewayTransactionKey", c => c.String(maxLength: 100));
+            //CreateIndex("dbo.FinancialTransaction", "GatewayTransactionKey");
 
             // MP: Power BI ReportViewer,Registration Block/Page
             // Delete BlockType (it may have been incorrectly added in an earlier migration: 201710192047587_PowerBiReportViewer)
@@ -112,10 +113,6 @@ WHERE [Guid] = '88B7DF18-9C30-4BAC-8CA2-5AD253D57E4D'" );
             RockMigrationHelper.DeleteBlock( "A114F642-2D03-4A63-95FB-EA77BD90EC63" );
 
             RockMigrationHelper.DeletePage( Rock.SystemGuid.Page.POWERBI_ACCOUNT_REGISTRATION );
-            
-
-            DropIndex( "dbo.FinancialTransaction", new[] { "GatewayTransactionKey" });
-            DropColumn("dbo.FinancialTransaction", "GatewayTransactionKey");
         }
     }
 }

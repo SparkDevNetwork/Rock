@@ -29,10 +29,11 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.FinancialScheduledTransaction", "GatewayTransactionKey", c => c.String(maxLength: 100));
-            AddColumn("dbo.FinancialPersonSavedAccount", "GatewayTransactionKey", c => c.String(maxLength: 100));
-            CreateIndex("dbo.FinancialScheduledTransaction", "GatewayTransactionKey");
-            CreateIndex("dbo.FinancialPersonSavedAccount", "GatewayTransactionKey");
+            // Columns are not needed and are deleted (if they exists) in later migration
+            //AddColumn("dbo.FinancialScheduledTransaction", "GatewayTransactionKey", c => c.String(maxLength: 100));
+            //AddColumn("dbo.FinancialPersonSavedAccount", "GatewayTransactionKey", c => c.String(maxLength: 100));
+            //CreateIndex("dbo.FinancialScheduledTransaction", "GatewayTransactionKey");
+            //CreateIndex("dbo.FinancialPersonSavedAccount", "GatewayTransactionKey");
         }
         
         /// <summary>
@@ -40,10 +41,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropIndex("dbo.FinancialPersonSavedAccount", new[] { "GatewayTransactionKey" });
-            DropIndex("dbo.FinancialScheduledTransaction", new[] { "GatewayTransactionKey" });
-            DropColumn("dbo.FinancialPersonSavedAccount", "GatewayTransactionKey");
-            DropColumn("dbo.FinancialScheduledTransaction", "GatewayTransactionKey");
         }
     }
 }

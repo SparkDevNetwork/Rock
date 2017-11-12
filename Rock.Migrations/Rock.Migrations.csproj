@@ -409,6 +409,10 @@
     <Compile Include="Migrations\201711092125120_Analytics5.Designer.cs">
       <DependentUpon>201711092125120_Analytics5.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711121446237_RemoveTransactionKeys.cs" />
+    <Compile Include="Migrations\201711121446237_RemoveTransactionKeys.Designer.cs">
+      <DependentUpon>201711121446237_RemoveTransactionKeys.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2864,6 +2868,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201711092125120_Analytics5.resx">
       <DependentUpon>201711092125120_Analytics5.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711121446237_RemoveTransactionKeys.resx">
+      <DependentUpon>201711121446237_RemoveTransactionKeys.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

@@ -102,7 +102,6 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GatewayScheduleId = source.GatewayScheduleId;
-            target.GatewayTransactionKey = source.GatewayTransactionKey;
             target.IsActive = source.IsActive;
             target.LastRemindedDate = source.LastRemindedDate;
             target.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
