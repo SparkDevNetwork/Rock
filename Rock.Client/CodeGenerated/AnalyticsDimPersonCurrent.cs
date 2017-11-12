@@ -53,6 +53,15 @@ namespace Rock.Client
         public int? BirthYear { get; set; }
 
         /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
+        public string CampusName { get; set; }
+
+        /// <summary />
+        public string CampusShortCode { get; set; }
+
+        /// <summary />
         public string ConnectionStatus { get; set; }
 
         /// <summary />
@@ -278,6 +287,9 @@ namespace Rock.Client
             this.BirthDay = source.BirthDay;
             this.BirthMonth = source.BirthMonth;
             this.BirthYear = source.BirthYear;
+            this.CampusId = source.CampusId;
+            this.CampusName = source.CampusName;
+            this.CampusShortCode = source.CampusShortCode;
             this.ConnectionStatus = source.ConnectionStatus;
             this.ConnectionStatusValueId = source.ConnectionStatusValueId;
             this.Count = source.Count;
