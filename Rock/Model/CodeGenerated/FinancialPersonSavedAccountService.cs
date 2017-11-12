@@ -92,7 +92,6 @@ namespace Rock.Model
             target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.GatewayTransactionKey = source.GatewayTransactionKey;
             target.GroupId = source.GroupId;
             target.Name = source.Name;
             target.PersonAliasId = source.PersonAliasId;
