@@ -163,10 +163,24 @@ namespace RockWeb
                             // Intentionally Blank
                         }
                     }
-                    
+
                     //// Run any needed Rock and/or plugin migrations
                     //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
-                    if ( MigrateDatabase( rockContext ) )
+                    bool anyMigrations = MigrateDatabase( rockContext );
+                    
+                    // Preload the commonly used objects
+                    stopwatch.Restart();
+                    LoadCacheObjects( rockContext );
+
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                    {
+                        System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                    }
+
+                    // Run any plugin migrations
+                    bool anyPluginMigrations = MigratePlugins( rockContext );
+
+                    if ( anyMigrations || anyPluginMigrations )
                     {
                         // If any migrations ran (version was likely updated)
                         try
@@ -183,19 +197,8 @@ namespace RockWeb
                             catch { }
                         }
                     }
-                    
-                    // Preload the commonly used objects
-                    stopwatch.Restart();
-                    LoadCacheObjects( rockContext );
 
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                    {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
-                    }
-
-                    // Run any plugin migrations
-                    MigratePlugins( rockContext );
-
+                    // Register Routes
                     RegisterRoutes( rockContext, RouteTable.Routes );
 
                     // Configure Rock Rest API
