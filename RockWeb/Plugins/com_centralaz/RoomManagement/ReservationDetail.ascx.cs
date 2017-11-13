@@ -510,7 +510,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     var availableQuantity = new ReservationResourceService( rockContext ).GetAvailableResourceQuantity( resource.Resource, reservation );
                     if ( availableQuantity - resource.Quantity < 0 )
                     {
-                        sb.AppendFormat( "<li>{0}</li>", resource.Resource.Name );
+                        sb.AppendFormat( "<li>{0} [note: only {1} available]</li>", resource.Resource.Name, availableQuantity );
                         hasConflict = true;
                     }
                 }
