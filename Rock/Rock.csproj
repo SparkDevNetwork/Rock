@@ -1004,6 +1004,7 @@
     <Compile Include="Plugin\HotFixes\036_PrayerRequestFollowingEvent.cs" />
     <Compile Include="Plugin\HotFixes\035_TransactionListSummary.cs" />
     <Compile Include="Plugin\HotFixes\034_FinancialSecurityActions.cs" />
+    <Compile Include="Plugin\HotFixes\037_MigrationRollupsForV6_10.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
