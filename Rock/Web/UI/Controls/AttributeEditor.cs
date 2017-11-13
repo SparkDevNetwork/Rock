@@ -1367,6 +1367,8 @@ namespace Rock.Web.UI.Controls
 
                 this.Qualifiers = qualifiers;
                 this.DefaultValue = attribute.DefaultValue;
+
+                SetSubTitleOnModal( attribute );
             }
 
             if ( objectType != null )
@@ -1482,6 +1484,24 @@ namespace Rock.Web.UI.Controls
 
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Set the Subtitle of modal dialog
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        protected void SetSubTitleOnModal( Model.Attribute attribute )
+        {
+            Control parent = this.Parent;
+            while ( parent.GetType() != typeof( ModalDialog ) )
+            {
+                parent = parent.Parent;
+            }
+            if ( parent.GetType() == typeof( ModalDialog ) )
+            {
+                ModalDialog modalDialog = ( ModalDialog ) parent;
+                modalDialog.SubTitle = string.Format( "Id: {0}", attribute.Id );
             }
         }
 
