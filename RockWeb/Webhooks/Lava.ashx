@@ -109,6 +109,11 @@ public class Lava : IHttpHandler
                 string apiMethod = api.GetAttributeValue( "Method" );
                 List<string> variables = new List<string>();
 
+                if ( !apiUrl.StartsWith( "/" ) )
+                {
+                    apiUrl = "/" + apiUrl;
+                }
+
                 //
                 // Check for match on method type, if not continue to the next item.
                 //
