@@ -11,126 +11,95 @@
             <div class="lm-base-panel">
                 <%-- LOGIN PANEL --%>
 			    <div id="login-panel">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <div>
-                                <h1 class="lm-form-title text-center">Log In</h1>
-                                <p style="margin-top: -.75em; margin-bottom: 3em;" class="small-paragraph-bold">Fill out the form below to securely access your account.</p>
-                            </div>
-                        
-                            <div id="lp-form-result-panel" style="visibility: hidden;">
-                                <p id="lp-form-result-message"></p>
-                            </div>
-
-                            <div class="col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2 col-xs-12">    
-                                <div class="form-group rock-text-box lm-form-label">
-                                    <label class="control-label" for="tb-lp-username">Username</label>
-                                    <input class="form-control" name="tb-lp-username" type="text" id="tb-lp-username">
-                                </div>
-
-                            
-                                <div style="margin: 25px 0 25px 0;"></div>
-
-                                <div class="form-group rock-text-box lm-form-label">
-                                    <label class="control-label" for="tb-lp-password">Password</label>
-                                    <input class="form-control" name="tb-lp-password" type="password" id="tb-lp-password">
-                                </div>
-                            
-                                <div class="checkbox ">
-				                    <label><input id="cb-lp-rememberme" type="checkbox" name="cb-lp-rememberme">Remember Me</label>
-			                    </div>
-
-                                <div class="row v-center" style="margin: 25px 0 25px 0;">
-                                    <div class="col-md-4 col-sm-4 col-xs-6" style="padding: 0;">
-                                        <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="lm-form-button btn btn-primary" OnClientClick="return tryLogin();"/>
-                                    </div>
-
-                                    <div class="col-md-8 col-sm-4 col-xs-6">
-                                        <asp:Button ID="btnHelp" runat="server" Text="Forgot username or password?" CssClass="small-paragraph lm-form-forgot" OnClientClick="displayForgotPasswordPanel(); return false;" CausesValidation="false" />
-                                    </div>
-                                </div>
-                                
-                                <asp:Button ID="btnNewAccount" runat="server" Text="Create Account" CssClass="lm-form-register btn btn-action" OnClientClick="displayCreateAccountPanel(); return false;" CausesValidation="false" />
-                            </div>
-                        </div>
+ 
+                    <div id="login-panel-title">
+                        <h1 class="lm-form-title text-center">Log In</h1>
+                        <p class="small-paragraph-bold">Fill out the form below to securely access your account.</p>
                     </div>
+                        
+                    <div id="lp-form-result-panel" style="visibility: hidden;">
+                        <p id="lp-form-result-message"></p>
+                    </div>
+
+                    <div id="login-panel-form">    
+                            <label class="lm-form-label" for="tb-lp-username">Username</label>
+                            <input class="form-control" name="tb-lp-username" type="text" id="tb-lp-username">
+                                
+                            <label class="lm-form-label" for="tb-lp-password">Password</label>
+                            <input class="form-control" name="tb-lp-password" type="password" id="tb-lp-password">
+                                
+                        <div class="checkbox ">
+				            <label><input id="cb-lp-rememberme" type="checkbox" name="cb-lp-rememberme">Remember Me</label>
+			            </div>
+
+                        <div id="login-help">
+                            <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary lm-button" OnClientClick="return tryLogin();"/>
+                                
+                            <asp:Button ID="btnHelp" runat="server" Text="Forgot username or password?" CssClass="small-paragraph lm-form-forgot" OnClientClick="displayForgotPasswordPanel(); return false;" CausesValidation="false" />
+                        </div>
+                                
+                        <asp:Button ID="btnNewAccount" runat="server" Text="Create Account" CssClass="lm-form-register btn btn-action" OnClientClick="displayCreateAccountPanel(); return false;" CausesValidation="false" />
+                    </div>
+
                 </div>
                 <%--END LOGIN PANEL--%>
 
                 <%-- CREATE ACCOUNT PANEL--%>
                 <div id="createaccount-panel" class="createaccount-panel-hidden">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div>
-                                <h1 class="lm-form-title text-center">REGISTER</h1>
-                                <p style="margin-top: -.75em; margin-bottom: 3em;" class="small-paragraph-bold">Create your account by filling out the form below.</p>
-                            </div>
+                    
+                    <div id="create-panel-title">
+                        <h1 class="lm-form-title text-center">REGISTER</h1>
+                        <p class="small-paragraph-bold">Create your account by filling out the form below.</p>
+                    </div>
                         
-                            <div id="ca-form-result-panel" style="visibility: hidden;">
-                                <p id="ca-form-result-message"></p>
-                            </div>
-                        </div>
+                    <div id="ca-form-result-panel" style="visibility: hidden;">
+                        <p id="ca-form-result-message"></p>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 col-sm-8 col-xs-12">    
-                            <div class="form-group rock-text-box lm-form-label">
-                                <label class="control-label" for="tb-ca-username">Username</label>
+                    <div id="create-panel-form">
+                    
+                        <div id="create-username-firstname">
+                            <div>
+                                <label class="lm-form-label" for="tb-ca-username">Username</label>
                                 <input class="form-control" name="tb-ca-username" type="text" id="tb-ca-username" value="jered-testyay">
                             </div>
-                        </div>
-
-                        <div class="col-md-6 col-sm-8 col-xs-12">    
-                            <div class="form-group rock-text-box lm-form-label">
-                                <label class="control-label" for="tb-ca-firstname">First Name</label>
-                                <input class="form-control" name="tb-ca-firstname" type="text" id="tb-ca-firstname" value="jered">
+                            <div> 
+                               <label class="lm-form-label" for="tb-ca-firstname">First Name</label>
+                               <input class="form-control" name="tb-ca-firstname" type="text" id="tb-ca-firstname" value="jered">
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6 col-sm-8 col-xs-12">    
-                            <div class="form-group rock-text-box lm-form-label">
-                                <label class="control-label" for="tb-ca-password">Password</label>
+                        <div id="create-password-lastname">
+                            <div>
+                                <label class="lm-form-label" for="tb-ca-password">Password</label>
                                 <input class="form-control" name="tb-ca-password" type="password" id="tb-ca-password" value="ccv123">
                             </div>
-                        </div>
 
-                        <div class="col-md-6 col-sm-8 col-xs-12">    
-                            <div class="form-group rock-text-box lm-form-label">
-                                <label class="control-label" for="tb-ca-lastname">Last Name</label>
+                            <div>
+                                <label class="lm-form-label" for="tb-ca-lastname">Last Name</label>
                                 <input class="form-control" name="tb-ca-lastname" type="text" id="tb-ca-lastname" value="mcferron">
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6 col-sm-8 col-xs-12">    
-                            <div class="form-group rock-text-box lm-form-label">
-                                <label class="control-label" for="tb-ca-confirmpassword">Confirm Password</label>
+                        <div id="create-confirm-email">
+                            <div>
+                                <label class="lm-form-label" for="tb-ca-confirmpassword">Confirm Password</label>
                                 <input class="form-control" name="tb-ca-confirmpassword" type="password" id="tb-ca-confirmpassword" value="ccv123">
                             </div>
-                        </div>
 
-                        <div class="col-md-6 col-sm-8 col-xs-12">    
-                            <div class="form-group rock-text-box lm-form-label">
-                                <label class="control-label" for="tb-ca-email">Email</label>
+                            <div>
+                                <label class="lm-form-label" for="tb-ca-email">Email</label>
                                 <input class="form-control" name="tb-ca-email" type="text" id="tb-ca-email" value="jered@mcferron.com">
                             </div>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 col-sm-8 col-xs-12">
-                            <div style="margin: 25px 0 25px 0;"></div>
-                            <asp:Button runat="server" Text="Cancel" CssClass="lm-form-button btn btn-action" OnClientClick="hideCreateAccountPanel(); return false;" CausesValidation="false" />
-                        </div>
+                    <div id="create-cancel-register">
+                        <asp:Button runat="server" Text="Cancel" CssClass="lm-button btn btn-action" OnClientClick="hideCreateAccountPanel(); return false;" CausesValidation="false" />
 
-                        <div class="text-right col-md-6 col-sm-8 col-xs-12">
-                            <div style="margin: 25px 0 25px 0;"></div>
-                            <asp:Button runat="server" Text="Register" CssClass="lm-form-button btn btn-primary" OnClientClick="tryRegisterUser(); return false;" CausesValidation="false" />
-                        </div>
+                        <asp:Button runat="server" Text="Register" CssClass="lm-button btn btn-primary" OnClientClick="tryRegisterUser(); return false;" CausesValidation="false" />
                     </div>
+
                 </div>
                 <%-- END CREATE ACCOUNT PANEL--%>
 

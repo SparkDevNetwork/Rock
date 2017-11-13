@@ -10718,15 +10718,21 @@ html,body{
 	box-sizing: border-box; 
 	-webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
 	position: relative;
-	width: 75%; 
-	max-width: 768px; 
+	width: 75%;
+    height: 95%; 
 	margin: 0px auto; 
 	opacity: 1;
-	
 	transition: top 175ms ease-in;
 	-moz-transition: top 175ms ease-in;
 	-webkit-transition: top 175ms ease-in;
 	overflow-x: hidden;
+}
+
+@media screen and (min-width: 1224px) {
+    #login-modal {
+        max-width: 768px;
+        height: auto;
+    }
 }
 
 .login-modal-hidden {
@@ -10734,7 +10740,25 @@ html,body{
 }
 
 .login-modal-visible {
-	top: 100px;
+	top: 15px;
+}
+
+@media screen and (min-width: 768px) {
+    .login-modal-visible {
+        top: 175px;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .login-modal-visible {
+        top: 300px;
+    }
+}
+
+@media screen and (min-width: 1224px) {
+    .login-modal-visible {
+        top: 150px;
+    }
 }
 
 .lm-base-panel {
@@ -10746,6 +10770,7 @@ html,body{
 	box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 45px, rgba(0, 0, 0, 0.22) 0px 10px 18px; 
 	border-radius: 2px;
 	padding-bottom: 25px;
+    
 }
 
 #login-panel {
@@ -10757,6 +10782,39 @@ html,body{
 	border-top: none;
 	border-bottom: none;
 	background-color: rgb(255, 255, 255);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#login-panel-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#login-panel-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+@media screen and (min-width: 1224px){
+    #login-panel-form {
+        width: 45%;
+    }
+}
+
+#login-help {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-flow: row wrap;
+    margin-bottom: 20px;
 }
 
 #createaccount-panel, #forgotpassword-panel, #accountcreationresult-panel, #accountcreationduplicates-panel {
@@ -10764,13 +10822,50 @@ html,body{
 	color: rgba(0, 0, 0, 0.6);
 	padding: 24px;
 	box-sizing: border-box;
-	height: 100%;
 	transition: left 250ms ease-in;
 	width: 100%;
 	top: 0px;
 	position: absolute;
 	background-color: rgb(255, 255, 255);
 	overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#create-panel-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#create-panel-form {
+    display: flex;
+    flex-flow: row wrap;
+    align-content: center;
+    justify-content: center;
+}
+
+
+#create-username-firstname {
+    display: flex;
+    flex-flow: row wrap;    
+}
+
+#create-password-lastname {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+#create-confirm-email {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+#create-cancel-register {
+    align-content: flex-start;
 }
 
 .createaccount-panel-hidden, .forgotpassword-panel-hidden, .accountcreationresult-panel-hidden, .accountcreationduplicates-panel-hidden {	
@@ -10796,7 +10891,7 @@ html,body{
     margin: 2.1rem 0 1.68rem 0;
 }
 
-.lm-form-label .control-label{
+.lm-form-label {
     text-transform: uppercase;
     font-family: Akrobat;
     font-size: 16px;
@@ -10804,17 +10899,17 @@ html,body{
 	box-sizing: border-box;
 }
 
-.lm-form-label input{
+#login-panel-form .form-control, #create-panel-form .form-control {
     height: 50px;
     width: 100%;
     border-radius: 5px;
-    background-color: #eee;
+    background-color: #EEEEEE;
     border-width: 0;
     font-family: heebo;
     font-size: 20px;
     color: #707270;
 	line-height: inherit;
-	margin: 0;
+	margin: 0 0 15px 0;
 	box-sizing: border-box;
     background-image: none;
     color: rgb(0, 0, 0);
@@ -10827,7 +10922,7 @@ html,body{
 }
 
 .lm-button {
-	height: 55px;
+	height: 45px;
     width: 94px;
     border-radius: 5px;
     background-color: #7A1315;
@@ -10839,8 +10934,20 @@ html,body{
     border-width: 0;
 }
 
+#create-cancel-register .lm-button {
+    margin: 0px 10px;
+}
+
 .lm-form-forgot {
 	border-bottom: 0;
+    padding-top: 10px;
+}
+
+@media screen and (min-width: 1224px) {
+    .lm-form-forgot {
+        margin-left: 30px;
+        padding: 0;
+    }
 }
 
 .lm-form-register {
