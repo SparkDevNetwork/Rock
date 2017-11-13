@@ -71,6 +71,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the included group type ids.
+        /// </summary>
+        /// <value>
+        /// The included group type ids.
+        /// </value>
         public List<int> IncludedGroupTypeIds
         {
             get

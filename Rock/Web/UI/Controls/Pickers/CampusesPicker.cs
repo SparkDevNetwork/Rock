@@ -135,6 +135,10 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Checks the items.
+        /// </summary>
+        /// <param name="values">The values.</param>
         public void CheckItems( List<int> values )
         {
             if ( values.Any() )
@@ -151,6 +155,10 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Loads the items.
+        /// </summary>
+        /// <param name="selectedValues">The selected values.</param>
         private void LoadItems( List<int> selectedValues )
         {
             var selectedItems = Items.Cast<ListItem>()
