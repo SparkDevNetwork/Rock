@@ -474,7 +474,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 // Check to make sure that nothing has a scheduling conflict.
                 bool hasConflict = false;
                 StringBuilder sb = new StringBuilder();
-                sb.Append( "<b>The Following items are already reserved for the scheduled times:<br><ul>" );
+                sb.Append( "<b>The following items are already reserved for the scheduled times:<br><ul>" );
                 var reservedLocationIds = reservationService.GetReservedLocationIds( reservation );
 
                 // Check self
@@ -505,6 +505,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     hasConflict = true;
                 }
 
+                // Check resources...
                 foreach ( var resource in reservation.ReservationResources )
                 {
                     var availableQuantity = new ReservationResourceService( rockContext ).GetAvailableResourceQuantity( resource.Resource, reservation );

@@ -98,6 +98,11 @@ namespace com.centralaz.RoomManagement.Model
             return reservationSummaryList;
         }
 
+        /// <summary>
+        /// Gets the  location ids for any existing non-denied reservations that have the a location as the ones in the given newReservation object.
+        /// </summary>
+        /// <param name="newReservation">The new reservation.</param>
+        /// <returns></returns>
         public List<int> GetReservedLocationIds( Reservation newReservation )
         {
             var newReservationSummaries = GetReservationSummaries( new List<Reservation>() { newReservation }.AsQueryable(), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) );
