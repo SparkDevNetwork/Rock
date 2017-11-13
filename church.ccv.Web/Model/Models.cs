@@ -56,10 +56,9 @@ namespace church.ccv.Web.Model
         public string ConfirmAccountUrl;
         public string ConfirmAccountEmailTemplateGuid;
         public string ForgotPasswordEmailTemplateGuid;
-
-        //TODO: Get all endpoints working consistently with either NO ROOT, or ALL ROOT
-        public string AppUrlWithRoot;
-        public string ThemeUrlWithRoot;
+        
+        public string AppUrl;
+        public string ThemeUrl;
     }
 
     [Serializable]

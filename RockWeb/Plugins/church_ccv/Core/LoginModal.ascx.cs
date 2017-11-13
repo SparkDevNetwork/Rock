@@ -80,7 +80,7 @@ namespace RockWeb.Plugins.church_ccv.Core
                         case "__LOGIN_SUCCEEDED":
                         {
                             string returnUrl = Request.QueryString["returnurl"];
-                            LoginModal_TryRedirectUser( returnUrl );
+                            LoginModal_RedirectUser( returnUrl );
 
                             break;
                         }
@@ -90,7 +90,7 @@ namespace RockWeb.Plugins.church_ccv.Core
                         case "__REGISTRATION_SUCCEEDED":
                         {
                             string returnUrl = Request.QueryString["returnurl"];
-                            LoginModal_TryRedirectUser( returnUrl );
+                            LoginModal_RedirectUser( returnUrl );
 
                             break;
                         }
@@ -105,7 +105,7 @@ namespace RockWeb.Plugins.church_ccv.Core
             }
         }
 
-        protected void LoginModal_TryRedirectUser( string returnUrl )
+        protected void LoginModal_RedirectUser( string returnUrl )
         {
             if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
@@ -129,17 +129,7 @@ namespace RockWeb.Plugins.church_ccv.Core
         {
             return ResolveRockUrl( "~/" );
         }
-
-        public string LoginModal_GetThemeUrlIncludeRoot( )
-        {
-            return ResolveRockUrlIncludeRoot( "~~/" );
-        }
-
-        public string LoginModal_GetAppUrlIncludeRoot( )
-        {
-            return ResolveRockUrlIncludeRoot( "~/" );
-        }
-
+        
         public string LoginModal_GetConfirmAccountEmailTemplateGuid( )
         {
             return GetAttributeValue( "ConfirmAccountEmailTemplateGuid" );

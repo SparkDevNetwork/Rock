@@ -1,4 +1,5 @@
 ﻿using church.ccv.Web.Model;
+using RestSharp;
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -16,29 +17,95 @@ namespace church.ccv.Web.Data
 {
     class WebUtil
     {
-        public static bool CreatePersonWithLogin( PersonWithLoginModel personWithLoginModel, out Person newPerson, out UserLogin newLogin )
+        public static LoginResponse Login( LoginData loginData )
+        {
+            LoginResponse loginResponse = LoginResponse.Invalid;
+
+            try
+            {
+                RockContext rockContext = new RockContext( );
+                var userLoginService = new UserLoginService(rockContext);
+
+                var userLogin = userLoginService.GetByUserName( loginData.Username );
+
+                var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
+                if ( component.IsActive && !component.RequiresRemoteAuthentication )
+                {
+                    // see if the credentials are valid
+                    if ( component.Authenticate( userLogin, loginData.Password ) )
+                    {
+                        // if the account isn't locked or needing confirmation
+                        if ( ( userLogin.IsConfirmed ?? true ) && !( userLogin.IsLockedOut ?? false ) )
+                        {
+                            // then proceed to the final step, validating them with PMG2's site
+                            if ( PMG2Login( loginData.Username, loginData.Password ) )
+                            {
+                                // generate their cookie
+                                UserLoginService.UpdateLastLogin( loginData.Username );
+                                Rock.Security.Authorization.SetAuthCookie( loginData.Username, bool.Parse( loginData.Persist ), false );
+
+                                // no issues!
+                                loginResponse = LoginResponse.Success;
+                            }
+                        }
+                        else
+                        {
+                            if ( userLogin.IsLockedOut ?? false )
+                            {
+                                loginResponse = LoginResponse.LockedOut;
+                            }
+                            else
+                            {
+                                loginResponse = LoginResponse.Confirm;
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // fail on exception
+            }
+
+            return loginResponse;
+        }
+
+        protected static bool PMG2Login( string username, string password )
+        {
+            // contact PMG2's site and attempt to login with the same credentials
+            string pmg2RootSite = GlobalAttributesCache.Value( "PMG2Server" );
+            
+            var restClient = new RestClient(
+                string.Format( pmg2RootSite + "auth?user[username]={0}&user[password]={1}", username, password ) );
+
+            var restRequest = new RestRequest( Method.POST );
+            var restResponse = restClient.Execute( restRequest );
+
+            if ( restResponse.StatusCode == HttpStatusCode.Created )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool CreatePersonWithLogin( PersonWithLoginModel personWithLoginModel )
         {
             bool success = false;
 
-            newPerson = null;
-            newLogin = null;
-
-            do
-            {
+            try
+            {            
                 RockContext rockContext = new RockContext( );
                 PersonService personService = new PersonService( rockContext );
                 GroupService groupService = new GroupService( rockContext );
 
                 // get all required values and make sure they exist
-                DefinedValueCache cellPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
                 DefinedValueCache connectionStatusWebProspect = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT);
                 DefinedValueCache recordStatusPending = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING);
                 DefinedValueCache recordTypePerson = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON);
-                
-                if( cellPhoneType == null || connectionStatusWebProspect == null || recordStatusPending == null || recordTypePerson == null ) break;
                                 
                 // create a new person, which will give us a new Id
-                newPerson = new Person( );
+                Person newPerson = new Person( );
                 
                 // for new people, copy the stuff sent by the Mobile App
                 newPerson.FirstName = personWithLoginModel.FirstName.Trim();
@@ -62,32 +129,127 @@ namespace church.ccv.Web.Data
                 
                 
                 // and now create the login for this person
-                try
-                {
-                    newLogin = UserLoginService.Create(
-                                    rockContext,
-                                    newPerson,
-                                    Rock.Model.AuthenticationServiceType.Internal,
-                                    EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
-                                    personWithLoginModel.Username,
-                                    personWithLoginModel.Password,
-                                    true,
-                                    false );
-                }
-                catch
-                {
-                    // fail on exception
-                    break;
-                }
-                
+                UserLogin newLogin = UserLoginService.Create(
+                                rockContext,
+                                newPerson,
+                                Rock.Model.AuthenticationServiceType.Internal,
+                                EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                personWithLoginModel.Username,
+                                personWithLoginModel.Password,
+                                true,
+                                false );
+                    
+                // email them confirmation
+                var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+                mergeObjects.Add( "ConfirmAccountUrl", personWithLoginModel.ConfirmAccountUrl );
+                mergeObjects.Add( "Person", newPerson );
+                mergeObjects.Add( "User", newLogin );
+
+                var recipients = new List<RecipientData>();
+                recipients.Add( new RecipientData( newPerson.Email, mergeObjects ) );
+
+                Email.Send( new Guid( personWithLoginModel.AccountCreatedEmailTemplateGuid ), recipients, personWithLoginModel.AppUrl, personWithLoginModel.ThemeUrl, false );
+
                 success = true;
             }
-            while( false );
+            catch
+            {
+                // fail on exception
+            }
 
             return success;
         }
 
-        public static void SendForgotPasswordEmail( string confirmAccountUrl, string forgotPasswordEmailTemplateGuid, string appUrlWithRoot, string themeUrlWithRoot, string personEmail )
+        public static CreateLoginModel.Response CreateLogin( CreateLoginModel createLoginModel )
+        {
+            CreateLoginModel.Response response = CreateLoginModel.Response.Failed;
+
+            try
+            {
+                RockContext rockContext = new RockContext();
+
+                // start by getting the person being worked on
+                PersonService personService = new PersonService( rockContext );
+                Person person = personService.Get( createLoginModel.PersonId );
+                
+                // now, see if the person already has ANY logins attached
+                var userLoginService = new Rock.Model.UserLoginService( rockContext );
+                var userLogins = userLoginService.GetByPersonId( createLoginModel.PersonId ).ToList();
+                if ( userLogins.Count == 0 )
+                {
+                    // and create a new, UNCONFIRMED login for them.
+                    var newLogin = UserLoginService.Create(
+                                    rockContext,
+                                    person,
+                                    Rock.Model.AuthenticationServiceType.Internal,
+                                    EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                                    createLoginModel.Username,
+                                    createLoginModel.Password,
+                                    false,
+                                    false );
+
+                    WebUtil.SendConfirmAccountEmail( newLogin, createLoginModel.ConfirmAccountUrl, createLoginModel.ConfirmAccountEmailTemplateGuid, createLoginModel.AppUrl, createLoginModel.ThemeUrl );
+
+                    response = CreateLoginModel.Response.Created;
+                }
+                else
+                {
+                    // they DO have a login, so simply email the person being worked on a list of them.
+                    response = CreateLoginModel.Response.Emailed;
+
+                    WebUtil.SendForgotPasswordEmail( person.Email, createLoginModel.ConfirmAccountUrl, createLoginModel.ForgotPasswordEmailTemplateGuid, createLoginModel.AppUrl, createLoginModel.ThemeUrl );
+                }
+            }
+            catch
+            {
+                // fail on exception
+            }
+
+            return response;
+        }
+
+        public static List<DuplicatePersonInfo> GetDuplicates( string lastName, string email )
+        {
+            List<DuplicatePersonInfo> duplicateList = new List<DuplicatePersonInfo>( );
+
+            // first, see if there's already a person with this matching last name and email
+            PersonService personService = new PersonService( new RockContext() );
+            var matches = personService.Queryable().Where( p =>
+                    p.Email.ToLower() == email.ToLower() && p.LastName.ToLower() == lastName.ToLower() ).ToList();
+
+            // add all duplicates to our list
+            foreach ( Person match in matches )
+            {
+                DuplicatePersonInfo duplicateInfo = new DuplicatePersonInfo( )
+                {
+                    Id = match.Id,
+                    FullName = match.FullName,
+                    Gender = match.Gender.ToString( ),
+                    Birthday = match.BirthDate.HasValue ? match.BirthDate.Value.ToString("MMMM") + " " + match.BirthDay : ""
+                };
+
+                duplicateList.Add( duplicateInfo );
+            }
+
+            return duplicateList;
+        }
+        
+        public static void SendConfirmAccountEmail( UserLogin userLogin, string confirmAccountUrl, string confirmAccountEmailTemplateGuid, string appUrl, string themeUrl )
+        {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+            mergeFields.Add( "ConfirmAccountUrl", confirmAccountUrl );
+
+            var personDictionary = userLogin.Person.ToLiquid() as Dictionary<string, object>;
+            mergeFields.Add( "Person", personDictionary );
+            mergeFields.Add( "User", userLogin );
+
+            var recipients = new List<RecipientData>();
+            recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
+
+            Email.Send( new Guid( confirmAccountEmailTemplateGuid ), recipients, appUrl, themeUrl, false );
+        }
+
+        public static void SendForgotPasswordEmail( string personEmail, string confirmAccountUrl, string forgotPasswordEmailTemplateGuid, string appUrl, string themeUrl )
         {
             // setup merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
@@ -134,7 +296,7 @@ namespace church.ccv.Web.Data
                 var recipients = new List<RecipientData>();
                 recipients.Add( new RecipientData( personEmail, mergeFields ) );
 
-                Email.Send( new Guid( forgotPasswordEmailTemplateGuid ), recipients, appUrlWithRoot, themeUrlWithRoot, false );
+                Email.Send( new Guid( forgotPasswordEmailTemplateGuid ), recipients, appUrl, themeUrl, false );
             }
         }
     }

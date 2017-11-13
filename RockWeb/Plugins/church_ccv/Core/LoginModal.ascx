@@ -33,7 +33,7 @@
 			            </div>
 
                         <div id="login-help">
-                            <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary lm-button" OnClientClick="return tryLogin();"/>
+                            <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary lm-button" OnClientClick="login(); return false;"/>
                                 
                             <asp:Button ID="btnHelp" runat="server" Text="Forgot username or password?" CssClass="small-paragraph lm-form-forgot" OnClientClick="displayForgotPasswordPanel(); return false;" CausesValidation="false" />
                         </div>
@@ -96,10 +96,8 @@
 
                     <div id="create-cancel-register">
                         <asp:Button runat="server" Text="Cancel" CssClass="lm-button btn btn-action" OnClientClick="hideCreateAccountPanel(); return false;" CausesValidation="false" />
-
-                        <asp:Button runat="server" Text="Register" CssClass="lm-button btn btn-primary" OnClientClick="tryRegisterUser(); return false;" CausesValidation="false" />
+                        <asp:Button runat="server" Text="Register" CssClass="lm-button btn btn-primary" OnClientClick="registerUser(); return false;" CausesValidation="false" />
                     </div>
-
                 </div>
                 <%-- END CREATE ACCOUNT PANEL--%>
 
@@ -123,13 +121,19 @@
                             <div style="margin: 25px 0 25px 0;"></div>
                             <div class="row">
                                 <div class="col-md-4 col-sm-4 col-xs-4">
-                                    <p>PERSON NAME</p>
+                                    <div class="lm-form-label control-label">
+                                        <label class="control-label">PERSON NAME</label>
+                                    </div>
                                 </div>
                                 <div class="col-md-4 col-sm-4 col-xs-4">
-                                    <p>GENDER</p>
+                                    <div class="lm-form-label control-label">
+                                        <label class="control-label">GENDER</label>
+                                    </div>
                                 </div>
                                 <div class="col-md-4 col-sm-4 col-xs-4">
-                                    <p>BIRTHDAY</p>
+                                    <div class="lm-form-label control-label">
+                                        <label class="control-label">BIRTHDAY</label>
+                                    </div>
                                 </div>
                             </div>
 
@@ -201,7 +205,7 @@
 
                         <div class="text-right col-md-6 col-sm-8 col-xs-12">
                             <div style="margin: 25px 0 25px 0;"></div>
-                            <asp:Button runat="server" Text="Confirm" CssClass="lm-form-button btn btn-primary" OnClientClick="trySendForgotPasswordEmail(); return false;" CausesValidation="false" />
+                            <asp:Button runat="server" Text="Confirm" CssClass="lm-form-button btn btn-primary" OnClientClick="sendForgotPasswordEmail(); return false;" CausesValidation="false" />
                         </div>
                     </div>
                 </div>
@@ -304,7 +308,7 @@
     }
 
     // ---- LOGIN ----
-    function tryLogin() {
+    function login() {
         // hide the response panel
         hideResponsePanel("#lp-form-result-panel", "#lp-form-result-message");
 
@@ -372,7 +376,7 @@
 
                 // invoke the send email api
                 $.ajax({
-                    url: "/api/Web/SendConfirmationEmail" +
+                    url: "/api/Web/SendConfirmAccountEmail" +
                          "?confirmAccountUrl=" + encodeURI(confirmAccountUrl) +
                          "&confirmAccountEmailTemplateGuid=" + confirmAccountEmailTemplateGuid +
                          "&appUrl=" + encodeURI(appUrl) +
@@ -442,7 +446,7 @@
         panel.addClass("accountcreationresult-panel-hidden");
     }
 
-    function tryRegisterUser() {
+    function registerUser() {
 
         // this function will validate all info inputted, and report any errors found.
         // if no errors ARE found, it will actually try to register the user
@@ -565,7 +569,7 @@
         });
     }
 
-    function tryCreateLogin(personId) {
+    function createLogin(personId) {
 
         // get the input fields
         var username = $("#tb-ca-username").val();
@@ -579,7 +583,7 @@
         var themeUrl = "<%=LoginModal_GetThemeUrl( ) %>";
 
         $.ajax({
-            url: "api/web/TryCreateLogin",
+            url: "api/web/CreateLogin",
             type: "POST",
             contentType: "application/json",
             data:
@@ -648,7 +652,7 @@
                 createPersonWithLogin();
             }
             else {
-                tryCreateLogin(selectedOption.value);
+                createLogin(selectedOption.value);
             }
         }
         else {
@@ -677,7 +681,7 @@
         forgotPasswordPanel.addClass("forgotpassword-panel-hidden");
     }
 
-    function trySendForgotPasswordEmail() {
+    function sendForgotPasswordEmail() {
 
         // hide the response panel
         hideResponsePanel("#fp-form-result-panel", "#fp-form-result-message");
@@ -689,8 +693,8 @@
 
         var confirmAccountUrl = "<%=LoginModal_GetConfirmAccountUrl( ) %>";
         var forgotPasswordEmailTemplateGuid = "<%=LoginModal_GetForgotPasswordEmailTemplateGuid( ) %>";
-        var appUrlWithRoot = "<%=LoginModal_GetAppUrlIncludeRoot( ) %>";
-        var themeUrlWithRoot = "<%=LoginModal_GetThemeUrlIncludeRoot( ) %>";
+        var appUrl = "<%=LoginModal_GetAppUrl( ) %>";
+        var themeUrl = "<%=LoginModal_GetThemeUrl( ) %>";
         
         // force a timer so that if they didn't enter a valid password / email,
         // we can still show them the loader and give them the feel that they pressed 'Register'
@@ -707,8 +711,8 @@
                     url: "/api/Web/SendForgotPasswordEmail" +
                          "?confirmAccountUrl=" + encodeURI(confirmAccountUrl) +
                          "&forgotPasswordEmailTemplateGuid=" + forgotPasswordEmailTemplateGuid +
-                         "&appUrlWithRoot=" + encodeURI(appUrlWithRoot) +
-                         "&themeUrlWithRoot=" + encodeURI(themeUrlWithRoot) +
+                         "&appUrl=" + encodeURI(appUrl) +
+                         "&themeUrl=" + encodeURI(themeUrl) +
                          "&personEmail=" + email,
                     type: "GET"
                 }).done(function (responseData) {
