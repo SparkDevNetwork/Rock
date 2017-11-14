@@ -1052,7 +1052,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         if ( item != null )
                         {
                             ResourcesState.Remove( item );
-                        }
+                            var headControlResource = phResourceAnswers.FindControl( "cReservationResource_" + item.Guid.ToString() ) as Control;
+                            if ( headControlResource != null )
+                            {
+                                phResourceAnswers.Controls.Remove( headControlResource );
+                            }
+                        }                        
                     }
                     BindReservationResourcesGrid();
                     //wpResources.Expanded = true;
