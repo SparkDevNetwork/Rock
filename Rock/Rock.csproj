@@ -386,6 +386,7 @@
     <Compile Include="Attribute\DefinedValueFieldAttribute.cs" />
     <Compile Include="Attribute\DefinedValueRangeFieldAttribute.cs" />
     <Compile Include="Attribute\EmailFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupMemberFieldAttribute.cs" />
     <Compile Include="Attribute\MatrixFieldAttribute.cs" />
     <Compile Include="Attribute\SSNFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowFieldAttribute.cs" />
@@ -553,6 +554,7 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\GroupMemberFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelFieldType.cs" />
     <Compile Include="Field\Types\CommunicationPreferenceFieldType.cs" />
     <Compile Include="Field\Types\DataViewsFieldType.cs" />
@@ -687,8 +689,7 @@
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
-    <Compile Include="Jobs\ProcessAnalyticsDimFamily.cs" />
-    <Compile Include="Jobs\ProcessAnalyticsDimPerson.cs" />
+    <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
     <Compile Include="Jobs\SendDataViewEmail.cs" />
@@ -1162,6 +1163,7 @@
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\LocationFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\PersonalDeviceDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PostalCodeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasNoteFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\UserLoginDataViewFilter.cs" />
@@ -1444,6 +1446,8 @@
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupMemberPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupMembersPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />

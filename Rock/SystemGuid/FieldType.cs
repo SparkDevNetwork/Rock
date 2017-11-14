@@ -219,6 +219,11 @@ namespace Rock.SystemGuid
         public const string GROUP_LOCATION_TYPE = "48624B0B-6A58-45B8-9E47-B67B67898D25";
 
         /// <summary>
+        /// Group Member field type
+        /// </summary>
+        public const string GROUP_MEMBER = "D092B5BB-A7F4-45B7-AB01-72CC4FC589A9";
+
+        /// <summary>
         /// Group Role field type
         /// </summary>
         public const string GROUP_ROLE = "3BB25568-E793-4D12-AE80-AC3FDA6FD8A8";

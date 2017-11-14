@@ -81,8 +81,13 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string ToPossesive( this string str )
+        public static string ToPossessive( this string str )
         {
+            if ( str == null )
+            {
+                return str;
+            }
+
             if ( str.ToLower().EndsWith( "s" ) )
             {
                 return $"{str}'";

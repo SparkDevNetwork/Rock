@@ -33,14 +33,6 @@ namespace RockWeb.Blocks.Reporting
     [Description( "This block registers a Power BI account for Rock to use." )]
     public partial class PowerBiAccountRegister : Rock.Web.UI.RockBlock
     {
-
-        #region Fields
-
-        private readonly string _authorityUri = "https://login.windows.net/common/oauth2/authorize/";
-        private readonly string _resourceUri = "https://analysis.windows.net/powerbi/api";
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>

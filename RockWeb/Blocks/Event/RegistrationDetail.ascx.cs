@@ -376,8 +376,14 @@ namespace RockWeb.Blocks.Event
 
                         if ( groupChanged && Registration.GroupId.HasValue )
                         {
-                            foreach( var registrant in Registration.Registrants.Where( r => !r.GroupMemberId.HasValue ) )
+                            var previousRegistrantPersonIds = Registration.Registrants
+                                .Where( r => r.PersonAlias != null )
+                                .Select( r => r.PersonAlias.PersonId )
+                                .ToList();
+
+                            foreach ( var registrant in Registration.Registrants.Where( r => !r.GroupMemberId.HasValue ) )
                             {
+                                Registration.SavePersonNotesAndHistory( new PersonService( new RockContext() ).Get( ppPerson.PersonId ?? 0 ), CurrentPersonAliasId, previousRegistrantPersonIds );
                                 AddRegistrantToGroup( registrant.Id );
                             }
 
@@ -974,6 +980,12 @@ namespace RockWeb.Blocks.Event
                 int? registrantId = lb.ID.Substring( 14 ).AsIntegerOrNull();
                 if ( registrantId.HasValue )
                 {
+                    var previousRegistrantPersonIds = Registration.Registrants
+                                .Where( r => r.PersonAlias != null )
+                                .Select( r => r.PersonAlias.PersonId )
+                                .ToList();
+
+                    Registration.SavePersonNotesAndHistory( new PersonService( new RockContext() ).Get( ppPerson.PersonId ?? 0 ), CurrentPersonAliasId, previousRegistrantPersonIds );
                     AddRegistrantToGroup( registrantId.Value );
                 }
             }

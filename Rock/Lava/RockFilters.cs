@@ -148,7 +148,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Possessives the specified input.
+        /// convert string to possessive ('s)
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
@@ -159,14 +159,7 @@ namespace Rock.Lava
                 return input;
             }
 
-            if ( input.EndsWith( "s" ) )
-            {
-                return input + "'";
-            }
-            else
-            {
-                return input + "'s";
-            }
+            return input.ToPossessive();
         }
 
         /// <summary>
@@ -1406,7 +1399,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Plus( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null )
             {
                 return input;
             }
@@ -1439,7 +1432,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Minus( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null  )
             {
                 return input;
             }
@@ -1472,7 +1465,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Times( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null )
             {
                 return input;
             }

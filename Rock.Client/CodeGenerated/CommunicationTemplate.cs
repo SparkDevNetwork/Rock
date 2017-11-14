@@ -38,6 +38,9 @@ namespace Rock.Client
         public string BCCEmails { get; set; }
 
         /// <summary />
+        public int? CategoryId { get; set; }
+
+        /// <summary />
         public string CCEmails { get; set; }
 
         /// <summary />
@@ -63,6 +66,9 @@ namespace Rock.Client
 
         /// <summary />
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        public int? LogoBinaryFileId { get; set; }
 
         /// <summary />
         public string Message { get; set; }
@@ -136,6 +142,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.BCCEmails = source.BCCEmails;
+            this.CategoryId = source.CategoryId;
             this.CCEmails = source.CCEmails;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
@@ -145,6 +152,7 @@ namespace Rock.Client
             this.ImageFileId = source.ImageFileId;
             this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
+            this.LogoBinaryFileId = source.LogoBinaryFileId;
             this.Message = source.Message;
             this.MessageMetaData = source.MessageMetaData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
@@ -174,6 +182,12 @@ namespace Rock.Client
     {
         /// <summary />
         public ICollection<CommunicationTemplateAttachment> Attachments { get; set; }
+
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public BinaryFile LogoBinaryFile { get; set; }
 
         /// <summary />
         public PersonAlias SenderPersonAlias { get; set; }

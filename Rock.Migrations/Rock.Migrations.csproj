@@ -377,6 +377,22 @@
     <Compile Include="Migrations\201710242108391_ReportCommunication.Designer.cs">
       <DependentUpon>201710242108391_ReportCommunication.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201710302139137_CommunicationTemplateLogo.cs" />
+    <Compile Include="Migrations\201710302139137_CommunicationTemplateLogo.Designer.cs">
+      <DependentUpon>201710302139137_CommunicationTemplateLogo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201711011841422_GatewayTransactionKey.cs" />
+    <Compile Include="Migrations\201711011841422_GatewayTransactionKey.Designer.cs">
+      <DependentUpon>201711011841422_GatewayTransactionKey.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201711012305567_AddGroupMemberFieldType.cs" />
+    <Compile Include="Migrations\201711012305567_AddGroupMemberFieldType.Designer.cs">
+      <DependentUpon>201711012305567_AddGroupMemberFieldType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.cs" />
+    <Compile Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.Designer.cs">
+      <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2809,6 +2825,18 @@
     <EmbeddedResource Include="Migrations\201710242108391_ReportCommunication.resx">
       <DependentUpon>201710242108391_ReportCommunication.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710302139137_CommunicationTemplateLogo.resx">
+      <DependentUpon>201710302139137_CommunicationTemplateLogo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711011841422_GatewayTransactionKey.resx">
+      <DependentUpon>201711011841422_GatewayTransactionKey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711012305567_AddGroupMemberFieldType.resx">
+      <DependentUpon>201711012305567_AddGroupMemberFieldType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.resx">
+      <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4687,6 +4715,7 @@
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor_TransactionData.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201606231511599_RegistrationWorkflow_Indexes.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201607102235065_ScheduledTransactionType.sql" />
+    <Content Include="Migrations\201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate.sql" />
     <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP1.sql" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP2.sql" />

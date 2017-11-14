@@ -55,8 +55,6 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/ZebraPrint.js" );
-
-            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
