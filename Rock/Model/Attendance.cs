@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "Attendance" )]
     [DataContract]
+    [Analytics( false, false )]
     public partial class Attendance : Model<Attendance>
     {
 

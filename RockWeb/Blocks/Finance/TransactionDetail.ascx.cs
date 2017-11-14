@@ -159,6 +159,8 @@ namespace RockWeb.Blocks.Finance
 
             apAccount.DisplayActiveOnly = true;
 
+            AddDynamicColumns();
+
             //function toggleCheckImages() {
             //    var image1src = $('#<%=imgCheck.ClientID%>').attr("src");
             //    var image2src = $('#<%=imgCheckOtherSideThumbnail.ClientID%>').attr("src");
@@ -1031,6 +1033,66 @@ namespace RockWeb.Blocks.Finance
         #endregion Events
 
         #region Methods
+
+        private void AddDynamicColumns()
+        {
+            // Remove attribute columns
+            foreach ( var attributeColumn in gAccountsView.Columns.OfType<AttributeField>().ToList() )
+            {
+                gAccountsView.Columns.Remove( attributeColumn );
+            }
+            foreach ( var attributeColumn in gAccountsEdit.Columns.OfType<AttributeField>().ToList() )
+            {
+                gAccountsEdit.Columns.Remove( attributeColumn );
+            }
+
+            var editColumn = gAccountsEdit.Columns.OfType<EditField>().FirstOrDefault();
+            if ( editColumn != null )
+            {
+                gAccountsEdit.Columns.Remove( editColumn );
+            }
+
+            var deleteColumn = gAccountsEdit.Columns.OfType<DeleteField>().FirstOrDefault();
+            if ( deleteColumn != null )
+            {
+                gAccountsEdit.Columns.Remove( deleteColumn );
+            }
+
+
+            // Add attribute columns
+            int entityTypeId = new FinancialTransactionDetail().TypeId;
+            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn &&
+                    a.EntityTypeQualifierColumn == "" &&
+                    a.EntityTypeQualifierValue == "" )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
+            {
+                    AttributeField boundField = new AttributeField();
+                    boundField.DataField = attribute.Key;
+                    boundField.AttributeId = attribute.Id;
+                    boundField.HeaderText = attribute.Name;
+
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    if ( attributeCache != null )
+                    {
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                    }
+
+                gAccountsView.Columns.Add( boundField );
+                gAccountsEdit.Columns.Add( boundField );
+            }
+
+            var editField = new EditField();
+            editField.Click += gAccountsEdit_EditClick;
+            gAccountsEdit.Columns.Add( editField );
+
+            var deleteField = new DeleteField();
+            deleteField.Click += gAccountsEdit_DeleteClick;
+            gAccountsEdit.Columns.Add( deleteField );
+        }
 
         /// <summary>
         /// Navigates to the next transaction in the list.

@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Core
     [BooleanField( "Enable Ordering", "Should the attributes be allowed to be sorted?", false, "Advanced", 3 )]
     [TextField( "Category Filter", "A comma separated list of category guids to limit the display of attributes to.", false, "", "Advanced", 4)]
 
-    public partial class Attributes : RockBlock
+    public partial class Attributes : RockBlock, ICustomGridColumns
     {
         #region Fields
 
@@ -117,16 +117,42 @@ namespace RockWeb.Blocks.Core
                 rGrid.GridRebind += rGrid_GridRebind;
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
-                rGrid.Columns[0].Visible = _enableOrdering;
-                rGrid.Columns[2].Visible = !_configuredType;   // qualifier
+                var reorderField = rGrid.ColumnsOfType<ReorderField>().FirstOrDefault();
+                if ( reorderField != null )
+                {
+                    reorderField.Visible = _enableOrdering;
+                }
 
-                rGrid.Columns[5].Visible = !_displayValueEdit; // default value / value
-                rGrid.Columns[6].Visible = _displayValueEdit; // default value / value
-                rGrid.Columns[7].Visible = _displayValueEdit;  // edit
+                var lEntityQualifierField = rGrid.ColumnsOfType<RockLiteralField>().FirstOrDefault(a=>a.ID== "lEntityQualifier" );
+                if ( lEntityQualifierField != null )
+                {
+                    lEntityQualifierField.Visible = !_configuredType;   // qualifier
+                }
 
-                SecurityField securityField = rGrid.Columns[8] as SecurityField;
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+                var rtDefaultValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtDefaultValue" );
+                if ( rtDefaultValueField != null )
+                {
+                    rtDefaultValueField.Visible = !_displayValueEdit; // default value / value
+                }
 
+                var rtValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtValue" );
+                if ( rtValueField != null )
+                {
+                    rtValueField.Visible = _displayValueEdit; // default value / value
+                }
+
+                var editField = rGrid.ColumnsOfType<EditField>().FirstOrDefault();
+                if ( editField != null )
+                {
+                    editField.Visible = _displayValueEdit; // edit
+                }
+
+                var securityField = rGrid.ColumnsOfType<SecurityField>().FirstOrDefault();
+                if ( securityField != null )
+                {
+                    securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+                }
+                
                 mdAttribute.SaveClick += mdAttribute_SaveClick;
                 mdAttributeValue.SaveClick += mdAttributeValue_SaveClick;
 
@@ -565,7 +591,7 @@ namespace RockWeb.Blocks.Core
             int? entityTypeId = _configuredType ? _entityTypeId : ddlEntityType.SelectedValueAsInt();
             
             var entityTypeCache = entityTypeId.HasValue ? EntityTypeCache.Read( entityTypeId.Value ) : null;
-            cbAnalyticsEnabled.Visible = entityTypeCache != null && entityTypeCache.IsAnalyticSupported;
+            cbAnalyticsEnabled.Visible = entityTypeCache != null && entityTypeCache.IsAnalyticsSupported( null, null );
             cbAnalyticsEnabled.Checked = rFilter.GetUserPreference( "Analytics Enabled" ).AsBoolean();
 
             BindCategoryFilter();

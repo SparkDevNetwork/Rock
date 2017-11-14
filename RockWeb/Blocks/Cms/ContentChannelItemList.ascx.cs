@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Show Security Column", "Determines if the security column should be shown.", true, order: 5 )]
     [BooleanField( "Show Expire Column", "Determines if the expire column should be shown.", true, order: 6 )]
     [ContentChannelField("Content Channel", "If set the block will ignore content channel query parameters", false)]
-    public partial class ContentChannelItemList : RockBlock, ISecondaryBlock
+    public partial class ContentChannelItemList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Fields
 
@@ -442,17 +442,24 @@ namespace RockWeb.Blocks.Cms
         {
             bool isFiltered = false;
             var items = GetItems( new RockContext(), out isFiltered );
+            var reorderField = gItems.ColumnsOfType<ReorderField>().FirstOrDefault();
 
             if ( _manuallyOrdered && !isFiltered )
             {
-                gItems.Columns[0].Visible = true;
-                gItems.AllowSorting = false;
+                if ( reorderField != null )
+                {
+                    reorderField.Visible = true;
+                    gItems.AllowSorting = false;
+                }
+                
             }
             else
             {
-                gItems.Columns[0].Visible = false;
-                gItems.AllowSorting = true;
-
+                if ( reorderField != null )
+                {
+                    reorderField.Visible = false;
+                    gItems.AllowSorting = true;
+                }
                 SortProperty sortProperty = gItems.SortProperty;
                 if ( sortProperty != null )
                 {

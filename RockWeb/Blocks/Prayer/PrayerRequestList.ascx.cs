@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Show Grid Filter", "If enabled, the grid filter will be visible.", true, "", 4 )]
 
     [ContextAware( typeof( Rock.Model.Person ) )]
-    public partial class PrayerRequestList : RockBlock
+    public partial class PrayerRequestList : RockBlock, ICustomGridColumns
     {
         #region Fields
 

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Communication
     [Description( "Lists the system emails that can be configured." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class SystemEmailList : RockBlock
+    public partial class SystemEmailList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

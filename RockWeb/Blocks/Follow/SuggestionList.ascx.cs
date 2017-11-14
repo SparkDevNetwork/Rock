@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Follow
     [Category( "Follow" )]
     [Description( "Block for viewing list of following events." )]
     [LinkedPage( "Detail Page" )]
-    public partial class SuggestionList : RockBlock
+    public partial class SuggestionList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

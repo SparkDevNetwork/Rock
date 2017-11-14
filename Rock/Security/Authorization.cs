@@ -119,6 +119,7 @@ namespace Rock.Security
                         .ThenBy( A => A.EntityId )
                         .ThenBy( A => A.Action )
                         .ThenBy( A => A.Order )
+                        .ThenBy( A => A.Id )
                         .Select( a => new
                         {
                             a.Id,
@@ -269,7 +270,7 @@ namespace Rock.Security
                     t.Group == null ||
                     ( t.Group.IsActive && ( t.Group.IsSecurityRole || t.Group.GroupTypeId == securityGroupTypeId ) )
                 )
-                .OrderBy( a => a.Order )
+                .OrderBy( a => a.Order ).ThenBy( a => a.Id )
                 .ToList();
         }
 

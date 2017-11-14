@@ -42,6 +42,9 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "Group" )]
     [DataContract]
+
+    // Support Analytics Tables, but only for GroupType Family
+    [Analytics("GroupTypeId", "10", true, true )]
     public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable
     {
         #region Entity Properties
@@ -631,6 +634,8 @@ namespace Rock.Model
                     attendance.SearchResultGroupId = null;
                 }
             }
+
+            base.PreSaveChanges( dbContext, state );
         }
 
         /// <summary>

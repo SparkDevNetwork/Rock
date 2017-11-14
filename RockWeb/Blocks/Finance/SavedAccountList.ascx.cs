@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Saved Account List" )]
     [Category( "Finance" )]
     [Description( "List of a person's saved accounts that can be used to delete an account." )]
-    public partial class SavedAccountList : RockBlock
+    public partial class SavedAccountList : RockBlock, ICustomGridColumns
     {
 
         /// <summary>

@@ -43,25 +43,58 @@ namespace Rock.Model
         /// <param name="deviceClientType">Type of the device client.</param>
         /// <param name="deviceTypeData">The device type data.</param>
         /// <param name="ipAddress">The ip address.</param>
+        /// <param name="browserSessionId">The browser session identifier (RockSessionId).</param>
         /// <returns></returns>
         public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
-            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress )
+            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
         {
             Interaction interaction = new Interaction();
             interaction.InteractionComponentId = interactionComponentId;
             interaction.EntityId = entityId;
             interaction.Operation = operation;
-            interaction.InteractionData = PersonToken.ObfuscateRockMagicToken( interactionData );
+            interaction.InteractionData = interactionData.IsNotNullOrWhitespace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
             interaction.InteractionDateTime = dateTime;
             interaction.PersonAliasId = personAliasId;
 
-            var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
-            var session = this.GetInteractionSession( null, ipAddress, deviceType.Id );
+            int? deviceTypeId = null;
+            if ( deviceApplication.IsNotNullOrWhitespace() && deviceOs.IsNotNullOrWhitespace() && deviceClientType.IsNotNullOrWhitespace() )
+            {
+                var deviceType = this.GetInteractionDeviceType( deviceApplication, deviceOs, deviceClientType, deviceTypeData );
+                deviceTypeId = deviceType != null ? deviceType.Id : ( int? ) null;
+            }
 
-            interaction.InteractionSessionId = session.Id;
+            // If we don't have an BrowserSessionId, IPAddress or a devicetype, there is nothing useful about the session
+            // but at least one of these has a value, then we should lookup or create a session
+            if ( browserSessionId.HasValue || ipAddress.IsNotNullOrWhitespace() || deviceTypeId.HasValue )
+            { 
+                var session = this.GetInteractionSession( browserSessionId, ipAddress, deviceTypeId );
+                interaction.InteractionSessionId = session.Id;
+            }
+
             this.Add( interaction );
 
             return interaction;
+        }
+
+        /// <summary>
+        /// Adds the interaction.
+        /// </summary>
+        /// <param name="interactionComponentId">The interaction component identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="interactionData">The interaction data.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="deviceApplication">The device application.</param>
+        /// <param name="deviceOs">The device os.</param>
+        /// <param name="deviceClientType">Type of the device client.</param>
+        /// <param name="deviceTypeData">The device type data.</param>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <returns></returns>
+        public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
+            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress )
+        {
+            return AddInteraction( interactionComponentId, entityId, operation, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, null );
         }
 
         /// <summary>
@@ -97,13 +130,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the interaction session. If it can't be found, a new InteractionSession record will be created and returned.
+        /// Gets the interaction session. If browserSessionId isn't specified, or it can't be found, a new InteractionSession record will be created and returned.
         /// </summary>
-        /// <param name="browserSessionId">The browser session identifier.</param>
+        /// <param name="browserSessionId">The browser session identifier (RockSessionId).</param>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="interactionDeviceTypeId">The interaction device type identifier.</param>
         /// <returns></returns>
-        public InteractionSession GetInteractionSession( Guid? browserSessionId, string ipAddress, int interactionDeviceTypeId )
+        public InteractionSession GetInteractionSession( Guid? browserSessionId, string ipAddress, int? interactionDeviceTypeId )
         {
             using ( var rockContext = new RockContext() )
             {

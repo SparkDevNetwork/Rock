@@ -75,5 +75,32 @@ namespace Rock
             var pluralizationService = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
             return pluralizationService.Singularize( str );
         }
+
+        /// <summary>
+        /// Convert string to possessive ('s)
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string ToPossessive( this string str )
+        {
+            if ( str == null )
+            {
+                return str;
+            }
+
+            if ( str.ToLower().EndsWith( "s" ) )
+            {
+                return $"{str}'";
+            }
+
+            if ( str.Length > 0 )
+            {
+                string poss = char.IsUpper( str[str.Length - 1] ) ? "S" : "s";
+                return $"{str}'{poss}";
+            }
+
+            return str;
+        }
+
     }
 }

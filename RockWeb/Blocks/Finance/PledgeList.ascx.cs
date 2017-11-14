@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField("Show Last Modified Date Column", "Allows the Last Modified Date column to be hidden.", true, "", 2)]
     [BooleanField( "Show Group Column", "Allows the group column to be hidden.", false, "", 3 )]
     [BooleanField( "Limit Pledges To Current Person", "Limit the results to pledges for the current person.", false, "", 4)]
+    [BooleanField( "Show Account Summary", "Should the account summary be displayed at the bottom of the list?", false, order: 5 )]
 
     [BooleanField( "Show Person Filter", "Allows person filter to be hidden.", true, "Display Filters", 0)]
     [BooleanField( "Show Account Filter", "Allows account filter to be hidden.", true, "Display Filters", 1 )]
@@ -45,7 +46,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Last Modified Filter", "Allows last modified filter to be hidden.", true, "Display Filters", 3 )]
 
     [ContextAware]
-    public partial class PledgeList : RockBlock, ISecondaryBlock
+    public partial class PledgeList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Properties
 
@@ -95,18 +96,34 @@ namespace RockWeb.Blocks.Finance
             // hide the person column and filter if a person context exists 
             if ( TargetPerson != null )
             {
-                gPledges.Columns[0].Visible = false;
+                var personField = gPledges.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Person" );
+                if ( personField != null )
+                {
+                    personField.Visible = false;
+                }
                 gfPledges.Visible = false;
             }
 
-            // show/hide the group column
-            gPledges.Columns[1].Visible = GetAttributeValue( "ShowGroupColumn" ).AsBoolean();
+            var forField = gPledges.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "For" );
+            if ( forField != null )
+            {
+                // show/hide the group column
+                forField.Visible = GetAttributeValue( "ShowGroupColumn" ).AsBoolean();
+            }
 
-            // show/hide the account column
-            gPledges.Columns[2].Visible = GetAttributeValue( "ShowAccountColumn" ).AsBoolean();
+            var accountField = gPledges.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Account" );
+            if ( accountField != null )
+            {
+                // show/hide the account column
+                accountField.Visible = GetAttributeValue( "ShowAccountColumn" ).AsBoolean();
+            }
 
-            // show/hide the last modified date column
-            gPledges.Columns[7].Visible = GetAttributeValue( "ShowLastModifiedDateColumn" ).AsBoolean();
+            var modifiedDateField = gPledges.ColumnsOfType<DateField>().FirstOrDefault( a => a.DataField == "ModifiedDateTime" );
+            if ( modifiedDateField != null )
+            {
+                // show/hide the last modified date column
+                modifiedDateField.Visible = GetAttributeValue( "ShowLastModifiedDateColumn" ).AsBoolean();
+            }
         }
 
         private void GPledges_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
@@ -420,6 +437,31 @@ namespace RockWeb.Blocks.Finance
 
             gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.AccountId ).ToList();
             gPledges.DataBind();
+
+            var showAccountSummary = this.GetAttributeValue( "ShowAccountSummary" ).AsBoolean();
+            if ( showAccountSummary || TargetPerson == null )
+            {
+                pnlSummary.Visible = true;
+
+                var summaryList = pledges
+                                .GroupBy( a => a.AccountId )
+                                .Select( a => new AccountSummaryRow
+                                {
+                                    AccountId = a.Key.Value,
+                                    TotalAmount = a.Sum( x => x.TotalAmount ),
+                                    Name = a.Select( p => p.Account.Name ).FirstOrDefault(),
+                                    Order = a.Select( p => p.Account.Order ).FirstOrDefault()
+                                } ).ToList();
+
+                var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ) : 0;
+                lGrandTotal.Text = grandTotalAmount.FormatAsCurrency();
+                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = a.TotalAmount.FormatAsCurrency() } ).ToList();
+                rptAccountSummary.DataBind();
+            }
+            else
+            {
+                pnlSummary.Visible = false;
+            }
         }
 
         /// <summary>
@@ -469,6 +511,17 @@ namespace RockWeb.Blocks.Finance
         public void SetVisible( bool visible )
         {
             pnlContent.Visible = visible;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class AccountSummaryRow
+        {
+            public int AccountId { get; internal set; }
+            public string Name { get; internal set; }
+            public int Order { get; internal set; }
+            public decimal TotalAmount { get; set; }
         }
     }
 }

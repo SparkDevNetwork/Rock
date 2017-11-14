@@ -74,7 +74,10 @@
                                         Help="The Url to redirect user to when they click on a row in the grid.  Any column's value can be used in the url by including it in braces.  For example if the grid includes an 'Id' column that contains Person Ids, you can link to the Person view, by specifying a value here of '~/Person/{Id}" />
 
                                     <Rock:RockTextBox ID="tbMergeFields" runat="server" Label="Communication Merge Fields" TextMode="MultiLine" Rows="1" CssClass="input-xlarge"
-                                        Help="When creating a new communication from a person report, additional fields from the report can be used as merge fields on the communication.  Enter any column names that you'd like to be available for the communication." />
+                                        Help="When creating a new communication from a person report, additional fields from the report can be used as merge fields on the communication. Enter any column names that you'd like to be available for the communication. If the same recipient has multiple results in this report, each result will be included in an 'AdditionalFields' list. These can be accessed using Lava in the communication. For example: {% for field in AdditionalFields %}{{ field.columnName }}{% endfor %}" />
+
+                                    <Rock:RockTextBox ID="tbCommunicationRecipientPersonIdFields" runat="server" Label="Communication Recipient Fields" 
+                                        Help="The column name(s) that contain a person id field to use as the recipient for a communication. If left blank, it will assume a column named 'Id' contains the recipient's person Id." />
 
                                     <Rock:NumberBox ID="nbTimeout" runat="server" Label="Timeout" Help="In seconds." />
                                 </div>

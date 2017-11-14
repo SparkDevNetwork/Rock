@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
@@ -105,6 +106,31 @@ namespace Rock.Utility
                     // if the REST call specified that Attributes should be loaded and we are returning a single IHasAttributes..
                     items = new List<Attribute.IHasAttributes>( new Attribute.IHasAttributes[] { value as Rock.Attribute.IHasAttributes } );
                 }
+                else if ( value is IQueryable )
+                {
+                    Type valueType = value.GetType();
+                    if ( valueType.IsGenericType && valueType.GenericTypeArguments[0].Name == "SelectAllAndExpand`1" )
+                    {
+                        // 'SelectAndExpand' buries the Entity in a private field called 'Instance', 
+                        // so use reflection to get that and load the attributes for each
+                        var selectExpandQry = value as IQueryable;
+                        var itemsList = new List<Attribute.IHasAttributes>();
+                        foreach ( var selectExpandItem in selectExpandQry )
+                        {
+                            var entityProperty = selectExpandItem.GetType().GetProperty( "Instance" );
+                            var entity = entityProperty.GetValue( selectExpandItem ) as Attribute.IHasAttributes;
+                            if ( entity != null )
+                            {
+                                itemsList.Add( entity );
+                            }
+
+                            entityProperty.SetValue( selectExpandItem, entity );
+                        }
+
+                        items = itemsList;
+                    }
+
+                }
 
                 if ( items != null )
                 {
@@ -115,6 +141,95 @@ namespace Rock.Utility
                     }
 
                     FilterAttributes( rockContext, items, this.Person );
+                }
+            }
+
+            // Special Code if an $expand clause is specified and a $select clause is NOT specified
+            // This fixes a couple of issues:
+            //  1) our special loadAttributes stuff did't work if $expand is specified
+            //  2) Only non-virtual,non-inherited fields were included (for example: Person.PrimaryAliasId, etc, wasn't getting included) if $expand was specified
+            if ( value is IQueryable && typeof( IQueryable<Rock.Data.IEntity> ).IsAssignableFrom( type ) )
+            {
+                Type valueType = value.GetType();
+
+                // if this is an OData 'SelectAndExpand', we have convert stuff to Dictionary manually to get the stuff to serialize the way we want
+                if ( valueType.IsGenericType && valueType.GenericTypeArguments[0].Name == "SelectAllAndExpand`1" )
+                {
+                    var rockContext = new Rock.Data.RockContext();
+
+                    // The normal SelectAllAndExpand converts stuff into dictionaries, but some stuff ends up missing
+                    // So, this will do all that manually using reflection and our own dictionary of each Entity
+                    var valueAsDictionary = new List<Dictionary<string, object>>();
+                    var selectExpandQry = value as IQueryable;
+                    var selectExpandList = ( selectExpandQry as IQueryable<object> ).ToList();
+                    var isPersonModel = type.IsGenericType && type.GenericTypeArguments[0] == typeof( Rock.Model.Person );
+                    Dictionary<int, Rock.Model.PersonAlias> personAliasLookup = null;
+                    if ( isPersonModel )
+                    {
+                        var personIds = selectExpandList.Select( a => ( a.GetPropertyValue( "Instance" ) as Rock.Model.Person ).Id ).ToList();
+
+                        // NOTE: If this is a really long list of PersonIds (20000+ or so), this might time out or get an error, 
+                        // so if it is more than 20000 just get *all* the personalias records which would probably be much faster than a giant where clause
+                        var personAliasQry = new Rock.Model.PersonAliasService( rockContext ).Queryable().AsNoTracking();
+                        if ( personIds.Count < 20000 )
+                        {
+                            personAliasLookup = personAliasQry.Where( a => personIds.Contains( a.PersonId ) && a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
+                        }
+                        else
+                        {
+                            personAliasLookup = personAliasQry.Where( a => a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
+                        }
+                    }
+
+                    foreach ( var selectExpandItem in selectExpandList )
+                    {
+                        var entityProperty = selectExpandItem.GetType().GetProperty( "Instance" );
+                        var entity = entityProperty.GetValue( selectExpandItem ) as Rock.Data.IEntity;
+                        if ( entity is Rock.Model.Person )
+                        {
+                            // if this is a SelectAndExpand of Person, we manually need to load Aliases so that the PrimaryAliasId is populated
+                            var person = entity as Rock.Model.Person;
+                            if ( !person.Aliases.Any() )
+                            {
+                                var primaryAlias = personAliasLookup.GetValueOrNull( person.Id );
+                                if ( primaryAlias != null )
+                                {
+                                    person.Aliases.Add( personAliasLookup[person.Id] );
+                                }
+                            }
+                        }
+
+                        Dictionary<string, object> valueDictionary = new Dictionary<string, object>();
+
+                        // add the "Expanded" stuff first to emulate the default behavior
+                        var expandedStuff = selectExpandItem.GetPropertyValue( "Container" );
+                        while ( expandedStuff != null)
+                        {
+                            var expandedName = expandedStuff.GetPropertyValue( "Name" ) as string;
+                            var expandedValue = expandedStuff.GetPropertyValue( "Value" );
+                            valueDictionary.Add( expandedName, expandedValue );
+                            expandedStuff = expandedStuff.GetPropertyValue( "Next" );
+                        }
+
+                        // add each of the Entity's properties
+                        foreach ( var entityKeyValue in entity.ToDictionary() )
+                        {
+                            valueDictionary.Add( entityKeyValue.Key, entityKeyValue.Value );
+                        }
+
+                        // if LoadAttributes was specified, add those last
+                        if ( LoadAttributes && ( entity is Rock.Attribute.IHasAttributes ) )
+                        {
+                            // Add Attributes and AttributeValues
+                            valueDictionary.Add( "Attributes", ( entity as Rock.Attribute.IHasAttributes ).Attributes );
+                            valueDictionary.Add( "AttributeValues", ( entity as Rock.Attribute.IHasAttributes ).AttributeValues );
+                        }
+
+                        valueAsDictionary.Add( valueDictionary );
+                    }
+                    
+                    base.WriteToStream( type, valueAsDictionary, writeStream, effectiveEncoding );
+                    return;
                 }
             }
 

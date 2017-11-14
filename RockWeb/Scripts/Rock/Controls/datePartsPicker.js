@@ -20,6 +20,7 @@
         var monthNumber = Number($datePartsPicker.find('.js-month').val());
         var dayNumber = Number($datePartsPicker.find('.js-day').val());
         var yearNumber = Number($datePartsPicker.find('.js-year').val());
+        var required = $datePartsPicker.attr('data-required') == 'true';
         var requireYear = $datePartsPicker.attr('data-requireyear') == 'true';
         var allowFuture = $datePartsPicker.attr('data-allowFuture') == 'true';
         var itemLabelText = $datePartsPicker.attr('data-itemlabel');
@@ -39,15 +40,18 @@
           }
         }
 
-        if (requireYear) {
-          if (monthNumber && dayNumber && yearNumber) {
-            // month, day and year are all set, it's OK  
-          }
-          else if (monthNumber || dayNumber || yearNumber) {
-            // at least one of them is set, but some are not, so it is invalid
-            isValid = false;
-            validator.errormessage = itemLabelText + ' must be a valid value.';
-          }
+        if (monthNumber && dayNumber && (yearNumber || !requireYear)) {
+          // month, day and (conditionally) year are all set, it's OK
+        }
+        else if (monthNumber || dayNumber || yearNumber) {
+          // at least one of them is set, but some are not, so it is invalid
+          isValid = false;
+          validator.errormessage = itemLabelText + ' must be a valid value.';
+        }
+        else if (required) {
+          // nothing is set but it is a required field.
+          isValid = false;
+          validator.errormessage = itemLabelText + ' is Required.';
         }
 
         var control = $datePartsPicker

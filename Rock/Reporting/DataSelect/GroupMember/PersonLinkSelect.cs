@@ -18,8 +18,10 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Reporting.DataSelect.GroupMember
@@ -32,7 +34,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
     [ExportMetadata( "ComponentName", "Select Person Name" )]
     [BooleanField( "Show As Link", "", true )]
     [CustomRadioListField( "Display Order", "", "0^FirstName LastName,1^LastName&#44; FirstName", true, "0" )]
-    public class PersonLinkSelect : DataSelectComponent
+    public class PersonLinkSelect : DataSelectComponent, IRecipientDataSelect
     {
         /// <summary>
         /// Gets the name of the entity type. Filter should be an empty string
@@ -122,7 +124,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override System.Linq.Expressions.Expression GetExpression( Data.RockContext context, System.Linq.Expressions.MemberExpression entityIdProperty, string selection )
+        public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
             bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
             int displayOrder = this.GetAttributeValueFromSelection( "DisplayOrder", selection ).AsIntegerOrNull() ?? 0;
@@ -159,5 +161,40 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             return exp; 
         }
+
+        #region IRecipientDataSelect implementation
+
+        /// <summary>
+        /// Gets the type of the recipient column field.
+        /// </summary>
+        /// <value>
+        /// The type of the recipient column field.
+        /// </value>
+        public Type RecipientColumnFieldType
+        {
+            get { return typeof( int ); }
+        }
+
+        /// <summary>
+        /// Gets the recipient person identifier expression.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public Expression GetRecipientPersonIdExpression( System.Data.Entity.DbContext dbContext, MemberExpression entityIdProperty, string selection )
+        {
+            var rockContext = dbContext as RockContext;
+            if ( rockContext != null )
+            {
+                var memberQuery = new GroupMemberService( rockContext ).Queryable().Select( gm => gm.PersonId );
+                var exp = SelectExpressionExtractor.Extract( memberQuery, entityIdProperty, "gm" );
+                return exp;
+            }
+
+            return null;
+        }
+
+        #endregion
     }
 }

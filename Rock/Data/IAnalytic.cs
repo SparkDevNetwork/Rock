@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Model;
 using Rock.Security;
 
@@ -22,6 +23,7 @@ namespace Rock.Data
     /// <summary>
     /// Represents a model that has an Analytic Table
     /// </summary>
+    [Obsolete("Decorate with [Analytics] instead")]
     public interface IAnalytic : IEntity
     {
 

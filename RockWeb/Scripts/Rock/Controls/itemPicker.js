@@ -9,6 +9,7 @@
 
             // set a flag so that the picker only auto-scrolls to a selected item once. This prevents it from scrolling at unwanted times
             this.alreadyScrolledToSelected = false;
+            this.iScroll = null;
         },
             exports;
 
@@ -41,7 +42,19 @@
                 }
                 $tree.empty();
 
-                $control.find('.scroll-container').tinyscrollbar({ size: 120, sizethumb: 20 });
+                var $scrollContainer = $control.find('.scroll-container .viewport');
+                var $scrollIndicator = $control.find('.track');
+                this.iScroll = new IScroll($scrollContainer[0], {
+                    mouseWheel: true,
+                    indicators: {
+                        el: $scrollIndicator[0],
+                        interactive: true,
+                        resize: false,
+                        listenY: true,
+                        listenX: false,
+                    }
+                });
+
                 // Since some hanlers are "live" events, they need to be bound before tree is initialized
                 this.initializeEventHandlers();
 
@@ -183,14 +196,17 @@
                 });
             },
             updateScrollbar: function (sPosition) {
+                var self = this;
                 // first, update this control's scrollbar, then the modal's
-                var $container = $('#' + this.options.controlId).find('.scroll-container')
+                var $container = $('#' + this.options.controlId).find('.scroll-container');
 
                 if ($container.is(':visible')) {
                     if (!sPosition) {
                         sPosition = 'relative'
                     }
-                    $container.tinyscrollbar_update(sPosition);
+                    if (self.iScroll) {
+                        self.iScroll.refresh();
+                    }
                 }
 
                 // update the outer modal  

@@ -72,6 +72,12 @@ namespace Rock.Client
         /// <summary />
         public int? PersonAliasId { get; set; }
 
+        /// <summary />
+        public int? RelatedEntityId { get; set; }
+
+        /// <summary />
+        public int? RelatedEntityTypeId { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -117,6 +123,8 @@ namespace Rock.Client
             this.Operation = source.Operation;
             this.PersonalDeviceId = source.PersonalDeviceId;
             this.PersonAliasId = source.PersonAliasId;
+            this.RelatedEntityId = source.RelatedEntityId;
+            this.RelatedEntityTypeId = source.RelatedEntityTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -140,6 +148,9 @@ namespace Rock.Client
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }
+
+        /// <summary />
+        public EntityType RelatedEntityType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

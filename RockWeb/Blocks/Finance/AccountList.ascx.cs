@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for viewing list of financial accounts." )]
     [LinkedPage( "Detail Page" )]
-    public partial class AccountList : RockBlock, ISecondaryBlock
+    public partial class AccountList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Control Methods
 
@@ -58,7 +58,11 @@ namespace RockWeb.Blocks.Finance
             if ( campusList.Count > 0 )
             {
                 ddlCampus.Visible = true;
-                rGridAccount.Columns[3].Visible = true;
+                var isActiveColumn = rGridAccount.ColumnsOfType<BoolField>().FirstOrDefault( a => a.DataField == "IsActive" );
+                if ( isActiveColumn != null )
+                {
+                    isActiveColumn.Visible = true;
+                }
             }
 
             rGridAccount.DataKeyNames = new string[] { "Id" };

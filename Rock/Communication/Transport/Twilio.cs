@@ -83,6 +83,8 @@ namespace Rock.Communication.Transport
                     throttlingWaitTimeMS = this.GetAttributeValue( "Long-CodeThrottling" ).AsIntegerOrNull();
                 }
 
+                List<Uri> attachmentMediaUrls = GetAttachmentMediaUrls( rockMessage.Attachments.AsQueryable() );
+
                 foreach ( var recipientData in rockMessage.GetRecipientData() )
                 {
                     try
@@ -94,31 +96,7 @@ namespace Rock.Communication.Transport
 
                         string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
 
-                        MessageResource response = null;
-
-                        // twilio has a max message size of 1600 (one thousand six hundred) characters
-                        // hopefully it isn't going to be that big, but just in case, break it into chunks if it is longer than that
-                        if ( message.Length > 1600 )
-                        {
-                            var messageChunks = message.SplitIntoChunks( 1600 );
-
-                            foreach ( var messageChunk in messageChunks )
-                            {
-                                response = MessageResource.Create(
-                                    from: new TwilioTypes.PhoneNumber( smsMessage.FromNumber.Value ),
-                                    to: new TwilioTypes.PhoneNumber( recipientData.To ),
-                                    body: messageChunk
-                                );
-                            }
-                        }
-                        else
-                        {
-                            response = MessageResource.Create(
-                                from: new TwilioTypes.PhoneNumber( smsMessage.FromNumber.Value ),
-                                to: new TwilioTypes.PhoneNumber( recipientData.To ),
-                                body: message
-                            );
-                        }
+                        MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
 
                         if ( response.ErrorMessage.IsNotNullOrWhitespace() )
                         {
@@ -140,7 +118,6 @@ namespace Rock.Communication.Transport
 
             return !errorMessages.Any();
         }
-
 
         /// <summary>
         /// Sends the specified communication.
@@ -182,6 +159,12 @@ namespace Rock.Communication.Transport
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
 
                     string fromPhone = communication.SMSFromDefinedValue?.Value;
+                    if ( string.IsNullOrWhiteSpace( fromPhone ) )
+                    {
+                        // just in case we got this far without a From Number, throw an exception
+                        throw new Exception( "A From Number was not provided for communication: " + communication.Id.ToString() );
+                    }
+
                     if ( !string.IsNullOrWhiteSpace( fromPhone ) )
                     {
 
@@ -202,7 +185,11 @@ namespace Rock.Communication.Transport
                         string callbackUrl = publicAppRoot + "Webhooks/Twilio.ashx";
 
                         var smsAttachmentsBinaryFileIdList = communication.GetAttachmentBinaryFileIds( CommunicationType.SMS );
-                        List<Uri> attachmentMediaUrls = smsAttachmentsBinaryFileIdList.Select( a => new Uri($"{publicAppRoot}GetImage.ashx?id={a}") ).ToList();
+                        List<Uri> attachmentMediaUrls = new List<Uri>();
+                        if ( smsAttachmentsBinaryFileIdList.Any() )
+                        {
+                            attachmentMediaUrls = this.GetAttachmentMediaUrls( new BinaryFileService( communicationRockContext ).GetByIds( smsAttachmentsBinaryFileIdList ) );
+                        }
 
                         bool recipientFound = true;
                         while ( recipientFound )
@@ -233,51 +220,7 @@ namespace Rock.Communication.Transport
                                                 twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                             }
 
-                                            MessageResource response = null;
-
-                                            // twilio has a max message size of 1600 (one thousand six hundred) characters
-                                            // hopefully it isn't going to be that big, but just in case, break it into chunks if it is longer than that
-                                            if ( message.Length > 1600 )
-                                            {
-                                                var messageChunks = message.SplitIntoChunks( 1600 );
-
-                                                foreach ( var messageChunk in messageChunks )
-                                                {
-                                                    CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
-                                                    {
-                                                        From = new TwilioTypes.PhoneNumber( fromPhone ),
-                                                        Body = messageChunk,
-                                                        StatusCallback = new System.Uri( callbackUrl )
-                                                    };
-
-                                                    // if this is the final chunk, add the attachment(s) 
-                                                    if ( messageChunk == messageChunks.Last() )
-                                                    {
-                                                        if ( attachmentMediaUrls.Any() )
-                                                        {
-                                                            createMessageOptions.MediaUrl = attachmentMediaUrls;
-                                                        }
-                                                    }
-
-                                                    response = MessageResource.Create( createMessageOptions );
-                                                }
-                                            }
-                                            else
-                                            {
-                                                CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
-                                                {
-                                                    From = new TwilioTypes.PhoneNumber( fromPhone ),
-                                                    Body = message,
-                                                    StatusCallback = new System.Uri( callbackUrl )
-                                                };
-                                                
-                                                if ( attachmentMediaUrls.Any() )
-                                                {
-                                                    createMessageOptions.MediaUrl = attachmentMediaUrls;
-                                                }
-
-                                                response = MessageResource.Create( createMessageOptions );
-                                            }
+                                            MessageResource response = SendToTwilio( fromPhone, callbackUrl, attachmentMediaUrls, message, twilioNumber );
 
                                             recipient.Status = CommunicationRecipientStatus.Delivered;
                                             recipient.TransportEntityTypeName = this.GetType().FullName;
@@ -333,6 +276,122 @@ namespace Rock.Communication.Transport
                 }
             }
         }
+
+
+        #region private shared methods
+
+        /// <summary>
+        /// Gets the attachment media urls.
+        /// </summary>
+        /// <param name="attachments">The attachments.</param>
+        /// <returns></returns>
+        private List<Uri> GetAttachmentMediaUrls( IQueryable<BinaryFile> attachments )
+        {
+            var binaryFilesInfo = attachments.Select( a => new
+            {
+                a.Id,
+                a.MimeType
+            } ).ToList();
+
+            List<Uri> attachmentMediaUrls = new List<Uri>();
+            if ( binaryFilesInfo.Any() )
+            {
+                string publicAppRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                attachmentMediaUrls = binaryFilesInfo.Select( b =>
+                {
+                    if ( b.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        return new Uri( $"{publicAppRoot}GetImage.ashx?id={b.Id}" );
+                    }
+                    else
+                    {
+                        return new Uri( $"{publicAppRoot}GetFile.ashx?id={b.Id}" );
+                    }
+                } ).ToList();
+            }
+
+            return attachmentMediaUrls;
+        }
+
+        /// <summary>
+        /// Sends to twilio.
+        /// </summary>
+        /// <param name="fromPhone">From phone.</param>
+        /// <param name="callbackUrl">The callback URL.</param>
+        /// <param name="attachmentMediaUrls">The attachment media urls.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="twilioNumber">The twilio number.</param>
+        /// <returns></returns>
+        private MessageResource SendToTwilio( string fromPhone, string callbackUrl, List<Uri> attachmentMediaUrls, string message, string twilioNumber )
+        {
+            MessageResource response = null;
+
+            // twilio has a max message size of 1600 (one thousand six hundred) characters
+            // hopefully it isn't going to be that big, but just in case, break it into chunks if it is longer than that
+            if ( message.Length > 1600 )
+            {
+                var messageChunks = message.SplitIntoChunks( 1600 );
+
+                foreach ( var messageChunk in messageChunks )
+                {
+                    CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
+                    {
+                        From = new TwilioTypes.PhoneNumber( fromPhone ),
+                        Body = messageChunk
+                    };
+
+                    if ( callbackUrl.IsNotNullOrWhitespace() )
+                    {
+                        createMessageOptions.StatusCallback = new Uri( callbackUrl );
+                    }
+
+                    // if this is the final chunk, add the attachment(s) 
+                    if ( messageChunk == messageChunks.Last() )
+                    {
+                        if ( attachmentMediaUrls.Any() )
+                        {
+                            createMessageOptions.MediaUrl = attachmentMediaUrls;
+                        }
+                    }
+
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                    {
+                        createMessageOptions.StatusCallback = null;
+                    }
+
+                    response = MessageResource.Create( createMessageOptions );
+                }
+            }
+            else
+            {
+                CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
+                {
+                    From = new TwilioTypes.PhoneNumber( fromPhone ),
+                    Body = message
+                };
+
+                if ( callbackUrl.IsNotNullOrWhitespace() )
+                {
+                    createMessageOptions.StatusCallback = new Uri( callbackUrl );
+                }
+
+                if ( attachmentMediaUrls.Any() )
+                {
+                    createMessageOptions.MediaUrl = attachmentMediaUrls;
+                }
+
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    createMessageOptions.StatusCallback = null;
+                }
+
+                response = MessageResource.Create( createMessageOptions );
+            }
+
+            return response;
+        }
+
+        #endregion
 
         #region Obsolete
 

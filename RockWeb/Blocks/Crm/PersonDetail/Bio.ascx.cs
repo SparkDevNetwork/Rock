@@ -189,7 +189,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     if ( Person.BirthDate.HasValue )
                     {
-                        lAge.Text = string.Format( "{0} old <small>({1})</small><br/>", Person.FormatAge(), (Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString());
+                        var formattedAge = Person.FormatAge();
+                        if ( formattedAge.IsNotNullOrWhitespace() )
+                        {
+                            formattedAge += " old";
+                        }
+
+                        lAge.Text = string.Format( "{0} <small>({1})</small><br/>", formattedAge, ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString() );
                     }
 
                     lGender.Text = Person.Gender.ToString();

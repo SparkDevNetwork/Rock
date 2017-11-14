@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Core
     [Description( "List of dates that schedules are not active for an entire category." )]
 
     [CategoryField("Category", "Optional Category to use (if not specified, query will be determined by query string).", false, "Rock.Model.Schedule", "", "", false, "", "", 0)]
-    public partial class ScheduleCategoryExclusionList : RockBlock, ISecondaryBlock
+    public partial class ScheduleCategoryExclusionList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Fields
 
