@@ -109,7 +109,7 @@ namespace church.ccv.MobileApp
                         Longitude = locationObj.Longitude.Value,
                         Latitude = locationObj.Latitude.Value,
                         DistanceFromSource = locationObj.Distance,
-                        MeetingTime = group.Schedule.FriendlyScheduleText
+                        MeetingTime = group.Schedule != null ? group.Schedule.FriendlyScheduleText : ""
                     };
                     
                     // load the attributes so we can take the filters value
