@@ -759,7 +759,6 @@ namespace Rock.Model
                 recipient = new CommunicationRecipientService( rockContext ).Queryable( "Communication,PersonAlias.Person" )
                     .Where( r =>
                         r.CommunicationId == communicationId &&
-                        r.PersonAlias.Person.IsDeceased == false &&
                         ( r.Status == CommunicationRecipientStatus.Pending ||
                             ( r.Status == CommunicationRecipientStatus.Sending && r.ModifiedDateTime < delayTime )
                         ) &&
