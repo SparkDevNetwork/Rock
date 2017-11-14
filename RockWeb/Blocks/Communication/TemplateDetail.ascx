@@ -125,7 +125,7 @@
                                             <Rock:RockControlWrapper ID="rcwPreviewMode" runat="server" Label="Preview Mode">
                                                 
                                                 <div class="btn-group" role="group">
-                                                    <button type="button" class="btn btn-xs btn-default js-preview-desktop">
+                                                    <button type="button" class="btn btn-xs btn-info active js-preview-desktop">
                                                         <i class="fa fa-desktop"></i>
                                                         Desktop
                                                     </button>
@@ -231,6 +231,8 @@
                     var $emailPreviewIframe = $('.js-emailpreview-iframe');
 
                     if ($(this).hasClass('js-preview-mobile')) {
+                        $('.js-preview-mobile').removeClass('btn-default').addClass('btn-info').addClass('active')
+                        $('.js-preview-desktop').removeClass('btn-info').removeClass('active').addClass('btn-default');
                         var mobileContainerHeight = '585px';
 
                         $('.js-email-preview').removeClass("device-browser").addClass("device-mobile");
@@ -240,6 +242,8 @@
                         $('#<%=pnlEmailPreviewContainer.ClientID%>').height(mobileContainerHeight);
                     }
                     else {
+                        $('.js-preview-desktop').removeClass('btn-default').addClass('btn-info').addClass('active')
+                        $('.js-preview-mobile').removeClass('btn-info').removeClass('active').addClass('btn-default');
                         $('.js-email-preview').removeClass("device-mobile").addClass("device-browser");
                         $emailPreviewIframe.height('auto');
 
@@ -251,6 +255,19 @@
 
                         $('#<%=pnlEmailPreviewContainer.ClientID%>').height(newHeight);
                     }
+                });
+
+                $('.js-revertlavavalue').off('click').on('click', function () {
+                    var valueControlId = $(this).attr('data-value-control');
+                    var defaultValue = $(this).attr('data-default');
+                    var $colorPicker = $('#' + valueControlId).closest('.rock-colorpicker-input');
+                    if ($colorPicker.length) {
+                        $colorPicker.colorpicker('setValue', defaultValue);
+                    }
+                    else {
+                        $('#' + valueControlId).val(defaultValue);
+                    }
+                    $(this).css('visibility', 'hidden');
                 });
             });
 

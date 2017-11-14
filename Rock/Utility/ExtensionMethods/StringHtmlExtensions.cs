@@ -192,5 +192,17 @@ namespace Rock
 
             return CommonMark.CommonMarkConverter.Convert( markdown, settings );
         }
+
+        /// <summary>
+        /// Moves the CSS inline using PreMailer.Net, which moves any stylesheets to inline style attributes, for maximum compatibility with E-mail clients
+        /// </summary>
+        /// <param name="html">The HTML.</param>
+        /// <returns></returns>
+        public static string ConvertHtmlStylesToInlineAttributes( this string html )
+        {
+            var result = PreMailer.Net.PreMailer.MoveCssInline( html, false, ".ignore" );
+
+            return result.Html;
+        }
     }
 }
