@@ -855,8 +855,9 @@ namespace RockWeb.Blocks.Communication
             var mediums = new Dictionary<int, string>();
             foreach ( var item in MediumContainer.Instance.Components.Values )
             {
-                if ( item.Value.IsActive &&
-                    ( !selectedGuids.Any() || selectedGuids.Contains( item.Value.EntityType.Guid ) ) )
+                if ( ( !selectedGuids.Any() || selectedGuids.Contains( item.Value.EntityType.Guid ) ) &&
+                    item.Value.IsActive &&
+                    item.Value.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     var entityType = item.Value.EntityType;
                     mediums.Add( entityType.Id, item.Metadata.ComponentName );
