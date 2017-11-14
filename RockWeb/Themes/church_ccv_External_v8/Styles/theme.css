@@ -10822,12 +10822,28 @@ html,body{
     flex-flow: row wrap;
 }
 
-#createaccount-panel, #forgotpassword-panel, #accountcreationresult-panel, #accountcreationduplicates-panel {
+#forgotpassword-panel, #accountcreationresult-panel, #accountcreationduplicates-panel {
 	font-size: 16px;
 	color: rgba(0, 0, 0, 0.6);
 	padding: 24px;
 	box-sizing: border-box;
 	transition: left 250ms ease-in;
+	width: 100%;
+    height: auto;
+	top: 0px;
+	position: absolute;
+	background-color: rgb(255, 255, 255);
+	overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#createaccount-panel {
+	font-size: 16px;
+	color: rgba(0, 0, 0, 0.6);
+	padding: 24px;
+	box-sizing: border-box;
 	width: 100%;
     height: auto;
 	top: 0px;
@@ -10875,6 +10891,10 @@ html,body{
     width: 100%;
     margin-top: 10px;
     margin-left: 5px;
+}
+
+.panel-animate {
+	transition: left 250ms ease-in;
 }
 
 .createaccount-panel-hidden, .forgotpassword-panel-hidden, .accountcreationresult-panel-hidden, .accountcreationduplicates-panel-hidden {	

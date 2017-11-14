@@ -39,7 +39,7 @@
                                 
                        <asp:Button ID="btnHelp" runat="server" Text="Forgot username or password?" CssClass="small-paragraph lm-form-forgot" OnClientClick="displayForgotPasswordPanel(); return false;" CausesValidation="false" />
                                 
-                       <asp:Button ID="btnNewAccount" runat="server" Text="Create Account" CssClass="lm-form-register btn btn-action" OnClientClick="displayCreateAccountPanel(); return false;" CausesValidation="false" />
+                       <asp:Button ID="btnNewAccount" runat="server" Text="Create Account" CssClass="lm-form-register btn btn-action" OnClientClick="displayCreateAccountPanel(true); return false;" CausesValidation="false" />
                      </div>
                 </div>
                 <%--END LOGIN PANEL--%>
@@ -95,7 +95,7 @@
                     </div>
 
                     <div id="create-panel-buttons">
-                        <asp:Button runat="server" Text="Cancel" CssClass="lm-button btn btn-action" OnClientClick="hideCreateAccountPanel(); return false;" CausesValidation="false" />
+                        <asp:Button runat="server" Text="Cancel" CssClass="lm-button btn btn-action" OnClientClick="hideCreateAccountPanel(true); return false;" CausesValidation="false" />
                         <asp:Button runat="server" Text="Register" CssClass="lm-button btn btn-primary" OnClientClick="registerUser(); return false;" CausesValidation="false" />
                     </div>
                 </div>
@@ -210,12 +210,6 @@
 	
 	function displayLoginModal() {
 
-	    //todo: do this without animation so it's instant
-	    hideAccountCreationDuplicatesPanel();
-	    hideAccountCreationResultPanel();
-	    hideCreateAccountPanel();
-	    hideForgotPasswordPanel();
-
 	    // fade in the bg screen (the grey overlay)
 	    var bgScreen = $("#bg-screen");
 	    bgScreen.removeClass("bg-screen-hidden");
@@ -241,8 +235,14 @@
 	    var loginModal = $("#login-modal");
 	    loginModal.removeClass("login-modal-visible");
 	    loginModal.addClass("login-modal-hidden");
-	}
 
+	    // hide all the other account panels, so we start with the correct one
+	    hideAccountCreationDuplicatesPanel();
+	    hideAccountCreationResultPanel();
+	    hideCreateAccountPanel(false);
+	    hideForgotPasswordPanel();
+	}
+    
 	function showResponsePanel(panelId, panelMessageId, errorMsg) {
 
 	    // reveal the panel
@@ -365,15 +365,30 @@
     // ---- END LOGIN ----
 
     // ---- USER REGISTRATION ----
-    function displayCreateAccountPanel() {
+    function displayCreateAccountPanel(withAnimation) {
         var createAccountPanel = $("#createaccount-panel");
         createAccountPanel.removeClass("createaccount-panel-hidden");
+
+        if (withAnimation) {
+            createAccountPanel.addClass("panel-animate");
+        }
+        else {
+            createAccountPanel.removeClass("panel-animate");
+        }
         createAccountPanel.addClass("createaccount-panel-visible");
     }
 
-    function hideCreateAccountPanel() {
+    function hideCreateAccountPanel(withAnimation) {
         var createAccountPanel = $("#createaccount-panel");
         createAccountPanel.removeClass("createaccount-panel-visible");
+
+        if (withAnimation) {
+            createAccountPanel.addClass("panel-animate");
+        }
+        else {
+            createAccountPanel.removeClass("panel-animate");
+        }
+
         createAccountPanel.addClass("createaccount-panel-hidden");
     }
 
