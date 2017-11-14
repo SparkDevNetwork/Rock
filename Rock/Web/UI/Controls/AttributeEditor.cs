@@ -1044,7 +1044,6 @@ namespace Rock.Web.UI.Controls
 
                 _phDefaultValue = new PlaceHolder();
                 _phDefaultValue.ID = "phDefaultValue";
-                _phDefaultValue.EnableViewState = false;
                 Controls.Add( _phDefaultValue );
 
                 _btnSave = new LinkButton();
