@@ -33,18 +33,6 @@ using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
 
-/// <summary>
-/// ALTER TABLE [dbo].[Person]
-///	ADD [TopSignalColor] [nvarchar](100) NULL,
-///	ADD [TopSignalIconCssClass] [nvarchar](100) NULL,
-///	[TopSignalId] [int] NULL
-///
-/// ALTER TABLE [dbo].[Person] WITH CHECK ADD CONSTRAINT [FK_dbo.Person_dbo.PersonSignal_Id] FOREIGN KEY( [TopSignalId])
-/// REFERENCES [dbo].[PersonSignal] ([Id])
-/// GO
-/// ALTER TABLE [dbo].[Person] CHECK CONSTRAINT [FK_dbo.Person_dbo.PersonSignal_Id]
-/// GO
-/// </summary>
 namespace Rock.Model
 {
     /// <summary>
@@ -2617,39 +2605,6 @@ namespace Rock.Model
 
             return string.Empty;
         }
-
-        /// <summary>
-        /// Gets the person image tag with their signal applied if they have one.
-        /// </summary>
-        /// <param name="person">The person to get the image for.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <param name="altText">The alt text to use on the image.</param>
-        /// <param name="className">The css class name to apply to the image.</param>
-        /// <returns>A string representation of either a Div tag or an Img tag.</returns>
-        public static string GetPersonPhotoImageTagWithSignal( Person person, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
-        {
-            if ( person != null )
-            {
-                string imgTag = GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? ( Guid? ) person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
-                string signalTag = person.GetSignalMarkup();
-
-                if ( string.IsNullOrWhiteSpace( signalTag ) )
-                {
-                    return imgTag;
-                }
-                else
-                {
-                    return string.Format( "<div class='person-signal'>{0}{1}</div>", signalTag, imgTag );
-                }
-            }
-            else
-            {
-                return GetPersonPhotoImageTag( null, null, null, Gender.Unknown, null, maxWidth, maxHeight, altText, className );
-            }
-
-        }
-
 
         /// <summary>
         /// Adds the related person to the selected person's known relationships with a role of 'Can check in' which
