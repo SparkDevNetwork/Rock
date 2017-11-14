@@ -216,7 +216,7 @@ namespace Rock.Field.Types
 
         #region Filter Control
 
-        // Note: Even though this is a 'text' type field, the base default binary comparison is used instead of being overridden with 
+        // Note: Even though this is a 'text' type field, the base default binary comparison (Is Blank/Is Not Blank) is used instead of being overridden with 
         // string comparison type like other 'text' fields, because comparisons like 'Starts with', 'Contains', etc. can't be performed
         // on the encrypted text.  Only a binary comparison can be performed.
 

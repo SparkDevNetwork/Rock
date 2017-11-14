@@ -72,6 +72,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_MEDIUM_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
 
         /// <summary>
+        /// The guid for Rock.Model.CommunicationTemplate
+        /// </summary>
+        public const string COMMUNICATION_TEMPLATE = "A9493AFE-4316-4651-800D-5028E4C7444D";
+
+        /// <summary>
         /// The guid for the Rock.Model.ConnectionActivityType entity
         /// </summary>
         public const string CONNECTION_ACTIVITY_TYPE = "97B143F0-CB9D-4652-8FF1-FF2FA1EA4945";

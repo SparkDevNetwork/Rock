@@ -271,7 +271,9 @@ namespace RockWeb.Blocks.Communication
                     ( communication.Status == CommunicationStatus.PendingApproval && _editingApproved ) )
                 {
                     // Make sure they are authorized to view
-                    if ( communication == null || communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
+                    if ( communication == null || 
+                        communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) ||
+                        ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue  && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
                     {
                         ShowDetail( communication );
                     }
@@ -938,7 +940,7 @@ namespace RockWeb.Blocks.Communication
                 lbShowAllRecipients.Visible = false;
             }
 
-            lbRemoveAllRecipients.Visible = Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ).Any();
+            lbRemoveAllRecipients.Visible = _fullMode && Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ).Any();
 
             rptRecipients.DataBind();
 

@@ -337,10 +337,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GlobalAttributesCache Read()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                return Read( rockContext );
-            }
+            return Read( null );
         }
 
         /// <summary>

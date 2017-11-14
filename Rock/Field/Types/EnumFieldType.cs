@@ -187,22 +187,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
-            if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )
+            var cbList = new RockCheckBoxList();
+            cbList.ID = string.Format( "{0}_cbList", id );
+            cbList.AddCssClass( "js-filter-control" );
+            cbList.RepeatDirection = RepeatDirection.Horizontal;
+
+            foreach ( var keyVal in EnumValues )
             {
-                var cbList = new RockCheckBoxList();
-                cbList.ID = string.Format( "{0}_cbList", id );
-                cbList.AddCssClass( "js-filter-control" );
-                cbList.RepeatDirection = RepeatDirection.Horizontal;
+                cbList.Items.Add( new ListItem( keyVal.Value, keyVal.Key.ToString() ) );
+            }
 
-                foreach ( var keyVal in EnumValues )
-                {
-                    cbList.Items.Add( new ListItem( keyVal.Value, keyVal.Key.ToString() ) );
-                }
-
-                if ( cbList.Items.Count > 0 )
-                {
-                    return cbList;
-                }
+            if ( cbList.Items.Count > 0 )
+            {
+                return cbList;
             }
 
             return null;

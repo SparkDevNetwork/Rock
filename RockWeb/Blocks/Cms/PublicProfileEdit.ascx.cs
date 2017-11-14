@@ -282,7 +282,13 @@ namespace RockWeb.Blocks.Cms
             lGroupMemberEmail.Text = person.Email;
             if ( person.BirthDate.HasValue )
             {
-                lAge.Text = string.Format( "{0}<small>({1} old)</small><br/>", person.FormatAge(), person.BirthYear != DateTime.MinValue.Year ? person.BirthDate.Value.ToShortDateString() : person.BirthDate.Value.ToMonthDayString() );
+                var formattedAge = person.FormatAge();
+                if ( formattedAge.IsNotNullOrWhitespace() )
+                {
+                    formattedAge += " old";
+                }
+
+                lAge.Text = string.Format( "{0} <small>({1})</small><br/>", formattedAge, ( person.BirthYear.HasValue && person.BirthYear != DateTime.MinValue.Year ) ? person.BirthDate.Value.ToShortDateString() : person.BirthDate.Value.ToMonthDayString() );
             }
 
             lGender.Text = person.Gender != Gender.Unknown ? person.Gender.ToString() : string.Empty;

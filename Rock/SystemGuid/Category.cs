@@ -131,6 +131,24 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region PowerBI 
+
+        /// <summary>
+        /// The category for defined types for PowerBI
+        /// </summary>
+        public const string POWERBI_DEFINED_TYPE = "FF0B8B72-C1A3-BB99-4D51-78BC670ADB9C";
+
+        #endregion 
+
+        #region Group Categories (for a specific group type)
+
+        /// <summary>
+        /// The 'Public' category for Communication List groups
+        /// </summary>
+        public const string GROUPTYPE_COMMUNICATIONLIST_PUBLIC = "A0889E77-67D9-418C-B301-1B3924692058";
+
+        #endregion
+
         #region System Email Categories
 
         /// <summary>

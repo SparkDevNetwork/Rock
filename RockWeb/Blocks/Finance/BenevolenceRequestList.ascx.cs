@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Finance
     [ContextAware( typeof( Person ) )]
     [LinkedPage( "Detail Page" )]
     [SecurityRoleField( "Case Worker Role", "The security role to draw case workers from", true, Rock.SystemGuid.Group.GROUP_BENEVOLENCE )]
-    public partial class BenevolenceRequestList : RockBlock
+    public partial class BenevolenceRequestList : RockBlock, ICustomGridColumns
     {
         #region Properties
 

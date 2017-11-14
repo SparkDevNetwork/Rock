@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Lists all the block types registered in Rock." )]
 
     [LinkedPage("Detail Page")]
-    public partial class BlockTypeList : RockBlock
+    public partial class BlockTypeList : RockBlock, ICustomGridColumns
     {
 
         #region Base Control Methods

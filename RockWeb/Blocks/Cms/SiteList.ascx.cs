@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Lists sites defined in the system.")]
     [LinkedPage("Detail Page")]
-    public partial class SiteList : RockBlock
+    public partial class SiteList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 
@@ -55,8 +55,11 @@ namespace RockWeb.Blocks.Cms
             bool canAddEdit = IsUserAuthorized( Authorization.EDIT );
             gSites.Actions.ShowAdd = canAddEdit;
 
-            SecurityField securityField = gSites.Columns[5] as SecurityField;
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Site ) ).Id;
+            var securityField = gSites.ColumnsOfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Site ) ).Id;
+            }
         }
 
         /// <summary>

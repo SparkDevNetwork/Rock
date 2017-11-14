@@ -242,48 +242,7 @@
 
                     <fieldset id="fieldsetViewDetails" runat="server">
 
-                        <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <asp:Literal ID="lblMainDetails" runat="server" />
-
-                                <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
-                                
-                            </div>
-                            <div class="col-md-6 location-maps">
-                                <asp:PlaceHolder ID="phMaps" runat="server" />
-
-                                <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Registrations">
-                                    <ul class="list-unstyled">
-                                        <asp:Repeater ID="rptLinkedRegistrations" runat="server">
-                                            <ItemTemplate>
-                                                <li><a href='<%# RegistrationInstanceUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </ul>
-                                </Rock:RockControlWrapper>
-                                <Rock:RockControlWrapper id="rcwEventItemOccurrences" runat="server" Label="Event Item Occurrences">
-                                    <ul class="list-unstyled">
-                                        <asp:Repeater ID="rptEventItemOccurrences" runat="server">
-                                            <ItemTemplate>
-                                                <li><a href='<%# EventItemOccurrenceUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </ul>
-                                </Rock:RockControlWrapper>
-                                <Rock:RockControlWrapper id="rcwContentItems" runat="server" Label="Content Items">
-                                    <ul class="list-unstyled">
-                                        <asp:Repeater ID="rptContentItems" runat="server">
-                                            <ItemTemplate>
-                                                <li><a href='<%# ContentItemUrl( (int)Eval("Key" ) ) %>'><%# Eval("Value") %></a></li>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </ul>
-                                </Rock:RockControlWrapper>
-                            </div>
-                        </div>
-
+                        <asp:Literal ID="lContent" runat="server"></asp:Literal>
 
                         <div class="actions">
                             <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />

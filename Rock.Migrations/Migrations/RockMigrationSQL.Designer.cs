@@ -3649,5 +3649,99 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201710061805334_CommunicationListGroup_UpdateEmailMediumAttributeValues", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsFactAttendance]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsFactAttendance
+        ///GO
+        ///
+        ///-- select top 10000 * from AnalyticsFactAttendance order by Id desc
+        ///CREATE VIEW AnalyticsFactAttendance
+        ///AS
+        ///SELECT asa.*
+        ///    ,adphPerson.PrimaryFamilyKey [FamilyKey]
+        ///	,adpcPerson.PrimaryFamilyKey [CurrentFamilyKey]
+        ///    ,isnull(at.NAME, &apos;None&apos;) [AttendanceTypeName]
+        ///    ,isnull(l.NAME, &apos;None&apos;) [LocationName]
+        ///    ,isnull(c.NAME, &apos;None&apos;) [CampusName]
+        ///    ,isnull(c.ShortCode, &apos;None&apos;) [CampusSho [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710131721219_InteractionRelatedEntity_AnalyticsFactAttendance {
+            get {
+                return ResourceManager.GetString("_201710131721219_InteractionRelatedEntity_AnalyticsFactAttendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsFactFinancialTransaction]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsFactFinancialTransaction
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsFactFinancialTransaction
+        ///AS
+        ///SELECT asft.*
+        ///    ,isnull(tt.Value, &apos;None&apos;) [TransactionType]
+        ///    ,isnull(ts.Value, &apos;None&apos;) [TransactionSource]
+        ///    ,CASE asft.IsScheduled
+        ///        WHEN 1
+        ///            THEN &apos;Scheduled&apos;
+        ///        ELSE &apos;Non-Scheduled&apos;
+        ///        END [ScheduleType]
+        ///    ,adphAuthorizedPerson.PrimaryFamilyKey [AuthorizedFamilyKey]
+        ///	,adpcAuthorized [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710131721219_InteractionRelatedEntity_AnalyticsFactFinancialTransaction {
+            get {
+                return ResourceManager.GetString("_201710131721219_InteractionRelatedEntity_AnalyticsFactFinancialTransaction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF EXISTS (
+        ///        SELECT *
+        ///        FROM [sysobjects]
+        ///        WHERE [id] = OBJECT_ID(N&apos;[dbo].[spAnalytics_ETL_Family]&apos;)
+        ///            AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1
+        ///        )
+        ///    DROP PROCEDURE [dbo].spAnalytics_ETL_Family
+        ///GO
+        ///
+        ///-- EXECUTE [dbo].[spAnalytics_ETL_Family] 
+        ///CREATE PROCEDURE [dbo].spAnalytics_ETL_Family
+        ///AS
+        ///BEGIN
+        ///    DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
+        ///        ,@MaxExpireDate DATE = DateFromParts(9999, 1, 1)
+        ///        ,@RecordStatusActiveId INT = (
+        ///      [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family {
+            get {
+                return ResourceManager.GetString("_201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [CommunicationTemplate] set [Message] = &apos;&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Strict//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd&quot;&gt;
+        ///&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+        ///
+        ///
+        ///&lt;head&gt;
+        ///
+        ///
+        ///  &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
+        ///  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+        ///  &lt;title&gt;My Basic Email Template Subject&lt;/title&gt;
+        ///  &lt;!-- &lt;style&gt; --&gt;
+        ///&lt;/head&gt;
+        ///
+        ///
+        ///&lt;body style=&quot;-moz-box-sizing: border-box; -ms-text-size-adjust: 100%; -webkit-box-s [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate {
+            get {
+                return ResourceManager.GetString("_201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate", resourceCulture);
+            }
+        }
     }
 }
