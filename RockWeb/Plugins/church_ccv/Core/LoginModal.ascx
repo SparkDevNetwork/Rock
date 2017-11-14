@@ -32,15 +32,15 @@
 				            <label><input id="cb-lp-rememberme" type="checkbox" name="cb-lp-rememberme">Remember Me</label>
 			            </div>
 
-                        <div id="login-help">
-                            <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary lm-button" OnClientClick="login(); return false;"/>
-                                
-                            <asp:Button ID="btnHelp" runat="server" Text="Forgot username or password?" CssClass="small-paragraph lm-form-forgot" OnClientClick="displayForgotPasswordPanel(); return false;" CausesValidation="false" />
-                        </div>
-                                
-                        <asp:Button ID="btnNewAccount" runat="server" Text="Create Account" CssClass="lm-form-register btn btn-action" OnClientClick="displayCreateAccountPanel(); return false;" CausesValidation="false" />
-                    </div>
+                     </div>
 
+                     <div id="login-panel-buttons">
+                       <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary lm-button" OnClientClick="login(); return false;"/>
+                                
+                       <asp:Button ID="btnHelp" runat="server" Text="Forgot username or password?" CssClass="small-paragraph lm-form-forgot" OnClientClick="displayForgotPasswordPanel(); return false;" CausesValidation="false" />
+                                
+                       <asp:Button ID="btnNewAccount" runat="server" Text="Create Account" CssClass="lm-form-register btn btn-action" OnClientClick="displayCreateAccountPanel(); return false;" CausesValidation="false" />
+                     </div>
                 </div>
                 <%--END LOGIN PANEL--%>
 
@@ -94,7 +94,7 @@
                         </div>
                     </div>
 
-                    <div id="create-cancel-register">
+                    <div id="create-panel-buttons">
                         <asp:Button runat="server" Text="Cancel" CssClass="lm-button btn btn-action" OnClientClick="hideCreateAccountPanel(); return false;" CausesValidation="false" />
                         <asp:Button runat="server" Text="Register" CssClass="lm-button btn btn-primary" OnClientClick="registerUser(); return false;" CausesValidation="false" />
                     </div>
@@ -103,52 +103,31 @@
 
                 <%-- ACCOUNT CREATION DUPLICATES PANEL (This panel is used when the account info already exists for another user).--%>
                 <div id="accountcreationduplicates-panel" class="accountcreationduplicates-panel-hidden">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div>
-                                <h1 id="accountcreationduplicates-header" class="lm-form-title text-center">ACCOUNT DUPLICATE</h1>
-                                <p id="accountcreationduplicates-details" style="margin-top: -.75em; margin-bottom: 3em;" class="small-paragraph-bold">We have this email and last name already on file. Are you any of these people?</p>
-                            </div>
-                        </div>
+                    <div id="accountcreationduplicates-panel-title">
+                        <h1 id="accountcreationduplicates-header" class="lm-form-title text-center">ACCOUNT DUPLICATE</h1>
+                        <p id="accountcreationduplicates-details" class="small-paragraph-bold">We have this email and last name already on file. Are you any of these people?</p>
                     </div>
-
+                  
                     <div id="ac-dup-form-result-panel" style="visibility: hidden;">
                         <p id="ac-dup-form-result-message"></p>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-12 col-sm-8 col-xs-12">
-                            <div style="margin: 25px 0 25px 0;"></div>
-                            <div class="row">
-                                <div class="col-md-4 col-sm-4 col-xs-4">
-                                    <div class="lm-form-label control-label">
-                                        <label class="control-label">PERSON NAME</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 col-sm-4 col-xs-4">
-                                    <div class="lm-form-label control-label">
-                                        <label class="control-label">GENDER</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 col-sm-4 col-xs-4">
-                                    <div class="lm-form-label control-label">
-                                        <label class="control-label">BIRTHDAY</label>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <%--Intentionally left blank. This is filled procedurally in javascript.--%>
-                            <div id="duplicates-form">
-                                
-                            </div>
-                        </div>
+                    <div id="accountcreationduplicates-panel-form">
+                        <label class="control-label">PERSON NAME</label>
+
+                        <label class="control-label">GENDER</label>
+
+                        <label class="control-label">BIRTHDAY</label>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-12 col-sm-8 col-xs-12 text-center">
-                            <div style="margin: 25px 0 25px 0;"></div>
-                            <asp:Button runat="server" Text="Submit" CssClass="lm-form-button btn btn-primary" OnClientClick="submitDuplicateResponse(); return false;" CausesValidation="false" />
-                        </div>
+                    
+                    <%--Intentionally left blank. This is filled procedurally in javascript.--%>
+                    <div id="duplicates-form">
+                                
+                    </div>
+                    
+                    <div id="accountcreationduplicates-panel-buttons">
+                        <asp:Button runat="server" Text="Submit" CssClass="lm-form-button btn btn-primary" OnClientClick="submitDuplicateResponse(); return false;" CausesValidation="false" />
                     </div>
                 </div>
                 <%-- END ACCOUNT CREATION DUPLICATES PANEL--%>
@@ -175,40 +154,26 @@
 
                 <%-- FORGOT PASSWORD PANEL--%>
                 <div id="forgotpassword-panel" class="forgotpassword-panel-hidden">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div>
-                                <h1 class="lm-form-title text-center">FORGOT PASSWORD</h1>
-                                <p style="margin-top: -.75em; margin-bottom: 3em;" class="small-paragraph-bold"><%=LoginModal_GetForgotPasswordCaption( ) %></p>
-                            </div>
+                    <div id="forgotpassword-panel-title">
+                        <h1 class="lm-form-title text-center">FORGOT PASSWORD</h1>
+                        <p class="small-paragraph-bold"><%=LoginModal_GetForgotPasswordCaption( ) %></p>
+                    </div>
                         
-                            <div id="fp-form-result-panel" style="visibility: hidden;">
-                                <p id="fp-form-result-message"></p>
-                            </div>
-                        </div>
+                    <div id="fp-form-result-panel" style="visibility: hidden;">
+                        <p id="fp-form-result-message"></p>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-12 col-sm-12 col-xs-12">    
-                            <div class="form-group rock-text-box lm-form-label">
-                                <label class="control-label" for="tb-fp-email">Email</label>
-                                <input class="form-control" name="tb-fp-email" type="text" id="tb-fp-email">
-                            </div>
-                        </div>
+                    <div id="forgotpassword-panel-form" class="form-group rock-text-box lm-form-label">
+                        <label class="lm-form-label" for="tb-fp-email">Email</label>
+                        <input class="form-control" name="tb-fp-email" type="text" id="tb-fp-email">
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 col-sm-8 col-xs-12">
-                            <div style="margin: 25px 0 25px 0;"></div>
-                            <asp:Button runat="server" Text="Cancel" CssClass="lm-form-button btn btn-action" OnClientClick="hideForgotPasswordPanel(); return false;" CausesValidation="false" />
-                        </div>
-
-                        <div class="text-right col-md-6 col-sm-8 col-xs-12">
-                            <div style="margin: 25px 0 25px 0;"></div>
-                            <asp:Button runat="server" Text="Confirm" CssClass="lm-form-button btn btn-primary" OnClientClick="sendForgotPasswordEmail(); return false;" CausesValidation="false" />
-                        </div>
+                    <div id="forgotpassword-panel-buttons">
+                        <asp:Button runat="server" Text="Cancel" CssClass="btn btn-action lm-button" OnClientClick="hideForgotPasswordPanel(); return false;" CausesValidation="false" />
+                        <asp:Button runat="server" Text="Confirm" CssClass="btn btn-primary lm-button" OnClientClick="sendForgotPasswordEmail(); return false;" CausesValidation="false" />
                     </div>
                 </div>
+
                 <%-- END FORGOT PASSWORD PANEL--%>
             </div>
         </div>
@@ -620,19 +585,16 @@
         // add the duplicate users
         for (var i = 0; i < duplicatesInfoList.length; i++) {
             duplicateHtmlList.prepend(
-                "<div class=\"duplicates-form-item\">" +
-                    "<div class=\"row\">" +
-                    "<div class=\"col-md-4\">" + "<input type=\"radio\" class=\"duplicates-form-item\" name=\"person\" value=\"" + duplicatesInfoList[i].Id + "\">" + duplicatesInfoList[i].FullName + "</div>" +
-                    "<div class=\"col-md-4\">" + duplicatesInfoList[i].Gender + "</div>" +
-                    "<div class=\"col-md-4\">" + duplicatesInfoList[i].Birthday + "</div>" +
-                "</div>" + "<br>");
+                "<div class=\"duplicates-form-items\">" +
+                    "<span class=\"duplicates-form-item\"><input type=\"radio\" class=\"duplicates-form-item\" name=\"person\" value=\"" + duplicatesInfoList[i].Id + "\">" + duplicatesInfoList[i].FullName +
+                    "</span><span class=\"duplicates-form-item-gender\">" + duplicatesInfoList[i].Gender +
+                    "</span><span class=\"duplicates-form-item-bday\">" + duplicatesInfoList[i].Birthday + "</span>" +
+                "</div>");
         }
 
         // add the 'none of the above' option
-        duplicateHtmlList.append("<div class=\"duplicates-form-item\">" +
-                                    "<div class=\"row\">" +
-                                        "<div class=\"col-md-4\">" + "<input type=\"radio\"  name=\"person\" value=\"-1\">None of the Above</div>" +
-                                    "</div>" +
+        duplicateHtmlList.append("<div class=\"duplicates-form-item-none\">" +
+                                    "<input type=\"radio\"  name=\"person\" value=\"-1\">None of the Above</div>" +
                                   "</div>");
     }
 

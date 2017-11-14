@@ -10728,6 +10728,12 @@ html,body{
 	overflow-x: hidden;
 }
 
+/* Hide scrollbar in Modal window*/
+#login-modal::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
 @media screen and (min-width: 1224px) {
     #login-modal {
         max-width: 768px;
@@ -10808,13 +10814,12 @@ html,body{
     }
 }
 
-#login-help {
+#login-panel-buttons {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     flex-flow: row wrap;
-    margin-bottom: 20px;
 }
 
 #createaccount-panel, #forgotpassword-panel, #accountcreationresult-panel, #accountcreationduplicates-panel {
@@ -10824,6 +10829,7 @@ html,body{
 	box-sizing: border-box;
 	transition: left 250ms ease-in;
 	width: 100%;
+    height: auto;
 	top: 0px;
 	position: absolute;
 	background-color: rgb(255, 255, 255);
@@ -10831,7 +10837,6 @@ html,body{
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
 }
 
 #create-panel-title {
@@ -10864,8 +10869,12 @@ html,body{
     flex-flow: row wrap;
 }
 
-#create-cancel-register {
-    align-content: flex-start;
+#create-panel-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+    margin-left: 5px;
 }
 
 .createaccount-panel-hidden, .forgotpassword-panel-hidden, .accountcreationresult-panel-hidden, .accountcreationduplicates-panel-hidden {	
@@ -10876,9 +10885,43 @@ html,body{
 	left: 0px;
 }
 
-.duplicates-form-item {
-	
-	padding: 0px;
+#accountcreationduplicates-panel {
+    height: 850px;
+}
+
+#accountcreationduplicates-panel-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 100%;
+}
+
+#duplicates-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.duplicates-form-items {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+}
+
+.duplicates-form-items input, .duplicates-form-item-none input {
+    margin-right: 2px;
+}
+
+.duplicates-form-item-gender {
+    margin-left: 15px;
+}
+
+.duplicates-form-item-bday {
+    margin-left: 15px;
+}
+
+#accountcreationduplicates-panel-buttons {
+    padding-top: 20px;
 }
 
 .lm-form-title {
@@ -10899,7 +10942,7 @@ html,body{
 	box-sizing: border-box;
 }
 
-#login-panel-form .form-control, #create-panel-form .form-control {
+#login-panel-form .form-control, #create-panel-form .form-control, #forgotpassword-panel-form .form-control {
     height: 50px;
     width: 100%;
     border-radius: 5px;
@@ -10917,7 +10960,6 @@ html,body{
     -webkit-rtl-ordering: logical;
     user-select: text;
     cursor: auto;
-    padding: 1px;
     border-width: 0px;
 }
 
@@ -10925,29 +10967,36 @@ html,body{
 	height: 45px;
     width: 94px;
     border-radius: 5px;
-    background-color: #7A1315;
     text-transform: uppercase;
-    color: #FFF;
+    color: #FFFFFF;
     font-family: akrobat;
     font-size: 16px;
     font-style: bold;
     border-width: 0;
 }
 
-#create-cancel-register .lm-button {
-    margin: 0px 10px;
+/* Forgot Password Modal*/
+#forgotpassword-panel {
+    display: flex;
+    flex-flow: column;
+    align-content: center;
+    height: 100%;
+}
+
+#forgotpassword-panel-title {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#forgotpassword-panel-title p {
+    width: 100%;
+    align-self: center;
 }
 
 .lm-form-forgot {
 	border-bottom: 0;
     padding-top: 10px;
-}
-
-@media screen and (min-width: 1224px) {
-    .lm-form-forgot {
-        margin-left: 30px;
-        padding: 0;
-    }
 }
 
 .lm-form-register {
@@ -10956,7 +11005,84 @@ html,body{
 	font-family: akrobat;
 	font-weight: normal;
 	border-width: 0px;
-	margin: 0 0 24px 0;
+	margin: 15px 0 24px 0;
+}
+
+/* Adjustments for larger screens  */
+@media screen and (min-width: 1224px) {
+    #createaccount-panel, #forgotpassword-panel, #accountcreationresult-panel, #accountcreationduplicates-panel {
+        justify-content: center;
+    }
+
+    #login-panel-buttons {
+        width: 45%
+    }
+
+    #create-panel-form {
+        width: 100%;
+    }
+
+    #create-panel-form .form-control {
+        width: 90%;
+    }
+
+    #create-panel-buttons {
+        width: 67%;
+        height: 100%;
+        justify-content: center;
+    }
+
+    #create-panel-buttons .lm-button {
+        margin-right: 25px;
+    }
+
+    #accountcreationduplicates-panel-form {
+        width: 80%;
+        flex-direction: row;
+    }
+
+    #accountcreationduplicates-panel {
+        height: 100%;
+    }
+
+    #duplicates-form {
+        display: flex;
+        flex-direction: column;
+        width: 70%;
+        margin-left: 20px;
+    }
+
+    .duplicates-form-items {
+        display: flex;
+        justify-content: flex-start;
+        flex-direction: row;
+    }
+
+    .duplicates-form-item-gender {
+        margin-left: 110px;
+    }
+
+    .duplicates-form-item-bday {
+        margin-left: 150px;
+    }
+
+    #forgotpassword-panel {
+        justify-content: center;
+    }
+
+    #forgotpassword-panel-form {
+        width: 50%;
+    }
+
+    #forgotpassword-panel-title p {
+        width: 60%;
+        align-self: center;
+    }
+
+    .lm-form-forgot {
+        margin-left: 30px;
+        padding: 0;
+    }
 }
 
 .selectaday-flex {
