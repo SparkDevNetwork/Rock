@@ -68,7 +68,6 @@
                             <li><a href="https://github.com/christianreed/Credit-Card-Type-Detector">jQuery Credit Card Type Detector</a> (Custom)</li>
                             <li><a href="http://threedubmedia.com">Event Drag</a> (Custom)</li>
                             <li><a href="http://xoxco.com/projects/code/tagsinput/">jQuery Tag Input</a> (MIT)</li>
-                            <li><a href="http://www.baijs.nl/tinyscrollbar/">Tiny Scrollbar</a> (MIT)</li>
                             <li><a href="http://epplus.codeplex.com/">EPPlus</a> (LGPL)</li>
                             <li><a href="http://dotliquidmarkup.org/">DotLiquid</a> (Apache)</li>
                             <li><a href="https://github.com/tonyheupel/liquid.js">Liquid.js</a> (MIT)</li>

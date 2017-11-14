@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
     [Description( "Lists all the background check requests." )]
 
     [LinkedPage("Workflow Detail Page", "The page to view details about the background check workflow")]
-    public partial class RequestList : RockBlock, ISecondaryBlock
+    public partial class RequestList : RockBlock, ISecondaryBlock, ICustomGridColumns
     { 
         #region Control Methods
 

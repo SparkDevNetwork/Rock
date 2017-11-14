@@ -44,9 +44,13 @@
                                     <div class="col-md-6">
                                         <Rock:NumberBox ID="nbFetchTop" runat="server" NumberType="Integer" Required="false" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
                                         Help="Limits the number of rows returned in the report. Leave blank to show all rows." />
+                                        <Rock:RockTextBox ID="tbQueryHint" runat="server" Label="Query Hint" Help="The Query Hint to apply to the query that is executed on the database server. These can sometimes improve the performance of the report, but could also make it worse. Examples are: <code>OPTIMIZE FOR UNKNOWN</code> and <code>RECOMPILE</code>." />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:RockTextBox ID="tbQueryHint" runat="server" Label="Query Hint" Help="The Query Hint to apply to the query that is executed on the database server. These can sometimes improve the performance of the report, but could also make it worse. Examples are: <code>OPTIMIZE FOR UNKNOWN</code> and <code>RECOMPILE</code>." />
+                                        <Rock:ValueList ID="vMergeFields" runat="server" Label="Communication Merge Fields"
+                                            Help="When creating a new communication from the report, fields from the report can be used as merge fields on the communication. Select any of the fields that you'd like to be available for the communication. If the same recipient has multiple results in this report, each result will be included in an 'AdditionalFields' list. These can be accessed using Lava in the communication. For example: {% for field in AdditionalFields %}{{ field.FieldName }}{% endfor %}" />
+                                        <Rock:ValueList ID="vRecipientFields" runat="server" Label="Communication Recipient Fields"
+                                            Help="The field(s) that should be used to determine the recipient for a communication. If left blank, and this is a Person report, it will assume the 'Id' contains the recipient's person Id."/>
                                     </div>
                                 </div>
                             </Rock:PanelWidget>
@@ -181,7 +185,12 @@
                         
                         // update displayed sorting field names to match updated title
                         var $kvSortFields = $('#<%=kvSortFields.ClientID %>');
+                        var $vMergeFields = $('#<%=vMergeFields.ClientID %>');
+                        var $vRecipientFields = $('#<%=vRecipientFields.ClientID %>');
+
                         $kvSortFields.find('.key-value-key').find('option[value="' + reportFieldGuid + '"]').text(title);
+                        $vMergeFields.find('.js-value-list-input').find('option[value="' + reportFieldGuid + '"]').text(title);
+                        $vRecipientFields.find('.js-value-list-input').find('option[value="' + reportFieldGuid + '"]').text(title);
 
                         // update the HTML for when the next sorting field is added
                         var valueHtml = $kvSortFields.find('.js-value-html').val();
@@ -189,6 +198,18 @@
                         $fakeDiv.find('.key-value-key').find('option[value="' + reportFieldGuid + '"]').text(title);
                         var updatedValueHtml = $fakeDiv.html();
                         $kvSortFields.find('.js-value-html').val(updatedValueHtml);
+
+                        var valueHtml2 = $vMergeFields.find('.js-value-list-html').val();
+                        var $fakeDiv2 = $('<div/>').append(valueHtml2);
+                        $fakeDiv2.find('.js-value-list-input').find('option[value="' + reportFieldGuid + '"]').text(title);
+                        var updatedValueHtml2 = $fakeDiv2.html();
+                        $vMergeFields.find('.js-value-list-html').val(updatedValueHtml2);
+
+                        var valueHtml3 = $vRecipientFields.find('.js-value-list-html').val();
+                        var $fakeDiv3 = $('<div/>').append(valueHtml3);
+                        $fakeDiv3.find('.js-value-list-input').find('option[value="' + reportFieldGuid + '"]').text(title);
+                        var updatedValueHtml3 = $fakeDiv3.html();
+                        $vRecipientFields.find('.js-value-list-html').val(updatedValueHtml3);
                     }
                 })
 

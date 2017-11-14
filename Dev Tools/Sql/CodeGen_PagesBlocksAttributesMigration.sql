@@ -379,7 +379,8 @@ create table #codeTable (
 
 	-- pages
     insert into #codeTable
-    SELECT '            RockMigrationHelper.AddPage("' +
+    SELECT '            RockMigrationHelper.AddPage(' +
+		' true, "' +
         CONVERT( nvarchar(50), [pp].[Guid]) + '","'+ 
         CONVERT( nvarchar(50), [l].[Guid]) + '","'+ 
         [p].[InternalName]+  '","'+  
@@ -463,7 +464,8 @@ create table #codeTable (
     SELECT 
         '            // Add Block to ' + ISNULL('Page: ' + [p.InternalName],'') + ISNULL('Layout: ' + [l.Name], '') + ISNULL(', Site: ' + [s.Name], '') +
         @crlf + 
-		'            RockMigrationHelper.AddBlock("'+
+		'            RockMigrationHelper.AddBlock(' +
+		' true, "' +
         ISNULL(CONVERT(nvarchar(50), [p.Guid]),'') + '","'+ 
         ISNULL(CONVERT(nvarchar(50), [l.Guid]),'') + '","'+
         CONVERT(nvarchar(50), [bt.Guid])+ '","'+

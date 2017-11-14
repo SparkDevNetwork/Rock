@@ -148,7 +148,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Possessives the specified input.
+        /// convert string to possessive ('s)
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
@@ -159,14 +159,7 @@ namespace Rock.Lava
                 return input;
             }
 
-            if ( input.EndsWith( "s" ) )
-            {
-                return input + "'";
-            }
-            else
-            {
-                return input + "'s";
-            }
+            return input.ToPossessive();
         }
 
         /// <summary>
@@ -1406,7 +1399,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Plus( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null )
             {
                 return input;
             }
@@ -1439,7 +1432,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Minus( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null  )
             {
                 return input;
             }
@@ -1472,7 +1465,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Times( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null )
             {
                 return input;
             }
@@ -2895,6 +2888,62 @@ namespace Rock.Lava
         }
 
         #endregion Person
+
+        #region Group Filters
+
+        /// <summary>
+        /// Loads a Group record from the database from it's GUID.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Rock.Model.Group GroupByGuid( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Guid? groupGuid = input.ToString().AsGuidOrNull();
+
+            if ( groupGuid.HasValue )
+            {
+                var rockContext = new RockContext();
+
+                return new GroupService( rockContext ).Get( groupGuid.Value );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Loads a Group record from the database from it's Identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Rock.Model.Group GroupById( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            int groupId = -1;
+
+            if ( !Int32.TryParse( input.ToString(), out groupId ) )
+            {
+                return null;
+            }
+
+            var rockContext = new RockContext();
+
+            return new GroupService( rockContext ).Get( groupId );
+        }
+
+        #endregion
 
         #region Misc Filters
 

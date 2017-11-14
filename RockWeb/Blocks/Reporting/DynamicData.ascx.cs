@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField( "Show Merge Template", "Show Export to Merge Template button in grid footer?", true, "CustomSetting" )]
     [IntegerField( "Timeout", "The amount of time in xxx to allow the query to run before timing out.", false, 30, Category = "CustomSetting" )]
     [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "CustomSetting" )]
+    [TextField( "Communication Recipient Person Id Columns", "Columns that contain a communication recipient person id.", false, "", "CustomSetting" )]
     [CodeEditorField( "Page Title Lava", "Optional Lava for setting the page title. If nothing is provided then the page's title will be used.",
         CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "CustomSetting" )]
     [BooleanField( "Paneled Grid", "Add the 'grid-panel' class to the grid to allow it to fit nicely in a block.", false, "Advanced" )]
@@ -232,7 +233,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "FormattedOutput", ceFormattedOutput.Text );
             SetAttributeValue( "PageTitleLava", cePageTitleLava.Text );
             SetAttributeValue( "PersonReport", cbPersonReport.Checked.ToString() );
-
+            SetAttributeValue( "CommunicationRecipientPersonIdColumns", tbCommunicationRecipientPersonIdFields.Text );
             SetAttributeValue( "ShowCommunicate", ( cbPersonReport.Checked && cbShowCommunicate.Checked ).ToString() );
             SetAttributeValue( "ShowMergePerson", ( cbPersonReport.Checked && cbShowMergePerson.Checked ).ToString() );
             SetAttributeValue( "ShowBulkUpdate", ( cbPersonReport.Checked && cbShowBulkUpdate.Checked ).ToString() );
@@ -396,7 +397,7 @@ namespace RockWeb.Blocks.Reporting
             ceFormattedOutput.Text = GetAttributeValue( "FormattedOutput" );
             cePageTitleLava.Text = GetAttributeValue( "PageTitleLava" );
             cbPersonReport.Checked = GetAttributeValue( "PersonReport" ).AsBoolean();
-
+            tbCommunicationRecipientPersonIdFields.Text = GetAttributeValue( "CommunicationRecipientPersonIdColumns" );
             cbShowCommunicate.Checked = GetAttributeValue( "ShowCommunicate" ).AsBoolean();
             cbShowMergePerson.Checked = GetAttributeValue( "ShowMergePerson" ).AsBoolean();
             cbShowBulkUpdate.Checked = GetAttributeValue( "ShowBulkUpdate" ).AsBoolean();
@@ -552,7 +553,9 @@ namespace RockWeb.Blocks.Reporting
                             {
                                 grid.PersonIdField = null;
                             }
+
                             grid.CommunicateMergeFields = GetAttributeValue( "MergeFields" ).SplitDelimitedValues().ToList<string>();
+                            grid.CommunicationRecipientPersonIdFields = GetAttributeValue( "CommunicationRecipientPersonIdColumns" ).SplitDelimitedValues().ToList();
 
                             AddGridColumns( grid, dataTable );
                             SetDataKeyNames( grid, dataTable );
@@ -563,7 +566,7 @@ namespace RockWeb.Blocks.Reporting
                                 SortTable( grid, dataTable );
                                 grid.DataSource = dataTable;
                                 
-                                if ( personReport)
+                                if ( personReport )
                                 {
                                     grid.EntityTypeId = EntityTypeCache.GetId<Person>();
                                 }

@@ -93,6 +93,14 @@ namespace Rock.Web.Cache
         public int? RetentionDuration { get; set; }
 
         /// <summary>
+        /// Gets or sets the length of time that components of this channel should be cached
+        /// </summary>
+        /// <value>
+        /// The duration of the component cache.
+        /// </value>
+        public int? ComponentCacheDuration { get; set; }
+
+        /// <summary>
         /// Gets the type of the component entity.
         /// </summary>
         /// <value>
@@ -258,6 +266,7 @@ namespace Rock.Web.Cache
                 this.ForeignKey = interactionChannel.ForeignKey;
                 this.InteractionEntityTypeId = interactionChannel.InteractionEntityTypeId;
                 this.RetentionDuration = interactionChannel.RetentionDuration;
+                this.ComponentCacheDuration = interactionChannel.ComponentCacheDuration;
 
                 // set componentIds to null so it load them all at once on demand
                 this.componentIds = null;

@@ -300,6 +300,8 @@ namespace Rock.Model
                     instance.RegistrationWorkflowTypeId = null;
                 }
             }
+
+            base.PreSaveChanges( dbContext, state );
         }
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this WorkflowType.

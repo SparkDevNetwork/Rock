@@ -212,6 +212,7 @@ namespace Rock.Data
         /// <param name="state"></param>
         public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
         {
+            PreSaveChanges( dbContext, dbContext.ChangeTracker.Entries<IModel>().Where( a => a.Entity == this ).FirstOrDefault(), state );
         }
 
         /// <summary>
@@ -222,6 +223,16 @@ namespace Rock.Data
         public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             PreSaveChanges( dbContext, entry.State );
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state )
+        {
         }
 
         /// <summary>

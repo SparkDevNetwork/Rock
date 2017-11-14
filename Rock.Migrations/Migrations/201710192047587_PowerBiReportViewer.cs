@@ -43,6 +43,7 @@ namespace Rock.Migrations
             // Change Defined Type to make it a non-system
             Sql( string.Format( "UPDATE [DefinedType] SET [IsSystem] = 0 WHERE [Guid] = '{0}'",  Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS ) );
 
+            /* NOTE: Commented this out because this was incorrect. It is done correctly in a later migration 201711011841422_GatewayTransactionKey.cs
             // register add account block
             RockMigrationHelper.UpdateBlockType( "Power Bi Account Register", "This block registers a Power BI account for Rock to use.", "~/Plugins/com_mineCartStudio/Bi/PowerBiAccountRegister.ascx", "Mine Cart Studio > BI",  Rock.SystemGuid.BlockType.POWERBI_ACCOUNT_REGISTRATION );
 
@@ -54,6 +55,7 @@ namespace Rock.Migrations
 
             // add route to page for redirect usage
             RockMigrationHelper.AddPageRoute(  Rock.SystemGuid.Page.POWERBI_ACCOUNT_REGISTRATION, "PowerBiAccountRedirect" );
+            */
 
             // MP: Populate AnalyticsSourceDate
             var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
@@ -68,7 +70,10 @@ namespace Rock.Migrations
         {
             RockMigrationHelper.DeleteDefinedType(  Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS );
 
-            RockMigrationHelper.DeletePage( "A530FD84-95D2-288C-453C-999DF71D40AE" );
+            // NOTE: The UP for these Power BI Blocks/Pages was commented out because is was incorrect. It is done correctly in a later migration 201711011841422_GatewayTransactionKey.cs
+            RockMigrationHelper.DeleteBlock( "A530FD84-95D2-288C-453C-999DF71D40AE" );
+            RockMigrationHelper.DeletePage( Rock.SystemGuid.Page.POWERBI_ACCOUNT_REGISTRATION );
+            
             RockMigrationHelper.DeleteBlockType(  Rock.SystemGuid.BlockType.POWERBI_ACCOUNT_REGISTRATION );
         }
     }

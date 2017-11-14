@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
@@ -37,7 +38,7 @@ namespace RockWeb.Blocks.Communication
     [Description( "Lists the available communication templates that can used when creating new communications." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class TemplateList : Rock.Web.UI.RockBlock
+    public partial class TemplateList : RockBlock, ICustomGridColumns
     {
         #region fields
 
@@ -56,7 +57,11 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            BindFilter();
+            if ( !this.IsPostBack )
+            {
+                BindFilter();
+            }
+
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
 
@@ -129,7 +134,22 @@ namespace RockWeb.Blocks.Communication
                 rFilter.SaveUserPreference( "Created By", ppCreatedBy.PersonId.ToString() );
             }
 
+            rFilter.SaveUserPreference( "Category", cpCategory.SelectedValue );
+            rFilter.SaveUserPreference( "Supports", ddlSupports.SelectedValue );
+            rFilter.SaveUserPreference( "Active", ddlActiveFilter.SelectedValue );
+
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            rFilter.DeleteUserPreferences();
+            BindFilter();
         }
 
         /// <summary>
@@ -142,6 +162,24 @@ namespace RockWeb.Blocks.Communication
         {
             switch ( e.Key )
             {
+                case "Category":
+                    {
+                        int? categoryId = e.Value.AsIntegerOrNull();
+                        if ( categoryId.HasValue && categoryId > 0 )
+                        {
+                            var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                            if ( category != null )
+                            {
+                                e.Value = category.Name;
+                            }
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+                        break;
+                    }
+
                 case "Communication Type":
                     {
                         if ( !string.IsNullOrWhiteSpace( e.Value ) )
@@ -149,6 +187,16 @@ namespace RockWeb.Blocks.Communication
                             e.Value = ( ( CommunicationType ) System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
                         }
 
+                        break;
+                    }
+
+                case "Active":
+                    {
+                        break;
+                    }
+
+                case "Supports":
+                    {
                         break;
                     }
 
@@ -242,24 +290,38 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void BindFilter()
         {
-            if ( !Page.IsPostBack )
+            if ( !_canEdit )
             {
-                if ( !_canEdit )
-                {
-                    rFilter.SaveUserPreference( "Created By", string.Empty );
-                }
+                rFilter.SaveUserPreference( "Created By", string.Empty );
+            }
 
-                int? personId = rFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();
-                if ( personId.HasValue && personId != 0 )
+            int? personId = rFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();
+            if ( personId.HasValue && personId != 0 )
+            {
+                var personService = new PersonService( new RockContext() );
+                var person = personService.Get( personId.Value );
+                if ( person != null )
                 {
-                    var personService = new PersonService( new RockContext() );
-                    var person = personService.Get( personId.Value );
-                    if ( person != null )
-                    {
-                        ppCreatedBy.SetValue( person );
-                    }
+                    ppCreatedBy.SetValue( person );
                 }
             }
+            else
+            {
+                ppCreatedBy.SetValue( null );
+            }
+
+            int? categoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+            if ( categoryId > 0 )
+            {
+                cpCategory.SetValue( categoryId );
+            }
+            else
+            {
+                cpCategory.SetValue( null );
+            }
+
+            ddlActiveFilter.SetValue( rFilter.GetUserPreference( "Active" ) );
+            ddlSupports.SetValue( rFilter.GetUserPreference( "Supports" ) );
         }
 
         /// <summary>
@@ -280,6 +342,22 @@ namespace RockWeb.Blocks.Communication
                             c.CreatedByPersonAlias != null &&
                             c.CreatedByPersonAlias.PersonId == personId.Value );
                 }
+            }
+
+            int? categoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+            if ( categoryId.HasValue && categoryId > 0 )
+            {
+                communicationTemplateQry = communicationTemplateQry.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == categoryId.Value );
+            }
+
+            var activeFilter = rFilter.GetUserPreference( "Active" );
+            if ( activeFilter == "Active" )
+            {
+                communicationTemplateQry = communicationTemplateQry.Where( a => a.IsActive == true );
+            }
+            else if ( activeFilter == "Inactive" )
+            {
+                communicationTemplateQry = communicationTemplateQry.Where( a => a.IsActive == false );
             }
 
             var sortProperty = gCommunicationTemplates.SortProperty;
@@ -309,6 +387,16 @@ namespace RockWeb.Blocks.Communication
                         viewableCommunications.Add( comm );
                     }
                 }
+            }
+
+            var supports = rFilter.GetUserPreference( "Supports" );
+            if ( supports == "Email Wizard" )
+            {
+                viewableCommunications = viewableCommunications.Where( a => a.SupportsEmailWizard() ).ToList();
+            }
+            else if ( supports == "Simple Email Template" )
+            {
+                viewableCommunications = viewableCommunications.Where( a => !a.SupportsEmailWizard() ).ToList();
             }
 
             gCommunicationTemplates.DataSource = viewableCommunications;

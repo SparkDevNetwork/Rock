@@ -397,6 +397,8 @@ namespace Rock.Model
                 ChildItems.Clear();
                 ParentItems.Clear();
             }
+
+            base.PreSaveChanges( dbContext, state );
         }
 
         /// <summary>

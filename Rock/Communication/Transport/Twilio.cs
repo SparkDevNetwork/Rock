@@ -159,6 +159,12 @@ namespace Rock.Communication.Transport
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
 
                     string fromPhone = communication.SMSFromDefinedValue?.Value;
+                    if ( string.IsNullOrWhiteSpace( fromPhone ) )
+                    {
+                        // just in case we got this far without a From Number, throw an exception
+                        throw new Exception( "A From Number was not provided for communication: " + communication.Id.ToString() );
+                    }
+
                     if ( !string.IsNullOrWhiteSpace( fromPhone ) )
                     {
 

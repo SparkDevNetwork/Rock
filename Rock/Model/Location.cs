@@ -640,6 +640,8 @@ namespace Rock.Model
                     binaryFile.IsTemporary = false;
                 }
             }
+
+            base.PreSaveChanges( dbContext, state );
         }
 
         /// <summary>

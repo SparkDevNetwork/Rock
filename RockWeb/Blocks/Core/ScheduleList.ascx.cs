@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Administration
     [Description( "Lists all the schedules." )]
 
     [LinkedPage("Detail Page")] 
-    public partial class ScheduleList : RockBlock
+    public partial class ScheduleList : RockBlock, ICustomGridColumns
     {
         #region properties
 

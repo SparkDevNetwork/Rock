@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Reporting
     [Description( "Displays a list of metric values." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class MetricValueList : RockBlock, ISecondaryBlock
+    public partial class MetricValueList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region fields
 

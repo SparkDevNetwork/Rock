@@ -137,6 +137,7 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.IsActive = cbIsActive.Checked;
                 communicationTemplate.Description = tbDescription.Text;
                 communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
+                communicationTemplate.LogoBinaryFileId = imgTemplateLogo.BinaryFileId;
 
                 communicationTemplate.FromName = tbFromName.Text;
                 communicationTemplate.FromEmail = tbFromAddress.Text;
@@ -165,6 +166,8 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
                 communicationTemplate.SMSMessage = tbSMSTextMessage.Text;
 
+                communicationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
+
                 if ( communicationTemplate != null )
                 {
                     rockContext.SaveChanges();
@@ -188,6 +191,34 @@ namespace RockWeb.Blocks.Communication
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             NavigateToParentPage();
+        }
+
+        /// <summary>
+        /// Handles the ImageUploaded event of the imgTemplateLogo control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ImageUploaderEventArgs"/> instance containing the event data.</param>
+        protected void imgTemplateLogo_ImageUploaded( object sender, ImageUploaderEventArgs e )
+        {
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( ceEmailTemplate.Text );
+            var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
+            imgTemplateLogo.Visible = templateLogoNode != null;
+            string previewHtml = ceEmailTemplate.Text;
+            if ( templateLogoNode != null && templateLogoNode.Attributes["src"] != null )
+            {
+                // if a template-logo exists in the template, update it's src attribute to whatever the uploaded logo is (or set it to the placeholder if it is not set)
+                if ( e.EventArgument != ImageUploaderEventArgs.ArgumentType.ImageRemoved && imgTemplateLogo.BinaryFileId != null && imgTemplateLogo.BinaryFileId > 0 )
+                {
+                    templateLogoNode.Attributes["src"].Value = this.ResolveRockUrl( string.Format( "~/GetImage.ashx?Id={0}", imgTemplateLogo.BinaryFileId ) );
+                }
+                else
+                {
+                    templateLogoNode.Attributes["src"].Value = "/Content/EmailTemplates/placeholder-logo.png";
+                }
+
+                ceEmailTemplate.Text = templateDoc.DocumentNode.OuterHtml;
+            }
         }
 
         #endregion
@@ -229,8 +260,10 @@ namespace RockWeb.Blocks.Communication
             tbName.Text = communicationTemplate.Name;
             cbIsActive.Checked = communicationTemplate.IsActive;
             tbDescription.Text = communicationTemplate.Description;
+            cpCategory.SetValue( communicationTemplate.CategoryId );
+
             imgTemplatePreview.BinaryFileId = communicationTemplate.ImageFileId;
-            // TODO imgTemplatePreview.BinaryFileTypeGuid = 
+            imgTemplateLogo.BinaryFileId = communicationTemplate.LogoBinaryFileId;
 
             // Email Fields
             tbFromName.Text = communicationTemplate.FromName;
@@ -287,10 +320,19 @@ namespace RockWeb.Blocks.Communication
 &lt;/div&gt;
 </pre>
 
+<p>To include a logo, an img div with an id of 'template-logo' can be placed anywhere in the template, which will then show the 'Logo' image uploader under the template editor which will be used to set the src of the template-logo</p>
+<br/>
+<pre>
+&lt;!-- LOGO --&gt;
+&lt;img id='template-logo' src='/Content/EmailTemplates/placeholder-logo.png' width='200' height='50' data-instructions='Provide a PNG with a transparent background or JPG with the background color of #ee7725.' /&gt;
+</pre>
+
 <br/>
 ";
 
             ceEmailTemplate.Text = communicationTemplate.Message;
+
+            ceEmailTemplate.OnBlurScript = "updateTemplateLogoVisibility();";
 
             hfAttachedBinaryFileIds.Value = communicationTemplate.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
             UpdateAttachedFiles( false );
@@ -414,11 +456,27 @@ namespace RockWeb.Blocks.Communication
         {
             upnlEmailPreview.Update();
 
-            ifEmailPreview.Attributes["srcdoc"] = ceEmailTemplate.Text;
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( ceEmailTemplate.Text );
+            var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
+            imgTemplateLogo.Visible = templateLogoNode != null;
+            string previewHtml = ceEmailTemplate.Text;
+            if ( templateLogoNode != null && templateLogoNode.Attributes["src"] != null )
+            {
+                if (imgTemplateLogo.BinaryFileId != null)
+                {
+                    templateLogoNode.Attributes["src"].Value = this.ResolveRockUrl( string.Format( "~/GetImage.ashx?Id={0}", imgTemplateLogo.BinaryFileId ) );
+                }
+            }
+
+            ifEmailPreview.Attributes["srcdoc"] = templateDoc.DocumentNode.OuterHtml;
+            
             pnlEmailPreview.Visible = true;
             mdEmailPreview.Show();
         }
 
         #endregion
+
+        
     }
 }

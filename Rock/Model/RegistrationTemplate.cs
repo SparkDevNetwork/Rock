@@ -510,10 +510,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Page entity for the parent page.
+        /// Gets or sets the category.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Page" /> entity for the parent Page
+        /// The category.
         /// </value>
         [LavaInclude]
         public virtual Category Category { get; set; }

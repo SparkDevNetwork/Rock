@@ -49,6 +49,12 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
+        /// <summary />
+        public bool? IsCommunicationMergeField { get; set; }
+
+        /// <summary />
+        public bool? IsCommunicationRecipientField { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -110,6 +116,8 @@ namespace Rock.Client
             this.DataSelectComponentEntityTypeId = source.DataSelectComponentEntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsCommunicationMergeField = source.IsCommunicationMergeField;
+            this.IsCommunicationRecipientField = source.IsCommunicationRecipientField;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.ReportFieldType = source.ReportFieldType;
             this.ReportId = source.ReportId;

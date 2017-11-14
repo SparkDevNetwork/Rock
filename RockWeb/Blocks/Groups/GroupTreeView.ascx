@@ -74,12 +74,27 @@
 
 
         <script type="text/javascript">
+            var <%=hfSelectedGroupId.ClientID%>IScroll = null;
+
             $(function () {
                 var $selectedId = $('#<%=hfSelectedGroupId.ClientID%>'),
                     $expandedIds = $('#<%=hfInitialGroupParentIds.ClientID%>');
 
                 var scrollbCategory = $('#<%=pnlTreeviewContent.ClientID%>').closest('.treeview-scroll');
-                scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: 60, size: 200 });
+                var scrollContainer = scrollbCategory.find('.viewport');
+                var scrollIndicator = scrollbCategory.find('.track');
+                <%=hfSelectedGroupId.ClientID%>IScroll = new IScroll(scrollContainer[0], {
+                    mouseWheel: false,
+                    scrollX: true,
+                    scrollY: false,
+                    indicators: {
+                        el: scrollIndicator[0],
+                        interactive: true,
+                        resize: false,
+                        listenX: true,
+                        listenY: false,
+                    }
+                });
 
                 // resize scrollbar when the window resizes
                 $(document).ready(function () {
@@ -143,12 +158,14 @@
                     });
             });
 
-                function resizeScrollbar(scrollControl) {
+            function resizeScrollbar(scrollControl) {
                     var overviewHeight = $(scrollControl).find('.overview').height();
 
                     $(scrollControl).find('.viewport').height(overviewHeight);
 
-                    scrollControl.tinyscrollbar_update('relative');
+                    if (<%=hfSelectedGroupId.ClientID%>IScroll) {
+                        <%=hfSelectedGroupId.ClientID%>IScroll.refresh();
+                    }
                 }
         </script>
 

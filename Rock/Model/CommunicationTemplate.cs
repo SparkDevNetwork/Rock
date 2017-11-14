@@ -97,13 +97,31 @@ namespace Rock.Model
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the image file identifier.
+        /// Gets or sets the image file identifier for the Template Preview Image
         /// </summary>
         /// <value>
         /// The image file identifier.
         /// </value>
         [DataMember]
         public int? ImageFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logo binary file identifier that email messages using this template can use for the logo in the message content
+        /// </summary>
+        /// <value>
+        /// The logo binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? LogoBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category identifier.
+        /// </summary>
+        /// <value>
+        /// The category identifier.
+        /// </value>
+        [DataMember]
+        public int? CategoryId { get; set; }
 
         /// <summary>
         /// Gets or sets a Json formatted string containing the Medium specific data.
@@ -278,6 +296,24 @@ namespace Rock.Model
         public virtual PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets or sets the logo binary file that email messages using this template can use for the logo in the message content
+        /// </summary>
+        /// <value>
+        /// The logo binary file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile LogoBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        [DataMember]
+        public virtual Category Category { get; set; }
+
+        /// <summary>
         /// Gets the <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
         /// </summary>
         /// <value>
@@ -399,7 +435,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.Attachments.Where(a => a.CommunicationType == CommunicationType.SMS).Select( a => a.BinaryFileId ).ToList();
+                return this.Attachments.Where( a => a.CommunicationType == CommunicationType.SMS ).Select( a => a.BinaryFileId ).ToList();
             }
         }
 
@@ -474,7 +510,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Subject ?? base.ToString();
+            return this.Name ?? this.Subject ?? base.ToString();
         }
 
         /// <summary>
@@ -509,6 +545,24 @@ namespace Rock.Model
             return !string.IsNullOrWhiteSpace( this.SMSMessage );
         }
 
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Category != null )
+                {
+                    return this.Category;
+                }
+
+                return base.ParentAuthority;
+            }
+        }
+
         #endregion
 
         #region Private Methods
@@ -524,7 +578,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// Communication Configuration class.
+    /// Communication Template Configuration class.
     /// </summary>
     public partial class CommunicationTemplateConfiguration : EntityTypeConfiguration<CommunicationTemplate>
     {
@@ -533,13 +587,12 @@ namespace Rock.Model
         /// </summary>
         public CommunicationTemplateConfiguration()
         {
+            this.HasOptional( c => c.Category ).WithMany().HasForeignKey( c => c.CategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.LogoBinaryFile ).WithMany().HasForeignKey( c => c.LogoBinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SMSFromDefinedValue ).WithMany().HasForeignKey( c => c.SMSFromDefinedValueId ).WillCascadeOnDelete( false );
         }
     }
 
     #endregion
-
-
 }
-

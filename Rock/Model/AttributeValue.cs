@@ -325,6 +325,8 @@ namespace Rock.Model
                     }
                 }
             }
+
+            base.PreSaveChanges( dbContext, entry );
         }
 
         /// <summary>
