@@ -79,8 +79,8 @@ namespace Rock.Rest.Controllers
                 qry = locationService.Queryable().AsNoTracking().Where( a => a.ParentLocationId == id );
             }
 
-            // limit to only Named Locations (don't show home addresses, etc)
-            qry = qry.Where( a => a.Name != null && a.Name != string.Empty );
+            // limit to only active, Named Locations (don't show home addresses, etc)
+            qry = qry.Where( a => a.Name != null && a.Name != string.Empty && a.IsActive == true );
 
             List<Location> locationList = new List<Location>();
             List<TreeViewItem> locationNameList = new List<TreeViewItem>();
