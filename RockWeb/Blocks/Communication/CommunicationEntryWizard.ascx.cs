@@ -1263,7 +1263,9 @@ namespace RockWeb.Blocks.Communication
                     {
                         testCommunication = communication.Clone( false );
                         testCommunication.Id = 0;
-                        testCommunication.Guid = Guid.Empty;
+                        testCommunication.Guid = Guid.NewGuid();
+                        testCommunication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
+                        testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext ).Queryable().Where( a => a.Id == this.CurrentPersonAliasId.Value ).Include( a => a.Person ).FirstOrDefault();
                         testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
                         testCommunication.ForeignGuid = null;
                         testCommunication.ForeignId = null;
@@ -1277,7 +1279,7 @@ namespace RockWeb.Blocks.Communication
                         {
                             var cloneAttachment = attachment.Clone( false );
                             cloneAttachment.Id = 0;
-                            cloneAttachment.Guid = Guid.Empty;
+                            cloneAttachment.Guid = Guid.NewGuid();
                             cloneAttachment.ForeignGuid = null;
                             cloneAttachment.ForeignId = null;
                             cloneAttachment.ForeignKey = null;
@@ -1316,15 +1318,18 @@ namespace RockWeb.Blocks.Communication
                         testPerson.ForeignKey = "_ForTestCommunication_";
 
                         var personService = new PersonService( rockContext );
+                        testPerson.Aliases.Add( new PersonAlias { AliasPerson = testPerson, AliasPersonGuid = testPerson.Guid, Guid = Guid.NewGuid() } );
                         personService.Add( testPerson );
-                        rockContext.SaveChanges();
+
+                        // use disablePrePostProcessing for all the TestCommunication related SaveChanges since we are deleting all the stuff we add and we don't want any workflow triggers to fire (if any) 
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
                         testPersonId = testPerson.Id;
                         testPerson = personService.Get( testPersonId.Value );
                         testRecipient.PersonAliasId = testPerson.PrimaryAliasId.Value;
 
                         testRecipient.MediumEntityTypeId = mediumEntityTypeId;
 
-                        // If we are just sending a Test Email, don't use set it up to use the CommunicationList
+                        // If we are just sending a Test Email, don't set it up to use the CommunicationList
                         testCommunication.ListGroup = null;
                         testCommunication.ListGroupId = null;
 
@@ -1332,7 +1337,7 @@ namespace RockWeb.Blocks.Communication
 
                         communicationService = new CommunicationService( rockContext );
                         communicationService.Add( testCommunication );
-                        rockContext.SaveChanges();
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
 
                         foreach ( var medium in testCommunication.Mediums )
                         {
@@ -1364,7 +1369,7 @@ namespace RockWeb.Blocks.Communication
                         if ( communicationService != null && testCommunication != null )
                         {
                             communicationService.Delete( testCommunication );
-                            rockContext.SaveChanges();
+                            rockContext.SaveChanges( disablePrePostProcessing: true );
                         }
 
                         // make sure we delete the Person record we created to send the test 
@@ -1379,9 +1384,9 @@ namespace RockWeb.Blocks.Communication
                                 personAliasToDeleteService.DeleteRange( personToDelete.Aliases );
                                 personToDelete.Aliases = null;
                                 personToDeleteService.Delete( personToDelete );
-                                deleteRockContext.SaveChanges();
+                                deleteRockContext.SaveChanges( disablePrePostProcessing: true );
                             }
-}
+                        }
                     }
                 }
             }
@@ -1498,7 +1503,10 @@ namespace RockWeb.Blocks.Communication
                     communicationHtml = Regex.Replace( communicationHtml, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
                 }
 
-                communicationHtml = communicationHtml.ConvertHtmlStylesToInlineAttributes();
+                if ( communication.CommunicationTemplate != null && communication.CommunicationTemplate.CssInliningEnabled )
+                {
+                    communicationHtml = communicationHtml.ConvertHtmlStylesToInlineAttributes();
+                }
             }
 
             ifEmailPreview.Attributes["srcdoc"] = communicationHtml;
@@ -2168,18 +2176,20 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
             // Add any new recipients
             HashSet<int> communicationPersonIdHash = new HashSet<int>( qryRecipients.Select( a => a.PersonAlias.PersonId ) );
-            var recipientPersonIdsAliasId = new PersonService( rockContext ).Queryable().Where( a => recipientPersonIds.Contains( a.Id ) ).Select( a => new
+            var recipientPersonsLookup = new PersonService( rockContext ).Queryable().Where( a => recipientPersonIds.Contains( a.Id ) ).Select( a => new
             {
                 PersonId = a.Id,
-                PrimaryAliasId = a.Aliases.Where( x => x.AliasPersonId == x.PersonId ).Select( pa => pa.Id ).FirstOrDefault()
-            } ).ToList();
+                a.CommunicationPreference,
+                PrimaryAlias = a.Aliases.Where( x => x.AliasPersonId == x.PersonId ).Select( pa => pa ).FirstOrDefault()
+            } ).ToDictionary( k => k.PersonId, v => new { v.CommunicationPreference, v.PrimaryAlias } );
 
-            foreach ( var recipientPersonIdAliasId in recipientPersonIdsAliasId )
+            foreach ( var recipientPersonLookup in recipientPersonsLookup )
             {
-                if ( !communicationPersonIdHash.Contains( recipientPersonIdAliasId.PersonId ) )
+                if ( !communicationPersonIdHash.Contains( recipientPersonLookup.Key ) )
                 {
                     var communicationRecipient = new CommunicationRecipient();
-                    communicationRecipient.PersonAliasId = recipientPersonIdAliasId.PrimaryAliasId;
+                    communicationRecipient.PersonAlias = recipientPersonLookup.Value.PrimaryAlias;
+                    communicationRecipient.PersonAliasId = recipientPersonLookup.Value.PrimaryAlias.Id;
                     communication.Recipients.Add( communicationRecipient );
                 }
             }
@@ -2200,10 +2210,14 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
             var emailMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
             var smsMediumEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
-            List<GroupMember> communicationListGroupMemberList = null;
+            Dictionary<int, GroupMember> communicationListGroupMemberLookup = new Dictionary<int, GroupMember>();
             if ( communication.ListGroupId.HasValue )
             {
-                communicationListGroupMemberList = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == communication.ListGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active ).ToList();
+                var communicationListGroupMemberList = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == communication.ListGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active ).ToList();
+                foreach( var communicationListGroupMember in communicationListGroupMemberList )
+                {
+                    communicationListGroupMemberLookup.AddOrIgnore( communicationListGroupMember.PersonId, communicationListGroupMember );
+                }
             }
 
             foreach ( var recipient in communication.Recipients )
@@ -2220,21 +2234,18 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 {
                     // if emailing to a communication list, first see if the recipient has a CommunicationPreference set as a GroupMember attribute for this list
                     CommunicationType? recipientPreference = null;
-                    if ( communicationListGroupMemberList != null )
+                    
+                    var groupMember = communicationListGroupMemberLookup.GetValueOrNull( recipient.PersonAlias.PersonId );
+                    if ( groupMember != null )
                     {
-                        var groupMember = communicationListGroupMemberList.FirstOrDefault( a => a.PersonId == recipient.PersonAlias.PersonId );
-                        if ( groupMember != null )
-                        {
-                            groupMember.LoadAttributes( rockContext );
-
-                            recipientPreference = ( CommunicationType? ) groupMember.GetAttributeValue( "PreferredCommunicationType" ).AsIntegerOrNull();
-                        }
+                        groupMember.LoadAttributes( rockContext );
+                        recipientPreference = ( CommunicationType? ) groupMember.GetAttributeValue( "PreferredCommunicationType" ).AsIntegerOrNull();
                     }
 
                     // if not emailing to a communication list, or the recipient doesn't have a preference set in the list, get the preference from the Person record
                     if ( recipientPreference == null || recipientPreference == CommunicationType.RecipientPreference )
                     {
-                        recipientPreference = recipient.PersonAlias.Person.CommunicationPreference;
+                        recipientPreference = recipientPersonsLookup[recipient.PersonAlias.PersonId].CommunicationPreference;
                     }
 
                     if ( recipientPreference == CommunicationType.SMS )
@@ -2266,6 +2277,10 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             communication.SegmentCriteria = rblCommunicationGroupSegmentFilterType.SelectedValueAsEnum<SegmentCriteria>();
 
             communication.CommunicationTemplateId = hfSelectedCommunicationTemplateId.Value.AsIntegerOrNull();
+            if ( communication.CommunicationTemplateId.HasValue )
+            {
+                communication.CommunicationTemplate = new CommunicationTemplateService( rockContext ).Get( communication.CommunicationTemplateId.Value );
+            }
 
             communication.FromName = tbFromName.Text;
             communication.FromEmail = ebFromAddress.Text;

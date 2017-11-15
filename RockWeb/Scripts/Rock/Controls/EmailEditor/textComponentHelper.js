@@ -47,7 +47,7 @@
       {
         Rock.controls.emailEditor.$currentTextComponent = $textComponent.hasClass('component-text') ? $currentComponent : $(false);
 
-        // replace the component div with a table that a special inner td that we can put border, padding, etc on
+        // replace the component div with a table that has special inner td that we can put border, padding, etc on
         var $innerWrapper = Rock.controls.emailEditor.$currentTextComponent.find('.js-component-text-wrapper');
         if (!$innerWrapper.length) {
           var componentCss = $textComponent.attr('class');
