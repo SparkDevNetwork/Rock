@@ -197,6 +197,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             base.OnInit( e );
 
             RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
+            Page.Header.Controls.Add( new LiteralControl( "<link rel=\"stylesheet\" type=\"text/css\" media=\"print\" href=\"/Plugins/com_centralaz/RoomManagement/Assets/Styles/print.css\" />" ) );
 
             gLocations.DataKeyNames = new string[] { "Guid" };
             gLocations.Actions.ShowAdd = true;
