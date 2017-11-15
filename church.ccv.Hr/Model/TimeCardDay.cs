@@ -220,7 +220,7 @@ namespace church.ccv.Hr.Model
         }
 
         /// <summary>
-        /// Gets the earned holiday hours.
+        /// Gets the earned holiday hours rounded up to nearest quarter hour.
         /// </summary>
         /// <param name="isHoliday">if set to <c>true</c> [is holiday].</param>
         /// <returns></returns>
@@ -229,7 +229,7 @@ namespace church.ccv.Hr.Model
             if ( isHoliday )
             {
                 var earnedHours = ( ( this.TotalWorkedDuration ?? 0 ) / 2 );
-                return earnedHours.ToNearestQtrHour();
+                return Math.Ceiling( earnedHours * 4 ) / 4;
             }
             else
             {
