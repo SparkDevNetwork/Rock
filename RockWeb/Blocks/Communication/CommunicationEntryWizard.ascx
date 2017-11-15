@@ -204,7 +204,7 @@
                                     </div>
                                     
                                     <div class="js-email-sendtest-inputs" style="display: none">
-                                        <Rock:RockTextBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" />
+                                        <Rock:EmailBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" AllowMultiple="false" />
                                         <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-xs btn-primary js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
                                         <a class="btn btn-xs btn-link js-email-sendtest-cancel" href="#">Cancel</a>
                                     </div>
@@ -890,7 +890,7 @@
                                 <Rock:MergeFieldPicker ID="mfpSMSMessage" runat="server" CssClass="margin-b-sm pull-right" OnSelectItem="mfpMessage_SelectItem" ValidationGroup="vgMobileTextEditor"/>
                                 <asp:HiddenField ID="hfSMSCharLimit" runat="server" />
                                 <asp:Label ID="lblSMSMessageCount" runat="server" CssClass="badge margin-all-sm pull-right" />
-                                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required"/>
+                                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required" ValidateRequestMode="Disabled" />
                                 <Rock:NotificationBox ID="nbSMSTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test SMS has been sent." Visible="false" />
                                 <div class="actions margin-t-sm pull-right">
                                     <a class="btn btn-xs btn-default js-sms-sendtest" href="#">Send Test</a>
@@ -1387,20 +1387,20 @@
 			            {
 			                $.post('<%=this.ResolveUrl("~/api/Lava/RenderTemplate")%>' + '?additionalMergeObjects=' + additionalMergeObjects, updatedText, function (data)
 			                {
-			                    if (data.startsWith('Error resolving Lava merge fields:')) {
-			                        $('.js-sms-chatoutput').html(updatedText);
+                                if (data.startsWith('Error resolving Lava merge fields:')) {
+			                        $('.js-sms-chatoutput').text(updatedText);
 			                    }
 			                    else {
-			                        $('.js-sms-chatoutput').html(data);
+			                        $('.js-sms-chatoutput').text(data);
 			                    }
 			                }).fail(function (a, b, c)
 			                {
-			                    $('.js-sms-chatoutput').html(updatedText);
+			                    $('.js-sms-chatoutput').text(updatedText);
 			                })
 			            }, 100);
 			        }
 			        else {
-			            $('.js-sms-chatoutput').html(updatedText);
+			            $('.js-sms-chatoutput').text(updatedText);
 			        }
 			    }
 			    else {
