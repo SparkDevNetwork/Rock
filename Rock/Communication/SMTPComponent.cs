@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
@@ -222,7 +223,6 @@ namespace Rock.Communication.Transport
                             // Body
                             string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
                             body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
-                            body = body.ConvertHtmlStylesToInlineAttributes();
 
                             message.Subject = subject;
                             message.Body = body;
@@ -279,9 +279,9 @@ namespace Rock.Communication.Transport
             {
                 // Requery the Communication
                 communication = new CommunicationService( communicationRockContext )
-                    .Queryable( "CreatedByPersonAlias.Person" )
+                    .Queryable().Include( a => a.CreatedByPersonAlias.Person ).Include( a => a.CommunicationTemplate )
                     .FirstOrDefault( c => c.Id == communication.Id );
-                
+
                 bool hasPendingRecipients;
                 if ( communication != null && 
                     communication.Status == Model.CommunicationStatus.Approved && 
@@ -307,6 +307,7 @@ namespace Rock.Communication.Transport
                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                     string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
+                    var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
 
                     // From - if none is set, use the one in the Organization's GlobalAttributes.
                     string fromAddress = communication.FromEmail;
@@ -441,8 +442,11 @@ namespace Rock.Communication.Transport
 
                                         if ( !string.IsNullOrWhiteSpace( htmlBody ) )
                                         {
-                                            // move styles inline to help it be compatible with more email clients
-                                            htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes();
+                                            if ( cssInliningEnabled )
+                                            {
+                                                // move styles inline to help it be compatible with more email clients
+                                                htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes();
+                                            }
 
                                             // add the main Html content to the email
                                             AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );

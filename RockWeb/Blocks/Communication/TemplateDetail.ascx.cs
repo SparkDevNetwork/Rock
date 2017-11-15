@@ -147,6 +147,7 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.CCEmails = tbCCList.Text;
                 communicationTemplate.BCCEmails = tbBCCList.Text;
                 communicationTemplate.LavaFields = kvlMergeFields.Value.AsDictionaryOrNull();
+                communicationTemplate.CssInliningEnabled = cbCssInliningEnabled.Checked;
 
                 var binaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
 
@@ -283,6 +284,7 @@ namespace RockWeb.Blocks.Communication
             tbReplyToAddress.Text = communicationTemplate.ReplyToEmail;
             tbCCList.Text = communicationTemplate.CCEmails;
             tbBCCList.Text = communicationTemplate.BCCEmails;
+            cbCssInliningEnabled.Checked = communicationTemplate.CssInliningEnabled;
             kvlMergeFields.Value = communicationTemplate.LavaFields.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
 
             hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( communicationTemplate.ReplyToEmail ) || !string.IsNullOrEmpty( communicationTemplate.CCEmails ) || !string.IsNullOrEmpty( communicationTemplate.BCCEmails ) ).ToTrueFalse().ToLower();
@@ -650,7 +652,11 @@ namespace RockWeb.Blocks.Communication
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
             var resolvedPreviewHtml = ceEmailTemplate.Text.ResolveMergeFields( mergeFields );
-            resolvedPreviewHtml = resolvedPreviewHtml.ConvertHtmlStylesToInlineAttributes();
+
+            if ( cbCssInliningEnabled.Checked )
+            {
+                resolvedPreviewHtml = resolvedPreviewHtml.ConvertHtmlStylesToInlineAttributes();
+            }
 
             ifEmailPreview.Attributes["srcdoc"] = resolvedPreviewHtml;
             pnlEmailPreview.Visible = true;

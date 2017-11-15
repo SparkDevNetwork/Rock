@@ -107,7 +107,8 @@
                                 <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" />
                             </div>
                             <div class="col-md-4">
-                                <Rock:KeyValueList ID="kvlMergeFields" runat="server" Label="Lava Fields" KeyPrompt="Key" ValuePrompt="Default Value" />
+                                <Rock:RockCheckBox ID="cbCssInliningEnabled" runat="server" Text="CSS Inlining Enabled" Help="Enable CSS Inlining to move styles to inline attributes. This can help maximize compatibility with email clients." />
+                                <Rock:KeyValueList ID="kvlMergeFields" runat="server" Label="Lava Fields" KeyPrompt="Key" Help="Add any fields and their default values that can be used as lava merge fields within the template html. Any fields with a 'Color' suffix will use a Color Picker as the value editor." ValuePrompt="Default Value" />
                             </div>
                         </div>
                     </asp:Panel>

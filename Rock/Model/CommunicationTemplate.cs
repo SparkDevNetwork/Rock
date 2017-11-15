@@ -88,6 +88,15 @@ namespace Rock.Model
         private bool _isActive = true;
 
         /// <summary>
+        /// Gets or sets a value indicating whether [CSS inlining enabled].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [CSS inlining enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CssInliningEnabled { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the sender of the Communication
         /// </summary>
         /// <value>
