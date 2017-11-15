@@ -39,9 +39,14 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="mdCopyQuestions" runat="server" Title="Copy Questions" OnSaveClick="mdCopyQuestions_SaveClick" OnCancelScript="clearActiveDialog();">
+        <Rock:ModalDialog ID="mdCopyQuestions" runat="server" Title="Copy Questions From..." OnSaveClick="mdCopyQuestions_SaveClick" OnCancelScript="clearActiveDialog();">
             <Content>
-                Copy from resource: <Rock:RockDropDownList ID="ddlCopySource" runat="server" EnhanceForLongLists="true"></Rock:RockDropDownList>
+                <div>
+                    Copy from resource: <Rock:RockDropDownList ID="ddlResourceCopySource" runat="server" EnhanceForLongLists="true"></Rock:RockDropDownList>
+                </div>
+                <div class="margin-t-md">
+                    Copy from location: <Rock:LocationPicker ID="locpLocations" runat="server" AllowedPickerModes="Named"></Rock:LocationPicker>
+                </div>
             </Content>
         </Rock:ModalDialog>
 
