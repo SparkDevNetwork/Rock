@@ -11132,10 +11132,19 @@ html,body{
 .masthead-fullmenu {
     background-color: #FFFFFF;
     position: fixed;
-    right: 0;
+	display: block;
+	margin: auto;
     top: 0;
     bottom: 0;
+	right: 0;
     width: 66%;
+	-webkit-transition-duration: 600ms;
+    transition-duration: 600ms;
+}
+
+.masthead-fullmenu.offscreen {
+	transform: translate(100%);
+	-webkit-transform: translate(100%);
 }
 
 .masthead-fullmenu-title {
