@@ -61,7 +61,6 @@ namespace church.ccv.Web.Rest
         
         [System.Web.Http.HttpPost]
         [System.Web.Http.Route( "api/Web/Login" )]
-        [EnableCors(origins: "*", headers: "*", methods:"*")]
         public HttpResponseMessage Login( [FromBody]LoginData loginData )
         {
             LoginResponse loginResponse = LoginResponse.Invalid;
@@ -80,7 +79,6 @@ namespace church.ccv.Web.Rest
 
         [System.Web.Http.HttpGet]
         [System.Web.Http.Route( "api/Web/SendConfirmAccountEmail" )]
-        [EnableCors(origins: "*", headers: "*", methods:"*")]
         public HttpResponseMessage SendConfirmation( string confirmAccountUrl, string confirmAccountEmailTemplateGuid, string appUrl, string themeUrl, string username )
         {
             if ( AuthenticateRequest( ) )
@@ -102,7 +100,6 @@ namespace church.ccv.Web.Rest
 
         [System.Web.Http.HttpGet]
         [System.Web.Http.Route( "api/Web/CheckDuplicates" )]
-        [EnableCors(origins: "*", headers: "*", methods:"*")]
         public HttpResponseMessage CheckDuplicates( string lastName, string email )
         {
             // this will test to see if the given lastname and email are already associated with one or more people,
@@ -123,7 +120,6 @@ namespace church.ccv.Web.Rest
         
         [System.Web.Http.HttpPost]
         [System.Web.Http.Route( "api/Web/CreatePersonWithLogin" )]
-        [EnableCors(origins: "*", headers: "*", methods:"*")]
         public HttpResponseMessage CreatePersonWithLogin( [FromBody]PersonWithLoginModel personWithLoginModel )
         {
             // creates a new person and user login FOR that person.
@@ -144,7 +140,6 @@ namespace church.ccv.Web.Rest
 
         [System.Web.Http.HttpPost]
         [System.Web.Http.Route( "api/Web/CreateLogin" )]
-        [EnableCors(origins: "*", headers: "*", methods:"*")]
         public HttpResponseMessage CreateLogin( [FromBody]CreateLoginModel createLoginModel )
         {
             // IF there is no existing login for the given person, an unconfirmed account will be created.
@@ -167,7 +162,6 @@ namespace church.ccv.Web.Rest
 
         [System.Web.Http.HttpGet]
         [System.Web.Http.Route( "api/Web/SendForgotPasswordEmail" )]
-        [EnableCors(origins: "*", headers: "*", methods:"*")]
         public HttpResponseMessage SendForgotPasswordEmail( string confirmAccountUrl, string forgotPasswordEmailTemplateGuid, string appUrl, string themeUrl, string personEmail )
         {
             // this will send a password reset email IF valid accounts are found tied to the email provided.
