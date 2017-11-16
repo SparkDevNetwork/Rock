@@ -806,6 +806,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         protected void gResources_Edit( object sender, RowEventArgs e )
         {
             Guid reservationResourceGuid = (Guid)e.RowKeyValue;
+            LoadPickers();
             gResources_ShowEdit( reservationResourceGuid );
         }
 
