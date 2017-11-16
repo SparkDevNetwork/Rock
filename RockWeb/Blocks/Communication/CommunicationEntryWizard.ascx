@@ -18,7 +18,10 @@
                 <%-- Recipient Selection --%>
                 <asp:Panel ID="pnlRecipientSelection" CssClass="js-navigation-panel" runat="server" Visible="true">
                     <h1 class="step-title">Recipient Selection</h1>
-
+                    <Rock:NotificationBox ID="nbCommunicationNotWizardCompatible" runat="server" NotificationBoxType="Info">
+                        This communication uses a template that is not compatible with the email wizard. You can continue with the email wizard, but the main content of the email will be replaced when the Email Wizard compatible template is selected. To keep the content, click 'Use Simple Editor' to use the simple communication editor.
+                    </Rock:NotificationBox> </>
+                    
                     <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgRecipientSelection" CssClass="alert alert-danger" />
 
                     <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Danger" />
