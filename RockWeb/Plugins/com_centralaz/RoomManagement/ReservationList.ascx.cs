@@ -375,7 +375,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 ReservationStartDateTime = r.ReservationStartDateTime,
                 ReservationEndDateTime = r.ReservationEndDateTime,
                 EventDateTimeDescription = r.EventDateTimeDescription,
-                ReservationDateTimeDescription = r.ReservationDateTimeDescription,
+                ReservationDateTimeDescription = r.ReservationDateTimeDescription + 
+                    string.Format( " ({0})", ( r.ReservationStartDateTime.Date == r.ReservationEndDateTime.Date ) 
+                        ? r.ReservationStartDateTime.DayOfWeek.ToStringSafe().Substring( 0, 3 )
+                        : r.ReservationStartDateTime.DayOfWeek.ToStringSafe().Substring( 0, 3 ) + "-" + r.ReservationEndDateTime.DayOfWeek.ToStringSafe().Substring( 0, 3 ) ),
                 ApprovalState = r.ApprovalState.ConvertToString()
             } )
             .OrderBy( r => r.ReservationStartDateTime ).ToList();
