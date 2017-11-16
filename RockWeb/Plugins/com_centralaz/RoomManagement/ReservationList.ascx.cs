@@ -108,14 +108,23 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 case "Ministry":
                     {
-                        int definedValueId = 0;
-                        if ( int.TryParse( e.Value, out definedValueId ) )
+                        int ministryId = 0;
+                        var reservationMinistryService = new ReservationMinistryService( new RockContext() );
+                        if ( int.TryParse( e.Value, out ministryId ) )
                         {
-                            var definedValue = DefinedValueCache.Read( definedValueId );
-                            if ( definedValue != null )
+                            var ministry = reservationMinistryService.Get( ministryId );
+                            if ( ministry != null )
                             {
-                                e.Value = definedValue.Value;
+                                e.Value = ministry.Name;
                             }
+                            else
+                            {
+                                e.Value = string.Empty;
+                            }
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
                         }
                         break;
                     }
@@ -139,7 +148,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 case "Start Time":
                 case "End Time":
                     {
-                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
                         break;
                     }
                 case "Created By":
@@ -189,7 +197,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         var locationIdList = e.Value.Split( ',' ).AsIntegerList();
                         if ( locationIdList.Any() && lipLocation.Visible )
                         {
-                            var service = new FinancialAccountService( new RockContext() );
+                            var service = new LocationService( new RockContext() );
                             var locations = service.GetByIds( locationIdList );
                             if ( locations != null && locations.Any() )
                             {
@@ -217,12 +225,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             gfSettings.SaveUserPreference( "Approval State", cblApproval.SelectedValues.AsDelimited( "," ) );
 
             int personId = ppCreator.PersonId ?? 0;
-            gfSettings.SaveUserPreference( "Created By", UserCanAdministrate ? personId.ToString() : "" );
+            gfSettings.SaveUserPreference( "Created By",  personId.ToString() );
 
-            gfSettings.SaveUserPreference( "Start Time", dtpStartDateTime.ToString() );
-            gfSettings.SaveUserPreference( "End Time", dtpEndDateTime.ToString() );
-            gfSettings.SaveUserPreference( "Resources", rpResource.SelectedValues.ToString() );
-            gfSettings.SaveUserPreference( "Locations", lipLocation.SelectedValues.ToString() );
+            gfSettings.SaveUserPreference( "Start Time", dtpStartDateTime.SelectedDateTime.ToString() );
+            gfSettings.SaveUserPreference( "End Time", dtpEndDateTime.SelectedDateTime.ToString() );
+            gfSettings.SaveUserPreference( "Resources", rpResource.SelectedValues.AsIntegerList().AsDelimited(","));
+            gfSettings.SaveUserPreference( "Locations", lipLocation.SelectedValues.AsIntegerList().AsDelimited( "," ) );
             BindGrid();
         }
 
@@ -330,8 +338,9 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 qry = qry
                     .Where( r =>
-                        r.CreatedByPersonId != null &&
-                        r.CreatedByPersonId == ppCreator.PersonId.Value );
+                        r.CreatedByPersonAlias != null &&
+                        r.CreatedByPersonAlias.PersonId != null &&
+                        r.CreatedByPersonAlias.PersonId == ppCreator.PersonId.Value );
             }
 
             // Filter by Resources
