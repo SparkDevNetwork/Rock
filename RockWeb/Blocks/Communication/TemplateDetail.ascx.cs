@@ -531,7 +531,7 @@ namespace RockWeb.Blocks.Communication
 
                 if ( helpWidth.IsNotNullOrWhitespace() && helpHeight.IsNotNullOrWhitespace() )
                 {
-                    helpText += string.Format(" (Image size: '{0}' x '{1}')", helpWidth, helpHeight);
+                    helpText += string.Format(" (Image size: {0}px x {1}px)", helpWidth, helpHeight);
                 }
 
                 imgTemplateLogo.Help = helpText;
