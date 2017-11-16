@@ -220,6 +220,8 @@ namespace RockWeb.Blocks.Communication
 
             var editingApproved = PageParameter( "Edit" ).AsBoolean() && IsUserAuthorized( "Approve" );
 
+            nbCommunicationNotWizardCompatible.Visible = false;
+
             if ( communication == null )
             {
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
@@ -233,6 +235,19 @@ namespace RockWeb.Blocks.Communication
                 if ( !allowedCommunicationTypes.Contains( communication.CommunicationType ) )
                 {
                     communication.CommunicationType = allowedCommunicationTypes.First();
+                }
+            }
+            else
+            {
+                if ( !communication.CommunicationTemplateId.HasValue || !communication.CommunicationTemplate.SupportsEmailWizard() )
+                {
+                    // If this communication was previously created, but doesn't have a CommunicationTemplateId or uses a template that doesn't suport the EmailWizard, 
+                    // it is a communication (or a copy of a communication) that was created created using the 'Simple Editor' or the editor prior to v7.
+                    // So, if they use the wizard, the main Html Content will be reset when they get to the Select Template step
+                    // since the wizard requires that the communication uses a Template that supports the Email Wizard.
+                    // So, if this is the case, warn them and explain that they can continue with the wizard but start over on the content,
+                    // or to use the 'Use Simple Editor' to keep the content, but not use the wizard
+                    nbCommunicationNotWizardCompatible.Visible = true;
                 }
             }
 
@@ -261,7 +276,7 @@ namespace RockWeb.Blocks.Communication
             LoadDropDowns();
 
             hfCommunicationId.Value = communication.Id.ToString();
-            lTitle.Text = ( communication.Name ?? "New Communication" ).FormatAsHtmlTitle();
+            lTitle.Text = ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
 
             tbCommunicationName.Text = communication.Name;
             tglBulkCommunication.Checked = communication.IsBulkCommunication;
@@ -1163,7 +1178,14 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnTemplateSelectionNext_Click( object sender, EventArgs e )
         {
-            if ( !hfSelectedCommunicationTemplateId.Value.AsIntegerOrNull().HasValue )
+            CommunicationTemplate selectedTemplate = null;
+            int? selectedTemplateId = hfSelectedCommunicationTemplateId.Value.AsIntegerOrNull();
+            if (selectedTemplateId.HasValue)
+            {
+                selectedTemplate = new CommunicationTemplateService( new RockContext() ).Get( selectedTemplateId.Value );
+            }
+
+            if ( selectedTemplate == null || !selectedTemplate.SupportsEmailWizard() )
             {
                 nbTemplateSelectionWarning.Text = "Please select a template.";
                 nbTemplateSelectionWarning.Visible = true;
