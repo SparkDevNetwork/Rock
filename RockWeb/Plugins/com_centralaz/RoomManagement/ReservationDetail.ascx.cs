@@ -485,7 +485,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     hasConflict = true;
                 }
 
-                // Check parent
+                // Check parent locations
                 foreach ( var location in reservation.ReservationLocations.Where( l => l.Location.ParentLocationId.HasValue && reservedLocationIds.Contains( l.Location.ParentLocationId.Value ) ) )
                 {
                     sb.AppendFormat( "<li>{0} ({1}{2})</li>", location.Location.ParentLocation.Name,
@@ -494,7 +494,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     hasConflict = true;
                 }
 
-                // Check grandparent
+                // Check grandparent locations
                 foreach ( var location in reservation.ReservationLocations.Where( l => l.Location.ParentLocation != null
                 && l.Location.ParentLocation.ParentLocation != null
                 && reservedLocationIds.Contains( l.Location.ParentLocation.ParentLocationId.Value ) )
@@ -503,6 +503,30 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     sb.AppendFormat( "<li>{0} ({1}{2})</li>", location.Location.ParentLocation.ParentLocation.Name,
                         location.Location.ParentLocation.ParentLocation.LocationTypeValue != null ? location.Location.ParentLocation.ParentLocation.LocationTypeValue.Value.ToLower() + " of " : "of ",
                         location.Location.Name );
+                    hasConflict = true;
+                }
+
+                // Check children locations...
+                foreach ( var location in reservation.ReservationLocations
+                            .Where( l => l.Location.ChildLocations != null
+                                && ( l.Location.ChildLocations.Any( c => reservedLocationIds.Contains( c.Id ) )
+                                    || l.Location.ChildLocations.Any( c => c.ChildLocations != null && c.ChildLocations.Any( gc => reservedLocationIds.Contains( gc.Id ) ) )
+                                    )
+                             )
+                        )
+                {
+                    // children (such as buildings of a campus)
+                    foreach ( var childLocation in location.Location.ChildLocations.Where( c => reservedLocationIds.Contains( c.Id ) ) )
+                    {
+                        sb.AppendFormat( "<li>{0} (in {1})</li>", childLocation.Name, location.Location.Name );
+                    }
+
+                    // grandchildren (such as rooms of building of a campus)
+                    foreach ( var gchildLocation in location.Location.ChildLocations.SelectMany( c => c.ChildLocations.Where( gc => reservedLocationIds.Contains( gc.Id ) ) ) )
+                    {
+                        sb.AppendFormat( "<li>{0} (in {1} of {2})</li>", gchildLocation.Name, gchildLocation.ParentLocation.Name, location.Location.Name );
+                    }
+
                     hasConflict = true;
                 }
 
