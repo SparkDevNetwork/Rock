@@ -876,7 +876,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             Hydrate( ResourcesState, new RockContext() );
 
             gResources.EntityTypeId = EntityTypeCache.Read<com.centralaz.RoomManagement.Model.ReservationResource>().Id;
-            gResources.SetLinqDataSource( ResourcesState.AsQueryable() );
+            gResources.SetLinqDataSource( ResourcesState.AsQueryable().OrderBy(r=> r.Resource.Name) );
             gResources.DataBind();
         }
 
@@ -1163,7 +1163,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             Hydrate( LocationsState, new RockContext() );
 
             gLocations.EntityTypeId = EntityTypeCache.Read<com.centralaz.RoomManagement.Model.ReservationLocation>().Id;
-            gLocations.SetLinqDataSource( LocationsState.AsQueryable() );
+            gLocations.SetLinqDataSource( LocationsState.AsQueryable().OrderBy( l => l.Location.Name ) );
             gLocations.DataBind();
         }
 
