@@ -227,6 +227,16 @@ namespace Rock.Communication.Transport
                             message.Subject = subject;
                             message.Body = body;
 
+                            var metaData = new Dictionary<string, string>( emailMessage.MessageMetaData );
+
+                            // If a communicatoin is going to get created, create a guid for tracking the opens/clicks
+                            Guid? recipientGuid = null;
+                            if ( emailMessage.CreateCommunicationRecord )
+                            {
+                                recipientGuid = Guid.NewGuid();
+                                metaData.Add( "communication_recipient_guid", recipientGuid.Value.ToString() );
+                            }
+
                             using ( var rockContext = new RockContext() )
                             {
                                 // Recreate the attachments
@@ -244,7 +254,7 @@ namespace Rock.Communication.Transport
                                     }
                                 }
 
-                                AddAdditionalHeaders( message, emailMessage.MessageMetaData );
+                                AddAdditionalHeaders( message, metaData );
 
                                 smtpClient.Send( message );
                             }
@@ -252,6 +262,7 @@ namespace Rock.Communication.Transport
                             if ( emailMessage.CreateCommunicationRecord )
                             {
                                 var transaction = new SaveCommunicationTransaction( recipientData.To, emailMessage.FromName, emailMessage.FromName, subject, body );
+                                transaction.RecipientGuid = recipientGuid;
                                 RockQueue.TransactionQueue.Enqueue( transaction );
                             }
                         }
