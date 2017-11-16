@@ -39,6 +39,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_IMAGE = "60B896C3-F00C-411C-A31C-2D5D4CCBB65F";
 
         /// <summary>
+        /// The Communication Attachment file type guid
+        /// </summary>
+        public const string COMMUNICATION_ATTACHMENT = "10FD7FE8-7187-45CC-A1E7-D9F71BD90E6C";
+
+        /// <summary>
         /// Gets the Transaction Image (scanned check, scanned envelope, etc) file type guid
         /// </summary>
         public const string CONTRIBUTION_IMAGE = "6D18A9C4-34AB-444A-B95B-C644019465AC";

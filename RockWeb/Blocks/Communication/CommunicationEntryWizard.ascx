@@ -544,7 +544,7 @@
 					                </div>
 
                                     <!-- Divider Properties -->
-                                    <div class="propertypanel propertypanel-divider" data-component="divider" style="display: none;">
+                                    <div class="propertypanel propertypanel-divider" id="component-divider-panel" data-component="divider" style="display: none;">
 						                <h4 class="propertypanel-title">Divider</h4>
                                         <div class="row">
 							                <div class="col-md-6">
@@ -560,6 +560,7 @@
 								                        <input class="form-control" id="component-divider-margin-top" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
+                                                <Rock:RockCheckBox ID="cbComponentDividerDivideWithLine" CssClass="js-component-divider-divide-with-line" runat="server" Text="Divide With Line" />
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
@@ -619,7 +620,7 @@
 					                </div>
 
 					                <!-- Button Properties -->
-                                    <div class="propertypanel propertypanel-button" data-component="button" style="display: none;">
+                                    <div id="component-button-panel" class="propertypanel propertypanel-button" data-component="button" style="display: none;">
 						                <h4 class="propertypanel-title">Button</h4>
 						                <hr />
 						                <div class="form-group">
@@ -663,7 +664,12 @@
 									                <select id="component-button-buttonwidth" class="form-control">
 										                <option value="0">Fit To Text</option>
 										                <option value="1">Full Width</option>
+                                                        <option value="2">Fixed Width</option>
 									                </select>
+								                </div>
+								                <div class="form-group js-buttonfixedwidth">
+									                <label for="component-button-buttonfixedwidth">Fixed Width</label>
+									                <input class="form-control" id="component-button-buttonfixedwidth">
 								                </div>
 							                </div>
 							                <div class="col-md-6">
@@ -1038,6 +1044,7 @@
 
                 $('.js-email-sendtest').off('click').on('click', function ()
                 {
+                    $('#<%=nbEmailTestResult.ClientID%>').hide();
                     $(this).hide();
                     $('#<%=btnEmailPreview.ClientID%>').hide();
 
