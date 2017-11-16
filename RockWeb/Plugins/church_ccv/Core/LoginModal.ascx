@@ -302,7 +302,10 @@
                             Password: password,
                             Persist: rememberMe
                         }),
-                    type: "POST"
+                    type: "POST",
+					xhrFields: {
+					  withCredentials: true
+				   }
                 }).done(function (returnData) {
                     handleLoginResponse(returnData);
                 });
@@ -359,8 +362,8 @@
     }
 
     function handleLoginSucceeded() {
-        // invoke a postback so the server can redirect us if needed
-        __doPostBack("btnLogin", "__LOGIN_SUCCEEDED" + ":");
+        // reload the page so they show as logged in.
+		location.reload();
     }
     // ---- END LOGIN ----
 
