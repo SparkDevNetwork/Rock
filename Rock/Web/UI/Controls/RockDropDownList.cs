@@ -309,6 +309,11 @@ namespace Rock.Web.UI.Controls
 
                 var script = new System.Text.StringBuilder();
                 script.AppendFormat( @"
+    // IE fix for 'chosen' causing activeElement to be undefined after postback
+    if (!document.activeElement.nodeType) {{
+        $('body').focus();
+    }}
+    
     $('#{0}').chosen({{
         width: '100%',
         allow_single_deselect: true,
