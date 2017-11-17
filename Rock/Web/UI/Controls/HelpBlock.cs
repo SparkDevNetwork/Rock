@@ -38,35 +38,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( System.EventArgs e )
-        {
-            base.OnInit( e );
-        }
-
-        /// <summary>
-        /// Registers the java script.
-        /// </summary>
-        private void RegisterJavaScript()
-        {
-            string script = @"
-$(document).ready(function() {
-    $('a.help').click(function (e) {
-        e.preventDefault();
-        $(this).siblings('div.alert-info').slideToggle(function(){
-            Rock.controls.modal.updateSize(this);
-        });
-        $(this).siblings('a.warning').insertAfter($(this));
-        $(this).siblings('div.alert-warning').slideUp();
-    });
-});
-";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "help-block", script, true );
-        }
-
-        /// <summary>
         /// Gets or sets the style.
         /// </summary>
         /// <value>
@@ -104,8 +75,6 @@ $(document).ready(function() {
                 writer.Write( this.Text.ConvertCrLfToHtmlBr().Trim() );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
-
-                RegisterJavaScript();
             }
         }
     }
