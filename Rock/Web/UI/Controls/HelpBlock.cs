@@ -36,7 +36,7 @@ namespace Rock.Web.UI.Controls
             var style = new Style();
             this.Style = style.GetStyleAttributes( this );
         }
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -44,7 +44,13 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( System.EventArgs e )
         {
             base.OnInit( e );
+        }
 
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        private void RegisterJavaScript()
+        {
             string script = @"
 $(document).ready(function() {
     $('a.help').click(function (e) {
@@ -58,7 +64,6 @@ $(document).ready(function() {
 });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "help-block", script, true );
-
         }
 
         /// <summary>
@@ -99,6 +104,8 @@ $(document).ready(function() {
                 writer.Write( this.Text.ConvertCrLfToHtmlBr().Trim() );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
+
+                RegisterJavaScript();
             }
         }
     }

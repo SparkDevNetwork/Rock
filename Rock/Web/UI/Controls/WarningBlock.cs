@@ -44,7 +44,13 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( System.EventArgs e )
         {
             base.OnInit( e );
+        }
 
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        private void RegisterJavaScript()
+        {
             string script = @"
 $(document).ready(function() {
     $('a.warning').click(function (e) {
@@ -57,7 +63,6 @@ $(document).ready(function() {
 });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "warning-block", script, true );
-
         }
 
         /// <summary>
@@ -98,6 +103,8 @@ $(document).ready(function() {
                 writer.Write( this.Text.Trim() );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
+
+                RegisterJavaScript();
             }
         }
     }
