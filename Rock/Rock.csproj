@@ -1456,6 +1456,7 @@
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\FieldTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupMemberPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupMembersPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
