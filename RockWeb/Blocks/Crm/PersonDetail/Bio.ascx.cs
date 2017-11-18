@@ -478,6 +478,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
+            var pbxComponent = Rock.Pbx.PbxContainer.GetActiveComponent();
+
+            var isAuthorized = Rock.Security.Authorization.Authorized( pbxComponent, Authorization.VIEW, CurrentPerson );
+
+            
             // if the page is being loaded locally then add the tel:// link
             if ( RockPage.IsMobileRequest )
             {

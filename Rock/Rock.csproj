@@ -1164,6 +1164,9 @@
     <Compile Include="Model\LavaShortCode.cs" />
     <Compile Include="Model\PageShortLinkService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
+    <Compile Include="Pbx\PbxComponent.cs" />
+    <Compile Include="Pbx\PbxContainer.cs" />
+    <Compile Include="Pbx\Provider\ElasticSearch.cs" />
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
