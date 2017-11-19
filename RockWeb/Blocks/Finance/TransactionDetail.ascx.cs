@@ -1303,14 +1303,15 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 detailsLeft.Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Value : string.Empty );
+                detailsLeft.Add( "Transaction Code", txn.TransactionCode );
 
-                if ( txn.FinancialGateway != null )
+                if ( txn.FinancialGateway != null && txn.FinancialGateway.EntityType != null )
                 {
-                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.Name ) );
+                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.EntityType.Name ) );
                 }
 
-                detailsLeft.Add( "Transaction Code", txn.TransactionCode );
-                
+                detailsLeft.Add( "Foreign Key", txn.ForeignKey );
+
                 if ( txn.ScheduledTransaction != null )
                 {
                     var qryParam = new Dictionary<string, string>();
