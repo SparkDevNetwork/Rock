@@ -162,10 +162,20 @@ namespace RockWeb
                             // Intentionally Blank
                         }
                     }
-                    
+
                     //// Run any needed Rock and/or plugin migrations
                     //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
-                    if ( MigrateDatabase( rockContext ) )
+                    bool anyMigrations = MigrateDatabase( rockContext );
+                    
+                    // Run any plugin migrations
+                    stopwatch.Restart();
+                    bool anyPluginMigrations = MigratePlugins( rockContext );
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                    {
+                        System.Diagnostics.Debug.WriteLine( string.Format( "MigratePlugins - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                    }
+                    
+                    if ( anyMigrations || anyPluginMigrations )
                     {
                         // If any migrations ran (version was likely updated)
                         try
@@ -181,14 +191,6 @@ namespace RockWeb
                             }
                             catch { }
                         }
-                    }
-
-                    // Run any plugin migrations
-                    stopwatch.Restart();
-                    MigratePlugins( rockContext );
-                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                    {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "MigratePlugins - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
                     }
 
                     // Preload the commonly used objects
