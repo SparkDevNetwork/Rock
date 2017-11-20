@@ -699,9 +699,25 @@ namespace Rock.Model
     /// </summary>
     public enum IconCssWeight
     {
+
+        /// <summary>
+        /// regular
+        /// </summary>
         Regular,
+
+        /// <summary>
+        /// solid
+        /// </summary>
         Solid,
+
+        /// <summary>
+        /// light
+        /// </summary>
         Light,
+
+        /// <summary>
+        /// thin
+        /// </summary>
         Thin
     }
 
