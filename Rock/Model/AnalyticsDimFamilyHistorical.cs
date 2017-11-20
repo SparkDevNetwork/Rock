@@ -40,7 +40,7 @@ namespace Rock.Model
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="Rock.Model.AnalyticsSourceFamilyBase{T}" />
     [RockDomain( "Reporting" )]
-    public abstract class AnalyticsDimFamilyBase<T> : AnalyticsSourceFamilyBase<T>
+    public abstract class AnalyticsDimFamilyBase<T> : AnalyticsSourceFamilyBase<T>, IAnalyticsAddresses
         where T : AnalyticsDimFamilyBase<T>, new()
     {
         #region Denormalized Lookup Values
@@ -186,6 +186,15 @@ namespace Rock.Model
         [DataMember]
         public double? MailingAddressLongitude { get; set; }
 
+        /// <summary>
+        /// Gets or sets the full mailing address.
+        /// </summary>
+        /// <value>
+        /// The mailing address full.
+        /// </value>
+        [DataMember]
+        public string MailingAddressFull { get; set; }
+
         #endregion
 
         #region Primary Mailing Address
@@ -308,6 +317,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public double? MappedAddressLongitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full mapped address.
+        /// </summary>
+        /// <value>
+        /// The mapped address full.
+        /// </value>
+        [DataMember]
+        public string MappedAddressFull { get; set; }
 
         #endregion
     }

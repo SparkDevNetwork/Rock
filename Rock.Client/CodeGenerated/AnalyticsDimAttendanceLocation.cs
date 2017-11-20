@@ -35,10 +35,16 @@ namespace Rock.Client
         public string City { get; set; }
 
         /// <summary />
+        public int Count { get; set; }
+
+        /// <summary />
         public string Country { get; set; }
 
         /// <summary />
         public string County { get; set; }
+
+        /// <summary />
+        public string FullAddress { get; set; }
 
         /// <summary />
         public object GeoFence { get; set; }
@@ -77,8 +83,10 @@ namespace Rock.Client
         public void CopyPropertiesFrom( AnalyticsDimAttendanceLocation source )
         {
             this.City = source.City;
+            this.Count = source.Count;
             this.Country = source.Country;
             this.County = source.County;
+            this.FullAddress = source.FullAddress;
             this.GeoFence = source.GeoFence;
             this.GeoPoint = source.GeoPoint;
             this.Latitude = source.Latitude;

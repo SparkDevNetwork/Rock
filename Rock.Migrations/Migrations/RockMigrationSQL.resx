@@ -592,4 +592,37 @@
   <data name="_201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201711011841422_gatewaytransactionkey_updatedefaultcommunicationtemplate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201711081825032_Analytics4_AnalyticsDimAttendanceLocation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711081825032_analytics4_analyticsdimattendancelocation.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201711081825032_Analytics4_AnalyticsDimFinancialAccount" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711081825032_analytics4_analyticsdimfinancialaccount.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201711081825032_Analytics4_AnalyticsDimFinancialBatch" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711081825032_analytics4_analyticsdimfinancialbatch.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201711081825032_Analytics4_AnalyticsDimPersonBirthDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711081825032_analytics4_analyticsdimpersonbirthdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201711081825032_Analytics4_AnalyticsDimPersonHistorical" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711081825032_analytics4_analyticsdimpersonhistorical.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201711081825032_Analytics4_spAnalytics_ETL_Family" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711081825032_analytics4_spanalytics_etl_family.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201711092125120_Analytics5_AnalyticsDimAttendanceLocation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711092125120_analytics5_analyticsdimattendancelocation.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201711092125120_Analytics5_AnalyticsDimCampus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711092125120_analytics5_analyticsdimcampus.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201711092125120_Analytics5_AnalyticsDimFamilyHistorical" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711092125120_analytics5_analyticsdimfamilyhistorical.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201711092125120_Analytics5_AnalyticsDimPersonHistorical" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711092125120_analytics5_analyticsdimpersonhistorical.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201711092125120_Analytics5_spAnalytics_ETL_Campus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711092125120_analytics5_spanalytics_etl_campus.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

@@ -101,6 +101,7 @@ namespace Rock.Model
             target.ImageFileId = source.ImageFileId;
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
+            target.LavaFieldsJson = source.LavaFieldsJson;
             target.LogoBinaryFileId = source.LogoBinaryFileId;
             target.Message = source.Message;
             target.MessageMetaData = source.MessageMetaData;

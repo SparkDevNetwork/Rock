@@ -1094,7 +1094,7 @@ namespace RockWeb.Blocks.Communication
 
             tbEmailSubject.Text = communicationTemplate.Subject;
 
-            hfEmailEditorHtml.Value = communicationTemplate.Message;
+            hfEmailEditorHtml.Value = communicationTemplate.Message.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null) );
 
             hfEmailAttachedBinaryFileIds.Value = communicationTemplate.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
             UpdateEmailAttachedFiles( false );
@@ -1496,6 +1496,11 @@ namespace RockWeb.Blocks.Communication
                 {
                     communicationHtml = emailMediumWithActiveTransport.Transport.ResolveText( communicationHtml, currentPerson, communication.EnabledLavaCommands, mergeFields, publicAppRoot );
                     communicationHtml = Regex.Replace( communicationHtml, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                }
+
+                if ( emailMediumWithActiveTransport.Transport is Rock.Communication.Transport.SMTPComponent )
+                {
+                    communicationHtml =( emailMediumWithActiveTransport.Transport as Rock.Communication.Transport.SMTPComponent ).MoveCssInline( communicationHtml );
                 }
             }
 

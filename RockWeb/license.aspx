@@ -54,7 +54,7 @@
                             <li><a href="#aspwebapi">ASP.net Web API</a> (Apache) - <a href="http://aspnetwebstack.codeplex.com/">Project Site</a> </li>
                             
                             <li><a href="http://twitter.github.io/bootstrap/">Bootstrap</a> (Apache)</li>
-                            <li><a href="http://entityframework.codeplex.com/">Entity Framework</a> (Apache)</li>
+                            <li><a href="https://github.com/aspnet/EntityFramework6">Entity Framework</a> (Apache)</li>
                             <li><a href="http://summernote.org/">Summernote</a> (MIT)</li>
                             <li><a href="https://github.com/facebook-csharp-sdk/facebook-csharp-sdk">Facebook C# SDK</a> (Apache 2)</li>
                             <li><a href="http://fontawesome.github.io/Font-Awesome/">Font Awesome</a> (OFL)</li>
@@ -78,7 +78,7 @@
                             <li><a href="http://nuget.org/packages/WebActivator">WebActivatorEx</a> (Ms-PL)</li>
                             <li><a href="http://nuget.org/packages/WebGrease/">WebGrease</a> (Custom)</li>
                             <li><a href="http://jvashishtha.github.io/bootstrap/javascript.html#limit">Limit Boostrap</a> (Apache)</li>
-                            <li><a href="https://github.com/eternicode/bootstrap-datepicker">Boostrap Datepicker</a> (Apache)</li>
+                            <li><a href="https://github.com/eternicode/bootstrap-datepicker">Bootstrap Datepicker</a> (Apache)</li>
                             <li><a href="http://imageresizing.net/">ImageResizer</a> (MIT)</li>
                             <li><a href="https://github.com/ftlabs/fastclick">FastClick</a> (Custom)</li>
                             <li><a href="https://code.google.com/p/google-code-prettify/">Prettify.js</a> (Apache)</li>
@@ -129,6 +129,8 @@
                             <li><a href="https://github.com/d3/d3">D3 (Data-Driven Documents)</a> (Custom)</li>
                             <li><a href="https://github.com/jasondavies/d3-cloud">D3 Word Cloud</a> (Custom)</li>
                             <li><a href="http://www.chartjs.org">Chart.js</a> (MIT)</li>
+                            <li><a href="https://github.com/milkshakesoftware/PreMailer.Net">PreMailer.Net</a> (MIT)</li>
+                            <li><a href="https://github.com/AngleSharp/AngleSharp">AngleSharp</a> (MIT)</li>
                         </ul>
                     </div>
                 </div>

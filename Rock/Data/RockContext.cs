@@ -129,7 +129,15 @@ namespace Rock.Data
         /// The analytics source dates.
         /// </value>
         public DbSet<AnalyticsSourceDate> AnalyticsSourceDates { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the analytics dim campuses.
+        /// </summary>
+        /// <value>
+        /// The analytics dim campuses.
+        /// </value>
+        public DbSet<AnalyticsDimCampus> AnalyticsDimCampuses { get; set; }
+
         /// <summary>
         /// Gets or sets the analytics dim family currents.
         /// </summary>
@@ -217,6 +225,14 @@ namespace Rock.Data
         /// The analytics source attendances.
         /// </value>
         public DbSet<AnalyticsSourceAttendance> AnalyticsSourceAttendances { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics source campuses.
+        /// </summary>
+        /// <value>
+        /// The analytics source campuses.
+        /// </value>
+        public DbSet<AnalyticsSourceCampus> AnalyticsSourceCampuses { get; set; }
 
         /// <summary>
         /// Gets or sets the analytics source family historicals.
