@@ -3743,5 +3743,316 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceLocation]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimAttendanceLocation
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsDimAttendanceLocation
+        ///AS
+        ///SELECT l.Id [LocationId]
+        ///	,l.Name
+        ///	 ,l.Street1 [Street1]
+        ///    ,l.Street2 [Street2]
+        ///    ,l.City [City]
+        ///    ,l.County [County]
+        ///    ,l.[State] [State]
+        ///    ,l.Country [Country]
+        ///    ,l.PostalCode [PostalCode]
+        ///    ,l.GeoPoint [GeoPoint]
+        ///    ,l.GeoFence [GeoFence]
+        ///    ,l.GeoPoint.Lat [Latitude]
+        ///    ,l.GeoPoint.Long [Longitude]
+        ///	,1  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711081825032_Analytics4_AnalyticsDimAttendanceLocation {
+            get {
+                return ResourceManager.GetString("_201711081825032_Analytics4_AnalyticsDimAttendanceLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialAccount]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimFinancialAccount
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsDimFinancialAccount
+        ///AS
+        ///SELECT fa.Id [AccountId]
+        ///    ,fa.[Name]
+        ///    ,fa.[PublicName]
+        ///    ,fa.[Description]
+        ///    ,fa.[PublicDescription]
+        ///    ,CASE fa.[IsTaxDeductible]
+        ///        WHEN 1
+        ///            THEN &apos;Taxable&apos;
+        ///        ELSE &apos;Not Taxable&apos;
+        ///        END [TaxStatus]
+        ///    ,fa.[GlCode]
+        ///    ,fa.[Order]
+        ///    ,CASE fa.IsActive
+        ///        WHEN 1
+        ///            THEN &apos;Active&apos; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711081825032_Analytics4_AnalyticsDimFinancialAccount {
+            get {
+                return ResourceManager.GetString("_201711081825032_Analytics4_AnalyticsDimFinancialAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialBatch]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimFinancialBatch
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsDimFinancialBatch
+        ///AS
+        ///SELECT fb.Id [BatchId]
+        ///    ,fb.[Name]
+        ///    ,fb.[BatchStartDateTime]
+        ///    ,fb.[BatchEndDateTime]
+        ///    ,CASE fb.[Status]
+        ///        WHEN 0
+        ///            THEN &apos;Pending&apos;
+        ///        WHEN 1
+        ///            THEN &apos;Open&apos;
+        ///        WHEN 2
+        ///            THEN &apos;Closed&apos;
+        ///        ELSE NULL
+        ///        END [Status]
+        ///    ,c.NAME [Campus]
+        ///    ,fb.[AccountingSystemCode]
+        ///    ,f [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711081825032_Analytics4_AnalyticsDimFinancialBatch {
+            get {
+                return ResourceManager.GetString("_201711081825032_Analytics4_AnalyticsDimFinancialBatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonBirthDate]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimPersonBirthDate
+        ///GO
+        ///
+        ///CREATE VIEW [dbo].AnalyticsDimPersonBirthDate
+        ///AS
+        ///SELECT d.DateKey AS [BirthDateKey]
+        ///    ,*
+        ///FROM AnalyticsSourceDate d
+        ///WHERE d.DateKey &gt;= (
+        ///        SELECT MIN(ph.BirthDateKey)
+        ///        FROM AnalyticsDimPersonHistorical ph
+        ///        )
+        ///    AND d.DateKey &lt;= (
+        ///        SELECT MAX(ph.BirthDateKey)
+        ///        FROM AnalyticsDimPersonHistorical ph
+        ///        ).
+        /// </summary>
+        public static string _201711081825032_Analytics4_AnalyticsDimPersonBirthDate {
+            get {
+                return ResourceManager.GetString("_201711081825032_Analytics4_AnalyticsDimPersonBirthDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonHistorical]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimPersonHistorical
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsDimPersonHistorical
+        ///AS
+        ///SELECT asph.*
+        ///    ,ms.Value [MaritalStatus]
+        ///    ,cs.Value [ConnectionStatus]
+        ///    ,rr.Value [ReviewReason]
+        ///    ,rs.Value [RecordStatus]
+        ///    ,rsr.Value [RecordStatusReason]
+        ///    ,rt.Value [RecordType]
+        ///    ,ps.Value [Suffix]
+        ///    ,pt.Value [Title]
+        ///    ,CASE asph.Gender
+        ///        WHEN 1
+        ///            THEN &apos;Male&apos;
+        ///        WHEN 2
+        ///             [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711081825032_Analytics4_AnalyticsDimPersonHistorical {
+            get {
+                return ResourceManager.GetString("_201711081825032_Analytics4_AnalyticsDimPersonHistorical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF EXISTS (
+        ///        SELECT *
+        ///        FROM [sysobjects]
+        ///        WHERE [id] = OBJECT_ID(N&apos;[dbo].[spAnalytics_ETL_Family]&apos;)
+        ///            AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1
+        ///        )
+        ///    DROP PROCEDURE [dbo].spAnalytics_ETL_Family
+        ///GO
+        ///
+        ///-- EXECUTE [dbo].[spAnalytics_ETL_Family] 
+        ///CREATE PROCEDURE [dbo].spAnalytics_ETL_Family
+        ///AS
+        ///BEGIN
+        ///    DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
+        ///        ,@MaxExpireDate DATE = DateFromParts(9999, 1, 1)
+        ///        ,@RecordStatusActiveId INT = (
+        ///      [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711081825032_Analytics4_spAnalytics_ETL_Family {
+            get {
+                return ResourceManager.GetString("_201711081825032_Analytics4_spAnalytics_ETL_Family", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimAttendanceLocation]&apos;, &apos;V&apos;) IS NOT NULL
+        ///	DROP VIEW AnalyticsDimAttendanceLocation
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsDimAttendanceLocation
+        ///AS
+        ///SELECT l.Id [LocationId]
+        ///	,l.NAME
+        ///	,l.Street1 [Street1]
+        ///	,l.Street2 [Street2]
+        ///	,l.City [City]
+        ///	,l.County [County]
+        ///	,l.[State] [State]
+        ///	,l.Country [Country]
+        ///	,l.PostalCode [PostalCode]
+        ///	,l.GeoPoint [GeoPoint]
+        ///	,l.GeoFence [GeoFence]
+        ///	,l.GeoPoint.Lat [Latitude]
+        ///	,l.GeoPoint.Long [Longitude]
+        ///	,CONCAT (
+        ///		l.[Street1]
+        ///		,&apos; &apos;
+        ///		, [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711092125120_Analytics5_AnalyticsDimAttendanceLocation {
+            get {
+                return ResourceManager.GetString("_201711092125120_Analytics5_AnalyticsDimAttendanceLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimCampus]&apos;, &apos;V&apos;) IS NOT NULL
+        ///	DROP VIEW AnalyticsDimCampus
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsDimCampus
+        ///AS
+        ///SELECT sc.*
+        ///	,CONCAT (
+        ///		lp.NickName
+        ///		,&apos; &apos;
+        ///		,lp.LastName
+        ///		) [LeaderFullName]
+        ///	,lp.Id [LeaderPersonId]
+        ///	,l.Street1 [AddressStreet1]
+        ///	,l.Street2 [AddressStreet2]
+        ///	,l.City [AddressCity]
+        ///	,l.County [AddressCounty]
+        ///	,l.[State] [AddressState]
+        ///	,l.Country [AddressCountry]
+        ///	,l.PostalCode [AddressPostalCode]
+        ///	,l.GeoPoint [AddressGeoPoint]
+        ///	,l.GeoFence [AddressGeoFen [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711092125120_Analytics5_AnalyticsDimCampus {
+            get {
+                return ResourceManager.GetString("_201711092125120_Analytics5_AnalyticsDimCampus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFamilyHistorical]&apos;, &apos;V&apos;) IS NOT NULL
+        ///	DROP VIEW AnalyticsDimFamilyHistorical
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsDimFamilyHistorical
+        ///AS
+        ///SELECT asfh.*
+        ///	,isnull(c.NAME, &apos;None&apos;) [CampusName]
+        ///	,isnull(c.ShortCode, &apos;None&apos;) [CampusShortCode]
+        ///	,mailingLocation.Street1 [MailingAddressStreet1]
+        ///	,mailingLocation.Street2 [MailingAddressStreet2]
+        ///	,mailingLocation.City [MailingAddressCity]
+        ///	,mailingLocation.County [MailingAddressCounty]
+        ///	,mailingLocation.[State] [MailingAddressState]        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711092125120_Analytics5_AnalyticsDimFamilyHistorical {
+            get {
+                return ResourceManager.GetString("_201711092125120_Analytics5_AnalyticsDimFamilyHistorical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonHistorical]&apos;, &apos;V&apos;) IS NOT NULL
+        ///	DROP VIEW AnalyticsDimPersonHistorical
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsDimPersonHistorical
+        ///AS
+        ///SELECT asph.*
+        ///	,ms.Value [MaritalStatus]
+        ///	,cs.Value [ConnectionStatus]
+        ///	,rr.Value [ReviewReason]
+        ///	,rs.Value [RecordStatus]
+        ///	,rsr.Value [RecordStatusReason]
+        ///	,rt.Value [RecordType]
+        ///	,ps.Value [Suffix]
+        ///	,pt.Value [Title]
+        ///	,CASE asph.Gender
+        ///		WHEN 1
+        ///			THEN &apos;Male&apos;
+        ///		WHEN 2
+        ///			THEN &apos;Female&apos;
+        ///		ELSE &apos;Unknown&apos;
+        ///		END [GenderText]
+        ///	,CASE  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711092125120_Analytics5_AnalyticsDimPersonHistorical {
+            get {
+                return ResourceManager.GetString("_201711092125120_Analytics5_AnalyticsDimPersonHistorical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF EXISTS (
+        ///		SELECT *
+        ///		FROM [sysobjects]
+        ///		WHERE [id] = OBJECT_ID(N&apos;[dbo].[spAnalytics_ETL_Campus]&apos;)
+        ///			AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1
+        ///		)
+        ///	DROP PROCEDURE [dbo].spAnalytics_ETL_Campus
+        ///GO
+        ///
+        ///-- EXECUTE [dbo].[spAnalytics_ETL_Campus] 
+        ///CREATE PROCEDURE [dbo].spAnalytics_ETL_Campus
+        ///AS
+        ///BEGIN
+        ///	DECLARE @RowsUpdated INT = 0
+        ///		,@RowsInserted INT = 0
+        ///
+        ///	INSERT INTO AnalyticsSourceCampus (
+        ///		[CampusId]
+        ///		,[Name]
+        ///		,[Description]
+        ///		,[IsActive]
+        ///		,[ShortCode]
+        ///		,[Url]
+        ///		,[LocationId]        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711092125120_Analytics5_spAnalytics_ETL_Campus {
+            get {
+                return ResourceManager.GetString("_201711092125120_Analytics5_spAnalytics_ETL_Campus", resourceCulture);
+            }
+        }
     }
 }

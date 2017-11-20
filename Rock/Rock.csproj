@@ -36,6 +36,9 @@
     <DocumentationFile>bin\Rock.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AngleSharp, Version=0.9.9.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.0.9.9\lib\net45\AngleSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
       <Private>True</Private>
@@ -201,6 +204,9 @@
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="PreMailer.Net, Version=1.5.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\PreMailer.Net.1.5.5\lib\net45\PreMailer.Net.dll</HintPath>
     </Reference>
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
@@ -387,6 +393,7 @@
     <Compile Include="Attribute\DefinedValueRangeFieldAttribute.cs" />
     <Compile Include="Attribute\EmailFieldAttribute.cs" />
     <Compile Include="Attribute\GroupMemberFieldAttribute.cs" />
+    <Compile Include="Attribute\IHasInheritedAttributes.cs" />
     <Compile Include="Attribute\MatrixFieldAttribute.cs" />
     <Compile Include="Attribute\SSNFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowFieldAttribute.cs" />
@@ -682,6 +689,7 @@
     <Compile Include="Follow\Event\PersonHistory.cs" />
     <Compile Include="Follow\SuggestionComponent.cs" />
     <Compile Include="Follow\SuggestionContainer.cs" />
+    <Compile Include="Follow\Suggestion\InFollowedGroup.cs" />
     <Compile Include="Follow\Suggestion\InGroupTogether.cs" />
     <Compile Include="Jobs\CalculateFamilyAnalytics.cs" />
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
@@ -746,6 +754,8 @@
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
     <Compile Include="MergeTemplates\WordDocumentMergeTemplateType.cs" />
     <Compile Include="Model\AnalyticsDimAttendanceLocation.cs" />
+    <Compile Include="Model\AnalyticsDimCampus.cs" />
+    <Compile Include="Model\AnalyticsSourceCampus.cs" />
     <Compile Include="Model\AnalyticsDimFinancialAccount.cs" />
     <Compile Include="Model\AnalyticsDimFinancialBatch.cs" />
     <Compile Include="Model\AnalyticsDimFamilyHistorical.cs" />
@@ -765,11 +775,13 @@
     <Compile Include="Model\AttributeMatrix.cs" />
     <Compile Include="Model\AttributeMatrixItem.cs" />
     <Compile Include="Model\AttributeMatrixTemplate.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsDimCampusService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyCurrentService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyHeadOfHouseholdService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyHistoricalService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsFactAttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceAttendanceService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsSourceCampusService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
     <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationAttachmentService.cs" />
@@ -789,6 +801,7 @@
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
+    <Compile Include="Data\IAnalyticsAddresses.cs" />
     <Compile Include="Model\InteractionComponent.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
@@ -1610,6 +1623,7 @@
     <Compile Include="Utility\RockSemanticVersion.cs" />
     <Compile Include="Utility\SettingsStringBase.cs" />
     <Compile Include="Utility\SimpleModeJsonConverter.cs" />
+    <Compile Include="Utility\SparkLinkHelper.cs" />
     <Compile Include="Utility\StringAsLiteralJavascriptJsonConverter.cs" />
     <Compile Include="Web\Cache\AttributeCache.cs" />
     <Compile Include="Web\Cache\BlockCache.cs" />

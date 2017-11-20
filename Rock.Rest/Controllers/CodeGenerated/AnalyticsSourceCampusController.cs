@@ -26,13 +26,13 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// PageShortLinks REST API
+    /// AnalyticsSourceCampus REST API
     /// </summary>
-    public partial class PageShortLinksController : Rock.Rest.ApiController<Rock.Model.PageShortLink>
+    public partial class AnalyticsSourceCampusController : Rock.Rest.ApiController<Rock.Model.AnalyticsSourceCampus>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PageShortLinksController"/> class.
+        /// Initializes a new instance of the <see cref="AnalyticsSourceCampusController"/> class.
         /// </summary>
-        public PageShortLinksController() : base( new Rock.Model.PageShortLinkService( new Rock.Data.RockContext() ) ) { } 
+        public AnalyticsSourceCampusController() : base( new Rock.Model.AnalyticsSourceCampusService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimCampus.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyHeadOfHousehold.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyHistorical.cs" />
@@ -48,6 +49,7 @@
     <Compile Include="CodeGenerated\AnalyticsFactAttendance.cs" />
     <Compile Include="CodeGenerated\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceAttendance.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceCampus.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceDate.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />

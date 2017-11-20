@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Finance
     [ContextAware]
     [SecurityAction( "FilterByPerson", "The roles and/or users that can filter transactions by person." )]
 
-    [LinkedPage( "Detail Page", order: 0 )]
+    [LinkedPage( "Detail Page", required: false, order: 0 )]
     [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false, order: 1 )]
     [BooleanField( "Show Only Active Accounts on Filter", "If account filter is displayed, only list active accounts", false, "", 2, "ActiveAccountsOnlyFilter" )]
     [BooleanField( "Show Options", "Show an Options button in the title panel for showing images or summary.", false, order: 3 )]
@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Finance
     [CustomDropdownListField( "Default Transaction View", "Select whether you want to initially see Transactions or Transaction Details", "Transactions,Transaction Details", false, "Transactions", "", 6 )]
     [LinkedPage( "Batch Page", required:false, order: 7 )]
     [BooleanField( "Show Account Summary", "Should the account summary be displayed at the bottom of the list?", false, order: 8 )]
+    [AccountsField( "Accounts", "Limit the results to transactions that match the selected accounts.", false, "", "", 9 )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
         private bool _isExporting = false;
@@ -103,8 +104,12 @@ namespace RockWeb.Blocks.Finance
             _canEdit = UserCanEdit;
 
             gTransactions.DataKeyNames = new string[] { "Id" };
-            gTransactions.Actions.ShowAdd = _canEdit;
+            gTransactions.Actions.ShowAdd = _canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( "DetailPage" ) );
             gTransactions.Actions.AddClick += gTransactions_Add;
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DetailPage" ) ) )
+            {
+                gTransactions.RowSelected += gTransactions_Edit;
+            }
             gTransactions.GridRebind += gTransactions_GridRebind;
             gTransactions.RowDataBound += gTransactions_RowDataBound;
             gTransactions.IsDeleteEnabled = _canEdit;
@@ -377,7 +382,7 @@ namespace RockWeb.Blocks.Finance
                 case "Account":
 
                     var accountIds = e.Value.SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
-                    if ( accountIds.Any() )
+                    if ( accountIds.Any() && apAccount.Visible )
                     {
                         var service = new FinancialAccountService( new RockContext() );
                         var accountNames = service.GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).Select( a => a.Name ).ToList().AsDelimited( ", ", " or " );
@@ -903,6 +908,7 @@ namespace RockWeb.Blocks.Finance
             nreAmount.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
             tbTransactionCode.Text = gfTransactions.GetUserPreference( "Transaction Code" );
 
+            apAccount.Visible = string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) );
             apAccount.DisplayActiveOnly = GetAttributeValue( "ActiveAccountsOnlyFilter" ).AsBoolean();
 
             var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
@@ -1054,6 +1060,14 @@ namespace RockWeb.Blocks.Finance
                 gTransactions.RowItemText = "Transaction Detail";
                 var financialTransactionDetailQry = new FinancialTransactionDetailService( rockContext ).Queryable();
 
+                // Filter to configured accounts.
+                var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+                if ( accountGuids.Any() )
+                {
+                    financialTransactionDetailQry = financialTransactionDetailQry
+                        .Where( d => accountGuids.Contains( d.Account.Guid ) );
+                }
+
                 if ( sortProperty != null && sortProperty.Property == "_PERSONNAME_" )
                 {
                     if ( sortProperty.Direction == SortDirection.Ascending )
@@ -1096,6 +1110,14 @@ namespace RockWeb.Blocks.Finance
             {
                 gTransactions.RowItemText = "Transactions";
                 var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable();
+
+                // Filter to configured accounts.
+                var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+                if ( accountGuids.Any() )
+                {
+                    financialTransactionQry = financialTransactionQry
+                        .Where( t => t.TransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
+                }
 
                 if ( sortProperty != null && sortProperty.Property == "_PERSONNAME_" )
                 {
@@ -1237,7 +1259,7 @@ namespace RockWeb.Blocks.Finance
                 var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
                 accountIds = accountIds.Distinct().ToList();
 
-                if ( accountIds.Any() )
+                if ( accountIds.Any() && apAccount.Visible )
                 {
                     if ( hfTransactionViewMode.Value == "Transactions" )
                     {
@@ -1417,7 +1439,7 @@ namespace RockWeb.Blocks.Finance
 
                 // check for filtered accounts
                 var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
-                if ( accountIds.Any() )
+                if ( accountIds.Any() && apAccount.Visible )
                 {
                     summaryQryList = summaryQryList.Where( a => accountIds.Contains( a.AccountId ) ).OrderBy( a => a.Order );
                     lbFiltered.Text = "Filtered Account List";
@@ -1473,10 +1495,21 @@ namespace RockWeb.Blocks.Finance
                 }
                 else if ( txn.TransactionDetails != null )
                 {
+                    var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
                     summary = txn.TransactionDetails.Select( a => new { Account = _financialAccountLookup[a.AccountId], a.Amount } )
-                   .OrderBy( d => d.Account.Order )
-                   .Select( d => string.Format( "{0}: {1}", d.Account.Name, d.Amount.FormatAsCurrency() ) )
-                   .ToList();
+                    .Select( d => new
+                    {
+                        IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ),
+                        Order = d.Account.Order,
+                        Name = d.Account.Name,
+                        Amount = d.Amount
+                    } )
+                    .OrderBy( d => d.IsOther )
+                    .ThenBy( d => d.Order )
+                    .Select( d => string.Format( "{0}: {1}",
+                        !d.IsOther ? d.Name : "Other",
+                        d.Amount.FormatAsCurrency() ) )
+                    .ToList();
                 }
 
                 if ( summary != null && summary.Any() )

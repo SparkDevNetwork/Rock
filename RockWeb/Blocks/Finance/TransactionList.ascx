@@ -54,7 +54,7 @@
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
                         <Rock:Grid ID="gTransactions" runat="server" EmptyDataText="No Transactions Found" 
-                            RowItemText="Transaction" OnRowSelected="gTransactions_Edit" AllowSorting="true" ExportSource="ColumnOutput" >
+                            RowItemText="Transaction" AllowSorting="true" ExportSource="ColumnOutput" >
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
                                 <Rock:RockLiteralField ID="lPersonFullNameReversed" HeaderText="Person" 

@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Campus" )]
     [DataContract]
+    [Analytics( false, true )]
     public partial class Campus : Model<Campus>, IOrdered
     {
         #region Entity Properties

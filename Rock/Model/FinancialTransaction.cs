@@ -107,17 +107,6 @@ namespace Rock.Model
         public string TransactionCode { get; set; }
 
         /// <summary>
-        /// For Credit Card transactions, this is the Gateway's Transaction Key
-        /// </summary>
-        /// <value>
-        /// The gateway transaction key.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        [Index( "IX_GatewayTransactionKey" )]
-        public string GatewayTransactionKey { get; set; }
-
-        /// <summary>
         /// Gets or sets a summary of the transaction.
         /// </summary>
         /// <value>

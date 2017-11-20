@@ -1671,7 +1671,11 @@ namespace RockWeb.Blocks.Event
         {
             try
             {
-                registration.SavePersonNotesAndHistory( this.CurrentPerson, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
+                {
+                    registration.SavePersonNotesAndHistory( registration.PersonAlias.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                }
+
                 AddRegistrantsToGroup( rockContext, registration );
 
                 string appRoot = ResolveRockUrl( "~/" );

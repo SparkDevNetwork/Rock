@@ -53,10 +53,22 @@ namespace Rock.Client
         public int? BirthYear { get; set; }
 
         /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
+        public string CampusName { get; set; }
+
+        /// <summary />
+        public string CampusShortCode { get; set; }
+
+        /// <summary />
         public string ConnectionStatus { get; set; }
 
         /// <summary />
         public int? ConnectionStatusValueId { get; set; }
+
+        /// <summary />
+        public int Count { get; set; }
 
         /// <summary />
         public bool CurrentRowIndicator { get; set; }
@@ -111,6 +123,78 @@ namespace Rock.Client
 
         /// <summary />
         public string LastName { get; set; }
+
+        /// <summary />
+        public string MailingAddressCity { get; set; }
+
+        /// <summary />
+        public string MailingAddressCountry { get; set; }
+
+        /// <summary />
+        public string MailingAddressCounty { get; set; }
+
+        /// <summary />
+        public string MailingAddressFull { get; set; }
+
+        /// <summary />
+        public object MailingAddressGeoFence { get; set; }
+
+        /// <summary />
+        public object MailingAddressGeoPoint { get; set; }
+
+        /// <summary />
+        public double? MailingAddressLatitude { get; set; }
+
+        /// <summary />
+        public double? MailingAddressLongitude { get; set; }
+
+        /// <summary />
+        public string MailingAddressPostalCode { get; set; }
+
+        /// <summary />
+        public string MailingAddressState { get; set; }
+
+        /// <summary />
+        public string MailingAddressStreet1 { get; set; }
+
+        /// <summary />
+        public string MailingAddressStreet2 { get; set; }
+
+        /// <summary />
+        public string MappedAddressCity { get; set; }
+
+        /// <summary />
+        public string MappedAddressCountry { get; set; }
+
+        /// <summary />
+        public string MappedAddressCounty { get; set; }
+
+        /// <summary />
+        public string MappedAddressFull { get; set; }
+
+        /// <summary />
+        public object MappedAddressGeoFence { get; set; }
+
+        /// <summary />
+        public object MappedAddressGeoPoint { get; set; }
+
+        /// <summary />
+        public double? MappedAddressLatitude { get; set; }
+
+        /// <summary />
+        public double? MappedAddressLongitude { get; set; }
+
+        /// <summary />
+        public string MappedAddressPostalCode { get; set; }
+
+        /// <summary />
+        public string MappedAddressState { get; set; }
+
+        /// <summary />
+        public string MappedAddressStreet1 { get; set; }
+
+        /// <summary />
+        public string MappedAddressStreet2 { get; set; }
 
         /// <summary />
         public string MaritalStatus { get; set; }
@@ -203,8 +287,12 @@ namespace Rock.Client
             this.BirthDay = source.BirthDay;
             this.BirthMonth = source.BirthMonth;
             this.BirthYear = source.BirthYear;
+            this.CampusId = source.CampusId;
+            this.CampusName = source.CampusName;
+            this.CampusShortCode = source.CampusShortCode;
             this.ConnectionStatus = source.ConnectionStatus;
             this.ConnectionStatusValueId = source.ConnectionStatusValueId;
+            this.Count = source.Count;
             this.CurrentRowIndicator = source.CurrentRowIndicator;
             this.EffectiveDate = source.EffectiveDate;
             this.Email = source.Email;
@@ -223,6 +311,30 @@ namespace Rock.Client
             this.InactiveReasonNote = source.InactiveReasonNote;
             this.IsDeceased = source.IsDeceased;
             this.LastName = source.LastName;
+            this.MailingAddressCity = source.MailingAddressCity;
+            this.MailingAddressCountry = source.MailingAddressCountry;
+            this.MailingAddressCounty = source.MailingAddressCounty;
+            this.MailingAddressFull = source.MailingAddressFull;
+            this.MailingAddressGeoFence = source.MailingAddressGeoFence;
+            this.MailingAddressGeoPoint = source.MailingAddressGeoPoint;
+            this.MailingAddressLatitude = source.MailingAddressLatitude;
+            this.MailingAddressLongitude = source.MailingAddressLongitude;
+            this.MailingAddressPostalCode = source.MailingAddressPostalCode;
+            this.MailingAddressState = source.MailingAddressState;
+            this.MailingAddressStreet1 = source.MailingAddressStreet1;
+            this.MailingAddressStreet2 = source.MailingAddressStreet2;
+            this.MappedAddressCity = source.MappedAddressCity;
+            this.MappedAddressCountry = source.MappedAddressCountry;
+            this.MappedAddressCounty = source.MappedAddressCounty;
+            this.MappedAddressFull = source.MappedAddressFull;
+            this.MappedAddressGeoFence = source.MappedAddressGeoFence;
+            this.MappedAddressGeoPoint = source.MappedAddressGeoPoint;
+            this.MappedAddressLatitude = source.MappedAddressLatitude;
+            this.MappedAddressLongitude = source.MappedAddressLongitude;
+            this.MappedAddressPostalCode = source.MappedAddressPostalCode;
+            this.MappedAddressState = source.MappedAddressState;
+            this.MappedAddressStreet1 = source.MappedAddressStreet1;
+            this.MappedAddressStreet2 = source.MappedAddressStreet2;
             this.MaritalStatus = source.MaritalStatus;
             this.MaritalStatusValueId = source.MaritalStatusValueId;
             this.MiddleName = source.MiddleName;

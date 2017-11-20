@@ -106,6 +106,18 @@ namespace Rock.Web.Cache
             return lavaTemplate;
         }
 
+        /// <summary>
+        /// Flushes all the LavaTemplateCache items
+        /// </summary>
+        public static void Flush()
+        {
+            RockMemoryCache cache = RockMemoryCache.Default;
+            var lavaTemplateCaches = cache.Where( a => a.Key.StartsWith( "Rock:LavaTemplate:" ) );
+            foreach ( var lavaTemplateCache in lavaTemplateCaches )
+            {
+                cache.Remove( lavaTemplateCache.Key );
+            }
+        }
 
         #endregion
     }

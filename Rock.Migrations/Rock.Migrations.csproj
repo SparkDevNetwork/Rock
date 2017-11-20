@@ -393,6 +393,26 @@
     <Compile Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.Designer.cs">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711071643407_GatewayTransactionKey2.cs" />
+    <Compile Include="Migrations\201711071643407_GatewayTransactionKey2.Designer.cs">
+      <DependentUpon>201711071643407_GatewayTransactionKey2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201711072304394_CommunicationTemplateLavaFields.cs" />
+    <Compile Include="Migrations\201711072304394_CommunicationTemplateLavaFields.Designer.cs">
+      <DependentUpon>201711072304394_CommunicationTemplateLavaFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201711081825032_Analytics4.cs" />
+    <Compile Include="Migrations\201711081825032_Analytics4.Designer.cs">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201711092125120_Analytics5.cs" />
+    <Compile Include="Migrations\201711092125120_Analytics5.Designer.cs">
+      <DependentUpon>201711092125120_Analytics5.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201711121446237_RemoveTransactionKeys.cs" />
+    <Compile Include="Migrations\201711121446237_RemoveTransactionKeys.Designer.cs">
+      <DependentUpon>201711121446237_RemoveTransactionKeys.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2837,6 +2857,21 @@
     <EmbeddedResource Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.resx">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711071643407_GatewayTransactionKey2.resx">
+      <DependentUpon>201711071643407_GatewayTransactionKey2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711072304394_CommunicationTemplateLavaFields.resx">
+      <DependentUpon>201711072304394_CommunicationTemplateLavaFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711081825032_Analytics4.resx">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711092125120_Analytics5.resx">
+      <DependentUpon>201711092125120_Analytics5.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711121446237_RemoveTransactionKeys.resx">
+      <DependentUpon>201711121446237_RemoveTransactionKeys.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4705,6 +4740,32 @@
     <Content Include="Migrations\201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family.sql">
       <DependentUpon>201710131721219_InteractionRelatedEntity.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate.sql">
+      <DependentUpon>201711011841422_GatewayTransactionKey.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimAttendanceLocation.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimFinancialAccount.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimFinancialBatch.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimPersonBirthDate.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimPersonHistorical.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711081825032_Analytics4_spAnalytics_ETL_Family.sql">
+      <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimAttendanceLocation.sql" />
+    <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimCampus.sql" />
+    <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimFamilyHistorical.sql" />
+    <Content Include="Migrations\201711092125120_Analytics5_spAnalytics_ETL_Campus.sql" />
+    <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimPersonHistorical.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
@@ -4715,7 +4776,6 @@
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor_TransactionData.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201606231511599_RegistrationWorkflow_Indexes.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201607102235065_ScheduledTransactionType.sql" />
-    <Content Include="Migrations\201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate.sql" />
     <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP1.sql" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP2.sql" />
