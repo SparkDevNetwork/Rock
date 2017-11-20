@@ -164,7 +164,9 @@
                             <asp:Label ID="asdasd" runat="server" Text="New Opportunity" Font-Bold="true" />
                             <div class="row">
                                 <div class="col-md-8">
-                                    <Rock:RockDropDownList ID="ddlTransferOpportunity" runat="server" />
+                                    <Rock:RockDropDownList ID="ddlTransferOpportunity" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlTransferOpportunity_SelectedIndexChanged" />
+                                    <Rock:RockDropDownList ID="ddlTransferOpportunityConnector" runat="server" Label="Connector" />
+                                    <Rock:RockCheckBox ID="cbUseDefaultConnector" Checked="true" runat="server" Text="Use default connector for new opportunity" Help="Use the default connector for the selected opportunity. Set to false to use the current connector for this connection request." AutoPostBack="true" OnCheckedChanged="cbUseDefaultConnector_CheckedChanged" />
                                 </div>
                                 <div class="col-md-4">
                                     <Rock:BootstrapButton ID="btnSearch" runat="server" CssClass="btn btn-primary" Text="Search" OnClick="btnSearch_Click" />
@@ -175,8 +177,6 @@
                             <Rock:RockDropDownList ID="ddlTransferStatus" runat="server" Label="Status" />
                         </div>
                     </div>
-
-                    <Rock:RockCheckBox ID="cbClearConnector" Checked="true" runat="server" Text=" Clear Connector" />
 
                     <Rock:RockTextBox ID="tbTransferNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
 
