@@ -72,8 +72,19 @@ namespace church.ccv.Web.Rest
 
             // build and return the response
             StringContent restContent = new StringContent( loginResponse.ToString( ), Encoding.UTF8, "text/plain");
-
             HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = HttpStatusCode.OK, Content = restContent };
+            return response;
+        }
+
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route( "api/Web/Logout" )]
+        public HttpResponseMessage Logout( int? currPageId )
+        {
+            bool shouldRedirect = WebUtil.Logout( Request.Headers.Referrer, currPageId );
+
+            // build and return the response
+            StringContent restContent = new StringContent( shouldRedirect.ToString( ), Encoding.UTF8, "text/plain" );
+            HttpResponseMessage response = new HttpResponseMessage() { StatusCode = HttpStatusCode.OK, Content = restContent };
             return response;
         }
 
@@ -113,7 +124,6 @@ namespace church.ccv.Web.Rest
 
             // return a list of duplicates, which will be empty if there weren't any
             StringContent restContent = new StringContent( JsonConvert.SerializeObject( duplicateList ), Encoding.UTF8, "application/json" );
-
             HttpResponseMessage response = new HttpResponseMessage() { StatusCode = HttpStatusCode.OK, Content = restContent };
             return response;
         }
@@ -133,7 +143,6 @@ namespace church.ccv.Web.Rest
             
             // return OK, and whether we created their request or not
             StringContent restContent = new StringContent( success.ToString( ), Encoding.UTF8, "text/plain" );
-            
             HttpResponseMessage response = new HttpResponseMessage() { StatusCode = HttpStatusCode.OK, Content = restContent };
             return response;
         }
@@ -154,9 +163,7 @@ namespace church.ccv.Web.Rest
             
             // return OK, and whether we created their request or not
             restContent = new StringContent( loginResponse.ToString( ), Encoding.UTF8, "text/plain" );
-            
             HttpResponseMessage response = new HttpResponseMessage() { StatusCode = HttpStatusCode.OK, Content = restContent };
-
             return response;
         }
 

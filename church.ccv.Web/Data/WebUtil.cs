@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Security;
 
 namespace church.ccv.Web.Data
 {
@@ -68,6 +69,40 @@ namespace church.ccv.Web.Data
             }
 
             return loginResponse;
+        }
+
+        public static bool Logout( Uri refererUri, int? pageId )
+        {
+            // assume we should not advise the browser to redirect the user,
+            // but after logging out, if they are on a page that's not allowed, this will be set to true.
+            bool shouldRedirectUser = false;
+
+            UserLogin loggedIn = UserLoginService.GetCurrentUser( );
+
+            if( loggedIn != null )
+            {
+                var transaction = new Rock.Transactions.UserLastActivityTransaction();
+                transaction.UserId = loggedIn.Id;
+                transaction.LastActivityDate = RockDateTime.Now;
+                transaction.IsOnLine = false;
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            }
+            
+            FormsAuthentication.SignOut();
+
+            string localPath = refererUri.LocalPath;
+
+            if( pageId.HasValue )
+            {
+                // if the page they claim they're visiting is NOT valid, we need to send them to the default page.
+                var currentPage = Rock.Web.Cache.PageCache.Read( pageId.Value );
+                if ( currentPage == null || currentPage.IsAuthorized( Rock.Security.Authorization.VIEW, null ) == false )
+                {
+                    shouldRedirectUser = true;
+                }
+            }
+
+            return shouldRedirectUser;
         }
 
         protected static bool PMG2Login( string username, string password )

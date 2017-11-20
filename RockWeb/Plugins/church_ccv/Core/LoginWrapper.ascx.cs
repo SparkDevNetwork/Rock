@@ -53,7 +53,7 @@ namespace RockWeb.Plugins.church_ccv.Core
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
+            
             LoginStatus_OnLoad( e );
         }
         #endregion
@@ -124,10 +124,7 @@ namespace RockWeb.Plugins.church_ccv.Core
                 {
                     phMySettings.Visible = false;
                 }
-
-                lbLogout.Text = "Logout";
-                lbLogout.Visible = true;
-
+                
                 divProfilePhoto.Attributes.Add( "style", String.Format( "background-image: url('{0}');", Rock.Model.Person.GetPersonPhotoUrl( currentPerson, 200, 200 )));
 
                 var navPagesString = GetAttributeValue( "LoggedInPageList" );
@@ -165,39 +162,26 @@ namespace RockWeb.Plugins.church_ccv.Core
                 phMyAccount.Visible = false;
                 phMyProfile.Visible = false;
                 phMySettings.Visible = false;
-                lbLogout.Visible = false;
-
+                
                 hlNewAccount.Visible = true;
                 liDropdown.Visible = false;
                 liLogin.Visible = true;
             }
         }
 
-        protected void LoginStatus_lbLogout_Click( object sender, EventArgs e )
+        public int LoginWrapper_GetPageId( )
         {
-            if ( CurrentUser != null )
-            {
-                var transaction = new Rock.Transactions.UserLastActivityTransaction();
-                transaction.UserId = CurrentUser.Id;
-                transaction.LastActivityDate = RockDateTime.Now;
-                transaction.IsOnLine = false;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-            }
+            return RockPage.PageId;
+        }
 
-            FormsAuthentication.SignOut();
-
-            // After logging out check to see if an anonymous user is allowed to view the current page.  If so
-            // redirect back to the current page, otherwise redirect to the site's default page
-            var currentPage = Rock.Web.Cache.PageCache.Read( RockPage.PageId );
-            if ( currentPage != null && currentPage.IsAuthorized(Authorization.VIEW, null))
+        public string LoginWrapper_GetDefaultPage( )
+        {
+            Rock.Web.Cache.PageCache.PageRouteInfo routeInfo = RockPage.Layout.Site.DefaultPage.PageRoutes.FirstOrDefault( );
+            if ( routeInfo != null )
             {
-                Response.Redirect( CurrentPageReference.BuildUrl() );
-                Context.ApplicationInstance.CompleteRequest();
+                return "/" + routeInfo.Route;
             }
-            else
-            {
-                RockPage.Layout.Site.RedirectToDefaultPage();
-            }
+            return "/Page/" + RockPage.Layout.Site.DefaultPageId.ToString( );
         }
         #endregion
     }

@@ -29,10 +29,35 @@
             </asp:PlaceHolder>
             <asp:Literal ID="lDropdownItems" runat="server" />
 
-            <li><asp:LinkButton ID="lbLogout" runat="server" OnClick="LoginStatus_lbLogout_Click" CausesValidation="false"></asp:LinkButton></li>
+            <li><asp:LinkButton runat="server" OnClientClick="logout(); return false;">Logout</asp:LinkButton></li>
         </ul>
 
     </li>
     <li ID="liLogin" runat="server" Visible="false"><asp:LinkButton CssClass="masthead-navitem" ID="lbLogin" runat="server" OnClientClick="displayLoginModal(); return false;" CausesValidation="false" Text="Login">
     <asp:PlaceHolder ID="phNewAccount" runat="server" Visible="false" ><asp:HyperLink ID="hlNewAccount" CssClass="masthead-navitem" runat="server" Text="Create Account" /></asp:PlaceHolder></asp:LinkButton></li>
 </ul>
+
+<script>
+    function logout() {
+        
+        var pageId = "<%=LoginWrapper_GetPageId( ) %>";
+
+        $.ajax({
+            url: "/api/Web/Logout?currPageId=" + pageId,
+            type: "GET",
+            xhrFields: {
+                withCredentials: true
+            }
+        }).done(function (returnData) {
+
+            // if true is returned, we're not allowed to view this page anonymously, so redirect them.
+            if (returnData == "True") {
+                var uri = window.location.protocol + "//" + window.location.host + "<%=LoginWrapper_GetDefaultPage( ) %>";
+                location.replace(uri);
+            }
+            else {
+                location.reload();
+            }
+        });
+    }
+</script>

@@ -705,8 +705,7 @@
     function handleForgotPasswordResponse(responseData) {
         hideLoader();
 
-        // invoke a postback so the server can redirect us if needed
-        __doPostBack("", "__FORGOT_PASSWORD_SUCCEEDED" + ":");
+        hideLoginModal();
     }
     // ---- END FORGOT PASSWORD ----
 </script>

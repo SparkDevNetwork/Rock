@@ -48,7 +48,6 @@ namespace RockWeb.Plugins.church_ccv.Core
     [SystemEmailField( "Account Created Email Template Guid", "Used when a new account is created.", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 6 )]
     public partial class LoginModal : Rock.Web.UI.RockBlock
     {
-        #region LoginModal
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -57,67 +56,6 @@ namespace RockWeb.Plugins.church_ccv.Core
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            LoginModal_OnLoad( e );
-        }
-        #endregion
-        
-        #region LoginModal
-        protected void LoginModal_OnLoad( EventArgs e )
-        {
-            // see if the login class needs to handle this
-            if ( Page.IsPostBack )
-            {
-                // parse the event args so we know what we need to handle
-                string postbackArgs = Request.Params["__EVENTARGUMENT"];
-                if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
-                {
-                    string[] splitArgs = postbackArgs.Split( new char[] { ':' } );
-
-                    // the first should always be the action
-                    switch ( splitArgs [ 0 ] )
-                    {
-                        case "__LOGIN_SUCCEEDED":
-                        {
-                            string returnUrl = Request.QueryString["returnurl"];
-                            LoginModal_RedirectUser( returnUrl );
-
-                            break;
-                        }
-
-                        // for now, do the same as when a login succeeds
-                        case "__FORGOT_PASSWORD_SUCCEEDED":
-                        case "__REGISTRATION_SUCCEEDED":
-                        {
-                            string returnUrl = Request.QueryString["returnurl"];
-                            LoginModal_RedirectUser( returnUrl );
-
-                            break;
-                        }
-
-                        default:
-                        {
-                            // ignore unknown actions
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        protected void LoginModal_RedirectUser( string returnUrl )
-        {
-            if ( !string.IsNullOrWhiteSpace( returnUrl ) )
-            {
-                string redirectUrl = Server.UrlDecode( returnUrl );
-                Response.Redirect( redirectUrl );
-                ApplicationInstance.CompleteRequest( );
-            }
-            else
-            {
-                // without a return URL, just reload the existing page.
-                Response.Redirect(Request.RawUrl);
-            }
         }
                 
         public string LoginModal_GetThemeUrl( )
@@ -174,6 +112,5 @@ namespace RockWeb.Plugins.church_ccv.Core
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
             return GetAttributeValue( "AccountHasLoginsCaption" ).ResolveMergeFields( mergeFields );
         }
-        #endregion
     }
 }
