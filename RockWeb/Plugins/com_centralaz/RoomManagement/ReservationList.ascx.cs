@@ -106,7 +106,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             switch ( e.Key )
             {
-                case "Ministry":
+                case FilterSetting.MINISTRY:
                     {
                         int ministryId = 0;
                         var reservationMinistryService = new ReservationMinistryService( new RockContext() );
@@ -128,7 +128,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         }
                         break;
                     }
-                case "Approval State":
+                case FilterSetting.APPROVAL_STATE:
                     {
                         var approvalValues = e.Value.Split( ',' ).Select( a => a.ConvertToEnum<ReservationApprovalState>() );
                         if ( approvalValues.Any() )
@@ -145,12 +145,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         break;
                     }
 
-                case "Start Time":
-                case "End Time":
+                case FilterSetting.START_TIME:
+                case FilterSetting.END_TIME:
                     {
                         break;
                     }
-                case "Created By":
+                case FilterSetting.CREATED_BY:
                     {
                         string personName = string.Empty;
 
@@ -169,7 +169,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                         break;
                     }
-                case "Resources":
+                case FilterSetting.RESOURCES:
                     {
                         var resourceIdList = e.Value.Split( ',' ).AsIntegerList();
                         if ( resourceIdList.Any() && rpResource.Visible )
@@ -192,7 +192,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                         break;
                     }
-                case "Locations":
+                case FilterSetting.LOCATIONS:
                     {
                         var locationIdList = e.Value.Split( ',' ).AsIntegerList();
                         if ( locationIdList.Any() && lipLocation.Visible )
@@ -220,17 +220,17 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfSettings.SaveUserPreference( "Reservation Name", tbName.Text );
-            gfSettings.SaveUserPreference( "Ministry", ddlMinistry.SelectedValue );
-            gfSettings.SaveUserPreference( "Approval State", cblApproval.SelectedValues.AsDelimited( "," ) );
+            gfSettings.SaveUserPreference( FilterSetting.RESERVATION_NAME, tbName.Text );
+            gfSettings.SaveUserPreference( FilterSetting.MINISTRY, ddlMinistry.SelectedValue );
+            gfSettings.SaveUserPreference( FilterSetting.APPROVAL_STATE, cblApproval.SelectedValues.AsDelimited( "," ) );
 
             int personId = ppCreator.PersonId ?? 0;
-            gfSettings.SaveUserPreference( "Created By",  personId.ToString() );
+            gfSettings.SaveUserPreference( FilterSetting.CREATED_BY,  personId.ToString() );
 
-            gfSettings.SaveUserPreference( "Start Time", dtpStartDateTime.SelectedDateTime.ToString() );
-            gfSettings.SaveUserPreference( "End Time", dtpEndDateTime.SelectedDateTime.ToString() );
-            gfSettings.SaveUserPreference( "Resources", rpResource.SelectedValues.AsIntegerList().AsDelimited(","));
-            gfSettings.SaveUserPreference( "Locations", lipLocation.SelectedValues.AsIntegerList().AsDelimited( "," ) );
+            gfSettings.SaveUserPreference( FilterSetting.START_TIME, dtpStartDateTime.SelectedDateTime.ToString() );
+            gfSettings.SaveUserPreference( FilterSetting.END_TIME, dtpEndDateTime.SelectedDateTime.ToString() );
+            gfSettings.SaveUserPreference( FilterSetting.RESOURCES, rpResource.SelectedValues.AsIntegerList().AsDelimited(","));
+            gfSettings.SaveUserPreference( FilterSetting.LOCATIONS, lipLocation.SelectedValues.AsIntegerList().AsDelimited( "," ) );
             BindGrid();
         }
 
@@ -245,9 +245,9 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             var rockContext = new RockContext();
 
-            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Reservation Name" ) ) )
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( FilterSetting.RESERVATION_NAME ) ) )
             {
-                tbName.Text = gfSettings.GetUserPreference( "Reservation Name" );
+                tbName.Text = gfSettings.GetUserPreference( FilterSetting.RESERVATION_NAME );
             }
 
             var ministries = new ReservationMinistryService( rockContext ).Queryable().ToList();
@@ -256,20 +256,20 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 ddlMinistry.Items.Add( new ListItem( ministry.Name, ministry.Id.ToString() ) );
             }
-            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Ministry" ) ) )
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( FilterSetting.MINISTRY ) ) )
             {
-                ddlMinistry.SetValue( gfSettings.GetUserPreference( "Ministry" ) );
+                ddlMinistry.SetValue( gfSettings.GetUserPreference( FilterSetting.MINISTRY ) );
             }
 
             cblApproval.BindToEnum<ReservationApprovalState>( );
-            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Approval State" ) ) )
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( FilterSetting.APPROVAL_STATE ) ) )
             {
-                cblApproval.SetValues( gfSettings.GetUserPreference( "Approval State" ).SplitDelimitedValues() );
+                cblApproval.SetValues( gfSettings.GetUserPreference( FilterSetting.APPROVAL_STATE ).SplitDelimitedValues() );
             }
 
-            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Created By" ) ) )
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( FilterSetting.CREATED_BY ) ) )
             {
-                int? personId = gfSettings.GetUserPreference( "Created By" ).AsIntegerOrNull();
+                int? personId = gfSettings.GetUserPreference( FilterSetting.CREATED_BY ).AsIntegerOrNull();
                 if ( personId.HasValue && personId.Value != 0 )
                 {
                     var personService = new PersonService( new RockContext() );
@@ -281,24 +281,24 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
             }
 
-            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Start Time" ) ) )
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( FilterSetting.START_TIME ) ) )
             {
-                dtpStartDateTime.SelectedDateTime = gfSettings.GetUserPreference( "Start Time" ).AsDateTime();
+                dtpStartDateTime.SelectedDateTime = gfSettings.GetUserPreference(  FilterSetting.START_TIME ).AsDateTime();
             }
 
-            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "End Time" ) ) )
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( FilterSetting.END_TIME ) ) )
             {
-                dtpEndDateTime.SelectedDateTime = gfSettings.GetUserPreference( "End Time" ).AsDateTime();
+                dtpEndDateTime.SelectedDateTime = gfSettings.GetUserPreference( FilterSetting.END_TIME ).AsDateTime();
             }
 
-            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Resource" ) ) )
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( FilterSetting.RESOURCES ) ) )
             {
-                rpResource.SetValues( gfSettings.GetUserPreference( "Resource" ).Split( ',' ).AsIntegerList() );
+                rpResource.SetValues( gfSettings.GetUserPreference( FilterSetting.RESOURCES ).Split( ',' ).AsIntegerList() );
             }
 
-            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Location" ) ) )
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( FilterSetting.LOCATIONS ) ) )
             {
-                lipLocation.SetValues( gfSettings.GetUserPreference( "Location" ).Split( ',' ).AsIntegerList() );
+                lipLocation.SetValues( gfSettings.GetUserPreference( FilterSetting.LOCATIONS ).Split( ',' ).AsIntegerList() );
             }
         }
 
@@ -386,6 +386,24 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             gReservations.DataBind();
         }
 
+        #endregion
+
+
+        #region Filter's User Preference Setting Keys
+        /// <summary>
+        /// Constant like string-key-settings that are tied to user saved filter preferences.
+        /// </summary>
+        public static class FilterSetting
+        {
+            public const string RESERVATION_NAME = "Reservation Name";
+            public const string MINISTRY = "Ministry";
+            public const string CREATED_BY = "Created By";
+            public const string LOCATIONS = "Locations";
+            public const string RESOURCES = "Resources";
+            public const string START_TIME = "Start Time";
+            public const string END_TIME = "End Time";
+            public const string APPROVAL_STATE = "Approval State";
+        }
         #endregion
     }
 }
