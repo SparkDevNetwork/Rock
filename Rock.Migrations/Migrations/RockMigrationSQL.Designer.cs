@@ -4107,5 +4107,45 @@ namespace Rock.Migrations.Migrations {
                         "der", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE
+        ///	@BinaryFileId int
+        ///	,@BinaryFileTypeIdDefault int = (SELECT TOP 1 Id from [BinaryFileType] where [Guid] = &apos;C1142570-8CD6-4A20-83B1-ACB47C1CD377&apos;)
+        ///	,@StorageEntityTypeIdDatabase int = (SELECT TOP 1 Id FROM [EntityType] WHERE [Guid] = &apos;0AA42802-04FD-4AEC-B011-FEB127FC85CD&apos;)
+        ///
+        ///-- Add communication-template-sidebar.svg
+        ///IF NOT EXISTS (SELECT * FROM [BinaryFile] WHERE [Guid] = &apos;26D240BC-B9AC-4120-8632-B63470A71414&apos; )
+        ///BEGIN
+        ///INSERT INTO [BinaryFile] ([IsTemporary], [IsSystem], [BinaryFileTypeId], [Fi [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711211752271_NcoaHistory_UpdateCommunicationTemplateBinaryFiles {
+            get {
+                return ResourceManager.GetString("_201711211752271_NcoaHistory_UpdateCommunicationTemplateBinaryFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /* Update the System &apos;Blank&apos; communication template */
+        ///
+        ///UPDATE [dbo].[CommunicationTemplate] 
+        ///	SET [CategoryId] = (SELECT TOP 1 Id FROM [Category] WHERE [Guid] = &apos;A7F79054-5539-4910-A13F-AA5884B8C01D&apos;)
+        ///	,[Message] = &apos;&lt;!DOCTYPE html&gt;
+        ///&lt;html&gt;
+        ///&lt;head&gt;
+        ///&lt;title&gt;A Responsive Email Template&lt;/title&gt;
+        ///
+        ///&lt;meta charset=&quot;utf-8&quot;&gt;
+        ///&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+        ///&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot; &gt;
+        ///&lt;style type=&quot;text/css&quot;&gt;
+        ///    /* CLIENT-SPECIFIC STYLES */
+        ///    [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711211752271_NcoaHistory_UpdateCommunicationTemplates {
+            get {
+                return ResourceManager.GetString("_201711211752271_NcoaHistory_UpdateCommunicationTemplates", resourceCulture);
+            }
+        }
     }
 }

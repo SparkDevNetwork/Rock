@@ -350,7 +350,7 @@ namespace Rock.Security.BackgroundCheck
                             xSSNElement.Value = "XXX-XX-XXXX";
                         }
 
-                        backgroundCheck.ResponseXml = string.Format( @"
+                        backgroundCheck.ResponseData = string.Format( @"
 Request XML ({0}): 
 ------------------------ 
 {1}
@@ -548,7 +548,7 @@ Response XML ({2}):
                     xSSNElement.Value = "XXX-XX-XXXX";
                 }
 
-                backgroundCheck.ResponseXml = backgroundCheck.ResponseXml + string.Format( @"
+                backgroundCheck.ResponseData = backgroundCheck.ResponseData + string.Format( @"
 Response XML ({0}): 
 ------------------------ 
 {1}
