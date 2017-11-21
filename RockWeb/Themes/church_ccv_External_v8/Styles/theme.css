@@ -10589,7 +10589,20 @@ html,body{
 }
 
 /* Formatting for the event details page */
+.event-detail-wrapper {
+   display: flex;
+   flex-direction: row;
+   flex-wrap: wrap;
+}
+
+.event-detail-body {
+   padding-right: 25px;
+}
+
 .event-detail-card {
+   display: flex;
+   flex-direction: column;
+   
    border-width: 0px; 
    border-color: #000; 
    border-style: solid;
@@ -10597,6 +10610,15 @@ html,body{
    box-shadow: 0px 0px 10px #bbb;
    padding: 25px;
    margin-bottom: 25px;
+   height: 100%;
+   
+   width: 380px;
+}
+
+@media screen and (min-width: 1224px) {
+   .event-detail-body {
+      width: 50%;
+   }
 }
 
 .event-detail-card h6 {
@@ -10605,6 +10627,8 @@ html,body{
 	font-weight: 900;
    text-transform: uppercase;
    font-size: 16px;
+   margin: 0px;
+   width: 50%;
 }
 
 .event-detail-card img {
@@ -10612,6 +10636,9 @@ html,body{
 }
 
 .event-detail-card .info {
+   display: flex;
+   flex-direction: column;
+   
    background-color: #f5f5f5;
    border-radius: 6px;
    padding: 15px;
@@ -10619,6 +10646,9 @@ html,body{
 }
 
 .event-detail-card .info .item {
+   display: flex;
+   flex-direction: row;
+   align-items: top;
    margin-top: 5px;
    margin-bottom: 5px;
 }
@@ -10628,6 +10658,7 @@ html,body{
 	font-family: heebo;
 	font-weight: normal;
    font-size: 12px;  
+   width: 80%;
 }
 
 /* Formatting for select a day campus selector */

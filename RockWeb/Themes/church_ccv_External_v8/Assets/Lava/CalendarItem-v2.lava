@@ -1,16 +1,15 @@
-<div class="row">
-   <div class="col-md-12">
+<div class="event-detail-header">
       <br/>
       <a href="/events" class="btn btn-primary">Return to Events</a>
       <h1>{{Event.Name}}</h1>
-   </div>
 </div>
-<div class="row">
-  <div class="col-md-6">
-    {{Event.Description}}
-  </div>
-  <div class="col-md-4">
-    <div class="event-detail-card">
+
+<div class="event-detail-wrapper">
+   <div class="event-detail-body">
+       {{Event.Description}}
+   </div>
+
+   <div class="event-detail-card">
       {% if Event.Photo.Guid %}
          <img src="/GetImage.ashx?Guid={{ Event.Photo.Guid }}" style="width: 365px; height: 200px;" class="img-responsive"></img>
       {% endif %}
@@ -19,33 +18,32 @@
          {% assign linkage = EventItemOccurrence.Linkages | First %}
          
          {% if EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
-            <div class="item row">
-               <div class="col-md-4">
-                  <h6>Contact: </h6>
-               </div>
-               <div class="col-md-8">
+            <div class="item">
+               <h6>Contact: </h6>
+               
+               <div class="text">
                   {% if EventItemOccurrence.ContactEmail != '' %}
-                     <div class="text">{{ EventItemOccurrence.ContactEmail }} </div>
+                     {{ EventItemOccurrence.ContactEmail }} <br/>
                   {% endif %}
+                  
                   {% if EventItemOccurrence.ContactPhone != '' %}
-                     <div class="text">{{ EventItemOccurrence.ContactPhone }} </div>
+                     {{ EventItemOccurrence.ContactPhone }}
                   {% endif %}
-               </div>
+                </div>
             </div>
          {% endif %}
 
          {% if EventItemOccurrence.Campus != null and EventItemOccurrence.Location != '' %}
-            <div class="item row">
-               <div class="col-md-4">
-                  <h6>Location:</h6>
-               </div>
-               <div class="col-md-8">
-               {% if EventItemOccurrence.Campus != null %}
-                  <div class="text">{{EventItemOccurrence.Campus.Name}} Campus </div>
-               {% endif %}
-               {% if EventItemOccurrence.Location != '' %}
-                  <div class="text">{{ EventItemOccurrence.Location }} </div>
-               {% endif %}
+            <div class="item">
+               <h6>Location:</h6>
+               
+               <div class="text">
+                  {% if EventItemOccurrence.Campus != null %}
+                     {{EventItemOccurrence.Campus.Name}} Campus <br/>
+                  {% endif %}
+                  {% if EventItemOccurrence.Location != '' %}
+                     {{ EventItemOccurrence.Location }}
+                  {% endif %}
                </div>
             </div>
          {% endif %}
@@ -54,14 +52,13 @@
          {% assign scheduledDates = EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal:'all' %}
          {% assign numScheduledDates = scheduledDates | Size %}
          {% if numScheduledDates > 0 %}
-            <div class="item row">
-               <div class="col-md-4">
-                  <h6>When:</h6>
-               </div>
-               <div class="col-md-8">
+            <div class="item">
+               <h6>When:</h6>
+               
+               <div class="text">
                   <ul class="list-unstyled">
                      {% for scheduledDate in scheduledDates %}
-                        <li><div class="text">{{  scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}</div></li>
+                        <li>{{  scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}</li>
                      {% endfor %}
                   </ul>
                </div>
@@ -69,14 +66,11 @@
          {% endif %}
             
          {% if EventItemOccurrence.Note != '' %}
-            <div class="item row">
-               <div class="col-md-4">
-                  <h6>Notes:</h6>
-               </div>
-               <div class="col-md-8">
-                  <ul class="list-unstyled">
-                     <div class="text">{{ EventItemOccurrence.Note }}</div>
-                  </ul>
+            <div class="item">
+               <h6>Notes:</h6>
+               
+               <div class="text">
+                  {{ EventItemOccurrence.Note }}
                </div>
             </div>
          {% endif %}
@@ -111,6 +105,8 @@
       {% endif %}
 
       {% endif %}
-    </div>
-  </div>
+   </div>
+   
+   <div style="height: 525px;" class="footer-padding">
+   </div>
 </div>
