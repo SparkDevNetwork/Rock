@@ -50,6 +50,9 @@ namespace Rock.Client
         public int? ComponentEntityTypeId { get; set; }
 
         /// <summary />
+        public string DetailTemplate { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -57,6 +60,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? InteractionEntityTypeId { get; set; }
+
+        /// <summary />
+        public string ListTemplate { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -68,6 +74,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? RetentionDuration { get; set; }
+
+        /// <summary />
+        public bool UsesSession { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -107,12 +116,15 @@ namespace Rock.Client
             this.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
             this.ComponentCacheDuration = source.ComponentCacheDuration;
             this.ComponentEntityTypeId = source.ComponentEntityTypeId;
+            this.DetailTemplate = source.DetailTemplate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InteractionEntityTypeId = source.InteractionEntityTypeId;
+            this.ListTemplate = source.ListTemplate;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.RetentionDuration = source.RetentionDuration;
+            this.UsesSession = source.UsesSession;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

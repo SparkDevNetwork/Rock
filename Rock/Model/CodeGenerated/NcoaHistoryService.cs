@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// InteractionSession Service class
+    /// NcoaHistory Service class
     /// </summary>
-    public partial class InteractionSessionService : Service<InteractionSession>
+    public partial class NcoaHistoryService : Service<NcoaHistory>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InteractionSessionService"/> class
+        /// Initializes a new instance of the <see cref="NcoaHistoryService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public InteractionSessionService(RockContext context) : base(context)
+        public NcoaHistoryService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( InteractionSession item, out string errorMessage )
+        public bool CanDelete( NcoaHistory item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Interaction>( Context ).Queryable().Any( a => a.InteractionSessionId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionSession.FriendlyTypeName, Interaction.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,44 +58,64 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class InteractionSessionExtensionMethods
+    public static partial class NcoaHistoryExtensionMethods
     {
         /// <summary>
-        /// Clones this InteractionSession object to a new InteractionSession object
+        /// Clones this NcoaHistory object to a new NcoaHistory object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static InteractionSession Clone( this InteractionSession source, bool deepCopy )
+        public static NcoaHistory Clone( this NcoaHistory source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as InteractionSession;
+                return source.Clone() as NcoaHistory;
             }
             else
             {
-                var target = new InteractionSession();
+                var target = new NcoaHistory();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another InteractionSession object to this InteractionSession object
+        /// Copies the properties from another NcoaHistory object to this NcoaHistory object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this InteractionSession target, InteractionSession source )
+        public static void CopyPropertiesFrom( this NcoaHistory target, NcoaHistory source )
         {
             target.Id = source.Id;
-            target.DetailTemplate = source.DetailTemplate;
-            target.DeviceTypeId = source.DeviceTypeId;
+            target.AddressInvalidReason = source.AddressInvalidReason;
+            target.AddressStatus = source.AddressStatus;
+            target.FamilyId = source.FamilyId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.InteractionMode = source.InteractionMode;
-            target.IpAddress = source.IpAddress;
-            target.ListTemplate = source.ListTemplate;
-            target.SessionData = source.SessionData;
+            target.LocationId = source.LocationId;
+            target.MatchFlag = source.MatchFlag;
+            target.MoveDate = source.MoveDate;
+            target.MoveDistance = source.MoveDistance;
+            target.MoveType = source.MoveType;
+            target.NcoaNote = source.NcoaNote;
+            target.NcoaRunDateTime = source.NcoaRunDateTime;
+            target.NcoaType = source.NcoaType;
+            target.OriginalCity = source.OriginalCity;
+            target.OriginalPostalCode = source.OriginalPostalCode;
+            target.OriginalState = source.OriginalState;
+            target.OriginalStreet1 = source.OriginalStreet1;
+            target.OriginalStreet2 = source.OriginalStreet2;
+            target.PersonAliasId = source.PersonAliasId;
+            target.Processed = source.Processed;
+            target.UpdatedAddressType = source.UpdatedAddressType;
+            target.UpdatedBarcode = source.UpdatedBarcode;
+            target.UpdatedCity = source.UpdatedCity;
+            target.UpdatedCountry = source.UpdatedCountry;
+            target.UpdatedPostalCode = source.UpdatedPostalCode;
+            target.UpdatedState = source.UpdatedState;
+            target.UpdatedStreet1 = source.UpdatedStreet1;
+            target.UpdatedStreet2 = source.UpdatedStreet2;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
