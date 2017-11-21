@@ -33,10 +33,9 @@
                                     <Rock:RockBoundField DataField="Summary" HeaderText="Summary" TruncateLength="300"  />
                                     <Rock:RockTemplateField HeaderText="Status" SortExpression="IsActive">
                                         <ItemTemplate>
-                                            <%# (bool)Eval("IsActive") ? "<span class='label label-success'>Active</span>" : "<span class='label label-default'>Inactive</span>" %>
+                                            <Rock:RockLiteral ID="lStatus" runat="server" />
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:DeleteField OnClick="DeleteConnectionOpportunity_Click" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
