@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Data;
+using Rock.Model;
 
 namespace com.centralaz.RoomManagement.Model
 {
@@ -34,6 +35,7 @@ namespace com.centralaz.RoomManagement.Model
         /// <param name="context">The context.</param>
         public ReservationService( RockContext context ) : base( context ) { }
 
+        #region Reservation Methods
         /// <summary>
         /// Gets the reservation summaries.
         /// </summary>
@@ -41,7 +43,7 @@ namespace com.centralaz.RoomManagement.Model
         /// <param name="filterStartDateTime">The filter start date time.</param>
         /// <param name="filterEndDateTime">The filter end date time.</param>
         /// <returns></returns>
-        public List<ReservationSummary> GetReservationSummaries( IQueryable<Reservation> qry, DateTime filterStartDateTime, DateTime filterEndDateTime , bool roundToDay = false)
+        public List<ReservationSummary> GetReservationSummaries( IQueryable<Reservation> qry, DateTime filterStartDateTime, DateTime filterEndDateTime, bool roundToDay = false )
         {
             var qryStartDateTime = filterStartDateTime.AddMonths( -1 );
             var qryEndDateTime = filterEndDateTime.AddMonths( 1 );
@@ -98,21 +100,14 @@ namespace com.centralaz.RoomManagement.Model
             return reservationSummaryList;
         }
 
-        /// <summary>
-        /// Gets the  location ids for any existing non-denied reservations that have the a location as the ones in the given newReservation object.
-        /// </summary>
-        /// <param name="newReservation">The new reservation.</param>
-        /// <returns></returns>
-        public List<int> GetReservedLocationIds( Reservation newReservation )
+        private IEnumerable<ReservationSummary> GetConflictingReservationSummaries( Reservation newReservation )
         {
             var newReservationSummaries = GetReservationSummaries( new List<Reservation>() { newReservation }.AsQueryable(), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) );
             var reservedLocationIds = GetReservationSummaries( Queryable().Where( r => r.Id != newReservation.Id && r.ApprovalState != ReservationApprovalState.Denied ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) )
                 .Where( currentReservationSummary => newReservationSummaries.Any( newReservationSummary =>
                  ( currentReservationSummary.ReservationStartDateTime > newReservationSummary.ReservationStartDateTime || currentReservationSummary.ReservationEndDateTime > newReservationSummary.ReservationStartDateTime ) &&
                  ( currentReservationSummary.ReservationStartDateTime < newReservationSummary.ReservationEndDateTime || currentReservationSummary.ReservationEndDateTime < newReservationSummary.ReservationEndDateTime )
-                 ) ).SelectMany( currentReservationSummary => currentReservationSummary.ReservationLocations.Where( rl => rl.ApprovalState != ReservationLocationApprovalState.Denied ).Select( rl => rl.LocationId ) )
-                 .Distinct()
-                 .ToList();
+                 ) );
             return reservedLocationIds;
         }
 
@@ -134,6 +129,116 @@ namespace com.centralaz.RoomManagement.Model
                 return String.Format( "{0} {1} - {2} {3}", startDateTime.ToString( "MM/dd/yy" ), startDateTime.ToString( "hh:mmt" ).ToLower(), endDateTime.ToString( "MM/dd/yy" ), endDateTime.ToString( "hh:mmt" ).ToLower() );
             }
         }
+        #endregion
+
+        #region Location Conflict Methods
+
+        /// <summary>
+        /// Gets the  location ids for any existing non-denied reservations that have the a location as the ones in the given newReservation object.
+        /// </summary>
+        /// <param name="newReservation">The new reservation.</param>
+        /// <returns></returns>
+        public List<int> GetReservedLocationIds( Reservation newReservation )
+        {
+            var locationService = new LocationService( new RockContext() );
+            IEnumerable<ReservationSummary> conflictingReservationSummaries = GetConflictingReservationSummaries( newReservation );
+
+            var reservedLocationIds = conflictingReservationSummaries.SelectMany( currentReservationSummary =>
+                    currentReservationSummary.ReservationLocations.Where( rl =>
+                        rl.ApprovalState != ReservationLocationApprovalState.Denied )
+                        .Select( rl => rl.LocationId )
+                        )
+                  .Distinct();
+
+            var reservedLocationAndChildIds = new List<int>();
+            reservedLocationAndChildIds.AddRange( reservedLocationIds );
+
+            reservedLocationAndChildIds.AddRange( reservedLocationIds
+                  .SelectMany( l => locationService.GetAllDescendentIds( l ) ) );
+
+            return reservedLocationAndChildIds;
+        }
+
+        public List<ReservationConflict> GetConflictsForLocationId( int locationId, Reservation newReservation)
+        {
+            var locationService = new LocationService( new RockContext() );
+
+            var locationAndAncestorIds = new List<int>();
+            locationAndAncestorIds.Add( locationId );
+            locationAndAncestorIds.AddRange( locationService.GetAllAncestorIds( locationId ) );
+            locationAndAncestorIds.AddRange( locationService.GetAllDescendentIds( locationId ) );
+
+            IEnumerable<ReservationSummary> conflictingReservationSummaries = GetConflictingReservationSummaries( newReservation );
+            var locationConflicts = conflictingReservationSummaries.SelectMany( currentReservationSummary =>
+                    currentReservationSummary.ReservationLocations.Where( rl =>
+                        rl.ApprovalState != ReservationLocationApprovalState.Denied &&
+                        locationAndAncestorIds.Contains( rl.LocationId ) )
+                     .Select( rl => new ReservationConflict
+                     {
+                         LocationId = rl.LocationId,
+                         Location = rl.Location,
+                         ReservationId = rl.ReservationId,
+                         Reservation = rl.Reservation
+                     } ) )
+                 .Distinct()
+                 .ToList();
+            return locationConflicts;
+        }
+
+        #endregion
+
+        #region Resource Conflict Methods
+
+        /// <summary>
+        /// Gets the available resource quantity.
+        /// </summary>
+        /// <param name="resource">The resource.</param>
+        /// <param name="reservation">The reservation.</param>
+        /// <returns></returns>
+        public int GetAvailableResourceQuantity( Resource resource, Reservation reservation )
+        {
+            // For each new reservation summary, make sure that the quantities of existing summaries that come into contact with it
+            // do not exceed the resource's quantity
+
+            var currentReservationSummaries = GetReservationSummaries( Queryable().Where( r => r.Id != reservation.Id && r.ApprovalState != ReservationApprovalState.Denied ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) );
+
+            var reservedQuantities = GetReservationSummaries( new List<Reservation>() { reservation }.AsQueryable(), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) )
+                .Select( newReservationSummary =>
+                    currentReservationSummaries.Where( currentReservationSummary =>
+                     ( currentReservationSummary.ReservationStartDateTime > newReservationSummary.ReservationStartDateTime || currentReservationSummary.ReservationEndDateTime > newReservationSummary.ReservationStartDateTime ) &&
+                     ( currentReservationSummary.ReservationStartDateTime < newReservationSummary.ReservationEndDateTime || currentReservationSummary.ReservationEndDateTime < newReservationSummary.ReservationEndDateTime )
+                    )
+                    .DistinctBy( reservationSummary => reservationSummary.Id )
+                    .Sum( currentReservationSummary => currentReservationSummary.ReservationResources.Where( rr => rr.ApprovalState != ReservationResourceApprovalState.Denied && rr.ResourceId == resource.Id ).Sum( rr => rr.Quantity ) )
+               );
+
+            var maxReservedQuantity = reservedQuantities.Count() > 0 ? reservedQuantities.Max() : 0;
+            return resource.Quantity - maxReservedQuantity;
+        }
+
+        public List<ReservationConflict> GetConflictsForResourceId( int resourceId, Reservation newReservation )
+        {
+            IEnumerable<ReservationSummary> conflictingReservationSummaries = GetConflictingReservationSummaries( newReservation );
+            var locationConflicts = conflictingReservationSummaries.SelectMany( currentReservationSummary =>
+                    currentReservationSummary.ReservationResources.Where( rr =>
+                        rr.ApprovalState != ReservationResourceApprovalState.Denied &&
+                        rr.ResourceId == resourceId )
+                     .Select( rr => new ReservationConflict
+                     {
+                         ResourceId = rr.ResourceId,
+                         Resource = rr.Resource,
+                         ResourceQuantity = rr.Quantity,
+                         ReservationId = rr.ReservationId,
+                         Reservation = rr.Reservation
+                     } ) )
+                 .Distinct()
+                 .ToList();
+            return locationConflicts;
+        }
+
+        #endregion
+
+        #region Helper Classes
 
         public class ReservationSummary
         {
@@ -159,5 +264,24 @@ namespace com.centralaz.RoomManagement.Model
             public Reservation Reservation { get; set; }
             public List<ReservationDateTime> ReservationDateTimes { get; set; }
         }
+
+        public class ReservationConflict
+        {
+            public int LocationId { get; set; }
+
+            public Location Location { get; set; }
+
+            public int ResourceId { get; set; }
+
+            public Resource Resource { get; set; }
+
+            public int ResourceQuantity { get; set; }
+
+            public int ReservationId { get; set; }
+
+            public Reservation Reservation { get; set; }
+        }
+
+        #endregion
     }
 }

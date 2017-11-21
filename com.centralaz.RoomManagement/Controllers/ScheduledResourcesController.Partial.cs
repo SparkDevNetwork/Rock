@@ -135,7 +135,7 @@ namespace Rock.Rest.Controllers
             if ( getCategorizedItems )
             {
                 var rockContext = new RockContext();
-                var reservationResourceService = new ReservationResourceService( rockContext );
+                var reservationService = new ReservationService( rockContext );
                 // if id is zero and we have a rootCategory, show the children of that rootCategory (but don't show the rootCategory)
                 int parentItemId = id == 0 ? rootCategoryId : id;
 
@@ -163,7 +163,7 @@ namespace Rock.Rest.Controllers
                     {
                         if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
-                            var availableQuantity = reservationResourceService.GetAvailableResourceQuantity( categorizedItem, newReservation );
+                            var availableQuantity = reservationService.GetAvailableResourceQuantity( categorizedItem, newReservation );
 
                             var scheduledCategoryItem = new ScheduledCategoryItem();
                             scheduledCategoryItem.Id = categorizedItem.Id.ToString();

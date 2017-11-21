@@ -102,9 +102,8 @@ namespace Rock.Rest.Controllers
                     treeViewItem.Id = location.Id.ToString();
                     treeViewItem.Name = string.Format( "{0}<small style='color:grey;'>{1}</small>", System.Web.HttpUtility.HtmlEncode( location.Name ), location.FirmRoomThreshold != null ? "\t(" + location.FirmRoomThreshold + ")" : "" );
                     treeViewItem.IsActive = 
-                        // location isnt' reserved or it's parent (or grandparent) isn't reserved
-                        ! ( reservedLocationIds.Contains( location.Id ) || ( location.ParentLocationId.HasValue && reservedLocationIds.Contains( location.ParentLocationId.Value ) )
-                            || location.ParentLocation != null && location.ParentLocation.ParentLocation != null && reservedLocationIds.Contains( location.ParentLocation.ParentLocationId.Value ) )
+                        // location isnt' reserved
+                        ! ( reservedLocationIds.Contains( location.Id ))
                         // and the attendee count is less than or equal to the room's capacity
                         && ( attendeeCount == null || location.FirmRoomThreshold == null || attendeeCount.Value <= location.FirmRoomThreshold.Value );
                     locationNameList.Add( treeViewItem );

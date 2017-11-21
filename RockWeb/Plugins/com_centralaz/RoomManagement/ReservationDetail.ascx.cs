@@ -472,6 +472,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     nbErrorWarning.Visible = true;
                     return;
                 }
+
                 // Check to make sure that nothing has a scheduling conflict.
                 bool hasConflict = false;
                 StringBuilder sb = new StringBuilder();
@@ -485,55 +486,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     hasConflict = true;
                 }
 
-                // Check parent locations
-                foreach ( var location in reservation.ReservationLocations.Where( l => l.Location.ParentLocationId.HasValue && reservedLocationIds.Contains( l.Location.ParentLocationId.Value ) ) )
-                {
-                    sb.AppendFormat( "<li>{0} ({1}{2})</li>", location.Location.ParentLocation.Name,
-                        location.Location.ParentLocation.LocationTypeValue != null ? location.Location.ParentLocation.LocationTypeValue.Value.ToLower() + " of " : "of ",
-                        location.Location.Name );
-                    hasConflict = true;
-                }
-
-                // Check grandparent locations
-                foreach ( var location in reservation.ReservationLocations.Where( l => l.Location.ParentLocation != null
-                && l.Location.ParentLocation.ParentLocation != null
-                && reservedLocationIds.Contains( l.Location.ParentLocation.ParentLocationId.Value ) )
-                    )
-                {
-                    sb.AppendFormat( "<li>{0} ({1}{2})</li>", location.Location.ParentLocation.ParentLocation.Name,
-                        location.Location.ParentLocation.ParentLocation.LocationTypeValue != null ? location.Location.ParentLocation.ParentLocation.LocationTypeValue.Value.ToLower() + " of " : "of ",
-                        location.Location.Name );
-                    hasConflict = true;
-                }
-
-                // Check children locations...
-                foreach ( var location in reservation.ReservationLocations
-                            .Where( l => l.Location.ChildLocations != null
-                                && ( l.Location.ChildLocations.Any( c => reservedLocationIds.Contains( c.Id ) )
-                                    || l.Location.ChildLocations.Any( c => c.ChildLocations != null && c.ChildLocations.Any( gc => reservedLocationIds.Contains( gc.Id ) ) )
-                                    )
-                             )
-                        )
-                {
-                    // children (such as buildings of a campus)
-                    foreach ( var childLocation in location.Location.ChildLocations.Where( c => reservedLocationIds.Contains( c.Id ) ) )
-                    {
-                        sb.AppendFormat( "<li>{0} (in {1})</li>", childLocation.Name, location.Location.Name );
-                    }
-
-                    // grandchildren (such as rooms of building of a campus)
-                    foreach ( var gchildLocation in location.Location.ChildLocations.SelectMany( c => c.ChildLocations.Where( gc => reservedLocationIds.Contains( gc.Id ) ) ) )
-                    {
-                        sb.AppendFormat( "<li>{0} (in {1} of {2})</li>", gchildLocation.Name, gchildLocation.ParentLocation.Name, location.Location.Name );
-                    }
-
-                    hasConflict = true;
-                }
-
                 // Check resources...
                 foreach ( var resource in reservation.ReservationResources )
                 {
-                    var availableQuantity = new ReservationResourceService( rockContext ).GetAvailableResourceQuantity( resource.Resource, reservation );
+                    var availableQuantity = reservationService.GetAvailableResourceQuantity( resource.Resource, reservation );
                     if ( availableQuantity - resource.Quantity < 0 )
                     {
                         sb.AppendFormat( "<li>{0} [note: only {1} available]</li>", resource.Resource.Name, availableQuantity );
@@ -735,14 +691,24 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             if ( resource != null )
             {
                 var newReservation = new Reservation() { Id = PageParameter( "ReservationId" ).AsIntegerOrNull() ?? 0, Schedule = new Schedule() { iCalendarContent = sbSchedule.iCalendarContent }, SetupTime = nbSetupTime.Text.AsInteger(), CleanupTime = nbCleanupTime.Text.AsInteger() };
-                var availableQuantity = new ReservationResourceService( new RockContext() ).GetAvailableResourceQuantity( resource, newReservation );
+                var availableQuantity = new ReservationService( rockContext ).GetAvailableResourceQuantity( resource, newReservation );
                 nbQuantity.MaximumValue = availableQuantity.ToString();
-                nbQuantity.Label = String.Format( "Quantity ({0} Available)", availableQuantity );
-                if ( availableQuantity >= 1 && string.IsNullOrWhiteSpace( nbQuantity.Text ) )
+                nbQuantity.Label = String.Format( "Quantity ({0} of {1} Available)", availableQuantity, resource.Quantity );
+                if ( availableQuantity >= 1 )
                 {
-                    nbQuantity.Text = "1";
+                    if ( string.IsNullOrWhiteSpace( nbQuantity.Text ) )
+                    {
+                        nbQuantity.Text = "1";
+                    }
+                }
+                else
+                {
+                    nbQuantity.MinimumValue = "0";
+                    nbQuantity.Enabled = false;
                 }
             }
+
+            LoadResourceConflictMessage();
         }
 
         /// <summary>
@@ -752,45 +718,49 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgReservationResource_SaveClick( object sender, EventArgs e )
         {
-            ReservationResource reservationResource = null;
-            Guid guid = hfAddReservationResourceGuid.Value.AsGuid();
-            if ( !guid.IsEmpty() )
+            if ( nbQuantity.Text.AsInteger() > 0 )
             {
-                reservationResource = ResourcesState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+                ReservationResource reservationResource = null;
+                Guid guid = hfAddReservationResourceGuid.Value.AsGuid();
+                if ( !guid.IsEmpty() )
+                {
+                    reservationResource = ResourcesState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+                }
+
+                if ( reservationResource == null )
+                {
+                    reservationResource = new ReservationResource();
+                }
+
+                try
+                {
+                    reservationResource.Resource = new ResourceService( new RockContext() ).Get( srpResource.SelectedValueAsId().Value );
+                }
+                catch { }
+
+                reservationResource.ApprovalState = ReservationResourceApprovalState.Unapproved;
+                reservationResource.ResourceId = srpResource.SelectedValueAsId().Value;
+                reservationResource.Quantity = nbQuantity.Text.AsInteger();
+                reservationResource.ReservationId = 0;
+
+                if ( !reservationResource.IsValid )
+                {
+                    return;
+                }
+
+                if ( ResourcesState.Any( a => a.Guid.Equals( reservationResource.Guid ) ) )
+                {
+                    ResourcesState.RemoveEntity( reservationResource.Guid );
+                }
+
+                ResourcesState.Add( reservationResource );
+                NewReservationResourceList.Add( reservationResource.Guid );
+                BindReservationResourcesGrid();
+                LoadQuestionsAndAnswers( NewReservationLocationList, NewReservationResourceList );
             }
 
-            if ( reservationResource == null )
-            {
-                reservationResource = new ReservationResource();
-            }
-
-            try
-            {
-                reservationResource.Resource = new ResourceService( new RockContext() ).Get( srpResource.SelectedValueAsId().Value );
-            }
-            catch { }
-
-            reservationResource.ApprovalState = ReservationResourceApprovalState.Unapproved;
-            reservationResource.ResourceId = srpResource.SelectedValueAsId().Value;
-            reservationResource.Quantity = nbQuantity.Text.AsInteger();
-            reservationResource.ReservationId = 0;
-
-            if ( !reservationResource.IsValid )
-            {
-                return;
-            }
-
-            if ( ResourcesState.Any( a => a.Guid.Equals( reservationResource.Guid ) ) )
-            {
-                ResourcesState.RemoveEntity( reservationResource.Guid );
-            }
-
-            ResourcesState.Add( reservationResource );
-            NewReservationResourceList.Add( reservationResource.Guid );
-            BindReservationResourcesGrid();
             dlgReservationResource.Hide();
             hfActiveDialog.Value = string.Empty;
-            LoadQuestionsAndAnswers( NewReservationLocationList, NewReservationResourceList );
         }
 
         /// <summary>
@@ -852,6 +822,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 srpResource.SetValue( null );
             }
 
+            LoadResourceConflictMessage();
+
             hfAddReservationResourceGuid.Value = reservationResourceGuid.ToString();
             hfActiveDialog.Value = "dlgReservationResource";
             dlgReservationResource.Show();
@@ -876,7 +848,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             Hydrate( ResourcesState, new RockContext() );
 
             gResources.EntityTypeId = EntityTypeCache.Read<com.centralaz.RoomManagement.Model.ReservationResource>().Id;
-            gResources.SetLinqDataSource( ResourcesState.AsQueryable().OrderBy(r=> r.Resource.Name) );
+            gResources.SetLinqDataSource( ResourcesState.AsQueryable().OrderBy( r => r.Resource.Name ) );
             gResources.DataBind();
         }
 
@@ -1000,6 +972,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         protected void slpLocation_SelectItem( object sender, EventArgs e )
         {
             LoadLocationImage();
+            LoadLocationConflictMessage();
         }
 
         /// <summary>
@@ -1083,7 +1056,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                             {
                                 phResourceAnswers.Controls.Remove( headControlResource );
                             }
-                        }                        
+                        }
                     }
                     BindReservationResourcesGrid();
                     //wpResources.Expanded = true;
@@ -1134,11 +1107,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 reservationLocation.ApprovalState = ReservationLocationApprovalState.Unapproved;
                 slpLocation.SetValue( reservationLocation.LocationId );
                 LoadLocationImage();
+
             }
             else
             {
                 slpLocation.SetValue( null );
             }
+
+            LoadLocationConflictMessage();
 
             hfAddReservationLocationGuid.Value = reservationLocationGuid.ToString();
             hfActiveDialog.Value = "dlgReservationLocation";
@@ -1686,12 +1662,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         } )
                         .FirstOrDefault();
 
-                    if ( contactInfo != null && ! string.IsNullOrWhiteSpace( contactInfo.Email ) )
+                    if ( contactInfo != null && !string.IsNullOrWhiteSpace( contactInfo.Email ) )
                     {
                         tbAdministrativeContactEmail.Text = contactInfo.Email;
                     }
 
-                    if ( contactInfo != null && ! string.IsNullOrWhiteSpace( contactInfo.Phone ) )
+                    if ( contactInfo != null && !string.IsNullOrWhiteSpace( contactInfo.Phone ) )
                     {
                         pnAdministrativeContactPhone.Text = contactInfo.Phone;
                     }
@@ -1829,6 +1805,88 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 {
                     lImage.Text = string.Empty;
                 }
+            }
+        }
+
+        private void LoadLocationConflictMessage()
+        {
+            if ( slpLocation.SelectedValueAsId().HasValue )
+            {
+                StringBuilder sb = new StringBuilder();
+                var rockContext = new RockContext();
+
+                var locationId = slpLocation.SelectedValueAsId().Value;
+                var location = new LocationService( rockContext ).Get( locationId );
+
+                int reservationId = PageParameter( "ReservationId" ).AsInteger();
+                var newReservation = new Reservation() { Id = reservationId, Schedule = new Schedule() { iCalendarContent = sbSchedule.iCalendarContent }, SetupTime = nbSetupTime.Text.AsInteger(), CleanupTime = nbCleanupTime.Text.AsInteger() };
+
+                var conflicts = new ReservationService( rockContext ).GetConflictsForLocationId( location.Id, newReservation );
+                if ( conflicts.Any() )
+                {
+                    sb.AppendFormat( "{0} is already reserved for the scheduled times by the following reservations:<ul>", location.Name );
+                    foreach ( var conflict in conflicts )
+                    {
+                        sb.AppendFormat( "<li>{0} [on {1} via <a href='/ReservationDetail?ReservationId={2}' target=_blank>'{3}'</a>]</li>",
+                            conflict.Location.Name,
+                            conflict.Reservation.Schedule.ToFriendlyScheduleText(),
+                            conflict.ReservationId,
+                            conflict.Reservation.Name
+                            );
+                    }
+                    sb.Append( "</ul>" );
+                    nbLocationConflicts.Text = sb.ToString();
+                    nbLocationConflicts.Visible = true;
+                }
+                else
+                {
+                    nbLocationConflicts.Visible = false;
+                }
+            }
+            else
+            {
+                nbLocationConflicts.Visible = false;
+            }
+        }
+
+        private void LoadResourceConflictMessage()
+        {
+            if ( srpResource.SelectedValueAsId().HasValue )
+            {
+                StringBuilder sb = new StringBuilder();
+                var rockContext = new RockContext();
+
+                var resourceId = srpResource.SelectedValueAsId().Value;
+                var resource = new ResourceService( rockContext ).Get( resourceId );
+
+                int reservationId = PageParameter( "ReservationId" ).AsInteger();
+                var newReservation = new Reservation() { Id = reservationId, Schedule = new Schedule() { iCalendarContent = sbSchedule.iCalendarContent }, SetupTime = nbSetupTime.Text.AsInteger(), CleanupTime = nbCleanupTime.Text.AsInteger() };
+
+                var conflicts = new ReservationService( rockContext ).GetConflictsForResourceId( resource.Id, newReservation );
+                if ( conflicts.Any() )
+                {
+                    sb.AppendFormat( "{0} is already reserved for the scheduled times by the following reservations:<ul>", resource.Name );
+                    foreach ( var conflict in conflicts )
+                    {
+                        sb.AppendFormat( "<li>{0} reserved on {1} via <a href='{2}' target=_blank>'{3}'</a></li>",
+                            conflict.ResourceQuantity,
+                            conflict.Reservation.Schedule.ToFriendlyScheduleText(),
+                            conflict.ReservationId,
+                            conflict.Reservation.Name
+                            );
+                    }
+                    sb.Append( "</ul>" );
+                    nbResourceConflicts.Text = sb.ToString();
+                    nbResourceConflicts.Visible = true;
+                }
+                else
+                {
+                    nbResourceConflicts.Visible = false;
+                }
+            }
+            else
+            {
+                nbResourceConflicts.Visible = false;
             }
         }
 

@@ -147,11 +147,21 @@
                     <div class="col-md-6">
                         <CentralAZ:ScheduledLocationItemPicker ID="slpLocation" runat="server" Label="Location" Required="false" Enabled="false" AllowMultiSelect="false" OnSelectItem="slpLocation_SelectItem" ValidationGroup="ReservationLocation" />
                     </div>
-                    <div class="col-md-6 xs-text-center" style="width: 200px;">
-                        <div class="photo">
-                            <asp:Literal ID="lImage" runat="server" />
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:NotificationBox ID="nbLocationConflicts" Visible="false" NotificationBoxType="Info" runat="server" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 xs-text-center" style="width: 200px;">
+                                <div class="photo">
+                                    <asp:Literal ID="lImage" runat="server" />
+                                </div>
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </Content>
         </Rock:ModalDialog>
@@ -166,6 +176,7 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbQuantity" runat="server" NumberType="Integer" MinimumValue="1" ValidationGroup="ReservationResource" Label="Quantity" />
+                        <Rock:NotificationBox ID="nbResourceConflicts" Visible="false" NotificationBoxType="Info" runat="server" />
                     </div>
                 </div>
             </Content>
