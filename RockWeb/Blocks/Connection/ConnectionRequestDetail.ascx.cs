@@ -710,7 +710,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     var connectionRequest = new ConnectionRequestService( rockContext ).Get( hfConnectionRequestId.ValueAsInt() );
                     var connectionWorkflow = new ConnectionWorkflowService( rockContext ).Get( e.CommandArgument.ToString().AsInteger() );
-                    if ( connectionRequest != null && connectionWorkflow != null )
+                    if ( connectionRequest != null && connectionWorkflow != null && connectionWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         LaunchWorkflow( rockContext, connectionRequest, connectionWorkflow );
                     }
@@ -1020,7 +1020,15 @@ namespace RockWeb.Blocks.Connection
                             c.Workflow.WorkflowType != null )
                         .ToList();
 
-                    gConnectionRequestWorkflows.DataSource = instantiatedWorkflows
+                    var authorizedWorkflows = new List<ConnectionRequestWorkflow>();
+                    foreach( var requestWorkfFlow in instantiatedWorkflows)
+                    {
+                        if ( requestWorkfFlow.Workflow.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            authorizedWorkflows.Add( requestWorkfFlow );
+                        }
+                    }
+                    gConnectionRequestWorkflows.DataSource = authorizedWorkflows
                         .Select( c => new
                             {
                                 c.Id,
@@ -1036,13 +1044,13 @@ namespace RockWeb.Blocks.Connection
                         .ToList();
                     gConnectionRequestWorkflows.DataBind();
 
-                    if ( !instantiatedWorkflows.Any() )
+                    if ( !authorizedWorkflows.Any() )
                     {
                         wpConnectionRequestWorkflow.Visible = false;
                     }
                     else
                     {
-                        wpConnectionRequestWorkflow.Title = String.Format( "Workflows <span class='badge badge-info'>{0}</span>", instantiatedWorkflows.Count.ToString() );
+                        wpConnectionRequestWorkflow.Title = String.Format( "Workflows <span class='badge badge-info'>{0}</span>", authorizedWorkflows.Count.ToString() );
                     }
                 }
             }
@@ -1603,10 +1611,19 @@ namespace RockWeb.Blocks.Connection
                         .OrderBy( w => w.WorkflowType.Name )
                         .Distinct();
 
-                    if ( manualWorkflows.Any() )
+                    var authorizedWorkflows = new List<ConnectionWorkflow>();
+                    foreach ( var manualWorkflow in manualWorkflows )
+                    {
+                        if ( manualWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            authorizedWorkflows.Add( manualWorkflow );
+                        }
+                    }
+
+                    if ( authorizedWorkflows.Any() )
                     {
                         lblWorkflows.Visible = true;
-                        rptRequestWorkflows.DataSource = manualWorkflows.ToList();
+                        rptRequestWorkflows.DataSource = authorizedWorkflows.ToList();
                         rptRequestWorkflows.DataBind();
                     }
                     else
