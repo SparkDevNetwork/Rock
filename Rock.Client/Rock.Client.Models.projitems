@@ -144,6 +144,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricPartition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValuePartition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NcoaHistory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Note.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NoteType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Notification.cs" />
