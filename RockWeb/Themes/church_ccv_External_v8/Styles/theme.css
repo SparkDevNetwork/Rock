@@ -11259,3 +11259,11 @@ html,body{
     background-color: #EEEEEE;
     text-decoration: none;
 }
+
+#masthead-navitem-register {
+    display: inline-block;
+    margin: 7px 0px;
+    padding: 10px 10px;
+    text-decoration: none;
+    color: #FFFFFF;
+}
