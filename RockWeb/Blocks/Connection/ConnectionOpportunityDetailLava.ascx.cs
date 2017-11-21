@@ -45,6 +45,8 @@ namespace RockWeb.Blocks.Connection
 
         ConnectionOpportunity _connectionOpportunity = null;
 
+        #endregion 
+
         #region Control Methods
 
         /// <summary>
