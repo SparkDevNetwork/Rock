@@ -1109,6 +1109,7 @@
     <Compile Include="Model\MetricPartition.cs" />
     <Compile Include="Model\MetricValue.cs" />
     <Compile Include="Model\MetricValuePartition.cs" />
+    <Compile Include="Model\NcoaHistory.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\NoteService.Partial.cs" />
     <Compile Include="Model\NoteType.cs" />
