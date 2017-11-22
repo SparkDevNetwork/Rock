@@ -783,6 +783,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gResources_Delete( object sender, RowEventArgs e )
         {
+            nbErrorWarning.Visible = false;
             Guid rowGuid = (Guid)e.RowKeyValue;
             ResourcesState.RemoveEntity( rowGuid );
 
@@ -1051,6 +1052,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gLocations_Delete( object sender, RowEventArgs e )
         {
+            nbErrorWarning.Visible = false;
             Guid rowGuid = (Guid)e.RowKeyValue;
 
             // check for attached resources and remove them too
