@@ -480,9 +480,19 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 var reservedLocationIds = reservationService.GetReservedLocationIds( reservation );
 
                 // Check self
+                string message = string.Empty;
                 foreach ( var location in reservation.ReservationLocations.Where( l => reservedLocationIds.Contains( l.LocationId ) ) )
                 {
-                    sb.AppendFormat( "<li>{0}</li>", location.Location.Name );
+                    //sb.AppendFormat( "<li>{0}</li>", location.Location.Name );
+                    message = BuildLocationConflictHtmlListMessage( location.Location.Id, rockContext );
+                    if ( message != null )
+                    {
+                        sb.AppendFormat( "<li>{0} due to:<ul>{1}</ul></li>", location.Location.Name, message );
+                    }
+                    else
+                    {
+                        sb.AppendFormat( "<li>{0}</li>", location.Location.Name );
+                    }
                     hasConflict = true;
                 }
 
@@ -696,6 +706,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 nbQuantity.Label = String.Format( "Quantity ({0} of {1} Available)", availableQuantity, resource.Quantity );
                 if ( availableQuantity >= 1 )
                 {
+                    nbQuantity.Enabled = true;
+
                     if ( string.IsNullOrWhiteSpace( nbQuantity.Text ) )
                     {
                         nbQuantity.Text = "1";
@@ -810,6 +822,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="reservationResourceGuid">The reservation resource unique identifier.</param>
         protected void gResources_ShowEdit( Guid reservationResourceGuid )
         {
+            nbQuantity.Label = "Quantity";
+
             ReservationResource reservationResource = ResourcesState.FirstOrDefault( l => l.Guid.Equals( reservationResourceGuid ) );
             if ( reservationResource != null )
             {
@@ -1808,6 +1822,9 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
         }
 
+        /// <summary>
+        /// Loads the location conflict message when using the location editor modal.
+        /// </summary>
         private void LoadLocationConflictMessage()
         {
             if ( slpLocation.SelectedValueAsId().HasValue )
@@ -1818,24 +1835,11 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 var locationId = slpLocation.SelectedValueAsId().Value;
                 var location = new LocationService( rockContext ).Get( locationId );
 
-                int reservationId = PageParameter( "ReservationId" ).AsInteger();
-                var newReservation = new Reservation() { Id = reservationId, Schedule = new Schedule() { iCalendarContent = sbSchedule.iCalendarContent }, SetupTime = nbSetupTime.Text.AsInteger(), CleanupTime = nbCleanupTime.Text.AsInteger() };
+                var message = BuildLocationConflictHtmlListMessage( locationId, rockContext );
 
-                var conflicts = new ReservationService( rockContext ).GetConflictsForLocationId( location.Id, newReservation );
-                if ( conflicts.Any() )
+                if ( message != null )
                 {
-                    sb.AppendFormat( "{0} is already reserved for the scheduled times by the following reservations:<ul>", location.Name );
-                    foreach ( var conflict in conflicts )
-                    {
-                        sb.AppendFormat( "<li>{0} [on {1} via <a href='/ReservationDetail?ReservationId={2}' target=_blank>'{3}'</a>]</li>",
-                            conflict.Location.Name,
-                            conflict.Reservation.Schedule.ToFriendlyScheduleText(),
-                            conflict.ReservationId,
-                            conflict.Reservation.Name
-                            );
-                    }
-                    sb.Append( "</ul>" );
-                    nbLocationConflicts.Text = sb.ToString();
+                    nbLocationConflicts.Text = string.Format ( "{0} is already reserved for the scheduled times by the following reservations:<ul>{1}</ul>", location.Name, message );
                     nbLocationConflicts.Visible = true;
                 }
                 else
@@ -1849,13 +1853,50 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
         }
 
+        /// <summary>
+        /// Builds a conflict message string (as HTML List) and returns it if there are location conflicts.
+        /// </summary>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>an HTML List if conflicts exists; null otherwise.</returns>
+        private string BuildLocationConflictHtmlListMessage( int locationId, RockContext rockContext )
+        {
+            int reservationId = PageParameter( "ReservationId" ).AsInteger();
+            var newReservation = new Reservation() { Id = reservationId, Schedule = new Schedule() { iCalendarContent = sbSchedule.iCalendarContent }, SetupTime = nbSetupTime.Text.AsInteger(), CleanupTime = nbCleanupTime.Text.AsInteger() };
+            var conflicts = new ReservationService( rockContext ).GetConflictsForLocationId( locationId, newReservation );
+
+            if ( conflicts.Any() )
+            {
+                StringBuilder sb = new StringBuilder();
+                var route = this.CurrentPageReference.Route; // is either "/page/123" or "ReservationDetail"
+                route = route.StartsWith( "/" ) ? route : "/" + route;
+
+                foreach ( var conflict in conflicts )
+                {
+                    sb.AppendFormat( "<li>{0} [on {1} via <a href='{4}?ReservationId={2}' target='_blank'>'{3}'</a>]</li>",
+                        conflict.Location.Name,
+                        conflict.Reservation.Schedule.ToFriendlyScheduleText(),
+                        conflict.ReservationId,
+                        conflict.Reservation.Name,
+                        route
+                        );
+                }
+                return sb.ToString();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Loads the resource conflict message when using the resource editor modal.
+        /// </summary>
         private void LoadResourceConflictMessage()
         {
             if ( srpResource.SelectedValueAsId().HasValue )
             {
-                StringBuilder sb = new StringBuilder();
                 var rockContext = new RockContext();
-
                 var resourceId = srpResource.SelectedValueAsId().Value;
                 var resource = new ResourceService( rockContext ).Get( resourceId );
 
@@ -1865,14 +1906,19 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 var conflicts = new ReservationService( rockContext ).GetConflictsForResourceId( resource.Id, newReservation );
                 if ( conflicts.Any() )
                 {
+                    StringBuilder sb = new StringBuilder();
+                    var route = this.CurrentPageReference.Route; // is either "/page/123" or "ReservationDetail"
+                    route = route.StartsWith( "/" ) ? route : "/" + route;
+
                     sb.AppendFormat( "{0} is already reserved for the scheduled times by the following reservations:<ul>", resource.Name );
                     foreach ( var conflict in conflicts )
                     {
-                        sb.AppendFormat( "<li>{0} reserved on {1} via <a href='{2}' target=_blank>'{3}'</a></li>",
+                        sb.AppendFormat( "<li>{0} reserved on {1} via <a href='{4}?ReservationId={2}' target='_blank'>'{3}'</a></li>",
                             conflict.ResourceQuantity,
                             conflict.Reservation.Schedule.ToFriendlyScheduleText(),
                             conflict.ReservationId,
-                            conflict.Reservation.Name
+                            conflict.Reservation.Name,
+                            route
                             );
                     }
                     sb.Append( "</ul>" );

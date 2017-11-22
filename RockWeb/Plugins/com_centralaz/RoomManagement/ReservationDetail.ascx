@@ -104,7 +104,7 @@
                                         <Rock:RockTemplateField>
                                             <ItemTemplate><em class="text-muted"><%# Convert.ToString( Eval( "Resource.Location.Name") ) == string.Empty ? "" : "(attached to " +  Eval("Resource.Location.Name") + ")" %></em></ItemTemplate>
                                         </Rock:RockTemplateField>
-                                        <Rock:RockBoundField DataField="Quantity" HeaderText="Quantity" />
+                                        <Rock:RockBoundField DataField="Quantity" HeaderText="Qty" />
                                         <Rock:RockBoundField DataField="ApprovalState" HeaderText="Approved?" />
                                         <Rock:LinkButtonField CssClass="btn btn-sm btn-success " OnClick="gResources_ApproveClick" Text="Approve" Visible="true" />
                                         <Rock:LinkButtonField CssClass="btn btn-sm btn-danger" OnClick="gResources_DenyClick" Text="Deny" Visible="true" />
@@ -150,7 +150,7 @@
                     <div class="col-md-6">
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:NotificationBox ID="nbLocationConflicts" Visible="false" NotificationBoxType="Info" runat="server" />
+                                <Rock:NotificationBox ID="nbLocationConflicts" Visible="false" NotificationBoxType="Danger" runat="server" />
                             </div>
                         </div>
                         <div class="row">
@@ -176,7 +176,7 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbQuantity" runat="server" NumberType="Integer" MinimumValue="1" ValidationGroup="ReservationResource" Label="Quantity" />
-                        <Rock:NotificationBox ID="nbResourceConflicts" Visible="false" NotificationBoxType="Info" runat="server" />
+                        <Rock:NotificationBox ID="nbResourceConflicts" Visible="false" NotificationBoxType="Warning" runat="server" />
                     </div>
                 </div>
             </Content>
