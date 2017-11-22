@@ -323,6 +323,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_OnClick( object sender, EventArgs e )
         {
+            nbErrorWarning.Visible = false;
             if ( Page.IsValid )
             {
                 RockContext rockContext = new RockContext();
@@ -1121,10 +1122,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 reservationLocation.ApprovalState = ReservationLocationApprovalState.Unapproved;
                 slpLocation.SetValue( reservationLocation.LocationId );
                 LoadLocationImage();
-
             }
             else
             {
+                lImage.Text = string.Empty;
                 slpLocation.SetValue( null );
             }
 
@@ -1800,6 +1801,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
         private void LoadLocationImage()
         {
+            lImage.Text = string.Empty;
             if ( slpLocation.SelectedValueAsId().HasValue )
             {
                 var location = new LocationService( new RockContext() ).Get( slpLocation.SelectedValueAsId().Value );
@@ -1814,10 +1816,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     }
 
                     lImage.Text = string.Format( "<a href='{0}' target='_blank'>{1}</a>", imgUrl, imgTag );
-                }
-                else
-                {
-                    lImage.Text = string.Empty;
                 }
             }
         }
