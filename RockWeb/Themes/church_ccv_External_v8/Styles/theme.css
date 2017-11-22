@@ -11267,3 +11267,13 @@ html,body{
     text-decoration: none;
     color: #FFFFFF;
 }
+
+/* SSO Login page*/
+/*#sso-login-form {
+    display: flex;
+    justify-content: center;
+    background: #FFFFFF;
+    width: 30%;
+    margin: auto;
+    padding: 40px 100px;
+}*/
