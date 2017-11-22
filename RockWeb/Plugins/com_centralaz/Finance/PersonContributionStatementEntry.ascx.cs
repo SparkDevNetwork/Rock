@@ -408,7 +408,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                         addressList.Add( new AddressSummary
                         {
                             GivingId = row.ItemArray[0] as string,
-                            Names = row.ItemArray[1] as string,
+                            AddressNames = row.ItemArray[1] as string,
                             Street1 = row.ItemArray[3] as string,
                             Street2 = row.ItemArray[4] as string,
                             City = row.ItemArray[5] as string,
@@ -657,7 +657,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
         /// <summary>
         /// The address summary for lava
         /// </summary>
-        [DotLiquid.LiquidType( "GivingId", "Names", "Street1", "Street2", "City", "State", "PostalCode" )]
+        [DotLiquid.LiquidType( "GivingId", "AddressNames", "Street1", "Street2", "City", "State", "PostalCode" )]
         public class AddressSummary
         {
             /// <summary>
@@ -674,7 +674,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             /// <value>
             /// The names.
             /// </value>
-            public String Names { get; set; }
+            public String AddressNames { get; set; }
 
             /// <summary>
             /// Gets or sets the street1.
