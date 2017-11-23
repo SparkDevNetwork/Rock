@@ -48,7 +48,6 @@
             {% endif %}
 
             {% assign currentDateTime = 'Now' | Date:'yyyy/MM/dd hh:mm:ss tt' %}
-
             {% if startDateTime <= currentDateTime %}
 
                 {% comment %} EventCalendarId 1 is public calendar {% endcomment %}

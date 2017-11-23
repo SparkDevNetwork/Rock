@@ -10588,6 +10588,139 @@ html,body{
     width: auto;
 }
 
+/* Formatting for the event calendar page */
+.event-page-wrapper {
+   display: flex;
+   flex-direction: row;
+   flex-wrap: wrap;
+}
+
+.event-page-wrapper .event-calendar .header {
+   display: flex;
+   justify-content: flex-start;
+   position: relative;
+   margin-top: 15px;
+   margin-bottom: 50px;
+}
+
+.event-page-wrapper .event-calendar .header h2 {
+   flex: 0 1 auto;
+   position: absolute;
+   left: 50%;
+   top: 50%;
+   transform: translateX( -50% ) translateY( -100% );
+}
+
+.event-page-wrapper .event-calendar .header .prev-arrow { 
+   flex: 0 1 auto;
+   color: #7a1315;
+   transform: scale(2) translateY( -20% ) translateX( 90% ) rotateZ(90deg);
+   margin-right: auto;
+}
+
+.event-page-wrapper .event-calendar .header .prev-arrow:hover,
+.event-page-wrapper .event-calendar .header .next-arrow:hover {
+   cursor: pointer;
+}
+
+.prev-arrow .hidden {
+   visibility: hidden;
+}
+
+.event-page-wrapper .event-calendar .header .next-arrow {
+   flex: 0 1 auto;
+   color: #7a1315;
+   transform: scale(2) translateY( 20% ) translateX( -90% ) rotateZ(-90deg);
+   margin-left: auto;
+}
+
+.event-page-wrapper .event-calendar .event-item {
+   display: flex;
+   flex-direction: row;
+   flex-wrap: wrap;
+   
+   margin-top: 15px;
+   margin-bottom: 15px;
+   width: 600px;
+}
+.event-page-wrapper .event-calendar .event-item .date {
+   background-color: #7a1315;
+   color: #fff;
+   margin-right: 10px;
+   width: 75px;
+   height: 75px;
+   align-items: center;
+   border-radius: 6px;
+}
+
+.event-page-wrapper .event-calendar .event-item .date p {
+   position: relative;
+   top: 50%;
+   transform: translateY(-50%); 
+   text-align: center;
+   color: #fff;
+   font-family: akrobat;
+   font-weight: regular;
+   font-size: 24px;
+}
+
+.event-page-wrapper .event-calendar .event-item .details {
+   background-color: #e9e9ea;
+   width: 80%;
+   border-radius: 6px;
+   display: flex;
+   flex-direction: row;
+   flex-wrap: wrap;
+   align-items: center;
+}
+
+.event-page-wrapper .event-calendar .event-item .details .info {
+   
+}
+
+.event-page-wrapper .event-calendar .event-item .details .info h4{
+   font-family: akrobat;
+   font-weight: 900;
+   margin-bottom: 0px;
+   margin-left: 10px;
+   text-decoration: none;
+}
+
+.event-page-wrapper .event-calendar .event-item .details .info p {
+   font-family: akrobat;
+   font-size: 16px;
+   margin-bottom: 1.14rem;
+   margin-left: 10px;
+}
+
+.event-page-wrapper .event-calendar .event-item .details .arrow {
+   margin-left: auto;
+   margin-right: 15px;
+}
+
+.event-page-wrapper .event-calendar .event-item .details .arrow b {
+   transform: scale(2) translateY( 20% ) rotateZ(-90deg);
+   padding: 0px;
+   margin: 0px;
+   color: #848484;
+}
+
+.event-page-wrapper .event-calendar .event-item .details:hover,
+.event-page-wrapper .event-calendar .event-item .details:hover p {
+   background-color: #999;
+   cursor: pointer;
+   color: #fff;
+}
+
+.selected, .selected p {
+   background-color: #999 !important;
+   color: #fff !important;
+}
+
+.selected .arrow b {
+   color: #7a1315 !important;
+}
+
 /* Formatting for the event details page */
 .event-detail-wrapper {
    display: flex;
@@ -10609,6 +10742,7 @@ html,body{
    border-radius: 6px;
    box-shadow: 0px 0px 10px #bbb;
    padding: 25px;
+   margin-top: 1.78rem;
    margin-bottom: 25px;
    height: 100%;
    

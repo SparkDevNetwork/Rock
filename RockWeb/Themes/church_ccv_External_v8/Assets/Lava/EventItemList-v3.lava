@@ -1,0 +1,423 @@
+
+{% comment %}
+   {% assign calendarId = 1 %}
+   <!-- baptism details page info -->
+   {% assign baptismDetailsPage = 'baptism' %}
+   {% assign baptismEventId = 6 %}
+   <!-- starting point details page info -->
+   {% assign startingpointDetailsPage = 'startingpoint' %}
+   {% assign startingpointEventId = 1 %}
+   {% include '~~/Assets/Lava/EventItemList-v3.lava' %}
+{% endcomment %}
+
+{% if Context.Campus %}
+   
+   {% comment %}Parse the strings for the monthoffset page param {% endcomment %}
+   
+   {% assign queryParamMonthOffset = 0 %}
+   
+   {% assign queryParms = 'Global' | Page:'QueryString'  %}
+   {% for item in queryParms %}
+       {% assign kvItem = item | PropertyToKeyValue %}
+       {% if kvItem.Key == 'monthoffset' %}
+         {% assign queryParamMonthOffset = kvItem.Value %}
+       {% endif %}
+   {% endfor %}
+   
+   {% comment %}Force conversion from string to int {% endcomment %}
+   {% assign dateMonthOffset = queryParamMonthOffset | Plus: 0 %}
+   
+   {% comment %} Don't allow the user to go more than a year out {% endcomment %}
+   {% if dateMonthOffset > 11 %}
+      {% assign dateMonthOffset = 11 %}
+   {% endif %}
+      
+   {% comment %}Add the specified number of months to the current date (rounded to down day 1). Then flip the year if needed. {% endcomment %}
+   {% assign nowMonth = 'Now' | Date:'M' %}
+   {% assign nowYear = 'Now' | Date:'yyyy' %}
+   
+   {% assign nowMonth = nowMonth | Plus: dateMonthOffset %}
+   {% if nowMonth > 12 %}
+      {% assign nowMonth = nowMonth | Minus: 12 %}
+      {% assign nowYear = nowYear | Plus: 1 %}
+   {% endif %}
+            
+   {% comment %}re-format the updated date so we can parse out a readable month and year. {% endcomment %}
+   {% capture dateFormat %}
+      {{nowMonth}}/1/{{nowYear}} 
+   {% endcapture %}
+      
+   {% assign finalDate = dateFormat | AsDateTime %}
+      
+   {% assign viewingMonth = finalDate | Date:'MMMM' %}
+   {% assign viewingDate = finalDate | Date:'MMMM yyyy' %}
+      
+   
+   {% assign selectedOccurrence = null %}
+  
+   {% unless calendarId %}
+      {% assign calendarId = 1 %}
+   {% endunless %}
+   
+   <h2>EVENTS</h2>
+  
+   <div class="event-page-wrapper">
+      <div class="event-calendar">
+         
+         <div class="header">
+         {%if dateMonthOffset == 0 %}
+            <div class="prev-arrow hidden">
+         {% else %}
+            <div onClick="updateMonth(-1);" class="prev-arrow">
+         {% endif %}
+               <b class="fa fa-caret-down"></b>
+            </div>
+            <h2>{{ viewingDate }}</h2>
+            {%if dateMonthOffset == 11 %}
+               <div class="next-arrow hidden">
+            {% else %}
+               <div onClick="updateMonth(1);" class="next-arrow">
+            {% endif %}
+               <b class="fa fa-caret-down"></b>
+            </div>
+         </div>
+         
+         
+         {% assign firstBaptismOfMonth = true %}
+         {% assign firstStartingPointOfMonth = true %}
+         {% assign firstEventItemOccurrenceId = -1 %}
+         
+         <script>
+            var events = [];
+            var firstEventId = null;
+         </script>
+         
+         {% for eventOccurrenceSummary in EventOccurrenceSummaries %}
+            {% if eventOccurrenceSummary.EventItem.IsApproved %}
+               {% assign linkage = eventOccurrenceSummary.EventItemOccurrence.Linkages | First %}
+               {% if linkage %}
+                  {% assign startDateTime = linkage.RegistrationInstance.StartDateTime %}
+               {% else %}
+                  {% assign startDateTime = 'Now' | Date:'yyyy/MM/dd hh:mm:ss tt' %}
+               {% endif %}
+
+               {% assign currentDateTime = 'Now' | Date:'yyyy/MM/dd hh:mm:ss tt' %}
+                 
+               {% assign eventMonth = eventOccurrenceSummary.DateTime | Date: 'MMMM' %}
+               {% if startDateTime <= currentDateTime and eventMonth == viewingMonth %}
+                  
+                  {% assign firstEventItemOccurrenceId = eventOccurrenceSummary.EventItemOccurrence.Id %}
+                  
+                  {% comment %} EventCalendarId 1 is public calendar {% endcomment %}
+                  {% assign eventCalendarItem = eventOccurrenceSummary.EventItem.EventCalendarItems | Where: 'EventCalendarId', calendarId | First %}
+
+                  {% if eventOccurrenceSummary.EventItem.DetailsUrl != empty %}
+                      {% assign detailUrl = eventOccurrenceSummary.EventItem.DetailsUrl %}
+                  {% elseif eventOccurrenceSummary.EventItem.Id == startingpointEventId %}
+                      {% assign detailUrl = startingpointDetailsPage %}
+                  {% elseif eventOccurrenceSummary.EventItem.Id == baptismEventId %}
+                      {% assign detailUrl = baptismDetailsPage %}
+                  {% else %}
+                      {% capture detailUrl %}{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}{% endcapture %}
+                  {% endif %}
+             
+                  {% if eventOccurrenceSummary.EventItem.Id == startingpointEventId or eventOccurrenceSummary.EventItem.Id == baptismEventId %}
+                     {% if firstBaptismOfMonth == true or firstStartingPointOfMonth == true %}
+                        {% if eventOccurrenceSummary.EventItem.Id == startingpointEventId %}
+                           {% assign firstStartingPointOfMonth = false %}
+                        {% elseif eventOccurrenceSummary.EventItem.Id == baptismEventId %}
+                           {% assign firstBaptismOfMonth = false %}
+                        {% endif %}
+                        
+                        <script>
+                           var eventItem =
+                           {
+                              itemOccurrenceId: '{{ eventOccurrenceSummary.EventItemOccurrence.Id }}',
+                              photoGuid: '{{ eventOccurrenceSummary.EventItem.Photo.Guid }}',
+                              name: '{{ eventOccurrenceSummary.Name }}',
+                              summary: '{{ eventOccurrenceSummary.Summary }}',
+                              detailUrl: '{{ detailUrl }}',
+                              contactEmail: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactEmail }}',
+                              contactPhone: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactPhone }}',
+                              note: '{{ eventOccurrenceSummary.EventItemOccurrence.Note | Escape }}',
+                              regInfo: ''
+                           };
+                           events[{{ eventOccurrenceSummary.EventItemOccurrence.Id }}] = eventItem;
+                           
+                           if( firstEventId == null ) {
+                              firstEventId = eventItem.itemOccurrenceId;
+                           }
+                       </script>
+                       
+                        <div class="event-item">
+                           <div class="date">
+                              <p>Multi</p>
+                           </div>
+                           <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}" class="details" onClick="toggleActiveItem( this ); displayEventInfo('{{ eventOccurrenceSummary.EventItemOccurrence.Id }}');">
+                              <div class="info">
+                                 <h4>{{ eventOccurrenceSummary.Name }}</h4>
+                                 <p>Click for Dates</p>
+                              </div>
+                              <div class="arrow">
+                                 <b class="fa fa-caret-down"></b>
+                              </div>
+                           </div>
+                        </div>
+                     {% endif %}
+                  {% else %}
+                        {% assign linkage = eventOccurrenceSummary.EventItemOccurrence.Linkages | First %}
+                        {% if linkage.RegistrationInstanceId > 0 ) %}
+
+                           {% assign daysTillStartDate = 'Now' | DateDiff:linkage.RegistrationInstance.StartDateTime,'m' %}
+                           {% assign daysTillEndDate = 'Now' | DateDiff:linkage.RegistrationInstance.EndDateTime,'m' %}
+                           {% assign showRegistration = true %}
+                           {% assign registrationMessgae = '' %}
+
+                           {% if daysTillStartDate and daysTillStartDate > 0 %}
+                             {% assign showRegistration = false %}
+                             {% capture registrationMessage %}<p>Registration opens on {{ linkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                           {% endif %}
+
+                           {% if daysTillEndDate and daysTillEndDate < 0 %}
+                             {% assign showRegistration = false %}
+                             {% capture registrationMessage %}<p>Registration closed on {{ linkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                           {% endif %}
+
+                           {% if showRegistration == true %}
+                             {% if linkage.RegistrationInstance.RegistrationTemplate.FinancialGatewayId == 4 %}
+                                 {% capture regInfo %}<a href="https://my.ccv.church/StarsRegistration?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ eventOccurrenceSummary.EventItemOccurrence.Id }}" class="btn btn-primary btn-block margin-t-md">Register Now</a>{% endcapture %}
+                             {% else %}
+                                 {% capture regInfo %}<a href="{{ registrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ eventOccurrenceSummary.EventItemOccurrence.Id }}" class="btn btn-primary btn-block margin-t-md">Register Now</a>{% endcapture %}
+                             {% endif %}
+                           {% else %}
+                              {% capture regInfo %}<div class="btn btn-primary btn-block margin-t-md" disabled>Registration Closed</div><br/>{{ registrationMessage }}{% endcapture %}
+                           {% endif %}
+                        {% endif %}
+                           
+                     <script>
+                           var eventItem =
+                           {
+                              itemOccurrenceId: '{{ eventOccurrenceSummary.EventItemOccurrence.Id }}',
+                              photoGuid: '{{ eventOccurrenceSummary.EventItem.Photo.Guid }}',
+                              name: '{{ eventOccurrenceSummary.Name }}',
+                              summary: '{{ eventOccurrenceSummary.Summary }}',
+                              detailUrl: '{{ detailUrl }}',
+                              contactEmail: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactEmail }}',
+                              contactPhone: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactPhone }}',
+                              note: '{{ eventOccurrenceSummary.EventItemOccurrence.Note | Escape }}',
+                              regInfo: '{{ regInfo }}'
+                           };
+                           events[{{ eventOccurrenceSummary.EventItemOccurrence.Id }}] = eventItem;
+                           
+                           if( firstEventId == null ) {
+                              firstEventId = eventItem.itemOccurrenceId;
+                           }
+                     </script>
+                       
+                     <div class="event-item">
+                        <div class="date">
+                           <p>{{ eventOccurrenceSummary.DateTime | Date: 'dd' }}</p>
+                        </div>
+                        <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}" class="details" onClick="toggleActiveItem( this ); displayEventInfo( '{{ eventOccurrenceSummary.EventItemOccurrence.Id }}');">
+                           <div class="info">
+                              <h4>{{ eventOccurrenceSummary.Name }}</h4>
+                              {% if eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate != eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate %}
+                                 <p>{{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d'}}</p>
+                              {% elseif eventOccurrenceSummary.Time == '12:00 AM' %}
+                                 <p>{{ eventOccurrenceSummary.DateTime | Date: 'dddd' }}</p>
+                              {% else %}
+                                 <p>{{ eventOccurrenceSummary.DateTime | Date: 'dddd | h:mmtt' }}</p>
+                              {% endif %}
+                           </div>
+                           <div class="arrow">
+                              <b class="fa fa-caret-down"></b>
+                           </div>
+                        </div>
+                     </div>
+                  {% endif %}
+                  
+                  {% assign Event = eventOccurrenceSummary.EventItem %}
+                  {% assign EventItemOccurrence = eventOccurrenceSummary.EventItemOccurrence %}
+                  
+               {% endif %}
+            {% endif %}
+         {% endfor %}
+      </div>
+      
+      <div class="event-detail-card">
+         <img id="event-detail-card-img" src="" style="width: 365px; height: 200px;" class="img-responsive"></img>
+         
+         <h4 id="event-detail-card-name"></h4>
+         <p id="event-detail-card-summary"></p>
+         <a id="event-detail-card-learnmore-btn" href="{{ detailUrl }}" class="btn btn-primary btn-block margin-t-md">Learn More</a>
+         
+         <div class="info">
+            <div id="event-detail-card-contact" class="item">
+               <h6>Contact: </h6>
+               
+               <div id="event-detail-card-contact-text" class="text">
+                </div>
+            </div>
+            
+            {% if EventItemOccurrence.Campus != null and EventItemOccurrence.Location != '' %}
+               <div class="item">
+                  <h6>Location:</h6>
+                  
+                  <p class="text">
+                     {% if EventItemOccurrence.Campus != null %}
+                        {{EventItemOccurrence.Campus.Name}} Campus <br/>
+                     {% endif %}
+                     {% if EventItemOccurrence.Location != '' %}
+                        {{ EventItemOccurrence.Location }}
+                     {% endif %}
+                  </p>
+               </div>
+            {% endif %}
+            
+            <div id="event-detail-card-note" class="item">
+               <h6>Notes:</h6>
+               
+               <div id="event-detail-card-note-text" class="text">
+               </div>
+            </div>            
+         </div>
+         
+         <div id="event-detail-card-reg">
+         </div>
+      </div>
+   </div>
+   
+   <script>
+      var oldonload = window.onload;
+      window.onload = (typeof window.onload != 'function') ?
+        selectDefaultItem : function() { oldonload(); selectDefaultItem(); };
+        
+     function selectDefaultItem( ) {
+         displayEventInfo( firstEventId );
+         var selectedDiv = $("#" + firstEventId );
+         toggleActiveItem( selectedDiv[0] );
+        }
+        
+      function updateMonth( direction ) {
+         var monthOffset = parseInt(getParameterByName('monthoffset'));
+         if( monthOffset == null ) {
+            monthOffset = 0;
+         }
+         
+         monthOffset += 1 * direction;         
+         monthOffset = Math.max( Math.min( monthOffset, 11 ), 0 );
+         
+         window.location.href = window.location.pathname + "?monthoffset=" + monthOffset;
+      }
+        
+      function toggleActiveItem( selectedDiv ) {
+         var classList = document.getElementsByClassName( "details");
+         
+         var i = 0;
+         for( i = 0; i < classList.length; i++ ) {
+            var detailObj = classList.item(i);
+            if( selectedDiv == detailObj ) {
+               detailObj.classList.add( "selected" );
+            }          
+            else {
+               detailObj.classList.remove( "selected" );
+            }
+         }
+      }
+   
+      function decodeHtml(html) {
+         var txt = document.createElement("textarea");
+         txt.innerHTML = html;
+         return txt.value;
+      }
+      
+      function getParameterByName(name, url) {
+          if (!url) url = window.location.href;
+          name = name.replace(/[\[\]]/g, "\\$&");
+          var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+              results = regex.exec(url);
+          if (!results) return null;
+          if (!results[2]) return '';
+          return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+
+      function displayEventInfo(eventItemOccurrenceId ) {
+         
+         var eventItem = events[eventItemOccurrenceId];
+      
+         var imageObj = $("#event-detail-card-img");
+         if( eventItem.photoGuid != '' ) {
+            imageObj.show();
+            imageObj.attr( "src", "/GetImage.ashx?Guid=" + eventItem.photoGuid )
+         }
+         else {
+            imageObj.hide();
+         }
+         
+         $("#event-detail-card-name").text( eventItem.name );
+         $("#event-detail-card-summary").text( eventItem.summary  );
+         $("#event-detail-card-learnmore-btn").attr( "href", eventItem.detailUrl );
+         
+         var contactObj = $("#event-detail-card-contact");
+         if( eventItem.contactEmail != '' || eventItem.contactPhone != '' ) {
+            contactObj.show();
+            
+            var contactDetails = $("#event-detail-card-contact-text");
+            contactDetails.html( eventItem.contactEmail + "<br/>" + eventItem.contactPhone );
+         }
+         else {
+            contactObj.hide();
+         }
+         
+         var noteObj = $("#event-detail-card-note");
+         if( eventItem.note != '' ) {
+            noteObj.show();
+            
+            var noteDetails = $("#event-detail-card-note-text");
+            
+            var decodedHtmlStr = decodeHtml( eventItem.note );
+            noteDetails.html( decodedHtmlStr );
+         }
+         else {
+            noteObj.hide();
+         }
+         
+         var regObj = $("#event-detail-card-reg");
+         if( eventItem.regInfo != '' ) {
+            regObj.show();
+            
+            regObj.html( eventItem.regInfo );
+         }
+         else {
+            regObj.hide();
+         }
+         
+      }
+   </script>
+
+   {% comment %} TODO: package these together {% endcomment %}
+   <script src="/Themes/church_ccv_External_v7/Scripts/Vendor/clamp.min.js"></script>
+   <script src="/Themes/church_ccv_External_v7/Scripts/Vendor/masonry.pkgd.min.js"></script>
+   <script>
+      $('.panel-title').each(function(){
+         $clamp(this, {clamp: 2})
+      })
+      $('.masonry').masonry({
+         itemSelector: '.masonry-item',
+         columnWidth: '.masonry-sizer',
+         percentPosition: true
+      })
+   </script>
+{% else %}
+   <p class="hidden-xs">&nbsp;</p>
+   <p class="hidden-xs">&nbsp;</p>
+   <p class="hidden-xs">&nbsp;</p>
+   <div class="text-center">
+      <p class="lead">Select a campus to view upcoming events.</p>
+      {% assign selectCampusBtnClasses = 'btn btn-primary btn-lg' %}
+      {% assign selectCampusBtnShowDescription = false %}
+      {% include '~~/Assets/Lava/SelectACampus.lava' %}
+   </div>
+   <p class="hidden-xs">&nbsp;</p>
+   <p class="hidden-xs">&nbsp;</p>
+{% endif %}
