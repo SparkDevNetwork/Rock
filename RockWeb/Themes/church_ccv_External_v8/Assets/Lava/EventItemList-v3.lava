@@ -299,9 +299,12 @@
         }
         
       function updateMonth( direction ) {
-         var monthOffset = parseInt(getParameterByName('monthoffset'));
-         if( monthOffset == null ) {
-            monthOffset = 0;
+         var monthOffset = 0;
+         
+         // try parsing the query param, if it exists
+         var monthParam = getParameterByName('monthoffset');
+         if( monthParam != null ) {
+            monthOffset = parseInt( monthParam );
          }
          
          monthOffset += 1 * direction;         
