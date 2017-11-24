@@ -22,10 +22,11 @@ using Rock.Attribute;
 
 namespace Rock.Pbx.Provider
 {
+
     /// <summary>
-    /// Text PBX Provider
+    /// 
     /// </summary>
-    /// <seealso cref="Rock.UniversalSearch.IndexComponent" />
+    /// <seealso cref="Rock.Pbx.PbxComponent" />
     [Description( "A test PBX provider." )]
     [Export( typeof( PbxComponent ) )]
     [ExportMetadata( "ComponentName", "PBX Tester" )]
@@ -35,6 +36,11 @@ namespace Rock.Pbx.Provider
     [TextField( "Password", "The password to use to connect with.", true, order: 2 )]
     public class TestPbx : PbxComponent
     {
+        public override int DownloadCdr( DateTime? startDate = null )
+        {
+            return 0;
+        }
+
         public override bool Originate( string fromPhone, string toPhone, string callerId )
         {
             return true;

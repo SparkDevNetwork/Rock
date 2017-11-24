@@ -30,6 +30,8 @@ namespace Rock.Pbx
     public abstract class PbxComponent : Component
     {
         public abstract bool Originate( string fromPhone, string toPhone, string callerId );
+
+        public abstract int DownloadCdr( DateTime? startDate = null );
     }
 
 }

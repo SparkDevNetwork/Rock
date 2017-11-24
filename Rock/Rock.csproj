@@ -694,6 +694,7 @@
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
+    <Compile Include="Jobs\PbxCdrDownload.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
     <Compile Include="Jobs\SendDataViewEmail.cs" />
@@ -1164,9 +1165,10 @@
     <Compile Include="Model\LavaShortCode.cs" />
     <Compile Include="Model\PageShortLinkService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
+    <Compile Include="Pbx\CdrRecord.cs" />
     <Compile Include="Pbx\PbxComponent.cs" />
     <Compile Include="Pbx\PbxContainer.cs" />
-    <Compile Include="Pbx\Provider\ElasticSearch.cs" />
+    <Compile Include="Pbx\Provider\TestPbx.cs" />
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />

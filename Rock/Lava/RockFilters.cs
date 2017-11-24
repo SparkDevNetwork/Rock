@@ -258,6 +258,23 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns the right part of the string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        public static string Right( object input, int length )
+        {
+            if (input == null )
+            {
+                return string.Empty;
+            }
+
+            var inputString = input.ToString();
+            return inputString.Right( length );
+        }
+
+        /// <summary>
         /// returns sentence in 'PascalCase'
         /// </summary>
         /// <param name="input"></param>
