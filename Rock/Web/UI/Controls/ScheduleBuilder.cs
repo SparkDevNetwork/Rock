@@ -255,8 +255,6 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            RegisterJavaScript();
-
             var sm = ScriptManager.GetCurrent( this.Page );
             EnsureChildControls();
 
@@ -429,6 +427,7 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             _scheduleBuilderPanel.RenderControl( writer );
+            RegisterJavaScript();
         }
 
         /// <summary>

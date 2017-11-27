@@ -104,6 +104,14 @@ namespace Rock.Transactions
         public CommunicationRecipientStatus RecipientStatus { get; set; }
 
         /// <summary>
+        /// On optional guid to use if one and only one recipient will be created. Used for tracking opens/clicks.
+        /// </summary>
+        /// <value>
+        /// The recipient unique identifier.
+        /// </value>
+        public Guid? RecipientGuid { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
         /// </summary>
         public SaveCommunicationTransaction()
@@ -170,9 +178,15 @@ namespace Rock.Transactions
                     .FirstOrDefault();
                 int? senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
 
-                new CommunicationService( rockContext ).CreateEmailCommunication(
+                var communication = new CommunicationService( rockContext ).CreateEmailCommunication(
                     RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication,
                     RecipientStatus, senderPersonAliasId );
+
+                if ( communication != null && communication.Recipients.Count() == 1 && RecipientGuid.HasValue )
+                {
+                    communication.Recipients.First().Guid = RecipientGuid.Value;
+                }
+
                 rockContext.SaveChanges();
             }
         }

@@ -44,6 +44,9 @@ namespace Rock.Client
         public string CCEmails { get; set; }
 
         /// <summary />
+        public bool CssInliningEnabled { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -147,6 +150,7 @@ namespace Rock.Client
             this.BCCEmails = source.BCCEmails;
             this.CategoryId = source.CategoryId;
             this.CCEmails = source.CCEmails;
+            this.CssInliningEnabled = source.CssInliningEnabled;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;

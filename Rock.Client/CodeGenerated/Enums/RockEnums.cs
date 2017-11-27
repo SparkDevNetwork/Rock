@@ -282,6 +282,16 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum IconCssWeight
+    {
+        Regular = 0x0,
+        Solid = 0x1,
+        Light = 0x2,
+        Thin = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum JobNotificationStatus
     {
         All = 0x1,

@@ -239,6 +239,43 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
+        /// Handles the Copy event of the gCommunicationTemplates control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gCommunicationTemplates_Copy( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+            var service = new CommunicationTemplateService( rockContext );
+            var template = service.Get( e.RowKeyId );
+            if ( template != null )
+            {
+                if ( !template.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    maGridWarning.Show( "You are not authorized to copy this template", ModalAlertType.Information );
+                    return;
+                }
+
+                var templateCopy = template.Clone( false );
+                templateCopy.Id = 0;
+                int copyNumber = 0;
+                var copyName = "Copy of " + template.Name;
+                while ( service.Queryable().Where(a => a.Name == copyName ).Any())
+                {
+                    copyNumber++;
+                    copyName = string.Format( "Copy({0}) of {1}", copyNumber, template.Name );
+                }
+
+                template.Name = copyName.Truncate( 100 );
+                templateCopy.Guid = Guid.NewGuid();
+                service.Add( templateCopy );
+                rockContext.SaveChanges();
+            }
+
+            BindGrid();
+        }
+
+        /// <summary>
         /// Handles the Delete event of the gCommunicationTemplates control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -439,5 +476,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion
+
+        
     }
 }

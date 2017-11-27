@@ -155,6 +155,10 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Loads the items.
+        /// </summary>
+        /// <param name="selectedValues">The selected values.</param>
         private void LoadItems( List<int> selectedValues )
         {
             var selectedItems = Items.Cast<ListItem>()
