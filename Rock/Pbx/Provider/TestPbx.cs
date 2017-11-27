@@ -18,7 +18,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using Rock.Attribute;
-
+using Rock.Model;
 
 namespace Rock.Pbx.Provider
 {
@@ -41,8 +41,15 @@ namespace Rock.Pbx.Provider
             return 0;
         }
 
-        public override bool Originate( string fromPhone, string toPhone, string callerId )
+        public override bool Originate( string fromPhone, string toPhone, string callerId, out string message )
         {
+            message = string.Empty;
+            return true;
+        }
+
+        public override bool Originate( Person fromPerson, string toPhone, string callerId, out string message )
+        {
+            message = string.Empty;
             return true;
         }
     }

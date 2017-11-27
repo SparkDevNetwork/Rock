@@ -15,12 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
-using Rock.Attribute;
 using Rock.Extension;
-using Rock.UniversalSearch.IndexModels;
+using Rock.Model;
 
 namespace Rock.Pbx
 {
@@ -29,7 +26,9 @@ namespace Rock.Pbx
     /// </summary>
     public abstract class PbxComponent : Component
     {
-        public abstract bool Originate( string fromPhone, string toPhone, string callerId );
+        public abstract bool Originate( string fromPhone, string toPhone, string callerId, out string message );
+
+        public abstract bool Originate( Person fromPerson, string toPhone, string callerId, out string message );
 
         public abstract int DownloadCdr( DateTime? startDate = null );
     }

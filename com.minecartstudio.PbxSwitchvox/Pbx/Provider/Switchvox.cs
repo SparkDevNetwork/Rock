@@ -50,13 +50,46 @@ FROM
 	INNER JOIN [DefinedType] dt ON dt.[Id] = dv.[DefinedTypeId]
 WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
     [CodeEditorField("Phone Extenstion Template", "Lava template to use to get the extension from the internal phone. This helps translate the full phone number to just the internal extension (e.g. (602) 555-2345 to 2345). The phone number will be passed into the template as the variable 'PhoneNumber'.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "{{ PhoneNumber | Right:4 }}", order: 4)]
+    [TextField("Default Origination Extension", "When originating calls between two phones this is the default extension to use for outgoing call rules and call api settings should be used when placing the calls. This is only used if we don't know the person to use as the source of the call (when we're only passed two phone numbers).", true )]
     public class Switchvox : PbxComponent
     {
-        public override bool Originate( string fromPhone, string toPhone, string callerId )
+        /// <summary>
+        /// Originates the specified from phone.
+        /// </summary>
+        /// <param name="fromPhone">From phone.</param>
+        /// <param name="toPhone">To phone.</param>
+        /// <param name="callerId">The caller identifier.</param>
+        /// <returns></returns>
+        public override bool Originate( string fromPhone, string toPhone, string callerId, out string message )
         {
+            message = string.Empty;
+            var accountId = GetAttributeValue( "DefaultOriginationExtension" );
+
+            return OrginateSwitchvox( fromPhone, toPhone, accountId, callerId, out message );
+        }
+
+        /// <summary>
+        /// Originates the specified from person.
+        /// </summary>
+        /// <param name="fromPerson">From person.</param>
+        /// <param name="toPhone">To phone.</param>
+        /// <param name="callerId">The caller identifier.</param>
+        /// <returns></returns>
+        public override bool Originate( Person fromPerson, string toPhone, string callerId, out string message )
+        {
+            message = string.Empty;
+            // get the phone number to use for the from person
+            // 1. check preference
+            // 2. use default phone type
+
             return true;
         }
 
+        /// <summary>
+        /// Downloads the CDR.
+        /// </summary>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <returns></returns>
         public override int DownloadCdr(DateTime? startDateTime = null)
         {
             var recordsProcessed = 0;
@@ -186,6 +219,29 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
             return recordsProcessed;
         }
 
+        #region Private Methods
+
+        private bool OrginateSwitchvox( string sourcePhone, string destinationPhone, string accountId, string callerId, out string message )
+        {
+            message = string.Empty;
+
+            XDocument result = XMLRequest( new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ),
+                    new XElement( "request",
+                        new XAttribute( "method", "switchvox.call" ),
+                        new XElement( "parameters",
+                            new XElement( "ignore_user_api_settings", "1" ),
+                            new XElement( "dial_first", sourcePhone ),
+                            new XElement( "dial_second", destinationPhone ),
+                            new XElement( "dial_as_account_id", accountId ),
+                            new XElement( "caller_id_name", callerId ),
+                            new XElement( "timeout_second_call", "120" )
+                        )
+                    )
+                ) );
+
+            return result != null;
+        }
+
         private XDocument GetCalls( int pageNumber, XElement xAccountIDs, DateTime startDateTime )
         {
             XDocument xRequest = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ),
@@ -203,8 +259,6 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
         
             return XMLRequest( xRequest );
         }
-
-        
 
         private XDocument XMLRequest( XDocument request )
         {
@@ -297,6 +351,8 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
             else
                 return null;
         }
+
+        #endregion
     }
 }
 
