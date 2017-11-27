@@ -93,6 +93,7 @@ namespace Rock.Model
             target.BCCEmails = source.BCCEmails;
             target.CategoryId = source.CategoryId;
             target.CCEmails = source.CCEmails;
+            target.CssInliningEnabled = source.CssInliningEnabled;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

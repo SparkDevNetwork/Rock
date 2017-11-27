@@ -126,6 +126,20 @@ namespace Rock.Web.UI.Controls
 
             this.IconCssClass = "fa fa-file";
 
+            var sm = ScriptManager.GetCurrent( this.Page );
+            EnsureChildControls();
+
+            if ( sm != null )
+            {
+                sm.RegisterAsyncPostBackControl( _btnSelectPageRoute );
+            }
+        }
+
+        /// <summary>
+        /// Registers the java script for the PageRoutePicker
+        /// </summary>
+        private void RegisterPageRoutePickerJavaScript()
+        {
             string scriptFormat = @"
 
                 $('#{0}').click(function () {{
@@ -145,14 +159,6 @@ namespace Rock.Web.UI.Controls
             string script = string.Format( scriptFormat, _btnShowPageRoutePicker.ClientID, _btnSelectPageRoute.ClientID, _btnCancelPageRoute.ClientID, this.ClientID );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "page-route-picker-script_" + this.ClientID, script, true );
-
-            var sm = ScriptManager.GetCurrent( this.Page );
-            EnsureChildControls();
-
-            if ( sm != null )
-            {
-                sm.RegisterAsyncPostBackControl( _btnSelectPageRoute );
-            }
         }
 
         /// <summary>
@@ -521,6 +527,8 @@ namespace Rock.Web.UI.Controls
                     writer.Write( "</div>" );
                     writer.Write( @"</div>" );
                     writer.Write( @"</div>" );
+
+                    RegisterPageRoutePickerJavaScript();
                 }
             }
         }

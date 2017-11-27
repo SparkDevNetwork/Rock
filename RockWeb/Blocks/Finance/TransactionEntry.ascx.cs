@@ -859,7 +859,7 @@ TransactionAccountDetails: [
 
                         if ( !ScheduleId.HasValue )
                         {
-                            var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( TransactionCode );
+                            var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( (financialGateway != null ? financialGateway.Id : (int?)null), TransactionCode );
                             if ( transaction != null && transaction.AuthorizedPersonAlias != null )
                             {
                                 if ( transaction.FinancialGateway != null )

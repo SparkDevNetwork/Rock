@@ -197,8 +197,8 @@ namespace Rock.Jobs
                     commDetails.FromName = ConvertMediumData( mediumData, "FromName", commDetails.FromName );
                     commDetails.FromEmail = ConvertMediumData( mediumData, "FromAddress", commDetails.FromEmail );
                     commDetails.ReplyToEmail = ConvertMediumData( mediumData, "ReplyTo", commDetails.ReplyToEmail );
-                    commDetails.CCEmails = ConvertMediumData( mediumData, "CC", commDetails.Message );
-                    commDetails.BCCEmails = ConvertMediumData( mediumData, "BCC", commDetails.Message );
+                    commDetails.CCEmails = ConvertMediumData( mediumData, "CC", commDetails.CCEmails );
+                    commDetails.BCCEmails = ConvertMediumData( mediumData, "BCC", commDetails.BCCEmails );
                     commDetails.Message = ConvertMediumData( mediumData, "HtmlMessage", commDetails.Message );
                     attachmentBinaryFileIds = ConvertMediumData( mediumData, "Attachments", commDetails.EmailAttachmentBinaryFileIds.ToList().AsDelimited( "," ) ).SplitDelimitedValues().AsIntegerList();
                 }

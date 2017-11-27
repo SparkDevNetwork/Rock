@@ -18,7 +18,10 @@
                 <%-- Recipient Selection --%>
                 <asp:Panel ID="pnlRecipientSelection" CssClass="js-navigation-panel" runat="server" Visible="true">
                     <h1 class="step-title">Recipient Selection</h1>
-
+                    <Rock:NotificationBox ID="nbCommunicationNotWizardCompatible" runat="server" NotificationBoxType="Info">
+                        This communication uses a template that is not compatible with the email wizard. You can continue with the email wizard, but the main content of the email will be replaced when the Email Wizard compatible template is selected. To keep the content, click 'Use Simple Editor' to use the simple communication editor.
+                    </Rock:NotificationBox> </>
+                    
                     <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please Correct the Following" ValidationGroup="vgRecipientSelection" CssClass="alert alert-danger" />
 
                     <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Danger" />
@@ -204,7 +207,7 @@
                                     </div>
                                     
                                     <div class="js-email-sendtest-inputs" style="display: none">
-                                        <Rock:RockTextBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" />
+                                        <Rock:EmailBox ID="tbTestEmailAddress" runat="server" Label="Email" ValidationGroup="vgEmailEditorSendTest" Required="true" AllowMultiple="false" />
                                         <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-xs btn-primary js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
                                         <a class="btn btn-xs btn-link js-email-sendtest-cancel" href="#">Cancel</a>
                                     </div>
@@ -544,7 +547,7 @@
 					                </div>
 
                                     <!-- Divider Properties -->
-                                    <div class="propertypanel propertypanel-divider" data-component="divider" style="display: none;">
+                                    <div class="propertypanel propertypanel-divider" id="component-divider-panel" data-component="divider" style="display: none;">
 						                <h4 class="propertypanel-title">Divider</h4>
                                         <div class="row">
 							                <div class="col-md-6">
@@ -560,6 +563,7 @@
 								                        <input class="form-control" id="component-divider-margin-top" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
+                                                <Rock:RockCheckBox ID="cbComponentDividerDivideWithLine" CssClass="js-component-divider-divide-with-line" runat="server" Text="Divide With Line" />
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
@@ -619,7 +623,7 @@
 					                </div>
 
 					                <!-- Button Properties -->
-                                    <div class="propertypanel propertypanel-button" data-component="button" style="display: none;">
+                                    <div id="component-button-panel" class="propertypanel propertypanel-button" data-component="button" style="display: none;">
 						                <h4 class="propertypanel-title">Button</h4>
 						                <hr />
 						                <div class="form-group">
@@ -663,7 +667,12 @@
 									                <select id="component-button-buttonwidth" class="form-control">
 										                <option value="0">Fit To Text</option>
 										                <option value="1">Full Width</option>
+                                                        <option value="2">Fixed Width</option>
 									                </select>
+								                </div>
+								                <div class="form-group js-buttonfixedwidth">
+									                <label for="component-button-buttonfixedwidth">Fixed Width</label>
+									                <input class="form-control" id="component-button-buttonfixedwidth">
 								                </div>
 							                </div>
 							                <div class="col-md-6">
@@ -890,7 +899,7 @@
                                 <Rock:MergeFieldPicker ID="mfpSMSMessage" runat="server" CssClass="margin-b-sm pull-right" OnSelectItem="mfpMessage_SelectItem" ValidationGroup="vgMobileTextEditor"/>
                                 <asp:HiddenField ID="hfSMSCharLimit" runat="server" />
                                 <asp:Label ID="lblSMSMessageCount" runat="server" CssClass="badge margin-all-sm pull-right" />
-                                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required"/>
+                                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required" ValidateRequestMode="Disabled" />
                                 <Rock:NotificationBox ID="nbSMSTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test SMS has been sent." Visible="false" />
                                 <div class="actions margin-t-sm pull-right">
                                     <a class="btn btn-xs btn-default js-sms-sendtest" href="#">Send Test</a>
@@ -1038,6 +1047,7 @@
 
                 $('.js-email-sendtest').off('click').on('click', function ()
                 {
+                    $('#<%=nbEmailTestResult.ClientID%>').hide();
                     $(this).hide();
                     $('#<%=btnEmailPreview.ClientID%>').hide();
 
@@ -1387,20 +1397,20 @@
 			            {
 			                $.post('<%=this.ResolveUrl("~/api/Lava/RenderTemplate")%>' + '?additionalMergeObjects=' + additionalMergeObjects, updatedText, function (data)
 			                {
-			                    if (data.startsWith('Error resolving Lava merge fields:')) {
-			                        $('.js-sms-chatoutput').html(updatedText);
+                                if (data.startsWith('Error resolving Lava merge fields:')) {
+			                        $('.js-sms-chatoutput').text(updatedText);
 			                    }
 			                    else {
-			                        $('.js-sms-chatoutput').html(data);
+			                        $('.js-sms-chatoutput').text(data);
 			                    }
 			                }).fail(function (a, b, c)
 			                {
-			                    $('.js-sms-chatoutput').html(updatedText);
+			                    $('.js-sms-chatoutput').text(updatedText);
 			                })
 			            }, 100);
 			        }
 			        else {
-			            $('.js-sms-chatoutput').html(updatedText);
+			            $('.js-sms-chatoutput').text(updatedText);
 			        }
 			    }
 			    else {

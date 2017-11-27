@@ -3994,7 +3994,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonHistorical]&apos;, &apos;V&apos;) IS NOT NULL
-        ///	DROP VIEW AnalyticsDimPersonHistorical
+        ///    DROP VIEW AnalyticsDimPersonHistorical
         ///GO
         ///
         ///CREATE VIEW AnalyticsDimPersonHistorical
@@ -4015,7 +4015,7 @@ namespace Rock.Migrations.Migrations {
         ///			THEN &apos;Female&apos;
         ///		ELSE &apos;Unknown&apos;
         ///		END [GenderText]
-        ///	,CASE  [rest of string was truncated]&quot;;.
+        ///	,CA [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711092125120_Analytics5_AnalyticsDimPersonHistorical {
             get {
@@ -4052,6 +4052,59 @@ namespace Rock.Migrations.Migrations {
         public static string _201711092125120_Analytics5_spAnalytics_ETL_Campus {
             get {
                 return ResourceManager.GetString("_201711092125120_Analytics5_spAnalytics_ETL_Campus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialAccount]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimFinancialAccount
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsDimFinancialAccount
+        ///AS
+        ///SELECT fa.Id [AccountId]
+        ///    ,fa.[Name]
+        ///    ,fa.[PublicName]
+        ///    ,fa.[Description]
+        ///    ,fa.[PublicDescription]
+        ///    ,CASE fa.[IsTaxDeductible]
+        ///        WHEN 1
+        ///            THEN &apos;Not Taxable&apos;
+        ///        ELSE &apos;Taxable&apos;
+        ///        END [TaxStatus]
+        ///    ,fa.[GlCode]
+        ///    ,fa.[Order]
+        ///    ,CASE fa.IsActive
+        ///        WHEN 1
+        ///            THEN &apos;Active&apos; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711141624083_CommunicationTemplateCssInliningEnabled_AnalyticsDimFinancialAccount {
+            get {
+                return ResourceManager.GetString("_201711141624083_CommunicationTemplateCssInliningEnabled_AnalyticsDimFinancialAcc" +
+                        "ount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCrm_PersonDuplicateFinder]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A- [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711141624083_CommunicationTemplateCssInliningEnabled_spCrm_PersonDuplicateFinder {
+            get {
+                return ResourceManager.GetString("_201711141624083_CommunicationTemplateCssInliningEnabled_spCrm_PersonDuplicateFin" +
+                        "der", resourceCulture);
             }
         }
     }

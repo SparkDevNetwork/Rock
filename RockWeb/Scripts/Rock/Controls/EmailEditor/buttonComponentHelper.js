@@ -37,6 +37,10 @@
           self.setButtonWidth();
         });
 
+        $('#component-button-buttonfixedwidth').on('change', function (e) {
+            self.setButtonWidth();
+        });
+
         $('#component-button-buttonalign').on('change', function (e)
         {
           self.setButtonAlign();
@@ -69,7 +73,7 @@
         var buttonUrl = $buttonComponent.find('.button-link').attr('href');
         var buttonBackgroundColor = $buttonComponent.find('.button-shell').css('backgroundColor');
         var buttonFontColor = $buttonComponent.find('.button-link').css('color');
-        var buttonWidth = $buttonComponent.find('.button-shell').attr('width');
+        var buttonWidth = $buttonComponent.find('.button-shell').attr('width') || null;
         var buttonAlign = $buttonComponent.find('.button-innerwrap').attr('align');
         var buttonFont = $buttonComponent.find('.button-link').css("font-family");
         var buttonFontWeight = $buttonComponent.find('.button-link')[0].style['font-weight'];
@@ -81,11 +85,22 @@
         $('#component-button-buttonbackgroundcolor').colorpicker('setValue', buttonBackgroundColor);
         $('#component-button-buttonfontcolor').colorpicker('setValue', buttonFontColor);
 
-        if (buttonWidth == '100%') {
-          $('#component-button-buttonwidth').val(1);
+        var $buttonfixedwidthDiv = $('#component-button-panel').find('.js-buttonfixedwidth');
+
+        if (buttonWidth == null) {
+            $('#component-button-buttonwidth').val(0);
+            $buttonfixedwidthDiv.hide();
+            $('#component-button-buttonfixedwidth').val('');
+        }
+        else if (buttonWidth == '100%') {
+            $('#component-button-buttonwidth').val(1);
+            $buttonfixedwidthDiv.hide();
+            $('#component-button-buttonfixedwidth').val('');
         }
         else {
-          $('#component-button-buttonwidth').val(0);
+            $('#component-button-buttonwidth').val(2);
+            $buttonfixedwidthDiv.show();
+            $('#component-button-buttonfixedwidth').val(buttonWidth);
         }
 
         $('#component-button-buttonalign').val(buttonAlign);
@@ -120,12 +135,20 @@
       setButtonWidth: function ()
       {
         var selectValue = $('#component-button-buttonwidth').val();
+        var fixedValue = $('#component-button-buttonfixedwidth').val();
+        var $buttonfixedwidthDiv = $('#component-button-panel').find('.js-buttonfixedwidth');
 
         if (selectValue == 0) {
-          Rock.controls.emailEditor.$currentButtonComponent.find('.button-shell').removeAttr('width');
+            Rock.controls.emailEditor.$currentButtonComponent.find('.button-shell').removeAttr('width');
+            $buttonfixedwidthDiv.slideUp();
         }
-        else {
-          Rock.controls.emailEditor.$currentButtonComponent.find('.button-shell').attr('width', '100%');
+        else if (selectValue == 1) {
+            Rock.controls.emailEditor.$currentButtonComponent.find('.button-shell').attr('width', '100%');
+            $buttonfixedwidthDiv.slideUp();
+        }
+        else if (selectValue == 2) {
+            Rock.controls.emailEditor.$currentButtonComponent.find('.button-shell').attr('width', fixedValue);
+            $buttonfixedwidthDiv.slideDown();
         }
       },
       setButtonAlign: function ()

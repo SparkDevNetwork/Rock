@@ -22,7 +22,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Humanizer;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -147,6 +147,7 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.CCEmails = tbCCList.Text;
                 communicationTemplate.BCCEmails = tbBCCList.Text;
                 communicationTemplate.LavaFields = kvlMergeFields.Value.AsDictionaryOrNull();
+                communicationTemplate.CssInliningEnabled = cbCssInliningEnabled.Checked;
 
                 var binaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
 
@@ -283,6 +284,7 @@ namespace RockWeb.Blocks.Communication
             tbReplyToAddress.Text = communicationTemplate.ReplyToEmail;
             tbCCList.Text = communicationTemplate.CCEmails;
             tbBCCList.Text = communicationTemplate.BCCEmails;
+            cbCssInliningEnabled.Checked = communicationTemplate.CssInliningEnabled;
             kvlMergeFields.Value = communicationTemplate.LavaFields.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
 
             hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( communicationTemplate.ReplyToEmail ) || !string.IsNullOrEmpty( communicationTemplate.CCEmails ) || !string.IsNullOrEmpty( communicationTemplate.BCCEmails ) ).ToTrueFalse().ToLower();
@@ -529,7 +531,7 @@ namespace RockWeb.Blocks.Communication
 
                 if ( helpWidth.IsNotNullOrWhitespace() && helpHeight.IsNotNullOrWhitespace() )
                 {
-                    helpText += string.Format(" (Image size: '{0}' x '{1}')", helpWidth, helpHeight);
+                    helpText += string.Format(" (Image size: {0}px x {1}px)", helpWidth, helpHeight);
                 }
 
                 imgTemplateLogo.Help = helpText;
@@ -597,15 +599,7 @@ namespace RockWeb.Blocks.Communication
                     RockTextBox lavaValueControl = phLavaFieldsControls.FindControl( "lavaValue_" + key ) as RockTextBox;
                     if ( lavaValueControl != null && lavaValueControl.Text != value )
                     {
-                        if ( lavaValueControl.Text.IsNullOrWhiteSpace() )
-                        {
-                            // if the Control is set to blank, revert to the default from the ComunnicationTemplate.LavaFields
-                            value = lavaFieldsDefaultDictionary.GetValueOrNull( key );
-                        }
-                        else
-                        {
-                            value = lavaValueControl.Text;
-                        }
+                        value = lavaValueControl.Text;
                     }
 
                     lavaFieldsTemplateDictionary.Add( key, value );
@@ -659,6 +653,11 @@ namespace RockWeb.Blocks.Communication
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
             var resolvedPreviewHtml = ceEmailTemplate.Text.ResolveMergeFields( mergeFields );
 
+            if ( cbCssInliningEnabled.Checked )
+            {
+                resolvedPreviewHtml = resolvedPreviewHtml.ConvertHtmlStylesToInlineAttributes();
+            }
+
             ifEmailPreview.Attributes["srcdoc"] = resolvedPreviewHtml;
             pnlEmailPreview.Visible = true;
             upnlEmailPreview.Update();
@@ -671,7 +670,13 @@ namespace RockWeb.Blocks.Communication
         {
             // Create Controls for LavaFields Values
             Dictionary<string, string> lavaFieldsTemplateDictionary = hfLavaFieldsState.Value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+            
+            // dictionary of keys and default values from Lava Fields KeyValueList control
+            var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();
+
             phLavaFieldsControls.Controls.Clear();
+
+            btnUpdateTemplatePreview.Visible = lavaFieldsTemplateDictionary.Any();
 
             foreach ( var keyValue in lavaFieldsTemplateDictionary )
             {
@@ -682,13 +687,26 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    lavaValueControl = new RockTextBox();
+                    lavaValueControl = new RockTextBox() { CssClass = "input-width-lg" };
                 }
 
+                var rcwLavaValue= new RockControlWrapper();
+                phLavaFieldsControls.Controls.Add( rcwLavaValue );
+
+                rcwLavaValue.Label = keyValue.Key.SplitCase().Transform( To.TitleCase );
+                rcwLavaValue.ID = "rcwLavaValue_" + keyValue.Key;
+
                 lavaValueControl.ID = "lavaValue_" + keyValue.Key;
-                lavaValueControl.Label = keyValue.Key.SplitCase();
+                lavaValueControl.AddCssClass( "pull-left" );
                 lavaValueControl.Text = keyValue.Value;
-                phLavaFieldsControls.Controls.Add( lavaValueControl );
+                rcwLavaValue.Controls.Add( lavaValueControl );
+
+                Literal btnRevertLavaValue = new Literal();
+                btnRevertLavaValue.ID = "btnRevertLavaValue_" + keyValue.Key;
+                var defaultValue = lavaFieldsDefaultDictionary.GetValueOrNull( keyValue.Key );
+                var visibility = keyValue.Value != defaultValue ? "visible" : "hidden";
+                btnRevertLavaValue.Text = string.Format( "<i class='btn fa fa-times js-revertlavavalue' title='Revert to default' data-value-control='{0}' data-default='{1}' style='visibility:{2}'></i>", lavaValueControl.ClientID, defaultValue, visibility );
+                rcwLavaValue.Controls.Add( btnRevertLavaValue );
             }
         }
 
