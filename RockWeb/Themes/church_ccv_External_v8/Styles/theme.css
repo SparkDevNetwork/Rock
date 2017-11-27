@@ -10595,6 +10595,10 @@ html,body{
    flex-wrap: wrap;
 }
 
+.event-page-wrapper .event-calendar {
+   width: 600px;
+}
+
 .event-page-wrapper .event-calendar .header {
    display: flex;
    justify-content: flex-start;

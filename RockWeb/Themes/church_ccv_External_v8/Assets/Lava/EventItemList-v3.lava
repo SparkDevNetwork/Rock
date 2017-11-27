@@ -16,13 +16,9 @@
    
    {% assign queryParamMonthOffset = 0 %}
    
-   {% assign queryParms = 'Global' | Page:'QueryString'  %}
-   {% for item in queryParms %}
-       {% assign kvItem = item | PropertyToKeyValue %}
-       {% if kvItem.Key == 'monthoffset' %}
-         {% assign queryParamMonthOffset = kvItem.Value %}
-       {% endif %}
-   {% endfor %}
+   {% if PageParameter.monthoffset != null %}
+      {% assign queryParamMonthOffset = PageParameter.monthoffset %}
+   {% endif %}
    
    {% comment %}Force conversion from string to int {% endcomment %}
    {% assign dateMonthOffset = queryParamMonthOffset | Plus: 0 %}
@@ -80,6 +76,10 @@
             {% endif %}
                <b class="fa fa-caret-down"></b>
             </div>
+         </div>
+         
+         <div class="no-event-placeholder" style="display: none;">
+            <h4 style="color: #7c7c7c">No events are currently scheduled.</h4>
          </div>
          
          
@@ -244,7 +244,7 @@
          {% endfor %}
       </div>
       
-      <div class="event-detail-card">
+      <div class="event-detail-card" style="visibility: hidden;">
          <img id="event-detail-card-img" src="" style="width: 365px; height: 200px;" class="img-responsive"></img>
          
          <h4 id="event-detail-card-name"></h4>
@@ -290,13 +290,29 @@
    <script>
       var oldonload = window.onload;
       window.onload = (typeof window.onload != 'function') ?
-        selectDefaultItem : function() { oldonload(); selectDefaultItem(); };
+        performLayout : function() { oldonload(); performLayout(); };
         
-     function selectDefaultItem( ) {
-         displayEventInfo( firstEventId );
-         var selectedDiv = $("#" + firstEventId );
-         toggleActiveItem( selectedDiv[0] );
-        }
+     function performLayout( ) {
+         
+         
+         // if there's at least one event for this month, we'll display the side panel 
+         // and select the first event
+         if( firstEventId != null ) {
+            $(".no-event-placeholder").css("display", "none");
+         
+            $(".event-detail-card").css("visibility", "visible");
+         
+            displayEventInfo( firstEventId );
+            
+            var selectedDiv = $("#" + firstEventId );
+            toggleActiveItem( selectedDiv[0] );
+         }
+         else {
+            $(".event-detail-card").css("visibility", "hidden");
+            
+            $(".no-event-placeholder").css("display", "inline");
+         }
+      }
         
       function updateMonth( direction ) {
          var monthOffset = 0;
