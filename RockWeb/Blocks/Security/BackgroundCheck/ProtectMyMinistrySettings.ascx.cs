@@ -418,6 +418,9 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 lPackages.Text = packages.AsDelimited( "<br/>" );
             }
 
+            nbSSLWarning.Visible = !GetSettingValue( settings, "ReturnURL" ).StartsWith( "https://" );
+            nbSSLWarning.NotificationBoxType = GetSettingValue( settings, "TestMode" ).AsBoolean() ? NotificationBoxType.Warning : NotificationBoxType.Danger;
+
             pnlNew.Visible = false;
             pnlViewDetails.Visible = true;
             pnlEditDetails.Visible = false;
@@ -684,5 +687,5 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
         #endregion
 
-}
+    }
 }

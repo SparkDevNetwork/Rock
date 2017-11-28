@@ -217,8 +217,8 @@ namespace Rock.Jobs
                                                                 {
                                                                     // If found, and it has not been ignored, and it's time to promote again, update the promote date
                                                                     if ( suggestion.Status != FollowingSuggestedStatus.Ignored &&
+                                                                        suggestionType.ReminderDays.HasValue &&
                                                                         (
-                                                                            !suggestionType.ReminderDays.HasValue ||
                                                                             !suggestion.LastPromotedDateTime.HasValue ||
                                                                             suggestion.LastPromotedDateTime.Value.AddDays( suggestionType.ReminderDays.Value ) <= timestamp
                                                                         ) )
@@ -335,13 +335,15 @@ namespace Rock.Jobs
                                 if ( personSuggestionNotices.Any() )
                                 {
                                     // Send the notice
-                                    var recipients = new List<RecipientData>();
                                     var mergeFields = new Dictionary<string, object>();
                                     mergeFields.Add( "Person", person );
                                     mergeFields.Add( "Suggestions", personSuggestionNotices.OrderBy( s => s.SuggestionType.Order ).ToList() );
-                                    recipients.Add( new RecipientData( person.Email, mergeFields ) );
-                                    Email.Send( systemEmailGuid.Value, recipients, appRoot );
-                                    followingSuggestionsEmailsSent += recipients.Count();
+
+                                    var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
+                                    emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                    emailMessage.Send();
+
+                                    followingSuggestionsEmailsSent += 1;
                                     followingSuggestionsSuggestionsTotal += personSuggestionNotices.Count();
                                 }
 

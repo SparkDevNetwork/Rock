@@ -106,6 +106,14 @@ namespace Rock.UniversalSearch
         public abstract IndexModelBase GetDocumentById( Type documentType, int id );
 
         /// <summary>
+        /// Gets the document by identifier.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public abstract IndexModelBase GetDocumentById( Type documentType, string id );
+
+        /// <summary>
         /// Searches the specified query.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -115,7 +123,7 @@ namespace Rock.UniversalSearch
         /// <param name="size">The size.</param>
         /// <param name="from">From.</param>
         /// <returns></returns>
-        public abstract List<IndexModelBase> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null, SearchFieldCriteria criteria = null, int? size = null, int? from = null  );
+        public abstract List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria criteria = null, int? size = null, int? from = null  );
 
         /// <summary>
         /// Searches the specified query.

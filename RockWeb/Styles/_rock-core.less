@@ -50,6 +50,8 @@
 @import "_global-variables.less";
 @import "_helpers.less";
 
+@import "_devices.less";
+
 @import "./Bootstrap/mixins.less";
 
 
@@ -429,7 +431,6 @@ th[align=center] {
 .panel-persondetails {
   border-top-color: @panel-top-border-color;
   // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
-
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
   .panel-heading {
@@ -445,7 +446,6 @@ th[align=center] {
 
     .form-group.static-control {
       margin-bottom: 2px;
-
       .clearfix();
 
       label {
@@ -462,6 +462,15 @@ th[align=center] {
         overflow: hidden;
         text-overflow: ellipsis;
       }
+    }
+    // styles for matrix attributes
+    .form-group.static-control.matrix-attribute label {
+      width: 100%;
+      text-align: left;
+    }
+
+    .form-group.static-control.matrix-attribute .form-control-static {
+      display: none;
     }
 
     i.fa.fa-bars {

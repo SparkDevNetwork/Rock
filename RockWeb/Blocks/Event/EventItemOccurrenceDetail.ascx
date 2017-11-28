@@ -30,6 +30,7 @@
                         </div>
                         <div class="col-md-6">
                             <asp:Literal ID="lRightDetails" runat="server" />
+                            <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                         </div>
                     </div>
                     <div class="row">
@@ -71,7 +72,7 @@
                             <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" EnableSelfSelection="true" OnSelectPerson="ppContact_SelectPerson" />
                             <Rock:PhoneNumberBox ID="pnPhone" runat="server" Label="Phone" />
                             <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" />
-
+                            <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </div>
 
                     </div>

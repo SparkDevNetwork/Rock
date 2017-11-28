@@ -48,8 +48,8 @@ namespace Rock.Migrations
             RockMigrationHelper.AddDefinedTypeAttribute( "2CACB86F-D811-4483-98E1-272F1FF8FF5D", "46A03F59-55D3-4ACE-ADD5-B4642225DD20", "Workflow Type", "WorkflowType", "The type of workflow to launch.", 3, "", "0097D00F-1F29-4217-8E67-D37A619A6FA3" );
             RockMigrationHelper.AddDefinedTypeAttribute( "2CACB86F-D811-4483-98E1-272F1FF8FF5D", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Workflow Name Template", "WorkflowNameTemplate", "The lava template to use for setting the workflow name. See the defined type's help text for a listing of merge fields. <span class='tip tip-lava'></span>", 4, "", "67E09C64-3558-48B7-9A27-A9499D0826E8" );
             RockMigrationHelper.AddDefinedTypeAttribute( "2CACB86F-D811-4483-98E1-272F1FF8FF5D", "73B02051-0D38-4AD9-BF81-A2D477DE4F70", "Workflow Attributes", "WorkflowAttributes", "Key/value list of workflow attributes to set with the given lava merge template. See the defined type’s help text for a listing of merge fields. <span class='tip tip-lava'></span>", 5, "", "836CFC0B-6750-4A93-8309-EAB868B845AF" );
-            RockMigrationHelper.UpdateAttributeQualifier( "836CFC0B-6750-4A93-8309-EAB868B845AF", "keyprompt", "Attribute Key", "262FFD40-3A40-4F48-B577-109C72F0C132" );
-            RockMigrationHelper.UpdateAttributeQualifier( "836CFC0B-6750-4A93-8309-EAB868B845AF", "valueprompt", "Merge Template", "1BE78D98-9A95-4B74-A1BE-BCA36192B49C" );
+            RockMigrationHelper.UpdateAttributeQualifier( "836CFC0B-6750-4A93-8309-EAB868B845AF", "keyprompt", "Attribute Key", "5F71B89A-44DC-48C6-A12D-CF0C056B6929" );
+            RockMigrationHelper.UpdateAttributeQualifier( "836CFC0B-6750-4A93-8309-EAB868B845AF", "valueprompt", "Merge Template", "0660523C-E12E-44B3-A0BA-8BC4D866204E" );
 
             Sql( @"UPDATE [Attribute] SET [IsGridColumn] = 'True' WHERE [Guid] = '0097D00F-1F29-4217-8E67-D37A619A6FA3'" );
 

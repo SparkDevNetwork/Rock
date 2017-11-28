@@ -25,6 +25,10 @@
                 wsUrl += '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '');
             }
 
+            if (options.isTemporary == 'F') {
+                wsUrl += '&IsTemporary=False';
+            }
+
             // uses https://github.com/blueimp/jQuery-File-Upload
             $('#' + options.controlId).fileupload({
                 url: wsUrl,
@@ -113,6 +117,11 @@
                 else {
                     $el.attr('style', 'background-image:url(' + noPictureUrl + ');background-size:cover;background-position:50%');
                 }
+                
+                if (options.deleteFunction) {
+                  options.deleteFunction();
+                }
+
                 if (options.postbackRemovedScript) {
                     window.location = "javascript:" + options.postbackRemovedScript;
                 } else {

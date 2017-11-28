@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Lists all the short Links ." )]
     [LinkedPage( "Detail Page" )]
-    public partial class ShortLinkList : RockBlock, ISecondaryBlock
+    public partial class ShortLinkList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Base Control Methods
 

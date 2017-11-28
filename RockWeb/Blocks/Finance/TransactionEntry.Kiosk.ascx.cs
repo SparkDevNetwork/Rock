@@ -144,7 +144,6 @@ namespace RockWeb.Blocks.Finance
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/Kiosk/kiosk-core.js" );
             RockPage.AddScriptLink( "~/Scripts/Kiosk/jquery.scannerdetection.js" );
         }
@@ -539,12 +538,12 @@ namespace RockWeb.Blocks.Finance
             if ( receiptEmail != null )
             {
                 var givingUnit = new PersonAliasService( rockContext ).Get( this.SelectedGivingUnit.PersonAliasId ).Person;
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
-                var recipients = new List<RecipientData>();
-                recipients.Add( new RecipientData( givingUnit.Email, GetMergeFields( givingUnit ) ) );
-
-                Email.Send( receiptEmail.Guid, recipients, appRoot );
+                var emailMessage = new RockEmailMessage( receiptEmail.Guid );
+                emailMessage.AddRecipient( new RecipientData( givingUnit.Email, GetMergeFields( givingUnit ) ) );
+                emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                emailMessage.Send();
             }
         }
 

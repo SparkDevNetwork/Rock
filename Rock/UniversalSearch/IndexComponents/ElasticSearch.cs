@@ -44,6 +44,7 @@ namespace Rock.UniversalSearch.IndexComponents
     [ExportMetadata( "ComponentName", "Elasticsearch 2.x" )]
 
     [TextField( "Node URL", "The URL of the ElasticSearch node (http://myserver:9200)", true, key: "NodeUrl" )]
+    [IntegerField("Shard Count", "The number of shards to use for each index. More shards support larger databases, but can make the results less accurate. We recommend using 1 unless your database get's very large (> 50GB).", true, 1)]
     public class Elasticsearch : IndexComponent
     {
         /// <summary>
@@ -225,6 +226,8 @@ namespace Rock.UniversalSearch.IndexComponents
                 // create a new index request
                 var createIndexRequest = new CreateIndexRequest( indexName );
                 createIndexRequest.Mappings = new Mappings();
+                createIndexRequest.Settings = new IndexSettings();
+                createIndexRequest.Settings.NumberOfShards = GetAttributeValue( "ShardCount" ).AsInteger();
 
                 var typeMapping = new TypeMapping();
                 typeMapping.Dynamic = DynamicMapping.Allow;
@@ -316,7 +319,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="size">The size.</param>
         /// <param name="from">From.</param>
         /// <returns></returns>
-        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null, SearchFieldCriteria fieldCriteria = null, int? size = null, int? from = null )
+        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria fieldCriteria = null, int? size = null, int? from = null )
         {
             long totalResultsAvailable = 0;
             return Search( query, searchType, entities, fieldCriteria, size, from, out totalResultsAvailable );
@@ -381,6 +384,13 @@ namespace Rock.UniversalSearch.IndexComponents
                         // get entities search model name
                         var entityType = new EntityTypeService( new RockContext() ).Get( entityId );
                         entityTypes.Add( entityType.IndexModelType.Name.ToLower() );
+
+                        // check if this is a person model, if so we need to add two model types one for person and the other for businesses
+                        // wish there was a cleaner way to do this
+                        if ( entityType.Guid == SystemGuid.EntityType.PERSON.AsGuid() )
+                        {
+                            entityTypes.Add( "businessindex" );
+                        }
                     }
 
                     searchDescriptor = searchDescriptor.Type( string.Join( ",", entityTypes ) ); // todo: consider adding indexmodeltype to the entity cache
@@ -622,7 +632,6 @@ namespace Rock.UniversalSearch.IndexComponents
             this.DeleteDocumentByProperty( documentType, "id", id );
         }
 
-
         /// <summary>
         /// Gets the document by identifier.
         /// </summary>
@@ -631,9 +640,20 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <returns></returns>
         public override IndexModelBase GetDocumentById( Type documentType, int id )
         {
+            return GetDocumentById( documentType, id.ToString() );
+        }
+
+        /// <summary>
+        /// Gets the document by identifier.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override IndexModelBase GetDocumentById( Type documentType, string id )
+        {
             var indexName = documentType.Name.ToLower();
 
-            var request = new GetRequest( indexName, indexName, id.ToString() ) { };
+            var request = new GetRequest( indexName, indexName, id ) { };
 
             var result = _client.Get<dynamic>( request );
 

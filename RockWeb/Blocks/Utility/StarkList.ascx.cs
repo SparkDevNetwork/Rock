@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Utility
 {
@@ -37,7 +38,7 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "Stark List" )]
     [Category( "Utility" )]
     [Description( "Template block for developers to use to start a new list block." )]
-    public partial class StarkList : Rock.Web.UI.RockBlock
+    public partial class StarkList : RockBlock, ICustomGridColumns
     {
         #region Fields
 

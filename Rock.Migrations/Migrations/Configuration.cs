@@ -67,6 +67,21 @@ namespace Rock.Migrations
                     }
                 }
             }
+
+            // In V7, the Communication and CommunicationTemplate models were updated to move data stored as JSON in a varchar(max) 
+            // column (MediumDataJson) to specific columns. This method will update all of the communication templates, and the most 
+            // recent 5000 communications. A job will runto convert the remaining communications. This can be removed after every 
+            // customer has migrated past v7
+            Jobs.MigrateCommunicationMediumData.UpdateCommunicationRecords( true, 5000 );
+
+
+            // MP: Populate AnalyticsSourceDate (if it isn't already)
+            if ( !context.AnalyticsSourceDates.AsQueryable().Any() )
+            {
+                var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
+                var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
+                Rock.Model.AnalyticsSourceDate.GenerateAnalyticsSourceDateData( 1, false, analyticsStartDate, analyticsEndDate );
+            }
         }
     }
 }

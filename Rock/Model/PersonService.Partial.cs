@@ -436,6 +436,14 @@ namespace Rock.Model
                         qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
                     }
 
+                    //
+                    // If searching for businesses, search by the full name as well to handle "," in the name
+                    //
+                    if ( includeBusinesses )
+                    {
+                        qry = qry.Union( GetByLastName( fullName, includeDeceased, includeBusinesses ) );
+                    }
+
                     return qry;
                 }
                 else
@@ -1488,10 +1496,15 @@ namespace Rock.Model
             //// 1) Both Persons are adults in the same family (GroupType = Family, GroupRole = Adult, and in same Group)
             //// 2) Opposite Gender as Person, if Gender of both Persons is known
             //// 3) Both Persons are Married
+            int marriedDefinedValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+            
+            if ( person.MaritalStatusValueId != marriedDefinedValueId )
+            {
+                return default( TResult );
+            }
 
             Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
             int adultRoleId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
-            int marriedDefinedValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
             // Businesses don't have a family role, so check for null before trying to get the Id.
             var familyRole = GetFamilyRole( person );
@@ -2168,7 +2181,7 @@ namespace Rock.Model
                         ( v.Attribute.EntityTypeQualifierValue == null || v.Attribute.EntityTypeQualifierValue == string.Empty ) &&
                         v.EntityId == person.Id ) )
                 {
-                    values.Add( attributeValue.Attribute.Key, attributeValue.Value );
+                    values.AddOrReplace( attributeValue.Attribute.Key, attributeValue.Value );
                 }
             }
 

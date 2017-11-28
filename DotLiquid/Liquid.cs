@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Resources;
+using System.Text.RegularExpressions;
 using DotLiquid.NamingConventions;
 using DotLiquid.Tags;
 using DotLiquid.Tags.Html;
@@ -42,6 +43,10 @@ namespace DotLiquid
 		public static readonly string LiteralShorthand = R.Q(@"^(?:\{\{\{\s?)(.*?)(?:\s*\}\}\})$");
 		public static readonly string CommentShorthand = R.Q(@"^(?:\{\s?\#\s?)(.*?)(?:\s*\#\s?\})$");
 		public static bool UseRubyDateFormat = false;
+
+        public static readonly Regex LeadingWhitespaceRegex = new Regex( string.Format( @"([ \t]+)?({0}|{1}|{2})-", Liquid.VariableStart, Liquid.TagStart, Liquid.ShortCodeStart ), RegexOptions.Compiled );
+        public static readonly Regex TrailingWhitespaceRegex = new Regex( string.Format( @"-({0}|{1}|{2})(\n|\r\n|[ \t]+)?", Liquid.VariableEnd, Liquid.TagEnd, Liquid.ShortCodeEnd ), RegexOptions.Compiled );
+        public static readonly Regex TemplateParserRegex = new Regex( Liquid.TemplateParser, RegexOptions.Compiled );
 
         static Liquid()
 		{

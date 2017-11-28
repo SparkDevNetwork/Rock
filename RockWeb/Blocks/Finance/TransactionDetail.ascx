@@ -62,8 +62,6 @@
                                             </Rock:RockTemplateField>
                                             <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
                                             <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
-                                            <Rock:EditField OnClick="gAccountsEdit_EditClick" />
-                                            <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                         </Columns>
                                     </Rock:Grid>
                                 </div>
@@ -98,7 +96,7 @@
                         </div>
                     </div>
 
-                    <Rock:DataTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2"
+                    <Rock:DataTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2" ValidateRequestMode="Disabled"
                         SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Summary" />
 
                     <div class="actions">

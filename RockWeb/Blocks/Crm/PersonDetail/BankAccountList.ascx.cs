@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "CRM > Person Detail" )]
     [Description( "Lists bank accounts for a person" )]
 
-    public partial class BankAccountList : PersonBlock, ISecondaryBlock
+    public partial class BankAccountList : PersonBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Base Control Methods
 

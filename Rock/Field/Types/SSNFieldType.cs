@@ -147,77 +147,18 @@ namespace Rock.Field.Types
 
         #region Filter Control
 
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override ComparisonType FilterComparisonType
-        {
-            get { return ComparisonHelper.NumericFilterComparisonTypes; }
-        }
-
-        /// <summary>
-        /// Gets a filter expression for an attribute value.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="filterValues">The filter values.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <returns></returns>
-        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
-        {
-            if ( filterValues.Count == 1 )
-            {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsNumeric" );
-                ComparisonType comparisonType = ComparisonType.EqualTo;
-                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( filterValues[0] ) );
-            }
-
-            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
-        }
-
-        /// <summary>
-        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, ValueAsBoolean, or ValueAsNumeric)
-        /// </summary>
-        /// <value>
-        /// The name of the attribute value field.
-        /// </value>
-        public override string AttributeValueFieldName
-        {
-            get
-            {
-                return "ValueAsNumeric";
-            }
-        }
-
-        /// <summary>
-        /// Attributes the constant expression.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public override ConstantExpression AttributeConstantExpression( string value )
-        {
-            return Expression.Constant( value.AsDecimal(), typeof( decimal ) );
-        }
-
-        /// <summary>
-        /// Gets the type of the attribute value field.
-        /// </summary>
-        /// <value>
-        /// The type of the attribute value field.
-        /// </value>
-        public override Type AttributeValueFieldType
-        {
-            get
-            {
-                return typeof( decimal? );
-            }
-        }
+        // Note: Even though this is a 'text' type field, the base default binary comparison (Is Blank/Is Not Blank) is used instead of being overridden with 
+        // string comparison type like other 'text' fields, because comparisons like 'Starts with', 'Contains', etc. can't be performed
+        // on the encrypted text.  Only a binary comparison can be performed.
 
         #endregion
 
-        private string UnencryptAndClean( string encryptedValue )
+        /// <summary>
+        /// Unencrypts and strips any non-numeric characters from value.
+        /// </summary>
+        /// <param name="encryptedValue">The encrypted value.</param>
+        /// <returns></returns>
+        public static string UnencryptAndClean( string encryptedValue )
         {
             if ( encryptedValue.IsNotNullOrWhitespace() )
             {

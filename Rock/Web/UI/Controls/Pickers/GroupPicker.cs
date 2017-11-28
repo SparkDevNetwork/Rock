@@ -202,10 +202,17 @@ namespace Rock.Web.UI.Controls
                         names.Add( group.Name );
                         var parentGroup = group.ParentGroup;
                         var groupParentIds = GetGroupAncestorsIdList( parentGroup );
-                        parentIds.AddRange( groupParentIds );
+                        foreach ( var groupParentId in groupParentIds )
+                        {
+                            if ( !parentIds.Contains( groupParentId ) )
+                            {
+                                parentIds.Add( groupParentId );
+                            }
+                        }
                     }
                 }
 
+                // NOTE: Order is important (parents before children) since the GroupTreeView loads on demand
                 InitialItemParentIds = parentIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;

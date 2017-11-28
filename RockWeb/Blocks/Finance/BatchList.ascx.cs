@@ -28,6 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
@@ -38,7 +39,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]
     [BooleanField( "Show Accounts Column", "Should the accounts column be displayed.", true, "", 2 )]
-    public partial class BatchList : Rock.Web.UI.RockBlock, IPostBackEventHandler
+    public partial class BatchList : RockBlock, IPostBackEventHandler, ICustomGridColumns
     {
         #region Fields
 
@@ -345,7 +346,7 @@ namespace RockWeb.Blocks.Finance
             var batch = batchService.Get( e.RowKeyId );
             if ( batch != null )
             {
-                if ( UserCanEdit || batch.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) )
+                if ( batch.IsAuthorized( Rock.Security.Authorization.DELETE, CurrentPerson ) )
                 {
                     string errorMessage;
                     if ( !batchService.CanDelete( batch, out errorMessage ) )
@@ -372,6 +373,10 @@ namespace RockWeb.Blocks.Finance
 
                         rockContext.SaveChanges();
                     } );
+                }
+                else
+                {
+                    mdGridWarning.Show( "You are not authorized to delete the selected batch.", ModalAlertType.Warning);
                 }
             }
 

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Core
 
     [LinkedPage( "Detail Page", order: 0 )]
     [CategoryField( "Categories", "If block should only display Defined Types from specific categories, select the categories here.", true, "Rock.Model.DefinedType", order: 1 )]
-    public partial class DefinedTypeList : RockBlock
+    public partial class DefinedTypeList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 
@@ -108,7 +108,12 @@ namespace RockWeb.Blocks.Core
             gDefinedType_Bind();
         }
 
-        void tFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        /// <summary>
+        /// ts the filter display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void tFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             if ( e.Key == "Category" )
             {

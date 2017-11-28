@@ -70,28 +70,56 @@ namespace Rock.Rest.Controllers
                                 string[] parts = fieldInfo.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
 
                                 string fieldId = parts.Length > 0 ? parts[0] : string.Empty;
-                                string[] idParts = fieldId.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
 
-                                string fieldType = idParts.Length > 1 ? idParts[1] : fieldId;
-
-                                var entityType = EntityTypeCache.Read( fieldType, false );
-                                if ( entityType != null )
+                                if ( fieldId == "AdditionalMergeFields" )
                                 {
-                                    items.Add( new TreeViewItem
+                                    if ( parts.Length > 1 )
                                     {
-                                        Id = fieldId,
-                                        Name = parts.Length > 1 ? parts[1] : entityType.FriendlyName,
-                                        HasChildren = true
-                                    } );
+                                        var fieldsTv = new TreeViewItem
+                                        {
+                                            Id = $"AdditionalMergeFields_{parts[1]}",
+                                            Name = "Additional Fields",
+                                            HasChildren = true,
+                                            Children = new List<TreeViewItem>()
+                                        };
+
+                                        foreach ( string fieldName in parts[1].Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries ) )
+                                        {
+                                            fieldsTv.Children.Add( new TreeViewItem
+                                            {
+                                                Id = $"AdditionalMergeField_{fieldName}",
+                                                Name = fieldName.SplitCase(),
+                                                HasChildren = false
+                                            } );
+                                        }
+                                        items.Add( fieldsTv );
+                                    }
                                 }
                                 else
                                 {
-                                    items.Add( new TreeViewItem
+                                    string[] idParts = fieldId.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+
+                                    string fieldType = idParts.Length > 1 ? idParts[1] : fieldId;
+
+                                    var entityType = EntityTypeCache.Read( fieldType, false );
+                                    if ( entityType != null )
                                     {
-                                        Id = fieldId,
-                                        Name = parts.Length > 1 ? parts[1] : fieldType.SplitCase(),
-                                        HasChildren = fieldType == "GlobalAttribute"
-                                    } );
+                                        items.Add( new TreeViewItem
+                                        {
+                                            Id = fieldId,
+                                            Name = parts.Length > 1 ? parts[1] : entityType.FriendlyName,
+                                            HasChildren = true
+                                        } );
+                                    }
+                                    else
+                                    {
+                                        items.Add( new TreeViewItem
+                                        {
+                                            Id = fieldId,
+                                            Name = parts.Length > 1 ? parts[1] : fieldType.SplitCase(),
+                                            HasChildren = fieldType == "GlobalAttribute"
+                                        } );
+                                    }
                                 }
                             }
                         }
@@ -118,6 +146,7 @@ namespace Rock.Rest.Controllers
 
                         break;
                     }
+
                 default:
                     {
                         // In this scenario, the id should be a concatnation of a root qualified entity name and then the property path

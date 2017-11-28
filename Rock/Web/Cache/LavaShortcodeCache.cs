@@ -368,6 +368,9 @@ namespace Rock.Web.Cache
         {
             FlushCache( LavaShortcodeCache.CacheKey( id ) );
             FlushCache( "Rock:LavaShortcode:All" );
+
+            // some of the cached lavatemplates might have a reference to this shortcode, so flush them all just in case
+            LavaTemplateCache.Flush(); 
         }
 
         #endregion

@@ -49,6 +49,8 @@ namespace RockWeb.Blocks.Cms
 
         private List<int> ChildContentChannelsList { get; set; }
 
+        private List<string> ItemInheritedKey { get; set; }
+
         /// <summary>
         /// Gets or sets the state of the item attributes.
         /// </summary>
@@ -71,6 +73,7 @@ namespace RockWeb.Blocks.Cms
 
             ChildContentChannelsList = ViewState["ChildContentChannelList"] as List<int> ?? new List<int>();
 
+            ItemInheritedKey = ViewState["ItemInheritedKey"] as List<string> ?? new List<string>();
             string json = ViewState["ItemAttributesState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -112,6 +115,10 @@ namespace RockWeb.Blocks.Cms
             string script = @"
     $('.js-content-channel-enable-rss').change( function() {
         $(this).closest('div.form-group').siblings('div.js-content-channel-rss').slideToggle()
+    });
+
+    $('.js-content-channel-enable-tags').change( function() {
+        $(this).closest('div.form-group').siblings('div.js-content-channel-tags').slideToggle()
     });
 ";
             ScriptManager.RegisterStartupScript( cbEnableRss, cbEnableRss.GetType(), "enable-rss", script, true );
@@ -166,6 +173,8 @@ namespace RockWeb.Blocks.Cms
         protected override object SaveViewState()
         {
             ViewState["ChildContentChannelList"] = ChildContentChannelsList;
+
+            ViewState["ItemInheritedKey"] = ItemInheritedKey;
 
             var jsonSetting = new JsonSerializerSettings
             {
@@ -256,6 +265,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="channel">The channel.</param>
         private void UpdateControlsForContentChannelType( ContentChannel channel )
         {
+            SetInheritedAttributeKeys( channel.Id );
+
             AddAttributeControls( channel );
 
             int contentChannelTypeId = ddlChannelType.SelectedValueAsInt() ?? 0;
@@ -320,6 +331,8 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.ItemUrl = tbItemUrl.Text;
                 contentChannel.TimeToLive = nbTimetoLive.Text.AsIntegerOrNull();
                 contentChannel.ItemUrl = tbContentChannelItemPublishingPoint.Text;
+                contentChannel.IsTaggingEnabled = cbEnableTag.Checked;
+                contentChannel.ItemTagCategoryId = cbEnableTag.Checked ? cpCategory.SelectedValueAsInt() : (int?)null;
 
                 contentChannel.ChildContentChannels = new List<ContentChannel>();
                 contentChannel.ChildContentChannels.Clear();
@@ -449,7 +462,10 @@ namespace RockWeb.Blocks.Cms
                 edtItemAttributes.ActionTitle = ActionTitle.Edit( tbName.Text + " Item Attribute" );
             }
 
-            edtItemAttributes.ReservedKeyNames = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+        
+            List<string> reservedKeys = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+            reservedKeys.AddRange( ItemInheritedKey );
+            edtItemAttributes.ReservedKeyNames = reservedKeys;
 
             edtItemAttributes.SetAttributeProperties( attribute, typeof( ContentChannelItem ) );
 
@@ -739,8 +755,12 @@ namespace RockWeb.Blocks.Cms
                 cbChildItemsManuallyOrdered.Checked = contentChannel.ChildItemsManuallyOrdered;
                 cbEnableRss.Checked = contentChannel.EnableRss;
                 tbContentChannelItemPublishingPoint.Text = contentChannel.ItemUrl;
+                cbEnableTag.Checked = contentChannel.IsTaggingEnabled;
+                cpCategory.SetValue( contentChannel.ItemTagCategoryId );
 
                 divRss.Attributes["style"] = cbEnableRss.Checked ? "display:block" : "display:none";
+                divTag.Attributes["style"] = cbEnableTag.Checked ? "display:block" : "display:none";
+
                 tbChannelUrl.Text = contentChannel.ChannelUrl;
                 tbItemUrl.Text = contentChannel.ItemUrl;
                 nbTimetoLive.Text = ( contentChannel.TimeToLive ?? 0 ).ToString();
@@ -769,6 +789,28 @@ namespace RockWeb.Blocks.Cms
                 ItemAttributesState.ForEach( a => a.Order = newOrder++ );
 
                 BindItemAttributesGrid();
+            }
+        }
+
+        /// <summary>
+        /// Sets the inherited attribute keys.
+        /// </summary>
+        /// <param name="contentChannelTypeId">The content channel type identifier.</param>
+        private void SetInheritedAttributeKeys( int? contentChannelTypeId )
+        {
+            ItemInheritedKey = new List<string>();
+            if ( contentChannelTypeId.HasValue && contentChannelTypeId.Value > 0 )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    int entityTypeID = new ContentChannelItem().TypeId;
+                    string qualifierValue = contentChannelTypeId.Value.ToString();
+
+                    ItemInheritedKey = new AttributeService( rockContext )
+                        .Get( entityTypeID, "ContentChannelTypeId", qualifierValue )
+                        .Select( a => a.Key )
+                        .ToList();
+                }
             }
         }
 

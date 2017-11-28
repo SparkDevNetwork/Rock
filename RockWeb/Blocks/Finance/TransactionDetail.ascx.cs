@@ -159,6 +159,8 @@ namespace RockWeb.Blocks.Finance
 
             apAccount.DisplayActiveOnly = true;
 
+            AddDynamicColumns();
+
             //function toggleCheckImages() {
             //    var image1src = $('#<%=imgCheck.ClientID%>').attr("src");
             //    var image2src = $('#<%=imgCheckOtherSideThumbnail.ClientID%>').attr("src");
@@ -1032,6 +1034,66 @@ namespace RockWeb.Blocks.Finance
 
         #region Methods
 
+        private void AddDynamicColumns()
+        {
+            // Remove attribute columns
+            foreach ( var attributeColumn in gAccountsView.Columns.OfType<AttributeField>().ToList() )
+            {
+                gAccountsView.Columns.Remove( attributeColumn );
+            }
+            foreach ( var attributeColumn in gAccountsEdit.Columns.OfType<AttributeField>().ToList() )
+            {
+                gAccountsEdit.Columns.Remove( attributeColumn );
+            }
+
+            var editColumn = gAccountsEdit.Columns.OfType<EditField>().FirstOrDefault();
+            if ( editColumn != null )
+            {
+                gAccountsEdit.Columns.Remove( editColumn );
+            }
+
+            var deleteColumn = gAccountsEdit.Columns.OfType<DeleteField>().FirstOrDefault();
+            if ( deleteColumn != null )
+            {
+                gAccountsEdit.Columns.Remove( deleteColumn );
+            }
+
+
+            // Add attribute columns
+            int entityTypeId = new FinancialTransactionDetail().TypeId;
+            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn &&
+                    a.EntityTypeQualifierColumn == "" &&
+                    a.EntityTypeQualifierValue == "" )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
+            {
+                    AttributeField boundField = new AttributeField();
+                    boundField.DataField = attribute.Key;
+                    boundField.AttributeId = attribute.Id;
+                    boundField.HeaderText = attribute.Name;
+
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    if ( attributeCache != null )
+                    {
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                    }
+
+                gAccountsView.Columns.Add( boundField );
+                gAccountsEdit.Columns.Add( boundField );
+            }
+
+            var editField = new EditField();
+            editField.Click += gAccountsEdit_EditClick;
+            gAccountsEdit.Columns.Add( editField );
+
+            var deleteField = new DeleteField();
+            deleteField.Click += gAccountsEdit_DeleteClick;
+            gAccountsEdit.Columns.Add( deleteField );
+        }
+
         /// <summary>
         /// Navigates to the next transaction in the list.
         /// </summary>
@@ -1098,6 +1160,7 @@ namespace RockWeb.Blocks.Finance
             FinancialTransaction txn = null;
 
             bool editAllowed = UserCanEdit;
+            bool refundAllowed = false;
 
             var rockContext = new RockContext();
 
@@ -1116,6 +1179,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     editAllowed = txn.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 }
+                refundAllowed = txn != null && txn.IsAuthorized( "Refund", CurrentPerson );
             }
 
             bool batchEditAllowed = true;
@@ -1169,7 +1233,7 @@ namespace RockWeb.Blocks.Finance
             nbEditModeMessage.Text = string.Empty;
 
             lbEdit.Visible = editAllowed && batchEditAllowed;
-            lbRefund.Visible = editAllowed && batchEditAllowed && txn.RefundDetails == null;
+            lbRefund.Visible = refundAllowed && batchEditAllowed && txn.RefundDetails == null;
             lbAddTransaction.Visible = editAllowed && batch != null && batch.Status != BatchStatus.Closed;
 
             if ( !editAllowed )
@@ -1239,14 +1303,15 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 detailsLeft.Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Value : string.Empty );
+                detailsLeft.Add( "Transaction Code", txn.TransactionCode );
 
-                if ( txn.FinancialGateway != null )
+                if ( txn.FinancialGateway != null && txn.FinancialGateway.EntityType != null )
                 {
-                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.Name ) );
+                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.FinancialGateway.EntityType.Name ) );
                 }
 
-                detailsLeft.Add( "Transaction Code", txn.TransactionCode );
-                
+                detailsLeft.Add( "Foreign Key", txn.ForeignKey );
+
                 if ( txn.ScheduledTransaction != null )
                 {
                     var qryParam = new Dictionary<string, string>();
@@ -1418,29 +1483,38 @@ namespace RockWeb.Blocks.Finance
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var relatedTxns = new FinancialTransactionService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( t =>
-                                t.TransactionCode == txn.TransactionCode &&
-                                t.AuthorizedPersonAliasId == txn.AuthorizedPersonAliasId &&
-                                t.Id != txn.Id &&
-                                t.TransactionDateTime.HasValue )
-                            .OrderBy( t => t.TransactionDateTime.Value )
-                            .ToList();
-                        if ( relatedTxns.Any() )
+                        if ( txn.FinancialGatewayId.HasValue )
                         {
-                            pnlRelated.Visible = true;
-                            gRelated.DataSource = relatedTxns
-                                .Select( t => new
-                                {
-                                    Id = t.Id,
-                                    TransactionDateTime = t.TransactionDateTime.Value.ToShortDateString() + " " +
-                                        t.TransactionDateTime.Value.ToShortTimeString(),
-                                    TransactionCode = t.TransactionCode,
-                                    TotalAmount = t.TotalAmount
-                                } )
+                            var relatedTxns = new FinancialTransactionService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( t =>
+                                    t.FinancialGatewayId.HasValue &&
+                                    t.FinancialGatewayId.Value == txn.FinancialGatewayId.Value &&
+                                    t.TransactionCode == txn.TransactionCode &&
+                                    t.AuthorizedPersonAliasId == txn.AuthorizedPersonAliasId &&
+                                    t.Id != txn.Id &&
+                                    t.TransactionDateTime.HasValue )
+                                .OrderBy( t => t.TransactionDateTime.Value )
                                 .ToList();
-                            gRelated.DataBind();
+                            if ( relatedTxns.Any() )
+                            {
+                                pnlRelated.Visible = true;
+                                gRelated.DataSource = relatedTxns
+                                    .Select( t => new
+                                    {
+                                        Id = t.Id,
+                                        TransactionDateTime = t.TransactionDateTime.Value.ToShortDateString() + " " +
+                                            t.TransactionDateTime.Value.ToShortTimeString(),
+                                        TransactionCode = t.TransactionCode,
+                                        TotalAmount = t.TotalAmount
+                                    } )
+                                    .ToList();
+                                gRelated.DataBind();
+                            }
+                            else
+                            {
+                                pnlRelated.Visible = false;
+                            }
                         }
                         else
                         {
@@ -1700,17 +1774,21 @@ namespace RockWeb.Blocks.Finance
                 {
                     var txnService = new FinancialTransactionService( rockContext );
                     var txn = txnService.Get( txnId.Value );
-                    if ( txn != null )
+                    if ( txn != null && txn.IsAuthorized( "Refund", CurrentPerson ) )
                     {
                         var totalAmount = txn.TotalAmount;
+
                         var otherAmounts = new FinancialTransactionDetailService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
                                 d.Transaction != null &&
                                 (
                                     ( 
+                                        txn.FinancialGatewayId.HasValue &&
                                         txn.TransactionCode != null &&
                                         txn.TransactionCode != "" &&
+                                        d.Transaction.FinancialGatewayId.HasValue && 
+                                        d.Transaction.FinancialGatewayId.Value == txn.FinancialGatewayId.Value &&
                                         d.Transaction.TransactionCode == txn.TransactionCode && 
                                         d.TransactionId != txn.Id ) ||
                                     ( 

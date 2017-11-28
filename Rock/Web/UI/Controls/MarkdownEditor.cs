@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     /// <seealso cref="Rock.Web.UI.Controls.RockTextBox" />
     [ToolboxData( "<{0}:MarkdownEditor runat=server></{0}:MarkdownEditor>" )]
-    public class MarkdownEditor : RockTextBox
+    public class MarkdownEditor : CodeEditor
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MarkdownEditor"/> class.
@@ -34,27 +34,19 @@ namespace Rock.Web.UI.Controls
         public MarkdownEditor()
             : base()
         {
-            this.Rows = 3;
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
             this.TextMode = TextBoxMode.MultiLine;
+            this.EditorHeight = "250";
+            this.EditorMode = CodeEditorMode.Markdown;
         }
 
         /// <summary>
-        /// Renders the base control.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="writer">The writer.</param>
-        public override void RenderBaseControl( System.Web.UI.HtmlTextWriter writer )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
-            base.RenderBaseControl( writer );
-            writer.Write( "<small class='pull-right text-muted'><strong>**bold**</strong> &nbsp;<em>*italics*</em> &nbsp;>quote &nbsp;[link text](link address) &nbsp;<a href='http://commonmark.org/help/' class='btn btn-xs text-muted' target='_blank'>more</a></small>" );
+            base.RenderControl( writer );
+            writer.Write( "<small class='pull-right text-muted' style='margin-top:-20px'><strong>**bold**</strong> &nbsp;<em>*italics*</em> &nbsp;>quote &nbsp;[link text](link address) &nbsp;<a href='http://commonmark.org/help/' class='btn btn-xs text-muted' target='_blank'>more</a></small>" );
         }
     }
 }

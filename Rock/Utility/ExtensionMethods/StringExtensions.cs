@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace Rock
 {
@@ -294,19 +295,14 @@ namespace Rock
         /// <summary>
         /// Replaces the last occurrence of a given string with a new value
         /// </summary>
-        /// <param name="source">The string.</param>
-        /// <param name="find">The search parameter.</param>
-        /// <param name="replace">The replacement parameter.</param>
+        /// <param name="Source">The string.</param>
+        /// <param name="Find">The search parameter.</param>
+        /// <param name="Replace">The replacement parameter.</param>
         /// <returns></returns>
-        public static string ReplaceLastOccurrence( this string source, string find, string replace )
+        public static string ReplaceLastOccurrence( this string Source, string Find, string Replace )
         {
-            int place = source.LastIndexOf( find );
-            if ( place >= 0 )
-            {
-                return source.Remove( place, find.Length ).Insert( place, replace );
-            }
-
-            return source;
+            int Place = Source.LastIndexOf( Find );
+            return Place > 0 ? Source.Remove( Place, Find.Length ).Insert( Place, Replace ) : Source;
         }
 
         /// <summary>
@@ -357,6 +353,10 @@ namespace Rock
         {
             var dictionary = new System.Collections.Generic.Dictionary<string, string>();
             string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+
+            // url decode array items just in case they were UrlEncoded (See KeyValueListFieldType and the KeyValueList controls)
+            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray(); 
+            
             // If we haven't found any pipes, check for commas
             if ( nameValues.Count() == 1 && nameValues[0] == str )
             {
@@ -579,16 +579,29 @@ namespace Rock
         }
 
         /// <summary>
-        /// Masks the specified value if greater than 4 characters (such as a credit card number).
+        /// Masks the specified value if greater than 4 characters (such as a credit card number) showing only the last 4 chars prefixed with 12*s
         /// For example, the return string becomes "************6789".
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
         public static string Masked( this string value )
         {
-            if ( value.Length > 4 )
+            return value.Masked( false );
+        }
+
+        /// <summary>
+        /// Masks the specified value if greater than 4 characters (such as a credit card number) showing only the last 4 chars and replacing the preceeding chars with *
+        /// For example, the return string becomes "************6789".
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="preserveLength">if set to <c>true</c> [preserve length]. If false, always put 12 *'s as the prefix</param>
+        /// <returns></returns>
+        public static string Masked( this string value, bool preserveLength )
+        {
+            if ( value != null && value.Length > 4 )
             {
-                return string.Concat( new string( '*', 12 ), value.Substring( value.Length - 4 ) );
+                int maskedLength = preserveLength ? value.Length - 4 : 12;
+                return string.Concat( new string( '*', maskedLength ), value.Substring( value.Length - 4 ) );
             }
             else
             {
@@ -701,6 +714,19 @@ namespace Rock
         public static string RemoveSpaces( this string input )
         {
             return input.Replace( " ", "" );
+        }
+
+        /// <summary>
+        /// Breaks a string into chunks. Handy for splitting a large string into smaller chunks
+        /// from https://stackoverflow.com/a/1450889/1755417
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="maxChunkSize">Maximum size of the chunk.</param>
+        /// <returns></returns>
+        public static IEnumerable<string> SplitIntoChunks( this string str, int maxChunkSize )
+        {
+            for ( int i = 0; i < str.Length; i += maxChunkSize )
+                yield return str.Substring( i, Math.Min( maxChunkSize, str.Length - i ) );
         }
 
         #endregion String Extensions

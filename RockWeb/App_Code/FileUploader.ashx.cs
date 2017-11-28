@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.ServiceModel.Web;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.SessionState;
 
@@ -132,9 +133,15 @@ namespace RockWeb
             // validate file type (child FileUploader classes, like ImageUploader, can do additional validation);
             this.ValidateFileType( context, uploadedFile );
 
+            //
+            // Get filename and scrub invalid characters.
+            //
+            var filename = Path.GetFileName( uploadedFile.FileName );
+            filename = Regex.Replace( filename, @"[<>*%&:\\]", string.Empty, RegexOptions.CultureInvariant );
+
             // get folderPath and construct filePath
             string relativeFolderPath = context.Request.Form["folderPath"] ?? string.Empty;
-            string relativeFilePath = Path.Combine( relativeFolderPath, Path.GetFileName( uploadedFile.FileName ) );
+            string relativeFilePath = Path.Combine( relativeFolderPath, filename );
             string rootFolderParam = context.Request.QueryString["rootFolder"];
 
             string rootFolder = string.Empty;
@@ -153,7 +160,7 @@ namespace RockWeb
 
             string physicalRootFolder = context.Request.MapPath( rootFolder );
             string physicalContentFolderName = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( new char[] { '/', '\\' } ) );
-            string physicalFilePath = Path.Combine( physicalContentFolderName, uploadedFile.FileName );
+            string physicalFilePath = Path.Combine( physicalContentFolderName, filename );
             var fileContent = GetFileContentStream( context, uploadedFile );
 
             // store the content file in the specified physical content folder
@@ -185,6 +192,16 @@ namespace RockWeb
 
             context.Response.Write( response.ToJson() );
         }
+
+        /// <summary>
+        /// Dictionary of deprecated or incorrect mimetypes and what they should be mapped to instead
+        /// </summary>
+        private Dictionary<string, string> _mimeTypeRemap = new Dictionary<string, string>
+        {
+            { "text/directory", "text/vcard" },
+            { "text/directory; profile=vCard", "text/vcard" },
+            { "text/x-vcard", "text/vcard" }
+        };
 
         /// <summary>
         /// Processes the binary file.
@@ -229,13 +246,19 @@ namespace RockWeb
             binaryFile.MimeType = uploadedFile.ContentType;
             binaryFile.FileSize = uploadedFile.ContentLength;
             binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+
+            if ( _mimeTypeRemap.ContainsKey( binaryFile.MimeType ) )
+            {
+                binaryFile.MimeType = _mimeTypeRemap[binaryFile.MimeType];
+            }
+
             binaryFile.ContentStream = GetFileContentStream( context, uploadedFile );
             rockContext.SaveChanges();
 
             var response = new
             {
                 Id = binaryFile.Id,
-                FileName = binaryFile.FileName
+                FileName = binaryFile.FileName.UrlEncode()
             };
 
             context.Response.Write( response.ToJson() );

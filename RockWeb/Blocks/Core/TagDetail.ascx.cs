@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
+            _canConfigure = IsUserAuthorized( Authorization.EDIT );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Tag ) ).Id;
@@ -68,13 +68,11 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            nbEditError.Visible = false;
+
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "tagId" ).AsInteger(), PageParameter( "entityTypeId" ).AsIntegerOrNull() );
-            }
-            else
-            {
-                nbEditError.Visible = false;
+                ShowDetail( PageParameter( "TagId" ).AsInteger(), PageParameter( "EntityTypeId" ).AsIntegerOrNull() );
             }
         }
 
@@ -169,7 +167,7 @@ namespace RockWeb.Blocks.Core
 
             string name = tbName.Text;
             int? ownerId = ppOwner.PersonId;
-            int entityTypeId = ddlEntityType.SelectedValueAsId().Value;
+            int? entityTypeId = ddlEntityType.SelectedValueAsId();
             string qualifierCol = tbEntityTypeQualifierColumn.Text;
             string qualifierVal = tbEntityTypeQualifierValue.Text;
 
@@ -182,9 +180,11 @@ namespace RockWeb.Blocks.Core
                             ( t.OwnerPersonAlias == null && !ownerId.HasValue ) || 
                             ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value ) 
                         ) &&
-                        t.EntityTypeId == entityTypeId &&
-                        t.EntityTypeQualifierColumn == qualifierCol &&
-                        t.EntityTypeQualifierValue == qualifierVal )
+                        ( !t.EntityTypeId.HasValue || (
+                            t.EntityTypeId.Value == entityTypeId &&
+                            t.EntityTypeQualifierColumn == qualifierCol &&
+                            t.EntityTypeQualifierValue == qualifierVal )
+                        ) )
                     .Any())
             {
                 nbEditError.Heading = "Tag Already Exists";
@@ -204,8 +204,8 @@ namespace RockWeb.Blocks.Core
 
                 if ( _canConfigure )
                 {
-                    tag.OwnerPersonAliasId = ownerPersonAliasId;
                     tag.CategoryId = cpCategory.SelectedValueAsInt();
+                    tag.OwnerPersonAliasId = ownerPersonAliasId;
                     tag.EntityTypeId = entityTypeId;
                     tag.EntityTypeQualifierColumn = qualifierCol;
                     tag.EntityTypeQualifierValue = qualifierVal;
@@ -302,23 +302,31 @@ namespace RockWeb.Blocks.Core
             
             if ( tag == null )
             {
-                tag = new Tag { Id = 0, OwnerPersonAliasId = CurrentPersonAliasId, OwnerPersonAlias = CurrentPersonAlias };
-                if ( entityTypeId.HasValue )
-                {
-                    tag.EntityTypeId = entityTypeId.Value;
-                }
+                tag = new Tag {
+                    Id = 0,
+                    CategoryId = PageParameter( "CategoryId" ).AsIntegerOrNull(),
+                    OwnerPersonAliasId = CurrentPersonAliasId,
+                    OwnerPersonAlias = CurrentPersonAlias,
+                    EntityTypeId = entityTypeId
+                };
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
 
-            if ( _canConfigure || tag.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            bool canView = _canConfigure || tag.IsAuthorized( Authorization.VIEW, CurrentPerson );
+
+            if ( canView )
             {
+                bool canEdit = _canConfigure || tag.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
                 pnlDetails.Visible = true;
+
                 hfId.Value = tag.Id.ToString();
 
                 bool readOnly = false;
 
-                if ( !_canConfigure && !tag.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                if ( !canEdit )
                 {
                     readOnly = true;
                     nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Tag.FriendlyTypeName );
@@ -373,27 +381,34 @@ namespace RockWeb.Blocks.Core
 
             tbName.Text = tag.Name;
             tbDescription.Text = tag.Description;
+
+            pnlAdvanced.Visible = _canConfigure;
+
+            cpCategory.SetValue( tag.CategoryId );
+
             if ( tag.OwnerPersonAlias != null )
             {
                 rblScope.SelectedValue = "Personal";
                 ppOwner.SetValue( tag.OwnerPersonAlias.Person );
+                ppOwner.Visible = true;
             }
             else
             {
                 rblScope.SelectedValue = "Organization";
                 ppOwner.SetValue( null );
+                ppOwner.Visible = false;
             }
 
-            cpCategory.SetValue( tag.CategoryId );
-
             cbIsActive.Checked = tag.IsActive;
+
             ddlEntityType.Items.Clear();
+            ddlEntityType.Items.Add( new System.Web.UI.WebControls.ListItem() );
             new EntityTypeService( new RockContext() ).GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
             ddlEntityType.SelectedValue = tag.EntityTypeId.ToString();
+
             tbEntityTypeQualifierColumn.Text = tag.EntityTypeQualifierColumn;
             tbEntityTypeQualifierValue.Text = tag.EntityTypeQualifierValue;
 
-            pnlAdvanced.Visible = _canConfigure;
         }
 
         /// <summary>
@@ -408,12 +423,24 @@ namespace RockWeb.Blocks.Core
             SetLabel( tag );
 
             lDescription.Text = tag.Description;
-            hlEntityType.Text = tag.EntityType.FriendlyName;
+            hlEntityType.Text = tag.EntityType != null ? tag.EntityType.FriendlyName : "None";
 
-            btnSecurity.Visible = tag.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            lScope.Text = tag.OwnerPersonAliasId.HasValue ? "Personal" : "Organizational";
+            lOwner.Visible = tag.OwnerPersonAlias != null;
+            if ( tag.OwnerPersonAlias != null && tag.OwnerPersonAlias.Person != null )
+            {
+                lOwner.Text = tag.OwnerPersonAlias.Person.FullName;
+            }
+
+            btnSecurity.Visible = !tag.OwnerPersonAliasId.HasValue && ( _canConfigure || tag.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
+            
             btnSecurity.EntityId = tag.Id;
         }
 
+        /// <summary>
+        /// Sets the Active/Inactive label.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
         private void SetLabel( Tag tag )
         {
             if ( tag.IsActive )

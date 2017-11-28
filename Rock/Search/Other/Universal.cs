@@ -75,7 +75,7 @@ namespace Rock.Search.Other
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
 
             // get the search type
-            var searchType = SearchType.ExactMatch;
+            var searchType = SearchType.Wildcard;
 
             if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ) )
             {

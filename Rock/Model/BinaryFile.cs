@@ -79,7 +79,7 @@ namespace Rock.Model
         public string FileName { get; set; }
 
         /// <summary>
-        /// Gets or sets the size of the file.
+        /// Gets or sets the size of the file (in bytes)
         /// </summary>
         /// <value>
         /// The size of the file in bytes.
@@ -419,6 +419,8 @@ namespace Rock.Model
                     }
                 }
             }
+
+            base.PreSaveChanges( dbContext, entry );
         }
 
         /// <summary>

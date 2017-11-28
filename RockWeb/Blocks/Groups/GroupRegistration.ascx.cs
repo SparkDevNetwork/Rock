@@ -207,6 +207,7 @@ namespace RockWeb.Blocks.Groups
                         tbLastName.Text.Trim().Equals( CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                     {
                         person = personService.Get( CurrentPerson.Id );
+                        isMatch = true;
                     }
                 }
 
@@ -322,12 +323,15 @@ namespace RockWeb.Blocks.Groups
                     // Check for the spouse
                     if ( IsFullWithSpouse && !string.IsNullOrWhiteSpace(tbSpouseFirstName.Text) && !string.IsNullOrWhiteSpace(tbSpouseLastName.Text) )
                     {
-                        spouse = person.GetSpouse();
+                        spouse = person.GetSpouse( rockContext );
+                        bool isSpouseMatch = true;
+
                         if ( spouse == null ||
                             !tbSpouseFirstName.Text.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
                             !tbSpouseLastName.Text.Trim().Equals( spouse.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                         {
                             spouse = new Person();
+                            isSpouseMatch = false;
 
                             spouse.FirstName = tbSpouseFirstName.Text.FixCase();
                             History.EvaluateChange( spouseChanges, "First Name", string.Empty, spouse.FirstName );
@@ -355,8 +359,15 @@ namespace RockWeb.Blocks.Groups
                         History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
                         spouse.Email = tbSpouseEmail.Text;
 
-                        SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), spouseChanges );
-                        SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), spouseChanges );
+                        if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( pnHome.Number ) )
+                        {
+                            SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), spouseChanges );
+                        }
+
+                        if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( pnSpouseCell.Number ) )
+                        {
+                            SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), spouseChanges );
+                        }
                     }
                 }
 
@@ -505,14 +516,18 @@ namespace RockWeb.Blocks.Groups
                     // If the group has a GroupCapacity, check how far we are from hitting that.
                     if ( _group.GroupCapacity.HasValue )
                     {
-                        openGroupSpots = _group.GroupCapacity.Value - _group.Members.Count();
+                        openGroupSpots = _group.GroupCapacity.Value - _group.Members
+                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                            .Count();
                     }
 
                     // When someone registers for a group on the front-end website, they automatically get added with the group's default
                     // GroupTypeRole. If that role exists and has a MaxCount, check how far we are from hitting that.
                     if ( _defaultGroupRole != null && _defaultGroupRole.MaxCount.HasValue )
                     {
-                        openRoleSpots = _defaultGroupRole.MaxCount.Value - _group.Members.Where( m => m.GroupRoleId == _defaultGroupRole.Id ).Count();
+                        openRoleSpots = _defaultGroupRole.MaxCount.Value - _group.Members
+                            .Where( m => m.GroupRoleId == _defaultGroupRole.Id && m.GroupMemberStatus == GroupMemberStatus.Active )
+                            .Count();
                     }
 
                     // Between the group's GroupCapacity and DefaultGroupRole.MaxCount, grab the one we're closest to hitting, and how close we are to

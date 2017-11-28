@@ -70,6 +70,11 @@ namespace Rock.SystemGuid
         public const string DISC_RESULTS_TYPE = "F06DDAD8-6058-4182-AD0A-B523BB7A2D78";
 
         /// <summary>
+        /// Guid for the Domains Sharing Logins
+        /// </summary>
+        public const string DOMAINS_SHARING_LOGINS = "6CE00E1B-FE09-45FE-BD9D-56C57A11BE1A";
+
+        /// <summary>
         /// Guid for Entity Set Purpose
         /// </summary>
         public const string ENTITY_SET_PURPOSE = "618BBF3F-794F-4FF9-9615-9211CDBAF723";
@@ -228,6 +233,11 @@ namespace Rock.SystemGuid
         /// The personal device platform type (ios, android, etc).
         /// </summary>
         public const string PERSONAL_DEVICE_PLATFORM = "A55849D7-5C7B-4B36-9024-A672169E4C9C";
+
+        /// <summary>
+        /// The PowerBI Accounts Defined Type guid
+        /// </summary>
+        public const string POWERBI_ACCOUNTS = "497DE3E6-66BD-D4A1-4A41-78A2FED2D0DF";
 
         /// <summary>
         /// Protect My Ministry MVR jurisdiction codes

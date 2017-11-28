@@ -44,6 +44,9 @@ namespace Rock.Client
         public int? ChannelTypeMediumValueId { get; set; }
 
         /// <summary />
+        public int? ComponentCacheDuration { get; set; }
+
+        /// <summary />
         public int? ComponentEntityTypeId { get; set; }
 
         /// <summary />
@@ -102,6 +105,7 @@ namespace Rock.Client
             this.ChannelData = source.ChannelData;
             this.ChannelEntityId = source.ChannelEntityId;
             this.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
+            this.ComponentCacheDuration = source.ComponentCacheDuration;
             this.ComponentEntityTypeId = source.ComponentEntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;

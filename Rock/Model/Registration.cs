@@ -353,6 +353,139 @@ Registration By: {0} Total Cost/Fees:{1}
         }
 
         /// <summary>
+        /// Saves the person notes and history.
+        /// </summary>
+        /// <param name="registrationPerson">The person that created the registration</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        /// <param name="previousRegistrantPersonIds">The person ids that have already registered prior to this registration</param>
+        public void SavePersonNotesAndHistory( Person registrationPerson, int? currentPersonAliasId, List<int> previousRegistrantPersonIds )
+        {
+            // Setup Note settings
+            Registration registration = this;
+            NoteTypeCache noteType = null;
+            using ( RockContext rockContext = new RockContext() )
+            {
+                RegistrationInstance registrationInstance = registration.RegistrationInstance ?? new RegistrationInstanceService( rockContext ).Get( registration.RegistrationInstanceId );
+                RegistrationTemplate registrationTemplate = registrationInstance.RegistrationTemplate ?? new RegistrationTemplateService( rockContext ).Get( registrationInstance.RegistrationTemplateId );
+
+                if ( registrationTemplate != null && registrationTemplate.AddPersonNote )
+                {
+                    noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
+                    if ( noteType != null )
+                    {
+                        var noteService = new NoteService( rockContext );
+                        var personAliasService = new PersonAliasService( rockContext );
+
+                        Person registrar = null;
+                        if ( registration.PersonAliasId.HasValue )
+                        {
+                            registrar = personAliasService.GetPerson( registration.PersonAliasId.Value );
+                        }
+
+                        var registrantNames = new List<string>();
+
+                        // Get each registrant
+                        foreach ( var registrantPersonAliasId in registration.Registrants
+                            .Where( r => r.PersonAliasId.HasValue )
+                            .Select( r => r.PersonAliasId.Value )
+                            .ToList() )
+                        {
+                            var registrantPerson = personAliasService.GetPerson( registrantPersonAliasId );
+                            if ( registrantPerson != null && ( previousRegistrantPersonIds == null || !previousRegistrantPersonIds.Contains( registrantPerson.Id ) ) )
+                            {
+                                var noteText = new StringBuilder();
+                                noteText.AppendFormat( "Registered for {0}", registrationInstance.Name );
+
+                                string registrarFullName = string.Empty;
+
+                                if ( registrar != null && registrar.Id != registrantPerson.Id )
+                                {
+                                    registrarFullName = string.Format( " by {0}", registrar.FullName );
+                                    registrantNames.Add( registrantPerson.FullName );
+                                }
+
+                                if ( registrar != null && ( registrationPerson.FirstName != registrar.NickName || registrationPerson.LastName != registrar.LastName ) )
+                                {
+                                    registrarFullName = string.Format( " by {0}", registrationPerson.FirstName + " " + registrationPerson.LastName );
+                                }
+
+                                noteText.Append( registrarFullName );
+
+                                if ( noteText.Length > 0 )
+                                {
+                                    var note = new Note();
+                                    note.NoteTypeId = noteType.Id;
+                                    note.IsSystem = false;
+                                    note.IsAlert = false;
+                                    note.IsPrivateNote = false;
+                                    note.EntityId = registrantPerson.Id;
+                                    note.Caption = string.Empty;
+                                    note.Text = noteText.ToString();
+                                    noteService.Add( note );
+                                }
+
+                                var changes = new List<string> { "Registered for" };
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( Person ),
+                                    Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
+                                    registrantPerson.Id,
+                                    changes,
+                                    registrationInstance.Name,
+                                    typeof( Registration ),
+                                    registration.Id,
+                                    false,
+                                    currentPersonAliasId );
+                            }
+                        }
+
+                        if ( registrar != null && registrantNames.Any() )
+                        {
+                            string namesText = string.Empty;
+                            if ( registrantNames.Count >= 2 )
+                            {
+                                int lessOne = registrantNames.Count - 1;
+                                namesText = registrantNames.Take( lessOne ).ToList().AsDelimited( ", " ) +
+                                    " and " +
+                                    registrantNames.Skip( lessOne ).Take( 1 ).First() + " ";
+                            }
+                            else
+                            {
+                                namesText = registrantNames.First() + " ";
+                            }
+
+                            var note = new Note();
+                            note.NoteTypeId = noteType.Id;
+                            note.IsSystem = false;
+                            note.IsAlert = false;
+                            note.IsPrivateNote = false;
+                            note.EntityId = registrar.Id;
+                            note.Caption = string.Empty;
+                            note.Text = string.Format( "Registered {0} for {1}", namesText, registrationInstance.Name );
+                            noteService.Add( note );
+
+                            var changes = new List<string> { string.Format( "Registered {0} for", namesText ) };
+
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
+                                registrar.Id,
+                                changes,
+                                registrationInstance.Name,
+                                typeof( Registration ),
+                                registration.Id,
+                                false,
+                                currentPersonAliasId );
+                        }
+
+                        rockContext.SaveChanges();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -370,6 +503,18 @@ Registration By: {0} Total Cost/Fees:{1}
 
         }
 
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                return RegistrationInstance != null ? RegistrationInstance : base.ParentAuthority;
+            }
+        }
         #endregion
 
     }

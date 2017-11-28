@@ -403,6 +403,44 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the javascript that will get executed when the codeeditor 'on blur' event occurs
+        /// </summary>
+        /// <value>
+        /// The on change press script.
+        /// </value>
+        public string OnBlurScript
+        {
+            get
+            {
+                return ViewState["OnBlurScript"] as string;
+            }
+
+            set
+            {
+                ViewState["OnBlurScript"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the javasscript that will get executed after the ace editor is done initializing
+        /// </summary>
+        /// <value>
+        /// The on load complete script.
+        /// </value>
+        public string OnLoadCompleteScript
+        {
+            get
+            {
+                return ViewState["OnLoadCompleteScript"] as string;
+            }
+
+            set
+            {
+                ViewState["OnLoadCompleteScript"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the merge field help.
         /// </summary>
         /// <value>
@@ -489,13 +527,14 @@ namespace Rock.Web.UI.Controls
             }
 
             // add editor div
-            string customDiv = @"<div class='code-editor-container' style='position:relative; height: {0}px'><pre id='codeeditor-div-{1}'>{2}</pre></div>";
-            writer.Write( string.Format( customDiv, editorHeight, this.ClientID, HttpUtility.HtmlEncode( this.Text ) ) );
+            var encodedText = HttpUtility.HtmlEncode( this.Text );
+            string customDiv = $@"<div class='code-editor-container {this.CssClass}' style='position:relative; height: {editorHeight}px'><pre id='codeeditor-div-{this.ClientID}'>{encodedText}</pre></div>";
+            writer.Write( customDiv );
 
             // write custom css for the code editor
-            string customStyle = @"
+            string styleTag = $@"
                 <style type='text/css' media='screen'>
-                    #codeeditor-div-{0} {{ 
+                    #codeeditor-div-{this.ClientID} {{ 
                         position: absolute;
                         top: 0;
                         right: 0;
@@ -504,8 +543,7 @@ namespace Rock.Web.UI.Controls
                     }}      
                 </style>     
 ";
-            string cssCode = string.Format( customStyle, this.ClientID );
-            writer.Write( cssCode );
+            writer.Write( styleTag );
 
             // make textbox hidden
             ( (WebControl)this ).Style.Add( HtmlTextWriterStyle.Display, "none" );
@@ -521,14 +559,30 @@ namespace Rock.Web.UI.Controls
                 ce_{0}.setTheme('ace/theme/{1}');
                 ce_{0}.getSession().setMode('ace/mode/{2}');
                 ce_{0}.setShowPrintMargin(false);
+                $('#codeeditor-div-{0}').data('aceEditor', ce_{0});
 
                 document.getElementById('{0}').value = $('<div/>').text( ce_{0}.getValue() ).html().replace(/&#39/g,""&apos"");
                 ce_{0}.getSession().on('change', function(e) {{
-                    document.getElementById('{0}').value = $('<div/>').text( ce_{0}.getValue() ).html().replace(/&#39/g,""&apos"");
+
+                    // get the raw content from the codeEditor
+                    var contents = ce_{0}.getValue();
+
+                    // set the input element value to the escaped value of contents
+                    document.getElementById('{0}').value = $('<div/>').text( contents  ).html().replace(/&#39/g,""&apos"");
+                    
                     {3}
                 }});
 
+                // disable warning about block scrolling
+                ce_{0}.$blockScrolling = Infinity;
+
                 ce_{0}.setReadOnly({4});
+
+                ce_{0}.on('blur', function(e) {{
+                    {5}
+                }});
+
+                {6}
 ";
 
             string script = string.Format( 
@@ -537,7 +591,9 @@ namespace Rock.Web.UI.Controls
                 EditorThemeAsString( this.EditorTheme ),  // {1}
                 EditorModeAsString( this.EditorMode ),  // {2} 
                 this.OnChangeScript,  // {3}
-                this.ReadOnly.ToTrueFalse().ToLower()  // {4}
+                this.ReadOnly.ToTrueFalse().ToLower(),  // {4}
+                this.OnBlurScript, // {5}
+                this.OnLoadCompleteScript // {6}
             );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ClientID, script, true );

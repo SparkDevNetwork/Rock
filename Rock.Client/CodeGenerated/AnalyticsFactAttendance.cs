@@ -62,6 +62,9 @@ namespace Rock.Client
         public int Count { get; set; }
 
         /// <summary />
+        public int? CurrentFamilyKey { get; set; }
+
+        /// <summary />
         public int? CurrentPersonKey { get; set; }
 
         /// <summary />
@@ -78,6 +81,9 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? EndDateTime { get; set; }
+
+        /// <summary />
+        public int? FamilyKey { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -152,12 +158,14 @@ namespace Rock.Client
             this.CampusName = source.CampusName;
             this.CampusShortCode = source.CampusShortCode;
             this.Count = source.Count;
+            this.CurrentFamilyKey = source.CurrentFamilyKey;
             this.CurrentPersonKey = source.CurrentPersonKey;
             this.DaysSinceLastAttendanceOfType = source.DaysSinceLastAttendanceOfType;
             this.DeviceId = source.DeviceId;
             this.DeviceName = source.DeviceName;
             this.DidAttend = source.DidAttend;
             this.EndDateTime = source.EndDateTime;
+            this.FamilyKey = source.FamilyKey;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
@@ -187,7 +195,7 @@ namespace Rock.Client
     public partial class AnalyticsFactAttendance : AnalyticsFactAttendanceEntity
     {
         /// <summary />
-        public AnalyticsDimDate AttendanceDate { get; set; }
+        public AnalyticsSourceDate AttendanceDate { get; set; }
 
         /// <summary />
         public AnalyticsDimAttendanceLocation Location { get; set; }

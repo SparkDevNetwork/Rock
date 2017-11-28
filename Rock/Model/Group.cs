@@ -42,6 +42,9 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "Group" )]
     [DataContract]
+
+    // Support Analytics Tables, but only for GroupType Family
+    [Analytics("GroupTypeId", "10", true, true )]
     public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable
     {
         #region Entity Properties
@@ -631,6 +634,8 @@ namespace Rock.Model
                     attendance.SearchResultGroupId = null;
                 }
             }
+
+            base.PreSaveChanges( dbContext, state );
         }
 
         /// <summary>
@@ -669,6 +674,28 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Get a list of all inherited Attributes that should be applied to this entity.
+        /// </summary>
+        /// <returns>A list of all inherited AttributeCache objects.</returns>
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        {
+            var groupType = this.GroupType;
+            if ( groupType == null && this.GroupTypeId > 0 )
+            {
+                groupType = new GroupTypeService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .FirstOrDefault( t => t.Id == this.GroupTypeId );
+            }
+
+            if ( groupType != null )
+            {
+                return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </summary>
         /// <returns>
@@ -678,6 +705,7 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
         #endregion
 
         #region Indexing Methods

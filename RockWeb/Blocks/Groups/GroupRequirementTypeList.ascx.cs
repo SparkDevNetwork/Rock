@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Groups
     [Description( "List of Group Requirement Types" )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class GroupRequirementTypeList : RockBlock
+    public partial class GroupRequirementTypeList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods
 

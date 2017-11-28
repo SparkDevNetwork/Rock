@@ -673,7 +673,8 @@ $(document).ready(function() {
             var dataViews = dataViewService.Queryable().AsNoTracking()
                 .Where( d => d.DataViewFilter.ChildFilters
                     .Any( f => f.Selection == dataView.Id.ToString()
-                        && f.EntityTypeId == dataViewFilterEntityId ) );
+                        && f.EntityTypeId == dataViewFilterEntityId ) )
+                .OrderBy( d => d.Name );
 
             StringBuilder sbDataViews = new StringBuilder();
             var dataViewDetailPage = GetAttributeValue( "DataViewDetailPage" );
@@ -697,7 +698,7 @@ $(document).ready(function() {
             StringBuilder sbReports = new StringBuilder();
 
             ReportService reportService = new ReportService( rockContext );
-            var reports = reportService.Queryable().AsNoTracking().Where( r => r.DataViewId == dataView.Id );
+            var reports = reportService.Queryable().AsNoTracking().Where( r => r.DataViewId == dataView.Id ).OrderBy( r => r.Name );
             var reportDetailPage = GetAttributeValue( "ReportDetailPage" );
 
             foreach ( var report in reports )
@@ -720,7 +721,7 @@ $(document).ready(function() {
             StringBuilder sbGroups = new StringBuilder();
 
             GroupService groupService = new GroupService( rockContext );
-            var groups = groupService.Queryable().AsNoTracking().Where( g => g.SyncDataViewId == dataView.Id );
+            var groups = groupService.Queryable().AsNoTracking().Where( g => g.SyncDataViewId == dataView.Id ).OrderBy( g => g.Name );
             var groupDetailPage = GetAttributeValue( "GroupDetailPage" );
 
             if ( groups.Count() > 0 )

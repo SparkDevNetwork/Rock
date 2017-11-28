@@ -49,49 +49,60 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Process( Workflow workflow, object entity, out List<string> errorMessages )
         {
-            var rockContext = (RockContext)this.Context;
-
-            if ( workflow.IsPersisted )
+            var workflowType = WorkflowTypeCache.Read( workflow.WorkflowTypeId );
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
-                workflow.IsProcessing = true;
-                rockContext.SaveChanges();
-            }
+                var rockContext = (RockContext)this.Context;
 
-            bool result = workflow.ProcessActivities( rockContext, entity, out errorMessages );
-
-            if ( workflow.Status == "DeleteWorkflowNow")
-            {
-                if ( workflow.Id > 0 )
+                if ( workflow.IsPersisted )
                 {
-                    rockContext.SaveChanges();
-                    Delete( workflow );
+                    workflow.IsProcessing = true;
                     rockContext.SaveChanges();
                 }
-                result = true;
+
+                bool result = workflow.ProcessActivities( rockContext, entity, out errorMessages );
+
+                if ( workflow.Status == "DeleteWorkflowNow" )
+                {
+                    if ( workflow.Id > 0 )
+                    {
+                        rockContext.SaveChanges();
+                        Delete( workflow );
+                        rockContext.SaveChanges();
+                    }
+                    result = true;
+                }
+                else
+                {
+                    if ( workflow.IsPersisted || workflowType.IsPersisted )
+                    {
+                        if ( workflow.Id == 0 )
+                        {
+                            Add( workflow );
+                        }
+
+                        rockContext.SaveChanges();
+
+                        workflow.SaveAttributeValues( rockContext );
+                        foreach ( var activity in workflow.Activities )
+                        {
+                            activity.SaveAttributeValues( rockContext );
+                        }
+
+                        workflow.IsProcessing = false;
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                return result;
             }
+
             else
             {
-                if ( workflow.IsPersisted || WorkflowTypeCache.Read( workflow.WorkflowTypeId ).IsPersisted )
-                {
-                    if ( workflow.Id == 0 )
-                    {
-                        Add( workflow );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    workflow.SaveAttributeValues( rockContext );
-                    foreach ( var activity in workflow.Activities )
-                    {
-                        activity.SaveAttributeValues( rockContext );
-                    }
-
-                    workflow.IsProcessing = false;
-                    rockContext.SaveChanges();
-                }
+                errorMessages = new List<string> { "Workflow Type is invalid or not active!" };
+                return false;
             }
 
-            return result;
         }
 
         /// <summary>

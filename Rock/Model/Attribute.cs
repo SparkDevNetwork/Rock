@@ -206,7 +206,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is analytic.
-        /// NOTE: Only applies if this is an Attribute on an Entity that implements IAnalytic 
+        /// NOTE: Only applies if this is an Attribute on an Entity that implements IAnalytic and has an [AnalyticAttributes] Attribute
         /// If this is true, the Analytic table for this entity should include a field for this attribute
         /// </summary>
         /// <value>
@@ -336,6 +336,8 @@ namespace Rock.Model
                     }
                 }
             }
+
+            base.PreSaveChanges( dbContext, state );
         }
 
         /// <summary>

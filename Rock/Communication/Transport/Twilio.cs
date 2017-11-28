@@ -29,7 +29,6 @@ using Rock.Web.Cache;
 using Twilio;
 using TwilioTypes = Twilio.Types;
 using Twilio.Rest.Api.V2010.Account;
-using System.Threading.Tasks;
 
 namespace Rock.Communication.Transport
 {
@@ -41,135 +40,371 @@ namespace Rock.Communication.Transport
     [ExportMetadata( "ComponentName", "Twilio" )]
     [TextField( "SID", "Your Twilio Account SID (find at https://www.twilio.com/user/account)", true, "", "", 0 )]
     [TextField( "Token", "Your Twilio Account Token", true, "", "", 1 )]
+    [IntegerField("Long-Code Throttling", "The amount of time (in milliseconds) to wait between sending to recipients when sending a message from a long-code number (regular phone number). When carriers detect that a message is not coming from a human, they may filter/block the message. A delay can help prevent this from happening.",
+        false, 500, order: 2)]
     public class Twilio : TransportComponent
     {
+        /// <summary>
+        /// Sends the specified rock message.
+        /// </summary>
+        /// <param name="rockMessage">The rock message.</param>
+        /// <param name="mediumEntityTypeId">The medium entity type identifier.</param>
+        /// <param name="mediumAttributes">The medium attributes.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public override bool Send( RockMessage rockMessage, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes, out List<string> errorMessages )
+        {
+            errorMessages = new List<string>();
+
+            var smsMessage = rockMessage as RockSMSMessage;
+            if ( smsMessage != null )
+            {
+                // Validate From Number
+                if ( smsMessage.FromNumber == null )
+                {
+                    errorMessages.Add( "A From Number was not provided." );
+                    return false;
+                }
+
+                string accountSid = GetAttributeValue( "SID" );
+                string authToken = GetAttributeValue( "Token" );
+                TwilioClient.Init( accountSid, authToken );
+
+                // Common Merge Field
+                var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, rockMessage.CurrentPerson );
+                foreach ( var mergeField in rockMessage.AdditionalMergeFields )
+                {
+                    mergeFields.AddOrReplace( mergeField.Key, mergeField.Value );
+                }
+
+                int? throttlingWaitTimeMS = null;
+                if ( this.IsLongCodePhoneNumber( smsMessage.FromNumber.Value ) )
+                {
+                    throttlingWaitTimeMS = this.GetAttributeValue( "Long-CodeThrottling" ).AsIntegerOrNull();
+                }
+
+                List<Uri> attachmentMediaUrls = GetAttachmentMediaUrls( rockMessage.Attachments.AsQueryable() );
+
+                foreach ( var recipientData in rockMessage.GetRecipientData() )
+                {
+                    try
+                    {
+                        foreach ( var mergeField in mergeFields )
+                        {
+                            recipientData.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                        }
+
+                        string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
+
+                        MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
+
+                        if ( response.ErrorMessage.IsNotNullOrWhitespace() )
+                        {
+                            errorMessages.Add( response.ErrorMessage );
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        errorMessages.Add( ex.Message );
+                        ExceptionLogService.LogException( ex );
+                    }
+
+                    if ( throttlingWaitTimeMS.HasValue )
+                    {
+                        System.Threading.Thread.Sleep( throttlingWaitTimeMS.Value );
+                    }
+                }
+            }
+
+            return !errorMessages.Any();
+        }
+
+        /// <summary>
+        /// Sends the specified communication.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="mediumEntityTypeId">The medium entity type identifier.</param>
+        /// <param name="mediumAttributes">The medium attributes.</param>
+        public override void Send( Model.Communication communication, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes )
+        {
+            using ( var communicationRockContext = new RockContext() )
+            {
+                // Requery the Communication
+                communication = new CommunicationService( communicationRockContext ).Get( communication.Id );
+
+                bool hasPendingRecipients;
+                if ( communication != null &&
+                    communication.Status == Model.CommunicationStatus.Approved &&
+                    ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
+                {
+                    var qryRecipients = new CommunicationRecipientService( communicationRockContext ).Queryable();
+                    hasPendingRecipients = qryRecipients
+                        .Where( r =>
+                            r.CommunicationId == communication.Id &&
+                            r.Status == Model.CommunicationRecipientStatus.Pending &&
+                            r.MediumEntityTypeId.HasValue &&
+                            r.MediumEntityTypeId.Value == mediumEntityTypeId )
+                        .Any();
+                }
+                else
+                {
+                    hasPendingRecipients = false;
+                }
+
+                if ( hasPendingRecipients )
+                {
+                    var currentPerson = communication.CreatedByPersonAlias.Person;
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
+
+                    string fromPhone = communication.SMSFromDefinedValue?.Value;
+                    if ( string.IsNullOrWhiteSpace( fromPhone ) )
+                    {
+                        // just in case we got this far without a From Number, throw an exception
+                        throw new Exception( "A From Number was not provided for communication: " + communication.Id.ToString() );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( fromPhone ) )
+                    {
+
+                        int? throttlingWaitTimeMS = null;
+                        if ( this.IsLongCodePhoneNumber( fromPhone ) )
+                        {
+                            throttlingWaitTimeMS = this.GetAttributeValue( "Long-CodeThrottling" ).AsIntegerOrNull();
+                        }
+
+                        string accountSid = GetAttributeValue( "SID" );
+                        string authToken = GetAttributeValue( "Token" );
+                        TwilioClient.Init( accountSid, authToken );
+
+                        var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                        var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
+                        var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), communicationRockContext ).Id;
+
+                        string callbackUrl = publicAppRoot + "Webhooks/Twilio.ashx";
+
+                        var smsAttachmentsBinaryFileIdList = communication.GetAttachmentBinaryFileIds( CommunicationType.SMS );
+                        List<Uri> attachmentMediaUrls = new List<Uri>();
+                        if ( smsAttachmentsBinaryFileIdList.Any() )
+                        {
+                            attachmentMediaUrls = this.GetAttachmentMediaUrls( new BinaryFileService( communicationRockContext ).GetByIds( smsAttachmentsBinaryFileIdList ) );
+                        }
+
+                        bool recipientFound = true;
+                        while ( recipientFound )
+                        {
+                            // make a new rockContext per recipient
+                            var recipientRockContext = new RockContext();
+                            var recipient = Model.Communication.GetNextPending( communication.Id, mediumEntityTypeId, recipientRockContext );
+                            if ( recipient != null )
+                            {
+                                if ( ValidRecipient( recipient, communication.IsBulkCommunication ) )
+                                {
+                                    try
+                                    {
+                                        var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers
+                                            .Where( p => p.IsMessagingEnabled )
+                                            .FirstOrDefault();
+
+                                        if ( phoneNumber != null )
+                                        {
+                                            // Create merge field dictionary
+                                            var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
+
+                                            string message = ResolveText( communication.SMSMessage, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+
+                                            string twilioNumber = phoneNumber.Number;
+                                            if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
+                                            {
+                                                twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
+                                            }
+
+                                            MessageResource response = SendToTwilio( fromPhone, callbackUrl, attachmentMediaUrls, message, twilioNumber );
+
+                                            recipient.Status = CommunicationRecipientStatus.Delivered;
+                                            recipient.TransportEntityTypeName = this.GetType().FullName;
+                                            recipient.UniqueMessageId = response.Sid;
+
+                                            try
+                                            {
+                                                var historyService = new HistoryService( recipientRockContext );
+                                                historyService.Add( new History
+                                                {
+                                                    CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                                    EntityTypeId = personEntityTypeId,
+                                                    CategoryId = communicationCategoryId,
+                                                    EntityId = recipient.PersonAlias.PersonId,
+                                                    Summary = "Sent SMS message.",
+                                                    Caption = message.Truncate( 200 ),
+                                                    RelatedEntityTypeId = communicationEntityTypeId,
+                                                    RelatedEntityId = communication.Id
+                                                } );
+                                            }
+                                            catch ( Exception ex )
+                                            {
+                                                ExceptionLogService.LogException( ex, null );
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            recipient.Status = CommunicationRecipientStatus.Failed;
+                                            recipient.StatusNote = "No Phone Number with Messaging Enabled";
+                                        }
+                                    }
+                                    catch ( Exception ex )
+                                    {
+                                        recipient.Status = CommunicationRecipientStatus.Failed;
+                                        recipient.StatusNote = "Twilio Exception: " + ex.Message;
+                                    }
+                                }
+
+                                recipientRockContext.SaveChanges();
+
+                                if ( throttlingWaitTimeMS.HasValue )
+                                {
+                                    System.Threading.Thread.Sleep( throttlingWaitTimeMS.Value );
+                                }
+                            }
+                            else
+                            {
+                                recipientFound = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        #region private shared methods
+
+        /// <summary>
+        /// Gets the attachment media urls.
+        /// </summary>
+        /// <param name="attachments">The attachments.</param>
+        /// <returns></returns>
+        private List<Uri> GetAttachmentMediaUrls( IQueryable<BinaryFile> attachments )
+        {
+            var binaryFilesInfo = attachments.Select( a => new
+            {
+                a.Id,
+                a.MimeType
+            } ).ToList();
+
+            List<Uri> attachmentMediaUrls = new List<Uri>();
+            if ( binaryFilesInfo.Any() )
+            {
+                string publicAppRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                attachmentMediaUrls = binaryFilesInfo.Select( b =>
+                {
+                    if ( b.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        return new Uri( $"{publicAppRoot}GetImage.ashx?id={b.Id}" );
+                    }
+                    else
+                    {
+                        return new Uri( $"{publicAppRoot}GetFile.ashx?id={b.Id}" );
+                    }
+                } ).ToList();
+            }
+
+            return attachmentMediaUrls;
+        }
+
+        /// <summary>
+        /// Sends to twilio.
+        /// </summary>
+        /// <param name="fromPhone">From phone.</param>
+        /// <param name="callbackUrl">The callback URL.</param>
+        /// <param name="attachmentMediaUrls">The attachment media urls.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="twilioNumber">The twilio number.</param>
+        /// <returns></returns>
+        private MessageResource SendToTwilio( string fromPhone, string callbackUrl, List<Uri> attachmentMediaUrls, string message, string twilioNumber )
+        {
+            MessageResource response = null;
+
+            // twilio has a max message size of 1600 (one thousand six hundred) characters
+            // hopefully it isn't going to be that big, but just in case, break it into chunks if it is longer than that
+            if ( message.Length > 1600 )
+            {
+                var messageChunks = message.SplitIntoChunks( 1600 );
+
+                foreach ( var messageChunk in messageChunks )
+                {
+                    CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
+                    {
+                        From = new TwilioTypes.PhoneNumber( fromPhone ),
+                        Body = messageChunk
+                    };
+
+                    if ( callbackUrl.IsNotNullOrWhitespace() )
+                    {
+                        createMessageOptions.StatusCallback = new Uri( callbackUrl );
+                    }
+
+                    // if this is the final chunk, add the attachment(s) 
+                    if ( messageChunk == messageChunks.Last() )
+                    {
+                        if ( attachmentMediaUrls.Any() )
+                        {
+                            createMessageOptions.MediaUrl = attachmentMediaUrls;
+                        }
+                    }
+
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                    {
+                        createMessageOptions.StatusCallback = null;
+                    }
+
+                    response = MessageResource.Create( createMessageOptions );
+                }
+            }
+            else
+            {
+                CreateMessageOptions createMessageOptions = new CreateMessageOptions( new TwilioTypes.PhoneNumber( twilioNumber ) )
+                {
+                    From = new TwilioTypes.PhoneNumber( fromPhone ),
+                    Body = message
+                };
+
+                if ( callbackUrl.IsNotNullOrWhitespace() )
+                {
+                    createMessageOptions.StatusCallback = new Uri( callbackUrl );
+                }
+
+                if ( attachmentMediaUrls.Any() )
+                {
+                    createMessageOptions.MediaUrl = attachmentMediaUrls;
+                }
+
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    createMessageOptions.StatusCallback = null;
+                }
+
+                response = MessageResource.Create( createMessageOptions );
+            }
+
+            return response;
+        }
+
+        #endregion
+
+        #region Obsolete
+
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( Rock.Model.Communication communication )
+        [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead" )]
+        public override void Send( Model.Communication communication )
         {
-            var rockContext = new RockContext();
-
-            // Requery the Communication
-            communication = new CommunicationService( rockContext ).Get( communication.Id );
-
-            if ( communication != null &&
-                communication.Status == Model.CommunicationStatus.Approved &&
-                communication.HasPendingRecipients(rockContext) &&
-                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
-            {
-                string fromPhone = string.Empty;
-                string fromValue = communication.GetMediumDataValue( "FromValue" );
-                int fromValueId = int.MinValue;
-                if ( int.TryParse( fromValue, out fromValueId ) )
-                {
-                    fromPhone = DefinedValueCache.Read( fromValueId, rockContext ).Value;
-                }
-
-                if ( !string.IsNullOrWhiteSpace( fromPhone ) )
-                {
-                    string accountSid = GetAttributeValue( "SID" );
-                    string authToken = GetAttributeValue( "Token" );
-                    TwilioClient.Init( accountSid, authToken );
-
-                    var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-                    var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
-                    var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext ).Id;
-
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-
-                    // get message template
-                    string message = communication.GetMediumDataValue( "Message" );
-
-                    // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
-                    message = message.ReplaceWordChars();
-
-                    // determine callback address
-                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-                    string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
-
-
-                    bool recipientFound = true;
-                    while ( recipientFound )
-                    {
-                        var loopContext = new RockContext();
-                        var historyService = new HistoryService( loopContext );
-                        var recipient = Rock.Model.Communication.GetNextPending( communication.Id, loopContext );
-                        if ( recipient != null )
-                        {
-                            try
-                            {
-                                var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers
-                                    .Where( p => p.IsMessagingEnabled )
-                                    .FirstOrDefault();
-
-                                if ( phoneNumber != null )
-                                {
-                                    // Create merge field dictionary
-                                    var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
-                                    
-                                    var resolvedMessage = message.ResolveMergeFields( mergeObjects, communication.EnabledLavaCommands );
- 
-                                    string twilioNumber = phoneNumber.Number;
-                                    if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
-                                    {
-                                        twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-                                    }
-
-                                    var response = MessageResource.Create(
-                                        from: new TwilioTypes.PhoneNumber(fromPhone),
-                                        to: new TwilioTypes.PhoneNumber(twilioNumber),
-                                        body: resolvedMessage,
-                                        statusCallback: new System.Uri(callbackUrl)
-                                    );
-
-                                    recipient.Status = CommunicationRecipientStatus.Delivered;
-                                    recipient.TransportEntityTypeName = this.GetType().FullName;
-                                    recipient.UniqueMessageId = response.Sid;
-
-                                    try
-                                    {
-                                        historyService.Add( new History
-                                        {
-                                            CreatedByPersonAliasId = communication.SenderPersonAliasId,
-                                            EntityTypeId = personEntityTypeId,
-                                            CategoryId = communicationCategoryId,
-                                            EntityId = recipient.PersonAlias.PersonId,
-                                            Summary = "Sent SMS message.",
-                                            Caption = message.Truncate( 200 ),
-                                            RelatedEntityTypeId = communicationEntityTypeId,
-                                            RelatedEntityId = communication.Id
-                                        } );
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        ExceptionLogService.LogException( ex, null );
-                                    }
-                                
-                                }
-                                else
-                                {
-                                    recipient.Status = CommunicationRecipientStatus.Failed;
-                                    recipient.StatusNote = "No Phone Number with Messaging Enabled";
-                                }
-                            }
-                            catch ( Exception ex )
-                            {
-                                recipient.Status = CommunicationRecipientStatus.Failed;
-                                recipient.StatusNote = "Twilio Exception: " + ex.Message;
-                            }
-
-                            loopContext.SaveChanges();
-                        }
-                        else
-                        {
-                            recipientFound = false;
-                        }
-                    }
-                }
-            }
+            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            Send( communication, mediumEntityId, null );
         }
 
         /// <summary>
@@ -180,6 +415,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public override void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
         {
             throw new NotImplementedException();
@@ -193,55 +429,18 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
-            try
-            {
-                var globalAttributes = GlobalAttributesCache.Read();
+            var message = new RockSMSMessage();
+            message.FromNumber = DefinedValueCache.Read( ( mediumData.GetValueOrNull( "FromValue" ) ?? string.Empty ).AsInteger() );
+            message.SetRecipients( recipients );
+            message.ThemeRoot = themeRoot;
+            message.AppRoot = appRoot;
 
-                string fromPhone = string.Empty;
-                string fromValue = string.Empty;
-                mediumData.TryGetValue( "FromValue", out fromValue );
-                if (!string.IsNullOrWhiteSpace(fromValue))
-                {
-                    fromPhone = DefinedValueCache.Read( fromValue.AsInteger() ).Value;
-                    if ( !string.IsNullOrWhiteSpace( fromPhone ) )
-                    {
-                        string accountSid = GetAttributeValue( "SID" );
-                        string authToken = GetAttributeValue( "Token" );
-                        TwilioClient.Init( accountSid, authToken );
-
-                        string message = string.Empty;
-                        mediumData.TryGetValue( "Message", out message );
-
-                        if ( !string.IsNullOrWhiteSpace( themeRoot ) )
-                        {
-                            message = message.Replace( "~~/", themeRoot );
-                        }
-
-                        if ( !string.IsNullOrWhiteSpace( appRoot ) )
-                        {
-                            message = message.Replace( "~/", appRoot );
-                            message = message.Replace( @" src=""/", @" src=""" + appRoot );
-                            message = message.Replace( @" href=""/", @" href=""" + appRoot );
-                        }
-
-                        foreach (var recipient in recipients)
-                        {
-                            var response = MessageResource.Create(
-                                from: new TwilioTypes.PhoneNumber(fromPhone),
-                                to: new TwilioTypes.PhoneNumber(recipient),
-                                body: message
-                            );
-                        }
-                    }
-                }
-            }
-
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, null );
-            }
+            var errorMessages = new List<string>();
+            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() )?.Id ?? 0;
+            Send( message, mediumEntityId, null, out errorMessages );
         }
 
         /// <summary>
@@ -254,47 +453,25 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
         {
-            try
+            var message = new RockSMSMessage();
+            message.FromNumber = DefinedValueCache.Read( from.AsInteger() );
+            if ( message.FromNumber == null )
             {
-                var globalAttributes = GlobalAttributesCache.Read();
-
-                string fromPhone = from;
-                if ( !string.IsNullOrWhiteSpace( fromPhone ) )
-                {
-                    string accountSid = GetAttributeValue( "SID" );
-                    string authToken = GetAttributeValue( "Token" );
-                    TwilioClient.Init( accountSid, authToken );
-
-                    string message = body;
-                    if ( !string.IsNullOrWhiteSpace( themeRoot ) )
-                    {
-                        message = message.Replace( "~~/", themeRoot );
-                    }
-
-                    if ( !string.IsNullOrWhiteSpace( appRoot ) )
-                    {
-                        message = message.Replace( "~/", appRoot );
-                        message = message.Replace( @" src=""/", @" src=""" + appRoot );
-                        message = message.Replace( @" href=""/", @" href=""" + appRoot );
-                    }
-
-                    foreach ( var recipient in recipients )
-                    {
-                        var response = MessageResource.Create(
-                            from: new TwilioTypes.PhoneNumber(fromPhone),
-                            to: new TwilioTypes.PhoneNumber(recipient),
-                            body: message
-                        );
-                    }
-                }
+                message.FromNumber = DefinedTypeCache.Read( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() )
+                    .DefinedValues
+                    .Where( v => v.Value == from )
+                    .FirstOrDefault();
             }
+            message.SetRecipients( recipients );
+            message.ThemeRoot = themeRoot;
+            message.AppRoot = appRoot;
 
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, null );
-            }
+            var errorMessages = new List<string>();
+            int mediumEntityId = EntityTypeCache.Read( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() )?.Id ?? 0;
+            Send( message, mediumEntityId, null, out errorMessages );
         }
 
         /// <summary>
@@ -308,6 +485,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
         {
             throw new NotImplementedException();
@@ -325,10 +503,73 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
         {
             throw new NotImplementedException();
         }
 
+        #endregion
+
+        #region 
+
+        /// <summary>
+        /// Determines whether the phone number is a regular 10 digit (or longer) phone number
+        /// </summary>
+        /// <param name="fromNumber">From number.</param>
+        /// <returns>
+        ///   <c>true</c> if [is long code phone number] [the specified from number]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsLongCodePhoneNumber(string fromNumber)
+        {
+            // if the number of digits in the phone number 10 or more, assume is it a LongCode ( if it is less than 10, assume it is a short-code)
+            return fromNumber.AsNumeric().Length >= 10;
+        }
+
+        /// <summary>
+        /// The MIME types for SMS attachments that Rock and Twilio fully support (also see AcceptedMimeTypes )_
+        /// Twilio's supported MimeTypes are from https://www.twilio.com/docs/api/messaging/accepted-mime-types
+        /// </summary>
+        public static List<string> SupportedMimeTypes = new List<string>
+        {
+            "image/jpeg",
+            "image/gif",
+            "image/png",
+        };
+
+        /// <summary>
+        /// The MIME types for SMS attachments that Rock and Twilio support/accept
+        /// Twilio's accepted MimeTypes are from https://www.twilio.com/docs/api/messaging/accepted-mime-types
+        /// Rock supports the following subset of those
+        /// </summary>
+        public static List<string> AcceptedMimeTypes = new List<string>
+        {
+            // These are fully supported by Twilio and will be formatted for delivery on destination devices
+            "image/jpeg",
+            "image/gif",
+            "image/png",
+
+            // These are accepted, but will not be modified for device compatibility
+            "audio/mp4",
+            "audio/mpeg",
+            "video/mp4",
+            "video/quicktime",
+            "video/H264",
+            "image/bmp",
+            "text/vcard",
+            "text/x-vcard", // sometimes, vcard is reported as x-vcard when uploaded thru IIS
+            "text/csv",
+            "text/rtf",
+            "text/richtext",
+            "text/calendar"
+        };
+
+
+        /// <summary>
+        /// The media size limit in bytes (5MB)
+        /// </summary>
+        public static int MediaSizeLimitBytes = 5 * 1024 * 1024;
+
+        #endregion
     }
 }

@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Registration Instance Page", "The page to view registration details", true, "", "", 1 )]
     [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
     [LinkedPage( "Content Item Detail Page", "The page for viewing details about a content item", true, "", "", 3 )]
-    public partial class EventItemOccurrenceList : RockBlock, ISecondaryBlock
+    public partial class EventItemOccurrenceList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Properties
 
@@ -88,12 +88,17 @@ namespace RockWeb.Blocks.Event
                     gCalendarItemOccurrenceList.Actions.AddClick += gCalendarItemOccurrenceList_Add;
                     gCalendarItemOccurrenceList.GridRebind += gCalendarItemOccurrenceList_GridRebind;
 
-                    var registrationCol = gCalendarItemOccurrenceList.Columns[3] as HyperLinkField;
-                    registrationCol.DataNavigateUrlFormatString = LinkedPageUrl("RegistrationInstancePage") + "?RegistrationInstanceId={0}";
+                    var registrationField = gCalendarItemOccurrenceList.ColumnsOfType<HyperLinkField>().FirstOrDefault( a => a.HeaderText == "Registration" );
+                    if ( registrationField != null )
+                    {
+                        registrationField.DataNavigateUrlFormatString = LinkedPageUrl( "RegistrationInstancePage" ) + "?RegistrationInstanceId={0}";
+                    }
 
-                    var groupCol = gCalendarItemOccurrenceList.Columns[4] as HyperLinkField;
-                    groupCol.DataNavigateUrlFormatString = LinkedPageUrl("GroupDetailPage") + "?GroupId={0}";
-
+                    var groupField = gCalendarItemOccurrenceList.ColumnsOfType<HyperLinkField>().FirstOrDefault( a => a.HeaderText == "Group" );
+                    if ( groupField != null )
+                    {
+                        groupField.DataNavigateUrlFormatString = LinkedPageUrl( "GroupDetailPage" ) + "?GroupId={0}";
+                    }
                 }
             }
         }

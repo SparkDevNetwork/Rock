@@ -55,6 +55,22 @@ a.aspNetDisabled {
   margin-top: 12px;
 }
 
+.form-inline {
+  // control groups break bootstraps form-inline https://stackoverflow.com/questions/21017542/bootstrap-form-inline-not-working
+  .control-wrapper {
+    display: inline-table;
+    width: auto;
+    vertical-align: middle;
+  }
+
+  .date-range-picker .input-group {
+    margin-bottom: 0;
+  }
+}
+
+
+
+
 // styling to get rock controls to layout horizontal
 .form-horizontal {
   .form-group {

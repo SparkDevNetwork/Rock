@@ -219,21 +219,26 @@ namespace Rock.Jobs
                                                                 .FirstOrDefault();
                                                             DateTime? lastNotification = previousNotification != null ? previousNotification.LastNotified : (DateTime?)null;
 
-                                                            // if the event happened
-                                                            if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
+                                                            // If ok to send on this day
+                                                            var today = RockDateTime.Today;
+                                                            if ( eventType.SendOnWeekends || ( today.DayOfWeek != DayOfWeek.Saturday && today.DayOfWeek != DayOfWeek.Sunday ) )
                                                             {
-                                                                // Store the event type id and the entity for later processing of notifications
-                                                                eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
-                                                                eventsThatHappened[eventType.Id].Add( entity.Id, eventComponent.FormatEntityNotification( eventType, entity ) );
-
-                                                                if ( previousNotification == null )
+                                                                // if the event happened
+                                                                if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
                                                                 {
-                                                                    previousNotification = new FollowingEventNotification();
-                                                                    previousNotification.FollowingEventTypeId = eventType.Id;
-                                                                    previousNotification.EntityId = entity.Id;
-                                                                    followingEventNotificationService.Add( previousNotification );
+                                                                    // Store the event type id and the entity for later processing of notifications
+                                                                    eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
+                                                                    eventsThatHappened[eventType.Id].Add( entity.Id, eventComponent.FormatEntityNotification( eventType, entity ) );
+
+                                                                    if ( previousNotification == null )
+                                                                    {
+                                                                        previousNotification = new FollowingEventNotification();
+                                                                        previousNotification.FollowingEventTypeId = eventType.Id;
+                                                                        previousNotification.EntityId = entity.Id;
+                                                                        followingEventNotificationService.Add( previousNotification );
+                                                                    }
+                                                                    previousNotification.LastNotified = timestamp;
                                                                 }
-                                                                previousNotification.LastNotified = timestamp;
                                                             }
                                                         }
 
@@ -257,8 +262,6 @@ namespace Rock.Jobs
                     }
 
                     // send notificatons
-                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
-
                     var possibleRecipients = new PersonService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( p => personSubscriptions.Keys.Contains( p.Id ) )
@@ -319,12 +322,14 @@ namespace Rock.Jobs
                                     if ( personEventTypeNotices.Any() )
                                     {
                                         // Send the notice
-                                        var recipients = new List<RecipientData>();
                                         var mergeFields = new Dictionary<string, object>();
                                         mergeFields.Add( "Person", person );
                                         mergeFields.Add( "EventTypes", personEventTypeNotices.OrderBy( e => e.EventType.Order ).ToList() );
-                                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
-                                        Email.Send( systemEmailGuid.Value, recipients, appRoot );
+
+                                        var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
+                                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                        emailMessage.Send();
+
                                         followingEventsSent++;
                                     }
                                 }

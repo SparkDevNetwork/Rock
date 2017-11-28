@@ -618,7 +618,8 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Adds a new PageRoute to the given page but only if the given route name does not exist.
+        /// Adds a new PageRoute to the given page but only if the given route name does not exist for the specified page
+        /// **NOTE**: If a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
@@ -628,7 +629,8 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Adds a new PageRoute to the given page but only if the given route name does not exist.
+        /// Adds a new PageRoute to the given page but only if the given route name does not exist for the specified page
+        /// **NOTE**: If a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
@@ -1971,7 +1973,7 @@ BEGIN
         }
 
         /// <summary>
-        /// Adds the defined type attribute.
+        /// Adds the defined type attribute, or updates it if it already exists
         /// </summary>
         /// <param name="definedTypeGuid">The defined type unique identifier.</param>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
@@ -2240,7 +2242,7 @@ BEGIN
         }
 
         /// <summary>
-        /// Adds the defined value attribute value.
+        /// Adds/Overwrites the defined value attribute value.
         /// </summary>
         /// <param name="definedValueGuid">The defined value unique identifier.</param>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
@@ -2285,6 +2287,35 @@ BEGIN
                     value.Replace( "'", "''" )
                 )
             );
+        }
+
+        /// <summary>
+        /// Adds/Overwrites the Group attribute value.
+        /// </summary>
+        public void AddGroupAttributeValue( string groupGuid, string attributeGuid, string value )
+        {
+            Migration.Sql( $@"
+
+                DECLARE @GroupId int
+                SET @GroupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{groupGuid}')
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @GroupId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@GroupId,
+                    '{value.Replace( "'", "''" )}',
+                    NEWID())"
+                );
         }
 
         /// <summary>
@@ -2448,14 +2479,14 @@ END
         /// <summary>
         /// Updates the type of the binary file.
         /// </summary>
-        /// <param name="storageEntityTypeId">The storage entity type identifier.</param>
+        /// <param name="storageEntityTypeGuid">The storage entity type identifier.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="allowCaching">if set to <c>true</c> [allow caching].</param>
         /// <param name="requiresViewSecurity">if set to <c>true</c> [requires view security].</param>
-        public void UpdateBinaryFileType( string storageEntityTypeId, string name, string description, string iconCssClass, string guid, bool allowCaching = false, bool requiresViewSecurity = false )
+        public void UpdateBinaryFileType( string storageEntityTypeGuid, string name, string description, string iconCssClass, string guid, bool allowCaching = false, bool requiresViewSecurity = false )
         {
             Migration.Sql( string.Format( @"
 
@@ -2482,7 +2513,7 @@ END
                     VALUES( 1,'{1}','{2}','{3}',@StorageEntityTypeId,{5},{6},'{4}' )
                 END
 ",
-                    storageEntityTypeId,
+                    storageEntityTypeGuid,
                     name,
                     description.Replace( "'", "''" ),
                     iconCssClass,
@@ -2674,7 +2705,7 @@ WHERE [EntityTypeId] = @EntityTypeId
         }
 
         /// <summary>
-        /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
+        /// Adds the page security authentication (or ignores if it already exists). Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="pageGuid">The page unique identifier.</param>
         /// <param name="order">The order.</param>
@@ -3565,9 +3596,9 @@ END
                     ( showInNavigation ? "1" : "0" ),
                     iconCssClass,
                     order,
-                    ( inheritedGroupTypeGuid == null ) ? "NULL" : "'" + inheritedGroupTypeGuid + "'",
+                    ( string.IsNullOrEmpty( inheritedGroupTypeGuid ) ) ? "NULL" : "'" + inheritedGroupTypeGuid + "'",
                     locationSelectionMode,
-                    ( groupTypePurposeValueGuid == null ) ? "NULL" : "'" + groupTypePurposeValueGuid + "'"
+                    ( string.IsNullOrEmpty( groupTypePurposeValueGuid ) ) ? "NULL" : "'" + groupTypePurposeValueGuid + "'"
             ) );
         }
 
@@ -3681,7 +3712,7 @@ END
         }
 
         /// <summary>
-        /// Adds the group type group attribute.
+        /// Adds (or Updates) a new GroupType "Group Attribute" for the given GroupType using the given values.
         /// </summary>
         /// <param name="groupTypeGuid">The group type unique identifier.</param>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>

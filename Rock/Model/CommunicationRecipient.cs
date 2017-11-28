@@ -58,6 +58,16 @@ namespace Rock.Model
         [DataMember]
         public int CommunicationId { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the medium entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The medium entity type identifier.
+        /// </value>
+        [DataMember]
+        public int? MediumEntityTypeId { get; set; }
+
         /// <summary>
         /// Gets or sets the status of the Communication submission to the recipient.
         /// </summary>
@@ -182,7 +192,14 @@ namespace Rock.Model
         [LavaInclude]
         public virtual Communication Communication { get; set; }
 
-
+        /// <summary>
+        /// Gets or sets the type of the medium entity.
+        /// </summary>
+        /// <value>
+        /// The type of the medium entity.
+        /// </value>
+        [DataMember]
+        public virtual EntityType MediumEntityType { get; set; }
 
         /// <summary>
         /// Gets or sets a dictionary containing the Additional Merge values for this communication
@@ -344,18 +361,25 @@ namespace Rock.Model
         public static string GetInteractionDetails( Interaction interaction )
         {
             string interactionDetails = string.Empty;
-            string deviceTypeDetails = $"{interaction.InteractionSession.DeviceType.OperatingSystem} {interaction.InteractionSession.DeviceType.DeviceTypeData} {interaction.InteractionSession.DeviceType.Application} {interaction.InteractionSession.DeviceType.ClientType}";
+            string ipAddress = interaction?.InteractionSession?.IpAddress ?? "'unknown'";
+
             if ( interaction.Operation == "Opened" )
             {
-                interactionDetails = $"Opened from {interaction.InteractionSession.IpAddress} using {deviceTypeDetails}";
+                interactionDetails = $"Opened from {ipAddress}";
             }
             else if ( interaction.Operation == "Click" )
             {
-                interactionDetails = $"Clicked the address {interaction.InteractionData} from {interaction.InteractionSession.IpAddress} using {deviceTypeDetails}";
+                interactionDetails = $"Clicked the address {interaction?.InteractionData} from {ipAddress}";
             }
             else
             {
-                interactionDetails = $"{interaction.Operation} using {deviceTypeDetails}";
+                interactionDetails = $"{interaction?.Operation}";
+            }
+
+            string deviceTypeDetails = $"{interaction?.InteractionSession?.DeviceType?.OperatingSystem} {interaction?.InteractionSession?.DeviceType?.DeviceTypeData} {interaction?.InteractionSession?.DeviceType?.Application} {interaction?.InteractionSession?.DeviceType?.ClientType}";
+            if ( deviceTypeDetails.IsNotNullOrWhitespace() )
+            {
+                interactionDetails += $" using {deviceTypeDetails}";
             }
 
             return interactionDetails;
@@ -379,6 +403,7 @@ namespace Rock.Model
         {
             this.HasRequired( r => r.PersonAlias).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.Communication ).WithMany( c => c.Recipients ).HasForeignKey( r => r.CommunicationId ).WillCascadeOnDelete( true );
+            this.HasOptional( c => c.MediumEntityType ).WithMany().HasForeignKey( c => c.MediumEntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

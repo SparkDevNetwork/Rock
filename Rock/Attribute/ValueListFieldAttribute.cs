@@ -27,6 +27,29 @@ namespace Rock.Attribute
         private const string VALUE_PROMPT_KEY = "valueprompt";
         private const string DEFINED_TYPE_KEY = "definedtype";
         private const string CUSTOM_VALUES = "customvalues";
+        private const string ALLOW_HTML = "allowhtml";
+
+        /* Developer Note: When adding new params to a Field Attribute, we could just add new Properties instead to avoid backwards compatibily issues. 
+         * See AllowHtml below as an example, and the GroupList block for how to initialize it
+         */
+
+        /// <summary>
+        /// Sets a value indicating whether [allow HTML].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow HTML]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowHtml
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_HTML ).AsBoolean();
+            }
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_HTML, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValueListFieldAttribute"/> class.

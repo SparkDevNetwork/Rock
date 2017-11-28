@@ -46,6 +46,9 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
+        /// <summary />
+        public int? MediumEntityTypeId { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -112,6 +115,7 @@ namespace Rock.Client
             this.CommunicationId = source.CommunicationId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.MediumEntityTypeId = source.MediumEntityTypeId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.OpenedClient = source.OpenedClient;
             this.OpenedDateTime = source.OpenedDateTime;
@@ -138,6 +142,9 @@ namespace Rock.Client
     {
         /// <summary />
         public Dictionary<string, Object> AdditionalMergeValues { get; set; }
+
+        /// <summary />
+        public EntityType MediumEntityType { get; set; }
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }

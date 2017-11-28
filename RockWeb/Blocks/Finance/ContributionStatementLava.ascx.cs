@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Finance
 
 {% if pledgeCount > 0 %}
     <hr style=""opacity: .5;"" />
-    <h4 class=""margin-t-md margin-b-md"">Pledges</h4>
+    <h4 class=""margin-t-md margin-b-md"">Pledges <small>(as of {{ StatementEndDate | Date:'M/dd/yyyy' }})</small></h4>
  
     {% for pledge in Pledges %}
         <div class=""row"">
@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Finance
     <em>Unless otherwise noted, the only goods and services provided are intangible religious benefits.</em>
 </p>", order: 2 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Excluded Currency Types", "Select the currency types you would like to excluded.", false, true, order: 4 )]
-    [BooleanField( "Allow Person Querystring", "Determines if a person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 5 )]
+    [BooleanField( "Allow Person Querystring", "Determines if any person other than the currently logged in person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 5 )]
     public partial class ContributionStatementLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -249,19 +249,18 @@ namespace RockWeb.Blocks.Finance
                 excludedCurrencyTypes = GetAttributeValue( "ExcludedCurrencyTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
 
-            if ( GetAttributeValue( "AllowPersonQuerystring" ).AsBoolean() )
+            var personGuid = Request["PersonGuid"].AsGuidOrNull();
+            
+            if ( personGuid.HasValue )
             {
-                if ( !string.IsNullOrWhiteSpace( Request["PersonGuid"] ) )
+                // if "AllowPersonQueryString is False", only use the PersonGuid if it is a Guid of one of the current person's businesses
+                var isCurrentPersonsBusiness = targetPerson != null && targetPerson.GetBusinesses().Any( b => b.Guid == personGuid.Value );
+                if ( GetAttributeValue( "AllowPersonQuerystring" ).AsBoolean() || isCurrentPersonsBusiness )
                 {
-                    Guid? personGuid = Request["PersonGuid"].AsGuidOrNull();
-
-                    if ( personGuid.HasValue )
+                    var person = new PersonService( rockContext ).Get( personGuid.Value );
+                    if ( person != null )
                     {
-                        var person = new PersonService( rockContext ).Get( personGuid.Value );
-                        if ( person != null )
-                        {
-                            targetPerson = person;
-                        }
+                        targetPerson = person;
                     }
                 }
             }
@@ -375,7 +374,7 @@ namespace RockWeb.Blocks.Finance
             // pledge information
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
                                 .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains(p.PersonAliasId.Value)
-                                    && ( p.StartDate.Year == statementYear || p.EndDate.Year == statementYear ) )
+                                    && p.StartDate.Year <= statementYear && p.EndDate.Year >= statementYear )
                                 .GroupBy( p => p.Account )
                                 .Select( g => new PledgeSummary
                                 {
@@ -392,6 +391,18 @@ namespace RockWeb.Blocks.Finance
             foreach ( var pledge in pledges )
             {
                 var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddDays( 1 );
+                var statementYearEnd = new DateTime( statementYear + 1, 1, 1 );
+
+                if ( adjustedPedgeEndDate > statementYearEnd )
+                {
+                    adjustedPedgeEndDate = statementYearEnd;
+                }
+
+                if ( adjustedPedgeEndDate > RockDateTime.Now )
+                {
+                    adjustedPedgeEndDate = RockDateTime.Now;
+                }
+
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
                                             .Where( t =>
                                                  t.AccountId == pledge.AccountId

@@ -29,6 +29,7 @@ using Rock.Attribute;
 using System.Collections.Generic;
 using System.Text;
 using System.Web.UI.HtmlControls;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -40,6 +41,8 @@ namespace RockWeb.Blocks.Core
     [Description( "Lists tags grouped by the first letter of the name with counts for people to select." )]
 
     [LinkedPage("Detail Page")]
+    [BooleanField("User-Selectable Entity Type", "Should user be able to select the entity type to show tags for?", true, "", 0, "ShowEntityType" )]
+    [EntityTypeField("Entity Type", false, "The entity type to display tags for. If entity type is user-selectable, this will be the default entity type", false, "", DefaultValue = Rock.SystemGuid.EntityType.PERSON )]
     public partial class TagsByLetter : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -47,12 +50,23 @@ namespace RockWeb.Blocks.Core
         // used for private variables
         protected string personalTagsCss = string.Empty;
         protected string publicTagsCss = string.Empty;
-        private string _tagCloudTab = string.Empty;
-        private bool _showInActive = false;
+        private bool _showEntityType = false;
 
         #endregion
 
         #region Properties
+
+        public int? EntityTypeId
+        {
+            get { return Session["EntityTypeId"] as int?; }
+            set { Session["EntityTypeId"] = value; }
+        }
+
+        public string TagCloudTab
+        {
+            get { return Session["TagCloudTab"] as string ?? "personal"; }
+            set { Session["TagCloudTab"] = value; }
+        }
 
         // used for public / protected properties
 
@@ -69,27 +83,23 @@ namespace RockWeb.Blocks.Core
             this.AddConfigurationUpdateTrigger(upnlTagCloud);
 
             base.OnInit( e );
+
+            _showEntityType = GetAttributeValue( "ShowEntityType" ).AsBoolean();
+
+            if ( !EntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Read( GetAttributeValue( "EntityType" ).AsGuid() );
+                EntityTypeId = entityType != null ? entityType.Id : (int?)null;
+            }
         }
 
         protected override void OnLoad( EventArgs e )
         {
-            _tagCloudTab = Session["TagCloudTab"] as string;
             if ( !Page.IsPostBack )
             {
-                if ( !string.IsNullOrWhiteSpace( _tagCloudTab ) && _tagCloudTab == "organization" )
-                {
-                    DisplayTags( null, 15 );
-                    publicTagsCss = "active";
-                }
-                else
-                {
-                    DisplayTags( CurrentPerson.Id, 15 );
-                    personalTagsCss = "active";
-                }
+                ShowControls();
+                DisplayTags();
             }
-
-           
-            _showInActive = tglStatus.Checked;
 
             base.OnLoad( e );
         }
@@ -107,25 +117,26 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated(object sender, EventArgs e)
         {
+            ShowControls();
+            DisplayTags();
+        }
 
+        protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            EntityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
+            DisplayTags();
         }
 
         protected void lbPersonalTags_Click(object sender, EventArgs e)
         {
-            DisplayTags(CurrentPerson.Id, 15);
-            personalTagsCss = "active";
-            publicTagsCss = string.Empty;
-
-            Session["TagCloudTab"] = "personal";
-
+            TagCloudTab = "personal";
+            DisplayTags();
         }
+
         protected void lbPublicTags_Click(object sender, EventArgs e)
         {
-            DisplayTags(null, 15);
-            personalTagsCss = string.Empty;
-            publicTagsCss = "active";
-
-            Session["TagCloudTab"] = "organization";
+            TagCloudTab = "organization";
+            DisplayTags();
         }
 
         /// <summary>
@@ -135,35 +146,61 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tgl_CheckedChanged( object sender, EventArgs e )
         {
-            if ( !string.IsNullOrWhiteSpace( _tagCloudTab ) && _tagCloudTab == "organization" )
-            {
-                DisplayTags( null, 15 );
-                publicTagsCss = "active";
-            }
-            else
-            {
-                DisplayTags( CurrentPerson.Id, 15 );
-                personalTagsCss = "active";
-            }
+            DisplayTags();
         }
 
         #endregion
 
         #region Methods
 
-        private void DisplayTags(int? ownerId, int entityId)
+        private void ShowControls()
         {
+            ddlEntityType.Visible = _showEntityType;
+            if ( _showEntityType )
+            {
+                ddlEntityType.Items.Clear();
+                ddlEntityType.Items.Add( new System.Web.UI.WebControls.ListItem() );
+                new EntityTypeService( new RockContext() ).GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
+                ddlEntityType.SetValue( EntityTypeId.HasValue && EntityTypeId.Value != 0 ? EntityTypeId.Value.ToString() : "" );
+            }
+        }
+
+        private void DisplayTags()
+        {
+            int? ownerId = null;
+
+            if ( TagCloudTab == "organization" )
+            {
+                publicTagsCss = "active";
+                personalTagsCss = "";
+            }
+            else
+            {
+                ownerId = CurrentPersonId ?? 0;
+                publicTagsCss = "";
+                personalTagsCss = "active";
+            }
+
             // get tags
-            var qry = new TagService( new RockContext() )
-                .Queryable()
-                .Where(t =>
-                     t.EntityTypeId == entityId &&
-                     (
-                         ( t.OwnerPersonAlias == null && !ownerId.HasValue ) ||
-                         ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value )
-                     ) &&
-                     ( t.IsActive || _showInActive ) )
-                .Select(t => new
+            var tagQry = new TagService( new RockContext() ).Queryable();
+
+            int? entityId = _showEntityType ? ddlEntityType.SelectedValueAsId() : EntityTypeId;
+            if ( entityId.HasValue && entityId.Value != 0 )
+            {
+                tagQry = tagQry.Where( t => t.EntityTypeId.HasValue && t.EntityTypeId.Value == entityId.Value );
+            }
+
+            if ( !tglStatus.Checked )
+            {
+                tagQry = tagQry.Where( t => t.IsActive );
+            }
+
+            if ( ownerId.HasValue )
+            {
+                tagQry = tagQry.Where( t => t.OwnerPersonAlias != null && t.OwnerPersonAlias.PersonId == ownerId.Value );
+            }
+
+            var qry = tagQry.Select( t => new 
                 {
                     Tag = t,
                     Count = t.TaggedItems.Count()
@@ -187,8 +224,10 @@ namespace RockWeb.Blocks.Core
 
             foreach ( var tagInfo in tags )
             {
-                bool canView = ownerId.HasValue && tagInfo.Tag.OwnerPersonAlias.PersonId == ownerId.Value;
-                canView = canView || tagInfo.Tag.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson );
+                bool canView = 
+                    ( tagInfo.Tag.OwnerPersonAlias != null && ownerId.HasValue && tagInfo.Tag.OwnerPersonAlias.PersonId == ownerId.Value ) ||
+                    ( tagInfo.Tag.OwnerPersonAlias == null && tagInfo.Tag.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) );
+
                 if ( canView )
                 {
                     var tagSummary = new TagSummary { Id = tagInfo.Tag.Id, Name = tagInfo.Tag.Name, Count = tagInfo.Count };
@@ -259,6 +298,7 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
+
     }
 
     class TagSummary

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using CronExpressionDescriptor;
 using Rock;
 using Rock.Constants;
@@ -168,7 +169,17 @@ namespace RockWeb.Blocks.Administration
             job.LoadAttributes();
             phAttributes.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
-            
+        }
+
+        /// <summary>
+        /// Handles the TextChanged event of the tbCronExpression control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tbCronExpression_TextChanged( object sender, EventArgs e )
+        {
+            lCronExpressionDesc.Text = ExpressionDescriptor.GetDescription( tbCronExpression.Text, new Options { ThrowExceptionOnParseError = false } );
+            lCronExpressionDesc.Visible = true;
         }
 
         /// <summary>
@@ -201,7 +212,18 @@ namespace RockWeb.Blocks.Administration
             tbName.Text = job.Name;
             tbDescription.Text = job.Description;
             cbActive.Checked = job.IsActive.HasValue ? job.IsActive.Value : false;
-            ddlJobTypes.SelectedValue = job.Class;
+            if ( job.Class.IsNotNullOrWhitespace() )
+            {
+                if ( ddlJobTypes.Items.FindByValue( job.Class ) == null )
+                {
+                    nbJobTypeError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                    nbJobTypeError.Text = "Unable to find Job Type: " + job.Class;
+                    nbJobTypeError.Visible = true;
+                }
+            }
+
+            ddlJobTypes.SetValue( job.Class );
+
             tbNotificationEmails.Text = job.NotificationEmails;
             ddlNotificationStatus.SetValue( (int)job.NotificationStatus );
             tbCronExpression.Text = job.CronExpression;
@@ -237,8 +259,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( job.IsSystem )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( ServiceJob.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.System( ServiceJob.FriendlyTypeName );
             }
 
             if ( readOnly )
@@ -250,15 +271,14 @@ namespace RockWeb.Blocks.Administration
                 phAttributes.Visible = false;
                 tbCronExpression.Text = job.CronExpression;
             }
-
             
-            tbName.ReadOnly = readOnly;
-            tbDescription.ReadOnly = readOnly;
-            cbActive.Enabled = !readOnly;
-            ddlJobTypes.Enabled = !readOnly;
+            tbName.ReadOnly = readOnly || job.IsSystem;
+            tbDescription.ReadOnly = readOnly || job.IsSystem;
+            cbActive.Enabled = !( readOnly || job.IsSystem );
+            ddlJobTypes.Enabled = !( readOnly || job.IsSystem );
             tbNotificationEmails.ReadOnly = readOnly;
             ddlNotificationStatus.Enabled = !readOnly;
-            tbCronExpression.ReadOnly = readOnly;
+            tbCronExpression.ReadOnly = readOnly || job.IsSystem;
 
             btnSave.Visible = !readOnly;
         }
@@ -290,16 +310,18 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            ddlJobTypes.DataSource = jobsList;
-            ddlJobTypes.DataBind();
+            ddlJobTypes.Items.Clear();
+            ddlJobTypes.Items.Add( new ListItem() );
+            foreach ( var job in jobsList.OrderBy(a => a.FullName ))
+            {
+                ddlJobTypes.Items.Add( new ListItem( job.FullName, job.FullName ) );
+            }
 
             nbJobTypeError.Visible = jobTypeErrors.Any();
             nbJobTypeError.Text = "Error loading job types";
             nbJobTypeError.Details = jobTypeErrors.AsDelimited( "<br/>" );
-
         }
 
         #endregion
-
     }
 }

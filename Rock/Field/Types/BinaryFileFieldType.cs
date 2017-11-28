@@ -149,7 +149,7 @@ namespace Rock.Field.Types
                     else
                     {
                         var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                        return string.Format( "<a href='{0}?guid={1}' title='{2}' class='btn btn-sm btn-default'>View</a>", filePath, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode(binaryFileInfo.FileName) );
+                        return string.Format( "<a href='{0}?guid={1}' title='{2}' class='btn btn-xs btn-default'>View</a>", filePath, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode(binaryFileInfo.FileName) );
                     }
                 }
             }

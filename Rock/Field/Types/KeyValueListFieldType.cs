@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 using System.Web.UI;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -59,7 +61,7 @@ namespace Rock.Field.Types
             tbKeyPrompt.Help = "The text to display as a prompt in the key textbox.";
 
             var cbDisplayValueFirst = new RockCheckBox();
-            controls.Insert( 4, cbDisplayValueFirst );
+            controls.Insert( 5, cbDisplayValueFirst );
             cbDisplayValueFirst.Label = "Display Value First";
             cbDisplayValueFirst.Help = "Reverses the display order of the key and the value.";
 
@@ -78,6 +80,7 @@ namespace Rock.Field.Types
             configurationValues.Add( "valueprompt", new ConfigurationValue( "Label Prompt", "The text to display as a prompt in the label textbox.", "" ) );
             configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", "" ) );
             configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1:text1,value2:text2,value3:text3,...'.", "" ) );
+            configurationValues.Add( "allowhtml", new ConfigurationValue( "Allow Html", "Allow Html content in values", "" ) );
             configurationValues.Add( "displayvaluefirst", new ConfigurationValue( "Display Value First", "Reverses the display order of the key and the value.", "" ) );
 
             if ( controls != null )
@@ -100,7 +103,11 @@ namespace Rock.Field.Types
                 }
                 if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox )
                 {
-                    configurationValues["displayvaluefirst"].Value = ( (RockCheckBox)controls[4] ).Checked.ToString();
+                    configurationValues["allowhtml"].Value = ( ( RockCheckBox ) controls[4] ).Checked.ToString();
+                }
+                if ( controls.Count > 5 && controls[5] != null && controls[5] is RockCheckBox )
+                {
+                    configurationValues["displayvaluefirst"].Value = ( (RockCheckBox)controls[5] ).Checked.ToString();
                 }
             }
 
@@ -133,9 +140,13 @@ namespace Rock.Field.Types
                 {
                    ( (RockTextBox)controls[3] ).Text = configurationValues["customvalues"].Value;
                 }
-                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox && configurationValues.ContainsKey( "displayvaluefirst" ) )
+                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox && configurationValues.ContainsKey( "allowhtml" ) )
                 {
-                    ( (RockCheckBox)controls[4] ).Checked = configurationValues["displayvaluefirst"].Value.AsBoolean();
+                    ( ( RockCheckBox ) controls[4] ).Checked = configurationValues["allowhtml"].Value.AsBoolean();
+                }
+                if ( controls.Count > 5 && controls[5] != null && controls[5] is RockCheckBox && configurationValues.ContainsKey( "displayvaluefirst" ) )
+                {
+                    ( (RockCheckBox)controls[5] ).Checked = configurationValues["displayvaluefirst"].Value.AsBoolean();
                 }
             }
         }
@@ -158,6 +169,10 @@ namespace Rock.Field.Types
 
             var values = new List<string>();
             string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+
+            // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
+            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
             foreach ( string nameValue in nameValues )
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' } );
@@ -297,6 +312,10 @@ namespace Rock.Field.Types
             bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsIntegerOrNull().HasValue;
 
             string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+
+            // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
+            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
             foreach ( string nameValue in nameValues )
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' } );

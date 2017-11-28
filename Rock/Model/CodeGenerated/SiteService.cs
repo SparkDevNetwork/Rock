@@ -112,6 +112,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            target.IconCssWeight = source.IconCssWeight;
             target.IndexStartingLocation = source.IndexStartingLocation;
             target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsSystem = source.IsSystem;

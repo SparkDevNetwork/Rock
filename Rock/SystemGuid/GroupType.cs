@@ -90,5 +90,10 @@ namespace Rock.SystemGuid
         /// General group type guid
         /// </summary>
         public const string GROUPTYPE_GENERAL = "8400497B-C52F-40AE-A529-3FCCB9587101";
+
+        /// <summary>
+        /// Communication List group type guid
+        /// </summary>
+        public const string GROUPTYPE_COMMUNICATIONLIST = "D1D95777-FFA3-CBB3-4A6D-658706DAED33";
     }
 }
