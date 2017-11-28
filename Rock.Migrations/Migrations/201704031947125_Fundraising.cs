@@ -191,6 +191,15 @@ INSERT INTO AttributeCategory (AttributeId, CategoryId) SELECT a.Id, c.Id FROM A
             //// Pages and Blocks migration for Fundraising
 
             RockMigrationHelper.AddPage( true,  "142627AE-6590-48E3-BFCA-3669260B8CF2", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Fundraising Matching", "", "A3EF32AC-B0FE-4140-A6F4-134FDD247CBD", "" ); // Site:Rock RMS
+
+            //// From 033_ConnectionOpportunityCounts
+            RockMigrationHelper.DeleteSecurityAuthForPage( "A3EF32AC-B0FE-4140-A6F4-134FDD247CBD" );
+            RockMigrationHelper.AddSecurityAuthForPage( "A3EF32AC-B0FE-4140-A6F4-134FDD247CBD", 3, "View", false, "", 1, "21EF9B65-A9BA-4C9C-8DBB-3247F668768B" ); // Page:Fundraising Matching
+            RockMigrationHelper.AddSecurityAuthForPage( "A3EF32AC-B0FE-4140-A6F4-134FDD247CBD", 2, "View", true, "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9", 0, "5310F062-147F-4FDD-8671-10516FD94251" ); // Page:Fundraising Matching
+            RockMigrationHelper.AddSecurityAuthForPage( "A3EF32AC-B0FE-4140-A6F4-134FDD247CBD", 1, "View", true, "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559", 0, "6FA07B13-7382-4988-B7FD-F506D3EDE7D8" ); // Page:Fundraising Matching
+            RockMigrationHelper.AddSecurityAuthForPage( "A3EF32AC-B0FE-4140-A6F4-134FDD247CBD", 0, "View", true, "628C51A8-4613-43ED-A18D-4A6FB999273E", 0, "7BE99C1B-B96E-4EDF-9D3F-8A8247A2B04F" ); // Page:Fundraising Matching
+
+
             RockMigrationHelper.AddPage( true, "5A8FBB92-85E5-4FD3-AF88-F3897C6CBC35", "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD", "Fundraising Opportunity View", "", "BA673ABE-A45A-4835-A3A0-94A60341B96F", "" ); // Site:External Website
 
             // Turn off BreadCrumbDisplayName for Fundraising Opportunity View
