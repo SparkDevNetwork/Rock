@@ -10615,7 +10615,7 @@ html,body{
    left: 50%;
    top: 50%;
    transform: translateX( -50% ) translateY( -100% );
-   font-size: 2.56rem;
+   font-size: 2.28rem;
 }
 
 .event-page-wrapper .event-calendar .header .prev-arrow,
@@ -10677,7 +10677,7 @@ html,body{
    flex-direction: row;
    flex-wrap: wrap;
    align-items: center;
-   min-width: 75%;
+   min-width: 72%;
 }
 
 .event-page-wrapper .event-calendar .event-item .details .info h4{
@@ -10688,7 +10688,7 @@ html,body{
    text-overflow: ellipsis;
    overflow: hidden;
    white-space: nowrap;
-   width: 200px;
+   max-width: 150px;
    font-size: 2.00rem;
 }
 
