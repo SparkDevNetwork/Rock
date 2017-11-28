@@ -244,7 +244,7 @@
          {% endfor %}
       </div>
       
-      <div class="event-detail-card" style="visibility: hidden;">
+      <div class="event-detail-card" style="margin: 0 auto; visibility: hidden;">
          <img id="event-detail-card-img" src="" style="width: 365px; height: 200px;" class="img-responsive"></img>
          
          <h4 id="event-detail-card-name"></h4>

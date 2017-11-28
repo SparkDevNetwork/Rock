@@ -10593,11 +10593,13 @@ html,body{
    display: flex;
    flex-direction: row;
    flex-wrap: wrap;
-   padding: 15px;
+   align-items: center;
+   width: 100%;
 }
 
 .event-page-wrapper .event-calendar {
-   width: 100%;
+   width: 90%;
+   margin: 0 auto;
 }
 
 .event-page-wrapper .event-calendar .header {
@@ -10625,13 +10627,13 @@ html,body{
 .event-page-wrapper .event-calendar .header .prev-arrow {
    transform: scale(2) translateY( 20% ) rotateZ(-90deg) scaleY(-1);
    margin-right: auto;
-   margin-left: 0px;
+   margin-left: 12%;
 }
 
 .event-page-wrapper .event-calendar .header .next-arrow {
    transform: scale(2) translateY( 20% ) rotateZ(-90deg);
    margin-left: auto;
-   margin-right: 0px;
+   margin-right: 12%;
 }
 
 .event-page-wrapper .event-calendar .header .prev-arrow:hover,
@@ -10651,8 +10653,8 @@ html,body{
    background-color: #7a1315;
    color: #fff;
    margin-right: 10px;
-   width: 75px;
-   height: 75px;
+   width: 70px;
+   height: 70px;
    align-items: center;
    border-radius: 6px;
 }
@@ -10727,23 +10729,39 @@ html,body{
 
 /* ---- Overrides for desktop size ---- */
 @media screen and (min-width: 1224px) {
-   .event-page-wrapper .event-calendar {
-      width: 60%;
+   .event-page-wrapper {
+      padding: 0;
+      align-items: stretch;
+      width: auto;
    }
    
-   .event-page-wrapper {
-      padding: 100px;
+   .event-page-wrapper .event-calendar {
+      width: 60%;
+      margin: 0 auto;
    }
    
    .event-page-wrapper .event-calendar .header {
       margin-top: 15px;
       margin-bottom: 50px;
-      margin-left: 100px;
-      width: 60%;
+      margin-left: auto;
+      width: auto;
    }
    
    .event-page-wrapper .event-calendar .header h2 {
       font-size: 3.56rem;
+   }
+   
+   .event-page-wrapper .event-calendar .event-item {
+      width: 600px;
+   }
+   
+   .event-page-wrapper .event-calendar .event-item .date {
+      width: 75px;
+      height: 75px;
+   }
+   
+   .event-page-wrapper .event-calendar .event-item .details {
+      width: 80%;
    }
 }
 /* ---- Overrides for desktop size ---- */
