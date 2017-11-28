@@ -10763,6 +10763,10 @@ html,body{
    .event-page-wrapper .event-calendar .event-item .details {
       width: 80%;
    }
+   
+   .event-page-wrapper .event-calendar .event-item .details .info h4 {
+      max-width: none;
+   }
 }
 /* ---- Overrides for desktop size ---- */
 
