@@ -429,6 +429,10 @@
     <Compile Include="Migrations\201711211752271_NcoaHistory.Designer.cs">
       <DependentUpon>201711211752271_NcoaHistory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711271827181_V7Rollup.cs" />
+    <Compile Include="Migrations\201711271827181_V7Rollup.Designer.cs">
+      <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2901,6 +2905,9 @@
       <DependentUpon>201711211752271_NcoaHistory.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711271827181_V7Rollup.resx">
+      <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4817,6 +4824,15 @@
     <Content Include="Migrations\201711211752271_NcoaHistory_UpdateCommunicationTemplates.sql">
       <DependentUpon>201711211752271_NcoaHistory.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201711271827181_V7Rollup_021_UpdateCheckInMergefieldDebugInfo.sql">
+      <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711271827181_V7Rollup_026_PersonEditConnectionRecordStatus.sql">
+      <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity.sql">
+      <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
@@ -4917,7 +4933,9 @@
       <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Migrations\Version 7.0\Version 1.7.0\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>CD $(SolutionDir)Dev Tools\EntityFramework\

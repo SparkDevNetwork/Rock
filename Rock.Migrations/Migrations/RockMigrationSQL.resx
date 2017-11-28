@@ -637,4 +637,13 @@
   <data name="_201711211752271_NcoaHistory_UpdateCommunicationTemplates" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201711211752271_ncoahistory_updatecommunicationtemplates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201711271827181_V7Rollup_021_UpdateCheckInMergefieldDebugInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711271827181_v7rollup_021_updatecheckinmergefielddebuginfo.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201711271827181_V7Rollup_026_PersonEditConnectionRecordStatus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711271827181_v7rollup_026_personeditconnectionrecordstatus.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201711271827181_v7rollup_029_batchdetailreopenbatchsecurity.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

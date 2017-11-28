@@ -4147,5 +4147,65 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201711211752271_NcoaHistory_UpdateCommunicationTemplates", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [DefinedType]
+        ///SET [helptext] = &apos;
+        ///Label merge fields are defined with a liquid syntax. Click the &apos;&apos;Show Merge Fields&apos;&apos; button below to view the available merge fields.
+        ///&lt;p&gt;&lt;a data-toggle=&quot;collapse&quot; href=&quot;#collapseMergeFields&quot; class=&quot;btn btn-action btn-xs&quot;&gt;Show/Hide Merge Fields&lt;/a&gt;&lt;/p&gt;&lt;div id=&quot;collapseMergeFields&quot; class=&quot;panel-collapse collapse&quot;&gt;&lt;div class=&quot;alert alert-info lava-debug&quot;&gt;&lt;div class=&quot;panel panel-default panel-lavadebug&quot;&gt;&lt;div class=&quot;panel-heading clearfix collapsed&quot; data-toggle=&quot;collaps [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711271827181_V7Rollup_021_UpdateCheckInMergefieldDebugInfo {
+            get {
+                return ResourceManager.GetString("_201711271827181_V7Rollup_021_UpdateCheckInMergefieldDebugInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @EntityTypeId INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [EntityType]
+        ///		WHERE [Name] = &apos;Rock.Model.Block&apos;
+        ///		)
+        ///DECLARE @PersonEditBlockId INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [Block]
+        ///		WHERE [Guid] = &apos;59C7EA79-2073-4EA9-B439-7E74F06E8F5B&apos;
+        ///		)
+        ///DECLARE @RockAdminGroupId INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [Group]
+        ///		WHERE [Guid] = &apos;628C51A8-4613-43ED-A18D-4A6FB999273E&apos;
+        ///		)
+        ///DECLARE @Order INT = (
+        ///		SELECT MAX([Order])
+        ///		FROM [Auth]
+        ///		WHERE EntityTypeId = @EntityTypeId
+        ///			AND EntityId = @PersonEdi [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711271827181_V7Rollup_026_PersonEditConnectionRecordStatus {
+            get {
+                return ResourceManager.GetString("_201711271827181_V7Rollup_026_PersonEditConnectionRecordStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Add &apos;ReopenBatch&apos; as a security action on Rock.Model.FinancialBatch and default it to whatever might be there for EDIT on BatchDetail, and ensure that FinanceAdmin, FinanceWorker, and Admin have &apos;ReopenBatch&apos; security
+        ///DECLARE @EntityTypeIdBlock INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [EntityType]
+        ///		WHERE [Name] = &apos;Rock.Model.Block&apos;
+        ///		)
+        ///DECLARE @EntityTypeIdFinancialBatch INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [EntityType]
+        ///		WHERE [Name] = &apos;Rock.Model.FinancialBatch&apos;
+        ///		)
+        ///DECLARE @BatchDetailBlockId INT  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity {
+            get {
+                return ResourceManager.GetString("_201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity", resourceCulture);
+            }
+        }
     }
 }
