@@ -10593,18 +10593,18 @@ html,body{
    display: flex;
    flex-direction: row;
    flex-wrap: wrap;
+   padding: 15px;
 }
 
 .event-page-wrapper .event-calendar {
-   width: 600px;
+   width: 100%;
 }
 
 .event-page-wrapper .event-calendar .header {
    display: flex;
    justify-content: flex-start;
    position: relative;
-   margin-top: 15px;
-   margin-bottom: 50px;
+   margin-bottom: 25px;
 }
 
 .event-page-wrapper .event-calendar .header h2 {
@@ -10613,13 +10613,25 @@ html,body{
    left: 50%;
    top: 50%;
    transform: translateX( -50% ) translateY( -100% );
+   font-size: 2.56rem;
 }
 
-.event-page-wrapper .event-calendar .header .prev-arrow { 
+.event-page-wrapper .event-calendar .header .prev-arrow,
+.event-page-wrapper .event-calendar .header .next-arrow { 
    flex: 0 1 auto;
-   color: #7a1315;
-   transform: scale(2) translateY( -20% ) translateX( 90% ) rotateZ(90deg);
+   color: #7a1315;   
+}
+
+.event-page-wrapper .event-calendar .header .prev-arrow {
+   transform: scale(2) translateY( 20% ) rotateZ(-90deg) scaleY(-1);
    margin-right: auto;
+   margin-left: 0px;
+}
+
+.event-page-wrapper .event-calendar .header .next-arrow {
+   transform: scale(2) translateY( 20% ) rotateZ(-90deg);
+   margin-left: auto;
+   margin-right: 0px;
 }
 
 .event-page-wrapper .event-calendar .header .prev-arrow:hover,
@@ -10627,25 +10639,13 @@ html,body{
    cursor: pointer;
 }
 
-.prev-arrow .hidden {
-   visibility: hidden;
-}
-
-.event-page-wrapper .event-calendar .header .next-arrow {
-   flex: 0 1 auto;
-   color: #7a1315;
-   transform: scale(2) translateY( 20% ) translateX( -90% ) rotateZ(-90deg);
-   margin-left: auto;
-}
-
 .event-page-wrapper .event-calendar .event-item {
    display: flex;
    flex-direction: row;
    flex-wrap: wrap;
-   
    margin-top: 15px;
    margin-bottom: 15px;
-   width: 600px;
+   min-width: 100%;
 }
 .event-page-wrapper .event-calendar .event-item .date {
    background-color: #7a1315;
@@ -10670,16 +10670,12 @@ html,body{
 
 .event-page-wrapper .event-calendar .event-item .details {
    background-color: #e9e9ea;
-   width: 80%;
    border-radius: 6px;
    display: flex;
    flex-direction: row;
    flex-wrap: wrap;
    align-items: center;
-}
-
-.event-page-wrapper .event-calendar .event-item .details .info {
-   
+   min-width: 75%;
 }
 
 .event-page-wrapper .event-calendar .event-item .details .info h4{
@@ -10687,7 +10683,11 @@ html,body{
    font-weight: 900;
    margin-bottom: 0px;
    margin-left: 10px;
-   text-decoration: none;
+   text-overflow: ellipsis;
+   overflow: hidden;
+   white-space: nowrap;
+   width: 200px;
+   font-size: 2.00rem;
 }
 
 .event-page-wrapper .event-calendar .event-item .details .info p {
@@ -10724,6 +10724,29 @@ html,body{
 .selected .arrow b {
    color: #7a1315 !important;
 }
+
+/* ---- Overrides for desktop size ---- */
+@media screen and (min-width: 1224px) {
+   .event-page-wrapper .event-calendar {
+      width: 60%;
+   }
+   
+   .event-page-wrapper {
+      padding: 100px;
+   }
+   
+   .event-page-wrapper .event-calendar .header {
+      margin-top: 15px;
+      margin-bottom: 50px;
+      margin-left: 100px;
+      width: 60%;
+   }
+   
+   .event-page-wrapper .event-calendar .header h2 {
+      font-size: 3.56rem;
+   }
+}
+/* ---- Overrides for desktop size ---- */
 
 /* Formatting for the event details page */
 .event-detail-wrapper {
