@@ -10727,6 +10727,13 @@ html,body{
    color: #7a1315 !important;
 }
 
+/* ---- overrides for landscape iPhone SE and above --- */
+@media screen and (min-width: 568px) {
+   .event-page-wrapper .event-calendar .event-item .details .info h4{
+      max-width: 250px;
+   }
+}
+
 /* ---- Overrides for desktop size ---- */
 @media screen and (min-width: 1224px) {
    .event-page-wrapper {

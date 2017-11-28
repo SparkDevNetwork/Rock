@@ -135,7 +135,7 @@
                               itemOccurrenceId: '{{ eventOccurrenceSummary.EventItemOccurrence.Id }}',
                               photoGuid: '{{ eventOccurrenceSummary.EventItem.Photo.Guid }}',
                               name: '{{ eventOccurrenceSummary.Name }}',
-                              summary: '{{ eventOccurrenceSummary.Summary }}',
+                              summary: '{{ eventOccurrenceSummary.Summary | Escape }}',
                               detailUrl: '{{ detailUrl }}',
                               contactEmail: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactEmail }}',
                               contactPhone: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactPhone }}',
@@ -153,7 +153,7 @@
                            <div class="date">
                               <p>Multi</p>
                            </div>
-                           <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}" class="details" onClick="toggleActiveItem( this ); displayEventInfo('{{ eventOccurrenceSummary.EventItemOccurrence.Id }}');">
+                           <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}" class="details" onClick="toggleActiveItem( {{eventOccurrenceSummary.EventItemOccurrence.Id}} ); displayEventInfo('{{ eventOccurrenceSummary.EventItemOccurrence.Id }}');">
                               <div class="info">
                                  <h4>{{ eventOccurrenceSummary.Name }}</h4>
                                  <p>Click for Dates</p>
@@ -162,6 +162,8 @@
                                  <b class="fa fa-caret-down"></b>
                               </div>
                            </div>
+                        </div>
+                        <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}-padding" style="height: 0px;">
                         </div>
                      {% endif %}
                   {% else %}
@@ -200,7 +202,7 @@
                               itemOccurrenceId: '{{ eventOccurrenceSummary.EventItemOccurrence.Id }}',
                               photoGuid: '{{ eventOccurrenceSummary.EventItem.Photo.Guid }}',
                               name: '{{ eventOccurrenceSummary.Name }}',
-                              summary: '{{ eventOccurrenceSummary.Summary }}',
+                              summary: '{{ eventOccurrenceSummary.Summary | Escape }}',
                               detailUrl: '{{ detailUrl }}',
                               contactEmail: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactEmail }}',
                               contactPhone: '{{ eventOccurrenceSummary.EventItemOccurrence.ContactPhone }}',
@@ -218,7 +220,7 @@
                         <div class="date">
                            <p>{{ eventOccurrenceSummary.DateTime | Date: 'dd' }}</p>
                         </div>
-                        <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}" class="details" onClick="toggleActiveItem( this ); displayEventInfo( '{{ eventOccurrenceSummary.EventItemOccurrence.Id }}');">
+                        <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}" class="details" onClick="toggleActiveItem( {{eventOccurrenceSummary.EventItemOccurrence.Id}} ); displayEventInfo( '{{ eventOccurrenceSummary.EventItemOccurrence.Id }}');">
                            <div class="info">
                               <h4>{{ eventOccurrenceSummary.Name }}</h4>
                               {% if eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate != eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate %}
@@ -233,6 +235,8 @@
                               <b class="fa fa-caret-down"></b>
                            </div>
                         </div>
+                     </div>
+                     <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}-padding" style="height: 0px;">
                      </div>
                   {% endif %}
                   
@@ -288,13 +292,31 @@
    </div>
    
    <script>
+      function decodeHtml(html) {
+         // parses HTML into readable text
+         var txt = document.createElement("textarea");
+         txt.innerHTML = html;
+         return txt.value;
+      }
+      
+      function getParameterByName(name, url) {
+         // gets the specified URL params
+          if (!url) url = window.location.href;
+          name = name.replace(/[\[\]]/g, "\\$&");
+          var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+              results = regex.exec(url);
+          if (!results) return null;
+          if (!results[2]) return '';
+          return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+      
+      // adds on "onload" hook to the window.onload function chain
       var oldonload = window.onload;
       window.onload = (typeof window.onload != 'function') ?
         performLayout : function() { oldonload(); performLayout(); };
+      // 
         
      function performLayout( ) {
-         
-         
          // if there's at least one event for this month, we'll display the side panel 
          // and select the first event
          if( firstEventId != null ) {
@@ -303,9 +325,7 @@
             $(".event-detail-card").css("visibility", "visible");
          
             displayEventInfo( firstEventId );
-            
-            var selectedDiv = $("#" + firstEventId );
-            toggleActiveItem( selectedDiv[0] );
+            toggleActiveItem( firstEventId );
          }
          else {
             $(".event-detail-card").css("visibility", "hidden");
@@ -315,6 +335,7 @@
       }
         
       function updateMonth( direction ) {
+         // safely updates the monthOffset query param and refreshes the page.
          var monthOffset = 0;
          
          // try parsing the query param, if it exists
@@ -329,9 +350,15 @@
          window.location.href = window.location.pathname + "?monthoffset=" + monthOffset;
       }
         
-      function toggleActiveItem( selectedDiv ) {
-         var classList = document.getElementsByClassName( "details");
+      function toggleActiveItem( eventItemOccurrenceId ) {
+         // this function "darkens" the selected item in the calendar list,
+         // and if on mobile, moves the "details card" below the selected item.
          
+         // first, get the div representing the item clicked
+         var selectedDiv = $("#" + eventItemOccurrenceId )[0];
+         var classList = document.getElementsByClassName( "details");
+        
+         // add the selected class to the target div, and remove it from the others
          var i = 0;
          for( i = 0; i < classList.length; i++ ) {
             var detailObj = classList.item(i);
@@ -342,26 +369,13 @@
                detailObj.classList.remove( "selected" );
             }
          }
-      }
-   
-      function decodeHtml(html) {
-         var txt = document.createElement("textarea");
-         txt.innerHTML = html;
-         return txt.value;
-      }
-      
-      function getParameterByName(name, url) {
-          if (!url) url = window.location.href;
-          name = name.replace(/[\[\]]/g, "\\$&");
-          var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-              results = regex.exec(url);
-          if (!results) return null;
-          if (!results[2]) return '';
-          return decodeURIComponent(results[2].replace(/\+/g, " "));
+         
+         // now we'll get the selected div's corresponding 'padding' class, and
+         // grow it. We'll also shrink any current ones
       }
 
       function displayEventInfo(eventItemOccurrenceId ) {
-         
+         // updates the "event card" with the details from the specified eventItemOccurrenceId
          var eventItem = events[eventItemOccurrenceId];
       
          var imageObj = $("#event-detail-card-img");
@@ -374,7 +388,7 @@
          }
          
          $("#event-detail-card-name").text( eventItem.name );
-         $("#event-detail-card-summary").text( eventItem.summary  );
+         $("#event-detail-card-summary").text( decodeHtml( eventItem.summary ) );
          $("#event-detail-card-learnmore-btn").attr( "href", eventItem.detailUrl );
          
          var contactObj = $("#event-detail-card-contact");
@@ -410,7 +424,6 @@
          else {
             regObj.hide();
          }
-         
       }
    </script>
 
