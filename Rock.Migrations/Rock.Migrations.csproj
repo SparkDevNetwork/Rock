@@ -69,368 +69,368 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
-    <Compile Include="Migrations\201609302332378_UniversalSearchModelUpdates.cs" />
-    <Compile Include="Migrations\201609302332378_UniversalSearchModelUpdates.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201609302332378_UniversalSearchModelUpdates.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201609302332378_UniversalSearchModelUpdates.Designer.cs">
       <DependentUpon>201609302332378_UniversalSearchModelUpdates.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201610031959052_FamilyAnalyticsUpdate.cs" />
-    <Compile Include="Migrations\201610031959052_FamilyAnalyticsUpdate.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610031959052_FamilyAnalyticsUpdate.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610031959052_FamilyAnalyticsUpdate.Designer.cs">
       <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201610062112535_PhoneNumberReversed.cs" />
-    <Compile Include="Migrations\201610062112535_PhoneNumberReversed.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610062112535_PhoneNumberReversed.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610062112535_PhoneNumberReversed.Designer.cs">
       <DependentUpon>201610062112535_PhoneNumberReversed.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201610192126047_WaitlistConfirmationFields.cs" />
-    <Compile Include="Migrations\201610192126047_WaitlistConfirmationFields.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610192126047_WaitlistConfirmationFields.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610192126047_WaitlistConfirmationFields.Designer.cs">
       <DependentUpon>201610192126047_WaitlistConfirmationFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201610201918491_RemoveWaitListColumns.cs" />
-    <Compile Include="Migrations\201610201918491_RemoveWaitListColumns.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610201918491_RemoveWaitListColumns.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610201918491_RemoveWaitListColumns.Designer.cs">
       <DependentUpon>201610201918491_RemoveWaitListColumns.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201610261808353_WaitListNotificationFields.cs" />
-    <Compile Include="Migrations\201610261808353_WaitListNotificationFields.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610261808353_WaitListNotificationFields.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610261808353_WaitListNotificationFields.Designer.cs">
       <DependentUpon>201610261808353_WaitListNotificationFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201610271509530_WaitlistPages.cs" />
-    <Compile Include="Migrations\201610271509530_WaitlistPages.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610271509530_WaitlistPages.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610271509530_WaitlistPages.Designer.cs">
       <DependentUpon>201610271509530_WaitlistPages.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201610312310571_ConnectionGroupConfig.cs" />
-    <Compile Include="Migrations\201610312310571_ConnectionGroupConfig.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610312310571_ConnectionGroupConfig.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201610312310571_ConnectionGroupConfig.Designer.cs">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201611022323122_RemoveForeignColumnIndexes.cs" />
-    <Compile Include="Migrations\201611022323122_RemoveForeignColumnIndexes.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611022323122_RemoveForeignColumnIndexes.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611022323122_RemoveForeignColumnIndexes.Designer.cs">
       <DependentUpon>201611022323122_RemoveForeignColumnIndexes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201611081726192_UpdateMissingEntities.cs" />
-    <Compile Include="Migrations\201611081726192_UpdateMissingEntities.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611081726192_UpdateMissingEntities.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611081726192_UpdateMissingEntities.Designer.cs">
       <DependentUpon>201611081726192_UpdateMissingEntities.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201611142131319_ExpiringCreditCards.cs" />
-    <Compile Include="Migrations\201611142131319_ExpiringCreditCards.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611142131319_ExpiringCreditCards.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611142131319_ExpiringCreditCards.Designer.cs">
       <DependentUpon>201611142131319_ExpiringCreditCards.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201611162052022_UpdateRegistrationText.cs" />
-    <Compile Include="Migrations\201611162052022_UpdateRegistrationText.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611162052022_UpdateRegistrationText.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611162052022_UpdateRegistrationText.Designer.cs">
       <DependentUpon>201611162052022_UpdateRegistrationText.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201611171650206_InteractionModels.cs" />
-    <Compile Include="Migrations\201611171650206_InteractionModels.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611171650206_InteractionModels.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611171650206_InteractionModels.Designer.cs">
       <DependentUpon>201611171650206_InteractionModels.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201611282234388_AdditionalInteractionFields.cs" />
-    <Compile Include="Migrations\201611282234388_AdditionalInteractionFields.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611282234388_AdditionalInteractionFields.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611282234388_AdditionalInteractionFields.Designer.cs">
       <DependentUpon>201611282234388_AdditionalInteractionFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.cs" />
-    <Compile Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611291601040_DropInteractionTablesToReorderFields.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611291601040_DropInteractionTablesToReorderFields.Designer.cs">
       <DependentUpon>201611291601040_DropInteractionTablesToReorderFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201611291825562_AddInteractionFieldsBackWithModifications.cs" />
-    <Compile Include="Migrations\201611291825562_AddInteractionFieldsBackWithModifications.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611291825562_AddInteractionFieldsBackWithModifications.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201611291825562_AddInteractionFieldsBackWithModifications.Designer.cs">
       <DependentUpon>201611291825562_AddInteractionFieldsBackWithModifications.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201612052305420_WorkflowTypeCleanupFields.cs" />
-    <Compile Include="Migrations\201612052305420_WorkflowTypeCleanupFields.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201612052305420_WorkflowTypeCleanupFields.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201612052305420_WorkflowTypeCleanupFields.Designer.cs">
       <DependentUpon>201612052305420_WorkflowTypeCleanupFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201612121647292_HotFixesFrom6_1.cs" />
-    <Compile Include="Migrations\201612121647292_HotFixesFrom6_1.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201612121647292_HotFixesFrom6_1.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201612121647292_HotFixesFrom6_1.Designer.cs">
       <DependentUpon>201612121647292_HotFixesFrom6_1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201612132013351_WorkflowTypeText.cs" />
-    <Compile Include="Migrations\201612132013351_WorkflowTypeText.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201612132013351_WorkflowTypeText.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201612132013351_WorkflowTypeText.Designer.cs">
       <DependentUpon>201612132013351_WorkflowTypeText.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201612151843454_ScheduleExclusion.cs" />
-    <Compile Include="Migrations\201612151843454_ScheduleExclusion.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201612151843454_ScheduleExclusion.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201612151843454_ScheduleExclusion.Designer.cs">
       <DependentUpon>201612151843454_ScheduleExclusion.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201612231305026_ExtendDiscountCodes.cs" />
-    <Compile Include="Migrations\201612231305026_ExtendDiscountCodes.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201612231305026_ExtendDiscountCodes.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201612231305026_ExtendDiscountCodes.Designer.cs">
       <DependentUpon>201612231305026_ExtendDiscountCodes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201701022126386_DataMaintenanceJob.cs" />
-    <Compile Include="Migrations\201701022126386_DataMaintenanceJob.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701022126386_DataMaintenanceJob.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701022126386_DataMaintenanceJob.Designer.cs">
       <DependentUpon>201701022126386_DataMaintenanceJob.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201701040116351_Analytics1.cs" />
-    <Compile Include="Migrations\201701040116351_Analytics1.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1.Designer.cs">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201701172024404_ContentChannelTypeDisableStatusOption.cs" />
-    <Compile Include="Migrations\201701172024404_ContentChannelTypeDisableStatusOption.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701172024404_ContentChannelTypeDisableStatusOption.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701172024404_ContentChannelTypeDisableStatusOption.Designer.cs">
       <DependentUpon>201701172024404_ContentChannelTypeDisableStatusOption.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201701172352092_IndexTemplateField.cs" />
-    <Compile Include="Migrations\201701172352092_IndexTemplateField.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701172352092_IndexTemplateField.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701172352092_IndexTemplateField.Designer.cs">
       <DependentUpon>201701172352092_IndexTemplateField.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201701241721429_InteractionData.cs" />
-    <Compile Include="Migrations\201701241721429_InteractionData.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701241721429_InteractionData.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701241721429_InteractionData.Designer.cs">
       <DependentUpon>201701241721429_InteractionData.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201701252028086_IndexDocumentUrl-Rollup.cs" />
-    <Compile Include="Migrations\201701252028086_IndexDocumentUrl-Rollup.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701252028086_IndexDocumentUrl-Rollup.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201701252028086_IndexDocumentUrl-Rollup.Designer.cs">
       <DependentUpon>201701252028086_IndexDocumentUrl-Rollup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201702032247537_PageBuilder.cs" />
-    <Compile Include="Migrations\201702032247537_PageBuilder.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201702032247537_PageBuilder.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201702032247537_PageBuilder.Designer.cs">
       <DependentUpon>201702032247537_PageBuilder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201702202308080_UniversalSearchJob-Rollup.cs" />
-    <Compile Include="Migrations\201702202308080_UniversalSearchJob-Rollup.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201702202308080_UniversalSearchJob-Rollup.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201702202308080_UniversalSearchJob-Rollup.Designer.cs">
       <DependentUpon>201702202308080_UniversalSearchJob-Rollup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201703271603300_TransactionSettledInfo.cs" />
-    <Compile Include="Migrations\201703271603300_TransactionSettledInfo.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201703271603300_TransactionSettledInfo.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201703271603300_TransactionSettledInfo.Designer.cs">
       <DependentUpon>201703271603300_TransactionSettledInfo.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201704031947125_Fundraising.cs" />
-    <Compile Include="Migrations\201704031947125_Fundraising.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704031947125_Fundraising.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704031947125_Fundraising.Designer.cs">
       <DependentUpon>201704031947125_Fundraising.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201704192119568_AnonymousGiving.cs" />
-    <Compile Include="Migrations\201704192119568_AnonymousGiving.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704192119568_AnonymousGiving.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704192119568_AnonymousGiving.Designer.cs">
       <DependentUpon>201704192119568_AnonymousGiving.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201704220037550_AttributeMatrix.cs" />
-    <Compile Include="Migrations\201704220037550_AttributeMatrix.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704220037550_AttributeMatrix.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704220037550_AttributeMatrix.Designer.cs">
       <DependentUpon>201704220037550_AttributeMatrix.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201704261843367_AddPersonalDevices.cs" />
-    <Compile Include="Migrations\201704261843367_AddPersonalDevices.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704261843367_AddPersonalDevices.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704261843367_AddPersonalDevices.Designer.cs">
       <DependentUpon>201704261843367_AddPersonalDevices.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201704271246518_TransactionHistory.cs" />
-    <Compile Include="Migrations\201704271246518_TransactionHistory.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704271246518_TransactionHistory.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704271246518_TransactionHistory.Designer.cs">
       <DependentUpon>201704271246518_TransactionHistory.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201704281656220_PrayerRequestCampus.cs" />
-    <Compile Include="Migrations\201704281656220_PrayerRequestCampus.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704281656220_PrayerRequestCampus.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201704281656220_PrayerRequestCampus.Designer.cs">
       <DependentUpon>201704281656220_PrayerRequestCampus.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201705011932514_CampusOrder.cs" />
-    <Compile Include="Migrations\201705011932514_CampusOrder.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201705011932514_CampusOrder.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201705011932514_CampusOrder.Designer.cs">
       <DependentUpon>201705011932514_CampusOrder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201705051826156_SiteBlocks.cs" />
-    <Compile Include="Migrations\201705051826156_SiteBlocks.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201705051826156_SiteBlocks.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201705051826156_SiteBlocks.Designer.cs">
       <DependentUpon>201705051826156_SiteBlocks.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201705122302485_GroupMemberGroupOrder.cs" />
-    <Compile Include="Migrations\201705122302485_GroupMemberGroupOrder.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201705122302485_GroupMemberGroupOrder.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201705122302485_GroupMemberGroupOrder.Designer.cs">
       <DependentUpon>201705122302485_GroupMemberGroupOrder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201705221159536_AccountTreeView.cs" />
-    <Compile Include="Migrations\201705221159536_AccountTreeView.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201705221159536_AccountTreeView.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201705221159536_AccountTreeView.Designer.cs">
       <DependentUpon>201705221159536_AccountTreeView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201705231726383_NewModelMap.cs" />
-    <Compile Include="Migrations\201705231726383_NewModelMap.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201705231726383_NewModelMap.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201705231726383_NewModelMap.Designer.cs">
       <DependentUpon>201705231726383_NewModelMap.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201706060019549_GroupRequirementsGroupType.cs" />
-    <Compile Include="Migrations\201706060019549_GroupRequirementsGroupType.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201706060019549_GroupRequirementsGroupType.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201706060019549_GroupRequirementsGroupType.Designer.cs">
       <DependentUpon>201706060019549_GroupRequirementsGroupType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201706141234225_CommunicationQueueAlertJob.cs" />
-    <Compile Include="Migrations\201706141234225_CommunicationQueueAlertJob.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201706141234225_CommunicationQueueAlertJob.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201706141234225_CommunicationQueueAlertJob.Designer.cs">
       <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201706201728113_BinaryFileSize.cs" />
-    <Compile Include="Migrations\201706201728113_BinaryFileSize.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201706201728113_BinaryFileSize.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201706201728113_BinaryFileSize.Designer.cs">
       <DependentUpon>201706201728113_BinaryFileSize.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201706221549322_UrlMap.cs" />
-    <Compile Include="Migrations\201706221549322_UrlMap.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201706221549322_UrlMap.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201706221549322_UrlMap.Designer.cs">
       <DependentUpon>201706221549322_UrlMap.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707052116053_LavaShortcodes.cs" />
-    <Compile Include="Migrations\201707052116053_LavaShortcodes.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707052116053_LavaShortcodes.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707052116053_LavaShortcodes.Designer.cs">
       <DependentUpon>201707052116053_LavaShortcodes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707101648235_CommonBlockTypes.cs" />
-    <Compile Include="Migrations\201707101648235_CommonBlockTypes.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707101648235_CommonBlockTypes.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707101648235_CommonBlockTypes.Designer.cs">
       <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.cs" />
-    <Compile Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707121812263_UniversalSearchContentChannelUpdates.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707121812263_UniversalSearchContentChannelUpdates.Designer.cs">
       <DependentUpon>201707121812263_UniversalSearchContentChannelUpdates.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707132057256_UniversalSearchBoostAttrib.cs" />
-    <Compile Include="Migrations\201707132057256_UniversalSearchBoostAttrib.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707132057256_UniversalSearchBoostAttrib.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707132057256_UniversalSearchBoostAttrib.Designer.cs">
       <DependentUpon>201707132057256_UniversalSearchBoostAttrib.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707171725146_UniversalSearchPages.cs" />
-    <Compile Include="Migrations\201707171725146_UniversalSearchPages.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707171725146_UniversalSearchPages.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707171725146_UniversalSearchPages.Designer.cs">
       <DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707172127488_TagChanges.cs" />
-    <Compile Include="Migrations\201707172127488_TagChanges.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707172127488_TagChanges.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707172127488_TagChanges.Designer.cs">
       <DependentUpon>201707172127488_TagChanges.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707182207536_PageShortLinks.cs" />
-    <Compile Include="Migrations\201707182207536_PageShortLinks.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_PageShortLinks.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_PageShortLinks.Designer.cs">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707191610105_SiteFavIcon.cs" />
-    <Compile Include="Migrations\201707191610105_SiteFavIcon.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707191610105_SiteFavIcon.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707191610105_SiteFavIcon.Designer.cs">
       <DependentUpon>201707191610105_SiteFavIcon.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707192232303_MetaModels.cs" />
-    <Compile Include="Migrations\201707192232303_MetaModels.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707192232303_MetaModels.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707192232303_MetaModels.Designer.cs">
       <DependentUpon>201707192232303_MetaModels.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707212034122_PersonToken.cs" />
-    <Compile Include="Migrations\201707212034122_PersonToken.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707212034122_PersonToken.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707212034122_PersonToken.Designer.cs">
       <DependentUpon>201707212034122_PersonToken.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707241828445_PersonAliasNullableId.cs" />
-    <Compile Include="Migrations\201707241828445_PersonAliasNullableId.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707241828445_PersonAliasNullableId.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707241828445_PersonAliasNullableId.Designer.cs">
       <DependentUpon>201707241828445_PersonAliasNullableId.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707272046132_Presence.cs" />
-    <Compile Include="Migrations\201707272046132_Presence.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707272046132_Presence.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707272046132_Presence.Designer.cs">
       <DependentUpon>201707272046132_Presence.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707311527250_AddMetaData.cs" />
-    <Compile Include="Migrations\201707311527250_AddMetaData.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_AddMetaData.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_AddMetaData.Designer.cs">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201708152332039_PageShortLinkUrl.cs" />
-    <Compile Include="Migrations\201708152332039_PageShortLinkUrl.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201708152332039_PageShortLinkUrl.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201708152332039_PageShortLinkUrl.Designer.cs">
       <DependentUpon>201708152332039_PageShortLinkUrl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201708160014458_VerifySecurityBlockPage.cs" />
-    <Compile Include="Migrations\201708160014458_VerifySecurityBlockPage.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201708160014458_VerifySecurityBlockPage.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201708160014458_VerifySecurityBlockPage.Designer.cs">
       <DependentUpon>201708160014458_VerifySecurityBlockPage.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201708162105164_AnalyticsPerformance.cs" />
-    <Compile Include="Migrations\201708162105164_AnalyticsPerformance.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance.Designer.cs">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201708162351472_ReportQueryHints.cs" />
-    <Compile Include="Migrations\201708162351472_ReportQueryHints.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201708162351472_ReportQueryHints.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201708162351472_ReportQueryHints.Designer.cs">
       <DependentUpon>201708162351472_ReportQueryHints.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201709082257551_Communications2.cs" />
-    <Compile Include="Migrations\201709082257551_Communications2.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709082257551_Communications2.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709082257551_Communications2.Designer.cs">
       <DependentUpon>201709082257551_Communications2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201709131136468_SafeSenderUpdate.cs" />
-    <Compile Include="Migrations\201709131136468_SafeSenderUpdate.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709131136468_SafeSenderUpdate.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709131136468_SafeSenderUpdate.Designer.cs">
       <DependentUpon>201709131136468_SafeSenderUpdate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201709132158103_ContentChannelTags.cs" />
-    <Compile Include="Migrations\201709132158103_ContentChannelTags.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709132158103_ContentChannelTags.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709132158103_ContentChannelTags.Designer.cs">
       <DependentUpon>201709132158103_ContentChannelTags.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201709191729044_Analytics2.cs" />
-    <Compile Include="Migrations\201709191729044_Analytics2.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709191729044_Analytics2.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709191729044_Analytics2.Designer.cs">
       <DependentUpon>201709191729044_Analytics2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201709222257442_CommunicationSMSAttachments.cs" />
-    <Compile Include="Migrations\201709222257442_CommunicationSMSAttachments.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709222257442_CommunicationSMSAttachments.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709222257442_CommunicationSMSAttachments.Designer.cs">
       <DependentUpon>201709222257442_CommunicationSMSAttachments.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201709231340508_FixPersonicx.cs" />
-    <Compile Include="Migrations\201709231340508_FixPersonicx.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709231340508_FixPersonicx.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201709231340508_FixPersonicx.Designer.cs">
       <DependentUpon>201709231340508_FixPersonicx.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710021015059_MigrationRollups1002.cs" />
-    <Compile Include="Migrations\201710021015059_MigrationRollups1002.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710021015059_MigrationRollups1002.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710021015059_MigrationRollups1002.Designer.cs">
       <DependentUpon>201710021015059_MigrationRollups1002.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710031453003_InitialShortcodesLoad.cs" />
-    <Compile Include="Migrations\201710031453003_InitialShortcodesLoad.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710031453003_InitialShortcodesLoad.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710031453003_InitialShortcodesLoad.Designer.cs">
       <DependentUpon>201710031453003_InitialShortcodesLoad.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710051632496_Analytics3.cs" />
-    <Compile Include="Migrations\201710051632496_Analytics3.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710051632496_Analytics3.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710051632496_Analytics3.Designer.cs">
       <DependentUpon>201710051632496_Analytics3.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710061805334_CommunicationListGroup.cs" />
-    <Compile Include="Migrations\201710061805334_CommunicationListGroup.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710061805334_CommunicationListGroup.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710061805334_CommunicationListGroup.Designer.cs">
       <DependentUpon>201710061805334_CommunicationListGroup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710070331132_TagEntityUpdate.cs" />
-    <Compile Include="Migrations\201710070331132_TagEntityUpdate.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710070331132_TagEntityUpdate.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710070331132_TagEntityUpdate.Designer.cs">
       <DependentUpon>201710070331132_TagEntityUpdate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710131721219_InteractionRelatedEntity.cs" />
-    <Compile Include="Migrations\201710131721219_InteractionRelatedEntity.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710131721219_InteractionRelatedEntity.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710131721219_InteractionRelatedEntity.Designer.cs">
       <DependentUpon>201710131721219_InteractionRelatedEntity.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710181729151_AnalyticsCalendarYearMonthName.cs" />
-    <Compile Include="Migrations\201710181729151_AnalyticsCalendarYearMonthName.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710181729151_AnalyticsCalendarYearMonthName.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710181729151_AnalyticsCalendarYearMonthName.Designer.cs">
       <DependentUpon>201710181729151_AnalyticsCalendarYearMonthName.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710192047587_PowerBiReportViewer.cs" />
-    <Compile Include="Migrations\201710192047587_PowerBiReportViewer.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710192047587_PowerBiReportViewer.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710192047587_PowerBiReportViewer.Designer.cs">
       <DependentUpon>201710192047587_PowerBiReportViewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710242108391_ReportCommunication.cs" />
-    <Compile Include="Migrations\201710242108391_ReportCommunication.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710242108391_ReportCommunication.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710242108391_ReportCommunication.Designer.cs">
       <DependentUpon>201710242108391_ReportCommunication.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710302139137_CommunicationTemplateLogo.cs" />
-    <Compile Include="Migrations\201710302139137_CommunicationTemplateLogo.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710302139137_CommunicationTemplateLogo.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201710302139137_CommunicationTemplateLogo.Designer.cs">
       <DependentUpon>201710302139137_CommunicationTemplateLogo.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711011841422_GatewayTransactionKey.cs" />
-    <Compile Include="Migrations\201711011841422_GatewayTransactionKey.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711011841422_GatewayTransactionKey.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711011841422_GatewayTransactionKey.Designer.cs">
       <DependentUpon>201711011841422_GatewayTransactionKey.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711012305567_AddGroupMemberFieldType.cs" />
-    <Compile Include="Migrations\201711012305567_AddGroupMemberFieldType.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711012305567_AddGroupMemberFieldType.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711012305567_AddGroupMemberFieldType.Designer.cs">
       <DependentUpon>201711012305567_AddGroupMemberFieldType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.cs" />
-    <Compile Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711052343544_RemoveDupDeviceTypeCol.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711052343544_RemoveDupDeviceTypeCol.Designer.cs">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711071643407_GatewayTransactionKey2.cs" />
-    <Compile Include="Migrations\201711071643407_GatewayTransactionKey2.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711071643407_GatewayTransactionKey2.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711071643407_GatewayTransactionKey2.Designer.cs">
       <DependentUpon>201711071643407_GatewayTransactionKey2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711072304394_CommunicationTemplateLavaFields.cs" />
-    <Compile Include="Migrations\201711072304394_CommunicationTemplateLavaFields.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711072304394_CommunicationTemplateLavaFields.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711072304394_CommunicationTemplateLavaFields.Designer.cs">
       <DependentUpon>201711072304394_CommunicationTemplateLavaFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711081825032_Analytics4.cs" />
-    <Compile Include="Migrations\201711081825032_Analytics4.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711081825032_Analytics4.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711081825032_Analytics4.Designer.cs">
       <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711092125120_Analytics5.cs" />
-    <Compile Include="Migrations\201711092125120_Analytics5.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711092125120_Analytics5.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711092125120_Analytics5.Designer.cs">
       <DependentUpon>201711092125120_Analytics5.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711121446237_RemoveTransactionKeys.cs" />
-    <Compile Include="Migrations\201711121446237_RemoveTransactionKeys.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711121446237_RemoveTransactionKeys.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711121446237_RemoveTransactionKeys.Designer.cs">
       <DependentUpon>201711121446237_RemoveTransactionKeys.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711141624083_CommunicationTemplateCssInliningEnabled.cs" />
-    <Compile Include="Migrations\201711141624083_CommunicationTemplateCssInliningEnabled.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711141624083_CommunicationTemplateCssInliningEnabled.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711141624083_CommunicationTemplateCssInliningEnabled.Designer.cs">
       <DependentUpon>201711141624083_CommunicationTemplateCssInliningEnabled.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711162212312_SiteFontAwesome.cs" />
-    <Compile Include="Migrations\201711162212312_SiteFontAwesome.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711162212312_SiteFontAwesome.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711162212312_SiteFontAwesome.Designer.cs">
       <DependentUpon>201711162212312_SiteFontAwesome.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711210033592_InteractionTemplateAndCampaignFields.cs" />
-    <Compile Include="Migrations\201711210033592_InteractionTemplateAndCampaignFields.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711210033592_InteractionTemplateAndCampaignFields.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711210033592_InteractionTemplateAndCampaignFields.Designer.cs">
       <DependentUpon>201711210033592_InteractionTemplateAndCampaignFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711211752271_NcoaHistory.cs" />
-    <Compile Include="Migrations\201711211752271_NcoaHistory.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711211752271_NcoaHistory.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711211752271_NcoaHistory.Designer.cs">
       <DependentUpon>201711211752271_NcoaHistory.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201711271827181_V7Rollup.cs" />
-    <Compile Include="Migrations\201711271827181_V7Rollup.Designer.cs">
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup.Designer.cs">
       <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
@@ -2633,279 +2633,279 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201609302332378_UniversalSearchModelUpdates.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201609302332378_UniversalSearchModelUpdates.resx">
       <DependentUpon>201609302332378_UniversalSearchModelUpdates.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201610031959052_FamilyAnalyticsUpdate.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201610031959052_FamilyAnalyticsUpdate.resx">
       <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201610062112535_PhoneNumberReversed.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201610062112535_PhoneNumberReversed.resx">
       <DependentUpon>201610062112535_PhoneNumberReversed.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201610192126047_WaitlistConfirmationFields.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201610192126047_WaitlistConfirmationFields.resx">
       <DependentUpon>201610192126047_WaitlistConfirmationFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201610201918491_RemoveWaitListColumns.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201610201918491_RemoveWaitListColumns.resx">
       <DependentUpon>201610201918491_RemoveWaitListColumns.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201610261808353_WaitListNotificationFields.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201610261808353_WaitListNotificationFields.resx">
       <DependentUpon>201610261808353_WaitListNotificationFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201610271509530_WaitlistPages.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201610271509530_WaitlistPages.resx">
       <DependentUpon>201610271509530_WaitlistPages.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201610312310571_ConnectionGroupConfig.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201610312310571_ConnectionGroupConfig.resx">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201611022323122_RemoveForeignColumnIndexes.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201611022323122_RemoveForeignColumnIndexes.resx">
       <DependentUpon>201611022323122_RemoveForeignColumnIndexes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201611081726192_UpdateMissingEntities.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201611081726192_UpdateMissingEntities.resx">
       <DependentUpon>201611081726192_UpdateMissingEntities.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201611142131319_ExpiringCreditCards.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201611142131319_ExpiringCreditCards.resx">
       <DependentUpon>201611142131319_ExpiringCreditCards.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201611162052022_UpdateRegistrationText.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201611162052022_UpdateRegistrationText.resx">
       <DependentUpon>201611162052022_UpdateRegistrationText.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201611171650206_InteractionModels.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201611171650206_InteractionModels.resx">
       <DependentUpon>201611171650206_InteractionModels.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201611282234388_AdditionalInteractionFields.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201611282234388_AdditionalInteractionFields.resx">
       <DependentUpon>201611282234388_AdditionalInteractionFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201611291601040_DropInteractionTablesToReorderFields.resx">
       <DependentUpon>201611291601040_DropInteractionTablesToReorderFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201611291825562_AddInteractionFieldsBackWithModifications.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201611291825562_AddInteractionFieldsBackWithModifications.resx">
       <DependentUpon>201611291825562_AddInteractionFieldsBackWithModifications.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201612052305420_WorkflowTypeCleanupFields.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201612052305420_WorkflowTypeCleanupFields.resx">
       <DependentUpon>201612052305420_WorkflowTypeCleanupFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201612121647292_HotFixesFrom6_1.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201612121647292_HotFixesFrom6_1.resx">
       <DependentUpon>201612121647292_HotFixesFrom6_1.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201612132013351_WorkflowTypeText.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201612132013351_WorkflowTypeText.resx">
       <DependentUpon>201612132013351_WorkflowTypeText.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201612151843454_ScheduleExclusion.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201612151843454_ScheduleExclusion.resx">
       <DependentUpon>201612151843454_ScheduleExclusion.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201612231305026_ExtendDiscountCodes.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201612231305026_ExtendDiscountCodes.resx">
       <DependentUpon>201612231305026_ExtendDiscountCodes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201701022126386_DataMaintenanceJob.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201701022126386_DataMaintenanceJob.resx">
       <DependentUpon>201701022126386_DataMaintenanceJob.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201701040116351_Analytics1.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1.resx">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201701172024404_ContentChannelTypeDisableStatusOption.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201701172024404_ContentChannelTypeDisableStatusOption.resx">
       <DependentUpon>201701172024404_ContentChannelTypeDisableStatusOption.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201701172352092_IndexTemplateField.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201701172352092_IndexTemplateField.resx">
       <DependentUpon>201701172352092_IndexTemplateField.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201701241721429_InteractionData.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201701241721429_InteractionData.resx">
       <DependentUpon>201701241721429_InteractionData.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201701252028086_IndexDocumentUrl-Rollup.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201701252028086_IndexDocumentUrl-Rollup.resx">
       <DependentUpon>201701252028086_IndexDocumentUrl-Rollup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201702032247537_PageBuilder.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201702032247537_PageBuilder.resx">
       <DependentUpon>201702032247537_PageBuilder.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201702202308080_UniversalSearchJob-Rollup.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201702202308080_UniversalSearchJob-Rollup.resx">
       <DependentUpon>201702202308080_UniversalSearchJob-Rollup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201703271603300_TransactionSettledInfo.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201703271603300_TransactionSettledInfo.resx">
       <DependentUpon>201703271603300_TransactionSettledInfo.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201704031947125_Fundraising.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201704031947125_Fundraising.resx">
       <DependentUpon>201704031947125_Fundraising.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201704192119568_AnonymousGiving.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201704192119568_AnonymousGiving.resx">
       <DependentUpon>201704192119568_AnonymousGiving.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201704220037550_AttributeMatrix.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201704220037550_AttributeMatrix.resx">
       <DependentUpon>201704220037550_AttributeMatrix.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201704261843367_AddPersonalDevices.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201704261843367_AddPersonalDevices.resx">
       <DependentUpon>201704261843367_AddPersonalDevices.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201704271246518_TransactionHistory.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201704271246518_TransactionHistory.resx">
       <DependentUpon>201704271246518_TransactionHistory.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201704281656220_PrayerRequestCampus.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201704281656220_PrayerRequestCampus.resx">
       <DependentUpon>201704281656220_PrayerRequestCampus.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201705011932514_CampusOrder.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201705011932514_CampusOrder.resx">
       <DependentUpon>201705011932514_CampusOrder.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201705051826156_SiteBlocks.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201705051826156_SiteBlocks.resx">
       <DependentUpon>201705051826156_SiteBlocks.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201705122302485_GroupMemberGroupOrder.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201705122302485_GroupMemberGroupOrder.resx">
       <DependentUpon>201705122302485_GroupMemberGroupOrder.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201705221159536_AccountTreeView.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201705221159536_AccountTreeView.resx">
       <DependentUpon>201705221159536_AccountTreeView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201705231726383_NewModelMap.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201705231726383_NewModelMap.resx">
       <DependentUpon>201705231726383_NewModelMap.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201706060019549_GroupRequirementsGroupType.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201706060019549_GroupRequirementsGroupType.resx">
       <DependentUpon>201706060019549_GroupRequirementsGroupType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201706141234225_CommunicationQueueAlertJob.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201706141234225_CommunicationQueueAlertJob.resx">
       <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201706201728113_BinaryFileSize.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201706201728113_BinaryFileSize.resx">
       <DependentUpon>201706201728113_BinaryFileSize.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201706221549322_UrlMap.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201706221549322_UrlMap.resx">
       <DependentUpon>201706221549322_UrlMap.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707052116053_LavaShortcodes.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707052116053_LavaShortcodes.resx">
       <DependentUpon>201707052116053_LavaShortcodes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707101648235_CommonBlockTypes.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707101648235_CommonBlockTypes.resx">
       <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707121812263_UniversalSearchContentChannelUpdates.resx">
       <DependentUpon>201707121812263_UniversalSearchContentChannelUpdates.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707132057256_UniversalSearchBoostAttrib.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707132057256_UniversalSearchBoostAttrib.resx">
       <DependentUpon>201707132057256_UniversalSearchBoostAttrib.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707171725146_UniversalSearchPages.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707171725146_UniversalSearchPages.resx">
       <DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707172127488_TagChanges.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707172127488_TagChanges.resx">
       <DependentUpon>201707172127488_TagChanges.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707182207536_PageShortLinks.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_PageShortLinks.resx">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707191610105_SiteFavIcon.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707191610105_SiteFavIcon.resx">
       <DependentUpon>201707191610105_SiteFavIcon.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707192232303_MetaModels.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707192232303_MetaModels.resx">
       <DependentUpon>201707192232303_MetaModels.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707212034122_PersonToken.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707212034122_PersonToken.resx">
       <DependentUpon>201707212034122_PersonToken.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707241828445_PersonAliasNullableId.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707241828445_PersonAliasNullableId.resx">
       <DependentUpon>201707241828445_PersonAliasNullableId.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707272046132_Presence.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707272046132_Presence.resx">
       <DependentUpon>201707272046132_Presence.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707311527250_AddMetaData.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_AddMetaData.resx">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201708152332039_PageShortLinkUrl.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201708152332039_PageShortLinkUrl.resx">
       <DependentUpon>201708152332039_PageShortLinkUrl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201708160014458_VerifySecurityBlockPage.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201708160014458_VerifySecurityBlockPage.resx">
       <DependentUpon>201708160014458_VerifySecurityBlockPage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201708162105164_AnalyticsPerformance.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance.resx">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201708162351472_ReportQueryHints.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201708162351472_ReportQueryHints.resx">
       <DependentUpon>201708162351472_ReportQueryHints.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201709082257551_Communications2.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201709082257551_Communications2.resx">
       <DependentUpon>201709082257551_Communications2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201709131136468_SafeSenderUpdate.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201709131136468_SafeSenderUpdate.resx">
       <DependentUpon>201709131136468_SafeSenderUpdate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201709132158103_ContentChannelTags.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201709132158103_ContentChannelTags.resx">
       <DependentUpon>201709132158103_ContentChannelTags.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201709191729044_Analytics2.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201709191729044_Analytics2.resx">
       <DependentUpon>201709191729044_Analytics2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201709222257442_CommunicationSMSAttachments.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201709222257442_CommunicationSMSAttachments.resx">
       <DependentUpon>201709222257442_CommunicationSMSAttachments.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201709231340508_FixPersonicx.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201709231340508_FixPersonicx.resx">
       <DependentUpon>201709231340508_FixPersonicx.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710021015059_MigrationRollups1002.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201710021015059_MigrationRollups1002.resx">
       <DependentUpon>201710021015059_MigrationRollups1002.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710031453003_InitialShortcodesLoad.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201710031453003_InitialShortcodesLoad.resx">
       <DependentUpon>201710031453003_InitialShortcodesLoad.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710051632496_Analytics3.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201710051632496_Analytics3.resx">
       <DependentUpon>201710051632496_Analytics3.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710061805334_CommunicationListGroup.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201710061805334_CommunicationListGroup.resx">
       <DependentUpon>201710061805334_CommunicationListGroup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710070331132_TagEntityUpdate.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201710070331132_TagEntityUpdate.resx">
       <DependentUpon>201710070331132_TagEntityUpdate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710131721219_InteractionRelatedEntity.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201710131721219_InteractionRelatedEntity.resx">
       <DependentUpon>201710131721219_InteractionRelatedEntity.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710181729151_AnalyticsCalendarYearMonthName.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201710181729151_AnalyticsCalendarYearMonthName.resx">
       <DependentUpon>201710181729151_AnalyticsCalendarYearMonthName.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710192047587_PowerBiReportViewer.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201710192047587_PowerBiReportViewer.resx">
       <DependentUpon>201710192047587_PowerBiReportViewer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710242108391_ReportCommunication.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201710242108391_ReportCommunication.resx">
       <DependentUpon>201710242108391_ReportCommunication.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710302139137_CommunicationTemplateLogo.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201710302139137_CommunicationTemplateLogo.resx">
       <DependentUpon>201710302139137_CommunicationTemplateLogo.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711011841422_GatewayTransactionKey.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711011841422_GatewayTransactionKey.resx">
       <DependentUpon>201711011841422_GatewayTransactionKey.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711012305567_AddGroupMemberFieldType.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711012305567_AddGroupMemberFieldType.resx">
       <DependentUpon>201711012305567_AddGroupMemberFieldType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711052343544_RemoveDupDeviceTypeCol.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711052343544_RemoveDupDeviceTypeCol.resx">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711071643407_GatewayTransactionKey2.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711071643407_GatewayTransactionKey2.resx">
       <DependentUpon>201711071643407_GatewayTransactionKey2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711072304394_CommunicationTemplateLavaFields.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711072304394_CommunicationTemplateLavaFields.resx">
       <DependentUpon>201711072304394_CommunicationTemplateLavaFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711081825032_Analytics4.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711081825032_Analytics4.resx">
       <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711092125120_Analytics5.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711092125120_Analytics5.resx">
       <DependentUpon>201711092125120_Analytics5.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711121446237_RemoveTransactionKeys.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711121446237_RemoveTransactionKeys.resx">
       <DependentUpon>201711121446237_RemoveTransactionKeys.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711141624083_CommunicationTemplateCssInliningEnabled.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711141624083_CommunicationTemplateCssInliningEnabled.resx">
       <DependentUpon>201711141624083_CommunicationTemplateCssInliningEnabled.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711162212312_SiteFontAwesome.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711162212312_SiteFontAwesome.resx">
       <DependentUpon>201711162212312_SiteFontAwesome.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711210033592_InteractionTemplateAndCampaignFields.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711210033592_InteractionTemplateAndCampaignFields.resx">
       <DependentUpon>201711210033592_InteractionTemplateAndCampaignFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711211752271_NcoaHistory.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711211752271_NcoaHistory.resx">
       <DependentUpon>201711211752271_NcoaHistory.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711271827181_V7Rollup.resx">
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup.resx">
       <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
@@ -4569,268 +4569,268 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Migrations\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsAttendance.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsAttendance.sql">
       <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsEraDataset.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsEraDataset.sql">
       <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_DropIndexes.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201610312310571_ConnectionGroupConfig_DropIndexes.sql">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201610312310571_ConnectionGroupConfig_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetAge.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201610312310571_ConnectionGroupConfig_ufnCrm_GetAge.sql">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetGradeOffset.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201610312310571_ConnectionGroupConfig_ufnCrm_GetGradeOffset.sql">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentEmails.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentEmails.sql">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentNames.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentNames.sql">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentPhones.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentPhones.sql">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnUtility_CsvToTable.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201610312310571_ConnectionGroupConfig_ufnUtility_CsvToTable.sql">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201612121647292_HotFixesFrom6_1.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201612121647292_HotFixesFrom6_1.sql">
       <DependentUpon>201612121647292_HotFixesFrom6_1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701022126386_DataMaintenanceJob.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701022126386_DataMaintenanceJob.sql">
       <DependentUpon>201701022126386_DataMaintenanceJob.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimAttendanceDate.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimAttendanceDate.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimAttendanceLocation.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimAttendanceLocation.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFamilyCurrent.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimFamilyCurrent.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFamilyHeadOfHousehold.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimFamilyHeadOfHousehold.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFamilyHistorical.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimFamilyHistorical.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFinancialAccount.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimFinancialAccount.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFinancialBatch.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimFinancialBatch.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFinancialTransactionDate.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimFinancialTransactionDate.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFinancialTransactionType.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimFinancialTransactionType.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimPersonBirthDate.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimPersonBirthDate.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimPersonCurrent.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimPersonCurrent.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimPersonHistorical.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsDimPersonHistorical.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsFactAttendance.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsFactAttendance.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsFactFinancialTransaction.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_AnalyticsFactFinancialTransaction.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_SetAttributesIsAnalytics.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_SetAttributesIsAnalytics.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_spAnalytics_ETL_Attendance.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_spAnalytics_ETL_Attendance.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_spAnalytics_ETL_Family.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_spAnalytics_ETL_Family.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201701040116351_Analytics1_spAnalytics_ETL_FinancialTransaction.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201701040116351_Analytics1_spAnalytics_ETL_FinancialTransaction.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201706060019549_GroupRequirementsGroupType_ufnCrm_GetAddress.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201706060019549_GroupRequirementsGroupType_ufnCrm_GetAddress.sql">
       <DependentUpon>201706060019549_GroupRequirementsGroupType.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId.sql">
       <DependentUpon>201706060019549_GroupRequirementsGroupType.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset.sql">
       <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201707101648235_CommonBlockTypes_spCore_BinaryFileGet.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201707101648235_CommonBlockTypes_spCore_BinaryFileGet.sql">
       <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201707171725146_UniversalSearchPages_spDbaRebuildIndexes.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201707171725146_UniversalSearchPages_spDbaRebuildIndexes.sql">
       <DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201707182207536_AttendanceAnalyticsScheduleFilter_Attendees.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsScheduleFilter_Attendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201707311527250_FirstNameGender.txt">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_FirstNameGender.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201707311527250_LastName.txt">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_LastName.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201707311527250_NickName.txt">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_NickName.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201707311527250_PersonicxCluster.txt">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_PersonicxCluster.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201707311527250_PersonicxGroup.txt">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201707311527250_PersonicxGroup.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AccountTotals.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance_AccountTotals.sql">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AttendeeDates.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance_AttendeeDates.sql">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AttendeeFirstDates.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance_AttendeeFirstDates.sql">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201708162105164_AnalyticsPerformance_AttendeeLastAttendance.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance_AttendeeLastAttendance.sql">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201708162105164_AnalyticsPerformance_Attendees.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance_Attendees.sql">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201708162105164_AnalyticsPerformance_Indexes.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance_Indexes.sql">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201708162105164_AnalyticsPerformance_NonAttendees.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance_NonAttendees.sql">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201708162105164_AnalyticsPerformance_PersonSummary.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance_PersonSummary.sql">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201708162105164_AnalyticsPerformance_TransactionData.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201708162105164_AnalyticsPerformance_TransactionData.sql">
       <DependentUpon>201708162105164_AnalyticsPerformance.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201709082257551_Communications2_AddCommunicationTemplates.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201709082257551_Communications2_AddCommunicationTemplates.sql">
       <DependentUpon>201709082257551_Communications2.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201709131136468_spAnalytics_ETL_Attendance.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201709131136468_spAnalytics_ETL_Attendance.sql">
       <DependentUpon>201709131136468_SafeSenderUpdate.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201709131136468_spAnalytics_ETL_FinancialTransaction.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201709131136468_spAnalytics_ETL_FinancialTransaction.sql">
       <DependentUpon>201709131136468_SafeSenderUpdate.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201709191729044_Analytics2_AnalyticsDimAttendanceDate.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201709191729044_Analytics2_AnalyticsDimAttendanceDate.sql">
       <DependentUpon>201709191729044_Analytics2.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201709191729044_Analytics2_AnalyticsDimFamilyHeadOfHouseholdBirthDate.sql">
       <DependentUpon>201709191729044_Analytics2.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201709191729044_Analytics2_AnalyticsDimFinancialTransactionDate.sql">
       <DependentUpon>201709191729044_Analytics2.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201709191729044_Analytics2_AnalyticsDimPersonCurrentBirthDate.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201709191729044_Analytics2_AnalyticsDimPersonCurrentBirthDate.sql">
       <DependentUpon>201709191729044_Analytics2.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201709191729044_Analytics2_AnalyticsDimPersonHistoricalBirthDate.sql">
       <DependentUpon>201709191729044_Analytics2.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201709222257442_CommunicationSMSAttachments_AddCommunicationTemplates.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201709222257442_CommunicationSMSAttachments_AddCommunicationTemplates.sql">
       <DependentUpon>201709222257442_CommunicationSMSAttachments.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201709231340508_PersonicxCluster.txt">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201709231340508_PersonicxCluster.txt">
       <DependentUpon>201709231340508_FixPersonicx.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201710021015059_BackgroundCheckSSN.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201710021015059_BackgroundCheckSSN.sql">
       <DependentUpon>201710021015059_MigrationRollups1002.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201710021015059_BlankCommTemplate.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201710021015059_BlankCommTemplate.sql">
       <DependentUpon>201710021015059_MigrationRollups1002.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201710031453003_InitialShortcodesLoad.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201710031453003_InitialShortcodesLoad.sql">
       <DependentUpon>201710031453003_InitialShortcodesLoad.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201710051632496_Analytics3_CommunicationBlockSettings.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201710051632496_Analytics3_CommunicationBlockSettings.sql">
       <DependentUpon>201710051632496_Analytics3.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201710061805334_CommunicationListGroup_UpdateEmailMediumAttributeValues.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201710061805334_CommunicationListGroup_UpdateEmailMediumAttributeValues.sql">
       <DependentUpon>201710061805334_CommunicationListGroup.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201710131721219_InteractionRelatedEntity_AnalyticsFactAttendance.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201710131721219_InteractionRelatedEntity_AnalyticsFactAttendance.sql">
       <DependentUpon>201710131721219_InteractionRelatedEntity.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201710131721219_InteractionRelatedEntity_AnalyticsFactFinancialTransaction.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201710131721219_InteractionRelatedEntity_AnalyticsFactFinancialTransaction.sql">
       <DependentUpon>201710131721219_InteractionRelatedEntity.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201710131721219_InteractionRelatedEntity_spAnalytics_ETL_Family.sql">
       <DependentUpon>201710131721219_InteractionRelatedEntity.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711011841422_GatewayTransactionKey_UpdateDefaultCommunicationTemplate.sql">
       <DependentUpon>201711011841422_GatewayTransactionKey.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimAttendanceLocation.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711081825032_Analytics4_AnalyticsDimAttendanceLocation.sql">
       <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimFinancialAccount.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711081825032_Analytics4_AnalyticsDimFinancialAccount.sql">
       <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimFinancialBatch.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711081825032_Analytics4_AnalyticsDimFinancialBatch.sql">
       <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimPersonBirthDate.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711081825032_Analytics4_AnalyticsDimPersonBirthDate.sql">
       <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711081825032_Analytics4_AnalyticsDimPersonHistorical.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711081825032_Analytics4_AnalyticsDimPersonHistorical.sql">
       <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711081825032_Analytics4_spAnalytics_ETL_Family.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711081825032_Analytics4_spAnalytics_ETL_Family.sql">
       <DependentUpon>201711081825032_Analytics4.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimAttendanceLocation.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711092125120_Analytics5_AnalyticsDimAttendanceLocation.sql">
       <DependentUpon>201711092125120_Analytics5.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimCampus.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711092125120_Analytics5_AnalyticsDimCampus.sql">
       <DependentUpon>201711092125120_Analytics5.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimFamilyHistorical.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711092125120_Analytics5_AnalyticsDimFamilyHistorical.sql">
       <DependentUpon>201711092125120_Analytics5.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711092125120_Analytics5_AnalyticsDimPersonHistorical.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711092125120_Analytics5_AnalyticsDimPersonHistorical.sql">
       <DependentUpon>201711092125120_Analytics5.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711092125120_Analytics5_spAnalytics_ETL_Campus.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711092125120_Analytics5_spAnalytics_ETL_Campus.sql">
       <DependentUpon>201711092125120_Analytics5.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711141624083_CommunicationTemplateCssInliningEnabled_AnalyticsDimFinancialAccount.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711141624083_CommunicationTemplateCssInliningEnabled_AnalyticsDimFinancialAccount.sql">
       <DependentUpon>201711141624083_CommunicationTemplateCssInliningEnabled.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711141624083_CommunicationTemplateCssInliningEnabled_spCrm_PersonDuplicateFinder.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711141624083_CommunicationTemplateCssInliningEnabled_spCrm_PersonDuplicateFinder.sql">
       <DependentUpon>201711141624083_CommunicationTemplateCssInliningEnabled.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711211752271_NcoaHistory_UpdateCommunicationTemplateBinaryFiles.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711211752271_NcoaHistory_UpdateCommunicationTemplateBinaryFiles.sql">
       <DependentUpon>201711211752271_NcoaHistory.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711211752271_NcoaHistory_UpdateCommunicationTemplates.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711211752271_NcoaHistory_UpdateCommunicationTemplates.sql">
       <DependentUpon>201711211752271_NcoaHistory.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711271827181_V7Rollup_021_UpdateCheckInMergefieldDebugInfo.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup_021_UpdateCheckInMergefieldDebugInfo.sql">
       <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711271827181_V7Rollup_026_PersonEditConnectionRecordStatus.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup_026_PersonEditConnectionRecordStatus.sql">
       <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity.sql">
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity.sql">
       <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
@@ -4933,9 +4933,7 @@
       <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Migrations\Version 7.0\Version 1.7.0\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>CD $(SolutionDir)Dev Tools\EntityFramework\
