@@ -10789,12 +10789,16 @@ html,body{
    padding: 25px;
    margin-top: 1.78rem;
    margin-bottom: 25px;
-   height: 100%;
-   
-   width: 380px;
+   height: auto;
+   width: auto;
+   max-width: 380px;
 }
 
 @media screen and (min-width: 1224px) {
+   .event-detail-card {
+      height: 100%;
+      width: 380px;
+   }
    .event-detail-body {
       width: 50%;
    }
