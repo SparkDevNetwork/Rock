@@ -881,12 +881,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                     reservationResource.ApprovalState = ReservationResourceApprovalState.Approved;
 
-                    if ( ResourcesState.Any( a => a.Guid.Equals( reservationResource.Guid ) ) )
-                    {
-                        ResourcesState.RemoveEntity( reservationResource.Guid );
-                    }
+                    // The resource should definitely be in the state at this point, so I'm removing
+                    // this code to deal with the 'invalid viewstate' problem we're encountering.
+                    //if ( ResourcesState.Any( a => a.Guid.Equals( reservationResource.Guid ) ) )
+                    //{
+                    //    ResourcesState.RemoveEntity( reservationResource.Guid );
+                    //}
 
-                    ResourcesState.Add( reservationResource );
+                    //ResourcesState.Add( reservationResource );
                 }
 
                 BindReservationResourcesGrid();
@@ -911,12 +913,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                     reservationResource.ApprovalState = ReservationResourceApprovalState.Denied;
 
-                    if ( ResourcesState.Any( a => a.Guid.Equals( reservationResource.Guid ) ) )
-                    {
-                        ResourcesState.RemoveEntity( reservationResource.Guid );
-                    }
+                    // The resource should definitely be in the state at this point, so I'm removing
+                    // this code to deal with the 'invalid viewstate' problem we're encountering.
+                    //if ( ResourcesState.Any( a => a.Guid.Equals( reservationResource.Guid ) ) )
+                    //{
+                    //    ResourcesState.RemoveEntity( reservationResource.Guid );
+                    //}
 
-                    ResourcesState.Add( reservationResource );
+                    //ResourcesState.Add( reservationResource );
                 }
 
                 BindReservationResourcesGrid();
@@ -1173,12 +1177,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                     reservationLocation.ApprovalState = ReservationLocationApprovalState.Approved;
 
-                    if ( LocationsState.Any( a => a.Guid.Equals( reservationLocation.Guid ) ) )
-                    {
-                        LocationsState.RemoveEntity( reservationLocation.Guid );
-                    }
+                    // The location should definitely be in the state at this point, so I'm removing
+                    // this code to deal with the 'invalid viewstate' problem we're encountering.
+                    //if ( LocationsState.Any( a => a.Guid.Equals( reservationLocation.Guid ) ) )
+                    //{
+                    //    LocationsState.RemoveEntity( reservationLocation.Guid );
+                    //}
 
-                    LocationsState.Add( reservationLocation );
+                    //LocationsState.Add( reservationLocation );
                 }
 
                 BindReservationLocationsGrid();
@@ -1203,12 +1209,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                     reservationLocation.ApprovalState = ReservationLocationApprovalState.Denied;
 
-                    if ( LocationsState.Any( a => a.Guid.Equals( reservationLocation.Guid ) ) )
-                    {
-                        LocationsState.RemoveEntity( reservationLocation.Guid );
-                    }
+                    // The location should definitely be in the state at this point, so I'm removing
+                    // this code to deal with the 'invalid viewstate' problem we're encountering.
+                    //if ( LocationsState.Any( a => a.Guid.Equals( reservationLocation.Guid ) ) )
+                    //{
+                    //    LocationsState.RemoveEntity( reservationLocation.Guid );
+                    //}
 
-                    LocationsState.Add( reservationLocation );
+                    //LocationsState.Add( reservationLocation );
                 }
 
                 BindReservationLocationsGrid();
