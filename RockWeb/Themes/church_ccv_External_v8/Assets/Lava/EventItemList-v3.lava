@@ -88,8 +88,8 @@
          {% assign firstEventItemOccurrenceId = -1 %}
          
          <script>
-            var events = [];
-            var firstEventId = null;
+            var gEvents = [];
+            var gCurrEventItemOccurrenceId = null;
          </script>
          
          {% for eventOccurrenceSummary in EventOccurrenceSummaries %}
@@ -142,10 +142,12 @@
                               note: '{{ eventOccurrenceSummary.EventItemOccurrence.Note | Escape }}',
                               regInfo: ''
                            };
-                           events[{{ eventOccurrenceSummary.EventItemOccurrence.Id }}] = eventItem;
+                           gEvents[{{ eventOccurrenceSummary.EventItemOccurrence.Id }}] = eventItem;
                            
-                           if( firstEventId == null ) {
-                              firstEventId = eventItem.itemOccurrenceId;
+                           // as we render the page, if this is the first event we're rendering, 
+                           // take its ID as our selected. (onLoad() will complete this by selecting the event)
+                           if( gCurrEventItemOccurrenceId == null ) {
+                              gCurrEventItemOccurrenceId = eventItem.itemOccurrenceId;
                            }
                        </script>
                        
@@ -153,7 +155,7 @@
                            <div class="date">
                               <p>Multi</p>
                            </div>
-                           <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}" class="details" onClick="toggleActiveItem( {{eventOccurrenceSummary.EventItemOccurrence.Id}} ); displayEventInfo('{{ eventOccurrenceSummary.EventItemOccurrence.Id }}');">
+                           <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}" class="details" onClick="setSelectedEvent( {{eventOccurrenceSummary.EventItemOccurrence.Id}} );">
                               <div class="info">
                                  <h4>{{ eventOccurrenceSummary.Name }}</h4>
                                  <p>Click for Dates</p>
@@ -163,8 +165,8 @@
                               </div>
                            </div>
                         </div>
-                        <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}-padding" style="height: 0px;">
-                        </div>
+                        {% assign eventDetailsCardId = eventOccurrenceSummary.EventItemOccurrence.Id %}
+                        {% include '~~/Assets/Lava/EventItemList-DetailsCard.lava' %}
                      {% endif %}
                   {% else %}
                         {% assign linkage = eventOccurrenceSummary.EventItemOccurrence.Linkages | First %}
@@ -209,10 +211,12 @@
                               note: '{{ eventOccurrenceSummary.EventItemOccurrence.Note | Escape }}',
                               regInfo: '{{ regInfo }}'
                            };
-                           events[{{ eventOccurrenceSummary.EventItemOccurrence.Id }}] = eventItem;
+                           gEvents[{{ eventOccurrenceSummary.EventItemOccurrence.Id }}] = eventItem;
                            
-                           if( firstEventId == null ) {
-                              firstEventId = eventItem.itemOccurrenceId;
+                           // as we render the page, if this is the first event we're rendering, 
+                           // take its ID as our selected. (onLoad() will complete this by selecting the event)
+                           if( gCurrEventItemOccurrenceId == null ) {
+                              gCurrEventItemOccurrenceId = eventItem.itemOccurrenceId;
                            }
                      </script>
                        
@@ -220,7 +224,7 @@
                         <div class="date">
                            <p>{{ eventOccurrenceSummary.DateTime | Date: 'dd' }}</p>
                         </div>
-                        <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}" class="details" onClick="toggleActiveItem( {{eventOccurrenceSummary.EventItemOccurrence.Id}} ); displayEventInfo( '{{ eventOccurrenceSummary.EventItemOccurrence.Id }}');">
+                        <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}" class="details" onClick="setSelectedEvent( {{eventOccurrenceSummary.EventItemOccurrence.Id}} );">
                            <div class="info">
                               <h4>{{ eventOccurrenceSummary.Name }}</h4>
                               {% if eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveStartDate != eventOccurrenceSummary.EventItemOccurrence.Schedule.EffectiveEndDate %}
@@ -236,8 +240,8 @@
                            </div>
                         </div>
                      </div>
-                     <div id="{{eventOccurrenceSummary.EventItemOccurrence.Id}}-padding" style="height: 0px;">
-                     </div>
+                     {% assign eventDetailsCardId = eventOccurrenceSummary.EventItemOccurrence.Id %}
+                     {% include '~~/Assets/Lava/EventItemList-DetailsCard.lava' %}
                   {% endif %}
                   
                   {% assign Event = eventOccurrenceSummary.EventItem %}
@@ -248,50 +252,13 @@
          {% endfor %}
       </div>
       
-      <div class="event-detail-card" style="margin: 0 auto; visibility: hidden;">
-         <img id="event-detail-card-img" src="" style="width: 365px; height: 200px;" class="img-responsive"></img>
-         
-         <h4 id="event-detail-card-name"></h4>
-         <p id="event-detail-card-summary"></p>
-         <a id="event-detail-card-learnmore-btn" href="{{ detailUrl }}" class="btn btn-primary btn-block margin-t-md">Learn More</a>
-         
-         <div class="info">
-            <div id="event-detail-card-contact" class="item">
-               <h6>Contact: </h6>
-               
-               <div id="event-detail-card-contact-text" class="text">
-                </div>
-            </div>
-            
-            {% if EventItemOccurrence.Campus != null and EventItemOccurrence.Location != '' %}
-               <div class="item">
-                  <h6>Location:</h6>
-                  
-                  <p class="text">
-                     {% if EventItemOccurrence.Campus != null %}
-                        {{EventItemOccurrence.Campus.Name}} Campus <br/>
-                     {% endif %}
-                     {% if EventItemOccurrence.Location != '' %}
-                        {{ EventItemOccurrence.Location }}
-                     {% endif %}
-                  </p>
-               </div>
-            {% endif %}
-            
-            <div id="event-detail-card-note" class="item">
-               <h6>Notes:</h6>
-               
-               <div id="event-detail-card-note-text" class="text">
-               </div>
-            </div>            
-         </div>
-         
-         <div id="event-detail-card-reg">
-         </div>
-      </div>
+      {% assign eventDetailsCardId = 'global' %}
+      {% include '~~/Assets/Lava/EventItemList-DetailsCard.lava' %}
    </div>
    
    <script>
+      var gIsLargeDisplaySize = false;
+      
       function decodeHtml(html) {
          // parses HTML into readable text
          var txt = document.createElement("textarea");
@@ -313,19 +280,41 @@
       // adds on "onload" hook to the window.onload function chain
       var oldonload = window.onload;
       window.onload = (typeof window.onload != 'function') ?
-        performLayout : function() { oldonload(); performLayout(); };
+        handleOnLoad : function() { 
+         oldonload(); handleOnLoad(); 
+         };
       // 
-        
-     function performLayout( ) {
+      
+      function handleOnLoad() {
+         // setup a callback for browser width changes
+         const mq = window.matchMedia( "(min-width: 1224px)" );
+         mq.addListener( widthChange );
+         
+         widthChange( mq );
+         
+         performLayout();
+      }
+       
+      function widthChange( mediaQuery ) {
+      
+         // this event is called when we do or do not hit 1224px.
+         // therefore, we can take its true/false as our isLargeDisplaySize
+         gIsLargeDisplaySize = mediaQuery.matches;
+         
+         if ( gCurrEventItemOccurrenceId != null ) {
+            setSelectedEvent( gCurrEventItemOccurrenceId );
+         }
+      } 
+      
+      function performLayout( ) {
          // if there's at least one event for this month, we'll display the side panel 
          // and select the first event
-         if( firstEventId != null ) {
+         if( gCurrEventItemOccurrenceId != null ) {
             $(".no-event-placeholder").css("display", "none");
          
             $(".event-detail-card").css("visibility", "visible");
          
-            displayEventInfo( firstEventId );
-            toggleActiveItem( firstEventId );
+            setSelectedEvent( gCurrEventItemOccurrenceId );
          }
          else {
             $(".event-detail-card").css("visibility", "hidden");
@@ -349,6 +338,57 @@
          
          window.location.href = window.location.pathname + "?monthoffset=" + monthOffset;
       }
+      
+      function setSelectedEvent( eventItemOccurrenceId ) {
+         
+         // store the event so we can update our layout if needed
+         gCurrEventItemOccurrenceId = eventItemOccurrenceId;
+      
+         // helper function for updating the selection in the calendar and filling out the "info card" containing the
+         // details of the event
+         toggleActiveItem( eventItemOccurrenceId );
+         
+         // if we're working with a large display (desktop class)
+         // use the single global card. 
+         var targetCard = null;
+         
+         if( gIsLargeDisplaySize ) {
+            targetCard = $("#event-details-card-global");
+         }
+         // otherwise, use the card that corressponds to the selected event
+         else {
+            targetCard = $("#event-details-card-" + eventItemOccurrenceId );
+         }
+         
+         displayEventInfo( targetCard[0], eventItemOccurrenceId );
+         targetCard.css("display", "flex");
+         //targetCard[0].classList.remove("event-detail-card-hidden");
+         
+         // hide the non-active cards
+         var displayCards = $(".event-detail-card");
+         var i = 0;
+         for( i = 0; i < displayCards.length; i++ ) {
+            if( displayCards[i] != targetCard[0] ) {
+               displayCards[i].style.display = "none";
+               //displayCards[i].classList.add("event-detail-card-hidden");
+            }
+         }
+         
+         // if we're on mobile, scroll the browser to the top of the card
+         if( gIsLargeDisplaySize == false ) {
+            var selectedDiv = $("#" + eventItemOccurrenceId )[0];
+            var rect = selectedDiv.getBoundingClientRect();
+            
+            var docRect = document.body.getBoundingClientRect();
+            
+            //window.scrollTo(0, rect.top - docRect.top);
+            window.scrollTo({
+                "behavior": "smooth",
+                "left": 0,
+                "top": rect.top - docRect.top
+            });
+         }
+      }
         
       function toggleActiveItem( eventItemOccurrenceId ) {
          // this function "darkens" the selected item in the calendar list,
@@ -369,16 +409,14 @@
                detailObj.classList.remove( "selected" );
             }
          }
-         
-         // now we'll get the selected div's corresponding 'padding' class, and
-         // grow it. We'll also shrink any current ones
       }
 
-      function displayEventInfo(eventItemOccurrenceId ) {
+      function displayEventInfo( parentEventItemCard, eventItemOccurrenceId ) {
          // updates the "event card" with the details from the specified eventItemOccurrenceId
-         var eventItem = events[eventItemOccurrenceId];
-      
-         var imageObj = $("#event-detail-card-img");
+         var eventItem = gEvents[eventItemOccurrenceId];
+         
+         var imageObj = $("#event-detail-card-img", parentEventItemCard);
+         
          if( eventItem.photoGuid != '' ) {
             imageObj.show();
             imageObj.attr( "src", "/GetImage.ashx?Guid=" + eventItem.photoGuid )
@@ -387,26 +425,26 @@
             imageObj.hide();
          }
          
-         $("#event-detail-card-name").text( eventItem.name );
-         $("#event-detail-card-summary").text( decodeHtml( eventItem.summary ) );
-         $("#event-detail-card-learnmore-btn").attr( "href", eventItem.detailUrl );
+         $("#event-detail-card-name", parentEventItemCard).text( eventItem.name );
+         $("#event-detail-card-summary", parentEventItemCard).text( decodeHtml( eventItem.summary ) );
+         $("#event-detail-card-learnmore-btn", parentEventItemCard).attr( "href", eventItem.detailUrl );
          
-         var contactObj = $("#event-detail-card-contact");
+         var contactObj = $("#event-detail-card-contact", parentEventItemCard);
          if( eventItem.contactEmail != '' || eventItem.contactPhone != '' ) {
             contactObj.show();
             
-            var contactDetails = $("#event-detail-card-contact-text");
+            var contactDetails = $("#event-detail-card-contact-text", parentEventItemCard);
             contactDetails.html( eventItem.contactEmail + "<br/>" + eventItem.contactPhone );
          }
          else {
             contactObj.hide();
          }
          
-         var noteObj = $("#event-detail-card-note");
+         var noteObj = $("#event-detail-card-note", parentEventItemCard);
          if( eventItem.note != '' ) {
             noteObj.show();
             
-            var noteDetails = $("#event-detail-card-note-text");
+            var noteDetails = $("#event-detail-card-note-text", parentEventItemCard);
             
             var decodedHtmlStr = decodeHtml( eventItem.note );
             noteDetails.html( decodedHtmlStr );
@@ -415,7 +453,7 @@
             noteObj.hide();
          }
          
-         var regObj = $("#event-detail-card-reg");
+         var regObj = $("#event-detail-card-reg", parentEventItemCard);
          if( eventItem.regInfo != '' ) {
             regObj.show();
             

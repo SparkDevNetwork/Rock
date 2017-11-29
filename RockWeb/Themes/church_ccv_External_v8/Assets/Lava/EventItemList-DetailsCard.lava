@@ -1,0 +1,43 @@
+{% comment %}YOU MUST SET THE ID VIA {% assign eventDetailsCardId = value %} BEFORE INCLUDING {% endcomment %}
+
+<div id="event-details-card-{{eventDetailsCardId}}" class="event-detail-card event-detail-card-hidden" style="margin: 0 auto; visibility: hidden;">
+   <img id="event-detail-card-img" src="" style="width: 365px; height: 200px;" class="img-responsive"></img>
+   
+   <h4 id="event-detail-card-name"></h4>
+   <p id="event-detail-card-summary"></p>
+   <a id="event-detail-card-learnmore-btn" href="{{ detailUrl }}" class="btn btn-primary btn-block margin-t-md">Learn More</a>
+   
+   <div class="info">
+      <div id="event-detail-card-contact" class="item">
+         <h6>Contact: </h6>
+         
+         <div id="event-detail-card-contact-text" class="text">
+          </div>
+      </div>
+      
+      {% if EventItemOccurrence.Campus != null and EventItemOccurrence.Location != '' %}
+         <div class="item">
+            <h6>Location:</h6>
+            
+            <p class="text">
+               {% if EventItemOccurrence.Campus != null %}
+                  {{EventItemOccurrence.Campus.Name}} Campus <br/>
+               {% endif %}
+               {% if EventItemOccurrence.Location != '' %}
+                  {{ EventItemOccurrence.Location }}
+               {% endif %}
+            </p>
+         </div>
+      {% endif %}
+      
+      <div id="event-detail-card-note" class="item">
+         <h6>Notes:</h6>
+         
+         <div id="event-detail-card-note-text" class="text">
+         </div>
+      </div>            
+   </div>
+   
+   <div id="event-detail-card-reg">
+   </div>
+</div>
