@@ -92,7 +92,6 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 }
                 ceLava.Text = text;
 
-
                 // Set up the Merge Fields
                 ceLava.MergeFields.Clear();
 
@@ -643,10 +642,17 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             {
                 RegistrationService registrationService = new RegistrationService( rockContext );
 
-                var registrations = registrationService.Queryable().AsNoTracking().Where( r => r.RegistrationInstanceId == registrationInstanceId.Value ).ToList();
-                Registration emptyRegistration = new Registration { Id = -1, FirstName = "" };
-                registrations.Insert( 0, emptyRegistration );
-                ddlRegistrations.DataSource = registrations;
+                var registrations = registrationService.Queryable().AsNoTracking()
+                    .Where( r => r.RegistrationInstanceId == registrationInstanceId.Value )
+                    .ToList();
+
+                // convert to something we can modify to show FirstName as first and last
+                var registrationsList = registrations.OrderBy( r => r.FirstName ).ThenBy( r => r.LastName )
+                    .Select( r => new { Id = r.Id, FirstName = string.Format( "{0} {1}", r.FirstName, r.LastName ) } )
+                    .ToList();
+                registrationsList.Insert( 0, new { Id = -1, FirstName = "" } );
+                
+                ddlRegistrations.DataSource = registrationsList;
                 ddlRegistrations.Visible = true;
                 ddlRegistrations.DataBind();
 
@@ -731,5 +737,6 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             SetUserPreference( _USER_PREF_GROUP, gpGroups.SelectedValue );
             litOutput.Text = string.Empty;
         }
-}
+
+    }
 }
