@@ -10801,7 +10801,7 @@ html,body{
    margin-top: 1.78rem;
    margin-bottom: 25px;
    height: auto;
-   max-height: 1024px;
+   /*max-height: 1024px;*/
    width: auto;
    max-width: 380px;
 }

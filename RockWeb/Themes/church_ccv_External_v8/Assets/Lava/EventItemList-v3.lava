@@ -302,7 +302,7 @@
          gIsLargeDisplaySize = mediaQuery.matches;
          
          if ( gCurrEventItemOccurrenceId != null ) {
-            setSelectedEvent( gCurrEventItemOccurrenceId );
+            setSelectedEvent( gCurrEventItemOccurrenceId, false );
          }
       } 
       
@@ -314,7 +314,7 @@
          
             $(".event-detail-card").css("visibility", "visible");
          
-            setSelectedEvent( gCurrEventItemOccurrenceId );
+            setSelectedEvent( gCurrEventItemOccurrenceId, false );
          }
          else {
             $(".event-detail-card").css("visibility", "hidden");
@@ -339,7 +339,7 @@
          window.location.href = window.location.pathname + "?monthoffset=" + monthOffset;
       }
       
-      function setSelectedEvent( eventItemOccurrenceId ) {
+      function setSelectedEvent( eventItemOccurrenceId, scrollViewport = true ) {
          
          // store the event so we can update our layout if needed
          gCurrEventItemOccurrenceId = eventItemOccurrenceId;
@@ -375,7 +375,7 @@
          }
          
          // if we're on mobile, scroll the browser to the top of the card
-         if( gIsLargeDisplaySize == false ) {
+         if( gIsLargeDisplaySize == false && scrollViewport == true ) {
             var selectedDiv = $("#" + eventItemOccurrenceId )[0];
             var rect = selectedDiv.getBoundingClientRect();
             
