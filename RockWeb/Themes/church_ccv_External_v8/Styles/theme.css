@@ -10746,7 +10746,7 @@ html,body{
 }
 
 /* ---- Overrides for desktop size ---- */
-@media screen and (min-width: 1224px) {
+@media screen and (min-width: 1457px) {
    .event-page-wrapper {
       padding: 0;
       align-items: stretch;
@@ -10779,7 +10779,7 @@ html,body{
    }
    
    .event-page-wrapper .event-calendar .event-item .details {
-      width: 80%;
+      width: 70%;
    }
    
    .event-page-wrapper .event-calendar .event-item .details .info h4 {
@@ -10821,7 +10821,7 @@ html,body{
    transition: max-height .5s, padding .5s, transform .5s;
 }*/
 
-@media screen and (min-width: 1224px) {
+@media screen and (min-width: 1457px) {
    .event-detail-card {
       height: 100%;
       width: 380px;
