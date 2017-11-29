@@ -10647,14 +10647,15 @@ html,body{
    flex-wrap: wrap;
    margin-top: 15px;
    margin-bottom: 15px;
-   min-width: 100%;
+   min-width: 112%;
 }
 .event-page-wrapper .event-calendar .event-item .date {
    background-color: #7a1315;
    color: #fff;
    margin-right: 10px;
-   width: 70px;
-   height: 70px;
+   width: 15%;
+   max-width: 75px;
+   height: width;
    align-items: center;
    border-radius: 6px;
 }
@@ -10718,6 +10719,10 @@ html,body{
    color: #fff;
 }
 
+.event-page-wrapper .event-calendar .event-item .details:hover b {
+   color: #7a1315;
+}
+
 .selected, .selected p {
    background-color: #999 !important;
    color: #fff !important;
@@ -10727,10 +10732,16 @@ html,body{
    color: #7a1315 !important;
 }
 
-/* ---- overrides for landscape iPhone SE and above --- */
-@media screen and (min-width: 568px) {
+/* ---- overrides for each event's header text --- */
+@media screen and (min-width: 414px) {
    .event-page-wrapper .event-calendar .event-item .details .info h4{
       max-width: 250px;
+   }
+}
+
+@media screen and (min-width: 568px) {
+   .event-page-wrapper .event-calendar .event-item .details .info h4{
+      max-width: 350px;
    }
 }
 

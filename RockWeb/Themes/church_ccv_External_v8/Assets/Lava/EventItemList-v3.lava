@@ -90,6 +90,7 @@
          <script>
             var gEvents = [];
             var gCurrEventItemOccurrenceId = null;
+            var gMonthHasEvents = false;
          </script>
          
          {% for eventOccurrenceSummary in EventOccurrenceSummaries %}
@@ -144,11 +145,8 @@
                            };
                            gEvents[{{ eventOccurrenceSummary.EventItemOccurrence.Id }}] = eventItem;
                            
-                           // as we render the page, if this is the first event we're rendering, 
-                           // take its ID as our selected. (onLoad() will complete this by selecting the event)
-                           if( gCurrEventItemOccurrenceId == null ) {
-                              gCurrEventItemOccurrenceId = eventItem.itemOccurrenceId;
-                           }
+                           // flag that this month does have events
+                           gMonthHasEvents = true;
                        </script>
                        
                         <div class="event-item">
@@ -166,6 +164,7 @@
                            </div>
                         </div>
                         {% assign eventDetailsCardId = eventOccurrenceSummary.EventItemOccurrence.Id %}
+                        {% assign eventDetailCardDisplayStyle = 'none' %}
                         {% include '~~/Assets/Lava/EventItemList-DetailsCard.lava' %}
                      {% endif %}
                   {% else %}
@@ -213,11 +212,8 @@
                            };
                            gEvents[{{ eventOccurrenceSummary.EventItemOccurrence.Id }}] = eventItem;
                            
-                           // as we render the page, if this is the first event we're rendering, 
-                           // take its ID as our selected. (onLoad() will complete this by selecting the event)
-                           if( gCurrEventItemOccurrenceId == null ) {
-                              gCurrEventItemOccurrenceId = eventItem.itemOccurrenceId;
-                           }
+                           // flag that this month does have events
+                           gMonthHasEvents = true;
                      </script>
                        
                      <div class="event-item">
@@ -241,6 +237,7 @@
                         </div>
                      </div>
                      {% assign eventDetailsCardId = eventOccurrenceSummary.EventItemOccurrence.Id %}
+                     {% assign eventDetailCardDisplayStyle = 'none' %}
                      {% include '~~/Assets/Lava/EventItemList-DetailsCard.lava' %}
                   {% endif %}
                   
@@ -253,6 +250,7 @@
       </div>
       
       {% assign eventDetailsCardId = 'global' %}
+      {% assign eventDetailCardDisplayStyle = 'flex' %}
       {% include '~~/Assets/Lava/EventItemList-DetailsCard.lava' %}
    </div>
    
@@ -286,13 +284,20 @@
       // 
       
       function handleOnLoad() {
+         // if there's at least one event for this month, we'll hide the "no events" banner
+         if( gMonthHasEvents == true  ) {
+            $(".no-event-placeholder").css("display", "none");
+         }
+         else {
+            $(".no-event-placeholder").css("display", "inline");
+         }
+         
+         
          // setup a callback for browser width changes
          const mq = window.matchMedia( "(min-width: 1224px)" );
          mq.addListener( widthChange );
          
          widthChange( mq );
-         
-         performLayout();
       }
        
       function widthChange( mediaQuery ) {
@@ -301,27 +306,23 @@
          // therefore, we can take its true/false as our isLargeDisplaySize
          gIsLargeDisplaySize = mediaQuery.matches;
          
+         // if the display size is large enough, make sure the global card is
+         // taking up its necessary space.
+         globalCard = $("#event-details-card-global")[0];
+         
+         if( gIsLargeDisplaySize == true ) {
+            globalCard.style.display = "flex";
+         }
+         else {
+            globalCard.style.display = "none";
+         }
+         
+         // if there's currently a selected event, it's important that we 
+         // re-select it to make sure the correct selection layout is used
          if ( gCurrEventItemOccurrenceId != null ) {
             setSelectedEvent( gCurrEventItemOccurrenceId, false );
          }
       } 
-      
-      function performLayout( ) {
-         // if there's at least one event for this month, we'll display the side panel 
-         // and select the first event
-         if( gCurrEventItemOccurrenceId != null ) {
-            $(".no-event-placeholder").css("display", "none");
-         
-            $(".event-detail-card").css("visibility", "visible");
-         
-            setSelectedEvent( gCurrEventItemOccurrenceId, false );
-         }
-         else {
-            $(".event-detail-card").css("visibility", "hidden");
-            
-            $(".no-event-placeholder").css("display", "inline");
-         }
-      }
         
       function updateMonth( direction ) {
          // safely updates the monthOffset query param and refreshes the page.
@@ -361,8 +362,8 @@
          }
          
          displayEventInfo( targetCard[0], eventItemOccurrenceId );
-         targetCard.css("display", "flex");
-         //targetCard[0].classList.remove("event-detail-card-hidden");
+         targetCard[0].style.display = "flex";
+         targetCard[0].style.visibility = "visible";
          
          // hide the non-active cards
          var displayCards = $(".event-detail-card");
@@ -370,22 +371,29 @@
          for( i = 0; i < displayCards.length; i++ ) {
             if( displayCards[i] != targetCard[0] ) {
                displayCards[i].style.display = "none";
-               //displayCards[i].classList.add("event-detail-card-hidden");
+               displayCards[i].style.visibility = "hidden";
             }
          }
          
-         // if we're on mobile, scroll the browser to the top of the card
+         // if we're on mobile, scroll the browser to the top item element
          if( gIsLargeDisplaySize == false && scrollViewport == true ) {
+         
+            // get the element and its rect
             var selectedDiv = $("#" + eventItemOccurrenceId )[0];
-            var rect = selectedDiv.getBoundingClientRect();
+            var elemRect = selectedDiv.getBoundingClientRect();
             
-            var docRect = document.body.getBoundingClientRect();
+            // get the absolute position of the element (vector from top of document to the element)
+            var bodyRect = document.body.getBoundingClientRect();
+            var elemAbsPos = elemRect.top - bodyRect.top;
             
-            //window.scrollTo(0, rect.top - docRect.top);
+            // get the navbar's rect, which is always absolute because its position is fixed
+            var navBarRect = $(".masthead")[0].getBoundingClientRect();
+            
+            // scroll to the top of the element - the navbar's bottom
             window.scrollTo({
                 "behavior": "smooth",
                 "left": 0,
-                "top": rect.top - docRect.top
+                "top": elemAbsPos - navBarRect.bottom
             });
          }
       }
@@ -463,20 +471,6 @@
             regObj.hide();
          }
       }
-   </script>
-
-   {% comment %} TODO: package these together {% endcomment %}
-   <script src="/Themes/church_ccv_External_v7/Scripts/Vendor/clamp.min.js"></script>
-   <script src="/Themes/church_ccv_External_v7/Scripts/Vendor/masonry.pkgd.min.js"></script>
-   <script>
-      $('.panel-title').each(function(){
-         $clamp(this, {clamp: 2})
-      })
-      $('.masonry').masonry({
-         itemSelector: '.masonry-item',
-         columnWidth: '.masonry-sizer',
-         percentPosition: true
-      })
    </script>
 {% else %}
    <p class="hidden-xs">&nbsp;</p>
