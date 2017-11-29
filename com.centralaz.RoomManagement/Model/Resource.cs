@@ -72,6 +72,20 @@ namespace com.centralaz.RoomManagement.Model
 
         #endregion
 
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> containing the Name (and Id) that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> containing the Name (and Id) that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format( "{0} ({1})", Name, Id );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
