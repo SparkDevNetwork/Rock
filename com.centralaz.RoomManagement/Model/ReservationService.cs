@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock;
@@ -103,7 +104,7 @@ namespace com.centralaz.RoomManagement.Model
         private IEnumerable<ReservationSummary> GetConflictingReservationSummaries( Reservation newReservation )
         {
             var newReservationSummaries = GetReservationSummaries( new List<Reservation>() { newReservation }.AsQueryable(), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) );
-            var reservedLocationIds = GetReservationSummaries( Queryable().Where( r => r.Id != newReservation.Id && r.ApprovalState != ReservationApprovalState.Denied ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) )
+            var reservedLocationIds = GetReservationSummaries( Queryable().AsNoTracking().Where( r => r.Id != newReservation.Id && r.ApprovalState != ReservationApprovalState.Denied ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) )
                 .Where( currentReservationSummary => newReservationSummaries.Any( newReservationSummary =>
                  ( currentReservationSummary.ReservationStartDateTime > newReservationSummary.ReservationStartDateTime || currentReservationSummary.ReservationEndDateTime > newReservationSummary.ReservationStartDateTime ) &&
                  ( currentReservationSummary.ReservationStartDateTime < newReservationSummary.ReservationEndDateTime || currentReservationSummary.ReservationEndDateTime < newReservationSummary.ReservationEndDateTime )
@@ -200,7 +201,7 @@ namespace com.centralaz.RoomManagement.Model
             // For each new reservation summary, make sure that the quantities of existing summaries that come into contact with it
             // do not exceed the resource's quantity
 
-            var currentReservationSummaries = GetReservationSummaries( Queryable().Where( r => r.Id != reservation.Id && r.ApprovalState != ReservationApprovalState.Denied ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) );
+            var currentReservationSummaries = GetReservationSummaries( Queryable().AsNoTracking().Where( r => r.Id != reservation.Id && r.ApprovalState != ReservationApprovalState.Denied ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) );
 
             var reservedQuantities = GetReservationSummaries( new List<Reservation>() { reservation }.AsQueryable(), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) )
                 .Select( newReservationSummary =>
