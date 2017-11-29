@@ -172,7 +172,20 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             }
             else
             {
-                item.Text = ceLava.Text.TrimStart().Truncate( 100 );
+                string title = ceLava.Text.TrimStart();
+
+                string commentPattern = @"<!--(.*)-->";
+                Regex r = new Regex( commentPattern, RegexOptions.IgnoreCase );
+                Match m = r.Match( title );
+                if ( m.Success )
+                {
+                    item.Text = m.Groups[1].Value;
+                }
+                else
+                {
+                    item.Text = title.Truncate( 150 );
+                }
+
                 RemoveCssClass( item, _TEXT_MUTED );
                 SetUserPreference( string.Format( "{0}:{1}", _USER_PREF_KEY, item.Value ), ceLava.Text );
             }
