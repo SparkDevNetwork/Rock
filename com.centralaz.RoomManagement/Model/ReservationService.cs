@@ -148,8 +148,21 @@ namespace com.centralaz.RoomManagement.Model
         public List<int> GetReservedLocationIds( Reservation newReservation )
         {
             var locationService = new LocationService( new RockContext() );
-            IEnumerable<ReservationSummary> conflictingReservationSummaries = GetConflictingReservationSummaries( newReservation );
 
+            // Get any Locations related to those reserved by the new Reservation
+            var newReservationLocationIds = newReservation.ReservationLocations.Select( rl => rl.LocationId ).ToList();
+            var relevantLocationIds = new List<int>();
+            relevantLocationIds.AddRange( newReservationLocationIds );
+            relevantLocationIds.AddRange( newReservationLocationIds.SelectMany( l => locationService.GetAllAncestorIds( l ) ) );
+            relevantLocationIds.AddRange( newReservationLocationIds.SelectMany( l => locationService.GetAllDescendentIds( l ) ) );
+
+            // Get any Reservations containing related Locations
+            var existingReservationQry = Queryable().Where( r => r.ReservationLocations.Any( rl => relevantLocationIds.Contains( rl.LocationId ) ) );
+
+            // Check existing Reservations for conflicts
+            IEnumerable<ReservationSummary> conflictingReservationSummaries = GetConflictingReservationSummaries( newReservation, existingReservationQry );
+
+            // Grab any locations booked by conflicting Reservations
             var reservedLocationIds = conflictingReservationSummaries.SelectMany( currentReservationSummary =>
                     currentReservationSummary.ReservationLocations.Where( rl =>
                         rl.ApprovalState != ReservationLocationApprovalState.Denied )
@@ -159,9 +172,8 @@ namespace com.centralaz.RoomManagement.Model
 
             var reservedLocationAndChildIds = new List<int>();
             reservedLocationAndChildIds.AddRange( reservedLocationIds );
-
-            reservedLocationAndChildIds.AddRange( reservedLocationIds
-                  .SelectMany( l => locationService.GetAllDescendentIds( l ) ) );
+            reservedLocationAndChildIds.AddRange( reservedLocationIds.SelectMany( l => locationService.GetAllAncestorIds( l ) ) );
+            reservedLocationAndChildIds.AddRange( reservedLocationIds.SelectMany( l => locationService.GetAllDescendentIds( l ) ) );
 
             return reservedLocationAndChildIds;
         }
@@ -170,16 +182,20 @@ namespace com.centralaz.RoomManagement.Model
         {
             var locationService = new LocationService( new RockContext() );
 
-            var locationAndAncestorIds = new List<int>();
-            locationAndAncestorIds.Add( locationId );
-            locationAndAncestorIds.AddRange( locationService.GetAllAncestorIds( locationId ) );
-            locationAndAncestorIds.AddRange( locationService.GetAllDescendentIds( locationId ) );
+            var relevantLocationIds = new List<int>();
+            relevantLocationIds.Add( locationId );
+            relevantLocationIds.AddRange( locationService.GetAllAncestorIds( locationId ) );
+            relevantLocationIds.AddRange( locationService.GetAllDescendentIds( locationId ) );
 
-            IEnumerable<ReservationSummary> conflictingReservationSummaries = GetConflictingReservationSummaries( newReservation );
+            // Get any Reservations containing related Locations
+            var existingReservationQry = Queryable().Where( r => r.ReservationLocations.Any( rl => relevantLocationIds.Contains( rl.LocationId ) ) );
+
+            // Check existing Reservations for conflicts
+            IEnumerable<ReservationSummary> conflictingReservationSummaries = GetConflictingReservationSummaries( newReservation, existingReservationQry );
             var locationConflicts = conflictingReservationSummaries.SelectMany( currentReservationSummary =>
                     currentReservationSummary.ReservationLocations.Where( rl =>
                         rl.ApprovalState != ReservationLocationApprovalState.Denied &&
-                        locationAndAncestorIds.Contains( rl.LocationId ) )
+                        relevantLocationIds.Contains( rl.LocationId ) )
                      .Select( rl => new ReservationConflict
                      {
                          LocationId = rl.LocationId,
@@ -189,6 +205,7 @@ namespace com.centralaz.RoomManagement.Model
                      } ) )
                  .Distinct()
                  .ToList();
+
             return locationConflicts;
         }
 
@@ -206,8 +223,9 @@ namespace com.centralaz.RoomManagement.Model
         {
             // For each new reservation summary, make sure that the quantities of existing summaries that come into contact with it
             // do not exceed the resource's quantity
+            var newReservationResourceIds = reservation.ReservationResources.Select( rl => rl.ResourceId ).ToList();
 
-            var currentReservationSummaries = GetReservationSummaries( Queryable().AsNoTracking().Where( r => r.Id != reservation.Id && r.ApprovalState != ReservationApprovalState.Denied ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) );
+            var currentReservationSummaries = GetReservationSummaries( Queryable().AsNoTracking().Where( r => r.Id != reservation.Id && r.ApprovalState != ReservationApprovalState.Denied && r.ReservationResources.Any( rr => newReservationResourceIds.Contains( rr.ResourceId ) ) ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) );
 
             var reservedQuantities = GetReservationSummaries( new List<Reservation>() { reservation }.AsQueryable(), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) )
                 .Select( newReservationSummary =>
@@ -225,7 +243,11 @@ namespace com.centralaz.RoomManagement.Model
 
         public List<ReservationConflict> GetConflictsForResourceId( int resourceId, Reservation newReservation )
         {
-            IEnumerable<ReservationSummary> conflictingReservationSummaries = GetConflictingReservationSummaries( newReservation );
+            // Get any Reservations containing related Locations
+            var existingReservationQry = Queryable().Where( r => r.ReservationResources.Any( rl => rl.ResourceId == resourceId ) );
+
+            // Check existing Reservations for conflicts
+            IEnumerable<ReservationSummary> conflictingReservationSummaries = GetConflictingReservationSummaries( newReservation, existingReservationQry );
             var locationConflicts = conflictingReservationSummaries.SelectMany( currentReservationSummary =>
                     currentReservationSummary.ReservationResources.Where( rr =>
                         rr.ApprovalState != ReservationResourceApprovalState.Denied &&
