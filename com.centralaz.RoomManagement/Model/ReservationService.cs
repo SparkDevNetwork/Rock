@@ -103,17 +103,17 @@ namespace com.centralaz.RoomManagement.Model
 
         private IEnumerable<ReservationSummary> GetConflictingReservationSummaries( Reservation newReservation )
         {
-            return GetConflictingReservationSummaries(newReservation, Queryable());
+            return GetConflictingReservationSummaries( newReservation, Queryable() );
         }
 
-        private IEnumerable<ReservationSummary> GetConflictingReservationSummaries(Reservation newReservation, IQueryable<Reservation> existingReservationQry)
+        private IEnumerable<ReservationSummary> GetConflictingReservationSummaries( Reservation newReservation, IQueryable<Reservation> existingReservationQry )
         {
-            var newReservationSummaries = GetReservationSummaries(new List<Reservation>() { newReservation }.AsQueryable(), RockDateTime.Now.AddMonths(-1), RockDateTime.Now.AddYears(1));
-            var conflictingSummaryList = GetReservationSummaries(existingReservationQry.AsNoTracking().Where(r => r.Id != newReservation.Id && r.ApprovalState != ReservationApprovalState.Denied), RockDateTime.Now.AddMonths(-1), RockDateTime.Now.AddYears(1))
-                .Where(currentReservationSummary => newReservationSummaries.Any(newReservationSummary =>
-               (currentReservationSummary.ReservationStartDateTime > newReservationSummary.ReservationStartDateTime || currentReservationSummary.ReservationEndDateTime > newReservationSummary.ReservationStartDateTime) &&
-               (currentReservationSummary.ReservationStartDateTime < newReservationSummary.ReservationEndDateTime || currentReservationSummary.ReservationEndDateTime < newReservationSummary.ReservationEndDateTime)
-                ));
+            var newReservationSummaries = GetReservationSummaries( new List<Reservation>() { newReservation }.AsQueryable(), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) );
+            var conflictingSummaryList = GetReservationSummaries( existingReservationQry.AsNoTracking().Where( r => r.Id != newReservation.Id && r.ApprovalState != ReservationApprovalState.Denied ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) )
+                .Where( currentReservationSummary => newReservationSummaries.Any( newReservationSummary =>
+                 ( currentReservationSummary.ReservationStartDateTime > newReservationSummary.ReservationStartDateTime || currentReservationSummary.ReservationEndDateTime > newReservationSummary.ReservationStartDateTime ) &&
+                 ( currentReservationSummary.ReservationStartDateTime < newReservationSummary.ReservationEndDateTime || currentReservationSummary.ReservationEndDateTime < newReservationSummary.ReservationEndDateTime )
+                 ) );
             return conflictingSummaryList;
         }
 
@@ -166,7 +166,7 @@ namespace com.centralaz.RoomManagement.Model
             return reservedLocationAndChildIds;
         }
 
-        public List<ReservationConflict> GetConflictsForLocationId( int locationId, Reservation newReservation)
+        public List<ReservationConflict> GetConflictsForLocationId( int locationId, Reservation newReservation )
         {
             var locationService = new LocationService( new RockContext() );
 
