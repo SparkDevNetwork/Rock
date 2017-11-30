@@ -7,25 +7,26 @@
     "Address2": "Anthem, AZ 85086",
     "Services": [
       {
-        "Date": "Friday 3/25",
+        "Date": "Friday 12/22",
         "Times": [
-          "6:00 pm"
+          "4:30 pm"
         ]
       },
       {
-        "Date": "Saturday 3/26",
+        "Date": "Saturday 12/23",
         "Times": [
           "4:30 pm",
-          "6:00 pm"
+          "6:00 pm hearing"
         ]
       },
       {
-        "Date": "Sunday 3/27",
+        "Date": "Sunday 12/24",
         "Times": [
-          "6:30 am sunrise",
-          "9:00 am",
+          "9:00 am special",
           "10:30 am special",
-          "12:00 pm"
+          "3:00 pm",
+          "4:30 pm",
+          "6:00 pm"
         ]
       }
     ]
@@ -37,24 +38,44 @@
     "Address2": "Avondale, AZ 85392",
     "Services": [
       {
-        "Date": "Friday 3/25",
+        "Date": "Saturday 12/23",
         "Times": [
-          "6:00 pm"
-        ]
-      },
-      {
-        "Date": "Saturday 3/26",
-        "Times": [
+          "3:00 pm",
           "4:30 pm special",
           "6:00 pm"
         ]
       },
       {
-        "Date": "Sunday 3/27",
+        "Date": "Sunday 12/24",
         "Times": [
-          "6:30 am sunrise",
-          "9:30 am",
-          "11:00 am special"
+          "9:00 am",
+          "10:30 am special",
+          "12:00 pm",
+          "3:00 pm",
+          "4:30 pm",
+          "6:00 pm"
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "Chandler",
+    "ShortCode": "CHD",
+    "Address1": "5835 W Ray Rd",
+    "Address2": "Chandler, AZ 85226",
+    "Services": [
+      {
+        "Date": "Saturday 12/23",
+        "Times": [
+          "6:00 pm"
+        ]
+      },
+      {
+        "Date": "Sunday 12/24",
+        "Times": [
+          "9:00 am",
+          "10:30 am special",
+          "4:30 pm special"
         ]
       }
     ]
@@ -66,23 +87,19 @@
     "Address2": "Mesa, AZ 85209",
     "Services": [
       {
-        "Date": "Friday 3/25",
+        "Date": "Saturday 12/23",
         "Times": [
+          "4:30 pm",
+          "6:00 pm special hearing"
+        ]
+      },
+      {
+        "Date": "Sunday 12/24",
+        "Times": [
+          "9:00 am special",
+          "10:30 am special",
+          "4:30 pm",
           "6:00 pm"
-        ]
-      },
-      {
-        "Date": "Saturday 3/26",
-        "Times": [
-          "5:00 pm special"
-        ]
-      },
-      {
-        "Date": "Sunday 3/27",
-        "Times": [
-          "6:30 am sunrise",
-          "9:30 am special",
-          "11:00 am special"
         ]
       }
     ]
@@ -94,23 +111,17 @@
     "Address2": "Phoenix, AZ 85016",
     "Services": [
       {
-        "Date": "Friday 3/25",
+        "Date": "Saturday 12/23",
         "Times": [
           "6:00 pm"
         ]
       },
       {
-        "Date": "Saturday 3/26",
+        "Date": "Sunday 12/24",
         "Times": [
-          "5:00 pm special"
-        ]
-      },
-      {
-        "Date": "Sunday 3/27",
-        "Times": [
-          "6:30 am sunrise",
-          "9:30 am special",
-          "11:00 am special"
+          "9:00 am special",
+          "10:30 am special",
+          "4:30 pm"
         ]
       }
     ]
@@ -122,26 +133,30 @@
     "Address2": "Peoria, AZ 85383",
     "Services": [
       {
-        "Date": "Friday 12/26",
+        "Date": "Friday 12/22",
         "Times": [
-          "5:30 pm special",
-          "7:00 pm special"
+          "4:30 pm",
+          "6:00 pm"
         ]
       },
       {
-        "Date": "Saturday 3/26",
+        "Date": "Saturday 12/23",
         "Times": [
+          "3:00 pm",
           "4:30 pm special",
           "6:00 pm special hearing"
         ]
       },
       {
-        "Date": "Sunday 3/27",
+        "Date": "Sunday 12/24",
         "Times": [
-          "6:30 am sunrise",
-          "9:00 am special hearing",
+          "9:00 am special",
           "10:30 am special",
-          "12:00 pm special"
+          "12:00 pm special",
+          "3:00 pm",
+          "4:30 pm",
+          "6:00 pm",
+          "7:30 pm"
         ]
       }
     ]
@@ -153,24 +168,25 @@
     "Address2": "Scottsdale, AZ 85255",
     "Services": [
       {
-        "Date": "Friday 3/25",
+        "Date": "Friday 12/22",
         "Times": [
-          "6:00 pm"
+          "4:30 pm"
         ]
       },
       {
-        "Date": "Saturday 3/26",
+        "Date": "Saturday 12/23",
         "Times": [
           "4:30 pm",
-          "6:00 pm"
+          "6:00 pm hearing"
         ]
       },
       {
-        "Date": "Sunday 3/27",
+        "Date": "Sunday 12/24",
         "Times": [
-          "6:30 am sunrise",
           "9:30 am special",
-          "11:00 am"
+          "11:00 am",
+          "3:00 pm",
+          "4:30 pm"
         ]
       }
     ]
@@ -182,25 +198,29 @@
     "Address2": "Surprise, AZ 85379",
     "Services": [
       {
-        "Date": "Friday 3/25",
+        "Date": "Friday 12/22",
         "Times": [
+          "4:30 pm",
           "6:00 pm"
         ]
       },
       {
-        "Date": "Saturday 3/26",
+        "Date": "Saturday 12/23",
         "Times": [
+          "3:00 pm",
           "4:30 pm special",
-          "6:00 pm"
+          "6:00 pm hearing special"
         ]
       },
       {
-        "Date": "Sunday 3/27",
+        "Date": "Sunday 12/24",
         "Times": [
-          "6:30 am sunrise",
           "9:00 am special",
           "10:30 am special hearing",
-          "12:00 pm"
+          "12:00 pm special",
+          "3:00 pm",
+          "4:30 pm",
+          "6:00 pm"
         ]
       }
     ]

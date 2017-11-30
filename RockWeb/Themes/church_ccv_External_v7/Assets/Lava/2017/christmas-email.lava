@@ -12,7 +12,7 @@ Join me for Christmas at CCV
 
 {% capture body %}I'm going to Christmas Eve service at CCV. Would you like to join me? I'll be attending the {{ rawTime }} service on {{ day.Date }} on the {{ item.Name }} campus. Let’s go together!
 
-http://ccvchristmas.com
+https://ccv.church
 {% endcapture %}
 
 <a class="{{ inviteBtnClasses }} js-track-email" data-label="{{ item.Name }} {{ day.Date }} {{ rawTime }}" href="{{ preUrl }}mailto:?subject={{ subject | Trim | EscapeDataString }}&body={{ body | EscapeDataString }}">{{ rawTime }}</a>
