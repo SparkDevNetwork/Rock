@@ -103,14 +103,20 @@ namespace com.centralaz.RoomManagement.Model
 
         private IEnumerable<ReservationSummary> GetConflictingReservationSummaries( Reservation newReservation )
         {
-            var newReservationSummaries = GetReservationSummaries( new List<Reservation>() { newReservation }.AsQueryable(), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) );
-            var reservedLocationIds = GetReservationSummaries( Queryable().AsNoTracking().Where( r => r.Id != newReservation.Id && r.ApprovalState != ReservationApprovalState.Denied ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) )
-                .Where( currentReservationSummary => newReservationSummaries.Any( newReservationSummary =>
-                 ( currentReservationSummary.ReservationStartDateTime > newReservationSummary.ReservationStartDateTime || currentReservationSummary.ReservationEndDateTime > newReservationSummary.ReservationStartDateTime ) &&
-                 ( currentReservationSummary.ReservationStartDateTime < newReservationSummary.ReservationEndDateTime || currentReservationSummary.ReservationEndDateTime < newReservationSummary.ReservationEndDateTime )
-                 ) );
-            return reservedLocationIds;
+            return GetConflictingReservationSummaries(newReservation, Queryable());
         }
+
+        private IEnumerable<ReservationSummary> GetConflictingReservationSummaries(Reservation newReservation, IQueryable<Reservation> existingReservationQry)
+        {
+            var newReservationSummaries = GetReservationSummaries(new List<Reservation>() { newReservation }.AsQueryable(), RockDateTime.Now.AddMonths(-1), RockDateTime.Now.AddYears(1));
+            var conflictingSummaryList = GetReservationSummaries(existingReservationQry.AsNoTracking().Where(r => r.Id != newReservation.Id && r.ApprovalState != ReservationApprovalState.Denied), RockDateTime.Now.AddMonths(-1), RockDateTime.Now.AddYears(1))
+                .Where(currentReservationSummary => newReservationSummaries.Any(newReservationSummary =>
+               (currentReservationSummary.ReservationStartDateTime > newReservationSummary.ReservationStartDateTime || currentReservationSummary.ReservationEndDateTime > newReservationSummary.ReservationStartDateTime) &&
+               (currentReservationSummary.ReservationStartDateTime < newReservationSummary.ReservationEndDateTime || currentReservationSummary.ReservationEndDateTime < newReservationSummary.ReservationEndDateTime)
+                ));
+            return conflictingSummaryList;
+        }
+
 
         private string GetFriendlyScheduleDescription( DateTime startDateTime, DateTime endDateTime, bool showDate = true )
         {
