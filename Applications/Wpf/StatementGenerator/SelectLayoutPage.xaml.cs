@@ -21,7 +21,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Xml;
-using ceTe.DynamicPDF.ReportWriter;
+//using ceTe.DynamicPDF.ReportWriter;
 using Microsoft.Win32;
 using Rock.Wpf;
 using Path = System.IO.Path;
@@ -48,7 +48,7 @@ namespace Rock.Apps.StatementGenerator
         /// </summary>
         private void PopulateLayoutRadioButtonsFromDisk()
         {
-            List<RadioButton> radioButtonList = new List<RadioButton>();
+            /*List<RadioButton> radioButtonList = new List<RadioButton>();
             var rockConfig = RockConfig.Load();
             List<string> filenameList = Directory.GetFiles( ".", "*.dplx" ).ToList();
             foreach ( var fileName in filenameList )
@@ -82,7 +82,7 @@ namespace Rock.Apps.StatementGenerator
             foreach ( var item in radioButtonList.OrderBy( a => a.Content ) )
             {
                 lstLayouts.Items.Add( item );
-            }
+            }*/
         }
 
         /// <summary>
@@ -175,7 +175,8 @@ namespace Rock.Apps.StatementGenerator
                 string fileName = selected.Tag.ToString();
                 ReportOptions.Current.LayoutFile = fileName;
                 var rockConfig = RockConfig.Load();
-                rockConfig.LayoutFile = fileName;
+                // TODO
+                //rockConfig.LayoutFile = fileName;
                 rockConfig.Save();
                 ProgressPage nextPage = new ProgressPage();
                 this.NavigationService.Navigate( nextPage );
