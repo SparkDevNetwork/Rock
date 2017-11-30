@@ -92,12 +92,12 @@
         </a>
       </li>
       <li>
-        <a href="http://twitter.com/home?status={{ 'Global' | Page:'Url' | Escape }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
+        <a href="http://twitter.com/home?status={{ 'Global' | Page:'Url' | EscapeDataString }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
           <i class="fa fa-fw fa-twitter"></i>
         </a>
       </li>
       <li>
-        <a href="mailto:?Subject={{ Event.Name | Escape }}&Body={{ 'Global' | Page:'Url' }}"  class="socialicon socialicon-email" title="" data-original-title="Share via Email">
+        <a href="mailto:?Subject={{ Event.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' }}"  class="socialicon socialicon-email" title="" data-original-title="Share via Email">
           <i class="fa fa-fw fa-envelope-o"></i>
         </a>
       </li>
