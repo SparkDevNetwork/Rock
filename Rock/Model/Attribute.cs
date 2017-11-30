@@ -297,9 +297,12 @@ namespace Rock.Model
                 {
                     var entityType = EntityTypeCache.Read( entityTypeId.Value );
                     var type = entityType.GetEntityType();
-                    if ( type != null && ( typeof( ISecured ).IsAssignableFrom( type ) ) )
+                    if ( type != null && 
+                        ( typeof( ISecured ).IsAssignableFrom( type ) )  &&
+                        !( typeof( Rock.Extension.Component ).IsAssignableFrom( type ) )
+                    )
                     {
-                        return (ISecured)Activator.CreateInstance( type );
+                        return (ISecured)Activator.CreateInstance( type );  
                     }
                 }
 
