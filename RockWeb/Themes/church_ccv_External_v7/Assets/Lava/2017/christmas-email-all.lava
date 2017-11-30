@@ -10,7 +10,7 @@
 Join me for Christmas at CCV
 {% endcapture %}
 
-{% capture body %}I'm going to Christmas Eve service at CCV on the {{ item.Name }} Campus. Would you like to join me? Check out the service times at http://ccvchristmas.com and let's plan to go together!
+{% capture body %}I'm going to Christmas Eve service at CCV on the {{ item.Name }} Campus. Would you like to join me? Check out the service times at https://ccv.church and let's plan to go together!
 
 {% for day in item.Services %}{{ day.Date }}{% for time in day.Times %}{% assign _time = time %}{% if time contains 'sunrise' %}{% assign _time = _time | Replace: 'sunrise','(Sunrise Service)' %}{% endif %}{% if time contains 'special' %}{% assign _time = _time | Replace: 'special','*' %}{% endif %}{% if time contains 'hearing' %}{% assign _time = _time | Replace: ' hearing','*' %}{% endif %}
 - {{ _time }}{% endfor %}
