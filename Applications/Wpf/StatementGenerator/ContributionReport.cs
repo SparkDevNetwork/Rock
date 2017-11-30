@@ -19,10 +19,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Xml;
-using ceTe.DynamicPDF;
-using ceTe.DynamicPDF.ReportWriter;
-using ceTe.DynamicPDF.ReportWriter.Data;
-using ceTe.DynamicPDF.ReportWriter.ReportElements;
 using Rock.Net;
 
 namespace Rock.Apps.StatementGenerator
@@ -49,12 +45,20 @@ namespace Rock.Apps.StatementGenerator
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the account ids.
+        /// Gets or sets the cash account ids.
         /// </summary>
         /// <value>
-        /// The account ids.
+        /// The cash account ids.
         /// </value>
-        public List<int> AccountIds { get; set; }
+        public List<int> CashAccountIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the non cash account ids.
+        /// </summary>
+        /// <value>
+        /// The non cash account ids.
+        /// </value>
+        public List<int> NonCashAccountIds { get; set; }
 
         /// <summary>
         /// Gets or sets the person unique identifier.
@@ -155,7 +159,7 @@ namespace Rock.Apps.StatementGenerator
         /// <summary>
         /// The _account summary query
         /// </summary>
-        private Query _accountSummaryQuery = null;
+        //private Query _accountSummaryQuery = null;
 
         /// <summary>
         /// The _contribution statement options rest
@@ -183,12 +187,13 @@ namespace Rock.Apps.StatementGenerator
         /// </summary>
         private DataTable _transactionsDataTable = null;
 
+        /*
         /// <summary>
         /// Creates the document.
         /// </summary>
         /// <param name="financialTransactionQry">The financial transaction qry.</param>
         /// <returns></returns>
-        public Document RunReport()
+        public void RunReport()
         {
             UpdateProgress( "Connecting..." );
 
@@ -287,19 +292,17 @@ namespace Rock.Apps.StatementGenerator
                 _accountSummaryQuery.OpeningRecordSet += delegate( object s, OpeningRecordSetEventArgs ee )
                 {
                     // create a recordset for the _accountSummaryQuery which is the GroupBy summary of AccountName, Amount
-                    /*
-                     The structure of _transactionsDataTable is
+                     //The structure of _transactionsDataTable is
                      
-                     DateTime TransactionDateTime
-                     string CurrencyTypeValueName
-                     string Summary (main transaction summary)
-                     DataTable Details {
-                          int AccountId
-                          string AccountName
-                          string Summary (detail summary)
-                          decimal Amount
-                     }
-                     */
+                     //DateTime TransactionDateTime
+                     //string CurrencyTypeValueName
+                     //string Summary (main transaction summary)
+                     //DataTable Details {
+                     //     int AccountId
+                     //     string AccountName
+                     //     string Summary (detail summary)
+                     //     decimal Amount
+                     //}
 
                     var detailsData = new DataTable();
                     detailsData.Columns.Add( "AccountId", typeof( int ) );
@@ -355,21 +358,7 @@ namespace Rock.Apps.StatementGenerator
             e.RecordSet = new EnumerableRecordSet( orgInfoList );
         }
 
-        /// <summary>
-        /// Gets or sets the record count.
-        /// </summary>
-        /// <value>
-        /// The record count.
-        /// </value>
-        private int RecordCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the index of the record.
-        /// </summary>
-        /// <value>
-        /// The index of the record.
-        /// </value>
-        private int RecordIndex { get; set; }
+        
 
         /// <summary>
         /// Handles the OpeningRecordSet event of the query control.
@@ -398,18 +387,6 @@ namespace Rock.Apps.StatementGenerator
             }
 
             transactionDetailReport.Query.OpeningRecordSet += transactionDetailReport_OpeningRecordSet;
-        }
-
-        /// <summary>
-        /// Updates the progress.
-        /// </summary>
-        /// <param name="progressMessage">The message.</param>
-        private void UpdateProgress( string progressMessage )
-        {
-            if ( OnProgress != null )
-            {
-                OnProgress( this, new ProgressEventArgs { ProgressMessage = progressMessage, Position = RecordIndex, Max = RecordCount } );
-            }
         }
 
         /// <summary>
@@ -454,6 +431,33 @@ namespace Rock.Apps.StatementGenerator
         {
             var detailsDataSet = e.LayoutWriter.RecordSets.Current["Details"] as DataTable;
             e.RecordSet = new DataTableRecordSet( detailsDataSet );
+        }
+        
+             */
+
+        /// <summary>
+        /// Gets or sets the record count.
+        /// </summary>
+        /// <value>
+        /// The record count.
+        /// </value>
+        private int RecordCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index of the record.
+        /// </summary>
+        /// <value>
+        /// The index of the record.
+        /// </value>
+        private int RecordIndex { get; set; }
+
+        /// <summary>
+        /// Updates the progress.
+        /// </summary>
+        /// <param name="progressMessage">The message.</param>
+        private void UpdateProgress( string progressMessage )
+        {
+            OnProgress?.Invoke( this, new ProgressEventArgs { ProgressMessage = progressMessage, Position = RecordIndex, Max = RecordCount } );
         }
 
         /// <summary>

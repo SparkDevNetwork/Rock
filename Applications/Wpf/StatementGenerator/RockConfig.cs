@@ -16,8 +16,6 @@
 //
 using System;
 using System.Configuration;
-using System.IO;
-using System.Text;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -49,11 +47,6 @@ namespace Rock.Apps.StatementGenerator
                 return defaultInstance;
             }
         }        
-        
-        /// <summary>
-        /// The default logo file
-        /// </summary>
-        public static string DefaultLogoFile = "logo.jpg";
 
         /// <summary>
         /// Gets or sets the rock base URL.
@@ -117,53 +110,25 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
-        /// Gets or sets the layout file.
+        /// Gets or sets the layout defined value unique identifier.
         /// </summary>
         /// <value>
-        /// The layout file.
+        /// The layout defined value unique identifier.
         /// </value>
         [DefaultSettingValueAttribute( "" )]
         [UserScopedSetting]
-        public string LayoutFile
+        public Guid? LayoutDefinedValueGuid
         {
             get
             {
-                return this["LayoutFile"] as string;
+                return this["LayoutDefinedValueId"] as Guid?;
             }
 
             set
             {
-                this["LayoutFile"] = value;
+                this["LayoutDefinedValueId"] = value;
             }
         }
-
-        /// <summary>
-        /// Gets or sets the logo file.
-        /// </summary>
-        /// <value>
-        /// The logo file.
-        /// </value>
-        public string LogoFile
-        {
-            get
-            {
-                string result = ( _logoFile ?? string.Empty ).Trim();
-                if ( !string.IsNullOrWhiteSpace( result ) )
-                {
-                    if ( File.Exists( result ) )
-                    {
-                        return result;
-                    }
-                }
-
-                return DefaultLogoFile;
-            }
-            set
-            {
-                _logoFile = value;
-            }
-        }
-        private string _logoFile;
 
         public static RockConfig Load()
         {

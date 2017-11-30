@@ -76,7 +76,10 @@ namespace Rock.Apps.StatementGenerator
 
             var accounts = _rockRestClient.GetData<List<Rock.Client.FinancialAccount>>( "api/FinancialAccounts" );
 
-            lstAccounts.ItemsSource = accounts.OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new NameIdIsChecked { Id = a.Id, Name = a.PublicName, IsChecked = true } );
+            var sortedAccounts = accounts.OrderBy( a => a.Order ).ThenBy( a => a.PublicName );
+
+            lstCashAccounts.ItemsSource = sortedAccounts.Select( a => new NameIdIsChecked { Id = a.Id, Name = a.PublicName, IsChecked = true } );
+            lstNonCashAccounts.ItemsSource = sortedAccounts.Select( a => new NameIdIsChecked { Id = a.Id, Name = a.PublicName, IsChecked = false } );
 
             lblWarning.Visibility = Visibility.Hidden;
         }
@@ -88,10 +91,12 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnNext_Click( object sender, RoutedEventArgs e )
         {
-            var accountIds = lstAccounts.Items.OfType<NameIdIsChecked>().Where( a => a.IsChecked == true ).Select( s => s.Id ).ToList();
-            if ( accountIds.Count > 0 )
+            var cashAccountIds = lstCashAccounts.Items.OfType<NameIdIsChecked>().Where( a => a.IsChecked == true ).Select( s => s.Id ).ToList();
+            var nonCashAccountIds = lstCashAccounts.Items.OfType<NameIdIsChecked>().Where( a => a.IsChecked == true ).Select( s => s.Id ).ToList();
+            if ( cashAccountIds.Any() || nonCashAccountIds.Any() )
             {
-                ReportOptions.Current.AccountIds = accountIds;
+                ReportOptions.Current.CashAccountIds = cashAccountIds;
+                ReportOptions.Current.NonCashAccountIds = nonCashAccountIds;
                 SelectDateRangePage nextPage = new SelectDateRangePage();
                 this.NavigationService.Navigate( nextPage );
             }
@@ -102,27 +107,29 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSelectAll control.
+        /// Handles the Click event of the btnSelectAllForCashGifts and btnSelectAllForNonCashGifts controls.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnSelectAll_Click( object sender, RoutedEventArgs e )
         {
-            var list = lstAccounts.Items.OfType<NameIdIsChecked>().ToList();
+            var listBox = sender == btnSelectAllForCashGifts ? lstCashAccounts : lstNonCashAccounts;
+            var list = listBox.Items.OfType<NameIdIsChecked>().ToList();
             list.ForEach( a => a.IsChecked = true );
-            lstAccounts.ItemsSource = list;
+            listBox.ItemsSource = list;
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSelectNone control.
+        /// Handles the Click event of the btnSelectNoneForCashGifts and btnSelectNoneForNonCashGifts controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnSelectNone_Click( object sender, RoutedEventArgs e )
         {
-            var list = lstAccounts.Items.OfType<NameIdIsChecked>().ToList();
+            var listBox = sender == btnSelectNoneForCashGifts ? lstCashAccounts : lstNonCashAccounts;
+            var list = listBox.Items.OfType<NameIdIsChecked>().ToList();
             list.ForEach( a => a.IsChecked = false );
-            lstAccounts.ItemsSource = list;
+            listBox.ItemsSource = list;
         }
 
         /// <summary>

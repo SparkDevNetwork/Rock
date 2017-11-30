@@ -102,6 +102,9 @@ No contributions found with the criteria provided.";
             ContributionReport contributionReport = new ContributionReport( ReportOptions.Current );
             contributionReport.OnProgress += contributionReport_OnProgress;
 
+            //// TODO
+
+            /*
             var doc = contributionReport.RunReport();
 
             if ( doc != null )
@@ -114,6 +117,7 @@ No contributions found with the criteria provided.";
             {
                 e.Result = null;
             }
+            */
         }
 
         /// <summary>
