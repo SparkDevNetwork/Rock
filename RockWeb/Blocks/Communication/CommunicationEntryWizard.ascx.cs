@@ -1440,7 +1440,7 @@ namespace RockWeb.Blocks.Communication
                         communicationService.Add( testCommunication );
                         rockContext.SaveChanges( disablePrePostProcessing: true );
 
-                        foreach ( var medium in testCommunication.Mediums )
+                        foreach ( var medium in testCommunication.GetMediums() )
                         {
                             medium.Send( testCommunication );
                         }
