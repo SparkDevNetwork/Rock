@@ -53,14 +53,11 @@ namespace RockWeb.Plugins.church_ccv.COP
     [SystemEmailField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", order: 11 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", order: 12 )]
-    [DefinedValueField(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types", "The phone numbers to display for editing.", false, true, order:17 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types Required", "The phone numbers that are required.", false, true, order: 18 )]
     public partial class AccountEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         private PlaceHolder[] PagePanels = new PlaceHolder[6];
-        private List<Guid> _RequiredPhoneNumberGuids = new List<Guid>();
 
         #endregion
 
