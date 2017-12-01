@@ -62,6 +62,22 @@ namespace Rock.Apps.StatementGenerator
         /// </value>
         private int RecordIndex { get; set; }
 
+        public void RunReport()
+        {
+            UpdateProgress( "Connecting..." );
+
+            // Login and setup options for REST calls
+            RockConfig rockConfig = RockConfig.Load();
+
+            _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
+            _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
+
+            // shouldn't happen, but just in case the StartDate isn't set, set it to the first day of the current year
+            DateTime firstDayOfYear = new DateTime( DateTime.Now.Year, 1, 1 );
+
+            DataSet personGroupAddressDataSet = _rockRestClient.PostDataWithResult<object, DataSet>( "api/FinancialTransactions/GetContributionPersonGroupAddress", ReportOptions.Current );
+        }
+
         /// <summary>
         /// Updates the progress.
         /// </summary>
@@ -72,38 +88,40 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public class ProgressEventArgs : EventArgs
-        {
-            /// <summary>
-            /// Gets or sets the position.
-            /// </summary>
-            /// <value>
-            /// The position.
-            /// </value>
-            public int Position { get; set; }
-
-            /// <summary>
-            /// Gets or sets the maximum.
-            /// </summary>
-            /// <value>
-            /// The maximum.
-            /// </value>
-            public int Max { get; set; }
-
-            /// <summary>
-            /// Gets or sets the progress message.
-            /// </summary>
-            /// <value>
-            /// The progress message.
-            /// </value>
-            public string ProgressMessage { get; set; }
-        }
-
-        /// <summary>
         /// Occurs when [configuration progress].
         /// </summary>
         public event EventHandler<ProgressEventArgs> OnProgress;
+
+        
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ProgressEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets or sets the position.
+        /// </summary>
+        /// <value>
+        /// The position.
+        /// </value>
+        public int Position { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum.
+        /// </summary>
+        /// <value>
+        /// The maximum.
+        /// </value>
+        public int Max { get; set; }
+
+        /// <summary>
+        /// Gets or sets the progress message.
+        /// </summary>
+        /// <value>
+        /// The progress message.
+        /// </value>
+        public string ProgressMessage { get; set; }
     }
 }

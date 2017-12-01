@@ -100,7 +100,9 @@ No contributions found with the criteria provided.";
         protected void bw_DoWork( object sender, DoWorkEventArgs e )
         {
             ContributionReport contributionReport = new ContributionReport( ReportOptions.Current );
-            contributionReport.OnProgress += contributionReport_OnProgress;
+            contributionReport.OnProgress += ContributionReport_OnProgress;
+
+            contributionReport.RunReport();
 
             //// TODO
 
@@ -121,14 +123,15 @@ No contributions found with the criteria provided.";
         }
 
         /// <summary>
-        /// Handles the OnProgress event of the contributionReport control.
+        /// Handles the OnProgress event of the ContributionReport control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ContributionReport.ProgressEventArgs"/> instance containing the event data.</param>
-        protected void contributionReport_OnProgress( object sender, ContributionReport.ProgressEventArgs e )
+        /// <param name="e">The <see cref="ProgressEventArgs"/> instance containing the event data.</param>
+        private void ContributionReport_OnProgress( object sender, ProgressEventArgs e )
         {
             ShowProgress( e.Position, e.Max, e.ProgressMessage );
         }
+
 
         /// <summary>
         /// The _start progress date time
