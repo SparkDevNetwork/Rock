@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LoginChurchOnlinePlatform.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Core.Login" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="COPLogin.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.COP.Login" %>
 
     <asp:Panel ID="pnlLogin" runat="server" DefaultButton="btnLogin">
         <div class="sso-login-wrapper">
@@ -34,19 +34,22 @@
 
     
     <asp:Panel ID="pnlLockedOut" runat="server" Visible="false">
-
-        <div class="alert alert-danger">
-            <asp:Literal ID="lLockedOutCaption" runat="server" />
+        <div class="sso-login-wrapper">
+            <img src="themes/church_ccv_external_v8/assets/ccv_logo-hi-res.png" style="width: 125px; margin-bottom:25px;"/>
+            <div class="alert alert-danger">
+                <asp:Literal ID="lLockedOutCaption" runat="server" />
+            </div>
         </div>
 
     </asp:Panel>
 
     <asp:Panel ID="pnlConfirmation" runat="server" Visible="false">
-
-        <div class="alert alert-warning">
-            <asp:Literal ID="lConfirmCaption" runat="server" />
+        <div class="sso-login-wrapper">
+            <img src="themes/church_ccv_external_v8/assets/ccv_logo-hi-res.png" style="width: 125px; margin-bottom:25px;"/>
+            <div class="alert alert-warning">
+                <asp:Literal ID="lConfirmCaption" runat="server" />
+            </div>
         </div>
-
     </asp:Panel>
    
 

@@ -28,13 +28,13 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 
-namespace RockWeb.Plugins.church_ccv.Core
+namespace RockWeb.Plugins.church_ccv.COP
 {
     /// <summary>
     /// Block for user to request a forgotten username.
     /// </summary>
-    [DisplayName( "Forgot Username Church Online Platform" )]
-    [Category( "CCV > Core" )]
+    [DisplayName( "Forgot Username" )]
+    [Category( "CCV > Church Online Platform" )]
     [Description( "Allows a user to get their forgotten username information emailed to them." )]
 
     [CodeEditorField( "Heading Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "<div class='alert alert-info'>Enter your email address below and we'll send your account information to you right away.</div>", "Captions", 0 )]

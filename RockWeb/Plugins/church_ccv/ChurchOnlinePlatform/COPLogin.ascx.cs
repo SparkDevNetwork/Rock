@@ -39,13 +39,13 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using church.ccv.Authentication;
 
-namespace RockWeb.Plugins.church_ccv.Core
+namespace RockWeb.Plugins.church_ccv.COP
 {
     /// <summary>
     /// Prompts user for login credentials.
     /// </summary>
-    [DisplayName( "Login Church Online Platform" )]
-    [Category( "CCV > Core" )]
+    [DisplayName( "Login" )]
+    [Category( "CCV > Church Online Platform" )]
     [Description( "SSO login for Church Online Platform. Add this block to an external facing page and point Church Online Platform at the external page." )]
 
     [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)", false, "", "", 0 )]
