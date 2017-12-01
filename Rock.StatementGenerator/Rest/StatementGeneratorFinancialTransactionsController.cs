@@ -11,7 +11,7 @@ using Rock.Web.Cache;
 
 namespace Rock.StatementGenerator.Rest
 {
-    public class FinancialTransactionsController : Rock.Rest.ApiControllerBase
+    public class StatementGeneratorFinancialTransactionsController : Rock.Rest.ApiControllerBase
     {
         /// <summary>
         /// Gets the statement generator recipients. This will be sorted based on the StatementGeneratorOptions
