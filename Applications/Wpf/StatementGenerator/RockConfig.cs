@@ -110,6 +110,38 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
+        /// Gets or sets the person selection option.
+        /// </summary>
+        /// <value>
+        /// The person selection option.
+        /// </value>
+        public PersonSelectionOption PersonSelectionOption { get; set; } = PersonSelectionOption.AllIndividuals;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show tax deductible accounts].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show tax deductible accounts]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowTaxDeductibleAccounts { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show non tax deductible accounts].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show non tax deductible accounts]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowNonTaxDeductibleAccounts { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show inactive accounts].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show inactive accounts]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowInactiveAccounts { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets the layout defined value unique identifier.
         /// </summary>
         /// <value>
@@ -121,12 +153,12 @@ namespace Rock.Apps.StatementGenerator
         {
             get
             {
-                return this["LayoutDefinedValueId"] as Guid?;
+                return this["LayoutDefinedValueGuid"] as Guid?;
             }
 
             set
             {
-                this["LayoutDefinedValueId"] = value;
+                this["LayoutDefinedValueGuid"] = value;
             }
         }
 
@@ -134,5 +166,26 @@ namespace Rock.Apps.StatementGenerator
         {
             return RockConfig.Default;
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum PersonSelectionOption
+    {
+        /// <summary>
+        /// All individuals
+        /// </summary>
+        AllIndividuals,
+
+        /// <summary>
+        /// The data view
+        /// </summary>
+        DataView,
+
+        /// <summary>
+        /// The single individual
+        /// </summary>
+        SingleIndividual
     }
 }

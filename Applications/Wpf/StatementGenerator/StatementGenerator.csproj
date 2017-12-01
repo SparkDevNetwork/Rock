@@ -79,17 +79,21 @@
     <Compile Include="ProgressPage.xaml.cs">
       <DependentUpon>ProgressPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ReportOptions.cs" />
     <Compile Include="RockConfig.cs" />
     <Compile Include="RockExtensions\ObjectExtensions.cs" />
     <Compile Include="RockExtensions\StringExtensions.cs" />
     <Compile Include="SelectAccountsPage.xaml.cs">
       <DependentUpon>SelectAccountsPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SelectAdvancedFeaturesPage.xaml.cs">
+      <DependentUpon>SelectAdvancedFeaturesPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SelectDateRangePage.xaml.cs">
       <DependentUpon>SelectDateRangePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SelectLayoutPage.xaml.cs">
-      <DependentUpon>SelectLayoutPage.xaml</DependentUpon>
+    <Compile Include="SelectLavaTemplatePage.xaml.cs">
+      <DependentUpon>SelectLavaTemplatePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="SelectPersonsPage.xaml.cs">
       <DependentUpon>SelectPersonsPage.xaml</DependentUpon>
@@ -134,11 +138,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="SelectAdvancedFeaturesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="SelectDateRangePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="SelectLayoutPage.xaml">
+    <Page Include="SelectLavaTemplatePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

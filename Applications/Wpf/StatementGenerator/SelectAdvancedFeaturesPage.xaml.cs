@@ -21,29 +21,21 @@ using System.Windows.Controls;
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
-    /// Interaction logic for SelectDateRangePage.xaml
+    /// 
     /// </summary>
-    public partial class SelectDateRangePage : Page
+    /// <seealso cref="System.Windows.Controls.Page" />
+    /// <seealso cref="System.Windows.Markup.IComponentConnector" />
+    public partial class SelectAdvancedFeaturesPage : Page
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SelectDateRangePage"/> class.
+        /// Initializes a new instance of the <see cref="SelectAdvancedFeaturesPage"/> class.
         /// </summary>
-        public SelectDateRangePage()
+        public SelectAdvancedFeaturesPage()
         {
             InitializeComponent();
 
-            DateTime firstDayOfYear = new DateTime( DateTime.Now.Year, 1, 1 );
-            dpStartDate.SelectedDate = ReportOptions.Current.StartDate ?? firstDayOfYear;
-
-            if ( ReportOptions.Current.EndDate.HasValue )
-            {
-                // set displayed EndDate to 1 day before since user would expect the entire full day of enddate to be included
-                dpEndDate.SelectedDate = ReportOptions.Current.EndDate.Value.AddDays( -1 );
-            }
-            else
-            {
-                dpEndDate.SelectedDate = ReportOptions.Current.EndDate ?? DateTime.Now.Date;
-            }
+            cbHideRefundedTransactions.IsChecked = ReportOptions.Current.HideRefundedTransactions;
+            cbHideCorrectedTransactions.IsChecked = ReportOptions.Current.HideCorrectedTransactions;
         }
 
         /// <summary>
@@ -55,7 +47,7 @@ namespace Rock.Apps.StatementGenerator
         {
             if ( SaveChanges( true ) )
             {
-                SelectLavaTemplatePage nextPage = new SelectLavaTemplatePage();
+                ProgressPage nextPage = new ProgressPage();
                 this.NavigationService.Navigate( nextPage );
             }
         }
@@ -67,37 +59,8 @@ namespace Rock.Apps.StatementGenerator
         /// <returns></returns>
         private bool SaveChanges( bool showWarnings )
         {
-            if ( dpEndDate.SelectedDate < dpStartDate.SelectedDate )
-            {
-                if ( showWarnings )
-                {
-                    lblWarning.Content = "Start date must be earlier than end date";
-                    lblWarning.Visibility = Visibility.Visible;
-                    return false;
-                }
-            }
-
-            if ( !dpStartDate.SelectedDate.HasValue )
-            {
-                if ( showWarnings )
-                {
-                    lblWarning.Content = "Please select a start date";
-                    lblWarning.Visibility = Visibility.Visible;
-                    return false;
-                }
-            }
-
-            ReportOptions.Current.StartDate = dpStartDate.SelectedDate.Value;
-
-            if ( dpEndDate.SelectedDate.HasValue )
-            {
-                // set EndDate to 1 day ahead since user would expect the entire full day of enddate to be included
-                ReportOptions.Current.EndDate = dpEndDate.SelectedDate.Value.AddDays( 1 );
-            }
-            else
-            {
-                ReportOptions.Current.EndDate = null;
-            }
+            ReportOptions.Current.HideRefundedTransactions = cbHideRefundedTransactions.IsChecked == true;
+            ReportOptions.Current.HideCorrectedTransactions = cbHideCorrectedTransactions.IsChecked == true;
 
             return true;
         }
