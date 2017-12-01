@@ -546,7 +546,7 @@ namespace RockWeb.Blocks.Communication
                         communicationService.Add( testCommunication );
                         rockContext.SaveChanges();
 
-                        foreach ( var medium in testCommunication.Mediums )
+                        foreach ( var medium in testCommunication.GetMediums() )
                         {
                             medium.Send( testCommunication );
                         }
@@ -786,7 +786,7 @@ namespace RockWeb.Blocks.Communication
 
             CommunicationId = communication.Id;
 
-            var firstMedium = communication.Mediums.FirstOrDefault();
+            var firstMedium = communication.GetMediums().FirstOrDefault();
             if ( firstMedium != null && firstMedium.EntityType != null )
             {
                 MediumEntityTypeId = firstMedium.EntityType.Id;
