@@ -11485,11 +11485,18 @@ html,body{
 }
 
 /* SSO Login page*/
-/*#sso-login-form {
+.sso-login-wrapper {
+	display: flex;
+    flex-direction: column;
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 512px;
+	margin-top: 100px;
+	padding: 25px;
+}
+#sso-login-panel-title {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    background: #FFFFFF;
-    width: 30%;
-    margin: auto;
-    padding: 40px 100px;
-}*/
+}

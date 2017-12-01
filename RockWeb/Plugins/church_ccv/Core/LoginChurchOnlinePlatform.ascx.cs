@@ -76,10 +76,6 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            btnNewAccount.Visible = !GetAttributeValue( "HideNewAccount" ).AsBoolean();
-            btnNewAccount.Text = this.GetAttributeValue( "NewAccountButtonText" ) ?? "Register";
-
         }
 
         /// <summary>
