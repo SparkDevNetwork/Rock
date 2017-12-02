@@ -67,6 +67,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\..\..\Rock.StatementGenerator\StatementGeneratorOptions.cs">
+      <Link>StatementGeneratorOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Rock.StatementGenerator\StatementGeneratorRecipient.cs">
+      <Link>StatementGeneratorRecipient.cs</Link>
+    </Compile>
     <Compile Include="LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
