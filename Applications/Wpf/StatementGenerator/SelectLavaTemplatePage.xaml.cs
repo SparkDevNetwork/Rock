@@ -55,11 +55,7 @@ namespace Rock.Apps.StatementGenerator
         {
             var rockConfig = RockConfig.Load();
 
-            // #TODO# Make a well known guid in a Statement Generator migration 
-            Guid statementGeneratorLavaTemplateDefinedTypeGuid = new Guid( "74A23516-A20A-40C9-93B5-1AB5FDFF6750" );
-
-            var statementGeneratorLavaTemplateDefinedType = _rockRestClient.GetDataByGuid<Rock.Client.DefinedType>( "api/DefinedTypes", statementGeneratorLavaTemplateDefinedTypeGuid );
-            var lavaTemplateDefineValues = _rockRestClient.GetData<List<Rock.Client.DefinedValue>>( $"api/DefinedValues?$filter=DefinedTypeId eq {statementGeneratorLavaTemplateDefinedType.Id}" );
+            var lavaTemplateDefineValues = _rockRestClient.GetData<List<Rock.Client.DefinedValue>>( "api/FinancialTransactions/GetStatementGeneratorTemplates" );
 
             List<RadioButton> radioButtonList = new List<RadioButton>();
             foreach ( var lavaTemplateDefineValue in lavaTemplateDefineValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
@@ -107,6 +103,8 @@ namespace Rock.Apps.StatementGenerator
             var rockConfig = RockConfig.Load();
             rockConfig.LayoutDefinedValueGuid = selected?.Tag as Guid?;
             rockConfig.Save();
+
+            ReportOptions.Current.LayoutDefinedValueGuid = selected?.Tag as Guid?;
 
             return true;
         }

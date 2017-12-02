@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data;
 using Rock.Net;
 
@@ -28,18 +29,18 @@ namespace Rock.Apps.StatementGenerator
         /// <summary>
         /// Initializes a new instance of the <see cref="ContributionReport"/> class.
         /// </summary>
-        public ContributionReport( ReportOptions options )
+        public ContributionReport( Rock.StatementGenerator.StatementGeneratorOptions options )
         {
             this.Options = options;
         }
 
         /// <summary>
-        /// Gets or sets the filter.
+        /// Gets or sets the options.
         /// </summary>
         /// <value>
-        /// The filter.
+        /// The options.
         /// </value>
-        public ReportOptions Options { get; set; }
+        public Rock.StatementGenerator.StatementGeneratorOptions Options { get; set; }
 
         /// <summary>
         /// The _rock rest client
@@ -75,7 +76,24 @@ namespace Rock.Apps.StatementGenerator
             // shouldn't happen, but just in case the StartDate isn't set, set it to the first day of the current year
             DateTime firstDayOfYear = new DateTime( DateTime.Now.Year, 1, 1 );
 
-            DataSet personGroupAddressDataSet = _rockRestClient.PostDataWithResult<object, DataSet>( "api/FinancialTransactions/GetContributionPersonGroupAddress", ReportOptions.Current );
+            var recipientList  = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, List<Rock.StatementGenerator.StatementGeneratorRecipient>>( "api/FinancialTransactions/GetStatementGeneratorRecipients", this.Options );
+
+            var recipentResults = new List<Rock.StatementGenerator.StatementGeneratorRecipientResult>();
+            this.RecordCount = recipientList.Count;
+            this.RecordIndex = 0;
+
+            foreach (var recipent in recipientList )
+            {
+                var url = $"api/FinancialTransactions/GetStatementGeneratorRecipientResult?GroupId={recipent.GroupId}";
+                if (recipent.PersonId.HasValue)
+                {
+                    url += $"&PersonId={recipent.PersonId.Value}";
+                }
+                var recipentResult =  _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, Rock.StatementGenerator.StatementGeneratorRecipientResult>( url, this.Options );
+                recipentResults.Add( recipentResult );
+                this.RecordIndex++;
+                UpdateProgress( "Getting Statements..." );
+            }
         }
 
         /// <summary>
