@@ -587,6 +587,11 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
+                if ( batch.IsAutomated == true && batch.Status == BatchStatus.Pending )
+                {
+                    ddlStatus.Enabled = false;
+                }
+
                 campCampus.Campuses = CampusCache.All();
                 if ( batch.CampusId.HasValue )
                 {
@@ -656,6 +661,8 @@ namespace RockWeb.Blocks.Finance
 
             hlBatchId.Text = string.Format( "Batch #{0}", batch.Id.ToString() );
             hlBatchId.Visible = batch.Id != 0;
+
+            hlIsAutomated.Visible = batch.IsAutomated;
         }
 
         /// <summary>

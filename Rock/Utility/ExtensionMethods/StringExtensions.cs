@@ -70,6 +70,22 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the right most part of a string of the given length.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        public static string Right( this string str, int length )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            return str.Substring( str.Length - length );
+        }
+
+        /// <summary>
         /// Determines whether the string is made up of only digits
         /// </summary>
         /// <param name="str">The string.</param>

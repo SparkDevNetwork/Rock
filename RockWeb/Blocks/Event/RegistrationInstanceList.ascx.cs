@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Event
                     gInstances.ExportFilename = _template.Name;
                     gInstances.ShowConfirmDeleteDialog = false;
 
-                    // make sure they have Auth to edit the block OR edit to the Group
+                    // make sure they have Auth to edit the block OR edit to the template
                     bool canEditBlock = UserCanEdit || _template.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
                     gInstances.Actions.ShowAdd = canEditBlock;
                     gInstances.IsDeleteEnabled = canEditBlock;

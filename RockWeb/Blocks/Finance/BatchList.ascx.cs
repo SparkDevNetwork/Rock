@@ -481,6 +481,13 @@ namespace RockWeb.Blocks.Finance
                             return;
                         }
 
+                        if ( batch.IsAutomated && batch.Status == BatchStatus.Pending && newStatus != BatchStatus.Pending )
+                        {
+                            errorMessage = string.Format( "{0} is an automated batch and the status can not be modified when the status is pending. The system will automatically set this batch to OPEN when all transactions have been downloaded.", batch.Name );
+                            maWarningDialog.Show( errorMessage, ModalAlertType.Warning );
+                            return;
+                        } 
+
                         batch.Status = newStatus;
 
                         if ( !batch.IsValid )

@@ -27,24 +27,21 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Interaction that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for NcoaHistory that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class InteractionEntity
+    public partial class NcoaHistoryEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public string Campaign { get; set; }
+        public Rock.Client.Enums.AddressInvalidReason AddressInvalidReason { get; set; }
 
         /// <summary />
-        public string Content { get; set; }
+        public Rock.Client.Enums.AddressStatus AddressStatus { get; set; }
 
         /// <summary />
-        public string DetailTemplate { get; set; }
-
-        /// <summary />
-        public int? EntityId { get; set; }
+        public int FamilyId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -53,25 +50,10 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int InteractionComponentId { get; set; }
+        public int? LocationId { get; set; }
 
         /// <summary />
-        public string InteractionData { get; set; }
-
-        /// <summary />
-        public DateTime InteractionDateTime { get; set; }
-
-        /// <summary />
-        public int? InteractionSessionId { get; set; }
-
-        /// <summary />
-        public string InteractionSummary { get; set; }
-
-        /// <summary />
-        public string ListTemplate { get; set; }
-
-        /// <summary />
-        public string Medium { get; set; }
+        public Rock.Client.Enums.MatchFlag MatchFlag { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -79,22 +61,67 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Operation { get; set; }
+        public DateTime? MoveDate { get; set; }
 
         /// <summary />
-        public int? PersonalDeviceId { get; set; }
+        public decimal? MoveDistance { get; set; }
 
         /// <summary />
-        public int? PersonAliasId { get; set; }
+        public Rock.Client.Enums.MoveType MoveType { get; set; }
 
         /// <summary />
-        public int? RelatedEntityId { get; set; }
+        public string NcoaNote { get; set; }
 
         /// <summary />
-        public int? RelatedEntityTypeId { get; set; }
+        public DateTime NcoaRunDateTime { get; set; }
 
         /// <summary />
-        public string Source { get; set; }
+        public Rock.Client.Enums.NcoaType NcoaType { get; set; }
+
+        /// <summary />
+        public string OriginalCity { get; set; }
+
+        /// <summary />
+        public string OriginalPostalCode { get; set; }
+
+        /// <summary />
+        public string OriginalState { get; set; }
+
+        /// <summary />
+        public string OriginalStreet1 { get; set; }
+
+        /// <summary />
+        public string OriginalStreet2 { get; set; }
+
+        /// <summary />
+        public int PersonAliasId { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.Processed Processed { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.UpdatedAddressType UpdatedAddressType { get; set; }
+
+        /// <summary />
+        public string UpdatedBarcode { get; set; }
+
+        /// <summary />
+        public string UpdatedCity { get; set; }
+
+        /// <summary />
+        public string UpdatedCountry { get; set; }
+
+        /// <summary />
+        public string UpdatedPostalCode { get; set; }
+
+        /// <summary />
+        public string UpdatedState { get; set; }
+
+        /// <summary />
+        public string UpdatedStreet1 { get; set; }
+
+        /// <summary />
+        public string UpdatedStreet2 { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -123,32 +150,41 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source Interaction object
+        /// Copies the base properties from a source NcoaHistory object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Interaction source )
+        public void CopyPropertiesFrom( NcoaHistory source )
         {
             this.Id = source.Id;
-            this.Campaign = source.Campaign;
-            this.Content = source.Content;
-            this.DetailTemplate = source.DetailTemplate;
-            this.EntityId = source.EntityId;
+            this.AddressInvalidReason = source.AddressInvalidReason;
+            this.AddressStatus = source.AddressStatus;
+            this.FamilyId = source.FamilyId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.InteractionComponentId = source.InteractionComponentId;
-            this.InteractionData = source.InteractionData;
-            this.InteractionDateTime = source.InteractionDateTime;
-            this.InteractionSessionId = source.InteractionSessionId;
-            this.InteractionSummary = source.InteractionSummary;
-            this.ListTemplate = source.ListTemplate;
-            this.Medium = source.Medium;
+            this.LocationId = source.LocationId;
+            this.MatchFlag = source.MatchFlag;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Operation = source.Operation;
-            this.PersonalDeviceId = source.PersonalDeviceId;
+            this.MoveDate = source.MoveDate;
+            this.MoveDistance = source.MoveDistance;
+            this.MoveType = source.MoveType;
+            this.NcoaNote = source.NcoaNote;
+            this.NcoaRunDateTime = source.NcoaRunDateTime;
+            this.NcoaType = source.NcoaType;
+            this.OriginalCity = source.OriginalCity;
+            this.OriginalPostalCode = source.OriginalPostalCode;
+            this.OriginalState = source.OriginalState;
+            this.OriginalStreet1 = source.OriginalStreet1;
+            this.OriginalStreet2 = source.OriginalStreet2;
             this.PersonAliasId = source.PersonAliasId;
-            this.RelatedEntityId = source.RelatedEntityId;
-            this.RelatedEntityTypeId = source.RelatedEntityTypeId;
-            this.Source = source.Source;
+            this.Processed = source.Processed;
+            this.UpdatedAddressType = source.UpdatedAddressType;
+            this.UpdatedBarcode = source.UpdatedBarcode;
+            this.UpdatedCity = source.UpdatedCity;
+            this.UpdatedCountry = source.UpdatedCountry;
+            this.UpdatedPostalCode = source.UpdatedPostalCode;
+            this.UpdatedState = source.UpdatedState;
+            this.UpdatedStreet1 = source.UpdatedStreet1;
+            this.UpdatedStreet2 = source.UpdatedStreet2;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -160,22 +196,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Interaction that includes all the fields that are available for GETs. Use this for GETs (use InteractionEntity for POST/PUTs)
+    /// Client model for NcoaHistory that includes all the fields that are available for GETs. Use this for GETs (use NcoaHistoryEntity for POST/PUTs)
     /// </summary>
-    public partial class Interaction : InteractionEntity
+    public partial class NcoaHistory : NcoaHistoryEntity
     {
-        /// <summary />
-        public InteractionComponent InteractionComponent { get; set; }
-
-        /// <summary />
-        public InteractionSession InteractionSession { get; set; }
-
-        /// <summary />
-        public PersonAlias PersonAlias { get; set; }
-
-        /// <summary />
-        public EntityType RelatedEntityType { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

@@ -793,6 +793,7 @@
     <Compile Include="Model\CodeGenerated\MetaNickNameLookupService.cs" />
     <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageClusterService.cs" />
     <Compile Include="Model\CodeGenerated\MetaPersonicxLifestageGroupService.cs" />
+    <Compile Include="Model\CodeGenerated\NcoaHistoryService.cs" />
     <Compile Include="Model\CodeGenerated\PersonalDeviceService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
@@ -1113,6 +1114,7 @@
     <Compile Include="Model\MetricPartition.cs" />
     <Compile Include="Model\MetricValue.cs" />
     <Compile Include="Model\MetricValuePartition.cs" />
+    <Compile Include="Model\NcoaHistory.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\NoteService.Partial.cs" />
     <Compile Include="Model\NoteType.cs" />

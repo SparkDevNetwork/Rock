@@ -119,6 +119,38 @@ namespace Rock.Model
         [DataMember]
         public int? ComponentCacheDuration { get; set; }
 
+        /// <summary>
+        /// Gets or sets the list template.
+        /// Used when rendering the interaction channel in a list using lava
+        /// </summary>
+        /// <value>
+        /// The list template.
+        /// </value>
+        [DataMember]
+        public string ListTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the detail template.
+        /// Used when rendering the interaction channel's details using lava
+        /// </summary>
+        /// <value>
+        /// The detail template.
+        /// </value>
+        [DataMember]
+        public string DetailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [uses session].
+        /// Set to true if interactions in this channel from a web browser session (for example: PageViews).
+        /// Set to false if interactions in this channel are not associated with a web browser session (for example: communication clicks and opens from an email client or sms device).
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [uses session]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool UsesSession { get; set; }
+
+
         #endregion
 
         #region Virtual Properties

@@ -99,11 +99,14 @@ namespace Rock.Model
             target.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
             target.ComponentCacheDuration = source.ComponentCacheDuration;
             target.ComponentEntityTypeId = source.ComponentEntityTypeId;
+            target.DetailTemplate = source.DetailTemplate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.InteractionEntityTypeId = source.InteractionEntityTypeId;
+            target.ListTemplate = source.ListTemplate;
             target.Name = source.Name;
             target.RetentionDuration = source.RetentionDuration;
+            target.UsesSession = source.UsesSession;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
