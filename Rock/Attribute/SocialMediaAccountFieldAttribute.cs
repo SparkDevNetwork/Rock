@@ -30,36 +30,6 @@ namespace Rock.Attribute
         private const string TEXT_TEMPLATE = "texttemplate";
         private const string BASEURL = "baseurl";
 
-        /* Developer Note: When adding new params to a Field Attribute, we could just add new Properties instead to avoid backwards compatibily issues. 
-         * See AllowHtml below as an example, and the GroupList block for how to initialize it
-         */
-
-        /// <summary>
-        /// Sets a value for Text Template.
-        /// </summary>
-        /// <value> </value>
-        public string TextTemplate {
-            get {
-                return FieldConfigurationValues.GetValueOrNull( TEXT_TEMPLATE );
-            }
-            set {
-                FieldConfigurationValues.AddOrReplace( TEXT_TEMPLATE, new Field.ConfigurationValue( value ) );
-            }
-        }
-
-        /// <summary>
-        /// Sets a value for base url.
-        /// </summary>
-        /// <value> </value>
-        public string BaseUrl {
-            get {
-                return FieldConfigurationValues.GetValueOrNull( BASEURL );
-            }
-            set {
-                FieldConfigurationValues.AddOrReplace( BASEURL, new Field.ConfigurationValue( value ) );
-            }
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ValueListFieldAttribute"/> class.
         /// </summary>
@@ -74,10 +44,12 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeClass">The field type class.</param>
-        internal SocialMediaAccountFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", string socialNetworkName = "",
-            string iconCssClass = "", string color = "", string category = "", int order = 0, string key = null, string fieldTypeClass = null )
-            : base( name, description, required, defaultValue, category, order, key, fieldTypeClass )
+        internal SocialMediaAccountFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "", 
+            string socialNetworkName = "", string iconCssClass = "", string color = "", string textTemplate = "", string baseUrl = "",
+            string category = "", int order = 0, string key = null, string fieldTypeClass = null )
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SocialMediaAccountFieldType ).FullName )
         {
+
             if ( !string.IsNullOrWhiteSpace( socialNetworkName ) )
             {
                 var configValue = new Field.ConfigurationValue( socialNetworkName );
@@ -95,26 +67,19 @@ namespace Rock.Attribute
                 var configValue = new Field.ConfigurationValue( color );
                 FieldConfigurationValues.Add( COLOR_KEY, configValue );
             }
+
+            if ( !string.IsNullOrWhiteSpace( textTemplate ) )
+            {
+                var configValue = new Field.ConfigurationValue( textTemplate );
+                FieldConfigurationValues.Add( TEXT_TEMPLATE, configValue );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( baseUrl ) )
+            {
+                var configValue = new Field.ConfigurationValue( baseUrl );
+                FieldConfigurationValues.Add( BASEURL, configValue );
+            }
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <param name="socialNetworkName">The name of the socal media network.</param>
-        /// <param name="iconCssClass">The icon that represents the social media network.</param>
-        /// <param name="color">The color to use for making buttons for the social media network.</param>
-        /// <param name="category">The category.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="key">The key.</param>
-        public SocialMediaAccountFieldAttribute( string name = "", string description = "", bool required = true, string defaultValue = "",
-             string socialNetworkName = "", string iconCssClass = "", string color = "", string category = "", int order = 0, string key = null )
-           : this( name, description, required, defaultValue, socialNetworkName, iconCssClass, color, category, order, key,
-            typeof( Rock.Field.Types.SocialMediaAccountFieldType ).FullName )
-        {
-        }
     }
 }

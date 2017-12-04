@@ -78,7 +78,6 @@ namespace Rock.Field.Types
             cpColor.Label = "Color";
             cpColor.Help = "The color to use for making buttons for the social media network.";
 
-
             var textTemplate = new CodeEditor();
             controls.Add( textTemplate );
             textTemplate.Label = "Text Template";
@@ -234,7 +233,6 @@ namespace Rock.Field.Types
         }
 
         #endregion
-
 
         #region Edit Control
 
