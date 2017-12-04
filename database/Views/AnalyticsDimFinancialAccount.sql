@@ -11,8 +11,8 @@ SELECT fa.Id [AccountId]
     ,fa.[PublicDescription]
     ,CASE fa.[IsTaxDeductible]
         WHEN 1
-            THEN 'Taxable'
-        ELSE 'Not Taxable'
+            THEN 'Not Taxable'
+        ELSE 'Taxable'
         END [TaxStatus]
     ,fa.[GlCode]
     ,fa.[Order]

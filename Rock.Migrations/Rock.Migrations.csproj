@@ -421,6 +421,14 @@
     <Compile Include="Migrations\201711162212312_SiteFontAwesome.Designer.cs">
       <DependentUpon>201711162212312_SiteFontAwesome.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711210033592_InteractionTemplateAndCampaignFields.cs" />
+    <Compile Include="Migrations\201711210033592_InteractionTemplateAndCampaignFields.Designer.cs">
+      <DependentUpon>201711210033592_InteractionTemplateAndCampaignFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201711211752271_NcoaHistory.cs" />
+    <Compile Include="Migrations\201711211752271_NcoaHistory.Designer.cs">
+      <DependentUpon>201711211752271_NcoaHistory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2886,6 +2894,13 @@
     <EmbeddedResource Include="Migrations\201711162212312_SiteFontAwesome.resx">
       <DependentUpon>201711162212312_SiteFontAwesome.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711210033592_InteractionTemplateAndCampaignFields.resx">
+      <DependentUpon>201711210033592_InteractionTemplateAndCampaignFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711211752271_NcoaHistory.resx">
+      <DependentUpon>201711211752271_NcoaHistory.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4795,6 +4810,12 @@
     </Content>
     <Content Include="Migrations\201711141624083_CommunicationTemplateCssInliningEnabled_spCrm_PersonDuplicateFinder.sql">
       <DependentUpon>201711141624083_CommunicationTemplateCssInliningEnabled.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711211752271_NcoaHistory_UpdateCommunicationTemplateBinaryFiles.sql">
+      <DependentUpon>201711211752271_NcoaHistory.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201711211752271_NcoaHistory_UpdateCommunicationTemplates.sql">
+      <DependentUpon>201711211752271_NcoaHistory.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />

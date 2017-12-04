@@ -129,9 +129,7 @@ namespace RockWeb.Blocks.Connection
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             gRequests.DataKeyNames = new string[] { "Id" };
-            gRequests.Actions.ShowAdd = true;
             gRequests.Actions.AddClick += gRequests_Add;
-            gRequests.IsDeleteEnabled = true;
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;
             gRequests.PersonIdField = "PersonId";
@@ -538,18 +536,18 @@ namespace RockWeb.Blocks.Connection
             // Loop through opportunities
             foreach ( var opportunity in opportunities )
             {
-                // Check to see if person can view the opportunity because of admin rights to this block or admin rights to
+                // Check to see if person can edit the opportunity because of edit rights to this block or edit rights to
                 // the opportunity
-                bool canView = UserCanAdministrate || opportunity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                bool canEdit = UserCanEdit || opportunity.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 bool campusSpecificConnector = false;
                 var campusIds = new List<int>();
 
                 if ( CurrentPersonId.HasValue )
                 {
                     // Check to see if person belongs to any connector group that is not campus specific
-                    if ( !canView )
+                    if ( !canEdit )
                     {
-                        canView = opportunity
+                        canEdit = opportunity
                             .ConnectionOpportunityConnectorGroups
                             .Any( g =>
                                 !g.CampusId.HasValue &&
@@ -557,9 +555,9 @@ namespace RockWeb.Blocks.Connection
                                 g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId.Value ) );
                     }
 
-                    // If user is not yet authorized to view the opportunity, check to see if they are a member of one of the 
+                    // If user is not yet authorized to edit the opportunity, check to see if they are a member of one of the 
                     // campus-specific connector groups for the opportunity, and note the campus
-                    if ( !canView )
+                    if ( !canEdit )
                     {
                         foreach ( var groupCampus in opportunity
                             .ConnectionOpportunityConnectorGroups
@@ -569,11 +567,13 @@ namespace RockWeb.Blocks.Connection
                                 g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId.Value ) ) )
                         {
                             campusSpecificConnector = true;
-                            canView = true;
+                            canEdit = true;
                             campusIds.Add( groupCampus.CampusId.Value );
                         }
                     }
                 }
+
+                var canView = canEdit || opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 // Is user is authorized to view this opportunity type...
                 if ( canView )
@@ -645,10 +645,11 @@ namespace RockWeb.Blocks.Connection
                             Id = opportunity.Id,
                             Name = opportunity.Name,
                             IsActive = opportunity.IsActive,
-	                        IconCssClass = opportunity.IconCssClass,
-	                        IdleConnectionRequests = idleConnectionRequests,
-	                        CriticalConnectionRequests = criticalConnectionRequests,
-                            DaysUntilRequestIdle = opportunity.ConnectionType.DaysUntilRequestIdle
+                            IconCssClass = opportunity.IconCssClass,
+                            IdleConnectionRequests = idleConnectionRequests,
+                            CriticalConnectionRequests = criticalConnectionRequests,
+                            DaysUntilRequestIdle = opportunity.ConnectionType.DaysUntilRequestIdle,
+                            CanEdit = canEdit
                         };
 
                         // If the user is limited requests with specific campus(es) set the list, otherwise leave it to be null
@@ -862,6 +863,10 @@ namespace RockWeb.Blocks.Connection
 
             if ( opportunitySummary != null )
             {
+                gRequests.Actions.ShowAdd = opportunitySummary.CanEdit;
+                gRequests.IsDeleteEnabled = opportunitySummary.CanEdit;
+                gRequests.ColumnsOfType<DeleteField>().First().Visible = opportunitySummary.CanEdit;
+
                 using ( var rockContext = new RockContext() )
                 {
 
@@ -1133,6 +1138,7 @@ namespace RockWeb.Blocks.Connection
             public bool CampusSpecificConnector { get; set; }
             public List<int> ConnectorCampusIds { get; set; }  // Will be null if user is a connector for all campuses
             public int DaysUntilRequestIdle { get; set; }
+            public bool CanEdit { get; set; }
             public int AssignedToYou
             {
                 get

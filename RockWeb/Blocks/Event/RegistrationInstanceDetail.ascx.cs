@@ -758,6 +758,7 @@ namespace RockWeb.Blocks.Event
                     int registrationInstanceId = registration.RegistrationInstanceId;
 
                     if ( !UserCanEdit &&
+                        !registration.IsAuthorized( "Register", CurrentPerson ) &&
                         !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) &&
                         !registration.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                     {
@@ -2364,8 +2365,11 @@ namespace RockWeb.Blocks.Event
                 {
                     btnEdit.Visible = false;
                     btnDelete.Visible = false;
-                    gRegistrations.Actions.ShowAdd = false;
-                    gRegistrations.IsDeleteEnabled = false;
+
+                    bool allowRegistrationEdit = registrationInstance.IsAuthorized( "Register", CurrentPerson );
+                    gRegistrations.Actions.ShowAdd = allowRegistrationEdit;
+                    gRegistrations.IsDeleteEnabled = allowRegistrationEdit;
+
                     ShowReadonlyDetails( registrationInstance, false );
                 }
                 else
