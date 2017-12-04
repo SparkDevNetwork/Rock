@@ -384,6 +384,7 @@
     <Compile Include="Attribute\EmailFieldAttribute.cs" />
     <Compile Include="Attribute\GroupMemberFieldAttribute.cs" />
     <Compile Include="Attribute\MatrixFieldAttribute.cs" />
+    <Compile Include="Attribute\SocialMediaAccountFieldAttribute.cs" />
     <Compile Include="Attribute\SSNFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowFieldAttribute.cs" />
     <Compile Include="Attribute\EncryptedTextFieldAttribute.cs" />
@@ -599,6 +600,7 @@
     <Compile Include="Field\Types\DefinedValueRangeFieldType.cs" />
     <Compile Include="Field\Types\EmailFieldType.cs" />
     <Compile Include="Field\Types\MatrixFieldType.cs" />
+    <Compile Include="Field\Types\SocialMediaAccountFieldType.cs" />
     <Compile Include="Field\Types\SSNFieldType.cs" />
     <Compile Include="Field\Types\WorkflowFieldType.cs" />
     <Compile Include="Field\Types\EncryptedTextFieldType.cs" />
