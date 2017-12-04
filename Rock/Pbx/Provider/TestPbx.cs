@@ -36,6 +36,14 @@ namespace Rock.Pbx.Provider
     [TextField( "Password", "The password to use to connect with.", true, order: 2 )]
     public class TestPbx : PbxComponent
     {
+        public override bool SupportsOrigination
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public override int DownloadCdr( DateTime? startDate = null )
         {
             return 0;

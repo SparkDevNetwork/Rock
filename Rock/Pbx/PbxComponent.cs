@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-
+using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
 
@@ -24,8 +24,17 @@ namespace Rock.Pbx
     /// <summary>
     /// MEF Component for PBX Systems
     /// </summary>
+    [CustomDropdownListField( "Internal Phone Type", "The phone type to that is connected to the PBX.", @"  SELECT 
+	dv.[Value] AS [Text],
+	dv.[Id] AS [Value]
+FROM 
+	[DefinedValue] dv
+	INNER JOIN [DefinedType] dt ON dt.[Id] = dv.[DefinedTypeId]
+WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 999 )]
     public abstract class PbxComponent : Component
     {
+        public abstract bool SupportsOrigination { get; }
+
         public abstract bool Originate( string fromPhone, string toPhone, string callerId, out string message );
 
         public abstract bool Originate( Person fromPerson, string toPhone, string callerId, out string message );

@@ -30,7 +30,7 @@ namespace Rock.Model
     /// Data Access/Service class for <see cref="Rock.Model.Person"/> entity objects.
     /// </summary>
     public partial class PersonService
-    {
+    {     
         /// <summary>
         /// Gets the specified unique identifier.
         /// </summary>
@@ -1914,6 +1914,17 @@ namespace Rock.Model
         #region User Preferences
 
         /// <summary>
+        /// Saves the user preference.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void SaveUserPreference( Person person, PersonPreferenceKey key, string value )
+        {
+            SaveUserPreference( person, key.ToString(), value );
+        }
+
+        /// <summary>
         /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
@@ -2133,6 +2144,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the user preference.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public static string GetUserPreference(Person person, PersonPreferenceKey key )
+        {
+            return GetUserPreference( person, key.ToString() );
+        }
+
+        /// <summary>
         /// Deletes a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
@@ -2159,6 +2181,16 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
             }
+        }
+
+        /// <summary>
+        /// Deletes the user preference.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="key">The key.</param>
+        public static void DeleteUserPreference(Person person, PersonPreferenceKey key )
+        {
+            DeleteUserPreference( person, key.ToString() );
         }
 
         /// <summary>
@@ -2190,4 +2222,12 @@ namespace Rock.Model
 
         #endregion
     }
+
+    /// <summary>
+    /// Enum for storing person preference keys
+    /// </summary>
+    public enum PersonPreferenceKey
+    {
+        OriginateCallSource
+    };
 }

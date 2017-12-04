@@ -33,11 +33,13 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public class PbxController : ApiControllerBase
     {
+
         /// <summary>
-        /// Originates a phone call between a source phone number and a destination phone number.
+        /// Originates the specified source phone.
         /// </summary>
         /// <param name="sourcePhone">The source phone.</param>
         /// <param name="destinationPhone">The destination phone.</param>
+        /// <param name="callerId">The caller identifier.</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/Pbx/Originate" )]
         [HttpGet]
@@ -55,19 +57,11 @@ namespace Rock.Rest.Controllers
                 return response;
             }
 
-            var pbxComponent = Rock.Pbx.PbxContainer.GetActiveComponent();
+            var pbxComponent = Rock.Pbx.PbxContainer.GetAllowedActiveComponentWithOriginationSupport( currentPerson );
             if ( pbxComponent == null )
             {
                 response.Success = false;
-                response.Message = "An active PBX component is not configured.";
-                return response;
-            }
-
-            // check that this person is allowed to access this component
-            if ( !Rock.Security.Authorization.Authorized( pbxComponent, Authorization.VIEW, currentPerson ) )
-            {
-                response.Success = false;
-                response.Message = "You do not have permission to originate calls.";
+                response.Message = "An active PBX component supporting call origination is secured to allow access.";
                 return response;
             }
 
@@ -103,23 +97,15 @@ namespace Rock.Rest.Controllers
                 return response;
             }
 
-            var pbxComponent = Rock.Pbx.PbxContainer.GetActiveComponent();
+            var pbxComponent = Rock.Pbx.PbxContainer.GetAllowedActiveComponentWithOriginationSupport( currentPerson );
             if ( pbxComponent == null )
             {
                 response.Success = false;
-                response.Message = "An active PBX component is not configured.";
+                response.Message = "An active PBX component supporting call origination is secured to allow access.";
                 return response;
             }
 
-            // check that this person is allowed to access this component
-            if ( !Rock.Security.Authorization.Authorized( pbxComponent, Authorization.VIEW, currentPerson ) )
-            {
-                response.Success = false;
-                response.Message = "You do not have permission to originate calls.";
-                return response;
-            }
-
-            // get the source person object
+            // get the source person object ( the source could be different from the current person)
             var sourcePerson = new PersonService( new Data.RockContext() ).Get( sourcePersonGuid );
 
             string message = null;

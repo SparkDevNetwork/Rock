@@ -21,6 +21,7 @@ using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -166,8 +167,22 @@ namespace Rock.Reporting.DataSelect.Person
             phoneNumberTypeList.ID = parentControl.ID + "_phoneTypeList";
             phoneNumberTypeList.Label = "Phone Type";
             parentControl.Controls.Add( phoneNumberTypeList );
-            
-            return new System.Web.UI.Control[] { phoneNumberTypeList };
+
+            // show the click to call link
+            var pbxComponent = Rock.Pbx.PbxContainer.GetActiveComponentWithOriginationSupport();
+
+            RockCheckBox enableCallOrigination = new RockCheckBox();
+            enableCallOrigination.Help = "Determines if the phone numbers should be linked to enable click-to-call.";
+            enableCallOrigination.Label = "Enable Call Origination";
+
+            if ( pbxComponent == null )
+            {
+                enableCallOrigination.Visible = false;
+            }
+
+            parentControl.Controls.Add( enableCallOrigination );
+
+            return new System.Web.UI.Control[] { phoneNumberTypeList, enableCallOrigination };
         }
 
         /// <summary>
@@ -188,16 +203,9 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            if ( controls.Count() == 1 )
-            {
-                RockDropDownList dropDownList = controls[0] as RockDropDownList;
-                if ( dropDownList != null )
-                {
-                    return dropDownList.SelectedValue;
-                }
-            }
-            
-            return null;
+            RockDropDownList dropDownList = controls[0] as RockDropDownList;
+            RockCheckBox enableCallOrigination = controls[1] as RockCheckBox;
+            return string.Format( "{0}|{1}", dropDownList.SelectedValue, enableCallOrigination.Checked );
         }
 
         /// <summary>
@@ -207,13 +215,18 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            if ( controls.Count() == 1 )
+            RockDropDownList dropDownList = controls[0] as RockDropDownList;
+            RockCheckBox enableCallOrigination = controls[1] as RockCheckBox;
+            string[] values = selection.Split( '|' );
+
+            if ( values.Length >= 1 )
             {
-                RockDropDownList dropDownList = controls[0] as RockDropDownList;
-                if ( dropDownList != null )
-                {
-                    dropDownList.SetValue( selection );
-                }
+                dropDownList.SetValue( values[0] );
+            }
+
+            if ( values.Length >= 2 )
+            {
+                enableCallOrigination.Checked = values[1].AsBoolean();
             }
         }
 

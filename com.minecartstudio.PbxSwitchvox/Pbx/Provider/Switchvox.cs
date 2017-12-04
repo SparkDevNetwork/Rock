@@ -27,7 +27,8 @@ using Rock.Pbx;
 using Rock.Model;
 using Rock.Data;
 using Rock;
-
+using System.Collections.Generic;
+using Rock.Web.Cache;
 
 namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
 {
@@ -42,17 +43,24 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
     [TextField( "Server URL", "The URL of the PBX node (http://myserver:80)", true, key: "ServerUrl", order: 0 )]
     [TextField( "Username", "The username to use to connect with.", true, order: 1 )]
     [TextField( "Password", "The password to use to connect with.", true, order: 2 )]
-    [CustomDropdownListField("Internal Phone Type", "The phone type to that is connected to the PBX.", @"  SELECT 
-	dv.[Value] AS [Text],
-	dv.[Id] AS [Value]
-FROM 
-	[DefinedValue] dv
-	INNER JOIN [DefinedType] dt ON dt.[Id] = dv.[DefinedTypeId]
-WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
-    [CodeEditorField("Phone Extenstion Template", "Lava template to use to get the extension from the internal phone. This helps translate the full phone number to just the internal extension (e.g. (602) 555-2345 to 2345). The phone number will be passed into the template as the variable 'PhoneNumber'.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "{{ PhoneNumber | Right:4 }}", order: 4)]
-    [TextField("Default Origination Extension", "When originating calls between two phones this is the default extension to use for outgoing call rules and call api settings should be used when placing the calls. This is only used if we don't know the person to use as the source of the call (when we're only passed two phone numbers).", true )]
+    [CodeEditorField( "Phone Extension Template", "Lava template to use to get the extension from the internal phone. This helps translate the full phone number to just the internal extension (e.g. (602) 555-2345 to 2345). The phone number will be passed into the template as the variable 'PhoneNumber'.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "{{ PhoneNumber | Right:4 }}", order: 4)]
+    [TextField( "Default Origination Extension", "When originating calls between two phones this is the default extension to use for outgoing call rules and call api settings should be used when placing the calls. This is only used if we don't know the person to use as the source of the call (when we're only passed two phone numbers).", true, order: 5 )]
     public class Switchvox : PbxComponent
     {
+        /// <summary>
+        /// Gets a value indicating whether [supports origination].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [supports origination]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool SupportsOrigination
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Originates the specified from phone.
         /// </summary>
@@ -78,11 +86,32 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
         public override bool Originate( Person fromPerson, string toPhone, string callerId, out string message )
         {
             message = string.Empty;
-            // get the phone number to use for the from person
-            // 1. check preference
-            // 2. use default phone type
 
-            return true;
+            var preferredOriginateCallSource = PersonService.GetUserPreference( fromPerson, PersonPreferenceKey.OriginateCallSource ).AsIntegerOrNull();
+            if ( !preferredOriginateCallSource.HasValue )
+            {
+                preferredOriginateCallSource = this.GetAttributeValue( "InternalPhoneType" ).AsIntegerOrNull();
+            }
+
+            if ( !preferredOriginateCallSource.HasValue )
+            {
+                message = "Could not determine the phone to use to originate this call.";
+                return false;
+            }
+
+            // get phone
+            var phoneNumber = new PhoneNumberService( new RockContext() ).Queryable()
+                                    .Where( p => p.PersonId == fromPerson.Id && p.NumberTypeValueId == preferredOriginateCallSource.Value )
+                                    .FirstOrDefault();
+
+            if (phoneNumber == null )
+            {
+                var phoneType = DefinedValueCache.Read( preferredOriginateCallSource.Value );
+                message = string.Format("There is no {0} phone number configured.", phoneType.Value.ToLower());
+                return false;
+            }
+
+            return Originate( phoneNumber.Number, toPhone, callerId, out message );
         }
 
         /// <summary>
@@ -92,6 +121,8 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
         /// <returns></returns>
         public override int DownloadCdr(DateTime? startDateTime = null)
         {
+            var utilityRockContext = new RockContext();
+
             var recordsProcessed = 0;
 
             if (startDateTime == null )
@@ -129,11 +160,28 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
 
                 // get list of current interaction foreign keys for the same timefrae to ensure we don't get duplicates
                 var startDate = startDateTime.Value.Date;
-                var currentInteractions = new InteractionService( new RockContext() ).Queryable()
+                var currentInteractions = new InteractionService( utilityRockContext ).Queryable()
                                                 .Where( i => 
                                                     i.InteractionComponentId == interactionComponentId 
                                                     && i.InteractionDateTime >= startDate )
                                                 .Select( i => i.ForeignKey ).ToList();
+
+                var internalPhoneTypeId = GetAttributeValue( "InternalPhoneType" ).AsInteger();
+
+                // get list of the iternal extensions an who is tied to them
+                var extensionList = new PhoneNumberService( utilityRockContext ).Queryable()
+                                        .Where( p => p.NumberTypeValueId == internalPhoneTypeId )
+                                        .Select( p => new ExtensionMap { Number = p.Number, Extension = p.Number, PersonAliasId = p.Person.Aliases.FirstOrDefault().Id } )
+                                        .ToList();
+
+                // run lava template over the extension to translate the full number into an extension
+                var translationTemplate = this.GetAttributeValue( "PhoneExtensionTemplate" );
+                foreach(var extension in extensionList )
+                {
+                    var mergeFields = new Dictionary<string, object>();
+                    mergeFields.Add( "PhoneNumber", extension.Number );
+                    extension.Extension = translationTemplate.ResolveMergeFields( mergeFields );
+                }
 
                 do
                 {
@@ -151,12 +199,6 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
 
                                 var cdrRecord = new CdrRecord();
 
-                                var rockContext = new RockContext();
-                                var interactionService = new InteractionService( rockContext );
-
-                                var cdrInteraction = new Interaction();
-                                interactionService.Add( cdrInteraction );
-
                                 // determine direction
                                 switch ( xCall.Attributes( "origination" ).First().Value )
                                 {
@@ -170,7 +212,6 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
                                         cdrRecord.Direction = CdrDirection.Unknown;
                                         break;
                                 }
-                                cdrInteraction.Operation = cdrRecord.Direction.ToString();
 
                                 cdrRecord.Source = xCall.Attributes( "from_number" ).First().Value;
                                 cdrRecord.Destination = xCall.Attributes( "to_number" ).First().Value;
@@ -182,9 +223,33 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
 
                                 if ( !currentInteractions.Contains( cdrRecord.RecordKey ) )
                                 {
+                                    var rockContext = new RockContext();
+                                    var interactionService = new InteractionService( rockContext );
+
+                                    var cdrInteraction = new Interaction();
+                                    interactionService.Add( cdrInteraction );
+
+                                    cdrInteraction.Operation = cdrRecord.Direction.ToString();
+
                                     var personService = new PersonService( rockContext );
-                                    var sourcePerson = personService.GetByPhonePartial( cdrRecord.Source ).FirstOrDefault();
-                                    var destinationPerson = personService.GetByPhonePartial( cdrRecord.Destination ).FirstOrDefault();
+
+                                    int? sourcePersonAliasId = null;
+                                    int? destinationPersonAliasId = null;
+
+                                    // try to phone number to a person
+                                    // first use the extension map (since one of them should be using an internal number)
+                                    // then consider all numbers in the system
+                                    sourcePersonAliasId = extensionList.Where( e => e.Number == cdrRecord.Source || e.Extension == cdrRecord.Source ).Select( e => e.PersonAliasId ).FirstOrDefault();
+                                    if ( !sourcePersonAliasId.HasValue )
+                                    {
+                                        sourcePersonAliasId = personService.GetByPhonePartial( cdrRecord.Source ).FirstOrDefault()?.PrimaryAliasId;
+                                    }
+
+                                    destinationPersonAliasId = extensionList.Where( e => e.Number == cdrRecord.Destination || e.Extension == cdrRecord.Destination ).Select( e => e.PersonAliasId ).FirstOrDefault();
+                                    if ( !destinationPersonAliasId.HasValue )
+                                    {
+                                        destinationPersonAliasId = personService.GetByPhonePartial( cdrRecord.Destination ).FirstOrDefault()?.PrimaryAliasId;
+                                    }
 
                                     cdrInteraction.InteractionData = cdrRecord.ToJson();
                                     cdrInteraction.InteractionComponentId = interactionComponentId;
@@ -193,24 +258,34 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
                                     // the entity id should always be the internal person
                                     if ( cdrRecord.Direction == CdrDirection.Incoming )
                                     {
-                                        cdrInteraction.EntityId = destinationPerson?.PrimaryAliasId;
-                                        cdrInteraction.RelatedEntityId = sourcePerson?.PrimaryAliasId;
+                                        cdrInteraction.EntityId = destinationPersonAliasId;
+                                        cdrInteraction.RelatedEntityId = sourcePersonAliasId;
                                     }
                                     else
                                     {
-                                        cdrInteraction.EntityId = sourcePerson?.PrimaryAliasId;
-                                        cdrInteraction.RelatedEntityId = destinationPerson?.PrimaryAliasId;
+                                        cdrInteraction.EntityId = sourcePersonAliasId;
+                                        cdrInteraction.RelatedEntityId = destinationPersonAliasId;
                                     }
 
                                     cdrInteraction.RelatedEntityTypeId = relatedEntityTypeId;
                                     cdrInteraction.ForeignKey = cdrRecord.RecordKey;
 
-                                    rockContext.SaveChanges();
+                                    if ( cdrRecord.StartDateTime.HasValue )
+                                    {
+                                        cdrInteraction.InteractionDateTime = cdrRecord.StartDateTime.Value;
+                                        rockContext.SaveChanges();
 
-                                    recordsProcessed++;
+                                        recordsProcessed++;
+                                    }
                                 }
                             }
-                            catch { }
+
+                            catch( Exception ex )
+                            {
+                                var test = ex;
+                                var zero = 0;
+                                var test2 = 1 / zero;
+                            }
                         }
                     }
                 } while ( cdrResult != null && totalPages > pageNumber );
@@ -353,6 +428,39 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 3)]
         }
 
         #endregion
+
+        #region Related Objects
+        /// <summary>
+        /// Class to use for extension mapping
+        /// </summary>
+        private class ExtensionMap
+        {
+            /// <summary>
+            /// Gets or sets the number.
+            /// </summary>
+            /// <value>
+            /// The number.
+            /// </value>
+            public string Number { get; set; }
+
+            /// <summary>
+            /// Gets or sets the extension.
+            /// </summary>
+            /// <value>
+            /// The extension.
+            /// </value>
+            public string Extension { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person alias identifier.
+            /// </summary>
+            /// <value>
+            /// The person alias identifier.
+            /// </value>
+            public int? PersonAliasId { get; set; }
+        }
+        #endregion
+
     }
 }
 
