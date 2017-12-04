@@ -62,6 +62,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 12 )]
     [CategoryField( "Tag Category", "Optional category to limit the tags to. If specified all new personal tags will be added with this category.", false, 
         "Rock.Model.Tag", "", "", false, "", "", 13 )]
+    [BooleanField( "Enable Call Origination", "Should click-to-call links be added to phone numbers.", true, "", 14 )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -461,6 +462,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <returns></returns>
         protected string FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId, bool smsEnabled = false )
         {
+            var originationEnabled = GetAttributeValue( "EnableCallOrigination" ).AsBoolean();
+
             string formattedNumber = "Unlisted";
 
             string cc = countryCode as string ?? string.Empty;
@@ -478,28 +481,34 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            var pbxComponent = Rock.Pbx.PbxContainer.GetActiveComponent();
-
-            var isAuthorized = Rock.Security.Authorization.Authorized( pbxComponent, Authorization.VIEW, CurrentPerson );
-
-            
-            // if the page is being loaded locally then add the tel:// link
-            if ( RockPage.IsMobileRequest )
-            {
-                formattedNumber = string.Format( "<a href=\"tel://{0}\">{1}</a>", n, formattedNumber );
-            }
-
             var phoneType = DefinedValueCache.Read( phoneNumberTypeId );
             if ( phoneType != null )
             {
+                string phoneMarkup = formattedNumber;
+
+                if ( originationEnabled )
+                {
+                    var pbxComponent = Rock.Pbx.PbxContainer.GetAllowedActiveComponentWithOriginationSupport( CurrentPerson );
+
+                    if ( pbxComponent != null )
+                    {
+                        phoneMarkup = string.Format( "<a class='originate-call js-originate-call' href='#' data-sourceperson='{0}' data-destinationphone='{1}' data-callerid='{2}' data-destinationphoneformatted='{3}' data-destinationname='{4}'>{5}</a>", CurrentPerson.Guid, number.ToString(), CurrentPerson.FullName, formattedNumber, Person.FullName, formattedNumber );
+                    }
+                    else if ( RockPage.IsMobileRequest ) // if the page is being loaded locally then add the tel:// link
+                    {
+                        formattedNumber = string.Format( "<a href=\"tel://{0}\">{1}</a>", n, formattedNumber );
+                    }
+                }                
+
                 if ( smsEnabled )
                 {
-                    formattedNumber = string.Format( "{0} <small>{1} <i class='fa fa-comments'></i></small>", formattedNumber, phoneType.Value );
+                    formattedNumber = string.Format( "{0} <small>{1} <i class='fa fa-comments'></i></small>", phoneMarkup, phoneType.Value );
                 }
                 else
                 {
-                    formattedNumber = string.Format( "{0} <small>{1}</small>", formattedNumber, phoneType.Value );
+                    formattedNumber = string.Format( "{0} <small>{1}</small>", phoneMarkup, phoneType.Value );
                 }
+
             }
 
             return formattedNumber;

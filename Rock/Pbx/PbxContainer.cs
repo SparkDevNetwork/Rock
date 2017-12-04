@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
 using Rock.Extension;
+using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Pbx
 {
@@ -59,13 +61,13 @@ namespace Rock.Pbx
         /// <value>
         ///   <c>true</c> if [indexing enabled]; otherwise, <c>false</c>.
         /// </value>
-        public static bool IndexingEnabled
+        /*public static bool IndexingEnabled
         {
             get
             {
                 return GetActiveComponent() != null;
             }
-        }
+        }*/
 
         /// <summary>
         /// Gets the component with the matching Entity Type Name.
@@ -99,6 +101,48 @@ namespace Rock.Pbx
                 if ( component.IsActive )
                 {
                     return component;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the active component with origination support.
+        /// </summary>
+        /// <returns></returns>
+        public static PbxComponent GetActiveComponentWithOriginationSupport()
+        {
+            foreach ( var indexType in PbxContainer.Instance.Components )
+            {
+                var component = indexType.Value.Value;
+                if ( component.IsActive && component.SupportsOrigination )
+                {
+                    return component;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the allowed active component with origination support.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public static PbxComponent GetAllowedActiveComponentWithOriginationSupport( Person person )
+        {
+            foreach ( var indexType in PbxContainer.Instance.Components )
+            {
+                var component = indexType.Value.Value;
+                if ( component.IsActive && component.SupportsOrigination )
+                {
+                    var isAuthorized = Rock.Security.Authorization.Authorized( component, Authorization.VIEW, person );
+
+                    if ( isAuthorized )
+                    {
+                        return component;
+                    }
                 }
             }
 
