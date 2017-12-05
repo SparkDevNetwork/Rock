@@ -354,6 +354,11 @@ namespace Rock.SystemGuid
         public const string SLIDING_DATE_RANGE = "55810BC5-45EA-4044-B783-0CCE0A445C6F";
 
         /// <summary>
+        /// Social Media Account field type
+        /// </summary>
+        public const string SOCIAL_MEDIA_ACCOUNT = "92C0E3A1-9F63-49D4-B23B-73624AC42546";
+
+        /// <summary>
         /// Social Security Number
         /// </summary>
         public const string SSN = "4722C99A-C078-464A-968F-13AB5E8E318F";

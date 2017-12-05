@@ -401,6 +401,10 @@
     <Compile Include="Migrations\201711141738284_PersonSignals.Designer.cs">
       <DependentUpon>201711141738284_PersonSignals.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201712051648183_AddSocialFieldType.cs" />
+    <Compile Include="Migrations\201712051648183_AddSocialFieldType.Designer.cs">
+      <DependentUpon>201712051648183_AddSocialFieldType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2850,6 +2854,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201711141738284_PersonSignals.resx">
       <DependentUpon>201711141738284_PersonSignals.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201712051648183_AddSocialFieldType.resx">
+      <DependentUpon>201712051648183_AddSocialFieldType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
