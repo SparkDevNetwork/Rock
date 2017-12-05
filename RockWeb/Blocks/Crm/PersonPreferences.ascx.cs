@@ -23,11 +23,9 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
+using Rock.SystemKey;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -117,7 +115,7 @@ namespace RockWeb.Blocks.Crm
             var phoneTypeDefinedTypeId = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).Id;
             dvpOriginateCallSource.DefinedTypeId = phoneTypeDefinedTypeId;
 
-            var preferredOriginationPhoneTypeId = PersonService.GetUserPreference( CurrentPerson, PersonPreferenceKey.OriginateCallSource ).AsIntegerOrNull();
+            var preferredOriginationPhoneTypeId = PersonService.GetUserPreference( CurrentPerson, UserPreference.ORIGINATE_CALL_SOURCE ).AsIntegerOrNull();
             if ( preferredOriginationPhoneTypeId.HasValue )
             {
                 dvpOriginateCallSource.SelectedValue = preferredOriginationPhoneTypeId.ToString();
@@ -145,17 +143,17 @@ namespace RockWeb.Blocks.Crm
 
                 if (selectedOriginateCallSource == defaultPhoneTypeId )
                 {
-                    PersonService.DeleteUserPreference( CurrentPerson, PersonPreferenceKey.OriginateCallSource );
+                    PersonService.DeleteUserPreference( CurrentPerson, UserPreference.ORIGINATE_CALL_SOURCE );
                 }
                 else
                 {
-                    PersonService.SaveUserPreference( CurrentPerson, PersonPreferenceKey.OriginateCallSource, selectedOriginateCallSource.ToString() );
+                    PersonService.SaveUserPreference( CurrentPerson, UserPreference.ORIGINATE_CALL_SOURCE, selectedOriginateCallSource.ToString() );
                 }
             }
             else
             {
                 // delete any preference so the default value is used again
-                PersonService.DeleteUserPreference( CurrentPerson, PersonPreferenceKey.OriginateCallSource );
+                PersonService.DeleteUserPreference( CurrentPerson, UserPreference.ORIGINATE_CALL_SOURCE );
             }
         }
     }
