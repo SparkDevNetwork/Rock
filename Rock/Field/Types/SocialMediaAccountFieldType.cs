@@ -34,6 +34,12 @@ namespace Rock.Field.Types
     {
         #region Configuration
 
+        private const string NAME_KEY = "name";
+        private const string ICONCSSCLASS_KEY = "iconcssclass";
+        private const string COLOR_KEY = "color";
+        private const string TEXT_TEMPLATE = "texttemplate";
+        private const string BASEURL = "baseurl";
+
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
@@ -41,11 +47,11 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
-            configKeys.Add( "name" );
-            configKeys.Add( "iconcssclass" );
-            configKeys.Add( "color" );
-            configKeys.Add( "texttemplate" );
-            configKeys.Add( "baseurl" );
+            configKeys.Add( NAME_KEY );
+            configKeys.Add( ICONCSSCLASS_KEY );
+            configKeys.Add( COLOR_KEY );
+            configKeys.Add( TEXT_TEMPLATE );
+            configKeys.Add( BASEURL );
             return configKeys;
         }
 
@@ -104,34 +110,41 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "name", new ConfigurationValue( "Name", "The name of the socal media network.", "" ) );
-            configurationValues.Add( "iconcssclass", new ConfigurationValue( "IconCssClass", "The icon that represents the social media network.", "" ) );
-            configurationValues.Add( "color", new ConfigurationValue( "Color", "The color to use for making buttons for the social media network.", "" ) );
-            configurationValues.Add( "texttemplate", new ConfigurationValue( "Text Template", "Lava template to use to create a formatted version for the link. Primarily used for making the link text.", "" ) );
-            configurationValues.Add( "baseurl", new ConfigurationValue( "BaseUrl", "The base URL for the social media network. If the entry does not have a URL in it this base URL will be prepended to the entered string.", "" ) );
+            configurationValues.Add( NAME_KEY, new ConfigurationValue( "Name", "The name of the socal media network.", "" ) );
+            configurationValues.Add( ICONCSSCLASS_KEY, new ConfigurationValue( "IconCssClass", "The icon that represents the social media network.", "" ) );
+            configurationValues.Add( COLOR_KEY, new ConfigurationValue( "Color", "The color to use for making buttons for the social media network.", "" ) );
+            configurationValues.Add( TEXT_TEMPLATE, new ConfigurationValue( "Text Template", "Lava template to use to create a formatted version for the link. Primarily used for making the link text.", "" ) );
+            configurationValues.Add( BASEURL, new ConfigurationValue( "BaseUrl", "The base URL for the social media network. If the entry does not have a URL in it this base URL will be prepended to the entered string.", "" ) );
 
             if ( controls != null )
             {
                 if ( controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox )
                 {
-                    configurationValues["name"].Value = ( ( RockTextBox ) controls[0] ).Text;
+                    configurationValues[NAME_KEY].Value = ( ( RockTextBox ) controls[0] ).Text;
                 }
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is RockTextBox )
                 {
-                    configurationValues["iconcssclass"].Value = ( ( RockTextBox ) controls[1] ).Text;
+                    configurationValues[ICONCSSCLASS_KEY].Value = ( ( RockTextBox ) controls[1] ).Text;
                 }
                 if ( controls.Count > 2 && controls[2] != null && controls[2] is ColorPicker )
                 {
-                    configurationValues["color"].Value = ( ( ColorPicker ) controls[2] ).Text;
+                    configurationValues[COLOR_KEY].Value = ( ( ColorPicker ) controls[2] ).Text;
                 }
                 if ( controls.Count > 3 && controls[3] != null && controls[3] is CodeEditor )
                 {
-                    configurationValues["texttemplate"].Value = ( ( CodeEditor ) controls[3] ).Text;
+                    configurationValues[TEXT_TEMPLATE].Value = ( ( CodeEditor ) controls[3] ).Text;
                 }
                 if ( controls.Count > 4 && controls[4] != null && controls[4] is UrlLinkBox )
                 {
-                    Uri baseUri = new Uri( ( ( UrlLinkBox ) controls[4] ).Text );
-                    configurationValues["baseurl"].Value = baseUri.AbsoluteUri;
+                    if ( string.IsNullOrEmpty( ( ( UrlLinkBox ) controls[4] ).Text ) )
+                    {
+                        configurationValues[BASEURL].Value = string.Empty;
+                    }
+                    else
+                    {
+                        Uri baseUri = new Uri( ( ( UrlLinkBox ) controls[4] ).Text );
+                        configurationValues[BASEURL].Value = baseUri.AbsoluteUri;
+                    }
                 }
             }
 
@@ -147,25 +160,25 @@ namespace Rock.Field.Types
         {
             if ( controls != null && configurationValues != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( "name" ) )
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( NAME_KEY ) )
                 {
-                    ( ( RockTextBox ) controls[0] ).Text = configurationValues["name"].Value;
+                    ( ( RockTextBox ) controls[0] ).Text = configurationValues[NAME_KEY].Value;
                 }
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is RockTextBox && configurationValues.ContainsKey( "iconcssclass" ) )
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is RockTextBox && configurationValues.ContainsKey( ICONCSSCLASS_KEY ) )
                 {
-                    ( ( RockTextBox ) controls[1] ).Text = configurationValues["iconcssclass"].Value;
+                    ( ( RockTextBox ) controls[1] ).Text = configurationValues[ICONCSSCLASS_KEY].Value;
                 }
-                if ( controls.Count > 2 && controls[2] != null && controls[2] is ColorPicker && configurationValues.ContainsKey( "color" ) )
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is ColorPicker && configurationValues.ContainsKey( COLOR_KEY ) )
                 {
-                    ( ( ColorPicker ) controls[2] ).Text = configurationValues["color"].Value;
+                    ( ( ColorPicker ) controls[2] ).Text = configurationValues[COLOR_KEY].Value;
                 }
-                if ( controls.Count > 3 && controls[3] != null && controls[3] is CodeEditor && configurationValues.ContainsKey( "texttemplate" ) )
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is CodeEditor && configurationValues.ContainsKey( TEXT_TEMPLATE ) )
                 {
-                    ( ( CodeEditor ) controls[3] ).Text = configurationValues["texttemplate"].Value;
+                    ( ( CodeEditor ) controls[3] ).Text = configurationValues[TEXT_TEMPLATE].Value;
                 }
-                if ( controls.Count > 4 && controls[4] != null && controls[4] is UrlLinkBox && configurationValues.ContainsKey( "baseurl" ) )
+                if ( controls.Count > 4 && controls[4] != null && controls[4] is UrlLinkBox && configurationValues.ContainsKey( BASEURL ) )
                 {
-                    ( ( UrlLinkBox ) controls[4] ).Text = configurationValues["baseurl"].Value;
+                    ( ( UrlLinkBox ) controls[4] ).Text = configurationValues[BASEURL].Value;
                 }
             }
         }
@@ -195,36 +208,38 @@ namespace Rock.Field.Types
                 {
                     Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( parentControl?.RockBlock()?.RockPage, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                     string template = string.Empty;
-                    
-                    if ( configurationValues.ContainsKey( "texttemplate" ) )
+
+                    if ( configurationValues.ContainsKey( TEXT_TEMPLATE ) )
                     {
-                        template = configurationValues["texttemplate"].Value;
+                        template = configurationValues[TEXT_TEMPLATE].Value;
                     }
-                    if ( configurationValues.ContainsKey( "iconcssclass" ) )
+                    if ( configurationValues.ContainsKey( ICONCSSCLASS_KEY ) )
                     {
-                        
-                        string iconCssClass = configurationValues["iconcssclass"].Value;
+
+                        string iconCssClass = configurationValues[ICONCSSCLASS_KEY].Value;
                         if ( !iconCssClass.Contains( "fa-fw" ) )
                         {
                             iconCssClass = iconCssClass + " fa-fw";
                         }
-                        mergeFields.Add( "iconcssclass", iconCssClass );
+                        mergeFields.Add( ICONCSSCLASS_KEY, iconCssClass );
                     }
 
-                    if ( configurationValues.ContainsKey( "color" ) && !string.IsNullOrEmpty( configurationValues["color"].Value ) )
+                    if ( configurationValues.ContainsKey( COLOR_KEY ) && !string.IsNullOrEmpty( configurationValues[COLOR_KEY].Value ) )
                     {
-                        mergeFields.Add( "color", configurationValues["color"].Value );
+                        mergeFields.Add( COLOR_KEY, configurationValues[COLOR_KEY].Value );
                     }
 
-                    if ( configurationValues.ContainsKey( "baseurl" ) && !string.IsNullOrEmpty( configurationValues["baseurl"].Value ) )
+                    if ( configurationValues.ContainsKey( BASEURL ) && !string.IsNullOrEmpty( configurationValues[BASEURL].Value ) )
                     {
-                        mergeFields.Add( "baseurl", configurationValues["baseurl"].Value );
+                        mergeFields.Add( BASEURL, configurationValues[BASEURL].Value );
                     }
 
-                    if ( configurationValues.ContainsKey( "name" ) && !string.IsNullOrEmpty( configurationValues["name"].Value ) )
+                    if ( configurationValues.ContainsKey( NAME_KEY ) && !string.IsNullOrEmpty( configurationValues[NAME_KEY].Value ) )
                     {
-                        mergeFields.Add( "name", configurationValues["name"].Value );
+                        mergeFields.Add( NAME_KEY, configurationValues[NAME_KEY].Value );
                     }
+
+                    mergeFields.Add( "value", value );
 
                     return template.ResolveMergeFields( mergeFields );
                 }
@@ -250,27 +265,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="required"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public override bool IsValid( string value, bool required, out string message )
-        {
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                Uri validatedUri;
-                if ( !Uri.TryCreate( value, UriKind.Absolute, out validatedUri ) )
-                {
-                    message = "Invalid Social Handler name provided";
-                    return true;
-                }
-            }
-            return base.IsValid( value, required, out message );
-        }
-
-        /// <summary>
         /// Reads new values entered by the user for the field
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
@@ -282,14 +276,14 @@ namespace Rock.Field.Types
             {
                 if ( configurationValues != null && configurationValues.ContainsKey( "baseurl" ) )
                 {
-                    Uri validatedUri;
-                    if ( Uri.TryCreate( ( ( TextBox ) control ).Text, UriKind.Absolute, out validatedUri ) )
-                    {
-                        return string.Format( "{0}{1}", configurationValues["baseurl"].Value, validatedUri.Segments.Last() );
+                    string value = ( ( TextBox ) control ).Text;
+                    if ( !value.StartsWith( configurationValues[BASEURL].Value ) )
+                    { 
+                        return string.Format( "{0}{1}", configurationValues[BASEURL].Value, value );
                     }
                     else
                     {
-                        return string.Format( "{0}{1}", configurationValues["baseurl"].Value, ( ( TextBox ) control ).Text );
+                        return value;
                     }
                 }
             }
