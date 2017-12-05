@@ -15,8 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using OpenHtmlToPdf;
+using PdfSharp.Pdf;
+using PdfSharp.Pdf.IO;
 using Rock.Net;
 
 namespace Rock.Apps.StatementGenerator
@@ -73,27 +82,79 @@ namespace Rock.Apps.StatementGenerator
             _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
             _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
 
-            // shouldn't happen, but just in case the StartDate isn't set, set it to the first day of the current year
-            DateTime firstDayOfYear = new DateTime( DateTime.Now.Year, 1, 1 );
+            var recipientList = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, List<Rock.StatementGenerator.StatementGeneratorRecipient>>( "api/FinancialTransactions/GetStatementGeneratorRecipients", this.Options );
 
-            var recipientList  = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, List<Rock.StatementGenerator.StatementGeneratorRecipient>>( "api/FinancialTransactions/GetStatementGeneratorRecipients", this.Options );
+            recipientList = recipientList.Take( 100 ).ToList();
 
             var recipentResults = new List<Rock.StatementGenerator.StatementGeneratorRecipientResult>();
             this.RecordCount = recipientList.Count;
             this.RecordIndex = 0;
 
-            foreach (var recipent in recipientList )
+            var tasks = new List<Task>();
+            ConcurrentDictionary<int, Stream> pdfResults = new ConcurrentDictionary<int, Stream>();
+
+            foreach ( var recipent in recipientList )
             {
+                Stopwatch stopwatch = Stopwatch.StartNew();
                 var url = $"api/FinancialTransactions/GetStatementGeneratorRecipientResult?GroupId={recipent.GroupId}";
-                if (recipent.PersonId.HasValue)
+                if ( recipent.PersonId.HasValue )
                 {
                     url += $"&PersonId={recipent.PersonId.Value}";
                 }
-                var recipentResult =  _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, Rock.StatementGenerator.StatementGeneratorRecipientResult>( url, this.Options );
+                var recipentResult = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, Rock.StatementGenerator.StatementGeneratorRecipientResult>( url, this.Options );
+                double fetchDataMS = stopwatch.Elapsed.TotalMilliseconds;
+                stopwatch.Restart();
+
+                var task = Task.Run( () =>
+                {
+                    int documentNumber = this.RecordIndex;
+                    var html = recipentResult.Html;
+                    var taskStopWatch = Stopwatch.StartNew();
+                    var pdfBytes = Pdf.From( html ).WithoutOutline().Portrait().Content();
+                    taskStopWatch.Stop();
+                    double htmlToPdfMS = taskStopWatch.Elapsed.TotalMilliseconds;
+                    var pdfStream = new MemoryStream( pdfBytes );
+                    pdfResults.TryAdd( documentNumber, pdfStream );
+                    Debug.WriteLine( $"fetchDataMS:{fetchDataMS} ms, htmlToPdfMS:{htmlToPdfMS} ms" );
+                } );
+
+                tasks.Add( task );
+                //task.Wait();
+
+                tasks = tasks.Where( a => a.Status != TaskStatus.RanToCompletion ).ToList();
+                Debug.WriteLine( $"taskCount:{tasks.Count}" );
+                
                 recipentResults.Add( recipentResult );
                 this.RecordIndex++;
-                UpdateProgress( "Getting Statements..." );
+                UpdateProgress( "Processing..." );
             }
+
+            Task.WaitAll( tasks.ToArray() );
+
+            UpdateProgress( "Creating PDF..." );
+            this.RecordIndex = 0;
+
+            var pdfResultList = pdfResults.ToList().OrderBy( a => a.Key ).ToList();
+            using ( PdfDocument outPdf = new PdfDocument() )
+            {
+                foreach ( var pdfResult in pdfResultList )
+                {
+                    UpdateProgress( "Creating PDF..." );
+                    this.RecordIndex++;
+                    pdfResult.Value.Seek( 0, SeekOrigin.Begin );
+                    PdfDocument pdfDocument = PdfReader.Open( pdfResult.Value, PdfDocumentOpenMode.Import );
+
+                    foreach ( var pdfPage in pdfDocument.Pages.OfType<PdfPage>() )
+                    {
+                        outPdf.Pages.Add( pdfPage );
+                    }
+
+                    pdfResult.Value.Dispose();
+                }
+
+                outPdf.Save( $@"c:\\temp\\combined.pdf" );
+            }
+
         }
 
         /// <summary>
@@ -110,7 +171,7 @@ namespace Rock.Apps.StatementGenerator
         /// </summary>
         public event EventHandler<ProgressEventArgs> OnProgress;
 
-        
+
     }
 
     /// <summary>
