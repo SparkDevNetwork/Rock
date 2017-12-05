@@ -15,6 +15,7 @@
                     <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                     <Rock:HighlightLabel ID="hlScheduleFriendlyText" runat="server" />
                     <Rock:HighlightLabel ID="ltLastRunDateTime" runat="server" />
+                    <Rock:HighlightLabel ID="hlblMetricId" runat="server" />
                 </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
