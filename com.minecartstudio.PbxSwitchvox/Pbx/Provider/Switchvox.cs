@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock;
 using System.Collections.Generic;
 using Rock.Web.Cache;
+using Rock.SystemKey;
 
 namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
 {
@@ -87,7 +88,7 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
         {
             message = string.Empty;
 
-            var preferredOriginateCallSource = PersonService.GetUserPreference( fromPerson, PersonPreferenceKey.OriginateCallSource ).AsIntegerOrNull();
+            var preferredOriginateCallSource = PersonService.GetUserPreference( fromPerson, UserPreference.ORIGINATE_CALL_SOURCE ).AsIntegerOrNull();
             if ( !preferredOriginateCallSource.HasValue )
             {
                 preferredOriginateCallSource = this.GetAttributeValue( "InternalPhoneType" ).AsIntegerOrNull();
