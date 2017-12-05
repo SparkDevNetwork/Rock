@@ -230,6 +230,39 @@ namespace Rock.Reporting.DataSelect.Person
             }
         }
 
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
+        {
+            Guid? phoneType = null;
+            bool enableOrigination = false;
+
+            var selectionParts = selection.Split( '|' );
+            if ( selectionParts.Length > 0 )
+            {
+                phoneType =  selectionParts[0].AsGuidOrNull();
+            }
+
+            if ( selectionParts.Length > 1 )
+            {
+                enableOrigination = selectionParts[1].AsBoolean();
+            }
+
+            var callbackField = new CallbackField();
+            callbackField.OnFormatDataValue += ( sender, e ) =>
+            {
+                var phoneNumber = e.DataValue as PhoneNumber;
+
+                e.FormattedValue = "<a href='#'>hi there</a>";
+            };
+
+            return callbackField;
+        }
+
         #endregion
     }
 }
