@@ -59,6 +59,11 @@ namespace Rock.SystemGuid
         public const string PERSON_INSTAGRAM = "8796567C-4047-43C1-AF32-2FDBE030BEAC";
 
         /// <summary>
+        /// The SnapChat link attribute
+        /// </summary>
+        public const string PERSON_SNAPCHAT = "61099377-9EB3-43EA-BA37-75E329E55866";
+
+        /// <summary>
         /// The allergy attribute
         /// </summary>
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
