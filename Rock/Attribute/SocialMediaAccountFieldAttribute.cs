@@ -31,7 +31,7 @@ namespace Rock.Attribute
         private const string BASEURL = "baseurl";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ValueListFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="SocialMediaAccountFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
