@@ -16,14 +16,14 @@
         "Date": "Saturday 12/23",
         "Times": [
           "4:30 pm",
-          "6:00 pm hearing"
+          "6:00 pm"
         ]
       },
       {
         "Date": "Sunday 12/24",
         "Times": [
-          "9:00 am special",
-          "10:30 am special",
+          "9:00 am",
+          "10:30 am",
           "3:00 pm",
           "4:30 pm",
           "6:00 pm"
@@ -41,7 +41,7 @@
         "Date": "Saturday 12/23",
         "Times": [
           "3:00 pm",
-          "4:30 pm special",
+          "4:30 pm",
           "6:00 pm"
         ]
       },
@@ -49,7 +49,7 @@
         "Date": "Sunday 12/24",
         "Times": [
           "9:00 am",
-          "10:30 am special",
+          "10:30 am",
           "12:00 pm",
           "3:00 pm",
           "4:30 pm",
@@ -74,7 +74,7 @@
         "Date": "Sunday 12/24",
         "Times": [
           "9:00 am",
-          "10:30 am special",
+          "10:30 am",
           "4:30 pm special"
         ]
       }
@@ -90,14 +90,14 @@
         "Date": "Saturday 12/23",
         "Times": [
           "4:30 pm",
-          "6:00 pm special hearing"
+          "6:00 pm"
         ]
       },
       {
         "Date": "Sunday 12/24",
         "Times": [
-          "9:00 am special",
-          "10:30 am special",
+          "9:00 am",
+          "10:30 am",
           "4:30 pm",
           "6:00 pm"
         ]
@@ -119,8 +119,8 @@
       {
         "Date": "Sunday 12/24",
         "Times": [
-          "9:00 am special",
-          "10:30 am special",
+          "9:00 am",
+          "10:30 am",
           "4:30 pm"
         ]
       }
@@ -143,16 +143,16 @@
         "Date": "Saturday 12/23",
         "Times": [
           "3:00 pm",
-          "4:30 pm special",
-          "6:00 pm special hearing"
+          "4:30 pm",
+          "6:00 pm"
         ]
       },
       {
         "Date": "Sunday 12/24",
         "Times": [
-          "9:00 am special",
-          "10:30 am special",
-          "12:00 pm special",
+          "9:00 am",
+          "10:30 am",
+          "12:00 pm",
           "3:00 pm",
           "4:30 pm",
           "6:00 pm",
@@ -177,13 +177,13 @@
         "Date": "Saturday 12/23",
         "Times": [
           "4:30 pm",
-          "6:00 pm hearing"
+          "6:00 pm"
         ]
       },
       {
         "Date": "Sunday 12/24",
         "Times": [
-          "9:30 am special",
+          "9:30 am",
           "11:00 am",
           "3:00 pm",
           "4:30 pm"
@@ -208,16 +208,16 @@
         "Date": "Saturday 12/23",
         "Times": [
           "3:00 pm",
-          "4:30 pm special",
-          "6:00 pm hearing special"
+          "4:30 pm",
+          "6:00 pm"
         ]
       },
       {
         "Date": "Sunday 12/24",
         "Times": [
-          "9:00 am special",
-          "10:30 am special hearing",
-          "12:00 pm special",
+          "9:00 am",
+          "10:30 am",
+          "12:00 pm",
           "3:00 pm",
           "4:30 pm",
           "6:00 pm"

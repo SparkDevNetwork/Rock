@@ -3,14 +3,27 @@
 <section class="bigblock bigblock-graylighter">
   <div class="container">
     <h2 class="margin-t-none margin-b-lg">Albums from CCV</h2>
-    <div class="row">
-      {% for album in Items %}
-        <div class="col-sm-6 margin-b-md">
-          <a href="{{ albumPreUrl }}{{ album.AlbumSlug }}" title="{{ album.Title }}">
-            <img src="{{ album | Attribute: 'Cover', 'Url' }}&width=1110" alt="Album Artwork for {{ album.Title }}">
-          </a>
-        </div>
-      {% endfor %}
-    </div>
+   
+    {% for album in Items %}
+
+      {% comment %} see if this is an even or odd numbered album, which tells us when to break the row and start another one. {% endcomment %}
+      {% assign remainder = forloop.index0 | Modulo:2 %}
+
+      {% comment %} if the remainder is 0, we're beginning an even numbered album and should start a new row {% endcomment %}
+      {% if remainder == 0 %}
+         <div class="row">
+      {% endif %}
+      
+            <div class="col-sm-6 margin-b-md">
+               <a href="{{ albumPreUrl }}{{ album.AlbumSlug }}" title="{{ album.Title }}">
+                  <img src="{{ album | Attribute: 'Cover', 'Url' }}&width=1110" alt="Album Artwork for {{ album.Title }}">
+               </a>
+            </div>
+
+      {% comment %} If this is the end of rendering an "odd" numbered album, break the div {% endcomment %}
+      {% if remainder != 0 %}
+         </div>
+      {% endif %}
+    {% endfor %}
   </div>
 </section>

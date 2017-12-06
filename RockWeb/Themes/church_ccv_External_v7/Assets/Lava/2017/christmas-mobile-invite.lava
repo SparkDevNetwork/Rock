@@ -32,6 +32,9 @@
 
 {% assign item = ContentObject | Where: "ShortCode", Context.Campus.ShortCode | First %}
 
+{% assign specialNeedsIcon = 'fa fa-birthday-cake' %}
+{% assign hearingIcon = 'fa fa-asl-interpreting' %}
+
 {% comment %}
 <pre>
   {{ item | ToJSON }}
@@ -63,23 +66,42 @@
       </div>
     </div>
 
-    <p class="lead">Which service are you attending?</p>
+    <p class="lead" style="margin-bottom: 5px;">Which service are you attending?</p>
+    <div style="margin-bottom: 25px;" class="row">
+       <div class="col-xs-6">
+         <i class="{{ specialNeedsIcon }}"> Special Needs</i>
+       </div>
+       <div class="col-xs-6">
+            <i class="{{ hearingIcon }}"> Sign Language</i>
+          </div>
+    </div>
+    
 
     {% for day in item.Services %}
       <h5>{{ day.Date }}</h5>
       <div class="row">
         {% for time in day.Times %}
+
           {% if time contains 'sunrise' %}
             {% assign hasSunrise = true %}
-          {% endif %}
-          {% if time contains 'special' %}
-            {% assign hasSpecial = true %}
-          {% endif %}
-          {% if time contains 'hearing' %}
-            {% assign hasHearing = true %}
-          {% endif %}
-          {% assign rawTime = time | Remove: 'sunrise' | Remove: ' special' | Remove: ' hearing' %}
-          <div class="col-xs-6 margin-b-lg">{% include '~~/Assets/Lava/2017/christmas-email.lava' %}</div>
+          {% else %}
+            {% assign hasSunrise = false %}
+         {% endif %}
+
+         {% if time contains 'special' %}
+           {% assign hasSpecial = true %}
+         {% else %}
+           {% assign hasSpecial = false %}
+         {% endif %}
+         
+         {% if time contains 'hearing' %}
+           {% assign hasHearing = true %}
+         {% else %}
+           {% assign hasHearing = false %}
+         {% endif %}
+
+         {% assign rawTime = time | Remove: 'sunrise' | Remove: ' special' | Remove: ' hearing' %}
+         <div class="col-xs-6 margin-b-lg" style="align-items: right;">{% include '~~/Assets/Lava/2017/christmas-email.lava' %}</div>
         {% endfor %}
       </div>
     {% endfor %}
@@ -87,7 +109,6 @@
       &nbsp;
     </p>
     {% include '~~/Assets/Lava/2017/christmas-email-all.lava' %}
-
   </article>
 
   <article id="SMSPage" class="page fade">
@@ -101,11 +122,38 @@
     </div>
 
     <p class="lead">Which service are you attending?</p>
+    <div style="margin-bottom: 25px;" class="row">
+         <div class="col-xs-6">
+           <i class="{{ specialNeedsIcon }}"> Special Needs</i>
+         </div>
+         <div class="col-xs-6">
+              <i class="{{ hearingIcon }}"> Sign Language</i>
+            </div>
+      </div>
 
     {% for day in item.Services %}
       <h5>{{ day.Date }}</h5>
       <div class="row">
         {% for time in day.Times %}
+
+         {% if time contains 'sunrise' %}
+           {% assign hasSunrise = true %}
+         {% else %}
+            {% assign hasSunrise = false %}
+         {% endif %}
+
+         {% if time contains 'special' %}
+            {% assign hasSpecial = true %}
+         {% else %}
+            {% assign hasSpecial = false %}
+         {% endif %}
+         
+         {% if time contains 'hearing' %}
+            {% assign hasHearing = true %}
+         {% else %}
+            {% assign hasHearing = false %}
+         {% endif %}
+
           {% assign rawTime = time | Remove: 'sunrise' | Remove: ' special' | Remove: ' hearing' %}
           <div class="col-xs-6 margin-b-lg">{% include '~~/Assets/Lava/2017/christmas-sms.lava' %}</div>
         {% endfor %}

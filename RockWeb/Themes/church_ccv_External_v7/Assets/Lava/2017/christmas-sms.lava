@@ -19,4 +19,18 @@ Come to Christmas Eve at CCV with me! I'll be going to the {{ rawTime }} service
     {% assign sep = '&' %}
 {% endcase %}
 
-<a class="{{ inviteBtnClasses }} js-track-sms" data-label="{{ item.Name }} {{ day.Date }} {{ rawTime }}" href="{{ preUrl }}sms:{{ sep }}body={{ smsAll | Trim | EscapeDataString }}">{{ rawTime }}</a>
+<a class="{{ inviteBtnClasses }} js-track-sms" data-label="{{ item.Name }} {{ day.Date }} {{ rawTime }}" href="{{ preUrl }}sms:{{ sep }}body={{ smsAll | Trim | EscapeDataString }}">
+   <div class="row">
+      <div class="col-xs-6">
+         {{ rawTime }}
+      </div>
+      <div class="col-xs-6">
+            {% if hasSpecial %}
+            <i style="font-size: 1.25rem; padding-left: 5px;" class="{{ specialNeedsIcon }}"></i>
+         {% endif %}
+         {% if hasHearing %}
+            <i style="font-size: 1.25rem; padding-left: 5px;" class="{{ hearingIcon }}"></i>
+         {% endif %}
+      </div>
+   </div>
+</a>

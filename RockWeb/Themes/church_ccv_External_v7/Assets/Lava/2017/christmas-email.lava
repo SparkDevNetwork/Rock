@@ -15,4 +15,18 @@ Join me for Christmas at CCV
 https://ccv.church
 {% endcapture %}
 
-<a class="{{ inviteBtnClasses }} js-track-email" data-label="{{ item.Name }} {{ day.Date }} {{ rawTime }}" href="{{ preUrl }}mailto:?subject={{ subject | Trim | EscapeDataString }}&body={{ body | EscapeDataString }}">{{ rawTime }}</a>
+<a style="text-align: left;" class="{{ inviteBtnClasses }} js-track-email" data-label="{{ item.Name }} {{ day.Date }} {{ rawTime }}" href="{{ preUrl }}mailto:?subject={{ subject | Trim | EscapeDataString }}&body={{ body | EscapeDataString }}">
+   <div class="row">
+      <div class="col-xs-6">
+         {{ rawTime }}
+      </div>
+      <div class="col-xs-6">
+            {% if hasSpecial %}
+            <i style="font-size: 1.25rem; padding-left: 5px;" class="{{ specialNeedsIcon }}"></i>
+         {% endif %}
+         {% if hasHearing %}
+            <i style="font-size: 1.25rem; padding-left: 5px;" class="{{ hearingIcon }}"></i>
+         {% endif %}
+      </div>
+   </div>
+</a>
