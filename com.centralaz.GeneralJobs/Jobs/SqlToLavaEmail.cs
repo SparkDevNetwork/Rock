@@ -32,7 +32,9 @@ using Rock.Communication;
 namespace com.centralaz.GeneralJobs.Jobs
 {
     /// <summary>
-    /// This job will send the output of your SQL as formatted HTML (via Lava) to all active group members of the specified group, with the option to also send it to members of descendant groups. If a person is a member of multiple groups in the tree they will receive an email for each group.
+    /// This job will send the output of your SQL as formatted HTML (via Lava) to all active group members 
+    /// of the specified group, with the option to also send it to members of descendant groups. 
+    /// If a person is a member of multiple groups in the tree they will receive an email for each group.
     /// </summary>
     [CodeEditorField( "SQL Script", "The Structured Query Language (SQL) script to execute.", Rock.Web.UI.Controls.CodeEditorMode.Sql, required: true )]
     [CodeEditorField( "Formatted Output", "Optional formatting for the returned results.  If left blank, a simple table will be generated. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %} <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
@@ -43,6 +45,7 @@ namespace com.centralaz.GeneralJobs.Jobs
     [TextField( "Email Subject", "The Subject: field for the email that will be sent." )]
     [GroupField( "Group", "The group the email will be sent to." )]
     [BooleanField( "Send To Descendant Groups", "Determines if the email will be sent to descendant groups." )]
+    [BooleanField( "Include Link To Group", "If checked, a link will be added (at the bottom of the report) so the group distribution list can be edited.", true )]
     [IntegerField("Timeout", "The timeout for execution of the SQL.", false, defaultValue: 180 )]
     [DisallowConcurrentExecution]
     public class SqlToLavaEmail : IJob
@@ -70,6 +73,7 @@ namespace com.centralaz.GeneralJobs.Jobs
             var timeout = dataMap.Get( "Timeout" ).ToStringSafe().AsIntegerOrNull();
             var groupGuid = dataMap.Get( "Group" ).ToString().AsGuid();
             var sendToDescendants = dataMap.Get( "SendToDescendantGroups" ).ToString().AsBoolean();
+            var includeLinkToGroup = dataMap.Get( "IncludeLinkToGroup" ).ToString().AsBoolean();
 
             var rockContext = new RockContext();
             var group = new GroupService( rockContext ).Get( groupGuid );
@@ -95,12 +99,17 @@ namespace com.centralaz.GeneralJobs.Jobs
                     message = outputResultsDescription + message;
                 }
 
+                if ( includeLinkToGroup )
+                {
+                    message = message + BuildLinkToGroup( rockContext, group, sendToDescendants );
+                }
+
                 foreach ( GroupMember groupMember in groupMemberList )
                 {
                     recipients.Add( groupMember.Person.Email );
                 }
 
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
                 Email.Send( emailFrom, emailSubject, recipients, message, appRoot );
                 context.Result = string.Format( "{0} emails sent", recipients.Count() );
             }
@@ -158,6 +167,25 @@ namespace com.centralaz.GeneralJobs.Jobs
             }
 
             return formattedOutput;
+        }
+
+        /// <summary>
+        /// Builds the link to group details.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="group">The group.</param>
+        /// <param name="sendToDescendants">if set to <c>true</c> [send to descendants].</param>
+        /// <returns></returns>
+        private string BuildLinkToGroup( RockContext rockContext, Group group, bool sendToDescendants )
+        {
+            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
+
+            string html = string.Format( "<p><i>This report was sent to the members of the '{0}' group{1}. <a href='{2}Group/{3}'>Click to add or remove people</a> to receive this report.</i></p>",
+                group.Name,
+                ( sendToDescendants ) ? " or one of the child groups of that group" : string.Empty,
+                appRoot,
+                group.Id );
+            return html;
         }
 
         /// <summary>
