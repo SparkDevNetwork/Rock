@@ -218,8 +218,7 @@ namespace Rock.Workflow.Action.CheckIn
 
             foreach ( var attribute in item.Attributes.OrderBy( a => a.Value.Order ) )
             {
-                if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid() &&
-                    attribute.Value.QualifierValues.ContainsKey( "binaryFileType" ) &&
+                if ( attribute.Value.QualifierValues.ContainsKey( "binaryFileType" ) &&
                     attribute.Value.QualifierValues["binaryFileType"].Value.Equals( SystemGuid.BinaryFiletype.CHECKIN_LABEL, StringComparison.OrdinalIgnoreCase ) )
                 {
                     Guid? binaryFileGuid = item.GetAttributeValue( attribute.Key ).AsGuidOrNull();
