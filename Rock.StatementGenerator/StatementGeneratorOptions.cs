@@ -41,6 +41,30 @@ namespace Rock.StatementGenerator
         public List<int> NonCashAccountIds { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether [pledges include child accounts].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [pledges include child accounts]; otherwise, <c>false</c>.
+        /// </value>
+        public bool PledgesIncludeChildAccounts { get; internal set; }
+
+        /// <summary>
+        /// Gets a value indicating whether [pledges include non cash gifts].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [pledges include non cash gifts]; otherwise, <c>false</c>.
+        /// </value>
+        public bool PledgesIncludeNonCashGifts { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the pledges account ids.
+        /// </summary>
+        /// <value>
+        /// The pledges account ids.
+        /// </value>
+        public List<int> PledgesAccountIds { get; set; }
+
+        /// <summary>
         /// Gets or sets the person unique identifier.
         /// NULL means to get all individuals
         /// </summary>
@@ -120,5 +144,30 @@ namespace Rock.StatementGenerator
         ///   <c>true</c> if [order by postal code]; otherwise, <c>false</c>.
         /// </value>
         public bool OrderByPostalCode { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the name of the base file.
+        /// </summary>
+        /// <value>
+        /// The name of the base file.
+        /// </value>
+        public string BaseFileName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the save directory.
+        /// </summary>
+        /// <value>
+        /// The save directory.
+        /// </value>
+        public string SaveDirectory { get; set; }
+
+        /// <summary>
+        /// The maximum number of statements in a single pdf file
+        /// </summary>
+        /// <value>
+        /// The size of the chapter.
+        /// </value>
+        public int? StatementsPerChapter { get; internal set; }
+        
     }
 }

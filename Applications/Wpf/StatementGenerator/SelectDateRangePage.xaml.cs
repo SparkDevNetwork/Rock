@@ -55,7 +55,7 @@ namespace Rock.Apps.StatementGenerator
         {
             if ( SaveChanges( true ) )
             {
-                SelectLavaTemplatePage nextPage = new SelectLavaTemplatePage();
+                SelectPledgeAccountsPage nextPage = new SelectPledgeAccountsPage();
                 this.NavigationService.Navigate( nextPage );
             }
         }
