@@ -66,7 +66,7 @@ namespace Rock.Migrations
 
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.SOCIAL_MEDIA_ACCOUNT, Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL, "Snapchat", "Snapchat", "", "Link to person's Snapchat page", 3, "", Rock.SystemGuid.Attribute.PERSON_SNAPCHAT );
             RockMigrationHelper.UpdateAttributeQualifier( Rock.SystemGuid.Attribute.PERSON_SNAPCHAT, "name", "Snapchat", "19283998-F3D7-41A1-B9F5-36FE17CC4566" );
-            RockMigrationHelper.UpdateAttributeQualifier( Rock.SystemGuid.Attribute.PERSON_SNAPCHAT, "iconcssclass", "fa fa-snapchat-ghost", "E9168011-2719-40EB-A082-9337B5F52233" );
+            RockMigrationHelper.UpdateAttributeQualifier( Rock.SystemGuid.Attribute.PERSON_SNAPCHAT, "iconcssclass", "fa fa-snapchat-ghost text-shadow", "E9168011-2719-40EB-A082-9337B5F52233" );
             RockMigrationHelper.UpdateAttributeQualifier( Rock.SystemGuid.Attribute.PERSON_SNAPCHAT, "color", "#FFFC00", "C396FB2E-E38B-4D9E-9DFC-3BC9F2D04C9A" );
             RockMigrationHelper.UpdateAttributeQualifier( Rock.SystemGuid.Attribute.PERSON_SNAPCHAT, "texttemplate", "<a href=''{{value}}'' target=''_blank''>{{ value | Url:''segments'' | Last }}</a>", "7B3650EF-8F42-40DF-A729-9BEF19941DD8" );
             RockMigrationHelper.UpdateAttributeQualifier( Rock.SystemGuid.Attribute.PERSON_SNAPCHAT, "baseurl", "http://www.snapchat.com/", "E2115559-2B43-4630-8A0F-7F1B0141D62C" );
