@@ -15,13 +15,12 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using OpenHtmlToPdf;
 using PdfSharp.Pdf;
@@ -84,77 +83,145 @@ namespace Rock.Apps.StatementGenerator
 
             var recipientList = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, List<Rock.StatementGenerator.StatementGeneratorRecipient>>( "api/FinancialTransactions/GetStatementGeneratorRecipients", this.Options );
 
-            recipientList = recipientList.Take( 100 ).ToList();
+            recipientList = recipientList.Take( 10 ).ToList();
 
             var recipentResults = new List<Rock.StatementGenerator.StatementGeneratorRecipientResult>();
             this.RecordCount = recipientList.Count;
             this.RecordIndex = 0;
 
             var tasks = new List<Task>();
-            ConcurrentDictionary<int, Stream> pdfResults = new ConcurrentDictionary<int, Stream>();
+            List<Stream> pdfStreams = recipientList.Select( a => ( Stream ) null ).ToList();
+            List<double> htmlToPdfTimingsMS = recipientList.Select( a => 0.0 ).ToList();
+            List<double> fetchDataTimingsMS = new List<double>();
+            
 
             foreach ( var recipent in recipientList )
             {
                 Stopwatch stopwatch = Stopwatch.StartNew();
-                var url = $"api/FinancialTransactions/GetStatementGeneratorRecipientResult?GroupId={recipent.GroupId}";
+                StringBuilder sbUrl = new StringBuilder();
+                sbUrl.Append( $"api/FinancialTransactions/GetStatementGeneratorRecipientResult?GroupId={recipent.GroupId}" );
                 if ( recipent.PersonId.HasValue )
                 {
-                    url += $"&PersonId={recipent.PersonId.Value}";
+                    sbUrl.Append( $"&PersonId={recipent.PersonId.Value}" );
                 }
-                var recipentResult = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, Rock.StatementGenerator.StatementGeneratorRecipientResult>( url, this.Options );
+
+                var recipentResult = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, Rock.StatementGenerator.StatementGeneratorRecipientResult>( sbUrl.ToString(), this.Options );
                 double fetchDataMS = stopwatch.Elapsed.TotalMilliseconds;
+                fetchDataTimingsMS.Add( fetchDataMS );
                 stopwatch.Restart();
+
+                int documentNumber = this.RecordIndex;
+                var html = recipentResult.Html;
 
                 var task = Task.Run( () =>
                 {
-                    int documentNumber = this.RecordIndex;
-                    var html = recipentResult.Html;
                     var taskStopWatch = Stopwatch.StartNew();
-                    var pdfBytes = Pdf.From( html ).WithoutOutline().Portrait().Content();
+                    var pdfBytes = Pdf.From( html )
+                        .WithObjectSetting( "footer.fontSize", "10" )
+                        .WithObjectSetting( "footer.right", "Page [page] of [topage]" )
+                        .WithoutOutline()
+                        .Portrait()
+                        .Content();
                     taskStopWatch.Stop();
                     double htmlToPdfMS = taskStopWatch.Elapsed.TotalMilliseconds;
                     var pdfStream = new MemoryStream( pdfBytes );
-                    pdfResults.TryAdd( documentNumber, pdfStream );
-                    Debug.WriteLine( $"fetchDataMS:{fetchDataMS} ms, htmlToPdfMS:{htmlToPdfMS} ms" );
+                    if ( pdfStreams[documentNumber] == null )
+                    {
+                        pdfStreams[documentNumber] = pdfStream;
+                    }
+                    else
+                    {
+                        pdfStreams[documentNumber] = pdfStream;
+                    }
+
+                    htmlToPdfTimingsMS[documentNumber] = htmlToPdfMS;
                 } );
 
                 tasks.Add( task );
-                //task.Wait();
 
                 tasks = tasks.Where( a => a.Status != TaskStatus.RanToCompletion ).ToList();
-                Debug.WriteLine( $"taskCount:{tasks.Count}" );
-                
+
                 recipentResults.Add( recipentResult );
                 this.RecordIndex++;
                 UpdateProgress( "Processing..." );
             }
 
             Task.WaitAll( tasks.ToArray() );
+            Debug.WriteLine( $"FETCH TIMINGS AVG: {fetchDataTimingsMS.Average()} ms" );
+            Debug.WriteLine( $"HTML TIMINGS AVG: {htmlToPdfTimingsMS.Average()} ms" );
 
             UpdateProgress( "Creating PDF..." );
             this.RecordIndex = 0;
 
-            var pdfResultList = pdfResults.ToList().OrderBy( a => a.Key ).ToList();
-            using ( PdfDocument outPdf = new PdfDocument() )
+            int maxStatementsPerChapter = RecordCount;
+
+            bool useChapters = this.Options.StatementsPerChapter.HasValue;
+
+            if ( this.Options.StatementsPerChapter.HasValue )
             {
-                foreach ( var pdfResult in pdfResultList )
+                maxStatementsPerChapter = this.Options.StatementsPerChapter.Value;
+            }
+            else
+            {
+                this.Options.StatementsPerChapter = RecordCount;
+            }
+
+            if ( maxStatementsPerChapter < 1)
+            {
+                // just in case they entered 0 or a negative number
+                useChapters = false;
+                maxStatementsPerChapter = RecordCount;
+            }
+
+            int statementsInChapter = 0;
+            int chapterIndex = 1;
+
+            PdfDocument resultPdf = new PdfDocument();
+            try
+            {
+                var lastPdfStream = pdfStreams.LastOrDefault();
+                foreach ( var pdfStream in pdfStreams )
                 {
                     UpdateProgress( "Creating PDF..." );
                     this.RecordIndex++;
-                    pdfResult.Value.Seek( 0, SeekOrigin.Begin );
-                    PdfDocument pdfDocument = PdfReader.Open( pdfResult.Value, PdfDocumentOpenMode.Import );
+                    PdfDocument pdfDocument = PdfReader.Open( pdfStream, PdfDocumentOpenMode.Import );
 
                     foreach ( var pdfPage in pdfDocument.Pages.OfType<PdfPage>() )
                     {
-                        outPdf.Pages.Add( pdfPage );
+                        resultPdf.Pages.Add( pdfPage );
                     }
 
-                    pdfResult.Value.Dispose();
+                    statementsInChapter++;
+                    if ( useChapters && ( ( statementsInChapter >= maxStatementsPerChapter ) || pdfStream == lastPdfStream ) )
+                    {
+                        string filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
+                        resultPdf.Save( filePath );
+                        resultPdf.Dispose();
+                        resultPdf = new PdfDocument();
+                        statementsInChapter = 0;
+                        chapterIndex++;
+                    }
                 }
 
-                outPdf.Save( $@"c:\\temp\\combined.pdf" );
+                if ( useChapters )
+                {
+                    // just in case we stil have statements that haven't been written to a pdf
+                    if ( statementsInChapter > 0 )
+                    {
+                        string filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
+                        resultPdf.Save( filePath );
+                    }
+                }
+                else
+                {
+                    string filePath = string.Format( @"{0}\{1}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName );
+                    resultPdf.Save( filePath );
+                }
             }
-
+            finally
+            {
+                resultPdf.Dispose();
+            }
         }
 
         /// <summary>

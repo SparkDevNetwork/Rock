@@ -31,9 +31,9 @@
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0"
                         Style="{StaticResource panelBanner}">
-                <Label Content="STEP 4:"
+                <Label Content="STEP 5:"
                        Style="{StaticResource labelStyleBannerTitle}" />
-                <Label Content="Statement Layout"
+                <Label Content="Statement Lava Template"
                        Style="{StaticResource labelStyleBannerText}" />
             </StackPanel>
             <StackPanel HorizontalAlignment="Center"
@@ -41,7 +41,7 @@
                         Grid.Column="1"
                         Grid.Row="1">
                 <Label Style="{StaticResource labelStyleLegend}"
-                       Content="Layouts Available" />
+                       Content="Templates Available" />
 
                 <ListBox Name="lstLavaTemplates"
                              Height="200"

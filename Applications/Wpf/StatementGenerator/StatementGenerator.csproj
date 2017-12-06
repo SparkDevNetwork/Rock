@@ -60,6 +60,7 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -99,6 +100,9 @@
     <Compile Include="RockConfig.cs" />
     <Compile Include="RockExtensions\ObjectExtensions.cs" />
     <Compile Include="RockExtensions\StringExtensions.cs" />
+    <Compile Include="SelectPledgeAccountsPage.xaml.cs">
+      <DependentUpon>SelectPledgeAccountsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SelectAccountsPage.xaml.cs">
       <DependentUpon>SelectAccountsPage.xaml</DependentUpon>
     </Compile>
@@ -113,6 +117,9 @@
     </Compile>
     <Compile Include="SelectPersonsPage.xaml.cs">
       <DependentUpon>SelectPersonsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SelectSavedLocationPage.xaml.cs">
+      <DependentUpon>SelectSavedLocationPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="StartPage.xaml.cs">
       <DependentUpon>StartPage.xaml</DependentUpon>
@@ -150,6 +157,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="SelectPledgeAccountsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="SelectAccountsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -169,6 +180,10 @@
     <Page Include="SelectPersonsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SelectSavedLocationPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="StartPage.xaml">
       <SubType>Designer</SubType>

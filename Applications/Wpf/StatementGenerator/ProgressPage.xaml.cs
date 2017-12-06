@@ -155,9 +155,20 @@ No contributions found with the criteria provided.";
 
                 if ( max > 0 )
                 {
-                    lblReportProgress.Content = progressMessage;
-                    pgReportProgress.Maximum = max;
-                    pgReportProgress.Value = position;
+                    if ( (string)lblReportProgress.Content != progressMessage )
+                    {
+                        lblReportProgress.Content = progressMessage;
+                    }
+                    if ( pgReportProgress.Maximum != max )
+                    {
+                        pgReportProgress.Maximum = max;
+                    }
+
+                    if ( pgReportProgress.Value != position )
+                    {
+                        pgReportProgress.Value = position;
+                    }
+
                     if ( pgReportProgress.Visibility != Visibility.Visible )
                     {
                         pgReportProgress.Visibility = Visibility.Visible;
@@ -165,10 +176,14 @@ No contributions found with the criteria provided.";
                     
                     // put the current statements/second in the tooltip
                     var duration = DateTime.Now - _startProgressDateTime;
-                    if ( duration.TotalSeconds > 10 )
+                    if ( duration.TotalSeconds > 1 )
                     {
                         double rate = position / duration.TotalSeconds;
-                        lblReportProgress.ToolTip = string.Format( "{1}/{2} @ {0:F2} per second", rate, position, max );
+                        string toolTip = string.Format( "{1}/{2} @ {0:F2} per second", rate, position, max );
+                        if ( (string)lblReportProgress.ToolTip != toolTip )
+                        {
+                            lblReportProgress.ToolTip = toolTip;
+                        }
                     }
                 }
                 else
