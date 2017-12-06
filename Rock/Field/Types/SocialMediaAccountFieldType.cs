@@ -277,8 +277,8 @@ namespace Rock.Field.Types
                 if ( configurationValues != null && configurationValues.ContainsKey( "baseurl" ) )
                 {
                     string value = ( ( TextBox ) control ).Text;
-                    if ( !value.StartsWith( configurationValues[BASEURL].Value ) )
-                    { 
+                    if ( !value.StartsWith( configurationValues[BASEURL].Value ) && !string.IsNullOrEmpty( value ) )
+                    {
                         return string.Format( "{0}{1}", configurationValues[BASEURL].Value, value );
                     }
                     else
