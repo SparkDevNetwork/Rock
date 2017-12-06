@@ -157,7 +157,52 @@ IF object_id(N'[dbo].[FK_dbo.CommunicationTemplate_dbo.EntityType_ChannelEntityT
     INNER JOIN [EntityType] E ON E.[Id] = C.[MediumEntityTypeId]
 " );
 
+            // Drop any custom indexes that might be referencing Communication.MediumEntityTypeId column
+            Sql( @"DECLARE @sql NVARCHAR(MAX) = ''
+
+BEGIN
+	SELECT @sql += CONCAT (
+			'DROP INDEX '
+			,object_name(ic.object_id)
+			,'.'
+			,I.name
+			,CHAR(10)
+			)
+	FROM sys.indexes i
+	INNER JOIN sys.index_columns ic ON ic.object_id = i.object_id
+		AND ic.index_id = i.index_id
+	INNER JOIN sys.columns c ON c.object_id = ic.object_id
+		AND c.column_id = ic.column_id
+	WHERE c.Name = 'MediumEntityTypeId'
+		AND object_name(ic.object_id) = 'Communication'
+
+	EXEC (@sql)
+END" );
+
+
             DropColumn( "dbo.Communication", "MediumEntityTypeId");
+
+            // Drop any custom indexes that might be referencing CommunicationTemplate.MediumEntityTypeId column
+            Sql( @"DECLARE @sql NVARCHAR(MAX) = ''
+
+BEGIN
+	SELECT @sql += CONCAT (
+			'DROP INDEX '
+			,object_name(ic.object_id)
+			,'.'
+			,I.name
+			,CHAR(10)
+			)
+	FROM sys.indexes i
+	INNER JOIN sys.index_columns ic ON ic.object_id = i.object_id
+		AND ic.index_id = i.index_id
+	INNER JOIN sys.columns c ON c.object_id = ic.object_id
+		AND c.column_id = ic.column_id
+	WHERE c.Name = 'MediumEntityTypeId'
+		AND object_name(ic.object_id) = 'CommunicationTemplate'
+
+	EXEC (@sql)
+END" );
             DropColumn("dbo.CommunicationTemplate", "MediumEntityTypeId");
 
             Sql( MigrationSQL._201709082257551_Communications2_AddCommunicationTemplates );
