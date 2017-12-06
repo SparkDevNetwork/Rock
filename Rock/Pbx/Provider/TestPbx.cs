@@ -44,9 +44,9 @@ namespace Rock.Pbx.Provider
             }
         }
 
-        public override int DownloadCdr( DateTime? startDate = null )
+        public override string DownloadCdr( DateTime? startDate = null )
         {
-            return 0;
+            return "Not implemented";
         }
 
         public override bool Originate( string fromPhone, string toPhone, string callerId, out string message )

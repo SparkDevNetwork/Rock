@@ -45,7 +45,8 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
     [TextField( "Username", "The username to use to connect with.", true, order: 1 )]
     [TextField( "Password", "The password to use to connect with.", true, order: 2 )]
     [CodeEditorField( "Phone Extension Template", "Lava template to use to get the extension from the internal phone. This helps translate the full phone number to just the internal extension (e.g. (602) 555-2345 to 2345). The phone number will be passed into the template as the variable 'PhoneNumber'.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "{{ PhoneNumber | Right:4 }}", order: 4)]
-    [TextField( "Default Origination Extension", "When originating calls between two phones this is the default extension to use for outgoing call rules and call api settings should be used when placing the calls. This is only used if we don't know the person to use as the source of the call (when we're only passed two phone numbers).", true, order: 5 )]
+    [CodeEditorField( "Origination Rules Template", "Lava template that will be applied to both the source and destination number when originating a call. Lava variables include {{ PhoneNumber }}.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 400, false, "{{ PhoneNumber }}", order: 4 )]
+    [TextField( "Default Origination Extension", "When originating calls between two phones this is the default extension to use for outgoing call rules and call api settings should be used when placing the calls. This is only used if we don't know the person to use as the source of the call (when we're only passed two phone numbers).", true, order: 6 )]
     public class Switchvox : PbxComponent
     {
         /// <summary>
@@ -73,6 +74,17 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
         {
             message = string.Empty;
             var accountId = GetAttributeValue( "DefaultOriginationExtension" );
+
+            // run the numbers through the calling rules
+            var mergeFields = new Dictionary<string, object>();
+            mergeFields.Add( "PhoneNumber", fromPhone );
+
+            var ruleTemplate = GetAttributeValue( "OriginationRulesTemplate" );
+
+            fromPhone = ruleTemplate.ResolveMergeFields( mergeFields );
+
+            mergeFields.AddOrReplace( "PhoneNumber", toPhone );
+            toPhone = ruleTemplate.ResolveMergeFields( mergeFields );
 
             return OrginateSwitchvox( fromPhone, toPhone, accountId, callerId, out message );
         }
@@ -120,7 +132,7 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
         /// </summary>
         /// <param name="startDateTime">The start date time.</param>
         /// <returns></returns>
-        public override int DownloadCdr(DateTime? startDateTime = null)
+        public override string DownloadCdr(DateTime? startDateTime = null)
         {
             var utilityRockContext = new RockContext();
 
@@ -131,70 +143,70 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
                 startDateTime = new DateTime( 2000, 1, 1 );
             }
 
-            XDocument result = XMLRequest( new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ),
-                new XElement( "request",
-                    new XAttribute( "method", "switchvox.extensions.search" ),
-                    new XElement( "parameters",
-                        new XElement( "items_per_page", "1000" ),
-                        new XElement( "extension_types",
-                            new XElement( "extension_type", "sip" )
+            try
+            {
+                XDocument result = XMLRequest( new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ),
+                    new XElement( "request",
+                        new XAttribute( "method", "switchvox.extensions.search" ),
+                        new XElement( "parameters",
+                            new XElement( "items_per_page", "1000" ),
+                            new XElement( "extension_types",
+                                new XElement( "extension_type", "sip" )
+                            )
                         )
                     )
-                )
-            ) );
+                ) );
 
-            if ( result != null )
-            {
-                XElement xAccountIDs = new XElement( "account_ids" );
-                foreach ( XElement xExtension in result.Descendants( "extension" ) )
-                    xAccountIDs.Add(
-                        new XElement( "account_id", xExtension.Attributes( "account_id" ).First().Value )
-                    );
-
-                int pageNumber = 0;
-                int totalPages = 0;
-
-                XDocument cdrResult;
-
-                var interactionComponentId = Rock.Web.Cache.InteractionComponentCache.Read(SystemGuid.InteractionComponent.PBX_SWITCHVOX).Id;
-                var relatedEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.PersonAlias" ).Id;
-
-                // get list of current interaction foreign keys for the same timefrae to ensure we don't get duplicates
-                var startDate = startDateTime.Value.Date;
-                var currentInteractions = new InteractionService( utilityRockContext ).Queryable()
-                                                .Where( i => 
-                                                    i.InteractionComponentId == interactionComponentId 
-                                                    && i.InteractionDateTime >= startDate )
-                                                .Select( i => i.ForeignKey ).ToList();
-
-                var internalPhoneTypeId = GetAttributeValue( "InternalPhoneType" ).AsInteger();
-
-                // get list of the iternal extensions an who is tied to them
-                var extensionList = new PhoneNumberService( utilityRockContext ).Queryable()
-                                        .Where( p => p.NumberTypeValueId == internalPhoneTypeId )
-                                        .Select( p => new ExtensionMap { Number = p.Number, Extension = p.Number, PersonAliasId = p.Person.Aliases.FirstOrDefault().Id } )
-                                        .ToList();
-
-                // run lava template over the extension to translate the full number into an extension
-                var translationTemplate = this.GetAttributeValue( "PhoneExtensionTemplate" );
-                foreach(var extension in extensionList )
+                if ( result != null )
                 {
-                    var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "PhoneNumber", extension.Number );
-                    extension.Extension = translationTemplate.ResolveMergeFields( mergeFields );
-                }
+                    XElement xAccountIDs = new XElement( "account_ids" );
+                    foreach ( XElement xExtension in result.Descendants( "extension" ) )
+                        xAccountIDs.Add(
+                            new XElement( "account_id", xExtension.Attributes( "account_id" ).First().Value )
+                        );
 
-                do
-                {
-                    cdrResult = GetCalls( ++pageNumber, xAccountIDs, startDateTime.Value );
+                    int pageNumber = 0;
+                    int totalPages = 0;
 
-                    if ( cdrResult != null )
+                    XDocument cdrResult;
+
+                    var interactionComponentId = Rock.Web.Cache.InteractionComponentCache.Read( SystemGuid.InteractionComponent.PBX_SWITCHVOX ).Id;
+                    var relatedEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.PersonAlias" ).Id;
+
+                    // get list of current interaction foreign keys for the same timefrae to ensure we don't get duplicates
+                    var startDate = startDateTime.Value.Date;
+                    var currentInteractions = new InteractionService( utilityRockContext ).Queryable()
+                                                    .Where( i =>
+                                                        i.InteractionComponentId == interactionComponentId
+                                                        && i.InteractionDateTime >= startDate )
+                                                    .Select( i => i.ForeignKey ).ToList();
+
+                    var internalPhoneTypeId = GetAttributeValue( "InternalPhoneType" ).AsInteger();
+
+                    // get list of the iternal extensions an who is tied to them
+                    var extensionList = new PhoneNumberService( utilityRockContext ).Queryable()
+                                            .Where( p => p.NumberTypeValueId == internalPhoneTypeId )
+                                            .Select( p => new ExtensionMap { Number = p.Number, Extension = p.Number, PersonAliasId = p.Person.Aliases.FirstOrDefault().Id } )
+                                            .ToList();
+
+                    // run lava template over the extension to translate the full number into an extension
+                    var translationTemplate = this.GetAttributeValue( "PhoneExtensionTemplate" );
+                    foreach ( var extension in extensionList )
                     {
-                        totalPages = Int32.Parse( cdrResult.Root.Element( "result" ).Element( "calls" ).Attributes( "total_pages" ).First().Value );
+                        var mergeFields = new Dictionary<string, object>();
+                        mergeFields.Add( "PhoneNumber", extension.Number );
+                        extension.Extension = translationTemplate.ResolveMergeFields( mergeFields );
+                    }
 
-                        foreach ( XElement xCall in cdrResult.Descendants( "call" ) )
+                    do
+                    {
+                        cdrResult = GetCalls( ++pageNumber, xAccountIDs, startDateTime.Value );
+
+                        if ( cdrResult != null )
                         {
-                            try
+                            totalPages = Int32.Parse( cdrResult.Root.Element( "result" ).Element( "calls" ).Attributes( "total_pages" ).First().Value );
+
+                            foreach ( XElement xCall in cdrResult.Descendants( "call" ) )
                             {
                                 string foreignKey = xCall.Attributes( "id" ).First().Value;
 
@@ -280,19 +292,16 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
                                     }
                                 }
                             }
-
-                            catch( Exception ex )
-                            {
-                                var test = ex;
-                                var zero = 0;
-                                var test2 = 1 / zero;
-                            }
                         }
-                    }
-                } while ( cdrResult != null && totalPages > pageNumber );
-            }
+                    } while ( cdrResult != null && totalPages > pageNumber );
+                }
 
-            return recordsProcessed;
+                return string.Format( "Switchvox: Processed {0} records.", recordsProcessed );
+            }
+            catch( Exception ex )
+            {
+                return string.Format( "Switchvox: Experienced and error: {0}.", ex.Message );
+            }
         }
 
         #region Private Methods

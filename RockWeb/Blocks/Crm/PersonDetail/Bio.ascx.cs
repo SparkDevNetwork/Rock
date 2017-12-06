@@ -492,7 +492,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     if ( pbxComponent != null )
                     {
-                        phoneMarkup = string.Format( "<a class='originate-call js-originate-call' href='#' data-sourceperson='{0}' data-destinationphone='{1}' data-callerid='{2}' data-destinationphoneformatted='{3}' data-destinationname='{4}'>{5}</a>", CurrentPerson.Guid, number.ToString(), CurrentPerson.FullName, formattedNumber, Person.FullName, formattedNumber );
+                        var jsScript = string.Format( "javascript: Rock.controls.pbx.originate('{0}', '{1}', '{2}','{3}','{4}');", CurrentPerson.Guid, number.ToString(), CurrentPerson.FullName, Person.FullName, formattedNumber );
+                        phoneMarkup = string.Format( "<a class='originate-call js-originate-call' href=\"{0}\">{1}</a>", jsScript, formattedNumber );
                     }
                     else if ( RockPage.IsMobileRequest ) // if the page is being loaded locally then add the tel:// link
                     {
