@@ -18,7 +18,7 @@ namespace church.ccv.Authentication
         {
             // For now hardcoding Church Online Platform SSO key and URL...need to implement better solution later.
             string ssoKey = "4c4cb8e422eea142aed426ab9f8c82065b2cd6ac7836f7b2511c416be39fcaea";
-            string chOPUrl = "http://ccvlive.churchonline.org";
+            string chOPUrl = "http://live.ccv.church";
 
             // Create json of Multipass
             ChOPCredentials credentials = new ChOPCredentials( person );
@@ -113,7 +113,7 @@ namespace church.ccv.Authentication
         {
             public ChOPCredentials( Person person )
             {
-                Email = person.Email;
+                Email = person.Email.ToLower();
                 Expires = DateTime.UtcNow.AddMinutes( 5 ).ToString( "o" );
                 FirstName = person.FirstName;
                 LastName = person.LastName;
