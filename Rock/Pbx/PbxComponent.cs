@@ -39,7 +39,7 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 999 )]
 
         public abstract bool Originate( Person fromPerson, string toPhone, string callerId, out string message );
 
-        public abstract int DownloadCdr( DateTime? startDate = null );
+        public abstract string DownloadCdr( DateTime? startDate = null );
     }
 
 }

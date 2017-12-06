@@ -9,7 +9,7 @@
                 $(".photo a").fluidbox();
                 $('span.js-email-status').tooltip({ html: true, container: 'body', delay: { show: 100, hide: 100 } });
 
-                $('.js-originate-call').on('click', function (e) {
+                /*$('.js-originate-call').on('click', function (e) {
                     e.preventDefault();
 
                     var sourcePersonGuid = $(this).data('sourceperson');
@@ -27,7 +27,7 @@
                             Rock.dialogs.alert( "An error occurred while attempting to place call.  " + r.Message );
                         }
                     });
-                });
+                });*/
             });
         </script>
 

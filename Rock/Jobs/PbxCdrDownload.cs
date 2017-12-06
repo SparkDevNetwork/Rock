@@ -75,7 +75,7 @@ namespace Rock.Jobs
                 lastProcessedDate = new DateTime(2000, 1, 1); // if first run use 1/1/2000
             }
 
-            provider.DownloadCdr( lastProcessedDate );
+            context.Result = provider.DownloadCdr( lastProcessedDate );
 
             Rock.Web.SystemSettings.SetValue( lastProcessedKey, RockDateTime.Now.ToString() );
 
