@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Action\Person\SetAddressFromPerson.cs" />
     <Compile Include="Action\Group\GroupGetChildGroupForCampus.cs" />
     <Compile Include="Action\CheckIn\CreateLabelsFromLabelAttribute.cs" />
     <Compile Include="Action\CheckIn\FilterGroupsByLastNameTBD.cs" />
