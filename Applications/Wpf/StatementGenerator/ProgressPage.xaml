@@ -55,12 +55,7 @@
                                  Height="4"
                                  Visibility="Collapsed"/>
 
-                    <Button x:Name="btnSaveAs"
-                            HorizontalAlignment="Center"
-                            Margin="4"
-                            Style="{StaticResource buttonStylePrimary}"
-                            Content="Save As.."
-                            Click="btnSaveAs_Click" />
+                    
                 </StackPanel>
 
             </Grid>

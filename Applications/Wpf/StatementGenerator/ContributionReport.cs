@@ -71,7 +71,10 @@ namespace Rock.Apps.StatementGenerator
         /// </value>
         private int RecordIndex { get; set; }
 
-        public void RunReport()
+        /// <summary>
+        /// Runs the report returning the number of statements that were generated
+        /// </summary>
+        public int RunReport()
         {
             UpdateProgress( "Connecting..." );
 
@@ -83,17 +86,27 @@ namespace Rock.Apps.StatementGenerator
 
             var recipientList = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, List<Rock.StatementGenerator.StatementGeneratorRecipient>>( "api/FinancialTransactions/GetStatementGeneratorRecipients", this.Options );
 
-            recipientList = recipientList.Take( 10 ).ToList();
-
             var recipentResults = new List<Rock.StatementGenerator.StatementGeneratorRecipientResult>();
             this.RecordCount = recipientList.Count;
             this.RecordIndex = 0;
 
             var tasks = new List<Task>();
             List<Stream> pdfStreams = recipientList.Select( a => ( Stream ) null ).ToList();
+            List<string> pdfHtml = recipientList.Select( a => ( string ) null ).ToList();
             List<double> htmlToPdfTimingsMS = recipientList.Select( a => 0.0 ).ToList();
             List<double> fetchDataTimingsMS = new List<double>();
-            
+
+            var lavaTemplates = _rockRestClient.GetData<List<Rock.Client.DefinedValue>>( "api/FinancialTransactions/GetStatementGeneratorTemplates" );
+            var lavaTemplate = lavaTemplates.FirstOrDefault( a => a.Guid == Options.LayoutDefinedValueGuid );
+
+            var footerHtml = lavaTemplate?.AttributeValues["FooterHtml"]?.Value;
+            string footerHtmlPath = Path.ChangeExtension( Path.GetTempFileName(), "html" );
+            string footerUrl = null;
+            if ( !string.IsNullOrEmpty( footerHtml ) )
+            {
+                File.WriteAllText( footerHtmlPath, footerHtml );
+                footerUrl = "file:///" + footerHtmlPath.Replace( '\\', '/' );
+            }
 
             foreach ( var recipent in recipientList )
             {
@@ -116,23 +129,45 @@ namespace Rock.Apps.StatementGenerator
                 var task = Task.Run( () =>
                 {
                     var taskStopWatch = Stopwatch.StartNew();
-                    var pdfBytes = Pdf.From( html )
-                        .WithObjectSetting( "footer.fontSize", "10" )
-                        .WithObjectSetting( "footer.right", "Page [page] of [topage]" )
-                        .WithoutOutline()
-                        .Portrait()
-                        .Content();
-                    taskStopWatch.Stop();
-                    double htmlToPdfMS = taskStopWatch.Elapsed.TotalMilliseconds;
-                    var pdfStream = new MemoryStream( pdfBytes );
-                    if ( pdfStreams[documentNumber] == null )
+                    /*  #TODO #
+                     *  - Include Logo Attribute in Lava Template
+                     *  - Finalize Default Lava Template
+                     *  - 
+                        - [DONE] Make Address line up with envelope
+                        - [DONE]Include Column Headers on each page of output
+                        - [DONE]Format Footer using HTML trick 
+                        - [DONE]Include People if Pledge even if no trans
+                        - [DONE]Update Pledge Calculation based on SOW
+                        - Make 'Grace' Lava Template
+                        - Make 'Woodlands' Lava Template
+                        - Exclude Opted Out
+                        - Total Cash Gifts This Period (??)
+                        - Migration
+                        - Installer
+ */
+
+
+                    var pdfGenerator = Pdf.From( html );
+                    if ( footerUrl != null )
                     {
-                        pdfStreams[documentNumber] = pdfStream;
+                        pdfGenerator = pdfGenerator.WithObjectSetting( "footer.htmlUrl", footerUrl );
                     }
                     else
                     {
-                        pdfStreams[documentNumber] = pdfStream;
+                        pdfGenerator = pdfGenerator.WithObjectSetting( "footer.right", "Page [page] of [topage]" );
                     }
+
+                    var pdfBytes = pdfGenerator
+                        .WithoutOutline()
+                        .Portrait()
+                        .Content();
+
+                    taskStopWatch.Stop();
+                    double htmlToPdfMS = taskStopWatch.Elapsed.TotalMilliseconds;
+                    var pdfStream = new MemoryStream( pdfBytes );
+                    pdfHtml[documentNumber] = html;
+                    Debug.Assert( pdfStreams[documentNumber] == null, "Threading issue: pdfStream shouldn't already be assigned" );
+                    pdfStreams[documentNumber] = pdfStream;
 
                     htmlToPdfTimingsMS[documentNumber] = htmlToPdfMS;
                 } );
@@ -161,12 +196,8 @@ namespace Rock.Apps.StatementGenerator
             {
                 maxStatementsPerChapter = this.Options.StatementsPerChapter.Value;
             }
-            else
-            {
-                this.Options.StatementsPerChapter = RecordCount;
-            }
 
-            if ( maxStatementsPerChapter < 1)
+            if ( maxStatementsPerChapter < 1 )
             {
                 // just in case they entered 0 or a negative number
                 useChapters = false;
@@ -195,33 +226,83 @@ namespace Rock.Apps.StatementGenerator
                     if ( useChapters && ( ( statementsInChapter >= maxStatementsPerChapter ) || pdfStream == lastPdfStream ) )
                     {
                         string filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
-                        resultPdf.Save( filePath );
+                        SavePdfFile( resultPdf, filePath );
                         resultPdf.Dispose();
                         resultPdf = new PdfDocument();
                         statementsInChapter = 0;
                         chapterIndex++;
                     }
                 }
-
+                
                 if ( useChapters )
                 {
-                    // just in case we stil have statements that haven't been written to a pdf
+                    // just in case we still have statements that haven't been written to a pdf
                     if ( statementsInChapter > 0 )
                     {
                         string filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
-                        resultPdf.Save( filePath );
+                        SavePdfFile( resultPdf, filePath );
                     }
                 }
                 else
                 {
                     string filePath = string.Format( @"{0}\{1}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName );
-                    resultPdf.Save( filePath );
+                    SavePdfFile( resultPdf, filePath );
                 }
+
+
+                // DEBUG
+                StringBuilder sbAllHtml = new StringBuilder();
+
+                foreach ( var html in pdfHtml )
+                {
+                    sbAllHtml.AppendLine( html );
+                    sbAllHtml.AppendLine( "<div style='page-break-before: always'>&nbsp;</div>" );
+                }
+
+                var pdfBytes = Pdf.From( sbAllHtml.ToString() )
+                    .WithObjectSetting( "footer.fontSize", "10" )
+                    .WithObjectSetting( "footer.right", "Page [page] of [topage]" )
+                    .WithoutOutline()
+                    .Portrait()
+                    .Content();
+
+                File.WriteAllText( string.Format( @"{0}\TESTBIG.html", this.Options.SaveDirectory, this.Options.BaseFileName ), sbAllHtml.ToString() );
+                File.WriteAllBytes( string.Format( @"{0}\TESTBIG.pdf", this.Options.SaveDirectory, this.Options.BaseFileName ), pdfBytes );
+
             }
             finally
             {
                 resultPdf.Dispose();
             }
+
+            if ( File.Exists( footerHtmlPath ) )
+            {
+                File.Delete( footerHtmlPath );
+            }
+
+            return this.RecordCount;
+        }
+
+        /// <summary>
+        /// Saves the PDF file and Prompts if the file seems to be open
+        /// </summary>
+        /// <param name="resultPdf">The result PDF.</param>
+        /// <param name="filePath">The file path.</param>
+        private static void SavePdfFile( PdfDocument resultPdf, string filePath )
+        {
+            if ( File.Exists( filePath ) )
+            {
+                try
+                {
+                    File.Delete( filePath );
+                }
+                catch ( Exception )
+                {
+                    System.Windows.MessageBox.Show( "Unable to write save PDF File. Make sure you don't have the file open then press OK to try again.", "Warning", System.Windows.MessageBoxButton.OK );
+                }
+            }
+
+            resultPdf.Save( filePath );
         }
 
         /// <summary>
@@ -237,8 +318,6 @@ namespace Rock.Apps.StatementGenerator
         /// Occurs when [configuration progress].
         /// </summary>
         public event EventHandler<ProgressEventArgs> OnProgress;
-
-
     }
 
     /// <summary>
