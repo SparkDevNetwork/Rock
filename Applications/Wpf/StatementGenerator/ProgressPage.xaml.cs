@@ -36,9 +36,9 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
-        /// The _PDF output
+        /// The statement count
         /// </summary>
-        private byte[] _pdfOutput;
+        private int _statementCount;
 
         /// <summary>
         /// Handles the Loaded event of the Page control.
@@ -47,7 +47,6 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
-            btnSaveAs.Visibility = Visibility.Hidden;
             btnPrev.Visibility = Visibility.Hidden;
             lblReportProgress.Visibility = Visibility.Hidden;
             lblReportProgress.Content = "Progress - Creating Statements";
@@ -76,18 +75,15 @@ namespace Rock.Apps.StatementGenerator
                 lblReportProgress.Content = "Error: " + e.Error.Message;
                 throw e.Error;
             }
-
-            if ( e.Result != null )
+            
+            if ( _statementCount == 0 )
             {
-                _pdfOutput = e.Result as byte[];
-                lblReportProgress.Content = "Complete";
-                btnSaveAs.Visibility = Visibility.Visible;
+                lblReportProgress.Content = @"Warning: No records matched your criteria. No statements have been created.";
             }
             else
             {
-                _pdfOutput = null;
-                lblReportProgress.Content = @"Warning:
-No contributions found with the criteria provided.";
+                lblReportProgress.Style = this.FindResource( "labelStyleAlertSuccess" ) as Style;
+                lblReportProgress.Content = string.Format( @"Success:{1}Your statements have been created.{1}( {0} statements created )", _statementCount, Environment.NewLine );
             }
         }
 
@@ -102,24 +98,9 @@ No contributions found with the criteria provided.";
             ContributionReport contributionReport = new ContributionReport( ReportOptions.Current );
             contributionReport.OnProgress += ContributionReport_OnProgress;
 
-            contributionReport.RunReport();
+            _statementCount = contributionReport.RunReport();
 
-            //// TODO
-
-            /*
-            var doc = contributionReport.RunReport();
-
-            if ( doc != null )
-            {
-                ShowProgress( 0, 0, "Rendering PDF..." );
-                byte[] pdfData = doc.Draw();
-                e.Result = pdfData;
-            }
-            else
-            {
-                e.Result = null;
-            }
-            */
+            e.Result = _statementCount > 0;
         }
 
         /// <summary>
@@ -192,25 +173,6 @@ No contributions found with the criteria provided.";
                     pgReportProgress.Visibility = Visibility.Collapsed;
                 }
             } );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSaveAs control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void btnSaveAs_Click( object sender, RoutedEventArgs e )
-        {
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.OverwritePrompt = true;
-            dlg.DefaultExt = ".pdf";
-            dlg.Filter = "Pdf Files (.pdf)|*.pdf";
-
-            if ( dlg.ShowDialog() == true )
-            {
-                File.WriteAllBytes( dlg.FileName, _pdfOutput );
-                Process.Start( dlg.FileName );
-            }
         }
 
         /// <summary>

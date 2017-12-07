@@ -55,7 +55,8 @@ namespace Rock.StatementGenerator.Rest
 
             using ( var rockContext = new RockContext() )
             {
-                IQueryable<FinancialTransaction> financialTransactionQry = GetFinancialTransactionQuery( options, rockContext, true );
+                var financialTransactionQry = GetFinancialTransactionQuery( options, rockContext, true );
+                var financialPledgeQry = GetFinancialPledgeQuery( options, rockContext, true );
 
                 // Get distinct Giving Groups for Persons that have a specific GivingGroupId and have transactions that match the filter
                 // These are Persons that give as part of a Group.For example, Husband and Wife
@@ -66,35 +67,50 @@ namespace Rock.StatementGenerator.Rest
                         GroupId = a.Value
                     } ).Distinct();
 
-                //var qryGivingGroupIdsThatHavePledges = 
+                var qryGivingGroupIdsThatHavePledges = financialPledgeQry.Select( a => a.PersonAlias.Person.GivingGroupId ).Where( a => a.HasValue )
+                    .Select( a => new
+                    {
+                        PersonId = ( int? ) null,
+                        GroupId = a.Value
+                    } ).Distinct();
 
                 // Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.        
                 // These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order 
                 // to determine which address(es) the statements need to be mailed to 
                 var groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
                 var groupMembersQry = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.GroupTypeId == groupTypeIdFamily );
+
                 var qryIndividualGiversThatHaveTransactions = financialTransactionQry
                     .Where( a => !a.AuthorizedPersonAlias.Person.GivingGroupId.HasValue )
                     .Select( a => a.AuthorizedPersonAlias.PersonId ).Distinct()
+                    .Join( groupMembersQry, p => p, m => m.PersonId, ( p, m ) => new { PersonId = ( int? ) p, GroupId = m.GroupId } );
+
+                var qryIndividualGiversThatHavePledges = financialPledgeQry
+                    .Where( a => !a.PersonAlias.Person.GivingGroupId.HasValue )
+                    .Select( a => a.PersonAlias.PersonId ).Distinct()
                     .Join( groupMembersQry, p => p, m => m.PersonId, ( p, m ) => new { PersonId = ( int? ) p, GroupId = m.GroupId } );
 
                 var unionQry = qryGivingGroupIdsThatHaveTransactions.Union( qryIndividualGiversThatHaveTransactions );
 
                 if ( options.PledgesAccountIds.Any() )
                 {
-                    // #TODO# Make sure to also include people that have pledges
+                    unionQry = unionQry.Union( qryGivingGroupIdsThatHavePledges ).Union( qryIndividualGiversThatHavePledges );
                 }
 
                 /*  Limit to Mailing Address and sort by ZipCode */
                 IQueryable<GroupLocation> groupLocationsQry = GetGroupLocationQuery( rockContext );
 
-                var unionJoinLocationQry = unionQry.Join( groupLocationsQry, pg => pg.GroupId, l => l.GroupId, ( pg, l ) => new
-                {
-                    pg.PersonId,
-                    pg.GroupId,
-                    LocationId = ( int? ) l.LocationId,
-                    l.Location.PostalCode
-                } );
+                // Do an outer join on location so we can include people that don't have an address (if options.IncludeIndividualsWithNoAddress) //
+                var unionJoinLocationQry = from pg in unionQry
+                                           join l in groupLocationsQry on pg.GroupId equals l.GroupId into u
+                                           from l in u.DefaultIfEmpty()
+                                           select new
+                                           {
+                                               pg.PersonId,
+                                               pg.GroupId,
+                                               LocationId = ( int? ) l.LocationId,
+                                               l.Location.PostalCode
+                                           };
 
                 if ( options.PersonId == null && !options.IncludeIndividualsWithNoAddress )
                 {
@@ -182,6 +198,7 @@ namespace Rock.StatementGenerator.Rest
             using ( var rockContext = new RockContext() )
             {
                 var financialTransactionQry = this.GetFinancialTransactionQuery( options, rockContext, false );
+                var financialPledgeQry = GetFinancialPledgeQuery( options, rockContext, false );
 
                 var personList = new List<Person>();
                 Person person = null;
@@ -219,10 +236,11 @@ namespace Rock.StatementGenerator.Rest
                     financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.OrderBy( a => a.Account.Order ).ThenBy( a => a.Account.Name ).ToList();
                 }
 
-                var template = DefinedValueCache.Read( options.LayoutDefinedValueGuid.Value );
-                var lavaTemplate = template.GetAttributeValue( "LavaTemplate" );
+                var lavaTemplateValue = DefinedValueCache.Read( options.LayoutDefinedValueGuid.Value );
+                var lavaTemplateLava = lavaTemplateValue.GetAttributeValue( "LavaTemplate" );
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false, GetDeviceFamily = false, GetOSFamily = false, GetPageContext = false, GetPageParameters = false, GetCampuses = true, GetCurrentPerson = true } );
+                mergeFields.Add( "LavaTemplate", lavaTemplateValue );
 
                 mergeFields.Add( "PersonList", personList );
                 mergeFields.Add( "StatementStartDate", options.StartDate );
@@ -256,39 +274,51 @@ namespace Rock.StatementGenerator.Rest
                     mergeFields.Add( "Country", string.Empty );
                 }
 
-                var transactionDetailList = financialTransactionsList.SelectMany( a => a.TransactionDetails ).ToList();
+                var transactionDetailListAll = financialTransactionsList.SelectMany( a => a.TransactionDetails ).ToList();
 
-                mergeFields.Add( "TransactionDetails", transactionDetailList );
+                List<FinancialTransactionDetail> transactionDetailListCash = transactionDetailListAll;
+                List<FinancialTransactionDetail> transactionDetailListNonCash = new List<FinancialTransactionDetail>();
+                if ( options.CashAccountIds != null )
+                {
+                    transactionDetailListCash = transactionDetailListCash.Where( a => options.CashAccountIds.Contains( a.AccountId ) ).ToList();
+                }
 
-                mergeFields.Add( "AccountSummary", transactionDetailList.GroupBy( t => t.Account.Name ).Select( s => new { AccountName = s.Key, Total = s.Sum( a => a.Amount ), Order = s.Max( a => a.Account.Order ) } ).OrderBy( s => s.Order ) );
+                if ( options.NonCashAccountIds != null )
+                {
+                    transactionDetailListNonCash = transactionDetailListNonCash.Where( a => options.NonCashAccountIds.Contains( a.AccountId ) ).ToList();
+                }
+
+                mergeFields.Add( "TransactionDetails", transactionDetailListCash );
+                mergeFields.Add( "TransactionDetailsNonCash", transactionDetailListNonCash );
+
+                mergeFields.Add( "TotalContributionAmount", transactionDetailListCash.Sum( a => a.Amount ) );
+                mergeFields.Add( "TotalContributionCount", transactionDetailListCash.Count() );
+
+                mergeFields.Add( "TotalContributionAmountNonCash", transactionDetailListNonCash.Sum( a => a.Amount ) );
+                mergeFields.Add( "TotalContributionCountNonCash", transactionDetailListNonCash.Count() );
+
+                mergeFields.Add( "AccountSummary", transactionDetailListCash.GroupBy( t => t.Account.Name ).Select( s => new { AccountName = s.Key, Total = s.Sum( a => a.Amount ), Order = s.Max( a => a.Account.Order ) } ).OrderBy( s => s.Order ) );
+                mergeFields.Add( "AccountSummaryNonCash", transactionDetailListNonCash.GroupBy( t => t.Account.Name ).Select( s => new { AccountName = s.Key, Total = s.Sum( a => a.Amount ), Order = s.Max( a => a.Account.Order ) } ).OrderBy( s => s.Order ) );
 
                 if ( options.PledgesAccountIds.Any() )
                 {
-
-                    var statementPledgeYear = options.StartDate.Value.Year;
-
-                    // pledge information
-                    var pledgeList = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
-                                        .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains( p.PersonAliasId.Value )
-                                            && p.StartDate.Year <= statementPledgeYear && p.EndDate.Year >= statementPledgeYear )
-                                            .Include( a => a.Account )
+                    var pledgeList = financialPledgeQry
+                                        .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains( p.PersonAliasId.Value ) )
+                                        .Include( a => a.Account )
                                             .ToList();
 
                     var pledgeSummaryList = pledgeList
-                                        .GroupBy( p => p.Account )
-                                        .Select( g => new PledgeSummary
+                                        .Select( p => new PledgeSummaryByPledge
                                         {
-                                            AccountId = g.Key.Id,
-                                            AccountName = g.Key.Name,
-                                            AmountPledged = g.Sum( p => p.TotalAmount ),
-                                            PledgeStartDate = g.Min( p => p.StartDate ),
-                                            PledgeEndDate = g.Max( p => p.EndDate )
+                                            Account = p.Account,
+                                            Pledge = p
                                         } )
                                         .ToList();
 
                     // add detailed pledge information
                     if ( pledgeSummaryList.Any() )
                     {
+                        int statementPledgeYear = options.StartDate.Value.Year;
                         foreach ( var pledge in pledgeSummaryList )
                         {
                             var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddDays( 1 );
@@ -304,7 +334,21 @@ namespace Rock.StatementGenerator.Rest
                                 adjustedPedgeEndDate = RockDateTime.Now;
                             }
 
-                            pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
+                            var pledgeFinancialTransactionDetailQry = new FinancialTransactionDetailService( rockContext ).Queryable();
+                            if ( options.PledgesIncludeChildAccounts )
+                            {
+                                pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t =>
+                                    t.AccountId == pledge.AccountId
+                                    ||
+                                    ( t.Account.ParentAccountId.HasValue && t.Account.ParentAccountId == pledge.AccountId )
+                                );
+                            }
+                            else
+                            {
+                                pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t => t.AccountId == pledge.AccountId );
+                            }
+
+                            pledge.AmountGiven = pledgeFinancialTransactionDetailQry
                                                         .Where( t =>
                                                              t.AccountId == pledge.AccountId
                                                              && t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value )
@@ -321,14 +365,101 @@ namespace Rock.StatementGenerator.Rest
                         }
                     }
 
+                    // Pledges (organized by each Pledge, not combined by Account)
                     mergeFields.Add( "Pledges", pledgeSummaryList );
+
+                    // Pledges but organized by Account (in case more than one pledge goes to the same account)
+                    var pledgeAccounts = pledgeSummaryList.GroupBy( a => a.Account ).Select( a => new PledgeSummaryByAccount
+                    {
+                        Account = a.Key,
+                        PledgeList = a.Select(x => x.Pledge).ToList()
+                    } );
+
+
+                    mergeFields.Add( "PledgeAccounts", pledgeAccounts );
                 }
 
-                result.Html = lavaTemplate.ResolveMergeFields( mergeFields );
+                mergeFields.Add( "Options", options );
+
+                result.Html = lavaTemplateLava.ResolveMergeFields( mergeFields );
                 result.Html = result.Html.Trim();
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the financial pledge query.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="usePersonFilters">if set to <c>true</c> [use person filters].</param>
+        /// <returns></returns>
+        private IQueryable<FinancialPledge> GetFinancialPledgeQuery( StatementGeneratorOptions options, RockContext rockContext, bool usePersonFilters )
+        {
+            int statementPledgeYear = options.StartDate.Value.Year;
+
+            // pledge information
+            var pledgeQry = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
+                                .Where( p => p.StartDate.Year <= statementPledgeYear && p.EndDate.Year >= statementPledgeYear );
+
+            // Filter to specified AccountIds (if specified)
+            if ( options.PledgesAccountIds == null || !options.PledgesAccountIds.Any() )
+            {
+                // if no PledgeAccountIds where specified, don't include any pledges
+                pledgeQry = pledgeQry.Where( a => false );
+            }
+            else
+            {
+                // narrow it down to recipients that have pledges involving any of the AccountIds
+                var selectedAccountIds = options.PledgesAccountIds;
+                if ( options.PledgesIncludeChildAccounts )
+                {
+                    // If Pledges Include Child Accounts, also check for child accounts (but only one level deep)
+                    pledgeQry = pledgeQry.Where( a => (
+                        a.AccountId.HasValue && selectedAccountIds.Contains( a.AccountId.Value ) )
+                        ||
+                        a.Account.ParentAccountId.HasValue && selectedAccountIds.Contains( a.Account.ParentAccountId.Value ) );
+                }
+                else
+                {
+                    pledgeQry = pledgeQry.Where( a => a.AccountId.HasValue && selectedAccountIds.Contains( a.AccountId.Value ) );
+                }
+            }
+
+            if ( usePersonFilters )
+            {
+                if ( options.PersonId.HasValue )
+                {
+                    // If PersonId is specified, then this statement is for a specific person, so don't do any other filtering
+                    string personGivingId = new PersonService( rockContext ).Queryable().Where( a => a.Id == options.PersonId.Value ).Select( a => a.GivingId ).FirstOrDefault();
+                    if ( personGivingId != null )
+                    {
+                        pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.GivingId == personGivingId );
+                    }
+                    else
+                    {
+                        // shouldn't happen, but just in case person doesn't exist
+                        pledgeQry = pledgeQry.Where( a => false );
+                    }
+                }
+                else
+                {
+                    if ( !options.IncludeBusinesses )
+                    {
+                        int recordTypeValueIdPerson = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                        pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordTypeValueId == recordTypeValueIdPerson );
+                    }
+
+                    if ( options.ExcludeInActiveIndividuals )
+                    {
+                        int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                        pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
+                    }
+                }
+            }
+
+            return pledgeQry;
         }
 
         /// <summary>
