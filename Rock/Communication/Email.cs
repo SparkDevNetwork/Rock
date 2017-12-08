@@ -55,7 +55,8 @@ namespace Rock.Communication
                 {
                     person.IsEmailActive = false;
 
-                    person.EmailNote = String.Format( "Email experienced a {0} on {1} ({2}).", bounceType.Humanize(), bouncedDateTime.ToShortDateString(), message );
+                    message = !string.IsNullOrEmpty( message ) ? " (" + message + ")" : string.Empty;
+                    person.EmailNote = $"Email experienced a {bounceType.Humanize()} on {bouncedDateTime.ToShortDateString()}{message}.";
                 }
 
                 rockContext.SaveChanges();
