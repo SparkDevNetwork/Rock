@@ -9014,6 +9014,30 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     min-height: 215px;
 }
 
+ @media (min-width: 768px) {
+	 .bigblock-flexbg-md {
+		 min-height:320px
+	 }
+ }
+ 
+ @media (min-width: 992px) {
+	 .bigblock-flexbg-md {
+		 min-height:400px
+	 }
+ }
+ 
+ @media (min-width: 1200px) {
+	 .bigblock-flexbg-md {
+		 min-height:460px
+	 }
+ }
+ 
+ @media (min-width: 1560px) {
+	 .bigblock-flexbg-md {
+		 min-height:520px
+	 }
+ }
+
 .bigblock-flexbg-contain {
     background-size: contain;
 }
@@ -9917,7 +9941,8 @@ html[xmlns] .slides {
 }
 
 .thumbnail {
-    border-width: 2px;
+    border-width: 0px;
+	border-radius: 0px;
 }
 
 a.thumbnail {

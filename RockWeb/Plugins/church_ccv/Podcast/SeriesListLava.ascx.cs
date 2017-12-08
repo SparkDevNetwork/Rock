@@ -54,7 +54,7 @@ namespace RockWeb.Plugins.church_ccv.Podcast
             int pageNum = PageParameter( "PageNum" ).AsInteger( );
             int numPerPage = PageParameter( "NumPerPage" ).AsInteger( );
 
-            ShowDetail( pageNum, numPerPage != 0 ? numPerPage : 12 );
+            ShowDetail( pageNum, numPerPage != 0 ? numPerPage : 6 );
         }
         
         /// <summary>
@@ -81,6 +81,7 @@ namespace RockWeb.Plugins.church_ccv.Podcast
             
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "WeekendSeries", pagedPodcastList );
+            mergeFields.Add( "CurrentSeries", podcastSeriesList.Children[0] );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add("SeriesDetailPage", LinkedPageUrl("SeriesDetailPage", null));

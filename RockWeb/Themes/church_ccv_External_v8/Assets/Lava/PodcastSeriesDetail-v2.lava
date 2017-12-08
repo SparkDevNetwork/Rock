@@ -1,0 +1,14 @@
+{% assign Series = PodcastSeries %}
+
+<div id="series-details" class="watch series container-fluid">
+  <div class="watch series small-paragraph">{{ Series.Description }}</div>
+  <div class="watch series small-paragraph">{{ Series.Attributes.ExtraDetails }}</div>
+  <br/>
+  <br/>
+  <h4>Messages in this Series</h4>
+  <ol class="watch-msglist">
+    {% for Message in Series.Messages reversed %}
+      <li><a href="{{ LinkedPages.MessageDetailPage }}?MessageId={{ Message.Id }}">{{ Message.Name }}</a></li>
+    {% endfor %}
+  </ol>
+</div>

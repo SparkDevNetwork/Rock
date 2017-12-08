@@ -9,6 +9,7 @@
   line-height: 2em;
   font-weight: 700;
   text-transform: uppercase;
+  color: #7A1315;
 }
 @media (min-width: 768px) {
   .watch-msglist {
@@ -43,4 +44,41 @@
     margin-top: 12px;
     margin-bottom: 0;
   }
+}
+
+@media (min-width: 768px) {
+	.watch.container-fluid {
+		margin-top: 25px;
+	}
+}
+
+.watch.series.container-fluid {
+	margin-top: 25px;
+	margin-bottom: 50px;
+}
+
+.watch.series.small-paragraph {
+	text-align: left;
+}
+
+.watch li a, .watch li a:focus, .watch li a:active, .watch li a:hover {
+	border-radius: 0px;
+	border-width: 0px;
+	background: rgba(0,0,0,0);
+	box-shadow: none;
+}
+
+.watch h3 {
+	text-transform: none;
+}
+
+.watch .thumbnail {
+    border-width: 0px;
+	border-radius: 0px;
+	padding: 0px;
+	background-color: #7a1315;
+}
+
+.watch .thumbnail .caption {
+	color: #fff;
 }
