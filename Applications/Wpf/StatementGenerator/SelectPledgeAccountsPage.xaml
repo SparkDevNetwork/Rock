@@ -33,7 +33,7 @@
 
             <StackPanel Grid.Row="0"
                         Style="{StaticResource panelBanner}">
-                <Label Content="STEP 4:"
+                <Label Content="STEP 5:"
                        Style="{StaticResource labelStyleBannerTitle}" />
                 <Label Content="Pledge Information"
                        Style="{StaticResource labelStyleBannerText}" />

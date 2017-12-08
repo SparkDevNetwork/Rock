@@ -31,19 +31,30 @@
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0"
                         Style="{StaticResource panelBanner}">
-                <Label Content="STEP 5:"
+                <Label Content="STEP 2:"
                        Style="{StaticResource labelStyleBannerTitle}" />
                 <Label Content="Statement Lava Template"
                        Style="{StaticResource labelStyleBannerText}" />
             </StackPanel>
-            <StackPanel HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
+            <StackPanel HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Style="{StaticResource indentStyle}"
                         Grid.Column="1"
                         Grid.Row="1">
-                <Label Style="{StaticResource labelStyleLegend}"
-                       Content="Templates Available" />
+                
+                <Label Style="{StaticResource labelStyleLegend}" Content="Templates Available" />
+                <Label Style="{StaticResource labelStyle}"  >
+                    <TextBlock TextWrapping="Wrap">
+                        Select the template to use for the layout of each statement. These can be customized in Rock under 
+                        <LineBreak />
+                        General Settings > Defined Types > Statement  Generator Lava Template.
+                    </TextBlock>
+                </Label>
+
 
                 <ListBox Name="lstLavaTemplates"
+                         HorizontalAlignment="Left"
+                         Margin="0,8,0,0"
                              Height="200"
                              Width="320"
                              ScrollViewer.VerticalScrollBarVisibility="Visible">

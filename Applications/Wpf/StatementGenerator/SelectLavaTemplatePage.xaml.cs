@@ -118,7 +118,7 @@ namespace Rock.Apps.StatementGenerator
         {
             if ( SaveChanges( true ) )
             {
-                SelectSaveLocationPage nextPage = new SelectSaveLocationPage();
+                var nextPage = new SelectDateRangePage();
                 this.NavigationService.Navigate( nextPage );
             }
         }
