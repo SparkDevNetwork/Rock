@@ -58,6 +58,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Migrations\001_StatementGenerator.cs" />
+    <Compile Include="Migrations\MigrationResource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MigrationResource.resx</DependentUpon>
+    </Compile>
     <Compile Include="PledgeSummary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\StatementGeneratorFinancialTransactionsController.cs" />
@@ -68,9 +73,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Migrations\Grace.lava" />
-    <None Include="Migrations\RockDefault.lava" />
-    <None Include="Migrations\Woodlands.lava" />
+    <None Include="Migrations\001_StatementGenerator_Grace.lava" />
+    <None Include="Migrations\001_StatementGenerator_RockDefault.lava" />
+    <None Include="Migrations\001_StatementGenerator_Woodlands.lava" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -88,7 +93,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Migrations\RockDefault.Footer.html" />
+    <Content Include="Migrations\001_StatementGenerator_RockDefault.Footer.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\MigrationResource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>MigrationResource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
