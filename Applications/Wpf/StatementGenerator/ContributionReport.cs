@@ -162,6 +162,10 @@ namespace Rock.Apps.StatementGenerator
             UpdateProgress( "Creating PDF..." );
             this.RecordIndex = 0;
 
+            // remove any statements that didn't get generated due to OptedOut
+            pdfStreams = pdfStreams.Where( a => a != null ).ToList();
+            this.RecordCount = pdfStreams.Count();
+
             int maxStatementsPerChapter = RecordCount;
 
             bool useChapters = this.Options.StatementsPerChapter.HasValue;
@@ -184,8 +188,7 @@ namespace Rock.Apps.StatementGenerator
             PdfDocument resultPdf = new PdfDocument();
             try
             {
-                // remove any statements that didn't get generated due to OptedOut
-                pdfStreams = pdfStreams.Where( a => a != null ).ToList();
+                
 
                 var lastPdfStream = pdfStreams.LastOrDefault();
                 foreach ( var pdfStream in pdfStreams )
@@ -235,6 +238,8 @@ namespace Rock.Apps.StatementGenerator
             {
                 File.Delete( footerHtmlPath );
             }
+
+            UpdateProgress( "Complete" );
 
             return this.RecordCount;
         }
