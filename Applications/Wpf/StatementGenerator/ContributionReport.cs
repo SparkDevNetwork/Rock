@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -91,9 +90,6 @@ namespace Rock.Apps.StatementGenerator
 
             var tasks = new List<Task>();
             List<Stream> pdfStreams = recipientList.Select( a => ( Stream ) null ).ToList();
-            List<string> pdfHtml = recipientList.Select( a => ( string ) null ).ToList();
-            List<double> htmlToPdfTimingsMS = recipientList.Select( a => 0.0 ).ToList();
-            List<double> fetchDataTimingsMS = new List<double>();
 
             var lavaTemplates = _rockRestClient.GetData<List<Rock.Client.DefinedValue>>( "api/FinancialTransactions/GetStatementGeneratorTemplates" );
             var lavaTemplate = lavaTemplates.FirstOrDefault( a => a.Guid == Options.LayoutDefinedValueGuid );
@@ -109,7 +105,6 @@ namespace Rock.Apps.StatementGenerator
 
             foreach ( var recipent in recipientList )
             {
-                Stopwatch stopwatch = Stopwatch.StartNew();
                 StringBuilder sbUrl = new StringBuilder();
                 sbUrl.Append( $"api/FinancialTransactions/GetStatementGeneratorRecipientResult?GroupId={recipent.GroupId}" );
                 if ( recipent.PersonId.HasValue )
@@ -118,15 +113,11 @@ namespace Rock.Apps.StatementGenerator
                 }
 
                 var recipentResult = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, Rock.StatementGenerator.StatementGeneratorRecipientResult>( sbUrl.ToString(), this.Options );
-                double fetchDataMS = stopwatch.Elapsed.TotalMilliseconds;
-                fetchDataTimingsMS.Add( fetchDataMS );
-                stopwatch.Restart();
 
                 int documentNumber = this.RecordIndex;
                 if ( ( this.Options.ExcludeOptedOutIndividuals && recipentResult.OptedOut ) || ( recipentResult.Html == null ) )
                 {
                     // don't generate a statement if opted out or no statement html
-                    htmlToPdfTimingsMS[documentNumber] = 0.0;
                     pdfStreams[documentNumber] = null;
                 }
                 else
@@ -135,8 +126,6 @@ namespace Rock.Apps.StatementGenerator
 
                     var task = Task.Run( () =>
                     {
-                        var taskStopWatch = Stopwatch.StartNew();
-
                         var pdfGenerator = Pdf.From( html );
                         if ( footerUrl != null )
                         {
@@ -154,14 +143,9 @@ namespace Rock.Apps.StatementGenerator
                             .Portrait()
                             .Content();
 
-                        taskStopWatch.Stop();
-                        double htmlToPdfMS = taskStopWatch.Elapsed.TotalMilliseconds;
                         var pdfStream = new MemoryStream( pdfBytes );
-                        pdfHtml[documentNumber] = html;
-                        Debug.Assert( pdfStreams[documentNumber] == null, "Threading issue: pdfStream shouldn't already be assigned" );
+                        System.Diagnostics.Debug.Assert( pdfStreams[documentNumber] == null, "Threading issue: pdfStream shouldn't already be assigned" );
                         pdfStreams[documentNumber] = pdfStream;
-
-                        htmlToPdfTimingsMS[documentNumber] = htmlToPdfMS;
                     } );
 
                     tasks.Add( task );
@@ -174,8 +158,6 @@ namespace Rock.Apps.StatementGenerator
             }
 
             Task.WaitAll( tasks.ToArray() );
-            Debug.WriteLine( $"FETCH TIMINGS AVG: {fetchDataTimingsMS.Average()} ms" );
-            Debug.WriteLine( $"HTML TIMINGS AVG: {htmlToPdfTimingsMS.Average()} ms" );
 
             UpdateProgress( "Creating PDF..." );
             this.RecordIndex = 0;
@@ -243,17 +225,6 @@ namespace Rock.Apps.StatementGenerator
                     string filePath = string.Format( @"{0}\{1}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName );
                     SavePdfFile( resultPdf, filePath );
                 }
-
-                // DEBUG. Output HTML version of the statements
-                StringBuilder sbAllHtml = new StringBuilder();
-
-                foreach ( var html in pdfHtml )
-                {
-                    sbAllHtml.AppendLine( html );
-                    sbAllHtml.AppendLine( "<div style='page-break-before: always'>&nbsp;</div>" );
-                }
-
-                File.WriteAllText( string.Format( @"{0}\{1}.html", this.Options.SaveDirectory, this.Options.BaseFileName ), sbAllHtml.ToString() );
             }
             finally
             {
