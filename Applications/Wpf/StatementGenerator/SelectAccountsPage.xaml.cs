@@ -124,7 +124,7 @@ namespace Rock.Apps.StatementGenerator
         {
             if ( SaveChanges( true ) )
             {
-                SelectDateRangePage nextPage = new SelectDateRangePage();
+                var nextPage = new SelectPledgeAccountsPage();
                 this.NavigationService.Navigate( nextPage );
             }
         }

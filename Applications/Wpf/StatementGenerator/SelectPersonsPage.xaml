@@ -37,8 +37,10 @@
                 <Label Content="Who Needs a Statement"
                        Style="{StaticResource labelStyleBannerText}" />
             </StackPanel>
-            <StackPanel Margin="12"
-                        Width="Auto"
+            <StackPanel HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Style="{StaticResource indentStyle}"
+                        Grid.Column="1"
                         Grid.Row="1">
                 <Label Style="{StaticResource labelStyleLegend}"
                        Content="Generate for"
