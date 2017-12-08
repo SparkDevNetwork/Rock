@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 
 namespace Rock.StatementGenerator
@@ -46,7 +62,7 @@ namespace Rock.StatementGenerator
         /// <value>
         ///   <c>true</c> if [pledges include child accounts]; otherwise, <c>false</c>.
         /// </value>
-        public bool PledgesIncludeChildAccounts { get; internal set; }
+        public bool PledgesIncludeChildAccounts { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether [pledges include non cash gifts].
@@ -54,7 +70,7 @@ namespace Rock.StatementGenerator
         /// <value>
         ///   <c>true</c> if [pledges include non cash gifts]; otherwise, <c>false</c>.
         /// </value>
-        public bool PledgesIncludeNonCashGifts { get; internal set; }
+        public bool PledgesIncludeNonCashGifts { get; set; }
 
         /// <summary>
         /// Gets or sets the pledges account ids.
@@ -167,7 +183,7 @@ namespace Rock.StatementGenerator
         /// <value>
         /// The size of the chapter.
         /// </value>
-        public int? StatementsPerChapter { get; internal set; }
+        public int? StatementsPerChapter { get; set; }
         
     }
 }

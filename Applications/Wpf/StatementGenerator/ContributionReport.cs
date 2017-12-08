@@ -86,7 +86,6 @@ namespace Rock.Apps.StatementGenerator
 
             var recipientList = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, List<Rock.StatementGenerator.StatementGeneratorRecipient>>( "api/FinancialTransactions/GetStatementGeneratorRecipients", this.Options );
 
-            var recipentResults = new List<Rock.StatementGenerator.StatementGeneratorRecipientResult>();
             this.RecordCount = recipientList.Count;
             this.RecordIndex = 0;
 
@@ -124,59 +123,52 @@ namespace Rock.Apps.StatementGenerator
                 stopwatch.Restart();
 
                 int documentNumber = this.RecordIndex;
-                var html = recipentResult.Html;
-
-                var task = Task.Run( () =>
+                if ( ( this.Options.ExcludeOptedOutIndividuals && recipentResult.OptedOut ) || ( recipentResult.Html == null ) )
                 {
-                    var taskStopWatch = Stopwatch.StartNew();
-                    /*  #TODO #
-                     *  - Include Logo Attribute in Lava Template
-                     *  - Finalize Default Lava Template
-                     *  - 
-                        - [DONE] Make Address line up with envelope
-                        - [DONE]Include Column Headers on each page of output
-                        - [DONE]Format Footer using HTML trick 
-                        - [DONE]Include People if Pledge even if no trans
-                        - [DONE]Update Pledge Calculation based on SOW
-                        - Make 'Grace' Lava Template
-                        - Make 'Woodlands' Lava Template
-                        - Exclude Opted Out
-                        - Total Cash Gifts This Period (??)
-                        - Migration
-                        - Installer
- */
+                    // don't generate a statement if opted out or no statement html
+                    htmlToPdfTimingsMS[documentNumber] = 0.0;
+                    pdfStreams[documentNumber] = null;
+                }
+                else
+                {
+                    var html = recipentResult.Html;
 
-
-                    var pdfGenerator = Pdf.From( html );
-                    if ( footerUrl != null )
+                    var task = Task.Run( () =>
                     {
-                        pdfGenerator = pdfGenerator.WithObjectSetting( "footer.htmlUrl", footerUrl );
-                    }
-                    else
-                    {
-                        pdfGenerator = pdfGenerator.WithObjectSetting( "footer.right", "Page [page] of [topage]" );
-                    }
+                        var taskStopWatch = Stopwatch.StartNew();
 
-                    var pdfBytes = pdfGenerator
-                        .WithoutOutline()
-                        .Portrait()
-                        .Content();
+                        var pdfGenerator = Pdf.From( html );
+                        if ( footerUrl != null )
+                        {
+                            pdfGenerator = pdfGenerator.WithObjectSetting( "footer.htmlUrl", footerUrl );
+                        }
+                        else
+                        {
+                            pdfGenerator = pdfGenerator.WithObjectSetting( "footer.fontSize", "10" );
+                            pdfGenerator = pdfGenerator.WithObjectSetting( "footer.right", "Page [page] of [topage]" );
+                        }
 
-                    taskStopWatch.Stop();
-                    double htmlToPdfMS = taskStopWatch.Elapsed.TotalMilliseconds;
-                    var pdfStream = new MemoryStream( pdfBytes );
-                    pdfHtml[documentNumber] = html;
-                    Debug.Assert( pdfStreams[documentNumber] == null, "Threading issue: pdfStream shouldn't already be assigned" );
-                    pdfStreams[documentNumber] = pdfStream;
+                        var pdfBytes = pdfGenerator
+                            .WithMargins( PaperMargins.All( Length.Millimeters( 10 ) ) )
+                            .WithoutOutline()
+                            .Portrait()
+                            .Content();
 
-                    htmlToPdfTimingsMS[documentNumber] = htmlToPdfMS;
-                } );
+                        taskStopWatch.Stop();
+                        double htmlToPdfMS = taskStopWatch.Elapsed.TotalMilliseconds;
+                        var pdfStream = new MemoryStream( pdfBytes );
+                        pdfHtml[documentNumber] = html;
+                        Debug.Assert( pdfStreams[documentNumber] == null, "Threading issue: pdfStream shouldn't already be assigned" );
+                        pdfStreams[documentNumber] = pdfStream;
 
-                tasks.Add( task );
+                        htmlToPdfTimingsMS[documentNumber] = htmlToPdfMS;
+                    } );
 
-                tasks = tasks.Where( a => a.Status != TaskStatus.RanToCompletion ).ToList();
+                    tasks.Add( task );
 
-                recipentResults.Add( recipentResult );
+                    tasks = tasks.Where( a => a.Status != TaskStatus.RanToCompletion ).ToList();
+                }
+
                 this.RecordIndex++;
                 UpdateProgress( "Processing..." );
             }
@@ -210,6 +202,9 @@ namespace Rock.Apps.StatementGenerator
             PdfDocument resultPdf = new PdfDocument();
             try
             {
+                // remove any statements that didn't get generated due to OptedOut
+                pdfStreams = pdfStreams.Where( a => a != null ).ToList();
+
                 var lastPdfStream = pdfStreams.LastOrDefault();
                 foreach ( var pdfStream in pdfStreams )
                 {
@@ -233,7 +228,7 @@ namespace Rock.Apps.StatementGenerator
                         chapterIndex++;
                     }
                 }
-                
+
                 if ( useChapters )
                 {
                     // just in case we still have statements that haven't been written to a pdf
@@ -249,8 +244,7 @@ namespace Rock.Apps.StatementGenerator
                     SavePdfFile( resultPdf, filePath );
                 }
 
-
-                // DEBUG
+                // DEBUG. Output HTML version of the statements
                 StringBuilder sbAllHtml = new StringBuilder();
 
                 foreach ( var html in pdfHtml )
@@ -259,16 +253,7 @@ namespace Rock.Apps.StatementGenerator
                     sbAllHtml.AppendLine( "<div style='page-break-before: always'>&nbsp;</div>" );
                 }
 
-                var pdfBytes = Pdf.From( sbAllHtml.ToString() )
-                    .WithObjectSetting( "footer.fontSize", "10" )
-                    .WithObjectSetting( "footer.right", "Page [page] of [topage]" )
-                    .WithoutOutline()
-                    .Portrait()
-                    .Content();
-
-                File.WriteAllText( string.Format( @"{0}\TESTBIG.html", this.Options.SaveDirectory, this.Options.BaseFileName ), sbAllHtml.ToString() );
-                File.WriteAllBytes( string.Format( @"{0}\TESTBIG.pdf", this.Options.SaveDirectory, this.Options.BaseFileName ), pdfBytes );
-
+                File.WriteAllText( string.Format( @"{0}\{1}.html", this.Options.SaveDirectory, this.Options.BaseFileName ), sbAllHtml.ToString() );
             }
             finally
             {

@@ -63,6 +63,7 @@
     <Compile Include="Rest\StatementGeneratorFinancialTransactionsController.cs" />
     <Compile Include="StatementGeneratorRecipient.cs" />
     <Compile Include="StatementGeneratorOptions.cs" />
+    <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="SystemGuid\DefinedValue.cs" />
   </ItemGroup>
   <ItemGroup>

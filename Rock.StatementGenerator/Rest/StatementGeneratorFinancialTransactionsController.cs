@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -150,8 +166,18 @@ namespace Rock.StatementGenerator.Rest
                 groupLocationTypeIds.Add( groupLocationTypeIdWork.Value );
             }
 
-            var groupLocationsQry = new GroupLocationService( rockContext ).Queryable()
-                .Where( a => a.IsMailingLocation && a.GroupLocationTypeValueId.HasValue && groupLocationTypeIds.Contains( a.GroupLocationTypeValueId.Value ) );
+            IQueryable<GroupLocation> groupLocationsQry = null;
+            if ( groupLocationTypeIds.Count == 2 )
+            {
+                groupLocationsQry = new GroupLocationService( rockContext ).Queryable()
+                    .Where( a => a.IsMailingLocation && a.GroupLocationTypeValueId.HasValue )
+                    .Where( a => a.GroupLocationTypeValueId == groupLocationTypeIdHome.Value || a.GroupLocationTypeValueId == groupLocationTypeIdWork.Value );
+            }
+            else
+            {
+                groupLocationsQry = new GroupLocationService( rockContext ).Queryable()
+                    .Where( a => a.IsMailingLocation && a.GroupLocationTypeValueId.HasValue && groupLocationTypeIds.Contains( a.GroupLocationTypeValueId.Value ) );
+            }
             return groupLocationsQry;
         }
 
@@ -215,6 +241,47 @@ namespace Rock.StatementGenerator.Rest
                     person = personList.FirstOrDefault();
                 }
 
+                if ( options.ExcludeOptedOutIndividuals == true )
+                {
+                    int? doNotSendGivingStatementAttributeId = AttributeCache.Read( Rock.StatementGenerator.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.Id;
+                    if ( doNotSendGivingStatementAttributeId.HasValue )
+                    {
+                        var personIds = personList.Select( a => a.Id ).ToList();
+                        var optedOutPersonQry = new AttributeValueService( rockContext ).Queryable().Where( a => a.AttributeId == doNotSendGivingStatementAttributeId );
+                        if ( personIds.Count == 1 )
+                        {
+                            int entityPersonId = personIds[0];
+                            optedOutPersonQry = optedOutPersonQry.Where( a => a.EntityId == entityPersonId );
+                        }
+                        else
+                        {
+                            optedOutPersonQry = optedOutPersonQry.Where( a => personIds.Contains( a.EntityId.Value ) );
+                        }
+
+                        var optedOutPersonIds = optedOutPersonQry
+                            .Select( a => new
+                            {
+                                PersonId = a.EntityId.Value,
+                                a.Value
+                            } ).ToList().Where( a => a.Value.AsBoolean() == true ).Select( a => a.PersonId ).ToList();
+
+                        if ( optedOutPersonIds.Any() )
+                        {
+                            bool givingLeaderOptedOut = personList.Any( a => optedOutPersonIds.Contains( a.Id ) && a.GivingLeaderId == a.Id );
+
+                            var remaingPersonIds = personList.Where( a => !optedOutPersonIds.Contains( a.Id ) ).ToList();
+
+                            if ( givingLeaderOptedOut || !remaingPersonIds.Any() )
+                            {
+                                // If the giving leader opted out, or if there aren't any people in the giving statement that haven't opted out, return NULL and OptedOut = true
+                                result.OptedOut = true;
+                                result.Html = null;
+                                return result;
+                            }
+                        }
+                    }
+                }
+
                 var personAliasIds = personList.SelectMany( a => a.Aliases.Select( x => x.Id ) ).ToList();
                 if ( personAliasIds.Count == 1 )
                 {
@@ -227,6 +294,8 @@ namespace Rock.StatementGenerator.Rest
                 }
 
                 var financialTransactionsList = financialTransactionQry
+                    .Include( a => a.FinancialPaymentDetail )
+                    .Include( a => a.FinancialPaymentDetail.CurrencyTypeValue )
                     .Include( a => a.TransactionDetails )
                     .Include( a => a.TransactionDetails.Select( x => x.Account ) )
                     .OrderBy( a => a.TransactionDateTime ).AsNoTracking().ToList();
@@ -276,6 +345,62 @@ namespace Rock.StatementGenerator.Rest
 
                 var transactionDetailListAll = financialTransactionsList.SelectMany( a => a.TransactionDetails ).ToList();
 
+                if ( options.HideRefundedTransactions && transactionDetailListAll.Any( a => a.Amount < 0 ) )
+                {
+                    var allRefunds = transactionDetailListAll.SelectMany( a => a.Transaction.Refunds ).ToList();
+                    foreach ( var refund in allRefunds )
+                    {
+                        foreach ( var refundedOriginalTransactionDetail in refund.OriginalTransaction.TransactionDetails )
+                        {
+                            // remove the refund's original TransactionDetails from the results
+                            if ( transactionDetailListAll.Contains( refundedOriginalTransactionDetail ) )
+                            {
+                                transactionDetailListAll.Remove( refundedOriginalTransactionDetail );
+                                foreach ( var refundDetailId in refund.FinancialTransaction.TransactionDetails.Select( a => a.Id ) )
+                                {
+                                    // remove the refund's transaction from the results
+                                    var refundDetail = transactionDetailListAll.FirstOrDefault( a => a.Id == refundDetailId );
+                                    if ( refundDetail != null )
+                                    {
+                                        transactionDetailListAll.Remove( refundDetail );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if ( options.HideCorrectedTransactions && transactionDetailListAll.Any( a => a.Amount < 0 ) )
+                {
+                    // Hide transactions that are corrected on the same date. Transactions that have a matching negative dollar amount on the same date will not be shown.
+
+                    // get a list of dates that have at least one negative transaction
+                    var transactionsByDateList = transactionDetailListAll.GroupBy( a => a.Transaction.TransactionDateTime.Value.Date ).Select( a => new
+                    {
+                        Date = a.Key,
+                        TransactionDetails = a.ToList()
+                    } )
+                    .Where( a => a.TransactionDetails.Any( x => x.Amount < 0 ) )
+                    .ToList();
+
+
+                    foreach ( var transactionsByDate in transactionsByDateList )
+                    {
+                        foreach ( var negativeTransaction in transactionsByDate.TransactionDetails.Where( a => a.Amount < 0 ) )
+                        {
+                            // find the first transaction that has an amount that matches the negative amount (on the same day)
+                            // and make sure the matching transaction doesn't already have a refund associated with it
+                            var correctedTransactionDetail = transactionsByDate.TransactionDetails.FirstOrDefault( a => a.Amount == ( -negativeTransaction.Amount ) && !a.Transaction.Refunds.Any() );
+                            if ( correctedTransactionDetail != null )
+                            {
+                                // if the transaction was corrected, remove it, and also remove the associated correction (the negative one) transaction
+                                transactionDetailListAll.Remove( correctedTransactionDetail );
+                                transactionDetailListAll.Remove( negativeTransaction );
+                            }
+                        }
+                    }
+                }
+
                 List<FinancialTransactionDetail> transactionDetailListCash = transactionDetailListAll;
                 List<FinancialTransactionDetail> transactionDetailListNonCash = new List<FinancialTransactionDetail>();
                 if ( options.CashAccountIds != null )
@@ -285,7 +410,7 @@ namespace Rock.StatementGenerator.Rest
 
                 if ( options.NonCashAccountIds != null )
                 {
-                    transactionDetailListNonCash = transactionDetailListNonCash.Where( a => options.NonCashAccountIds.Contains( a.AccountId ) ).ToList();
+                    transactionDetailListNonCash = transactionDetailListAll.Where( a => options.NonCashAccountIds.Contains( a.AccountId ) ).ToList();
                 }
 
                 mergeFields.Add( "TransactionDetails", transactionDetailListCash );
@@ -305,7 +430,9 @@ namespace Rock.StatementGenerator.Rest
                     var pledgeList = financialPledgeQry
                                         .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains( p.PersonAliasId.Value ) )
                                         .Include( a => a.Account )
-                                            .ToList();
+                                        .OrderBy( a => a.Account.Order )
+                                        .ThenBy( a => a.Account.PublicName )
+                                        .ToList();
 
                     var pledgeSummaryList = pledgeList
                                         .Select( p => new PledgeSummaryByPledge
@@ -321,7 +448,18 @@ namespace Rock.StatementGenerator.Rest
                         int statementPledgeYear = options.StartDate.Value.Year;
                         foreach ( var pledge in pledgeSummaryList )
                         {
-                            var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddDays( 1 );
+                            DateTime adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date;
+                            if ( pledge.PledgeEndDate.Value.Date < DateTime.MaxValue.Date )
+                            {
+                                adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddDays( 1 );
+                            }
+
+                            // if the pledge is to a child account of one of the selected PledgeAccountIs, set the Account as the ParentAccount
+                            if ( !options.PledgesAccountIds.Contains( pledge.AccountId ) && pledge.Account.ParentAccountId.HasValue )
+                            {
+                                pledge.Account = pledge.Account.ParentAccount;
+                            }
+
                             var statementYearEnd = new DateTime( statementPledgeYear + 1, 1, 1 );
 
                             if ( adjustedPedgeEndDate > statementYearEnd )
@@ -366,17 +504,18 @@ namespace Rock.StatementGenerator.Rest
                     }
 
                     // Pledges (organized by each Pledge, not combined by Account)
-                    mergeFields.Add( "Pledges", pledgeSummaryList );
+                    mergeFields.Add( "PledgesByPledge", pledgeSummaryList );
 
                     // Pledges but organized by Account (in case more than one pledge goes to the same account)
                     var pledgeAccounts = pledgeSummaryList.GroupBy( a => a.Account ).Select( a => new PledgeSummaryByAccount
                     {
                         Account = a.Key,
-                        PledgeList = a.Select(x => x.Pledge).ToList()
+                        PledgeList = a.Select( x => x.Pledge ).ToList()
                     } );
 
 
-                    mergeFields.Add( "PledgeAccounts", pledgeAccounts );
+                    // Pledges ( organized by each Account in case an account is used by more than one pledge )
+                    mergeFields.Add( "Pledges", pledgeAccounts );
                 }
 
                 mergeFields.Add( "Options", options );
