@@ -26,10 +26,6 @@
 			background-color: #FFFFFF
         }
         
-        .footer {
-            font-size: 8px
-        }
-        
          /* helper classes not included in stock bs3 */
         
         .margin-t-md {
@@ -67,7 +63,7 @@
     <div class="row" style='height:230px'>
         <div class="col-md-6 pull-left">
             <div>
-                <img src="{{ LavaTemplate | Attribute:'Logo','Url' }}" width="240px" height="80px" />
+                <img src="{{ publicApplicationRoot }}GetImage.ashx?guid={{ LavaTemplate | Attribute:'Logo','RawValue' }}" width="240px" height="80px" />
             </div>
             
             <div>
