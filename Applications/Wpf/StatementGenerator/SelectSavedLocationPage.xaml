@@ -31,7 +31,7 @@
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0"
                         Style="{StaticResource panelBanner}">
-                <Label Content="STEP 5:"
+                <Label Content="STEP 6:"
                        Style="{StaticResource labelStyleBannerTitle}" />
                 <Label Content="Save Settings"
                        Style="{StaticResource labelStyleBannerText}" />
