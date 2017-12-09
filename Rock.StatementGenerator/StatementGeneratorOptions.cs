@@ -41,21 +41,13 @@ namespace Rock.StatementGenerator
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the cash account ids.
+        /// Gets or sets the transaction account ids.
         /// </summary>
         /// <value>
-        /// The cash account ids.
+        /// The transaction account ids.
         /// </value>
-        public List<int> CashAccountIds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the non cash account ids.
-        /// </summary>
-        /// <value>
-        /// The non cash account ids.
-        /// </value>
-        public List<int> NonCashAccountIds { get; set; }
-
+        public List<int> TransactionAccountIds { get; set; }
+       
         /// <summary>
         /// Gets a value indicating whether [pledges include child accounts].
         /// </summary>

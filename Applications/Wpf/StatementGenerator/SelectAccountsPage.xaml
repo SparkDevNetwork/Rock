@@ -27,7 +27,6 @@
             <Grid.RowDefinitions>
                 <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="90" />
                 <RowDefinition Style="{StaticResource rowDefinitionActions}" />
             </Grid.RowDefinitions>
 
@@ -53,10 +52,10 @@
                         Grid.Row="0"
                         Style="{StaticResource indentStyle}">
                     
-                    <Label Content="Accounts for Cash Gifts"
+                    <Label Content="Accounts"
                        Style="{StaticResource labelStyleLegend}"   />
 
-                    <ListBox Name="lstCashAccounts"
+                    <ListBox Name="lstAccounts"
                              Width="360" 
                              Height="180"
                              SelectionMode="Multiple"
@@ -66,15 +65,37 @@
                     <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Left" Margin="4">
                         <Button Content="Select all"
-                            Name="btnSelectAllForCashGifts"
+                            Name="btnSelectAllAccounts"
                             Style="{StaticResource buttonStyleMini}"
                                 
                             Click="btnSelectAll_Click" />
                         <Border Width="4" />
                         <Button Content="Select none"
-                            Name="btnSelectNoneForCashGifts"
+                            Name="btnSelectNoneAccounts"
                             Style="{StaticResource buttonStyleMini}"
                             Click="btnSelectNone_Click" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,16,0,0">
+                        <CheckBox Name="cbShowTaxDeductible" 
+                          Content="Show Tax Deductible Accounts"
+                          Style="{StaticResource checkboxStyle}"
+                          Checked="cbFilter_Changed"
+                          Unchecked="cbFilter_Changed"
+                          IsChecked="True" />
+                        <CheckBox Name="cbShowNonTaxDeductible" 
+                          Content="Show Non Tax Deductible Accounts"
+                          Style="{StaticResource checkboxStyle}"
+                          Checked="cbFilter_Changed"
+                          Unchecked="cbFilter_Changed"
+                          IsChecked="True" 
+                          />
+                        <CheckBox Name="cbShowInactive" 
+                          Content="Show Inactive Accounts"
+                          Style="{StaticResource checkboxStyle}"
+                          Checked="cbFilter_Changed"
+                          Unchecked="cbFilter_Changed"
+                          IsChecked="True" />
                     </StackPanel>
 
 
@@ -84,63 +105,45 @@
                         Margin="16,0,16,0"
                         Grid.Column="1"
                         Grid.Row="0">
-                    <Label Content="Accounts for Non-Cash Gifts"
+                    
+                    <Label Content="Currency Types for Cash Gifts"
                        Style="{StaticResource labelStyleLegend}" />
 
-                    <ListBox Name="lstNonCashAccounts"
-                             Width="320"
-                             Height="180"
+                    <ListBox Name="lstCashCurrencyTypes"
+                             Width="360"
+                             Height="120"
                              ScrollViewer.VerticalScrollBarVisibility="Visible"
                              SelectionMode="Multiple">
                     </ListBox>
 
-                    <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Left" Margin="4">
-                        <Button Content="Select all"
-                            Name="btnSelectAllForNonCashGifts"
-                            Style="{StaticResource buttonStyleMini}"
-                            Click="btnSelectAll_Click" />
-                        <Border Width="4" />
-                        <Button Content="Select none"
-                            Name="btnSelectNoneForNonCashGifts"
-                            Style="{StaticResource buttonStyleMini}"
-                            Click="btnSelectNone_Click" />
-                    </StackPanel>
+                    <Label Content="Currency Types for Non-Cash Gifts"
+                       Style="{StaticResource labelStyleLegend}" />
+
+                    <ListBox Name="lstNonCashCurrencyTypes"
+                             Width="360"
+                             Height="120"
+                             ScrollViewer.VerticalScrollBarVisibility="Visible"
+                             SelectionMode="Multiple">
+                    </ListBox>
+
+                    <Label Name="lblAccountsCurrencyTypesWarning" Grid.Row="2" VerticalAlignment="Bottom"
+                   HorizontalAlignment="Right"
+                       Style="{StaticResource labelStyleAlert}"
+                       Content="Please select at least one account and currency type."
+                       Visibility="Visible">
+                    </Label>
+
+
                 </StackPanel>
 
             </Grid>
 
-            <StackPanel Grid.Row="2" Margin="16,8,0,0">
-                <CheckBox Name="cbShowTaxDeductible" 
-                          Content="Show Tax Deductible Accounts"
-                          Style="{StaticResource checkboxStyle}"
-                          Checked="cbFilter_Changed"
-                          Unchecked="cbFilter_Changed"
-                          IsChecked="True" />
-                <CheckBox Name="cbShowNonTaxDeductible" 
-                          Content="Show Non Tax Deductible Accounts"
-                          Style="{StaticResource checkboxStyle}"
-                          Checked="cbFilter_Changed"
-                          Unchecked="cbFilter_Changed"
-                          IsChecked="True" 
-                          />
-                <CheckBox Name="cbShowInactive" 
-                          Content="Show Inactive Accounts"
-                          Style="{StaticResource checkboxStyle}"
-                          Checked="cbFilter_Changed"
-                          Unchecked="cbFilter_Changed"
-                          IsChecked="True" />
-            </StackPanel>
+            
 
-            <Label Name="lblWarning" Grid.Row="2" VerticalAlignment="Bottom"
-                   HorizontalAlignment="Right"
-                       Style="{StaticResource labelStyleAlert}"
-                       Content="Please select at least one account."
-                       Visibility="Visible">
-            </Label>
+            
 
             <Button x:Name="btnPrev"
-                    Grid.Row="3"
+                    Grid.Row="2"
                     HorizontalAlignment="Left"
                     Style="{StaticResource buttonStyle}"
                     Margin="8,8,8,8"
@@ -153,7 +156,7 @@
                 </StackPanel>
             </Button>
             <Button x:Name="btnNext"
-                    Grid.Row="3"
+                    Grid.Row="2"
                     HorizontalAlignment="Right"
                     Style="{StaticResource buttonStylePrimary}"
                     Margin="8,8,8,8"
