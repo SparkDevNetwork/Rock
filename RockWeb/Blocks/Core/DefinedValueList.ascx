@@ -18,7 +18,7 @@
                             <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
                         
                             <div class="grid grid-panel">
-                                <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False" TooltipField="Id">
+                                <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False">
                                     <Columns>
                                         <Rock:ReorderField/>
                                         <Rock:RockBoundField DataField="Value" HeaderText="Value"/>
