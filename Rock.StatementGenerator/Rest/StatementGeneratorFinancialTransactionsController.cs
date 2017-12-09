@@ -403,6 +403,7 @@ namespace Rock.StatementGenerator.Rest
 
                 List<FinancialTransactionDetail> transactionDetailListCash = transactionDetailListAll;
                 List<FinancialTransactionDetail> transactionDetailListNonCash = new List<FinancialTransactionDetail>();
+                /* TODO
                 if ( options.CashAccountIds != null )
                 {
                     transactionDetailListCash = transactionDetailListCash.Where( a => options.CashAccountIds.Contains( a.AccountId ) ).ToList();
@@ -411,7 +412,7 @@ namespace Rock.StatementGenerator.Rest
                 if ( options.NonCashAccountIds != null )
                 {
                     transactionDetailListNonCash = transactionDetailListAll.Where( a => options.NonCashAccountIds.Contains( a.AccountId ) ).ToList();
-                }
+                }*/
 
                 mergeFields.Add( "TransactionDetails", transactionDetailListCash );
                 mergeFields.Add( "TransactionDetailsNonCash", transactionDetailListNonCash );
@@ -627,6 +628,7 @@ namespace Rock.StatementGenerator.Rest
             }
 
             // Filter to specified AccountIds (if specified)
+            /* TODO
             if ( options.CashAccountIds == null && options.NonCashAccountIds == null )
             {
                 // if neither CashAccountIds or NonCashAccountIds was supplied, don't filter on AccountId
@@ -637,6 +639,7 @@ namespace Rock.StatementGenerator.Rest
                 var selectedAccountIds = options.CashAccountIds.Union( options.NonCashAccountIds ).Distinct().ToList();
                 financialTransactionQry = financialTransactionQry.Where( a => a.TransactionDetails.Any( x => selectedAccountIds.Contains( x.AccountId ) ) );
             }
+            */
 
             if ( usePersonFilters )
             {
