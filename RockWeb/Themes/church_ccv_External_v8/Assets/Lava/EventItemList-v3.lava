@@ -55,8 +55,6 @@
       {% assign calendarId = 1 %}
    {% endunless %}
    
-   <h2 style="padding-left: 15px;">EVENTS</h2>
-  
    <div class="event-page-wrapper">
       <div class="event-calendar">
          

@@ -1,0 +1,6 @@
+.events-flex {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-left: 15px;
+}

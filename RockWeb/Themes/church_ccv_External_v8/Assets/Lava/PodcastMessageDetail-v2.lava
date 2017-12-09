@@ -1,0 +1,95 @@
+{% comment %}
+
+
+REQUIRED VARIABLES
+==================
+
+{% assign fullService = false %}
+
+
+{% endcomment %}
+
+{% assign Series = PodcastSeries %}
+{% assign Message = PodcastMessage %}
+
+{% capture pageTitle %}{{ Series.Name }}: {{ Message.Name }}{% endcapture %}
+
+{% if fullService %}
+  {% capture pageTitle %}{{ pageTitle }} (Full Service){% endcapture %}
+{% endif %}
+
+{% capture ogImage %}http://my.ccv.church/GetImage.ashx?guid={{ Series.Attributes.HeaderImage }}{% endcapture %}
+
+{{ 'photo' | AddMetaTagToHead: 'property', 'twitter:card' }}
+{{ '@ccvonline' | AddMetaTagToHead: 'property', 'twitter:site' }}
+
+{{ pageTitle | SetPageTitle }}
+{{ pageTitle | AddMetaTagToHead: 'property', 'og:title' }}
+{{ Message.Description | AddMetaTagToHead: 'property', 'og:description' }}
+{{ ogImage | AddMetaTagToHead: 'property', 'og:image' }}
+
+
+{{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
+
+<h1>{{ Message.Name }}</h1>
+
+<div class="embed-responsive embed-responsive-16by9 margin-b-md">
+  {% if fullService %}
+    <iframe src="{{ Message.Attributes.3rdPartyFullVideoUrl }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  {% else %}
+    <iframe src="{{ Message.Attributes.3rdPartyMessageVideoUrl }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  {% endif %}
+</div>
+<div class="row">
+  <div class="col-md-8">
+    <ul class="list-inline watch-msgmeta">
+      <li><strong>{{ Message.Attributes.Speaker }}</strong></li>
+      <li><time datetime="{{ Message.Date | Date: 'MMM d, yyyy' }}" title="{{ Message.Date | Date: 'MMM d, yyyy' }}" data-toggle="tooltip" data-placement="right">{{ Message.Date | HumanizeDateTime }}</time></li>
+    </ul>
+  </div>
+  {% if Message.Attributes.3rdPartyFullVideoUrl != empty %}
+    <div class="col-md-4">
+      <div class="btn-group btn-group-justified">
+        {% if fullService %}
+          <a class="btn btn-default" href="{{ LinkedPages.MessageOnlyPage }}?MessageId={{ Message.Id }}">Message Only</a>
+          <a class="btn btn-default active" href="{{ LinkedPages.FullServicePage }}?MessageId={{ Message.Id }}">Full Service</a>
+        {% else %}
+          <a class="btn btn-default active" href="{{ LinkedPages.MessageOnlyPage }}?MessageId={{ Message.Id }}">Message Only</a>
+          <a class="btn btn-default" href="{{ LinkedPages.FullServicePage }}?MessageId={{ Message.Id }}">Full Service</a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+<hr>
+<div class="row">
+  <div class="col-md-8">
+    {{ Message.Attributes.ExtraDetails }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8">
+    <p>{{ Message.Description }}</p>
+    <h3>Other Messages in this Series</h3>
+    <ol>
+      {% for otherMessage in Series.Messages reversed %}
+        <li><a href="?MessageId={{ otherMessage.Id }}">{{ otherMessage.Name }}</a></li>
+      {% endfor %}
+    </ol>
+  </div>
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">Related Downloads</div>
+      <div class="list-group">
+        <a href="{{ Message.Attributes.HostedVideoUrl }}" class="list-group-item"><i class="fa fa-fw fa-film"></i> Download Video</a>
+        <a href="{{ Message.Attributes.HostedAudioUrl }}" class="list-group-item"><i class="fa fa-fw fa-headphones"></i> Download Audio</a>
+        {% if Message.Attributes.SermonNotePDFUrl != empty %}
+          <a href="{{ Message.Attributes.SermonNotePDFUrl }}" class="list-group-item"><i class="fa fa-fw fa-file-text-o"></i> Download Sermon Note</a>
+        {% endif %}
+        {% if Message.Attributes.DiscussionGuideUrl != empty %}
+          <a href="{{ Message.Attributes.DiscussionGuideUrl }}" class="list-group-item"><i class="fa fa-fw fa-file-text-o"></i> Download Discussion Guide</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
