@@ -41,6 +41,7 @@ namespace RockWeb.Plugins.church_ccv.Podcast
     [CodeEditorField( "Lava Template", "The lava template to use to format the page.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true)]
     [LinkedPage( "Series Detail Page" )]
     [LinkedPage( "Message Detail Page" )]
+    [IntegerField( "Items Per Page", "The number of series per page to display.", false, 12 )]
     public partial class SeriesListLava : Rock.Web.UI.RockBlock
     {        
         /// <summary>
@@ -54,7 +55,9 @@ namespace RockWeb.Plugins.church_ccv.Podcast
             int pageNum = PageParameter( "PageNum" ).AsInteger( );
             int numPerPage = PageParameter( "NumPerPage" ).AsInteger( );
 
-            ShowDetail( pageNum, numPerPage != 0 ? numPerPage : 6 );
+            int numItems = int.Parse( GetAttributeValue( "ItemsPerPage" ) );
+
+            ShowDetail( pageNum, numPerPage != 0 ? numPerPage : numItems );
         }
         
         /// <summary>
