@@ -81,10 +81,16 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
 
             var ruleTemplate = GetAttributeValue( "OriginationRulesTemplate" );
 
-            fromPhone = ruleTemplate.ResolveMergeFields( mergeFields );
+            fromPhone = ruleTemplate.ResolveMergeFields( mergeFields ).Trim();
 
             mergeFields.AddOrReplace( "PhoneNumber", toPhone );
-            toPhone = ruleTemplate.ResolveMergeFields( mergeFields );
+            toPhone = ruleTemplate.ResolveMergeFields( mergeFields ).Trim();
+
+            // if this is an internal phone use it as the accountId
+            if (fromPhone.Length < 7 )
+            {
+                accountId = fromPhone;
+            }
 
             return OrginateSwitchvox( fromPhone, toPhone, accountId, callerId, out message );
         }
