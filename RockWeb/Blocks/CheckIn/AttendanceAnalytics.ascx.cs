@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.CheckIn
     [BooleanField( "Show Group Ancestry", "By default the group ancestry path is shown.  Unselect this to show only the group name.", true, "", 3 )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, "", "", 4 )]
     [LinkedPage( "Check-in Detail Page", "Page that shows the user details for the check-in data.", false, "", "", 5 )]
+    [CategoryField("Data View Category(s)", "The optional data view categories that should be included as an option to filter attendance for. If a category is not selected, all data views will be included.", true, "Rock.Model.DataView", "", "", false, "", "", 6, "DataViewCategories" )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", "", true, false, Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK, "", 5 )]
     public partial class AttendanceAnalytics : RockBlock
@@ -95,7 +96,10 @@ namespace RockWeb.Blocks.CheckIn
 
             gAttendeesAttendance.EntityTypeId = EntityTypeCache.Read<Rock.Model.Person>().Id;
 
+            dvpDataView.AutoLoadItems = false;
             dvpDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+            dvpDataView.CategoryGuids = GetAttributeValue( "DataViewCategories" ).SplitDelimitedValues().AsGuidList();
+            dvpDataView.LoadDropDownItems();
 
             _rockContext = new RockContext();
 
