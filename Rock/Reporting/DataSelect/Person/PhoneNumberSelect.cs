@@ -20,11 +20,13 @@ using System.ComponentModel.Composition;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Web;
 using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -37,6 +39,10 @@ namespace Rock.Reporting.DataSelect.Person
     [ExportMetadata( "ComponentName", "Select Person's Phone Number" )]
     public class PhoneNumberSelect : DataSelectComponent
     {
+        #region
+        Rock.Model.Person _currentPerson = null;
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -241,6 +247,14 @@ namespace Rock.Reporting.DataSelect.Person
             Guid? phoneType = null;
             bool enableOrigination = false;
 
+            if ( _currentPerson == null )
+            {
+                if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+                {
+                    _currentPerson = HttpContext.Current.Items["CurrentPerson"] as Rock.Model.Person;
+                }
+            }
+
             var selectionParts = selection.Split( '|' );
             if ( selectionParts.Length > 0 )
             {
@@ -257,7 +271,28 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 var phoneNumber = e.DataValue as PhoneNumber;
 
-                e.FormattedValue = "<a href='#'>hi there</a>";
+                if ( enableOrigination )
+                {
+                    if (phoneNumber == null )
+                    {
+                        e.FormattedValue = string.Empty;
+                        return;
+                    }
+
+                    if ( _currentPerson == null )
+                    {
+                        e.FormattedValue = phoneNumber.NumberFormatted;
+                        return;
+                    }
+
+                    var jsScript = string.Format( "javascript: Rock.controls.pbx.originate('{0}', '{1}', '{2}','{3}','{4}');", _currentPerson.Guid, phoneNumber.Number, _currentPerson.FullName, "", phoneNumber.ToString() );
+
+                    e.FormattedValue = string.Format( "<a class='originate-call js-originate-call' href=\"{0}\">{1}</a>", jsScript, phoneNumber.NumberFormatted );
+                }
+                else
+                {
+                    e.FormattedValue = phoneNumber.NumberFormatted;
+                }
             };
 
             return callbackField;

@@ -8,26 +8,6 @@
             $(function () {
                 $(".photo a").fluidbox();
                 $('span.js-email-status').tooltip({ html: true, container: 'body', delay: { show: 100, hide: 100 } });
-
-                /*$('.js-originate-call').on('click', function (e) {
-                    e.preventDefault();
-
-                    var sourcePersonGuid = $(this).data('sourceperson');
-                    var destinationNumber = $(this).data('destinationphone');
-                    var callerId = $(this).data('callerid');
-                    var destinationPersonName = $(this).data('destinationname');
-                    var destinationNumberFormatted = $(this).data('destinationphoneformatted');
-
-                    var originateUrl = Rock.settings.get('baseUrl') + 'api/Pbx/Originate?sourcePersonGuid=' + sourcePersonGuid + '&destinationPhone=' + destinationNumber + '&callerId=' + callerId;
-
-                    console.log(originateUrl);
-
-                    $.get(originateUrl, function (r) {
-                        if (!r.Success) {
-                            Rock.dialogs.alert( "An error occurred while attempting to place call.  " + r.Message );
-                        }
-                    });
-                });*/
             });
         </script>
 
