@@ -32,7 +32,8 @@ namespace Rock.Migrations
             AlterColumn("dbo.PageShortLink", "Url", c => c.String(nullable: false));
 
             // SK: Added a security rule to block view for RSR - Benevolence Group on this page
-            RockMigrationHelper.AddSecurityAuthForPage( "A3EF32AC-B0FE-4140-A6F4-134FDD247CBD", 0, "View", false, "02FA0881-3552-42B8-A519-D021139B800F", 0, "25BF7D65-1642-463E-8081-C3637B9ABC02" ); // Page:Fundraising Matching
+            //// moved to 201704031947125_Fundraising since 033_ConnectionOpportunityCounts also does this
+            //RockMigrationHelper.AddSecurityAuthForPage( "A3EF32AC-B0FE-4140-A6F4-134FDD247CBD", 0, "View", false, "02FA0881-3552-42B8-A519-D021139B800F", 0, "25BF7D65-1642-463E-8081-C3637B9ABC02" ); // Page:Fundraising Matching
 
             // DT: Add icon for meta models
             RockMigrationHelper.AddBlockAttributeValue( "2583DE89-F028-4ACE-9E1F-2873340726AC", "75A0C88F-7F5B-48A2-88A4-C3A62F0EDF9A", @"CMS^fa fa-code|Communication^fa fa-comment|Connection^fa fa-plug|Core^fa fa-gear|Event^fa fa-clipboard|Finance^fa fa-money|Group^fa fa-users|Prayer^fa fa-cloud-upload|Reporting^fa fa-list-alt|Workflow^fa fa-gears|Other^fa fa-question-circle|CRM^fa fa-user|Meta^fa fa-table" );
