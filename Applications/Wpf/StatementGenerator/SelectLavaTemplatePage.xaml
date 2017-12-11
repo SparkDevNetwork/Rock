@@ -1,4 +1,4 @@
-﻿<Page x:Class="Rock.Apps.StatementGenerator.SelectDateRangePage"
+﻿<Page x:Class="Rock.Apps.StatementGenerator.SelectLavaTemplatePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -7,7 +7,7 @@
       d:DesignHeight="600"
       d:DesignWidth="800"
       Style="{StaticResource pageBackgroundGrey}"
-      Title="Select Date Range">
+      Title="Select Layout">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -31,57 +31,54 @@
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0"
                         Style="{StaticResource panelBanner}">
-                <Label Content="STEP 3:"
+                <Label Content="STEP 2:"
                        Style="{StaticResource labelStyleBannerTitle}" />
-                <Label Content="Statement Date Range"
+                <Label Content="Statement Lava Template"
                        Style="{StaticResource labelStyleBannerText}" />
             </StackPanel>
-            <StackPanel VerticalAlignment="Top"
-                        HorizontalAlignment="Left"
+            <StackPanel HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
                         Style="{StaticResource indentStyle}"
                         Grid.Column="1"
                         Grid.Row="1">
-
-                <Label Style="{StaticResource labelStyleLegend}"
-                       Content="Date Range" />
-                <StackPanel Orientation="Horizontal">
-                    <StackPanel>
-                        <Label Content="Start Date"
-                               Style="{StaticResource labelStyle}" />
-                        <DatePicker Grid.Row="3"
-                                    Grid.Column="0"
-                                    x:Name="dpStartDate"
-                                    Style="{StaticResource datePickerStyle}" />
-                    </StackPanel>
-                    <StackPanel>
-                        <Label Content="End Date"
-                               Style="{StaticResource labelStyle}" />
-                        <DatePicker Grid.Row="3"
-                                    Grid.Column="0"
-                                    x:Name="dpEndDate"
-                                    Style="{StaticResource datePickerStyle}" />
-                    </StackPanel>
-
-                </StackPanel>
-                <Label Name="lblWarning"
-                       Style="{StaticResource labelStyleAlert}"
-                       Content="Please select a Date Range"
-                       Visibility="Hidden">
+                
+                <Label Style="{StaticResource labelStyleLegend}" Content="Templates Available" />
+                <Label Style="{StaticResource labelStyle}"  >
+                    <TextBlock TextWrapping="Wrap">
+                        Select the template to use for the layout of each statement. These can be customized in Rock under 
+                        <LineBreak />
+                        General Settings > Defined Types > Statement  Generator Lava Template.
+                    </TextBlock>
                 </Label>
+
+
+                <ListBox Name="lstLavaTemplates"
+                         HorizontalAlignment="Left"
+                         Margin="0,8,0,0"
+                             Height="200"
+                             Width="320"
+                             ScrollViewer.VerticalScrollBarVisibility="Visible">
+                </ListBox>
+
+
             </StackPanel>
-            <Button x:Name="btnPrev"
-                    Grid.Row="2"
-                    HorizontalAlignment="Left"
-                    Style="{StaticResource buttonStyle}"
-                    Margin="8,8,8,8"
-                    Click="btnPrev_Click">
-                <StackPanel Orientation="Horizontal">
-                    <Label Style="{StaticResource labelStyleIconLeft}"
-                           Content="&#xf053;" />
-                    <Label Style="{StaticResource labelStyleButtonText}"
-                           Content="Prev" />
-                </StackPanel>
-            </Button>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left"
+                        Grid.Row="2">
+                <Button x:Name="btnPrev"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource buttonStyle}"
+                        Margin="8,8,8,8"
+                        Click="btnPrev_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Style="{StaticResource labelStyleIconLeft}"
+                               Content="&#xf053;" />
+                        <Label Style="{StaticResource labelStyleButtonText}"
+                               Content="Prev" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
             <Button x:Name="btnNext"
                     Grid.Row="2"
                     HorizontalAlignment="Right"
@@ -95,6 +92,7 @@
                            Content="&#xf054;" />
                 </StackPanel>
             </Button>
+
         </Grid>
 
         <Frame Grid.Row="3"

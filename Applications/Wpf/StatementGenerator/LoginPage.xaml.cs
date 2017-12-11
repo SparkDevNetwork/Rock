@@ -167,6 +167,9 @@ namespace Rock.Apps.StatementGenerator
             txtUsername.Text = rockConfig.Username;
             txtPassword.Password = rockConfig.Password;
 
+            // ##DEBUG##
+            txtPassword.Password = "admin";
+
             // set keyboard focus to the first input that needs a value
             if ( string.IsNullOrEmpty( txtRockUrl.Text ) )
             {
