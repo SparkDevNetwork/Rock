@@ -27,14 +27,13 @@
             <Grid.RowDefinitions>
                 <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="70" />
-                <RowDefinition Height="55" />
+                <RowDefinition Height="90" />
                 <RowDefinition Style="{StaticResource rowDefinitionActions}" />
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0"
                         Style="{StaticResource panelBanner}">
-                <Label Content="STEP 2:"
+                <Label Content="STEP 4:"
                        Style="{StaticResource labelStyleBannerTitle}" />
                 <Label Content="Account Selection"
                        Style="{StaticResource labelStyleBannerText}" />
@@ -49,16 +48,17 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <StackPanel VerticalAlignment="Top"
-                        HorizontalAlignment="Right"
-                        Margin="16,0,16,0"
+                        HorizontalAlignment="Left"
                         Grid.Column="0"
-                        Grid.Row="0">
+                        Grid.Row="0"
+                        Style="{StaticResource indentStyle}">
+                    
                     <Label Content="Accounts for Cash Gifts"
-                       Style="{StaticResource labelStyleLegend}" Margin="-4"  />
+                       Style="{StaticResource labelStyleLegend}"   />
 
                     <ListBox Name="lstCashAccounts"
                              Width="360" 
-                             Height="160"
+                             Height="180"
                              SelectionMode="Multiple"
                              ScrollViewer.VerticalScrollBarVisibility="Visible">
                     </ListBox>
@@ -85,11 +85,11 @@
                         Grid.Column="1"
                         Grid.Row="0">
                     <Label Content="Accounts for Non-Cash Gifts"
-                       Style="{StaticResource labelStyleLegend}" Margin="-4" />
+                       Style="{StaticResource labelStyleLegend}" />
 
                     <ListBox Name="lstNonCashAccounts"
                              Width="320"
-                             Height="160"
+                             Height="180"
                              ScrollViewer.VerticalScrollBarVisibility="Visible"
                              SelectionMode="Multiple">
                     </ListBox>
@@ -132,14 +132,15 @@
                           IsChecked="True" />
             </StackPanel>
 
-            <Label Name="lblWarning" Grid.Row="3" VerticalAlignment="Bottom"
+            <Label Name="lblWarning" Grid.Row="2" VerticalAlignment="Bottom"
+                   HorizontalAlignment="Right"
                        Style="{StaticResource labelStyleAlert}"
                        Content="Please select at least one account."
                        Visibility="Visible">
             </Label>
 
             <Button x:Name="btnPrev"
-                    Grid.Row="4"
+                    Grid.Row="3"
                     HorizontalAlignment="Left"
                     Style="{StaticResource buttonStyle}"
                     Margin="8,8,8,8"
@@ -152,7 +153,7 @@
                 </StackPanel>
             </Button>
             <Button x:Name="btnNext"
-                    Grid.Row="4"
+                    Grid.Row="3"
                     HorizontalAlignment="Right"
                     Style="{StaticResource buttonStylePrimary}"
                     Margin="8,8,8,8"

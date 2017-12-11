@@ -75,7 +75,7 @@ namespace Rock.Apps.StatementGenerator
 
             if ( SaveChanges( true ) )
             {
-                SelectAccountsPage nextPage = new SelectAccountsPage();
+                var nextPage = new SelectLavaTemplatePage();
                 this.NavigationService.Navigate( nextPage );
             }
         }

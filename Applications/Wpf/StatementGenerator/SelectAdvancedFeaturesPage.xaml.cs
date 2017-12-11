@@ -47,7 +47,7 @@ namespace Rock.Apps.StatementGenerator
         {
             if ( SaveChanges( true ) )
             {
-                ProgressPage nextPage = new ProgressPage();
+                var nextPage = new SelectSaveLocationPage();
                 this.NavigationService.Navigate( nextPage );
             }
         }
