@@ -1,0 +1,45 @@
+{% comment %}
+  {% include '~~/Assets/Lava/Toolboxes/NextSteps.lava' %}
+{% endcomment %}
+
+
+{% comment %}
+  Toolbox variables
+{% endcomment %}
+
+{% assign fullRosterPage = "/page/1546" %}
+
+{% assign showInactive = false %}
+{% assign showMap = false %}
+{% assign showAddMember = false %}
+
+
+{% comment %}
+  Person partial variables
+{% endcomment %}
+
+{% assign showTUpVideoButton = true %}
+{% assign memberDetailPage = "/page/1542" %}
+
+
+
+
+{% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_default-vars.lava' %}
+  {% include '~~/Assets/Lava/Toolboxes/_pre.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_header.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_roster-pending.lava' %}
+  {% include '~~/Assets/Lava/Toolboxes/_roster-active.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_footer-actions.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_post.lava' %}
+
+{% else %}
+  {% if Group.Id %}
+    <div class='alert alert-warning'>You do not have persmission to view this group.</div>
+  {% endif %}
+{% endif %}

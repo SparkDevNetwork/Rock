@@ -1,0 +1,59 @@
+{% comment %}
+
+  {% assign detailPage = '/story' %}
+  {% include '~~/Assets/Lava/Stories/Detail.lava' %}
+
+{% endcomment %}
+
+{% assign item = Items | First %}
+{% capture pageTitle %}{{ item.Title }} - Stories | {{ 'Global' | Attribute:'OrganizationAbbreviation' }}{% endcapture %}
+{{ pageTitle | SetPageTitle }}
+
+{% assign detailPage = detailPage | Default: '/story' %}
+
+{% assign itemWistiaId = item | Attribute:'WistiaId' %}
+
+{% capture image2 %}
+  <a class="lightbox" href="{{ item | Attribute: 'Image2', 'Url' }}">
+    <img src="{{ item | Attribute: 'Image2', 'Url' }}&maxwidth=700" />
+  </a>
+{% endcapture %}
+
+{% if itemWistiaId == empty %}
+
+  <header class="storythumb" style="background-image: url('{{ item | Attribute: 'Image', 'Url' }}&maxwidth=1140'); background-position: {{ item | Attribute: 'ImageFocalPoint', 'RawValue' }};">
+  </header>
+
+  <div class="container-md">
+    <a href="{{ detailPage }}/{{ item | Attribute:'ShortUrl' }}" class="link-plain">
+      <h1 class="page-header">{{ item.Title }}</h1>
+    </a>
+    <div class="text-responsive">
+      <p class="lead">{{ item.Summary }}</p>
+      {{ item.Content | Replace: '[[Image2]]', image2 }}
+    </div>
+  </div>
+
+{% else %}
+
+  <script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><div class="wistia_embed wistia_async_{{ itemWistiaId }} videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="height:100%;width:100%">&nbsp;</div></div></div>
+
+  {% if item.Content == "" %}
+    <div class="text-responsive margin-t-lg">
+      <p class="lead">{{ item.Title }}</p>
+    </div>
+  {% else %}
+    <div class="container-md">
+      <a href="{{ detailPage }}/{{ item | Attribute:'ShortUrl' }}" class="link-plain">
+        <h1 class="page-header">{{ item.Title }}</h1>
+      </a>
+      <div class="text-responsive">
+        <p class="lead">{{ item.Summary }}</p>
+        {{ item.Content | Replace: '[[Image2]]', image2 }}
+      </div>
+    </div>
+  {% endif %}
+
+
+
+{% endif %}

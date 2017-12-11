@@ -1,0 +1,34 @@
+<script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/E-v1.js" async></script>
+
+{% assign item = Items | First %}
+
+<h1>Weekly Bible Reading</h1>
+
+<h3 class="page-header">{{ item.Title }} - <small>{{ item.ChapterSpan }}</small></h3>
+
+{% assign itemWistiaId = item.VideoId %}
+
+{% if itemWistiaId != empty %}
+  <script src="//fast.wistia.com/embed/medias/{{ itemWistiaId }}.jsonp" async></script><script src="//fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><div class="wistia_embed wistia_async_{{ itemWistiaId }} videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="height:100%;width:100%">&nbsp;</div></div></div>
+{% endif %}
+
+<h2 class="page-header">Reading Schedule</h2>
+<ul>
+    <li>Monday: {{ item.MondayReading }}</li>
+    <li>Tuesday: {{ item.TuesdayReading }}</li>
+    <li>Wednesday: {{ item.WednesdayReading }}</li>
+    <li>Thursday: {{ item.ThursdayReading }}</li>
+    <li>Friday: {{ item.FridayReading }}</li>
+</ul>
+
+{% assign coachLength = item.CoachingTip | Size %}
+{% if coachLength > 0 %}
+    <h2 class="page-header">Coaching Tips</h2>
+    {{ item.CoachingTip }}
+{% endif %}
+
+{% assign videoLength = item.VideoDetail | Size %}
+{% if videoLength > 0 %}
+    <h2 class="page-header">Video Discussion</h2>
+    {{ item.VideoDetail }}
+{% endif %}

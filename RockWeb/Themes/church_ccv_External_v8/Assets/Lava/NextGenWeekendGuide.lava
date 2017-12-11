@@ -1,0 +1,57 @@
+{% comment %}
+  {% include '~~/Assets/Lava/NextGenWeekendGuide.lava' %}
+{% endcomment %}
+
+{% assign item = Items | First %}
+
+{% if item %}
+
+  <div class="container container-md margin-v-md">
+
+    <div class="small">
+      {% case item.Grade %}
+        {% when 'JrHigh' %}
+          <span class="label label-default">Latest Jr. High Coach Guide</span>
+        {% when 'SrHigh' %}
+          <span class="label label-default">Latest High School Coach Guide</span>
+      {% endcase %}
+      <span class="text-muted pull-right">Published {{ item.StartDateTime | HumanizeDateTime }}</span>
+    </div>
+
+    <article class="text-responsive">
+      {% for item in Items %}
+        <h1 class="page-header margin-t-lg">{{ item.Title }}</h1>
+        {{ item.Content | FromMarkdown }}
+        {% assign wistiaId = item | Attribute: 'WistiaId' %}
+        {% if wistiaId != empty %}
+          <hr>
+          <p>
+            &nbsp;
+          </p>
+          <script src="//fast.wistia.com/embed/medias/{{ wistiaId }}.jsonp" async></script><script src="//fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><div class="wistia_embed wistia_async_{{ wistiaId }} videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="height:100%;width:100%">&nbsp;</div></div></div>
+          <p>
+            &nbsp;
+          </p>
+        {% endif %}
+      {% endfor %}
+    </article>
+  </div>
+
+  <script>
+    var refTagger = {
+      settings: {
+        bibleVersion: "NIV",
+        roundCorners: true,
+        socialSharing: [],
+        tagChapters: true,
+        caseInsensitive: !false
+      }
+    };
+    (function(d, t) {
+      var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+      g.src = "//api.reftagger.com/v2/RefTagger.js";
+      s.parentNode.insertBefore(g, s);
+    }(document, "script"));
+  </script>
+
+{% endif %}

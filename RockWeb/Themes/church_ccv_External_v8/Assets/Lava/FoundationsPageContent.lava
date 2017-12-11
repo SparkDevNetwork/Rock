@@ -1,0 +1,41 @@
+{% assign item = Items.first %}
+{% assign vimeoId = item | Attribute: 'VimeoId' %}
+{% assign wistiaId = item | Attribute: 'WistiaId' %}
+
+{% if wistiaId != empty %}
+  <script src="//fast.wistia.com/embed/medias/{{ wistiaId }}.jsonp" async></script><script src="//fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><div class="wistia_embed wistia_async_{{ wistiaId }} videoFoam=true" style="height:100%;width:100%">&nbsp;</div></div></div>
+{% elsif vimeoId != empty %}
+<div class="embed-responsive embed-responsive-16by9">
+  <iframe class="embed-responsive-item" src="//player.vimeo.com/video/{{ vimeoId }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+</div>
+{% endif %}
+
+
+<h3>{{ item.Title}}</h3>
+
+<p>{{ item.Content }}</p>
+
+<nav class="margin-b-lg">
+  <ul class="pager">
+  {% if Pagination.PreviousPage != -1 %}
+    <li class="previous"><a href="?Page={{ Pagination.PreviousPage }}"><span aria-hidden="true">&larr;</span> Previous</a></li>
+  {% endif %}
+
+  {% if Pagination.NextPage != -1 %}
+    <li class="next"><a href="?Page={{ Pagination.NextPage }}">Next <span aria-hidden="true">&rarr;</span></a></li>
+  {% endif %}
+  </ul>
+</nav>
+
+{% assign Resources = item | Attribute: 'Resources', 'Object' %}
+
+{% if Resources != empty %}
+  <h3 class="underline">Resources</h3>
+  <ul class="brandlist brandlist-inline">
+    {% for resource in Resources %}
+      {% assign resourcekv = resource | PropertyToKeyValue %}
+      <li class="brandlist-item"><a href="{{ resourcekv.Value }}">{{ resourcekv.Key }}</a></li>
+    {% endfor %}
+  </ul>
+  <p>&nbsp;</p>
+{% endif %}

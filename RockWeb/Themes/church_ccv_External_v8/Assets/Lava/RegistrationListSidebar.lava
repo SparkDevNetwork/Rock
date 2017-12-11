@@ -1,0 +1,18 @@
+{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
+{% assign registrationCount = Registrations | Size %}
+{% if registrationCount > 0 %}
+
+<div class="panel panel-default">
+  <div class="panel-heading">Recent Registrations</div>
+  <ul class="list-group list-group-panel">
+    {% for registration in Registrations %}
+    <li class="list-group-item">
+      <a href="{{ externalSite }}Registration?RegistrationId={{ registration.Id }}" class="js-group-item" >{{ registration.RegistrationInstance.Name }}</a> 
+		{% if registration.BalanceDue > 0 %} <label class='label label-warning'>{{ 'Global' | Attribute:'CurrencySymbol' }}</label> {% endif %}
+    </li>
+    {% endfor %}
+	</ul>
+</div>
+
+{% endif %}
+

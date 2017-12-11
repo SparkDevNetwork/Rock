@@ -1,0 +1,31 @@
+<div class="rss-item">
+	<h1>{{title}}</h1>
+	<h2>{{SelectedItem.title}}</h2>
+	<div class="rss-item-byline">
+		{% if SelectedItem.dc_creator != empty -%}
+			{{SelectedItem.dc_creator}} |
+		{% endif -%}
+		{% if SelectedItem.pubDate == '1/1/0000 12:00:00 AM' -%}
+			{{SelectedItem.updated}}
+		{% else -%}
+			{{SelectedItem.pubDate}}
+		{% endif -%}		
+	</div>
+	<br />
+	<div class="rss-item-content">
+		{{SelectedItem.content_encoded}}
+	</div>
+	
+	<ul class="rss-item-pager">
+		{% if PreviousItem -%}
+			<li class="previous">
+				<a href="{{PreviousItem.detailPageUrl}}" class="btn btn-default"><i class="fa fa-angle-double-left"></i> Previous</a>
+			</li>
+		{% endif -%}
+		{% if NextItem -%}
+			<li class="next">
+				<a href="{{NextItem.detailPageUrl}}" class="btn btn-default">Next <i class="fa fa-angle-double-right"></i> </a>
+			</li>		
+		{% endif -%}
+	</ul>
+</div>

@@ -1,0 +1,71 @@
+{% comment %}
+
+{% capture panelTitle %}Register for {{ EventItem.Name }} <small style="display: inline-block">{{ EventItemOccurrences[0].Campus.Name }} Campus</small>{% endcapture %}
+
+{% assign emptyMessage = "There are currently no events scheduled" %}
+
+{% capture emptyMessage %}There are currently no events scheduled for the {{ Context.Campus.Name }} Campus{% endcapture %}
+
+{% assign displayOccurrenceName = false %}
+{% assign displayDateRange = false %}
+{% assign showIfEmpty = true %}
+
+{% endcomment %}
+
+{% if Context.Campus %}
+
+{% comment %} Default values of lava settings {% endcomment %}
+{% unless displayOccurrenceName or displayOccurrenceName == false %}
+  {% assign displayOccurrenceName = false %}
+{% endunless %}
+{% unless displayDateRange or displayDateRange == false %}
+  {% assign displayDateRange = false %}
+{% endunless %}
+{% unless showIfEmpty or showIfEmpty == false %}
+  {% assign showIfEmpty = true %}
+{% endunless %}
+
+
+{% capture defaultPanelTitle %}Register for {{ EventItem.Name }} <small style="display: inline-block">{{ EventItemOccurrences[0].Campus.Name }} Campus</small>{% endcapture %}
+
+  {% if EventItemOccurrences != empty %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ panelTitle | Default: defaultPanelTitle }}</h3>
+      </div>
+      <div class="list-group">
+        {% for occurrence in EventItemOccurrences %}
+          {% if displayDateRange %}
+            {% capture dateString %}{{ occurrence.Schedule.EffectiveStartDate | Date: 'dddd, MMM d'  }} - {{ occurrence.Schedule.EffectiveEndDate | Date: 'dddd, MMM d'  }}{% endcapture %}
+          {% else %}
+            {% capture dateString %}{{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'dddd, MMM d / h:mmtt'  }}{% endcapture %}
+          {% endif %}
+          {% comment %}<a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">{% endcomment %}
+          {% if displayOccurrenceName %}
+            <a class="list-group-item" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
+              {{ occurrence.EventItem.Name }} <small class="text-muted">{{ dateString }}</small>
+            </a>
+          {% else %}
+            <a class="list-group-item" href="{{ RegistrationPage }}?EventOccurrenceId={{ occurrence.Id }}">
+              {{ dateString }}
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    {% if showIfEmpty %}
+      <div class="panel panel-default">
+        <div class="panel-body">
+          {{ emptyMessage | Default: "There are currently no events scheduled" }}
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+{% else %}
+
+  {% assign selectCampusBtnClasses = 'btn btn-primary' %}
+  {% include '~~/Assets/Lava/SelectACampus.lava' %}
+
+{% endif %}

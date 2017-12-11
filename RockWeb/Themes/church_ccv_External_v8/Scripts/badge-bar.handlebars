@@ -1,0 +1,102 @@
+{{!
+  Compile this template using the handlebars node package
+  (more here: http://handlebarsjs.com/precompilation.html)
+
+  In the same directory as this file, run this command:
+  handlebars badge-bar.handlebars -f badge-bar-compiled.js -m
+
+  We compile the template as it has major performance savings, especially when
+  the template is reused multiple times on one page.
+}}
+
+<div class="badge-group badge-group-steps js-badge-group-steps badge-id-27">
+
+  {{#ifStatus BaptismResult.BaptismStatus is=1}}
+  <div class="badge badge-baptism badge-icon" data-toggle="tooltip" title="Baptized on {{dateFormat BaptismResult.BaptismDate format='l'}}" data-container="body">
+    <i class="icon ccv-baptism"></i>
+  </div>
+  {{/ifStatus}}
+  {{#ifStatus BaptismResult.BaptismStatus is=2}}
+  <div class="badge badge-baptism badge-icon step-partial" data-toggle="tooltip" title="Registered for baptism on {{dateFormat BaptismResult.BaptismRegistrationDate format='l'}}" data-container="body">
+    <i class="icon ccv-baptism"></i>
+  </div>
+  {{/ifStatus}}
+  {{#ifStatus BaptismResult.BaptismStatus is=0}}
+  <div class="badge badge-baptism badge-icon step-nottaken" data-toggle="tooltip" title="Is not baptized" data-container="body">
+    <i class="icon ccv-baptism"></i>
+  </div>
+  {{/ifStatus}}
+
+  {{#if IsWorshipper}}
+  <div class="badge badge-worship badge-icon" data-toggle="tooltip" title="Is an eRA" data-container="body">
+    <i class="icon ccv-worship"></i>
+  </div>
+  {{else}}
+  <div class="badge badge-worship badge-icon step-nottaken" data-toggle="tooltip" title="Is not an eRA" data-container="body">
+    <i class="icon ccv-worship"></i>
+  </div>
+  {{/if}}
+
+  {{#ifStatus ConnectionResult.ConnectionStatus is=0}}
+  <div class="badge badge-connect badge-icon" data-toggle="tooltip" title="Is in a connection group (eariest active group {{dateFormat ConnectionResult.ConnectedSince format='l'}})" data-container="body">
+    <i class="icon ccv-connect"></i>
+  </div>
+  {{/ifStatus}}
+  {{#ifStatus ConnectionResult.ConnectionStatus is=2}}
+  <div class="badge badge-connect badge-icon step-partial" data-toggle="tooltip" title="Is pending in a connection group (eariest active group {{dateFormat ConnectionResult.ConnectedSince format='l'}})" data-container="body">
+    <i class="icon ccv-connect"></i>
+  </div>
+  {{/ifStatus}}
+  {{#ifStatus ConnectionResult.ConnectionStatus is=1}}
+  <div class="badge badge-connect badge-icon step-nottaken" data-toggle="tooltip" title="Is not connected to a neighborhood group" data-container="body">
+    <i class="icon ccv-connect"></i>
+  </div>
+  {{/ifStatus}}
+
+  {{#ifStatus ServingResult.ServingStatus is=0}}
+    <div class="badge badge-serve badge-icon step-nottaken" data-toggle="tooltip" title="Is not serving" data-container="body">
+    <i class="icon ccv-serve"></i>
+  </div>
+  {{/ifStatus}}
+  {{#ifStatus ServingResult.ServingStatus is=1}}
+    <div class="badge badge-serve badge-icon step-partial" data-toggle="tooltip" title="Is pending serving (earliest active group {{dateFormat ServingResult.ServingSince format='l'}})" data-container="body">
+    <i class="icon ccv-serve"></i>
+    </div>
+  {{/ifStatus}}
+  {{#ifStatus ServingResult.ServingStatus is=2}}
+    <div class="badge badge-serve badge-icon" data-toggle="tooltip" title="Is serving (earliest active group {{dateFormat ServingResult.ServingSince format='l'}})" data-container="body">
+    <i class="icon ccv-serve"></i>
+    </div>
+  {{/ifStatus}}
+
+  {{#if IsTithing}}
+  <div class="badge badge-tithe badge-icon" data-toggle="tooltip" data-original-title="Is giving" data-container="body">
+    <i class="icon ccv-tithe"></i>
+  </div>
+  {{else}}
+  <div class="badge badge-tithe badge-icon step-nottaken" data-toggle="tooltip" data-original-title="Is not giving" data-container="body">
+    <i class="icon ccv-tithe"></i>
+  </div>
+  {{/if}}
+
+  {{#if CoachingResult.IsCoaching}}
+  <div class="badge badge-coach badge-icon" data-toggle="tooltip" title="Is in a coaching group (earliest active group {{dateFormat CoachingResult.CoachingSince format='l'}})" data-container="body">
+    <i class="icon ccv-coach"></i>
+  </div>
+  {{else}}
+  <div class="badge badge-coach badge-icon step-nottaken" data-toggle="tooltip" title="Is not coaching" data-container="body">
+    <i class="icon ccv-coach"></i>
+  </div>
+  {{/if}}
+
+  {{#if SharedStoryResult.SharedStory}}
+  <div class="badge badge-share badge-icon" data-toggle="tooltip" title="Has shared a story" data-container="body">
+    <i class="icon ccv-share"></i>
+  </div>
+  {{else}}
+  <div class="badge badge-share badge-icon step-nottaken" data-toggle="tooltip" title="Has not shared a story" data-container="body">
+    <i class="icon ccv-share"></i>
+  </div>
+  {{/if}}
+
+</div>

@@ -1,0 +1,36 @@
+{% comment %}
+
+  {% include '~~/Assets/Lava/Stories/Latest.lava' %}
+
+{% endcomment %}
+
+{% include '~~/Assets/Lava/Stories/Detail.lava' %}
+
+<div class="clearfix">
+  {% assign nextPageString = Pagination.NextPage | ToString %}
+  {% assign prevPageString = Pagination.PreviousPage | ToString %}
+
+  {% if Pagination.NextPage == -1 %}
+  {% comment %}
+  <div class="btn btn-default disabled pull-left">
+    <i class="fa fa-chevron-left"></i> Prev
+  </div>
+  {% endcomment %}
+  {% else %}
+  <a class="btn btn-default pull-left" href="{{Pagination.UrlTemplate | Replace:'PageNum', nextPageString}}">
+    <i class="fa fa-chevron-left"></i> Prev
+  </a>
+  {% endif %}
+
+  {% if Pagination.PreviousPage == -1 %}
+  {% comment %}
+  <div class="btn btn-default disabled pull-right">
+    Next <i class="fa fa-chevron-right"></i>
+  </div>
+  {% endcomment %}
+  {% else %}
+  <a class="btn btn-default pull-right" href="{{Pagination.UrlTemplate | Replace:'PageNum', prevPageString}}">
+    Next <i class="fa fa-chevron-right"></i>
+  </a>
+  {% endif %}
+</div>

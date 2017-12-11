@@ -1,0 +1,41 @@
+/*
+    The accent colors are deprecated and should not be used in new theme development. They will be
+    removed in Rock v 6.0.
+*/
+.students-about {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 30px;
+  background: #e2231a;
+  background-size: 55%;
+  color: #fff;
+  padding: 30px 0;
+}
+.students-about p {
+  margin-bottom: 0;
+  font-weight: 400;
+}
+@media (min-width: 768px) {
+  .students-about {
+    background: #e2231a url(https://s3.amazonaws.com/media.ccvonline.com/external_site_v7/students/Students-Bird.svg) no-repeat -45% 40%;
+    background-size: 55%;
+    padding: 120px 0;
+  }
+}
+@media (min-width: 992px) {
+  .students-about {
+    background-position: -40% 40%;
+    background-size: 50%;
+  }
+}
+@media (min-width: 1200px) {
+  .students-about {
+    background-position: -15% 30%;
+    background-size: 45%;
+  }
+}
+@media (min-width: 768px) {
+  .students-about .container p {
+    margin-left: 35%;
+  }
+}

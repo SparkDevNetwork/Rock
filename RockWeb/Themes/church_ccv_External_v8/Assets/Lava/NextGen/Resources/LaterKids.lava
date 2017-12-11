@@ -1,0 +1,35 @@
+{% comment %}
+  {% include '~~/Assets/Lava/NextGen/Resources/LaterKids.lava' %}
+{% endcomment %}
+
+{% assign resultList = Items | Where:'Id', PageParameter.ContentId %}
+{% assign count = resultList | Size %}
+
+{% comment %}If the result list is empty or invalid, show the latest item{% endcomment%}
+{% if count > 0 %}
+	{% assign viewedItem = resultList | First %} 
+{% else %}
+	{% assign viewedItem = Items | First %}
+{% endif %}
+
+<h4 class="page-header">What They Learned In Class</h4>
+<p><b>Main Point:</b> {{ viewedItem | Attribute: 'MainPoint' }}</p>
+<p><b>Memory Verses:</b> {{ viewedItem | Attribute: 'MemoryVerses' }}</p>
+<p><b>Bible Verses:</b> {{ viewedItem | Attribute: 'BibleVerses' }}</p>
+<p>{{ viewedItem | Attribute:'Summary' }}</p>
+<p>{{ viewedItem.Content }}</p>
+
+{% assign introVid = viewedItem | Attribute: 'IntroVideo' %}
+{% assign messageVid = viewedItem | Attribute: 'MessageVideo' %}
+
+{% if introVid != '' %}
+  <div class="embed-responsive embed-responsive-16by9">
+    <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/{{ introVid }}" width="320" height="180" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  </div>
+{% endif %}
+<br>
+{% if messageVid != '' %}
+  <div class="embed-responsive embed-responsive-16by9">
+    <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/{{ messageVid }}" width="320" height="180" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  </div>
+{% endif %}

@@ -1,0 +1,173 @@
+{% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
+
+  {% capture pageTitle %}{{ Group.Name }} Roster{% endcapture %}
+  {{ pageTitle | SetPageTitle }}
+
+  <style>
+    @media all {
+      .page-break {
+        display: none;
+      }
+    }
+    @media print {
+      body {
+        font-size: 10px;
+      }
+      .page-break {
+        display: block;
+        page-break-before: always;
+      }
+      @page {
+        margin: .5in;
+      }
+      .media {
+        page-break-inside: avoid;
+      }
+      .col-sm-6 {
+        width: 50%;
+        float: left;
+      }
+      h1.page-header {
+        margin-top: 0;
+      }
+    }
+    .badge-group.badge-group-steps {
+      display: block;
+      opacity: .75;
+    }
+    .badge-group.badge-group-steps .badge {
+      font-size: 10px;
+      width: 15px;
+      height: 15px;
+    }
+    .badge-group.badge-group-steps .badge.step-nottaken {
+      background-color: inherit;
+      opacity: .4;
+      color: #939393;
+    }
+  </style>
+
+  {% assign countActive = -1 %}
+  {% assign tempActive = ActiveGroupMembers | Size %}
+  {% if tempActive > 0 %}
+	{% assign countActive = tempActive | Minus: 1 %}
+  {% endif %}
+  
+  {% assign countInactive = -1 %}
+  {% assign tempInactive = InactiveGroupMembers | Size %}
+  {% if tempInactive > 0 %}
+	{% assign countInactive = tempInactive | Minus: 1 %}
+  {% endif %}
+  
+  {% assign countPending = -1 %}
+  {% assign tempPending = PendingGroupMembers | Size %}
+  {% if tempPending > 0 %}
+	{% assign countPending = tempPending | Minus: 1 %}
+  {% endif %}
+  
+
+  <div class="container">
+
+    <h1 class="page-header">{{ Group.Name }}</h1>
+
+    {% if countPending > -1 %}
+
+        <h4>Pending Members</h4>
+      {% assign icountPending = 0 %}
+
+      {% for member in PendingGroupMembers %}
+
+          {% assign loopcycle = icountPending | Modulo:2 %}
+
+          {% if loopcycle == 0 %}
+            <div class="row">
+          {% endif %}
+
+          {% include '~~/Assets/Lava/GroupFullRoster-person.lava' %}
+
+          {% if loopcycle != 0 or icountPending == countPending %}
+            </div>
+          {% endif %}
+
+          {% assign icountPending = icountPending | Plus: 1 %}
+
+      {% endfor %}
+
+    {% endif %}
+
+
+
+    {% if countActive > -1 %}
+      {% assign icountActive = 0 %}
+
+      <h4>Active Members</h4>
+
+      {% for member in ActiveGroupMembers %}
+		
+        {% assign loopcycle = icountActive | Modulo:2 %}
+
+        {% if loopcycle == 0 %}
+        <div class="row">
+        {% endif %}
+				
+        {% include '~~/Assets/Lava/GroupFullRoster-person.lava' %}
+
+        {% if loopcycle != 0 or icountActive == countActive %}
+        </div>
+        {% endif %}
+
+        {% assign icountActive = icountActive | Plus: 1 %}
+
+      {% endfor %}
+
+    {% endif %}
+
+
+
+    {% if countInactive > -1 %}
+      {% assign icountInactive = 0 %}
+
+      <h4>Inactive Members</h4>
+
+      {% for member in InactiveGroupMembers %}
+
+        {% assign loopcycle = icountInactive | Modulo:2 %}
+
+        {% if loopcycle == 0 %}
+        <div class="row">
+        {% endif %}
+
+        {% include '~~/Assets/Lava/GroupFullRoster-person.lava' %}
+
+        {% if loopcycle != 0 or icountInactive == countInactive %}
+          </div>
+        {% endif %}
+
+        {% assign icountInactive = icountInactive | Plus: 1 %}
+
+      {% endfor %}
+
+    {% endif %}
+  </div>
+
+  <div class="well margin-t-xl hidden-print fade js-toggle-badge-vis-wrapper">
+    <div class="container">
+      <div class="checkbox">
+        <label>
+          <input class="js-toggle-badge-vis" type="checkbox" checked>
+          Display badge bar
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    CURRENT_GROUP_GUID = '{{ Group.Guid }}'
+  </script>
+  <script src="/Themes/church_ccv_External_v7/Scripts/pages/min/toolbox.min.js?v=5"></script>
+
+{% else %}
+  {% if Group.Id %}
+    <div class='alert alert-warning'>You do not have persmission to view this group.</div>
+  {% endif %}
+{% endif %}

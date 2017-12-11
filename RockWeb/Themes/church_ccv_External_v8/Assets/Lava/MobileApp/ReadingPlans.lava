@@ -1,0 +1,24 @@
+
+<h1 class="page-header">Weekly Reading Plans</h1>
+Reading your Bible is key to growing as a disciple of Jesus Christ. Browse the reading plans below and
+find one that interests you. Each one lasts one week, so commit to completing one today! 
+
+<p/>
+<p/>
+
+{% for item in Items %}
+    {% if item.Audiences == '' or item.Audiences contains 'Adults' %}
+        {% assign dateDiff = item.StartDateTime | DateDiff:'Now', 'd' %}
+        {% if dateDiff >= 0 or PageParameter.admin == 'true' %}
+            <div class="container-md">
+                <h3 class="page-header">{{ item.Title }}</h3>
+                <p/>
+                {{ item.Content }}
+                <p/>
+                <p/>
+                <a href="/page/1285?Id={{ item.Id }}" class="btn btn-default btn-xs">Read Now</a>
+            </div>
+        {% endif %}
+    {% endif %}
+
+{% endfor %}
