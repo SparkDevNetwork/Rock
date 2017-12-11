@@ -47,7 +47,23 @@ namespace Rock.StatementGenerator
         /// The transaction account ids.
         /// </value>
         public List<int> TransactionAccountIds { get; set; }
-       
+
+        /// <summary>
+        /// Gets or sets the currency type ids cash.
+        /// </summary>
+        /// <value>
+        /// The currency type ids cash.
+        /// </value>
+        public List<int> CurrencyTypeIdsCash { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency type ids non cash.
+        /// </summary>
+        /// <value>
+        /// The currency type ids non cash.
+        /// </value>
+        public List<int> CurrencyTypeIdsNonCash { get; set; }
+
         /// <summary>
         /// Gets a value indicating whether [pledges include child accounts].
         /// </summary>

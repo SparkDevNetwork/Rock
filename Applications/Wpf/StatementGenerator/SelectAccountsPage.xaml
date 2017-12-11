@@ -126,21 +126,21 @@
                              SelectionMode="Multiple">
                     </ListBox>
 
-                    <Label Name="lblAccountsCurrencyTypesWarning" Grid.Row="2" VerticalAlignment="Bottom"
-                   HorizontalAlignment="Right"
-                       Style="{StaticResource labelStyleAlert}"
-                       Content="Please select at least one account and currency type."
-                       Visibility="Visible">
-                    </Label>
+                    
 
 
                 </StackPanel>
 
             </Grid>
 
-            
+            <Label Name="lblAccountsCurrencyTypesWarning" Grid.Row="2" VerticalAlignment="Bottom"
+                   HorizontalAlignment="Center"
+                       Style="{StaticResource labelStyleAlert}"
+                       Content="Please select at least one account and currency type."
+                       Visibility="Visible">
+            </Label>
 
-            
+
 
             <Button x:Name="btnPrev"
                     Grid.Row="2"

@@ -37,6 +37,7 @@ namespace Rock.Apps.StatementGenerator
         /// All of the Financial Accounts from Rock
         /// </summary>
         private List<Rock.Client.FinancialAccount> _financialAccountList = null;
+        private List<Rock.Client.DefinedValue> _currencyTypes = null;
 
         /// <summary>
         /// The selected cash account ids
@@ -57,11 +58,51 @@ namespace Rock.Apps.StatementGenerator
             _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
 
             _financialAccountList = _rockRestClient.GetData<List<Rock.Client.FinancialAccount>>( "api/FinancialAccounts" );
+            var currencyDefinedType = _rockRestClient.GetDataByGuid<Rock.Client.DefinedType>( "api/DefinedTypes", Rock.Client.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
+            _currencyTypes = _rockRestClient.GetData<List<Rock.Client.DefinedValue>>( $"api/DefinedValues?$filter=DefinedTypeId eq {currencyDefinedType.Id}" );
+            lstCashCurrencyTypes.Items.Clear();
+            var defaultCashCurrencyGuids = new Guid[] {
+                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH.AsGuid(),
+                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid(),
+                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid(),
+                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid()
+            };
+
+            var defaultNonCashCurrencyGuids = new Guid[] {
+                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid()
+            };
+
+            // Default Cash Currency Types to 
+            foreach ( var currencyType in _currencyTypes )
+            {
+
+                var cashCurrencyCheckbox = new CheckBox { Tag = currencyType.Id, Content = currencyType.Value };
+                if ( ReportOptions.Current.CurrencyTypeIdsCash != null )
+                {
+                    cashCurrencyCheckbox.IsChecked = ReportOptions.Current.CurrencyTypeIdsCash.Contains( currencyType.Id );
+                }
+                else
+                {
+                    cashCurrencyCheckbox.IsChecked = defaultCashCurrencyGuids.Contains( currencyType.Guid );
+                }
+
+                lstCashCurrencyTypes.Items.Add( cashCurrencyCheckbox );
+
+                var nonCashCurrencyCheckbox = new CheckBox { Tag = currencyType.Id, Content = currencyType.Value };
+                if ( ReportOptions.Current.CurrencyTypeIdsNonCash != null )
+                {
+                    nonCashCurrencyCheckbox.IsChecked = ReportOptions.Current.CurrencyTypeIdsNonCash.Contains( currencyType.Id );
+                }
+                else
+                {
+                    nonCashCurrencyCheckbox.IsChecked = defaultNonCashCurrencyGuids.Contains( currencyType.Guid );
+                }
+
+                lstNonCashCurrencyTypes.Items.Add( nonCashCurrencyCheckbox );
+            }
 
             // default to the currently configured CashAccountsId (if configured), or default to all
-            /* TODO */
             _selectedAccountIds = ReportOptions.Current.TransactionAccountIds ?? _financialAccountList.Select( a => a.Id ).ToList();
-
 
             cbShowInactive.IsChecked = rockConfig.ShowInactiveAccounts;
             cbShowTaxDeductible.IsChecked = rockConfig.ShowTaxDeductibleAccounts;
@@ -135,10 +176,26 @@ namespace Rock.Apps.StatementGenerator
             rockConfig.ShowNonTaxDeductibleAccounts = cbShowNonTaxDeductible.IsChecked == true;
 
             ReportOptions.Current.TransactionAccountIds = lstAccounts.Items.OfType<CheckBox>().Where( a => a.IsChecked == true ).Select( s => ( int ) s.Tag ).ToList();
-            if ( !ReportOptions.Current.TransactionAccountIds.Any() || false /* TODO */ )
+            ReportOptions.Current.CurrencyTypeIdsCash = lstCashCurrencyTypes.Items.OfType<CheckBox>().Where( a => a.IsChecked == true ).Select( s => ( int ) s.Tag ).ToList();
+            ReportOptions.Current.CurrencyTypeIdsNonCash = lstNonCashCurrencyTypes.Items.OfType<CheckBox>().Where( a => a.IsChecked == true ).Select( s => ( int ) s.Tag ).ToList();
+            var currencySelected = ReportOptions.Current.CurrencyTypeIdsCash.Any() || ReportOptions.Current.CurrencyTypeIdsNonCash.Any();
+            if ( !ReportOptions.Current.TransactionAccountIds.Any() || !currencySelected )
             {
                 if ( showWarnings )
                 {
+                    if ( !ReportOptions.Current.TransactionAccountIds.Any() && !currencySelected )
+                    {
+                        lblAccountsCurrencyTypesWarning.Content = "Please select at least one account and currency type.";
+                    }
+                    else if ( !ReportOptions.Current.TransactionAccountIds.Any() )
+                    {
+                        lblAccountsCurrencyTypesWarning.Content = "Please select at least one account.";
+                    }
+                    else if ( !currencySelected )
+                    {
+                        lblAccountsCurrencyTypesWarning.Content = "Please select at least one currency type.";
+                    }
+
                     lblAccountsCurrencyTypesWarning.Visibility = Visibility.Visible;
                     return false;
                 }
@@ -154,9 +211,7 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnSelectAll_Click( object sender, RoutedEventArgs e )
         {
-            /* TODO*/
-            var listBox = sender == btnSelectAllAccounts ? lstAccounts : null;
-            listBox.Items.OfType<CheckBox>().ToList().ForEach( a => a.IsChecked = true );
+            lstAccounts.Items.OfType<CheckBox>().ToList().ForEach( a => a.IsChecked = true );
         }
 
         /// <summary>
@@ -166,9 +221,7 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnSelectNone_Click( object sender, RoutedEventArgs e )
         {
-            /* TODO*/
-            var listBox = sender == btnSelectAllAccounts ? lstAccounts : null;
-            listBox.Items.OfType<CheckBox>().ToList().ForEach( a => a.IsChecked = false );
+            lstAccounts.Items.OfType<CheckBox>().ToList().ForEach( a => a.IsChecked = false );
         }
 
         /// <summary>
