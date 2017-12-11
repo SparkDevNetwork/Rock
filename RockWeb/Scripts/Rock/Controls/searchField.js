@@ -42,26 +42,12 @@
             initializeEventHandlers: function () {
                 var self = this,
                     search = function (term) {
+                        var keyVal = self.$el.parents('.smartsearch').find('input:hidden').val(),
+                            $li = self.$el.parents('.smartsearch').find('li[data-key="' + keyVal + '"]'),
+                            targetUrl = $li.attr('data-target'),
+                            url = Rock.settings.get('baseUrl') + targetUrl.replace('{0}', encodeURIComponent(term.trim()));
 
-                        // search for data elements in the search term
-                        var returnType = $("<p>" + term + "</p>").find("data:first").attr("return-type");
-                        var returnId = $("<p>" + term + "</p>").find("data:first").attr("return-id");
-
-                        if (returnType == null || returnId == null) {
-                            var keyVal = self.$el.parents('.smartsearch').find('input:hidden').val(),
-                                $li = self.$el.parents('.smartsearch').find('li[data-key="' + keyVal + '"]'),
-                                targetUrl = $li.attr('data-target'),
-                                url = Rock.settings.get('baseUrl') + targetUrl.replace('{0}', encodeURIComponent(term.trim()));
-
-                            window.location = url;
-                        } else {
-                            var keyVal = self.$el.parents('.smartsearch').find('input:hidden').val(),
-                                $li = self.$el.parents('.smartsearch').find('li[data-key="' + keyVal + '"]'),
-                                targetUrl = $li.attr('data-target'),
-                                url = Rock.settings.get('baseUrl') + targetUrl.replace('{0}', encodeURIComponent(returnType) + "/" + encodeURIComponent(returnId));
-
-                            window.location = url;
-                        }
+                        window.location = url;
                     };
 
                 // Listen for typeahead's custom events and trigger search when hit
