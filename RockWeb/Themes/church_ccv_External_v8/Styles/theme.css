@@ -10922,16 +10922,25 @@ html,body{
     margin: 0px;
 
 }
-/*this effects all nav classes, but we only have one, so, whatever.*/
+/* Set default hover color */
 .nav .open>a, .nav .open>a:hover, .nav .open>a:focus
 {
 	background-color: rgba( 0, 0, 0, 0 );
 }
 
-.contextsetter-campus .dropdown-menu>li>a:hover, 
-.contextsetter-campus .dropdown-menu>li>a:focus
+/* Header campus selector override */
+.contextsetter-campus-navbar .navbar-nav .dropdown-menu>li>a:hover, 
+.contextsetter-campus-navbar .navbar-nav .dropdown-menu>li>a:focus
 {
 	background-color: #7A1315;
+}
+
+/* Select A Day campus selector override */
+.contextsetter-campus-event .navbar-nav .dropdown-menu>li>a:hover, 
+.contextsetter-campus-event .navbar-nav .dropdown-menu>li>a:focus
+{
+    background-color: #7A1315;
+    color: #FFFFFF;
 }
 
 /* Defines for the inVision screens */
