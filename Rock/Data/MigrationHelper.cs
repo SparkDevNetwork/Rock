@@ -1103,7 +1103,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Adds (or Deletes then Adds) a new BlockType Attribute for the given blocktype and key.
-        /// NOTE: This deletes the Attribute first if it already exists, so be careful. You migth want to use UpdateBlockTypeAttribute instead.
+        /// NOTE: This deletes the Attribute first if it already exists, so be careful. You might want to use UpdateBlockTypeAttribute instead.
         /// </summary>
         /// <param name="blockTypeGuid">The block GUID.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
@@ -1533,7 +1533,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Adds a global Attribute for the given FieldType, entityTypeQualifierColumn, entityTypeQualifierValue and name (key).
-        /// Note: This method delets the Attribute first if it had already existed.
+        /// Note: This method deletes the Attribute first if it had already existed.
         /// </summary>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
         /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
@@ -1546,45 +1546,57 @@ namespace Rock.Data
         /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core global attribute, specify the key with a 'core.' prefix</param>
         public void AddGlobalAttribute( string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid, string key = null )
         {
+            this.AddGlobalAttribute( fieldTypeGuid, entityTypeQualifierColumn, entityTypeQualifierColumn, name, description, order, defaultValue, guid, key, true );
+
+        }
+        /// <summary>
+        /// Adds the global attribute value with an option to overwrite the value if it already exists
+        /// </summary>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="key">The key (use null to use the key based on 'name')</param>
+        /// <param name="overwriteIfAlreadyExists">if set to <c>true</c> [overwrite if already exists].</param>
+        public void AddGlobalAttribute( string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid, string key, bool overwriteIfAlreadyExists )
+        {
             if ( string.IsNullOrWhiteSpace( key ) )
             {
                 key = name.Replace( " ", string.Empty );
             }
 
-            Migration.Sql( string.Format( @"
+            var addUpdateSql = $@"
 
                 DECLARE @FieldTypeId int
-                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
 
-                -- Delete existing attribute first (might have been created by Rock system)
-                DELETE [Attribute]
-                WHERE [EntityTypeId] IS NULL
-                AND [Key] = '{2}'
-                AND [EntityTypeQualifierColumn] = '{8}'
-                AND [EntityTypeQualifierValue] = '{9}'
+                IF (1={overwriteIfAlreadyExists.Bit()} OR NOT EXISTS(SELECT * FROM [Attribute] WHERE [EntityTypeId] IS NULL AND [Key] = '{key}' AND [EntityTypeQualifierColumn] = '{entityTypeQualifierColumn}' AND [EntityTypeQualifierValue] = '{entityTypeQualifierValue}' ))
+                BEGIN
+                    -- Delete existing attribute first (might have been created by Rock system)
+                    DELETE [Attribute]
+                    WHERE [EntityTypeId] IS NULL
+                    AND [Key] = '{key}'
+                    AND [EntityTypeQualifierColumn] = '{entityTypeQualifierColumn}'
+                    AND [EntityTypeQualifierValue] = '{entityTypeQualifierValue}'
 
-                INSERT INTO [Attribute] (
-                    [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                    [Key],[Name],[Description],
-                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-                    [Guid])
-                VALUES(
-                    1,@FieldTypeId,NULL,'{8}','{9}',
-                    '{2}','{3}','{4}',
-                    {5},0,'{6}',0,0,
-                    '{7}')
-",
-                    "", // no entity; keeps {#} the same as AddEntityAttribute()
-                    fieldTypeGuid,
-                    key,
-                    name,
-                    description.Replace( "'", "''" ),
-                    order,
-                    defaultValue,
-                    guid,
-                    entityTypeQualifierColumn,
-                    entityTypeQualifierValue )
-            );
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId,NULL,'{entityTypeQualifierColumn}','{entityTypeQualifierValue}',
+                        '{key}','{name}','{description.Replace( "'", "''" )}',
+                        {order},0,'{defaultValue}',0,0,
+                        '{guid}')
+                END
+";
+
+            Migration.Sql( addUpdateSql );
         }
 
         /// <summary>
@@ -2249,44 +2261,67 @@ BEGIN
         /// <param name="value">The value.</param>
         public void UpdateDefinedValueAttributeValue( string definedValueGuid, string attributeGuid, string value )
         {
-            this.AddDefinedValueAttributeValue( definedValueGuid, attributeGuid, value );
+            this.AddOrUpdateDefinedValueAttributeValue( definedValueGuid, attributeGuid, value, true );
         }
 
         /// <summary>
-        /// Adds the defined value attribute value.
+        /// Adds/Overwrites the defined value attribute value.
         /// </summary>
         /// <param name="definedValueGuid">The defined value unique identifier.</param>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
         /// <param name="value">The value.</param>
         public void AddDefinedValueAttributeValue( string definedValueGuid, string attributeGuid, string value )
         {
-            Migration.Sql( string.Format( @"
+            this.AddOrUpdateDefinedValueAttributeValue( definedValueGuid, attributeGuid, value, true );
+        }
 
+        /// <summary>
+        /// Adds the defined value attribute value with an option to overwrite the value if it already exists
+        /// </summary>
+        /// <param name="definedValueGuid">The defined value unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="overwriteIfAlreadyExists">if set to <c>true</c> [overwrite if already exists].</param>
+        public void AddDefinedValueAttributeValue( string definedValueGuid, string attributeGuid, string value, bool overwriteIfAlreadyExists )
+        {
+            this.AddOrUpdateDefinedValueAttributeValue( definedValueGuid, attributeGuid, value, overwriteIfAlreadyExists );
+        }
+
+        /// <summary>
+        /// Adds the or update defined value attribute value.
+        /// </summary>
+        /// <param name="definedValueGuid">The defined value unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="overwriteIfAlreadyExists">if set to <c>true</c> [overwrite if already exists].</param>
+        private void AddOrUpdateDefinedValueAttributeValue( string definedValueGuid, string attributeGuid, string value, bool overwriteIfAlreadyExists )
+        {
+            var addUpdateSql = $@"
                 DECLARE @DefinedValueId int
-                SET @DefinedValueId = (SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '{0}')
+                SET @DefinedValueId = (SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '{definedValueGuid}')
 
                 DECLARE @AttributeId int
-                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
 
-                -- Delete existing attribute value first (might have been created by Rock system)
-                DELETE [AttributeValue]
-                WHERE [AttributeId] = @AttributeId
-                AND [EntityId] = @DefinedValueId
+                IF (1={overwriteIfAlreadyExists.Bit()} OR NOT EXISTS( SELECT * FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @DefinedValueId) )
+                BEGIN
+                    -- Delete existing attribute value first (might have been created by Rock system)
+                    DELETE [AttributeValue]
+                    WHERE [AttributeId] = @AttributeId
+                    AND [EntityId] = @DefinedValueId
 
-                INSERT INTO [AttributeValue] (
-                    [IsSystem],[AttributeId],[EntityId],
-                    [Value],
-                    [Guid])
-                VALUES(
-                    1,@AttributeId,@DefinedValueId,
-                    '{2}',
-                    NEWID())
-",
-                    definedValueGuid,
-                    attributeGuid,
-                    value.Replace( "'", "''" )
-                )
-            );
+                    INSERT INTO [AttributeValue] (
+                        [IsSystem],[AttributeId],[EntityId],
+                        [Value],
+                        [Guid])
+                    VALUES(
+                        1,@AttributeId,@DefinedValueId,
+                        '{value.Replace( "'", "''")}',
+                        NEWID())
+                END
+";
+
+            Migration.Sql( addUpdateSql );
         }
 
         /// <summary>
@@ -4923,7 +4958,7 @@ END
         }
 
         /// <summary>
-        /// Adds the action type attribute value.
+        /// Adds or overwrites the action type attribute value.
         /// </summary>
         /// <param name="actionTypeGuid">The action type unique identifier.</param>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
