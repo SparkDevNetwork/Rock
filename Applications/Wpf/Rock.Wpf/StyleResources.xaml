@@ -786,6 +786,23 @@
                 Value="Left"></Setter>
     </Style>
 
+    <!-- Checkbox Style -->
+    <Style x:Key="checkboxStyle"
+           TargetType="{x:Type CheckBox}">
+        <Setter Property="Height" Value="22" />
+    </Style>
+
+    <!-- Radiobutton Style -->
+    <Style x:Key="radioButtonStyle"
+           TargetType="{x:Type RadioButton}">
+        <Setter Property="Height" Value="22" />
+    </Style>
+
+    <Style x:Key="indentStyle"
+           TargetType="FrameworkElement">
+        <Setter Property="Margin" Value="16,0,0,0" />
+    </Style>
+
     <!-- Textbox Style -->
     <Style x:Key="textboxStyle"
            TargetType="{x:Type Control}"
@@ -833,7 +850,7 @@
     <!-- ComboBox Style XL -->
     <Style x:Key="comboBoxStyleXL"
            TargetType="ComboBox"
-           BasedOn="{StaticResource ResourceKey=inputStyleBase}">
+           BasedOn="{StaticResource ResourceKey=comboBoxStyle}">
         <Setter Property="Width"
                 Value="320" />
     </Style>
