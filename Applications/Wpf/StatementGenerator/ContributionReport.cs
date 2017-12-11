@@ -83,6 +83,7 @@ namespace Rock.Apps.StatementGenerator
             _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
             _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
 
+            UpdateProgress( "Getting Recipients..." );
             var recipientList = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, List<Rock.StatementGenerator.StatementGeneratorRecipient>>( "api/FinancialTransactions/GetStatementGeneratorRecipients", this.Options );
 
             this.RecordCount = recipientList.Count;
@@ -103,6 +104,7 @@ namespace Rock.Apps.StatementGenerator
                 footerUrl = "file:///" + footerHtmlPath.Replace( '\\', '/' );
             }
 
+            UpdateProgress( "Getting Statements..." );
             foreach ( var recipent in recipientList )
             {
                 StringBuilder sbUrl = new StringBuilder();
