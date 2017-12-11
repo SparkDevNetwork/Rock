@@ -403,14 +403,19 @@ namespace Rock.StatementGenerator.Rest
 
                 List<FinancialTransactionDetail> transactionDetailListCash = transactionDetailListAll;
                 List<FinancialTransactionDetail> transactionDetailListNonCash = new List<FinancialTransactionDetail>();
-                if ( options.CashAccountIds != null )
+                
+                if ( options.CurrencyTypeIdsCash != null )
                 {
-                    transactionDetailListCash = transactionDetailListCash.Where( a => options.CashAccountIds.Contains( a.AccountId ) ).ToList();
+                    transactionDetailListCash = transactionDetailListCash.Where( a => 
+                        a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue 
+                        && options.CurrencyTypeIdsCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ).ToList();
                 }
 
-                if ( options.NonCashAccountIds != null )
+                if ( options.CurrencyTypeIdsNonCash != null )
                 {
-                    transactionDetailListNonCash = transactionDetailListAll.Where( a => options.NonCashAccountIds.Contains( a.AccountId ) ).ToList();
+                    transactionDetailListNonCash = transactionDetailListAll.Where( a => 
+                        a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue 
+                        && options.CurrencyTypeIdsNonCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ).ToList();
                 }
 
                 mergeFields.Add( "TransactionDetails", transactionDetailListCash );
@@ -446,18 +451,23 @@ namespace Rock.StatementGenerator.Rest
                     if ( pledgeSummaryList.Any() )
                     {
                         int statementPledgeYear = options.StartDate.Value.Year;
-                        foreach ( var pledge in pledgeSummaryList )
-                        {
-                            DateTime adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date;
-                            if ( pledge.PledgeEndDate.Value.Date < DateTime.MaxValue.Date )
-                            {
-                                adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddDays( 1 );
-                            }
 
-                            // if the pledge is to a child account of one of the selected PledgeAccountIs, set the Account as the ParentAccount
-                            if ( !options.PledgesAccountIds.Contains( pledge.AccountId ) && pledge.Account.ParentAccountId.HasValue )
+                        List<int> pledgeCurrencyTypeIds = null;
+                        if ( options.CurrencyTypeIdsCash != null )
+                        {
+                            pledgeCurrencyTypeIds = options.CurrencyTypeIdsCash;
+                            if ( options.PledgesIncludeNonCashGifts && options.CurrencyTypeIdsNonCash != null )
                             {
-                                pledge.Account = pledge.Account.ParentAccount;
+                                pledgeCurrencyTypeIds = options.CurrencyTypeIdsCash.Union( options.CurrencyTypeIdsNonCash ).ToList();
+                            }
+                        }
+
+                        foreach ( var pledgeSummary in pledgeSummaryList )
+                        {
+                            DateTime adjustedPedgeEndDate = pledgeSummary.PledgeEndDate.Value.Date;
+                            if ( pledgeSummary.PledgeEndDate.Value.Date < DateTime.MaxValue.Date )
+                            {
+                                adjustedPedgeEndDate = pledgeSummary.PledgeEndDate.Value.Date.AddDays( 1 );
                             }
 
                             var statementYearEnd = new DateTime( statementPledgeYear + 1, 1, 1 );
@@ -472,34 +482,33 @@ namespace Rock.StatementGenerator.Rest
                                 adjustedPedgeEndDate = RockDateTime.Now;
                             }
 
-                            var pledgeFinancialTransactionDetailQry = new FinancialTransactionDetailService( rockContext ).Queryable();
+                            var pledgeFinancialTransactionDetailQry = new FinancialTransactionDetailService( rockContext ).Queryable().Where( t =>
+                                                             t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value )
+                                                             && t.Transaction.TransactionDateTime >= pledgeSummary.PledgeStartDate
+                                                             && t.Transaction.TransactionDateTime < adjustedPedgeEndDate );
+
                             if ( options.PledgesIncludeChildAccounts )
                             {
+                                // If PledgesIncludeChildAccounts = true, we'll include transactions to those child accounts as part of the pledge (but only one level deep)
                                 pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t =>
-                                    t.AccountId == pledge.AccountId
+                                    t.AccountId == pledgeSummary.AccountId
                                     ||
-                                    ( t.Account.ParentAccountId.HasValue && t.Account.ParentAccountId == pledge.AccountId )
+                                    ( t.Account.ParentAccountId.HasValue && t.Account.ParentAccountId == pledgeSummary.AccountId )
                                 );
                             }
                             else
                             {
-                                pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t => t.AccountId == pledge.AccountId );
+                                pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t => t.AccountId == pledgeSummary.AccountId );
                             }
 
-                            pledge.AmountGiven = pledgeFinancialTransactionDetailQry
-                                                        .Where( t =>
-                                                             t.AccountId == pledge.AccountId
-                                                             && t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value )
-                                                             && t.Transaction.TransactionDateTime >= pledge.PledgeStartDate
-                                                             && t.Transaction.TransactionDateTime < adjustedPedgeEndDate )
-                                                        .Sum( t => ( decimal? ) t.Amount ) ?? 0;
-
-                            pledge.AmountRemaining = ( pledge.AmountGiven > pledge.AmountPledged ) ? 0 : ( pledge.AmountPledged - pledge.AmountGiven );
-
-                            if ( pledge.AmountPledged > 0 )
+                            if ( pledgeCurrencyTypeIds != null )
                             {
-                                pledge.PercentComplete = ( int ) ( ( pledge.AmountGiven * 100 ) / pledge.AmountPledged );
+                                pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t => t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue && pledgeCurrencyTypeIds.Contains(t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value) );
                             }
+
+                            pledgeSummary.AmountGiven = pledgeFinancialTransactionDetailQry
+                                                        
+                                                        .Sum( t => ( decimal? ) t.Amount ) ?? 0;
                         }
                     }
 
@@ -507,9 +516,9 @@ namespace Rock.StatementGenerator.Rest
                     var pledgeAccounts = pledgeSummaryList.GroupBy( a => a.Account ).Select( a => new PledgeSummaryByAccount
                     {
                         Account = a.Key,
-                        PledgeList = a.Select( x => x.Pledge ).ToList()
+                        PledgeList = a.Select( x => x.Pledge ).ToList(),
+                        AmountGiven = a.Sum(x => x.AmountGiven)
                     } );
-
 
                     // Pledges ( organized by each Account in case an account is used by more than one pledge )
                     mergeFields.Add( "Pledges", pledgeAccounts );
@@ -547,20 +556,10 @@ namespace Rock.StatementGenerator.Rest
             }
             else
             {
-                // narrow it down to recipients that have pledges involving any of the AccountIds
+                // NOTE: Only get the Pledges that were specifically pledged to the selected accounts
+                // If the PledgesIncludeChildAccounts = true, we'll include transactions to those child accounts as part of the pledge (but only one level deep)
                 var selectedAccountIds = options.PledgesAccountIds;
-                if ( options.PledgesIncludeChildAccounts )
-                {
-                    // If Pledges Include Child Accounts, also check for child accounts (but only one level deep)
-                    pledgeQry = pledgeQry.Where( a => (
-                        a.AccountId.HasValue && selectedAccountIds.Contains( a.AccountId.Value ) )
-                        ||
-                        a.Account.ParentAccountId.HasValue && selectedAccountIds.Contains( a.Account.ParentAccountId.Value ) );
-                }
-                else
-                {
-                    pledgeQry = pledgeQry.Where( a => a.AccountId.HasValue && selectedAccountIds.Contains( a.AccountId.Value ) );
-                }
+                pledgeQry = pledgeQry.Where( a => a.AccountId.HasValue && selectedAccountIds.Contains( a.AccountId.Value ) );
             }
 
             if ( usePersonFilters )
@@ -627,14 +626,14 @@ namespace Rock.StatementGenerator.Rest
             }
 
             // Filter to specified AccountIds (if specified)
-            if ( options.CashAccountIds == null && options.NonCashAccountIds == null )
+            if ( options.TransactionAccountIds == null  )
             {
-                // if neither CashAccountIds or NonCashAccountIds was supplied, don't filter on AccountId
+                // if TransactionAccountIds wasn't supplied, don't filter on AccountId
             }
             else
             {
                 // narrow it down to recipients that have transactions involving any of the AccountIds
-                var selectedAccountIds = options.CashAccountIds.Union( options.NonCashAccountIds ).Distinct().ToList();
+                var selectedAccountIds = options.TransactionAccountIds;
                 financialTransactionQry = financialTransactionQry.Where( a => a.TransactionDetails.Any( x => selectedAccountIds.Contains( x.AccountId ) ) );
             }
 
