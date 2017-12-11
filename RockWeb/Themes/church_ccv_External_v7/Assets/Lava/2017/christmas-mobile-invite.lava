@@ -32,7 +32,7 @@
 
 {% assign item = ContentObject | Where: "ShortCode", Context.Campus.ShortCode | First %}
 
-{% assign specialNeedsIcon = 'fa fa-hand-paper-o' %}
+{% assign specialNeedsIcon = 'fa fa-heart' %}
 {% assign hearingIcon = 'fa fa-asl-interpreting' %}
 
 {% comment %}
