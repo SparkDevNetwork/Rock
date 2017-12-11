@@ -17,12 +17,12 @@ REQUIRED VARIABLES
 {% if CurrentPerson %}
   <div>
     <a class="small header-login-item" href="{{ myAccountPage }}">My Account</a>
-    <a class="small header-login-item" href="https://rock.ccv.church/page/887">Volunteers</a>
+    <a class="small header-login-item" href="https://rock.ccv.church/page/887">Volunteer</a>
     <a class="small header-login-item margin-r-md" href="?logout=true">Logout</a>
   </div>
 {% else %}
   <div>
     <a class="small header-login-item" href="{{ loginPage }}?returnurl={{ currentPageEscaped }}">Login</a>
-    <a class="small header-login-item" href="https://rock.ccv.church/page/887">Volunteers</a>
+    <a class="small header-login-item" href="https://rock.ccv.church/page/887">Volunteer</a>
   </div>
 {% endif %}
