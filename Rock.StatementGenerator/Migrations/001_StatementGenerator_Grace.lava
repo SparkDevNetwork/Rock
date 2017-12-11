@@ -71,7 +71,7 @@
 	<div class="row" style='height:230px'>
 		<div class="col-xs-6 pull-left">
 			<div>
-				<img src="{{ LavaTemplate | Attribute:'Logo','Url' }}" width="240px" height="80px" />
+				<img src="{{ publicApplicationRoot }}GetImage.ashx?guid={{ LavaTemplate | Attribute:'Logo','RawValue' }}" width="240px" height="80px" />
 			</div>
 			
 			<div>

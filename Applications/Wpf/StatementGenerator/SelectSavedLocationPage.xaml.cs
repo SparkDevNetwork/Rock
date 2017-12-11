@@ -124,7 +124,7 @@ namespace Rock.Apps.StatementGenerator
         {
             if ( SaveChanges( true ) )
             {
-                SelectAdvancedFeaturesPage nextPage = new SelectAdvancedFeaturesPage();
+                var nextPage = new ProgressPage();
                 this.NavigationService.Navigate( nextPage );
             }
         }

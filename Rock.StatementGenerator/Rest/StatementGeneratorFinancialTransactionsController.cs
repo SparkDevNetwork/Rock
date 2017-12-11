@@ -298,7 +298,7 @@ namespace Rock.StatementGenerator.Rest
                     .Include( a => a.FinancialPaymentDetail.CurrencyTypeValue )
                     .Include( a => a.TransactionDetails )
                     .Include( a => a.TransactionDetails.Select( x => x.Account ) )
-                    .OrderBy( a => a.TransactionDateTime ).AsNoTracking().ToList();
+                    .OrderBy( a => a.TransactionDateTime ).ToList();
 
                 foreach ( var financialTransaction in financialTransactionsList )
                 {
@@ -503,9 +503,6 @@ namespace Rock.StatementGenerator.Rest
                         }
                     }
 
-                    // Pledges (organized by each Pledge, not combined by Account)
-                    mergeFields.Add( "PledgesByPledge", pledgeSummaryList );
-
                     // Pledges but organized by Account (in case more than one pledge goes to the same account)
                     var pledgeAccounts = pledgeSummaryList.GroupBy( a => a.Account ).Select( a => new PledgeSummaryByAccount
                     {
@@ -539,7 +536,7 @@ namespace Rock.StatementGenerator.Rest
             int statementPledgeYear = options.StartDate.Value.Year;
 
             // pledge information
-            var pledgeQry = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
+            var pledgeQry = new FinancialPledgeService( rockContext ).Queryable()
                                 .Where( p => p.StartDate.Year <= statementPledgeYear && p.EndDate.Year >= statementPledgeYear );
 
             // Filter to specified AccountIds (if specified)
