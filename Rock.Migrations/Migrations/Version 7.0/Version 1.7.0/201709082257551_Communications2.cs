@@ -133,15 +133,19 @@ IF object_id(N'[dbo].[FK_dbo.CommunicationTemplate_dbo.EntityType_ChannelEntityT
             AddColumn("dbo.CommunicationTemplate", "PushTitle", c => c.String(maxLength: 100));
             AddColumn("dbo.CommunicationTemplate", "PushMessage", c => c.String());
             AddColumn("dbo.CommunicationTemplate", "PushSound", c => c.String(maxLength: 100));
-            CreateIndex("dbo.CommunicationRecipient", "MediumEntityTypeId");
-            CreateIndex("dbo.Communication", "CommunicationTemplateId");
-            CreateIndex("dbo.Communication", "SMSFromDefinedValueId");
-            CreateIndex("dbo.CommunicationTemplate", "SMSFromDefinedValueId");
-            AddForeignKey("dbo.CommunicationTemplate", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
-            AddForeignKey("dbo.Communication", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
-            AddForeignKey("dbo.CommunicationRecipient", "MediumEntityTypeId", "dbo.EntityType", "Id");
 
-            // AddForeignKey("dbo.Communication", "CommunicationTemplateId", "dbo.CommunicationTemplate", "Id");
+            // Moved Index Creating to MigrateCommunicationMediumData job since it could take a while
+            //CreateIndex("dbo.CommunicationRecipient", "MediumEntityTypeId");
+            //CreateIndex("dbo.Communication", "CommunicationTemplateId");
+            //CreateIndex("dbo.Communication", "SMSFromDefinedValueId");
+            //CreateIndex("dbo.CommunicationTemplate", "SMSFromDefinedValueId");
+            AddForeignKey( "dbo.CommunicationTemplate", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
+            AddForeignKey("dbo.Communication", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
+
+            // Moved to MigrateCommunicationMediumData job since it could take a while
+            //AddForeignKey("dbo.CommunicationRecipient", "MediumEntityTypeId", "dbo.EntityType", "Id");
+            //AddForeignKey("dbo.Communication", "CommunicationTemplateId", "dbo.CommunicationTemplate", "Id");
+            
             // Instead of AddForeignKey, do it manually so it can be a ON DELETE SET NULL
             Sql( @"ALTER TABLE dbo.Communication ADD CONSTRAINT [FK_dbo.Communication_dbo.CommunicationTemplate_CommunicationTemplateId] 
                     FOREIGN KEY (CommunicationTemplateId) REFERENCES dbo.CommunicationTemplate (Id) ON DELETE SET NULL" );
