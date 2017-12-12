@@ -32,6 +32,14 @@ namespace Rock.StatementGenerator
         public string Html { get; set; }
 
         /// <summary>
+        /// Gets or sets the footer HTML.
+        /// </summary>
+        /// <value>
+        /// The footer HTML.
+        /// </value>
+        public string FooterHtml { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this statement should not be included due to the 'Do Not Send Giving Statement' option
         /// </summary>
         /// <value>
