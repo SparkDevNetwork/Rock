@@ -52,7 +52,7 @@ namespace Rock.StatementGenerator.Migrations
             RockMigrationHelper.AddAttributeQualifier( "B20A936B-6F73-4371-A2A1-83513E58A630", "editorTheme", "0", "93D454E7-1140-4D6F-AFC0-D057312A3BBD" );
 
             // 'Rock Default' lava template
-            RockMigrationHelper.AddDefinedValue( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, "Rock Default", "The default statement generator lava template. It includes a  transaction list, account summary, non-cash contributions section and a pledges section. Use this as a starting point for making a custom template. A logo size of 240 x 80px works best for this template.", "7C504683-0DE2-41ED-A640-867125713D23", true );
+            RockMigrationHelper.UpdateDefinedValue( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, "Rock Default", "The default statement generator lava template. It includes a  transaction list, account summary, non-cash contributions section and a pledges section. Use this as a starting point for making a custom template. A logo size of 240 x 80px works best for this template.", "7C504683-0DE2-41ED-A640-867125713D23", true );
             RockMigrationHelper.AddDefinedValueAttributeValue( "7C504683-0DE2-41ED-A640-867125713D23", 
                 Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_LAVA_TEMPLATE,  MigrationResource._001_StatementGenerator_RockDefault );
 
@@ -85,7 +85,7 @@ END
                 Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_LOGO, "405AF489-17F3-46D3-AB4F-40A3C90ADA17" );
 
             // 'Grace' Lava Template
-            RockMigrationHelper.AddDefinedValue( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, "Grace", "A custom template that is similar to the default. It has larger section headings, and a borderless transaction list that includes a currency column. A logo size of 240 x 80px works best for this template.", "8D1FF6BC-4FCD-42DA-AAEB-735461467302", false );
+            RockMigrationHelper.UpdateDefinedValue( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, "Grace", "A custom template that is similar to the default. It has larger section headings, and a borderless transaction list that includes a currency column. A logo size of 240 x 80px works best for this template.", "8D1FF6BC-4FCD-42DA-AAEB-735461467302", false );
 
             RockMigrationHelper.AddDefinedValueAttributeValue( "8D1FF6BC-4FCD-42DA-AAEB-735461467302",
                 Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_LAVA_TEMPLATE, MigrationResource._001_StatementGenerator_Grace );
@@ -94,7 +94,7 @@ END
                 Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_FOOTERHTML, MigrationResource._001_StatementGenerator_RockDefault_Footer );
 
             // 'Woodlands' Lava Template
-            RockMigrationHelper.AddDefinedValue( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, "Woodlands", "A custom template that is similar to the default. There are minor tweaks for some of the text, it does not include an account summary and the pledges are arranged horizontally into 4 columns. A logo size of 240 x 80px works best for this template.", "05F8D725-73BE-4C39-9EF1-5A926D5FAB67", false );
+            RockMigrationHelper.UpdateDefinedValue( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, "Woodlands", "A custom template that is similar to the default. There are minor tweaks for some of the text, it does not include an account summary and the pledges are arranged horizontally into 4 columns. A logo size of 240 x 80px works best for this template.", "05F8D725-73BE-4C39-9EF1-5A926D5FAB67", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "05F8D725-73BE-4C39-9EF1-5A926D5FAB67", 
                 Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_LAVA_TEMPLATE, MigrationResource._001_StatementGenerator_Woodlands );
 
@@ -105,6 +105,13 @@ END
 
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.BOOLEAN, "E919E722-F895-44A4-B86D-38DB8FBA1844", 
                 "Do Not Send Giving Statement", "DoNotSendGivingStatement", "", "Set this to true if the person does not want a giving statement", 0, "false", Rock.StatementGenerator.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT );
+
+            // update new location of statementgenerator installer
+            Sql( @"
+    UPDATE [AttributeValue] 
+    SET [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/statementgenerator/1.7.0/statementgenerator.exe' 
+    WHERE [Guid] = '10BE2E03-7827-41B5-8CB2-DEB473EA107A'
+" );
         }
 
         /// <summary>
