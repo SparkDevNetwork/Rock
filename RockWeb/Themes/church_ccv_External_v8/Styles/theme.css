@@ -8577,10 +8577,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 }
 
-.masthead-nav {
-    /*text-align: right;*/
-}
-
 .navbar-collapse {
     box-shadow: none;
 }
@@ -10524,6 +10520,7 @@ html,body{
     transition: .25s;
 	background: rgba( 255, 255, 255, .15);
 	border-radius: 4px;
+    cursor: pointer;
 }
 
 .masthead-navitem.active {
