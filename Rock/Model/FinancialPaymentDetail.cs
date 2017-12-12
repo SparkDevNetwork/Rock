@@ -164,6 +164,26 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the expiration date formatted as mm/yy
+        /// </summary>
+        /// <value>
+        /// The expiration date.
+        /// </value>
+        [NotMapped]
+        public string ExpirationDate
+        {
+            get
+            {
+                int? expMonth = ExpirationMonth;
+                int? expYear = ExpirationYear;
+                if ( expMonth.HasValue && expYear.HasValue )
+                {
+                    return $"{expMonth.Value:00}/{expYear.Value:00}";
+                }
+                return null;
+            }
+        }
+        /// <summary>
         /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
         /// transaction.
         /// </summary>
