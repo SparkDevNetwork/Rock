@@ -178,12 +178,12 @@ namespace Rock.StatementGenerator
         public abstract decimal AmountPledged { get;  }
 
         /// <summary>
-        /// Gets or sets the amount given.
+        /// Gets the percent complete.
         /// </summary>
         /// <value>
-        /// The amount given.
+        /// The percent complete.
         /// </value>
-        public decimal AmountGiven { get; set; }
+        public int PercentComplete => ( int ) ( ( this.AmountGiven * 100 ) / this.AmountPledged );
 
         /// <summary>
         /// Gets or sets the amount remaining.
@@ -191,14 +191,14 @@ namespace Rock.StatementGenerator
         /// <value>
         /// The amount remaining.
         /// </value>
-        public decimal AmountRemaining { get; set; }
+        public decimal AmountRemaining => ( this.AmountGiven > this.AmountPledged ) ? 0 : ( this.AmountPledged - this.AmountGiven );
 
         /// <summary>
-        /// Gets or sets the percent complete.
+        /// Gets or sets the amount given.
         /// </summary>
         /// <value>
-        /// The percent complete.
+        /// The amount given.
         /// </value>
-        public int PercentComplete { get; set; }
+        public decimal AmountGiven { get; set; }
     }
 }
