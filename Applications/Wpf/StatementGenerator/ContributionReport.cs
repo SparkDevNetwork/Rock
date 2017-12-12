@@ -86,8 +86,6 @@ namespace Rock.Apps.StatementGenerator
             UpdateProgress( "Getting Recipients..." );
             var recipientList = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, List<Rock.StatementGenerator.StatementGeneratorRecipient>>( "api/FinancialTransactions/GetStatementGeneratorRecipients", this.Options );
 
-            recipientList = recipientList.Take( 1000 ).ToList();
-
             this.RecordCount = recipientList.Count;
             this.RecordIndex = 0;
 
