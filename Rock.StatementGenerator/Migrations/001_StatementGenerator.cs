@@ -87,14 +87,22 @@ END
             // 'Grace' Lava Template
             RockMigrationHelper.AddDefinedValue( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, "Grace", "A custom template that is similar to the default. It has larger section headings, and a borderless transaction list that includes a currency column. A logo size of 240 x 80px works best for this template.", "8D1FF6BC-4FCD-42DA-AAEB-735461467302", false );
 
-            RockMigrationHelper.AddDefinedValueAttributeValue( "05F8D725-73BE-4C39-9EF1-5A926D5FAB67",
+            RockMigrationHelper.AddDefinedValueAttributeValue( "8D1FF6BC-4FCD-42DA-AAEB-735461467302",
                 Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_LAVA_TEMPLATE, MigrationResource._001_StatementGenerator_Grace );
+
+            RockMigrationHelper.AddDefinedValueAttributeValue( "8D1FF6BC-4FCD-42DA-AAEB-735461467302",
+                Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_FOOTERHTML, MigrationResource._001_StatementGenerator_RockDefault_Footer );
 
             // 'Woodlands' Lava Template
             RockMigrationHelper.AddDefinedValue( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, "Woodlands", "A custom template that is similar to the default. There are minor tweaks for some of the text, it does not include an account summary and the pledges are arranged horizontally into 4 columns. A logo size of 240 x 80px works best for this template.", "05F8D725-73BE-4C39-9EF1-5A926D5FAB67", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "05F8D725-73BE-4C39-9EF1-5A926D5FAB67", 
                 Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_LAVA_TEMPLATE, MigrationResource._001_StatementGenerator_Woodlands );
-            
+
+            RockMigrationHelper.AddDefinedValueAttributeValue( "05F8D725-73BE-4C39-9EF1-5A926D5FAB67",
+                Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_FOOTERHTML, MigrationResource._001_StatementGenerator_RockDefault_Footer );
+
+
+
             RockMigrationHelper.UpdatePersonAttribute( Rock.SystemGuid.FieldType.BOOLEAN, "E919E722-F895-44A4-B86D-38DB8FBA1844", 
                 "Do Not Send Giving Statement", "DoNotSendGivingStatement", "", "Set this to true if the person does not want a giving statement", 0, "false", Rock.StatementGenerator.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT );
         }

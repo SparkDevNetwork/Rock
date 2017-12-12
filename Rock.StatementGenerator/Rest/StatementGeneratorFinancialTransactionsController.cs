@@ -307,13 +307,15 @@ namespace Rock.StatementGenerator.Rest
 
                 var lavaTemplateValue = DefinedValueCache.Read( options.LayoutDefinedValueGuid.Value );
                 var lavaTemplateLava = lavaTemplateValue.GetAttributeValue( "LavaTemplate" );
+                var lavaTemplateFooterLava = lavaTemplateValue.GetAttributeValue( "FooterHtml" );
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false, GetDeviceFamily = false, GetOSFamily = false, GetPageContext = false, GetPageParameters = false, GetCampuses = true, GetCurrentPerson = true } );
                 mergeFields.Add( "LavaTemplate", lavaTemplateValue );
 
                 mergeFields.Add( "PersonList", personList );
                 mergeFields.Add( "StatementStartDate", options.StartDate );
-                mergeFields.Add( "StatementEndDate", options.EndDate );
+                var humanFriendlyEndDate = options.EndDate.HasValue ? options.EndDate.Value.AddDays( -1 ) : RockDateTime.Now.Date;
+                mergeFields.Add( "StatementEndDate", humanFriendlyEndDate );
 
                 var familyTitle = Rock.Data.RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, personId, groupId, null, false );
 
@@ -527,6 +529,11 @@ namespace Rock.StatementGenerator.Rest
                 mergeFields.Add( "Options", options );
 
                 result.Html = lavaTemplateLava.ResolveMergeFields( mergeFields );
+                if ( !string.IsNullOrEmpty( lavaTemplateFooterLava ) )
+                {
+                    result.FooterHtml = lavaTemplateFooterLava.ResolveMergeFields( mergeFields );
+                }
+
                 result.Html = result.Html.Trim();
             }
 
@@ -542,11 +549,18 @@ namespace Rock.StatementGenerator.Rest
         /// <returns></returns>
         private IQueryable<FinancialPledge> GetFinancialPledgeQuery( StatementGeneratorOptions options, RockContext rockContext, bool usePersonFilters )
         {
-            int statementPledgeYear = options.StartDate.Value.Year;
-
             // pledge information
-            var pledgeQry = new FinancialPledgeService( rockContext ).Queryable()
-                                .Where( p => p.StartDate.Year <= statementPledgeYear && p.EndDate.Year >= statementPledgeYear );
+            var pledgeQry = new FinancialPledgeService( rockContext ).Queryable();
+
+            // only include pledges that started *before* the enddate of the statement ( we don't want pledges that start AFTER the statement end date )
+            if ( options.EndDate.HasValue )
+            {
+                pledgeQry = pledgeQry.Where( p => p.StartDate <= options.EndDate.Value );
+            }
+
+            // also only include pledges that ended *after* the statement start date ( we don't want pledges that ended BEFORE the statement start date )
+            pledgeQry = pledgeQry.Where( p => p.EndDate >= options.StartDate.Value );
+            
 
             // Filter to specified AccountIds (if specified)
             if ( options.PledgesAccountIds == null || !options.PledgesAccountIds.Any() )
@@ -591,6 +605,9 @@ namespace Rock.StatementGenerator.Rest
                         int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                         pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
                     }
+
+                    // Only include Non-Deceased People even if we are including inactive individuals
+                    pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.IsDeceased == false );
                 }
             }
 
@@ -666,6 +683,9 @@ namespace Rock.StatementGenerator.Rest
                         int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                         financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
                     }
+
+                    // Only include Non-Deceased People even if we are including inactive individuals
+                    financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.IsDeceased == false );
                 }
             }
 
