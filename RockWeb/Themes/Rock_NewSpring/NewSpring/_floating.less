@@ -1,0 +1,47 @@
+.floating(@vertical, @horizontal) {
+
+    text-align: @horizontal;
+    &:before {
+        content: '';
+        display: inline-block;
+        height: 100%;
+        vertical-align: @vertical;
+        margin-right: -0.25em;
+    }
+
+    .floating__item{
+        display: inline-block;
+        vertical-align: @vertical;
+    }
+
+}
+
+.floating {
+    .floating(middle, center);
+
+    &.floating--left {
+        text-align: left;
+    }
+
+    &.floating--right {
+        text-align: right;
+    }
+
+    &.floating--top {
+        &:before {
+            vertical-align: top;
+        }
+        .floating__item {
+            vertical-align: top;
+        }
+    }
+
+    &.floating--bottom {
+        &:before {
+            vertical-align: bottom;
+        }
+        .floating__item {
+            vertical-align: bottom;
+        }
+    }
+}
