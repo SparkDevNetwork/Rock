@@ -83,26 +83,18 @@ namespace Rock.Apps.StatementGenerator
             _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
             _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
 
+            UpdateProgress( "Getting Recipients..." );
             var recipientList = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, List<Rock.StatementGenerator.StatementGeneratorRecipient>>( "api/FinancialTransactions/GetStatementGeneratorRecipients", this.Options );
 
             this.RecordCount = recipientList.Count;
             this.RecordIndex = 0;
 
             var tasks = new List<Task>();
+
+            // initialize the pdfStreams list for all the recipients so that it can be populated safely in the pdf generation threads
             List<Stream> pdfStreams = recipientList.Select( a => ( Stream ) null ).ToList();
 
-            var lavaTemplates = _rockRestClient.GetData<List<Rock.Client.DefinedValue>>( "api/FinancialTransactions/GetStatementGeneratorTemplates" );
-            var lavaTemplate = lavaTemplates.FirstOrDefault( a => a.Guid == Options.LayoutDefinedValueGuid );
-
-            var footerHtml = lavaTemplate?.AttributeValues["FooterHtml"]?.Value;
-            string footerHtmlPath = Path.ChangeExtension( Path.GetTempFileName(), "html" );
-            string footerUrl = null;
-            if ( !string.IsNullOrEmpty( footerHtml ) )
-            {
-                File.WriteAllText( footerHtmlPath, footerHtml );
-                footerUrl = "file:///" + footerHtmlPath.Replace( '\\', '/' );
-            }
-
+            UpdateProgress( "Getting Statements..." );
             foreach ( var recipent in recipientList )
             {
                 StringBuilder sbUrl = new StringBuilder();
@@ -123,10 +115,21 @@ namespace Rock.Apps.StatementGenerator
                 else
                 {
                     var html = recipentResult.Html;
+                    var footerHtml = recipentResult.FooterHtml;
 
                     var task = Task.Run( () =>
                     {
                         var pdfGenerator = Pdf.From( html );
+
+                        string footerHtmlPath = Path.ChangeExtension( Path.GetTempFileName(), "html" );
+                        string footerUrl = null;
+
+                        if ( !string.IsNullOrEmpty( footerHtml ) )
+                        {
+                            File.WriteAllText( footerHtmlPath, footerHtml );
+                            footerUrl = "file:///" + footerHtmlPath.Replace( '\\', '/' );
+                        }
+
                         if ( footerUrl != null )
                         {
                             pdfGenerator = pdfGenerator.WithObjectSetting( "footer.htmlUrl", footerUrl );
@@ -146,6 +149,12 @@ namespace Rock.Apps.StatementGenerator
                         var pdfStream = new MemoryStream( pdfBytes );
                         System.Diagnostics.Debug.Assert( pdfStreams[documentNumber] == null, "Threading issue: pdfStream shouldn't already be assigned" );
                         pdfStreams[documentNumber] = pdfStream;
+
+                        if ( File.Exists( footerHtmlPath ) )
+                        {
+                            File.Delete( footerHtmlPath );
+                        }
+
                     } );
 
                     tasks.Add( task );
@@ -188,55 +197,51 @@ namespace Rock.Apps.StatementGenerator
             PdfDocument resultPdf = new PdfDocument();
             try
             {
-                
-
-                var lastPdfStream = pdfStreams.LastOrDefault();
-                foreach ( var pdfStream in pdfStreams )
+                if ( pdfStreams.Any() )
                 {
-                    UpdateProgress( "Creating PDF..." );
-                    this.RecordIndex++;
-                    PdfDocument pdfDocument = PdfReader.Open( pdfStream, PdfDocumentOpenMode.Import );
-
-                    foreach ( var pdfPage in pdfDocument.Pages.OfType<PdfPage>() )
+                    var lastPdfStream = pdfStreams.LastOrDefault();
+                    foreach ( var pdfStream in pdfStreams )
                     {
-                        resultPdf.Pages.Add( pdfPage );
+                        UpdateProgress( "Creating PDF..." );
+                        this.RecordIndex++;
+                        PdfDocument pdfDocument = PdfReader.Open( pdfStream, PdfDocumentOpenMode.Import );
+
+                        foreach ( var pdfPage in pdfDocument.Pages.OfType<PdfPage>() )
+                        {
+                            resultPdf.Pages.Add( pdfPage );
+                        }
+
+                        statementsInChapter++;
+                        if ( useChapters && ( ( statementsInChapter >= maxStatementsPerChapter ) || pdfStream == lastPdfStream ) )
+                        {
+                            string filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
+                            SavePdfFile( resultPdf, filePath );
+                            resultPdf.Dispose();
+                            resultPdf = new PdfDocument();
+                            statementsInChapter = 0;
+                            chapterIndex++;
+                        }
                     }
 
-                    statementsInChapter++;
-                    if ( useChapters && ( ( statementsInChapter >= maxStatementsPerChapter ) || pdfStream == lastPdfStream ) )
+                    if ( useChapters )
                     {
-                        string filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
+                        // just in case we still have statements that haven't been written to a pdf
+                        if ( statementsInChapter > 0 )
+                        {
+                            string filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
+                            SavePdfFile( resultPdf, filePath );
+                        }
+                    }
+                    else
+                    {
+                        string filePath = string.Format( @"{0}\{1}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName );
                         SavePdfFile( resultPdf, filePath );
-                        resultPdf.Dispose();
-                        resultPdf = new PdfDocument();
-                        statementsInChapter = 0;
-                        chapterIndex++;
                     }
-                }
-
-                if ( useChapters )
-                {
-                    // just in case we still have statements that haven't been written to a pdf
-                    if ( statementsInChapter > 0 )
-                    {
-                        string filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
-                        SavePdfFile( resultPdf, filePath );
-                    }
-                }
-                else
-                {
-                    string filePath = string.Format( @"{0}\{1}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName );
-                    SavePdfFile( resultPdf, filePath );
                 }
             }
             finally
             {
                 resultPdf.Dispose();
-            }
-
-            if ( File.Exists( footerHtmlPath ) )
-            {
-                File.Delete( footerHtmlPath );
             }
 
             UpdateProgress( "Complete" );
