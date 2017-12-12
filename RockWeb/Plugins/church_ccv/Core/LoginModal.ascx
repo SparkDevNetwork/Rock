@@ -61,35 +61,35 @@
                         <div id="create-username-firstname">
                             <div>
                                 <label class="lm-form-label" for="tb-ca-username">Username</label>
-                                <input class="form-control" name="tb-ca-username" type="text" id="tb-ca-username" value="jered-testyay">
+                                <input class="form-control" name="tb-ca-username" type="text" id="tb-ca-username">
                             </div>
                             <div> 
                                <label class="lm-form-label" for="tb-ca-firstname">First Name</label>
-                               <input class="form-control" name="tb-ca-firstname" type="text" id="tb-ca-firstname" value="jered">
+                               <input class="form-control" name="tb-ca-firstname" type="text" id="tb-ca-firstname">
                             </div>
                         </div>
 
                         <div id="create-password-lastname">
                             <div>
                                 <label class="lm-form-label" for="tb-ca-password">Password</label>
-                                <input class="form-control" name="tb-ca-password" type="password" id="tb-ca-password" value="ccv123">
+                                <input class="form-control" name="tb-ca-password" type="password" id="tb-ca-password">
                             </div>
 
                             <div>
                                 <label class="lm-form-label" for="tb-ca-lastname">Last Name</label>
-                                <input class="form-control" name="tb-ca-lastname" type="text" id="tb-ca-lastname" value="mcferron">
+                                <input class="form-control" name="tb-ca-lastname" type="text" id="tb-ca-lastname">
                             </div>
                         </div>
 
                         <div id="create-confirm-email">
                             <div>
                                 <label class="lm-form-label" for="tb-ca-confirmpassword">Confirm Password</label>
-                                <input class="form-control" name="tb-ca-confirmpassword" type="password" id="tb-ca-confirmpassword" value="ccv123">
+                                <input class="form-control" name="tb-ca-confirmpassword" type="password" id="tb-ca-confirmpassword">
                             </div>
 
                             <div>
                                 <label class="lm-form-label" for="tb-ca-email">Email</label>
-                                <input class="form-control" name="tb-ca-email" type="text" id="tb-ca-email" value="jered@mcferron.com">
+                                <input class="form-control" name="tb-ca-email" type="text" id="tb-ca-email">
                             </div>
                         </div>
                     </div>
