@@ -17,6 +17,7 @@
 namespace Rock.Migrations
 {
     using System;
+    using System.Collections.Generic;
     using System.Data.Entity.Migrations;
     using System.Linq;
 
@@ -32,7 +33,6 @@ namespace Rock.Migrations
         {
             AddColumn("dbo.Person", "MetaPersonicxLifestageClusterId", c => c.Int());
             AddColumn("dbo.Person", "MetaPersonicxLifestageGroupId", c => c.Int());
-            AlterColumn("dbo.MetaLastNameLookup", "LastName", c => c.String(nullable: false, maxLength: 100));
             AlterColumn("dbo.MetaPersonicxLifestageCluster", "Summary", c => c.String(maxLength: 1000));
             CreateIndex("dbo.Person", "MetaPersonicxLifestageClusterId");
             CreateIndex("dbo.Person", "MetaPersonicxLifestageGroupId");
@@ -44,10 +44,30 @@ namespace Rock.Migrations
                 "INSERT INTO [MetaFirstNameGenderLookup] ([FirstName],[MaleCount],[FemaleCount],[Country],[Language],[TotalCount],[FemalePercent],[MalePercent],[Guid])",
                 MigrationSQL._201707311527250_FirstNameGender );
 
-            Sql( "DELETE [MetaLastNameLookup]" );
-            ExecuteSqlInsert(
-                "INSERT INTO [MetaLastNameLookup] ([LastName],[Count],[Rank],[CountIn100k],[Guid])",
-                MigrationSQL._201707311527250_LastName );
+            // use BulkInsert for LastName since there are 150,000+ rowsa
+            List<Rock.Model.MetaLastNameLookup> metaLastNameLookupsToInsert = new List<Model.MetaLastNameLookup>();
+            var lastNameLines = MigrationSQL._201707311527250_LastName.Split( new[] { "\n" }, StringSplitOptions.None ).ToList();
+            foreach(var lastNameLine in lastNameLines)
+            {
+                var lastNameColValues = lastNameLine.Split( new[] { ',' }, StringSplitOptions.None ).ToList();
+                if ( lastNameColValues.Count == 4 )
+                {
+                    var metaLastNameLookup = new Rock.Model.MetaLastNameLookup();
+                    metaLastNameLookup.LastName = lastNameColValues[0].TrimStart( new[] { '\'' } ).TrimEnd( new[] { '\'' } );
+                    metaLastNameLookup.Count = lastNameColValues[1].AsInteger();
+                    metaLastNameLookup.Rank = lastNameColValues[2].AsInteger();
+                    metaLastNameLookup.CountIn100k = lastNameColValues[3].AsDecimalOrNull();
+                    metaLastNameLookup.Guid = Guid.NewGuid();
+                    metaLastNameLookupsToInsert.Add( metaLastNameLookup );
+                }
+            }
+
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( "DELETE [MetaLastNameLookup]" );
+                rockContext.Database.ExecuteSqlCommand( "ALTER TABLE MetaLastNameLookup ALTER COLUMN LastName NVARCHAR(100)" );
+                rockContext.BulkInsert( metaLastNameLookupsToInsert );
+            }
 
             Sql( "DELETE [MetaNickNameLookup]" );
             ExecuteSqlInsert(

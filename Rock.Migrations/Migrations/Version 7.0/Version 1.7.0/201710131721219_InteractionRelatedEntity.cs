@@ -31,6 +31,8 @@ namespace Rock.Migrations
         {
             AddColumn( "dbo.Interaction", "RelatedEntityTypeId", c => c.Int() );
             AddColumn( "dbo.Interaction", "RelatedEntityId", c => c.Int() );
+
+            // NOTE: This could take a while if the system already has lots of Interaction records, but if upgrading from v6, this should be fast since there wouldn't be any records yet
             CreateIndex( "dbo.Interaction", "RelatedEntityTypeId" );
             AddForeignKey( "dbo.Interaction", "RelatedEntityTypeId", "dbo.EntityType", "Id" );
 
