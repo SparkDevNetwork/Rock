@@ -73,7 +73,7 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
         public override bool Originate( string fromPhone, string toPhone, string callerId, out string message )
         {
             message = string.Empty;
-            var accountId = GetAttributeValue( "DefaultOriginationExtension" );
+            string accountId = null;
 
             // run the numbers through the calling rules
             var mergeFields = new Dictionary<string, object>();
@@ -86,10 +86,48 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
             mergeFields.AddOrReplace( "PhoneNumber", toPhone );
             toPhone = ruleTemplate.ResolveMergeFields( mergeFields ).Trim();
 
-            // if this is an internal phone use it as the accountId
-            if (fromPhone.Length < 7 )
+            // look for a matching account id in the extension list
+            var extensions = DefinedTypeCache.Read( SystemGuid.DefinedType.SWITCHVOX_EXTENSIONS.AsGuid() );
+            var extension = extensions.DefinedValues.Where( e => e.Value == fromPhone ).FirstOrDefault();
+
+            if ( extension != null )
             {
-                accountId = fromPhone;
+                var extenstionAccountId = extension.GetAttributeValue( "AccountId" );
+
+                if ( extenstionAccountId != null )
+                {
+                    accountId = extenstionAccountId;
+                }
+            }
+            else // look for a the person matching this from number, then look to see if they have an extension to find an account id on
+            {
+                var rockContext = new RockContext();
+
+                var phoneNumberPersonAliases = new PhoneNumberService( rockContext ).Queryable()
+                                   .Where( p => p.Number == fromPhone )
+                                   .Select( p => new {
+                                       PersonAliasGuids = p.Person.Aliases.Select(a => a.Guid)
+                                   } )
+                                   .FirstOrDefault();
+
+                if (phoneNumberPersonAliases != null )
+                {
+                    // look for a matching extension for this person
+                    foreach(var extensionValue in extensions.DefinedValues )
+                    {
+                        if ( phoneNumberPersonAliases.PersonAliasGuids.Contains( extensionValue.GetAttributeValue( "Owner" ).AsGuid() ) )
+                        {
+                            accountId = extensionValue.GetAttributeValue( "AccountId" );
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (accountId == null )
+            {
+                // we've tried everything, just use the default
+                accountId = GetAttributeValue( "DefaultOriginationExtension" );
             }
 
             return OrginateSwitchvox( fromPhone, toPhone, accountId, callerId, out message );
@@ -133,6 +171,87 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
             return Originate( phoneNumber.Number, toPhone, callerId, out message );
         }
 
+        public bool SyncExtensions(out string messages )
+        {
+            messages = string.Empty;
+
+            try
+            {
+                XDocument result = XMLRequest( new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ),
+                    new XElement( "request",
+                        new XAttribute( "method", "switchvox.extensions.search" ),
+                        new XElement( "parameters",
+                            new XElement( "items_per_page", "1000" ),
+                            new XElement( "extension_types",
+                                new XElement( "extension_type", "sip" )
+                            )
+                        )
+                    )
+                ) );
+
+                if ( result != null )
+                {
+                    RockContext rockContext = new RockContext();
+                    var definedValueService = new DefinedValueService( rockContext );
+
+                    var switchvoxExtensionDefinedTypeId = DefinedTypeCache.Read( SystemGuid.DefinedType.SWITCHVOX_EXTENSIONS.AsGuid() ).Id;
+
+                    var matchedExtensions = new List<string>();
+
+                    // get list of the iternal extensions an who is tied to them
+                    var extenstionList = GetInternalExtensions( rockContext );
+
+                    foreach ( XElement xExtension in result.Descendants( "extension" ) )
+                    {
+                        string extension = xExtension.Attributes( "number" ).First().Value;
+                        int accountId = Convert.ToInt32( xExtension.Attributes( "account_id" ).First().Value );
+
+                        matchedExtensions.Add( extension );
+
+                        var extensionValue = definedValueService.Queryable()
+                                                .Where( v =>
+                                                    v.Value == extension 
+                                                    && v.DefinedTypeId == switchvoxExtensionDefinedTypeId )
+                                                .FirstOrDefault();
+
+                        if (extensionValue == null )
+                        {
+                            extensionValue = new DefinedValue();
+                            definedValueService.Add( extensionValue );
+                            extensionValue.DefinedTypeId = switchvoxExtensionDefinedTypeId;
+                            extensionValue.Value = extension;
+                            rockContext.SaveChanges();
+                        }
+
+                        extensionValue.LoadAttributes();
+
+                        extensionValue.SetAttributeValue( "Owner", extenstionList.Where( e => e.Extension == extension ).Select( e => e.PersonAlias.Guid).FirstOrDefault() );
+                        extensionValue.SetAttributeValue( "AccountId", accountId );
+
+                        extensionValue.SaveAttributeValues();
+                    }
+
+                    // delete all defined value extensions that were not just synced
+                    var expiredExtensions = definedValueService.Queryable()
+                                                .Where( v => !matchedExtensions.Contains( v.Value ) )
+                                                .ToList();
+
+                    foreach( var expiredExtension in expiredExtensions )
+                    {
+                        definedValueService.Delete( expiredExtension );
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                return true;
+            }
+            catch(Exception ex )
+            {
+                messages = ex.Message;
+                return false;
+            }
+        }
+
         /// <summary>
         /// Downloads the CDR.
         /// </summary>
@@ -141,6 +260,9 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
         public override string DownloadCdr(DateTime? startDateTime = null)
         {
             var utilityRockContext = new RockContext();
+
+            // sync the extenions to the defined value
+            SyncExtensions( out string messages );
 
             var recordsProcessed = 0;
 
@@ -187,22 +309,8 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
                                                         && i.InteractionDateTime >= startDate )
                                                     .Select( i => i.ForeignKey ).ToList();
 
-                    var internalPhoneTypeId = GetAttributeValue( "InternalPhoneType" ).AsInteger();
-
-                    // get list of the iternal extensions an who is tied to them
-                    var extensionList = new PhoneNumberService( utilityRockContext ).Queryable()
-                                            .Where( p => p.NumberTypeValueId == internalPhoneTypeId )
-                                            .Select( p => new ExtensionMap { Number = p.Number, Extension = p.Number, PersonAliasId = p.Person.Aliases.FirstOrDefault().Id } )
-                                            .ToList();
-
-                    // run lava template over the extension to translate the full number into an extension
-                    var translationTemplate = this.GetAttributeValue( "PhoneExtensionTemplate" );
-                    foreach ( var extension in extensionList )
-                    {
-                        var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "PhoneNumber", extension.Number );
-                        extension.Extension = translationTemplate.ResolveMergeFields( mergeFields );
-                    }
+                    // get internal extentions mapped to people
+                    var extensionList = GetInternalExtensions( utilityRockContext );
 
                     do
                     {
@@ -258,13 +366,13 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
                                     // try to phone number to a person
                                     // first use the extension map (since one of them should be using an internal number)
                                     // then consider all numbers in the system
-                                    sourcePersonAliasId = extensionList.Where( e => e.Number == cdrRecord.Source || e.Extension == cdrRecord.Source ).Select( e => e.PersonAliasId ).FirstOrDefault();
+                                    sourcePersonAliasId = extensionList.Where( e => e.Number == cdrRecord.Source || e.Extension == cdrRecord.Source ).Select( e => e.PersonAlias.Id ).FirstOrDefault();
                                     if ( !sourcePersonAliasId.HasValue )
                                     {
                                         sourcePersonAliasId = personService.GetByPhonePartial( cdrRecord.Source ).FirstOrDefault()?.PrimaryAliasId;
                                     }
 
-                                    destinationPersonAliasId = extensionList.Where( e => e.Number == cdrRecord.Destination || e.Extension == cdrRecord.Destination ).Select( e => e.PersonAliasId ).FirstOrDefault();
+                                    destinationPersonAliasId = extensionList.Where( e => e.Number == cdrRecord.Destination || e.Extension == cdrRecord.Destination ).Select( e => e.PersonAlias.Id ).FirstOrDefault();
                                     if ( !destinationPersonAliasId.HasValue )
                                     {
                                         destinationPersonAliasId = personService.GetByPhonePartial( cdrRecord.Destination ).FirstOrDefault()?.PrimaryAliasId;
@@ -311,6 +419,42 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
         }
 
         #region Private Methods
+
+        /// <summary>
+        /// Gets the internal extensions.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private List<ExtensionMap> GetInternalExtensions(RockContext rockContext = null)
+        {
+            if (rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            var internalPhoneTypeId = GetAttributeValue( "InternalPhoneType" ).AsInteger();
+
+            // get list of the iternal extensions an who is tied to them
+            var extensionList = new PhoneNumberService( rockContext ).Queryable()
+                                    .Where( p => p.NumberTypeValueId == internalPhoneTypeId )
+                                    .Select( p => new ExtensionMap {
+                                                    Number = p.Number,
+                                                    Extension = p.Number,
+                                                    PersonAlias = p.Person.Aliases.FirstOrDefault()
+                                                } )
+                                    .ToList();
+
+            // run lava template over the extension to translate the full number into an extension
+            var translationTemplate = this.GetAttributeValue( "PhoneExtensionTemplate" );
+            foreach ( var extension in extensionList )
+            {
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "PhoneNumber", extension.Number );
+                extension.Extension = translationTemplate.ResolveMergeFields( mergeFields );
+            }
+
+            return extensionList;
+        }
 
         private bool OrginateSwitchvox( string sourcePhone, string destinationPhone, string accountId, string callerId, out string message )
         {
@@ -473,7 +617,7 @@ namespace com.minecartstudio.PbxSwitchvox.Pbx.Provider
             /// <value>
             /// The person alias identifier.
             /// </value>
-            public int? PersonAliasId { get; set; }
+            public PersonAlias PersonAlias { get; set; }
         }
         #endregion
 

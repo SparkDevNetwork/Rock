@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace com.minecartstudio.PbxSwitchvox.SystemGuid
 {
-    class DefinedValue
+    class DefinedType
     {
-        public const string PBX_CDR_MEDIUM_VALUE = "B3904B57-62A2-57AC-43EA-94D4DEBA3D51";
+        public const string SWITCHVOX_EXTENSIONS = "C20D9F4D-1237-BC8E-439C-C22A83C5F220";
 
     }
 }
