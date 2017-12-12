@@ -10452,7 +10452,7 @@ html,body{
 
 .contextsetter-campus-navbar .contextsetter .navbar-link, .contextsetter-campus-navbar .contextsetter .navbar-link:hover {
     background-color: transparent;
-    padding-top: 13px;
+    padding-top: 12px;
 }
 
 .contextsetter-campus-navbar .dropdown-menu li a  {
@@ -10515,7 +10515,7 @@ html,body{
 	border-radius: 4px;
 }
 
-.masthead-navitem:hover {
+.masthead-navitem:hover, .contextsetter-campus:hover {
     color: #FFFFFF;
     transition: .25s;
 	background: rgba( 255, 255, 255, .15);
