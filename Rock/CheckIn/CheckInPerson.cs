@@ -509,9 +509,7 @@ namespace Rock.CheckIn
 
                 foreach ( var attribute in groupType.GroupType.Attributes.OrderBy( a => a.Value.Order ) )
                 {
-                    if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid() &&
-                        attribute.Value.QualifierValues.ContainsKey( "binaryFileType" ) &&
-                        attribute.Value.QualifierValues["binaryFileType"].Value.Equals( SystemGuid.BinaryFiletype.CHECKIN_LABEL, StringComparison.OrdinalIgnoreCase ) )
+                    if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.LABEL.AsGuid() )
                     {
                         Guid? binaryFileGuid = groupType.GroupType.GetAttributeValue( attribute.Key ).AsGuidOrNull();
                         if ( binaryFileGuid.HasValue && binaryFileGuid.Value == label.Guid )
