@@ -11,7 +11,7 @@
 
    <div class="event-detail-card">
       {% if Event.Photo.Guid %}
-         <img src="/GetImage.ashx?Guid={{ Event.Photo.Guid }}" style="width: 365px; height: 200px;" class="img-responsive"></img>
+         <img src="/GetImage.ashx?Guid={{ Event.Photo.Guid }}" class="img-responsive"></img>
       {% endif %}
       
       <div class="info">

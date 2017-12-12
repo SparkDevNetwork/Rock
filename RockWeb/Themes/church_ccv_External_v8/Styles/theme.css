@@ -10834,30 +10834,19 @@ html,body{
    margin-top: 1.78rem;
    margin-bottom: 25px;
    height: auto;
-   /*max-height: 1024px;*/
    width: auto;
-   max-width: 380px;
+   max-width: 500px;
 }
-
-/*.event-detail-card-animation {
-   transition: max-height .5s, padding .5s, transform .5s;
-}*/
 
 @media screen and (min-width: 1457px) {
    .event-detail-card {
       height: 100%;
-      width: 380px;
+      width: 500px;
    }
    .event-detail-body {
       width: 50%;
    }
 }
-
-/*.event-detail-card-hidden {
-   transform: scaleY(0);
-   padding: 0px;
-   max-height: 0px;
-}*/
 
 .event-detail-card h6 {
 	color: #7A1315;
