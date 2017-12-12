@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DotLiquid">
+      <HintPath>..\RockWeb\Bin\DotLiquid.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\EntityFramework.dll</HintPath>
@@ -53,9 +56,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Migrations\001_IntitalSetup.cs" />
+    <Compile Include="Migrations\003_ExtensionDefinedValue.cs" />
     <Compile Include="Migrations\002_ConfigureJob.cs" />
     <Compile Include="Pbx\Provider\Switchvox.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="SystemGuid\DefinedValue.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="SystemGuid\InteractionComponent.cs" />
