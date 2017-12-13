@@ -11175,7 +11175,7 @@ html,body{
     flex-flow: row wrap;
 }
 
-#forgotpassword-panel, #accountcreationresult-panel, #accountcreationduplicates-panel {
+#forgotpassword-panel, #accountcreationresult-panel {
 	font-size: 16px;
 	color: rgba(0, 0, 0, 0.6);
 	padding: 24px;
@@ -11243,16 +11243,25 @@ html,body{
 	left: 0px;
 }
 
-@media screen and (min-width: 813px) {
-	#accountcreationduplicates-panel {
-		height: 850px;
-	}
+#accountcreationduplicates-panel {
+	font-size: 14px;
+	color: rgba(0, 0, 0, 0.6);
+	padding: 24px;
+	box-sizing: border-box;
+	transition: left 250ms ease-in;
+	width: 100%;
+	top: 40px;
+	position: absolute;
+	background-color: rgb(255, 255, 255);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #accountcreationduplicates-panel-form {
     display: flex;
-    flex-direction: column;
-    justify-content: space-around;
+    flex-direction: row;
+    justify-content: space-between;
     width: 100%;
 }
 
@@ -11264,16 +11273,13 @@ html,body{
 
 .duplicates-form-items {
     display: flex;
-    justify-content: flex-start;
-    flex-direction: column;
+    justify-content: space-between;
+    flex-direction: row;
+	padding-bottom: 10px;
 }
 
 .duplicates-form-items input, .duplicates-form-item-none input {
     margin-right: 2px;
-}
-
-.duplicates-form-item-gender {
-    margin-left: 15px;
 }
 
 .duplicates-form-item-bday {
@@ -11282,6 +11288,17 @@ html,body{
 
 #accountcreationduplicates-panel-buttons {
     padding-top: 20px;
+}
+
+@media screen and (min-width: 767px) {
+	
+	#accountcreationduplicates-panel-form {
+        width: 80%;
+    }
+	
+	#duplicates-form {
+        width: 80%;
+    }
 }
 
 .lm-form-title {
@@ -11401,36 +11418,6 @@ html,body{
 
     #create-panel-buttons .lm-button {
         margin-right: 25px;
-    }
-
-    #accountcreationduplicates-panel-form {
-        width: 80%;
-        flex-direction: row;
-    }
-
-    #accountcreationduplicates-panel {
-        height: 100%;
-    }
-
-    #duplicates-form {
-        display: flex;
-        flex-direction: column;
-        width: 70%;
-        margin-left: 20px;
-    }
-
-    .duplicates-form-items {
-        display: flex;
-        justify-content: flex-start;
-        flex-direction: row;
-    }
-
-    .duplicates-form-item-gender {
-        margin-left: 110px;
-    }
-
-    .duplicates-form-item-bday {
-        margin-left: 150px;
     }
 
     #forgotpassword-panel {

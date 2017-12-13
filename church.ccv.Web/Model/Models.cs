@@ -66,7 +66,6 @@ namespace church.ccv.Web.Model
     {
         public int Id;
         public string FullName;
-        public string Gender;
         public string Birthday;
         public bool HasUsernames;
     }

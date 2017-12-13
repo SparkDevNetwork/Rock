@@ -117,8 +117,6 @@
                     <div id="accountcreationduplicates-panel-form">
                         <label class="control-label">PERSON NAME</label>
 
-                        <label class="control-label">GENDER</label>
-
                         <label class="control-label">BIRTHDAY</label>
                     </div>
                     
@@ -655,7 +653,6 @@
             duplicateHtmlList.prepend(
                 "<div class=\"duplicates-form-items\">" +
                     "<span class=\"duplicates-form-item\"><input type=\"radio\" class=\"duplicates-form-item\" name=\"person\" value=\"" + duplicatesInfoList[i].Id + "\">" + duplicatesInfoList[i].FullName +
-                    "</span><span class=\"duplicates-form-item-gender\">" + duplicatesInfoList[i].Gender +
                     "</span><span class=\"duplicates-form-item-bday\">" + duplicatesInfoList[i].Birthday + "</span>" +
                 "</div>");
         }

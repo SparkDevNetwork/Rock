@@ -259,7 +259,6 @@ namespace church.ccv.Web.Data
                 {
                     Id = match.Id,
                     FullName = match.FullName,
-                    Gender = match.Gender.ToString( ),
                     Birthday = match.BirthDate.HasValue ? match.BirthDate.Value.ToString("MMMM") + " " + match.BirthDay : ""
                 };
 
