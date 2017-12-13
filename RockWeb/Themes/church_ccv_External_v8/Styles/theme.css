@@ -11481,6 +11481,7 @@ html,body{
     width: 66%;
 	-webkit-transition-duration: 600ms;
     transition-duration: 600ms;
+	overflow-y: auto;
 }
 
 .masthead-fullmenu.offscreen {
