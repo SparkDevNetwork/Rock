@@ -10835,13 +10835,13 @@ html,body{
    margin-bottom: 25px;
    height: auto;
    width: auto;
-   max-width: 500px;
+   max-width: 450px;
 }
 
 @media screen and (min-width: 1457px) {
    .event-detail-card {
       height: 100%;
-      width: 500px;
+      width: 450px;
    }
    .event-detail-body {
       width: 50%;

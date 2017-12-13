@@ -12,6 +12,8 @@
       <label class="control-label col-sm-3" for="ApplicationYear">Year for application</label>
       <div class="col-sm-9">
         <input id="ApplicationYear" name="ApplicationYear" type="text" pattern="[0-9]*" placeholder="Year" class="input-mini form-control">
+        <br/>
+        <br/>
         <p class="help-block">Please indicate the year for which you are applying</p>
       </div>
     </div>
