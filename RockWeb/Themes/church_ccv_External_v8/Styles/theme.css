@@ -10977,13 +10977,13 @@ html,body{
 
 .loader-bg {
 	background: rgba(0, 0, 0, .45);
-	position: absolute;
+	position: fixed;
 	padding: 0;
 	margin: 0;
 	left: 0;
 	top: 0;
 	width: 100%;
-	height: 100%;
+	height: 100vh;
 	z-index: 1500;
 }
 
@@ -11006,16 +11006,14 @@ html,body{
 /* Formatting for the Login Modal */
 #bg-screen {
 	position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: rgba(0, 0, 0, 0.8);
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: #444;
     z-index: 1499;
 	display: block;
-    -webkit-transition: opacity 100ms;
-    -moz-transition: opacity 100ms;
-    transition: opacity 100ms;
+	overflow-x: hidden;
 }
 
 .bg-screen-hidden {
@@ -11028,18 +11026,22 @@ html,body{
 	pointer-events: auto;
 }
 
+@media screen and (min-width: 813px) {
+	#bg-screen {
+		background: rgba(0, 0, 0, 0.8);
+		-webkit-transition: opacity 100ms;
+		-moz-transition: opacity 100ms;
+		transition: opacity 100ms;
+		overflow-y: hidden;
+	}
+}
+
 #login-modal {
 	box-sizing: border-box; 
 	-webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
-	position: relative;
-	width: 75%;
-    height: 95%; 
+	width: 100%;
 	margin: 0px auto; 
 	opacity: 1;
-	transition: top 175ms ease-in;
-	-moz-transition: top 175ms ease-in;
-	-webkit-transition: top 175ms ease-in;
-	overflow-x: hidden;
 }
 
 /* Hide scrollbar in Modal window*/
@@ -11048,37 +11050,47 @@ html,body{
     background: transparent;
 }
 
-@media screen and (min-width: 1224px) {
-    #login-modal {
-        max-width: 768px;
-        height: auto;
-    }
-}
-
 .login-modal-hidden {
 	top: -300px;
 }
 
 .login-modal-visible {
-	top: 15px;
+	top: 0px;
 }
 
-@media screen and (min-width: 768px) {
-    .login-modal-visible {
-        top: 175px;
+@media screen and (min-width: 813px) {
+	#login-modal {
+		box-sizing: border-box; 
+		-webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
+		position: relative;
+		width: 75%;
+		height: 95%; 
+		margin: 0px auto; 
+		opacity: 1;
+		transition: top 175ms ease-in;
+		-moz-transition: top 175ms ease-in;
+		-webkit-transition: top 175ms ease-in;
+		overflow-x: hidden;
+		max-width: 768px;
+		overflow-y: hidden;
+	}
+	
+	.login-modal-visible {
+        top: 12.5%;
     }
 }
 
-@media screen and (min-width: 1024px) {
-    .login-modal-visible {
-        top: 300px;
-    }
+.lm-base-panel .close-button {
+	text-align: right;
+	padding-top: 15px;
+	padding-right: 15px;
+	font-size: 18px;
 }
 
-@media screen and (min-width: 1224px) {
-    .login-modal-visible {
-        top: 150px;
-    }
+@media screen and (min-width: 813px) {
+	.lm-base-panel .close-button {
+		visibility: hidden;
+	}
 }
 
 .lm-base-panel {
@@ -11088,9 +11100,13 @@ html,body{
 	font-family: Roboto, sans-serif; 
 	-webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
 	box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 45px, rgba(0, 0, 0, 0.22) 0px 10px 18px; 
-	border-radius: 2px;
 	padding-bottom: 25px;
-    
+}
+
+@media screen and (min-width: 813px) {
+	.lm-base-panel {
+		border-radius: 2px;
+	}
 }
 
 #login-panel {
@@ -11098,7 +11114,6 @@ html,body{
 	color: rgba(0, 0, 0, 0.6);
 	padding: 24px;
 	box-sizing: border-box;
-	overflow-y: hidden;
 	border-top: none;
 	border-bottom: none;
 	background-color: rgb(255, 255, 255);
@@ -11106,6 +11121,30 @@ html,body{
     flex-direction: column;
     align-items: center;
     justify-content: center;
+	padding-top: 0px;
+}
+
+@media screen and (min-width: 813px) {
+	#login-panel {
+		font-size: 16px;
+		color: rgba(0, 0, 0, 0.6);
+		padding: 24px;
+		box-sizing: border-box;
+		border-top: none;
+		border-bottom: none;
+		background-color: rgb(255, 255, 255);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+}
+
+@media screen and (max-width: 813px) {
+	#login-panel-title h1 {
+		line-height: 0px;
+		padding: 15px;
+	}
 }
 
 #login-panel-title {
@@ -11122,7 +11161,7 @@ html,body{
     justify-content: center;
 }
 
-@media screen and (min-width: 1224px){
+@media screen and (min-width: 813px){
     #login-panel-form {
         width: 45%;
     }
@@ -11143,11 +11182,9 @@ html,body{
 	box-sizing: border-box;
 	transition: left 250ms ease-in;
 	width: 100%;
-    height: auto;
-	top: 0px;
+	top: 40px;
 	position: absolute;
 	background-color: rgb(255, 255, 255);
-	overflow-y: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -11159,11 +11196,9 @@ html,body{
 	padding: 24px;
 	box-sizing: border-box;
 	width: 100%;
-    height: auto;
-	top: 0px;
+	top: 40px;
 	position: absolute;
 	background-color: rgb(255, 255, 255);
-	overflow-y: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -11183,20 +11218,9 @@ html,body{
     justify-content: center;
 }
 
-
-#create-username-firstname {
-    display: flex;
-    flex-flow: row wrap;    
-}
-
-#create-password-lastname {
-    display: flex;
-    flex-flow: row wrap;
-}
-
-#create-confirm-email {
-    display: flex;
-    flex-flow: row wrap;
+.create-panel-form-col {
+	width: 300px;
+	padding-right: 25px;
 }
 
 #create-panel-buttons {
@@ -11219,8 +11243,10 @@ html,body{
 	left: 0px;
 }
 
-#accountcreationduplicates-panel {
-    height: 850px;
+@media screen and (min-width: 813px) {
+	#accountcreationduplicates-panel {
+		height: 850px;
+	}
 }
 
 #accountcreationduplicates-panel-form {
@@ -11314,7 +11340,14 @@ html,body{
     display: flex;
     flex-flow: column;
     align-content: center;
-    height: 100%;
+}
+
+@media screen and (min-width: 813px) {
+	#forgotpassword-panel {
+		display: flex;
+		flex-flow: column;
+		align-content: center;
+	}
 }
 
 #forgotpassword-panel-title {
@@ -11343,7 +11376,7 @@ html,body{
 }
 
 /* Adjustments for larger screens  */
-@media screen and (min-width: 1224px) {
+@media screen and (min-width: 813px) {
     #createaccount-panel, #forgotpassword-panel, #accountcreationresult-panel, #accountcreationduplicates-panel {
         justify-content: center;
     }
