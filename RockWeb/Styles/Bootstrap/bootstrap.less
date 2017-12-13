@@ -10,12 +10,16 @@
   2. Add in the FontAwesome weight declarations
        * Solid and Brand are needed for all themes 
        * The regular or light is optional by theme
+  3. Add reference to FontAwesome _update_map.less
 */
+@fa-theme-weight-name: "solid";
+@fa-theme-weight: 900;
 
-@import "../FontAwesome/fa-solid.less";
-@import "../FontAwesome/fa-brands.less";
-@import "../FontAwesome/fa-@{fa-theme-weight-name}.less";
+@import "../FontAwesome/fa-solid.less"; // we always need solid for some of the components (rating needs a solid star)
+@import "../FontAwesome/fa-brands.less"; // we always need brand icons (rock rms)
+//@import "../FontAwesome/fa-@{fa-theme-weight-name}.less";
 
+@import "../FontAwesome/_upgrade-map-classes.less";
 
 // Core variables and mixins
 @import "variables.less";
@@ -24,7 +28,7 @@
 // Reset and dependencies
 @import "normalize.less";
 @import "print.less";
-//@import "glyphicons.less"; -- custom to save space
+//@import "glyphicons.less"; // custom to save space
 
 // Core CSS
 @import "scaffolding.less";
