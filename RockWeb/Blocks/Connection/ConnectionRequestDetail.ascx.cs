@@ -592,7 +592,12 @@ namespace RockWeb.Blocks.Connection
                         ddlTransferOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString().ToUpper() ) );
                     }
 
-                    cbUseDefaultConnector.Checked = true;
+                    rbTransferDefaultConnector.Checked = true;
+                    rbTransferCurrentConnector.Checked = false;
+                    rbTransferSelectConnector.Checked = false;
+                    rbTransferNoConnector.Checked = false;
+
+                    rbTransferCurrentConnector.Text = string.Format( "Current Connector: {0}", connectionRequest.ConnectorPersonAlias != null ? connectionRequest.ConnectorPersonAlias.ToString() : "No Connector" );
 
                     ddlTransferOpportunity_SelectedIndexChanged( null, null );
                 }
@@ -618,7 +623,7 @@ namespace RockWeb.Blocks.Connection
                 connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( connectionOpportunityID.Value );
                 if ( connectionOpportunity != null && connectionOpportunity.ConnectionType != null )
                 {
-                    cbUseDefaultConnector.Text = "Use default connector for " + connectionOpportunity.Name;
+                    rbTransferDefaultConnector.Text = "Default Connector for " + connectionOpportunity.Name;
                     var connectionOpportunityConnectorPersonList = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable()
                         .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id ).SelectMany( a => a.ConnectorGroup.Members )
                         .Where( a => a.GroupMemberStatus == GroupMemberStatus.Active ).Select( a => a.Person ).AsNoTracking().ToList();
@@ -658,9 +663,9 @@ namespace RockWeb.Blocks.Connection
                 }
             }
             
-            if ( cbUseDefaultConnector.Checked && connectionOpportunity != null  )
+            if ( rbTransferDefaultConnector.Checked && connectionOpportunity != null  )
             {
-                if (defaultConnectorPersonId.HasValue)
+                if ( defaultConnectorPersonId.HasValue)
                 {
                     ddlTransferOpportunityConnector.SetValue( defaultConnectorPersonId.Value );
                 }
@@ -669,32 +674,6 @@ namespace RockWeb.Blocks.Connection
             {
                 ddlTransferOpportunityConnector.SetValue( connectionRequest.ConnectorPersonAlias.PersonId );
             }
-
-            ddlTransferOpportunityConnector.Visible = connectors.Any();
-        }
-
-        /// <summary>
-        /// Handles the CheckedChanged event of the cbUseDefaultConnector control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void cbUseDefaultConnector_CheckedChanged( object sender, EventArgs e )
-        {
-            int? connectorPersonId = null;
-            if ( cbUseDefaultConnector.Checked )
-            {
-                connectorPersonId = ddlTransferOpportunityConnector.Items.OfType<ListItem>().Where( a => a.Attributes["IsDefaultConnector"].AsBoolean() ).Select( a => a.Value.AsIntegerOrNull() ).FirstOrDefault();
-            }
-            else
-            {
-                var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( hfConnectionRequestId.ValueAsInt() );
-                if ( connectionRequest != null && connectionRequest.ConnectorPersonAlias != null )
-                {
-                    connectorPersonId = connectionRequest.ConnectorPersonAlias.PersonId;
-                }
-            }
-
-            ddlTransferOpportunityConnector.SetValue( connectorPersonId );
         }
 
         /// <summary>
@@ -869,17 +848,41 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest.AssignedGroupMemberRoleId = null;
                         connectionRequest.AssignedGroupMemberStatus = null;
 
-                        // Now assign the default connector if one was specified by the new connection opportunity's settings.
-                        var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
-
-                        // newOpportunity should never be null unless someone *just* deleted the opportunity that our user just selected.
-                        if ( newOpportunity != null )
+                        // assign the connector based on the selection
+                        if ( rbTransferCurrentConnector.Checked )
                         {
-                            connectionRequest.ConnectorPersonAliasId = ddlTransferOpportunityConnector.SelectedValue.AsIntegerOrNull();
+                            // just leave the connector that they had
                         }
-                        else
+                        else if ( rbTransferDefaultConnector.Checked )
+                        {
+                            var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
+                            if ( newOpportunity != null )
+                            {
+                                connectionRequest.ConnectorPersonAliasId = newOpportunity.GetDefaultConnectorPersonAliasId( connectionRequest.CampusId );
+                            }
+                            else
+                            {
+                                connectionRequest.ConnectorPersonAliasId = null;
+                            }
+                        }
+                        else if ( rbTransferNoConnector.Checked )
                         {
                             connectionRequest.ConnectorPersonAliasId = null;
+                        }
+                        else if ( rbTransferSelectConnector.Checked )
+                        {
+                            int? connectorPersonId = ddlTransferOpportunityConnector.SelectedValue.AsIntegerOrNull();
+                            int? connectorPersonAliasId = null;
+                            if ( connectorPersonId.HasValue )
+                            {
+                                var connectorPerson = new PersonService( rockContext ).Get( connectorPersonId.Value );
+                                if ( connectorPerson != null )
+                                {
+                                    connectorPersonAliasId = connectorPerson.PrimaryAliasId;
+                                }
+                            }
+
+                            connectionRequest.ConnectorPersonAliasId = connectorPersonAliasId;
                         }
 
                         rockContext.SaveChanges();
@@ -2495,6 +2498,8 @@ namespace RockWeb.Blocks.Connection
         }
 
         #endregion
+
+
 
 
 
