@@ -7,19 +7,18 @@
 /* 
   Summary of customizations for Rock:
   1. Comment out the glyphicons
-  2. Add in the FontAwesome weight declarations
-       * Solid and Brand are needed for all themes 
-       * The regular or light is optional by theme
-  3. Add reference to FontAwesome _update_map.less
+  2. Add in the FontAwesome mixin
+  3. Add reference to FontAwesome _rock-update_map-classes.less
+  4. Add reference to _rock-fa-mixins.less
 */
+@import "../FontAwesome/_rock-fa-mixins.less";
+
 @fa-theme-weight-name: "solid";
 @fa-theme-weight: 900;
 
-@import "../FontAwesome/fa-solid.less"; // we always need solid for some of the components (rating needs a solid star)
-@import "../FontAwesome/fa-brands.less"; // we always need brand icons (rock rms)
-//@import "../FontAwesome/fa-@{fa-theme-weight-name}.less";
+.fa-font-face( @fa-theme-weight-name, @fa-theme-weight, @fa-font-path );
 
-@import "../FontAwesome/_upgrade-map-classes.less";
+@import "../FontAwesome/_rock-upgrade-map-classes.less";
 
 // Core variables and mixins
 @import "variables.less";

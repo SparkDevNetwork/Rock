@@ -3,11 +3,21 @@
 // mapped.
 
 
-@import "_upgrade-map-variables.less";
+@import "_rock-upgrade-map-variables.less";
 
 .fa {
   font-family: 'Font Awesome 5';
   font-weight: @fa-theme-weight;
+}
+
+// overrides for key icons
+.fa.fa-rating-unselected {
+  opacity: .2;
+}
+
+.fa.fa-rating-selected:before,
+.fa.fa-rating-unselected:before {
+  content: @fa-var-star;
 }
 
 // map all the missing v4 icons to fontawesome
