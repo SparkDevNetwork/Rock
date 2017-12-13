@@ -42,6 +42,8 @@ namespace RockWeb.Plugins.com_centralaz.Finance
     [Category( "com_centralaz > Finance" )]
     [Description( "Used for merging contribution data into output documents, such as Word, Html, using a pre-defined template." )]
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, "", 0 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Statement Frequency Attribute" )]
+
     [BinaryFileTypeField( "File Type", "The file type used to save the contribution statements.", true, "FC7218EE-EA28-4EA4-8C3D-F30750A2FE59" )]
     [SystemEmailField( "Notify Requester Email", "The system email used to notify the requester that the statements have been generated" )]
     public partial class ContributionStatementTemplateEntry : RockBlock
@@ -158,7 +160,10 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             transaction.Account2 = account2;
             transaction.Account3 = account3;
             transaction.Account4 = account4;
-            transaction.Campuses = cblCampus.SelectedValuesAsInt;
+            transaction.CampusIds = cblCampus.SelectedValuesAsInt;
+            transaction.DefinedTypeAttribute = AttributeCache.Read( GetAttributeValue( "StatementFrequencyAttribute" ).AsGuid() );
+            transaction.DefinedValueIds = cblStatementFrequency.SelectedValuesAsInt;
+            transaction.ExcludedGroupId = gpExcludedGroup.SelectedValueAsId();
             transaction.StartDate = dateRange.Start;
             transaction.EndDate = dateRange.End;
             transaction.LetterTemplate = letterTemplate;
@@ -180,6 +185,9 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             SetBlockUserPreference( "Account4", apAccount4.SelectedValue );
             SetBlockUserPreference( "Campuses", cblCampus.SelectedValuesAsInt.AsDelimited( "|" ) );
             SetBlockUserPreference( "Date Range", drpDates.DelimitedValues );
+            SetBlockUserPreference( "ExcludedGroup", gpExcludedGroup.SelectedValue );
+            SetBlockUserPreference( "StatementFrequencies", cblStatementFrequency.SelectedValuesAsInt.AsDelimited( "|" ) );
+
 
             nbNotification.Visible = true;
         }
@@ -253,6 +261,32 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             if ( !String.IsNullOrWhiteSpace( GetBlockUserPreference( "Campuses" ) ) )
             {
                 cblCampus.SetValues( GetBlockUserPreference( "Campuses" ).SplitDelimitedValues().AsIntegerList() );
+            }
+
+            if ( !String.IsNullOrWhiteSpace( GetBlockUserPreference( "ExcludedGroup" ) ) )
+            {
+                gpExcludedGroup.SetValue( GetBlockUserPreference( "ExcludedGroup" ).AsIntegerOrNull() );
+            }
+
+            var attributeGuid = GetAttributeValue( "StatementFrequencyAttribute" ).AsGuid();
+            var personAttribute = AttributeCache.Read( attributeGuid );
+            if ( personAttribute != null )
+            {
+                var qualifierValue = personAttribute.QualifierValues.Where( qv => qv.Key == "definedtype" ).First().Value;
+                if ( qualifierValue != null && qualifierValue.Value != null )
+                {
+                    var definedType = DefinedTypeCache.Read( int.Parse( qualifierValue.Value ) );
+                    if ( definedType != null )
+                    {
+                        cblStatementFrequency.Visible = true;
+                        cblStatementFrequency.BindToDefinedType( definedType );
+
+                        if ( !String.IsNullOrWhiteSpace( GetBlockUserPreference( "StatementFrequencies" ) ) )
+                        {
+                            cblStatementFrequency.SetValues( GetBlockUserPreference( "StatementFrequencies" ).SplitDelimitedValues().AsIntegerList() );
+                        }
+                    }
+                }
             }
         }
 

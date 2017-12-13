@@ -21,6 +21,14 @@
                 <h3>Contribution Filters</h3>
                 <div class="row">
                     <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:GroupPicker ID="gpExcludedGroup" Label="Exclusion Group" Help="The group of people to exclude from the statement generation" runat="server" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockCheckBoxList ID="cblStatementFrequency" runat="server" Label="Generate statements for people with a preference of:" Visible="false" RepeatDirection="Horizontal" />
+                            </div>
+                        </div>
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
 
                         <Rock:SlidingDateRangePicker ID="drpDates" runat="server" Label="Dates" SlidingDateRangeMode="DateRange" Required="true" />

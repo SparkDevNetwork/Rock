@@ -23,6 +23,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using System.Web.UI;
+using com.centralaz.Finance.Utility;
 using Newtonsoft.Json.Linq;
 using Rock;
 using Rock.Attribute;
@@ -367,74 +368,35 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 rockContext.Database.CommandTimeout = databaseTimeout.Value;
             }
 
-            // Get all transactions tied to the Giving Ids
-            List<TransactionSummary> transactionList = new List<TransactionSummary>();
-            List<AddressSummary> addressList = new List<AddressSummary>();
-            Dictionary<string, object> parameters = GetSqlParameters();
-            DataSet result = null;
+            // Get all transactions tied to the Giving Id
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
             if ( Person.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() )
             {
-                result = DbService.GetDataSet( "spFinance_GetGivingGroupTransactionsForAPerson", System.Data.CommandType.StoredProcedure, parameters );
+                parameters = FinanceHelper.GetSqlParameters(
+                startDate: StartDate,
+                endDate: EndDate,
+                account1Id: Account1.Id,
+                account2Id: Account2.Id,
+                account3Id: Account3.Id,
+                account4Id: Account4.Id,
+                givingId: Person.GivingId
+                );
             }
             else if ( Person.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
             {
-                result = DbService.GetDataSet( "spFinance_GetGivingGroupTransactionsForABusiness", System.Data.CommandType.StoredProcedure, parameters );
+                parameters = FinanceHelper.GetSqlParameters(
+                startDate: StartDate,
+                endDate: EndDate,
+                account1Id: Account1.Id,
+                account2Id: Account2.Id,
+                account3Id: Account3.Id,
+                account4Id: Account4.Id,
+                givingId: Person.GivingId,
+                isBusiness: true
+                );
             }
 
-            if ( result != null )
-            {
-                if ( result.Tables.Count > 1 )
-                {
-                    var transactionDataTable = result.Tables[0];
-                    foreach ( var row in transactionDataTable.Rows.OfType<DataRow>().ToList() )
-                    {
-                        transactionList.Add( new TransactionSummary
-                        {
-                            GivingId = row.ItemArray[0] as string,
-                            TransactionCode = row.ItemArray[1] as string,
-                            TransactionDateTime = row.ItemArray[2] as DateTime?,
-                            Account1Amount = row.ItemArray[3] as decimal?,
-                            Account2Amount = row.ItemArray[4] as decimal?,
-                            Account3Amount = row.ItemArray[5] as decimal?,
-                            Account4Amount = row.ItemArray[6] as decimal?,
-                            OtherAmount = row.ItemArray[7] as decimal?,
-                            TotalTransactionAmount = row.ItemArray[8] as decimal?
-                        } );
-                    }
-
-                    var addressDataTable = result.Tables[01];
-                    foreach ( var row in addressDataTable.Rows.OfType<DataRow>().ToList() )
-                    {
-                        addressList.Add( new AddressSummary
-                        {
-                            GivingId = row.ItemArray[0] as string,
-                            AddressNames = row.ItemArray[1] as string,
-                            Street1 = row.ItemArray[3] as string,
-                            Street2 = row.ItemArray[4] as string,
-                            City = row.ItemArray[5] as string,
-                            State = row.ItemArray[6] as string,
-                            PostalCode = row.ItemArray[7] as string
-                        } );
-                    }
-                }
-            }
-
-            var givingTransactionList = transactionList.GroupBy( t => t.GivingId ).Select( g => new GroupedTransaction
-            {
-                Key = g.Key,
-                Account1Total = g.Sum( t => t.Account1Amount ),
-                Account2Total = g.Sum( t => t.Account2Amount ),
-                Account3Total = g.Sum( t => t.Account3Amount ),
-                Account4Total = g.Sum( t => t.Account4Amount ),
-                OtherTotal = g.Sum( t => t.OtherAmount ),
-                TransactionTotal = g.Sum( t => t.TotalTransactionAmount ),
-                Transactions = g.ToList()
-            } ).ToList();
-
-            // Dump everything into a lava object
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
-            mergeFields.Add( "Transactions", givingTransactionList );
-            mergeFields.Add( "Addresses", addressList );
+            var mergeFields = FinanceHelper.GetFinancialStatementTransactionsAndAddresses( parameters );
             mergeFields.Add( "Account1", Account1 );
             mergeFields.Add( "Account2", Account2 );
             mergeFields.Add( "Account3", Account3 );
@@ -442,36 +404,6 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             mergeFields.Add( "StartDate", StartDate.ToString() );
             mergeFields.Add( "EndDate", EndDate.ToString() );
             return mergeFields;
-        }
-
-        private Dictionary<string, object> GetSqlParameters()
-        {
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
-            if ( StartDate.HasValue )
-            {
-                parameters.Add( "startDate", StartDate.Value );
-            }
-            else
-            {
-                parameters.Add( "startDate", DateTime.MinValue );
-            }
-            if ( EndDate.HasValue )
-            {
-                parameters.Add( "endDate", EndDate.Value );
-            }
-            else
-            {
-                parameters.Add( "endDate", DateTime.MaxValue );
-            }
-
-            parameters.Add( "account1Id", Account1.Id );
-            parameters.Add( "account2Id", Account2.Id );
-            parameters.Add( "account3Id", Account3.Id );
-            parameters.Add( "account4Id", Account4.Id );
-
-            parameters.Add( "givingId", Person.GivingId );
-
-            return parameters;
         }
 
         /// <summary>
@@ -491,231 +423,6 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             return mergeTemplate.GetMergeTemplateType();
         }
 
-        #endregion
-
-        #region Helper Classes
-
-        /// <summary>
-        /// Grouped Transactions
-        /// </summary>
-        /// <seealso cref="Rock.Data.Entity{com.centralaz.Finance.Transactions.GenerateContributionStatementTransaction.GroupedTransaction}" />
-        public class GroupedTransaction : Entity<GroupedTransaction>
-        {
-            /// <summary>
-            /// Gets or sets the key.
-            /// </summary>
-            /// <value>
-            /// The key.
-            /// </value>
-            [LavaInclude]
-            public String Key { get; set; }
-
-            /// <summary>
-            /// Gets or sets the account1 total.
-            /// </summary>
-            /// <value>
-            /// The account1 total.
-            /// </value>
-            [LavaInclude]
-            public decimal? Account1Total { get; set; }
-
-            /// <summary>
-            /// Gets or sets the account2 total.
-            /// </summary>
-            /// <value>
-            /// The account2 total.
-            /// </value>
-            [LavaInclude]
-            public decimal? Account2Total { get; set; }
-
-            /// <summary>
-            /// Gets or sets the account3 total.
-            /// </summary>
-            /// <value>
-            /// The account3 total.
-            /// </value>
-            [LavaInclude]
-            public decimal? Account3Total { get; set; }
-
-            /// <summary>
-            /// Gets or sets the account4 total.
-            /// </summary>
-            /// <value>
-            /// The account4 total.
-            /// </value>
-            [LavaInclude]
-            public decimal? Account4Total { get; set; }
-
-            /// <summary>
-            /// Gets or sets the other total.
-            /// </summary>
-            /// <value>
-            /// The other total.
-            /// </value>
-            [LavaInclude]
-            public decimal? OtherTotal { get; set; }
-
-            /// <summary>
-            /// Gets or sets the transaction total.
-            /// </summary>
-            /// <value>
-            /// The transaction total.
-            /// </value>
-            [LavaInclude]
-            public decimal? TransactionTotal { get; set; }
-
-            /// <summary>
-            /// Gets or sets the transactions.
-            /// </summary>
-            /// <value>
-            /// The transactions.
-            /// </value>
-            [LavaInclude]
-            public List<TransactionSummary> Transactions { get; set; }
-
-        }
-
-        /// <summary>
-        /// The transaction Summary
-        /// </summary>
-        [DotLiquid.LiquidType( "GivingId", "TransactionCode", "TransactionDateTime", "Account1Amount", "Account2Amount", "Account3Amount", "Account4Amount", "OtherAmount", "TotalTransactionAmount" )]
-        public class TransactionSummary
-        {
-            /// <summary>
-            /// Gets or sets the giving identifier.
-            /// </summary>
-            /// <value>
-            /// The giving identifier.
-            /// </value>
-            public String GivingId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the transaction code.
-            /// </summary>
-            /// <value>
-            /// The transaction code.
-            /// </value>
-            public String TransactionCode { get; set; }
-
-            /// <summary>
-            /// Gets or sets the transaction date time.
-            /// </summary>
-            /// <value>
-            /// The transaction date time.
-            /// </value>
-            public DateTime? TransactionDateTime { get; set; }
-
-            /// <summary>
-            /// Gets or sets the account1 amount.
-            /// </summary>
-            /// <value>
-            /// The account1 amount.
-            /// </value>
-            public decimal? Account1Amount { get; set; }
-
-            /// <summary>
-            /// Gets or sets the account2 amount.
-            /// </summary>
-            /// <value>
-            /// The account2 amount.
-            /// </value>
-            public decimal? Account2Amount { get; set; }
-
-            /// <summary>
-            /// Gets or sets the account3 amount.
-            /// </summary>
-            /// <value>
-            /// The account3 amount.
-            /// </value>
-            public decimal? Account3Amount { get; set; }
-
-            /// <summary>
-            /// Gets or sets the account4 amount.
-            /// </summary>
-            /// <value>
-            /// The account4 amount.
-            /// </value>
-            public decimal? Account4Amount { get; set; }
-
-            /// <summary>
-            /// Gets or sets the other amount.
-            /// </summary>
-            /// <value>
-            /// The other amount.
-            /// </value>
-            public decimal? OtherAmount { get; set; }
-
-            /// <summary>
-            /// Gets or sets the total transaction amount.
-            /// </summary>
-            /// <value>
-            /// The total transaction amount.
-            /// </value>
-            public decimal? TotalTransactionAmount { get; set; }
-        }
-
-        /// <summary>
-        /// The address summary for lava
-        /// </summary>
-        [DotLiquid.LiquidType( "GivingId", "AddressNames", "Street1", "Street2", "City", "State", "PostalCode" )]
-        public class AddressSummary
-        {
-            /// <summary>
-            /// Gets or sets the giving identifier.
-            /// </summary>
-            /// <value>
-            /// The giving identifier.
-            /// </value>
-            public String GivingId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the names.
-            /// </summary>
-            /// <value>
-            /// The names.
-            /// </value>
-            public String AddressNames { get; set; }
-
-            /// <summary>
-            /// Gets or sets the street1.
-            /// </summary>
-            /// <value>
-            /// The street1.
-            /// </value>
-            public String Street1 { get; set; }
-
-            /// <summary>
-            /// Gets or sets the street2.
-            /// </summary>
-            /// <value>
-            /// The street2.
-            /// </value>
-            public String Street2 { get; set; }
-
-            /// <summary>
-            /// Gets or sets the city.
-            /// </summary>
-            /// <value>
-            /// The city.
-            /// </value>
-            public String City { get; set; }
-
-            /// <summary>
-            /// Gets or sets the state.
-            /// </summary>
-            /// <value>
-            /// The state.
-            /// </value>
-            public String State { get; set; }
-
-            /// <summary>
-            /// Gets or sets the postal code.
-            /// </summary>
-            /// <value>
-            /// The postal code.
-            /// </value>
-            public String PostalCode { get; set; }
-        }
         #endregion
     }
 }
