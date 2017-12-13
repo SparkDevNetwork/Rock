@@ -11278,6 +11278,13 @@ html,body{
 	padding-bottom: 10px;
 }
 
+.duplicates-form-item {
+	text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 60%;
+}
+
 .duplicates-form-items input, .duplicates-form-item-none input {
     margin-right: 2px;
 }
