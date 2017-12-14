@@ -10614,14 +10614,14 @@ html,body{
 .event-page-wrapper {
    display: flex;
    flex-direction: row;
-   flex-wrap: wrap;
-   align-items: center;
+   /* flex-wrap: wrap;
+   align-items: center; */
    width: 100%;
 }
 
 .event-page-wrapper .event-calendar {
    width: 90%;
-   margin: 0 auto;
+   /* margin: 0 auto; */
 }
 
 .event-page-wrapper .event-calendar .header {
@@ -10776,8 +10776,9 @@ html,body{
    }
    
    .event-page-wrapper .event-calendar {
-      width: 60%;
-      margin: 0 auto;
+      width: 50%;
+      padding-left: 30px;
+      /* margin: 0 auto; */
    }
    
    .event-page-wrapper .event-calendar .header {
@@ -10791,9 +10792,10 @@ html,body{
       font-size: 3.56rem;
    }
    
-   .event-page-wrapper .event-calendar .event-item {
+   /* .event-page-wrapper .event-calendar .event-item {
       width: 600px;
-   }
+      min-width: 100%;
+   } */
    
    .event-page-wrapper .event-calendar .event-item .date {
       width: 75px;
@@ -10833,6 +10835,7 @@ html,body{
    padding: 25px;
    margin-top: 1.78rem;
    margin-bottom: 25px;
+   margin-left: 10px;
    height: auto;
    width: auto;
    max-width: 450px;
@@ -10841,7 +10844,7 @@ html,body{
 @media screen and (min-width: 1457px) {
    .event-detail-card {
       height: 100%;
-      width: 450px;
+      width: 500px;
    }
    .event-detail-body {
       width: 50%;
