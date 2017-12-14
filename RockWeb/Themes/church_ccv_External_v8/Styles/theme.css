@@ -10574,7 +10574,6 @@ html,body{
 /* Formatting for select a day event block */
 .event-item-list-container {
 	display: flex;
-	justify-content: center;
     flex-wrap: wrap;
 }
 
@@ -10614,14 +10613,12 @@ html,body{
 .event-page-wrapper {
    display: flex;
    flex-direction: row;
-   /* flex-wrap: wrap;
-   align-items: center; */
    width: 100%;
 }
 
 .event-page-wrapper .event-calendar {
-   width: 90%;
-   /* margin: 0 auto; */
+   width: 100%;
+   margin-left: 30px;
 }
 
 .event-page-wrapper .event-calendar .header {
@@ -10768,7 +10765,7 @@ html,body{
 }
 
 /* ---- Overrides for desktop size ---- */
-@media screen and (min-width: 1457px) {
+@media screen and (min-width: 1000px) {
    .event-page-wrapper {
       padding: 0;
       align-items: stretch;
@@ -10826,7 +10823,6 @@ html,body{
 .event-detail-card {
    display: flex;
    flex-direction: column;
-   
    border-width: 0px; 
    border-color: #000; 
    border-style: solid;
@@ -10841,7 +10837,13 @@ html,body{
    max-width: 450px;
 }
 
-@media screen and (min-width: 1457px) {
+@media screen and (max-width: 999px ){
+    .event-detail-card {
+        margin: 0 auto;
+    }
+}
+
+@media screen and (min-width: 1000px) {
    .event-detail-card {
       height: 100%;
       width: 500px;
