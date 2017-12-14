@@ -1,9 +1,21 @@
 //<script type="text/javascript" src="https://localhost:44347/Themes/church_ccv_External_v8/Scripts/effects.js"></script>
 
 $(document).scroll( function() {
+	
+	// anytime the browser is resized or scrolled, 
+	// we need to update the positioning of the nav bars
    updateNavbarForScroll( );
    
    updateSubNavbarForScroll( );
+});
+
+$(window).resize(function() {
+	
+	// anytime the browser is resized or scrolled, 
+	// we need to update the positioning of the nav bars
+	updateNavbarForScroll( );
+	
+	updateSubNavbarForScroll();
 });
 
 function updateNavbarForScroll( )
@@ -25,8 +37,6 @@ function updateNavbarForScroll( )
    navBar.css( "background-color", 'rgba( 0, 0, 0,' +  alpha + ')' );
 }
 
-var subNavbarStartingPos = 0;
-
 function updateSubNavbarForScroll( )
 {
 	// only do these things if there IS a subnav bar. (the actual zone will always exist,
@@ -43,19 +53,22 @@ function updateSubNavbarForScroll( )
 // "Snaps" the sub navbar to underneath the primary navbar when scrolling the page
 function updateSubNavbarSnap( )
 {
+	// get the origin position of the subNavbar. This lets us know if we've scrolled beyond it or not,
+	// and thus whether to snap it to the top or not.
+	// Its origin is always below the "main-feature" section, so just get the bottom of that section.
+	var mainFeature = document.getElementsByClassName("main-feature");
+	var subNavbarOriginPos = mainFeature[0].offsetHeight;
+	
 	// get the "section A" element, which is where the body content starts
 	var sectionA = document.getElementById("section-a-bg");
 	
 	// seed the navbar starting position on first update (since we don't have OnLoad() access)
 	var subNavbar = document.getElementById("subnavbar-bg");
-	if ( subNavbarStartingPos == 0 )
-	{
-		subNavbarStartingPos = subNavbar.offsetTop;
-	}
-
+	
+	
 	// if the top navbar has clipped the sub navbar, we've gone far enough to snap
 	var topNavbar = document.getElementById("masthead");	
-	if( window.pageYOffset + topNavbar.offsetHeight >= subNavbarStartingPos )
+	if( window.pageYOffset + topNavbar.offsetHeight >= subNavbarOriginPos )
 	{
 		// snap the sub navbar to underneath the top navbar
 		subNavbar.style.top = topNavbar.offsetHeight + "px";
