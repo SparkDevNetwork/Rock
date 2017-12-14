@@ -17,8 +17,9 @@
                     </p>
 
 					<div class="packagesummary-footer">
-						<div class="rating pull-left rating-{{ package.Rating | Replace:'.','' }}">
-						</div>
+						<div class="rating pull-left">
+              {{  package.Rating | RatingMarkup }}
+            </div>
 						<div class="cost pull-right">
 							{% if package.Price == 0 %}
 								Free

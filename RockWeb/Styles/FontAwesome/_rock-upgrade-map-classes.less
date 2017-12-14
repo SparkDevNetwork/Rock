@@ -2,6 +2,12 @@
 // and make v5 a bit more flexible allowing .fa to be dynamically
 // mapped.
 
+/* 
+  Summary of customizations for Rock:
+  1. Make sure the _update-map.less file is in place
+  2. Make 'virtual links' mixins.less -> _mixins.less and variables.less -> _variables.less to support older Rock themes
+  3. Add the prefixes below
+*/
 
 @import "_rock-upgrade-map-variables.less";
 
@@ -10,13 +16,38 @@
   font-weight: @fa-theme-weight;
 }
 
+/* prefix start */
+.fas {
+  font-family: 'Font Awesome 5';
+  font-weight: 900;
+}
+
+.far {
+  font-family: 'Font Awesome 5';
+  font-weight: 400;
+}
+
+.fal {
+  font-family: 'Font Awesome 5';
+  font-weight: 300;
+}
+
+.fab {
+  font-family: 'Font Awesome 5 Brands';
+  font-weight: normal;
+}
+/* prefix end */
+
 // overrides for key icons
-.fa.fa-rating-unselected {
+.fa.fa-rating-unselected,
+.fa.fa-rating-off {
   opacity: .2;
 }
 
 .fa.fa-rating-selected:before,
-.fa.fa-rating-unselected:before {
+.fa.fa-rating-unselected:before,
+.fa.fa-rating-on:before,
+.fa.fa-rating-off:before {
   content: @fa-var-star;
 }
 
