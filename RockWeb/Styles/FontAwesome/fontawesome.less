@@ -1,0 +1,47 @@
+/*!
+ * Font Awesome Free 5.0.0 by @fontawesome - http://fontawesome.com
+ * License - http://fontawesome.com/license (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+ */
+
+
+/* 
+  Summary of customizations for Rock:
+  1. Comment out the .fa line in fa-solid.less
+  2. Make sure the _update-map.less file is in place
+  3. Make 'virtual links' mixins.less -> _mixins.less and variables.less -> _variables.less to support older Rock themes
+  4. Add the prefixes below
+*/
+
+/* prefix start */
+.fas {
+  font-family: 'Font Awesome 5';
+  font-weight: 900;
+}
+
+.far {
+  font-family: 'Font Awesome 5';
+  font-weight: 400;
+}
+
+.fal {
+  font-family: 'Font Awesome 5';
+  font-weight: 300;
+}
+.fab {
+  font-family: 'Font Awesome 5 Brands';
+  font-weight: normal;
+}
+/* prefix end */
+
+@import "_variables.less";
+@import "_mixins.less";
+@import "_core.less";
+@import "_larger.less";
+@import "_fixed-width.less";
+@import "_list.less";
+@import "_bordered-pulled.less";
+@import "_animated.less";
+@import "_rotated-flipped.less";
+@import "_stacked.less";
+@import "_icons.less";
+@import "_screen-reader.less";
