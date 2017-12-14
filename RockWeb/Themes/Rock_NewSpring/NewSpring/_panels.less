@@ -1,7 +1,25 @@
-.panel {
-	border-bottom: 1px solid @theme-4;
+.panel, .panel-block {
+	border-top-width: 1px;
+
+	.panel-heading {
+		border-top-right-radius: 5px;
+		border-top-left-radius: 5px;
+	}
+
+	.grid-actions {
+		border-bottom-left-radius: 5px;
+		border-bottom-right-radius: 5px;
+	}
 }
 
-.panel-block > .panel-heading {
-	color: @text-color;
+.panel-persondetails > .panel-heading,
+.panel-note > .panel-heading,
+.panel-block > .panel-heading .panel-title i {
+	color: @theme-3;
+}
+
+.panel:not(.panel-drawer) {
+	border-color: rgba(0,0,0,.10);
+	border-radius: 5px;
+	border-bottom: 2px solid rgba(0,0,0,.15);
 }

@@ -25,19 +25,22 @@
 
 .navbar-static-side .navbar-side > li i {
 	display: inline-block;
-	font-size: 18px;
-	margin-right: 5px;
-	margin-left: 15px;
+	font-size: 22px;
+	padding: 15px 0 20px;
+	margin-right: 18px;
+	margin-left: 18px;
+	position: relative;
+	top: 3px;
 }
 
 .navbar-static-side .navbar-side > li .nav-childpages li.header {
 	text-transform: uppercase;
 	font-size: 14px;
-	font-weight: 500;
+	font-weight: 900;
 	margin-bottom: 5px;
 	margin-left: 15px;
 	color: @theme-1;
-	border-color: @theme-1;
+	border-color: lighten(@theme-2, 5%);
 }
 
 .navbar-static-side .navbar-side > li .nav-childpages {
@@ -56,16 +59,20 @@
 	li a {
 		color: @theme-1-text;
 		
-		padding: 7px 15px 6px;
+		padding: 9px 15px 8px;
 		margin-bottom: 2px;
 
 		@media (min-width: @screen-md-min) {
 			&:hover {
-				background-color: @theme-1;
-				color: @theme-1-text;
+				background-color: lighten(@theme-2, 15%);
+				color: @theme-2-text;
 			}
 		}
 	}
+}
+
+.navbar-static-side .navbar-side > li > i:hover {
+	background-color: transparent;
 }
 
 .navbar-static-side .navbar-side > li.open {
@@ -73,6 +80,7 @@
 	background-color: transparent;
 
 	.nav-childpages {
+		margin-top: 10px;
 		height: auto;
 	}
 }

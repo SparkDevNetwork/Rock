@@ -1,6 +1,5 @@
-* {
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+h1, h2, h3, h4, h5, h6, ul, ol, p {
+	margin-bottom: @base-spacing-unit/2;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -9,18 +8,24 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 hr {
+	margin-top: @base-spacing-unit;
+	margin-bottom: @base-spacing-unit;
 	border: 0;
-	border-bottom: 3px solid @theme-4;
+	border-bottom: 3px solid @theme-5;
 }
 
 // LABELS
 .label {
-	padding: 0.3em 0.6em;
+	padding: 0.25em 0.6em;
 }
 
 .label-default {
-	background-color: @theme-2;
-	color: @theme-2-text;
+	background-color: @theme-3;
+}
+
+// BADGES
+.badge {
+	padding: 4px 7px 3px;
 }
 
 // LOGIN STATUS
@@ -37,12 +42,12 @@ hr {
 
 // PAGE TITLES
 #content-wrapper #page-title {
-	background-color: @theme-8;
+	background-color: @brand-secondary;
 	padding: 25px;
 
 	h1 {
 		font-weight: 700;
-		color: @theme-8-text;
+		color: @theme-1-text;
 
 		i {
 			display: none;
@@ -72,5 +77,12 @@ hr {
 		h1 {
 			font-size: 36px;
 		}
+	}
+}
+
+@media (min-width: @screen-md-min) {
+	.text-larger {
+		font-size: 115%;
+		letter-spacing: -.2px;
 	}
 }

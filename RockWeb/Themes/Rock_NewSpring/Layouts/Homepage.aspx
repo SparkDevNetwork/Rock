@@ -2,8 +2,8 @@
 
 <asp:Content ID="ctFeature" ContentPlaceHolderID="feature" runat="server">
 
-    <section class="main-feature">
-        <div class="container">
+    <section class="main-feature soft-half lg-soft">
+        <div class="container-fluid hard">
             <div class="row">
                 <div class="col-md-12">
                     <Rock:Zone Name="Feature" runat="server" />
@@ -16,7 +16,7 @@
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
     
-	<main class="container">
+	<main class="soft-half lg-soft">
         
         <!-- Start Content Area -->
         
@@ -31,28 +31,26 @@
                 <Rock:Zone Name="Sub Feature" runat="server" />
             </div>
         </div>
+    </main>
 
+    <section class="soft-half lg-soft">
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-4 col-sm-6">
                 <Rock:Zone Name="Section A" runat="server" />
             </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-6">
                 <Rock:Zone Name="Section B" runat="server" />
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-6">
                 <Rock:Zone Name="Section C" runat="server" />
             </div>
-            <div class="col-md-4">
-                <Rock:Zone Name="Section D" runat="server" />
-            </div>
         </div>
+        <Rock:Zone Name="Section D" runat="server" />
+    </section>
 
         <!-- End Content Area -->
 
-	</main>
+	
         
 </asp:Content>
 

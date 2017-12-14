@@ -1,5 +1,5 @@
 <div class="panel panel-default list-as-blocks clearfix">
-    <div class="panel-body">
+    <div class="panel-body hard-bottom">
         <div class="row soft-half-right">
             {% for childPage in Page.Pages %}
                 <div class="col-lg-2 col-md-3 col-sm-4 hard-right text-center">

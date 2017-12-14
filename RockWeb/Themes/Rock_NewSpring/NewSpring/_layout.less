@@ -15,14 +15,19 @@ body {
 	top: 0;
 	left: 0;
 	bottom: 0;
-	width: 250px;
+	width: 230px;
 	min-height: 100%;
 	overflow-y: auto;
+	padding-bottom: 200px;
+}
+
+body #content-wrapper {
+	left: 0px;
 }
 
 body.navbar-side-open .navbar-static-side {
 	display: block;
-	width: 250px;
+	width: 230px;
 }
 
 body.navbar-side-close .navbar-static-side {
@@ -31,7 +36,7 @@ body.navbar-side-close .navbar-static-side {
 
 body.navbar-side-open #content-wrapper {
 	margin-left: 0;
-	left: 250px;
+	left: 230px;
 }
 
 #content-wrapper header .navbar-default .navbar-mobile-logo {
@@ -50,12 +55,12 @@ body.navbar-side-open #content-wrapper {
 }
 
 @media (min-width: @screen-md-min) {
-	#content-wrapper {
-		left: 250px;
+	body #content-wrapper {
+		left: 65px;
 	}
 
 	body.navbar-side-close #content-wrapper {
-		left: 250px;
+		left: 230px;
 	}
 }
 

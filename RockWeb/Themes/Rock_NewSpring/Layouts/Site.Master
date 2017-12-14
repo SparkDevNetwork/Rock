@@ -144,21 +144,56 @@
     <script>
         // enable sidbar sub menus
         $(document).on('click', '.navbar-side li', function () {
-            if($(this).hasClass('open')) {
-                $(this).removeClass('open');
-            } else {
+            if(!$(this).hasClass('open')) {
                 $('.navbar-side li').removeClass('open');
                 $(this).addClass('open');
             }
+
+            $('body').addClass('navbar-side-open');
         });
 
         $(document).on('click', '#content-wrapper', function () {
             $('.navbar-side li').removeClass('open');
+            $('body').removeClass('navbar-side-open');
         });
 
         // show/hide sidebar nav
         $(document).on('click', '.navbar-minimize', function () {
-            $('body').toggleClass('navbar-side-close').toggleClass('navbar-side-open');
+
+            var body = $('body');
+
+            if(body.hasClass('navbar-side-close')) {
+                console.log('a');
+                body.addClass('navbar-side-open');
+                body.removeClass('navbar-side-close');
+            } else {
+                console.log('b');
+                body.removeClass('navbar-side-open');
+                body.addClass('navbar-side-close');
+            };
+            // $('body').toggleClass('navbar-side-close').toggleClass('navbar-side-open');
+        });
+    </script>
+
+    <script>
+        $('[data-action="expand"]').on('click', function() {
+            
+            event.preventDefault();
+            var button = $(this);
+            var buttonHTML = $(this).html();
+            var content = $(this).prev();
+            var summary = content.prev();
+
+            if(buttonHTML.indexOf( 'More' ) != -1){
+                content.removeClass('hidden');
+                summary.addClass('hidden');
+                button.html(buttonHTML.replace('More','Less').replace('down','up'));
+            } else {
+                content.addClass('hidden');
+                summary.removeClass('hidden');
+                button.html(buttonHTML.replace('Less','More').replace('up','down'));
+            };
+
         });
     </script>
 
