@@ -16,21 +16,6 @@
 			  <h3 class="panel-title">{{ Series.Name }}</h3>
 			</div>
 		  </div>
-		  <div class="popover-content-holder hide">
-			<span class="description">
-			  {{ Series.Description | Truncate: 280, '...'}}
-			</span>
-			<hr class="margin-v-md">
-			<div class="message-list list-2col-wrapper">
-			  <ol class="list-flush margin-b-none js-reverselist">
-				{% for Message in Series.Messages %}
-				<li class="margin-b-sm">
-				  <a href="{{ LinkedPages.MessageDetailPage }}?MessageId={{ Message.Id }}">{{ Message.Name }}</a>
-				</li>
-				{% endfor %}
-			  </ol>
-			</div>
-		  </div>
 		</div>
     {% endfor %}
 
@@ -48,50 +33,5 @@
       <li class="next"><a class="btn bt-default" href="?PageNum={{ nextPage }}">Older <span aria-hidden="true">&rarr;</span></a></li>
     </ul>
   </nav>
-
-
 </div>
 
-<script>
-
-  $('.js-reverselist').each(function(){
-    var $list = $(this);
-    $list.append($list.children('li').get().reverse());
-  });
-
-  // Keep popover open when hovering on popover, not trigger
-  // Modified from http://jsfiddle.net/WojtekKruszewski/Zf3m7/22/
-  // Requires a hide delay on the popover
-  var originalLeave = $.fn.popover.Constructor.prototype.leave;
-  $.fn.popover.Constructor.prototype.leave = function(obj){
-    var self = obj instanceof this.constructor ?
-      obj : $(obj.currentTarget)[this.type](this.getDelegateOptions()).data('bs.' + this.type)
-    var container, timeout;
-
-    originalLeave.call(this, obj);
-
-    if(obj.currentTarget) {
-      container = self.$tip
-      timeout = self.timeout;
-      container.one('mouseenter', function(){
-        clearTimeout(timeout);
-        container.one('mouseleave', function(){
-          $.fn.popover.Constructor.prototype.leave.call(self, self);
-        });
-      })
-    }
-  };
-
-  $('.js-series').popover({
-    html: true,
-    content: function(){
-      return $(this).siblings('.popover-content-holder').html()
-    },
-    trigger: 'hover',
-    placement: 'auto right',
-    container: 'body',
-    viewport: { 'selector': 'body', 'padding': 0 },
-    delay: 300,
-    template: '<div class="popover popover-close" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
-  })
-</script>
