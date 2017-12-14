@@ -4,6 +4,22 @@
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 
+/* 
+  Summary of customizations for Rock:
+  1. Comment out the glyphicons
+  2. Add in the FontAwesome mixin
+  3. Add reference to FontAwesome _rock-update_map-classes.less
+  4. Add reference to _rock-fa-mixins.less
+*/
+@import "../FontAwesome/_rock-fa-mixins.less";
+
+@fa-theme-weight-name: "solid";
+@fa-theme-weight: 900;
+
+.fa-font-face( @fa-theme-weight-name, @fa-theme-weight, @fa-font-path );
+
+@import "../FontAwesome/_rock-upgrade-map-classes.less";
+
 // Core variables and mixins
 @import "variables.less";
 @import "mixins.less";
@@ -11,7 +27,7 @@
 // Reset and dependencies
 @import "normalize.less";
 @import "print.less";
-@import "glyphicons.less";
+//@import "glyphicons.less"; // custom to save space
 
 // Core CSS
 @import "scaffolding.less";
