@@ -292,7 +292,7 @@
          
          
          // setup a callback for browser width changes
-         const mq = window.matchMedia( "(min-width: 1457px)" );
+         const mq = window.matchMedia( "(min-width: 1000px)" );
          mq.addListener( widthChange );
          
          widthChange( mq );
