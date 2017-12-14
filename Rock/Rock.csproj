@@ -695,6 +695,7 @@
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
+    <Compile Include="Jobs\PbxCdrDownload.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
     <Compile Include="Jobs\SendDataViewEmail.cs" />
@@ -1167,6 +1168,9 @@
     <Compile Include="Model\LavaShortCode.cs" />
     <Compile Include="Model\PageShortLinkService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
+    <Compile Include="Pbx\CdrRecord.cs" />
+    <Compile Include="Pbx\PbxComponent.cs" />
+    <Compile Include="Pbx\PbxContainer.cs" />
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
@@ -1196,6 +1200,7 @@
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
     <Compile Include="SystemGuid\Communication.cs" />
     <Compile Include="SystemGuid\InteractionChannel.cs" />
+    <Compile Include="SystemKey\UserPreference.cs" />
     <Compile Include="Transactions\DeleteIndexEntityTransaction.cs" />
     <Compile Include="Transactions\IndexEntityTransaction.cs" />
     <Compile Include="Transactions\BulkIndexEntityTypeTransaction.cs" />
@@ -2059,6 +2064,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
+    <Folder Include="Pbx\Provider\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
