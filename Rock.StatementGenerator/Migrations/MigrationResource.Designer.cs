@@ -36,7 +36,7 @@ namespace Rock.StatementGenerator.Migrations {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Rock.StatementGenerator.Migrations.MigrationResource", typeof(MigrationResource).Assembly);
@@ -51,7 +51,7 @@ namespace Rock.StatementGenerator.Migrations {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -69,9 +69,9 @@ namespace Rock.StatementGenerator.Migrations {
         ///{% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
         ///{% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string _001_StatementGenerator_Grace {
+        public static string _001_StatementGenerator_Alternate1 {
             get {
-                return ResourceManager.GetString("_001_StatementGenerator_Grace", resourceCulture);
+                return ResourceManager.GetString("_001_StatementGenerator_Alternate1", resourceCulture);
             }
         }
         
@@ -82,9 +82,24 @@ namespace Rock.StatementGenerator.Migrations {
         ///{% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
         ///{% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
         ///{% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
-        ///{% assign currencySymbol = &apos;Global&apos; | Attribute:&apos;Curre [rest of string was truncated]&quot;;.
+        ///{% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string _001_StatementGenerator_RockDefault {
+        public static string _001_StatementGenerator_Alternate2 {
+            get {
+                return ResourceManager.GetString("_001_StatementGenerator_Alternate2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+        ///{% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+        ///{% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+        ///{% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+        ///{% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+        ///{% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+        ///{% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _001_StatementGenerator_RockDefault {
             get {
                 return ResourceManager.GetString("_001_StatementGenerator_RockDefault", resourceCulture);
             }
@@ -106,24 +121,9 @@ namespace Rock.StatementGenerator.Migrations {
         ///                }
         ///    [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string _001_StatementGenerator_RockDefault_Footer {
+        public static string _001_StatementGenerator_RockDefault_Footer {
             get {
                 return ResourceManager.GetString("_001_StatementGenerator_RockDefault_Footer", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
-        ///{% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
-        ///{% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
-        ///{% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
-        ///{% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
-        ///{% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
-        ///{% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string _001_StatementGenerator_Woodlands {
-            get {
-                return ResourceManager.GetString("_001_StatementGenerator_Woodlands", resourceCulture);
             }
         }
     }
