@@ -1,7 +1,14 @@
 ﻿.fa-font-face( @fa-weight-name, @fa-weight, @fa-path ) {
+  
+  .fa-font-face(@fa-weight-name, @fa-weight, @fa-path, '');
+
+}
+
+
+.fa-font-face( @fa-weight-name, @fa-weight, @fa-path, @fa-suffix ) {
 
   @font-face {
-    font-family: 'Font Awesome 5';
+    font-family: 'Font Awesome 5@{fa-suffix}';
     font-style: normal;
     font-weight: @fa-weight;
     src: url('@{fa-path}/fa-@{fa-weight-name}-@{fa-weight}.eot');
@@ -9,3 +16,4 @@
   }
 
 }
+
