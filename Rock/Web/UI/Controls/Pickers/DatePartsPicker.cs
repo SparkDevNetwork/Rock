@@ -326,9 +326,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        private DropDownList monthDropDownList;
-        private DropDownList dayDropDownList;
-        private DropDownList yearDropDownList;
+        private RockDropDownList monthDropDownList;
+        private RockDropDownList dayDropDownList;
+        private RockDropDownList yearDropDownList;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -366,20 +366,29 @@ namespace Rock.Web.UI.Controls
             this.Attributes["data-requireyear"] = this.RequireYear.ToTrueFalse().ToLower();
             this.Attributes["data-allowFuture"] = this.AllowFutureDates.ToTrueFalse().ToLower();
 
-            monthDropDownList = new DropDownList();
+            monthDropDownList = new RockDropDownList();
             monthDropDownList.CssClass = "form-control input-width-sm js-month";
             monthDropDownList.ID = "monthDropDownList_" + this.ID;
             monthDropDownList.SelectedIndexChanged += dateList_SelectedIndexChanged;
+            monthDropDownList.ValidationGroup = this.ValidationGroup;
+            monthDropDownList.Required = this.Required;
+            monthDropDownList.RequiredErrorMessage = "Birthday month is Required.";
 
-            dayDropDownList = new DropDownList();
+            dayDropDownList = new RockDropDownList();
             dayDropDownList.CssClass = "form-control input-width-sm js-day";
             dayDropDownList.ID = "dayDropDownList_" + this.ID;
             dayDropDownList.SelectedIndexChanged += dateList_SelectedIndexChanged;
+            dayDropDownList.ValidationGroup = this.ValidationGroup;
+            dayDropDownList.Required = this.Required;
+            dayDropDownList.RequiredErrorMessage = "Birthday day is Required.";
 
-            yearDropDownList = new DropDownList();
+            yearDropDownList = new RockDropDownList();
             yearDropDownList.CssClass = "form-control input-width-sm js-year";
             yearDropDownList.ID = "yearDropDownList_" + this.ID;
             yearDropDownList.SelectedIndexChanged += dateList_SelectedIndexChanged;
+            yearDropDownList.ValidationGroup = this.ValidationGroup;
+            yearDropDownList.Required = this.Required;
+            yearDropDownList.RequiredErrorMessage = "Birthday year is Required.";
 
             Controls.Add( monthDropDownList );
             Controls.Add( dayDropDownList );
