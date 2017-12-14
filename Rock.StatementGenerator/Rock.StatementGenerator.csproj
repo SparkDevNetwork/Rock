@@ -73,9 +73,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Migrations\001_StatementGenerator_Grace.lava" />
-    <None Include="Migrations\001_StatementGenerator_RockDefault.lava" />
-    <None Include="Migrations\001_StatementGenerator_Woodlands.lava" />
+    <None Include="Migrations\001_StatementGenerator_Alternate1.lava">
+      <DependentUpon>001_StatementGenerator.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\001_StatementGenerator_Alternate2.lava">
+      <DependentUpon>001_StatementGenerator.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\001_StatementGenerator_RockDefault.lava">
+      <DependentUpon>001_StatementGenerator.cs</DependentUpon>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -93,14 +99,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Migrations\001_StatementGenerator_RockDefault.Footer.html" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Migrations\MigrationResource.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>MigrationResource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Migrations\001_StatementGenerator_RockDefault.Footer.html">
+      <DependentUpon>001_StatementGenerator.cs</DependentUpon>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
