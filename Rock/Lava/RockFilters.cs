@@ -3475,6 +3475,37 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Ratings the markup.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string RatingMarkup(object input )
+        {
+            var rating = 0;
+
+            if (input!= null )
+            {
+                rating = input.ToString().AsInteger();
+            }
+
+            var starCounter = 0;
+            StringBuilder starMarkup = new StringBuilder();
+
+            for ( int i = 0; i < rating; i++ )
+            {
+                starMarkup.Append( "<i class='fa fa-rating-on'></i>" );
+                starCounter++;
+            }
+
+            for ( int i = starCounter; i < 5; i++ )
+            {
+                starMarkup.Append( "<i class='fa fa-rating-off'></i>" );
+            }
+
+            return starMarkup.ToString();
+        }
+
+        /// <summary>
         /// Pages the specified input.
         /// </summary>
         /// <param name="input">The input.</param>

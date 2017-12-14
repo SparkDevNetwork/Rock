@@ -21,6 +21,7 @@
 @import "./chosen/bootstrap-chosen-variables.less";
 @import "./chosen/bootstrap-chosen.less";
 
+.fa-font-face( @fa-theme-weight-name, @fa-theme-weight, @fa-font-path );
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.css";
@@ -621,7 +622,6 @@ th[align=center] {
 
 .btn-authentication {
   width: 100%;
-
   .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
 
   &:hover {
@@ -630,19 +630,22 @@ th[align=center] {
 
   &.facebook:before {
     margin-right: 12px;
-    font-family: 'FontAwesome';
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
     content: @fa-var-facebook;
   }
 
   &.google:before {
     margin-right: 12px;
-    font-family: 'FontAwesome';
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
     content: @fa-var-google;
   }
 
   &.twitter:before {
     margin-right: 12px;
-    font-family: 'FontAwesome';
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
     content: @fa-var-twitter;
   }
 }

@@ -1,11 +1,16 @@
-﻿// These variables are used to map older FontAwesome v4 variables to v5
+﻿// global font awesome variables for rock customization
+@fa-font-face: "Font Awesome 5";
+@fa-theme-weight: 900;
+@fa-theme-weight-name: "solid";
 
-@fa-var-star-o: "\f005";
-@fa-var-trash-o: "\f2ed";
-@fa-var-file-o: "\f15b";
-@fa-var-clock-o: "\f017";
-@fa-var-arrow-circle-o-down: "\f358";
-@fa-var-arrow-circle-o-up: "\f35b";
+// These variables are used to map older FontAwesome v4 variables to v5
+
+@fa-var-star-o: @fa-var-star;
+@fa-var-trash-o: @fa-var-trash-alt;
+@fa-var-file-o: @fa-var-file;
+@fa-var-clock-o: @fa-var-clock;
+@fa-var-arrow-circle-o-down: @fa-var-arrow-alt-circle-down;
+@fa-var-arrow-circle-o-up: @fa-var-arrow-alt-circle-up;
 @fa-var-play-circle-o: "\f144";
 @fa-var-picture-o: "\f03e";
 @fa-var-photo: "\f03e";
@@ -28,7 +33,7 @@
 @fa-var-hand-o-left: \f0a5;
 @fa-var-hand-o-up: \f0a6;
 @fa-var-hand-o-down: \f0a7;
-@fa-var-files-o: \f0c5;
+@fa-var-files-o: @fa-var-file;
 @fa-var-floppy-o: \f0c7;
 @fa-var-money: \f3d1;
 @fa-var-comment-o: \f075;
