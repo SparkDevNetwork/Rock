@@ -12,43 +12,43 @@
 @import "_rock-upgrade-map-variables.less";
 
 .fa {
-  font-family: 'Font Awesome 5';
+  font-family: @fa-font-face;
   font-weight: @fa-theme-weight;
 }
 
 /* prefix start */
 .fas {
-  font-family: 'Font Awesome 5';
+  font-family: @fa-font-face;
   font-weight: 900;
 }
 
 .far {
-  font-family: 'Font Awesome 5';
+  font-family: @fa-font-face;
   font-weight: 400;
 }
 
 .fal {
-  font-family: 'Font Awesome 5';
+  font-family: @fa-font-face;
   font-weight: 300;
 }
 
 .fab {
-  font-family: 'Font Awesome 5 Brands';
+  font-family: '@{fa-font-face} Brands';
   font-weight: normal;
 }
 /* prefix end */
 
 // overrides for key icons
-.fa.fa-rating-unselected,
-.fa.fa-rating-off {
-  opacity: .2;
+.fa.fa-rating-selected:before,
+.fa.fa-rating-on:before {
+  content: @fa-var-star;
 }
 
-.fa.fa-rating-selected:before,
+
 .fa.fa-rating-unselected:before,
-.fa.fa-rating-on:before,
 .fa.fa-rating-off:before {
   content: @fa-var-star;
+  font-weight: @fa-theme-weight-outline;
 }
 
 // map all the missing v4 icons to fontawesome
@@ -183,7 +183,7 @@
 .fa.fa-bathtub,
 .fa.fa-s15,
 .fa.fa-times-rectangle {
-  font-family: 'Font Awesome 5';
+  font-family: @fa-font-face;
   font-weight: @fa-theme-weight;
 }
 
@@ -529,7 +529,7 @@
 .fa.fa-fa,
 .fa.fa-eercast
 {
-  font-family: 'Font Awesome 5 Brands';
+  font-family: '@{fa-font-face} Brands';
   font-weight: normal !important;
 }
 
@@ -673,8 +673,8 @@
 .fa.fa-window-close-o,
 .fa.fa-times-rectangle-o,
 .fa.fa-snowflake-o {
-  font-family: 'Font Awesome 5';
-  font-weight: @fa-theme-weight;
+  font-family: @fa-font-face;
+  font-weight: @fa-theme-weight-outline;
 }
 
 // set content for v4 missing icons
