@@ -87,10 +87,12 @@ namespace RockWeb.Blocks.Cms
                 if ( tbFontAwesomeProKey.Text.IsNullOrWhiteSpace() )
                 {
                     updateMessages.Add( "Font Awesome Pro Key removed" );
+                    pnlFontAwesomeFree.Visible = true;
                 }
                 else
                 {
                     updateMessages.Add( "Font Awesome Pro Key updated" );
+                    pnlFontAwesomeFree.Visible = false;
                 }
             }
 
@@ -99,6 +101,7 @@ namespace RockWeb.Blocks.Cms
                 if ( FontAwesomeHelper.ExtractFontAwesomePackage( fupFontAwesomeProPackage.BinaryFileId.Value ) )
                 {
                     updateMessages.Add( "Font Awesome Pro Package updated" );
+                    btnInstallUpdate.Text = "Update";
                 }
             }
 

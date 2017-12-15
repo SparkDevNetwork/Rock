@@ -149,7 +149,6 @@ $('.js-panel-toggle').on('click', function (e) {
                 overrideFile.AppendLine( string.Format( "{0} '{1}';", FontAwesomeHelper.VariableOverridesTokens.FontWeightNameLineStart, selectedPrimaryWeight.WeightName ) );
                 overrideFile.AppendLine();
                 overrideFile.AppendLine( "@import \"../../../Styles/FontAwesome/_rock-fa-mixins.less\";" );
-                overrideFile.AppendLine( "@fa-font-path: '../../../Assets/Fonts/FontAwesome';" );
 
                 foreach ( var alternateFontWeightName in cblFontAwesomeAlternateFonts.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value ).ToList() )
                 {
@@ -157,17 +156,10 @@ $('.js-panel-toggle').on('click', function (e) {
                     if ( alternateFont != null )
                     {
                         string suffixParam = string.Empty;
-                        if ( alternateFont.Suffix.IsNotNullOrWhitespace() )
-                        {
-                            // ensure the suffix has a space prefix
-                            suffixParam = " " + alternateFont.Suffix;
-                        }
                         overrideFile.AppendLine(
-                            string.Format( "{0} '{1}', {2}, @fa-font-path, '{3}');",
+                            string.Format( "{0} '{1}' );",
                                 FontAwesomeHelper.VariableOverridesTokens.FontFaceLineStart,
-                                alternateFont.WeightName,
-                                alternateFont.WeightValue,
-                                suffixParam
+                                alternateFont.WeightName
                                 ) );
                     }
                 }
@@ -245,10 +237,12 @@ $('.js-panel-toggle').on('click', function (e) {
                 alternateFontWeights = FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IncludedInFree && a.WeightName != selectedWeight ).ToList();
             }
 
+
+            var selectedAlternateFonts = cblFontAwesomeAlternateFonts.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value ).ToList();
             cblFontAwesomeAlternateFonts.Items.Clear();
             foreach ( var fontWeight in alternateFontWeights )
             {
-                cblFontAwesomeAlternateFonts.Items.Add( new ListItem( fontWeight.DisplayName, fontWeight.WeightName ) );
+                cblFontAwesomeAlternateFonts.Items.Add( new ListItem( fontWeight.DisplayName, fontWeight.WeightName ) { Selected = selectedAlternateFonts.Contains( fontWeight.WeightName ) } );
             }
         }
 
