@@ -17,7 +17,7 @@
                     <Rock:NotificationBox ID="nbFontAwesomeFree" runat="server" NotificationBoxType="Info">
                         You are currently using the free version of Font Awesome. Consider upgrading to the Pro version to unlock hundreds of new fonts.
                     </Rock:NotificationBox>
-                    <a class="btn btn-primary" href="http://www.fontawesome.com">Learn More</a>
+                    <a class="btn btn-primary" target="_blank" href="http://www.fontawesome.com">Learn More</a>
 
                     <hr />
                 </asp:Panel>
