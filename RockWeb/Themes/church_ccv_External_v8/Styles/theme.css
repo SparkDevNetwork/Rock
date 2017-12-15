@@ -1306,13 +1306,13 @@ a.aspNetDisabled {
     line-height: 1.42857143;
 }
 
-    .form-group .checkbox:last-child {
-        margin-bottom: 30px;
-    }
+.form-group .checkbox:last-child {
+    margin-bottom: 30px;
+}
 
-    .form-group > .form-group {
-        margin-top: 12px;
-    }
+.form-group > .form-group {
+    margin-top: 12px;
+}
 
 .form-horizontal .form-group {
     margin-right: 0;
@@ -10213,10 +10213,6 @@ legend {
     padding-right: 0;
 }
 
-.form-control {
-	width: 75%;
-}
-
 .form-control ,input {
   border: 0;
   outline: 0;
@@ -10622,6 +10618,12 @@ html,body{
    margin-left: 30px;
 }
 
+@media screen and (max-width: 800px) {
+    .event-page-wrapper .event-calendar {
+        margin-left: 15px;
+     }
+}
+
 .event-page-wrapper .event-calendar .header {
    display: flex;
    justify-content: flex-start;
@@ -10699,6 +10701,12 @@ html,body{
    flex-wrap: wrap;
    align-items: center;
    min-width: 72%;
+}
+
+@media screen and (max-width: 800px) {
+    .event-page-wrapper .event-calendar .event-item .details {
+        min-width: 65%;
+    }        
 }
 
 .event-page-wrapper .event-calendar .event-item .details .info h4{
@@ -10840,7 +10848,8 @@ html,body{
 
 @media screen and (max-width: 999px ){
     .event-detail-card {
-        margin: 0 auto;
+        margin: 0px 10px;
+        width: 85%;
     }
 }
 
@@ -11602,7 +11611,7 @@ html,body{
 
     /* Push first section down below header */
     #section-a-bg {
-        padding-top: 40px;
+        padding: 40px 0px;
     }
 
     /* Footer Size Styling */
@@ -11617,4 +11626,24 @@ html,body{
     .mainfootersocial, .mainfooterweblinks {
         margin: 15px;
     }
+
+    /* Style Form Fields */
+    .form-control {
+        width: 100%;
+    }
+}
+
+/* Event Form Entry Styling */
+.actions .btn {
+    margin-top: 15px;
+}
+
+/* Email input on all form fields */
+.email-box .control-wrapper .input-group {
+    display: block;
+    margin-bottom: 15px;
+}
+
+.email-box {
+    margin-bottom: 50px;
 }
