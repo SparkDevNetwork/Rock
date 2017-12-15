@@ -26,6 +26,8 @@ using Humanizer;
 
 using Rock;
 using Rock.Model;
+using Rock.Utility;
+using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -42,6 +44,8 @@ namespace RockWeb.Blocks.Cms
         #region Fields
 
         private string _themeName = string.Empty;
+        private string _variableFile = null;
+        private string _variableOverrideFile = null;
 
         #endregion
 
@@ -71,6 +75,9 @@ $('.js-panel-toggle').on('click', function (e) {
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true );
 
             _themeName = PageParameter( "EditTheme" );
+
+            _variableFile = string.Format( @"{0}Themes/{1}/Styles/_variables.less", Request.PhysicalApplicationPath, _themeName );
+            _variableOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_variable-overrides.less", Request.PhysicalApplicationPath, _themeName );
         }
 
         /// <summary>
@@ -83,7 +90,9 @@ $('.js-panel-toggle').on('click', function (e) {
 
             if ( !Page.IsPostBack )
             {
-                LoadCssOverrides();
+                LoadDropDowns();
+
+                ShowDetail( _themeName );
             }
 
             BuildControls();
@@ -120,8 +129,6 @@ $('.js-panel-toggle').on('click', function (e) {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            string variableFile = string.Format( @"{0}Themes/{1}/Styles/_variables.less", Request.PhysicalApplicationPath, _themeName );
-            string variableOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_variable-overrides.less", Request.PhysicalApplicationPath, _themeName );
             string cssOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_css-overrides.less", Request.PhysicalApplicationPath, _themeName );
 
             if ( File.Exists( cssOverrideFile ) )
@@ -130,9 +137,43 @@ $('.js-panel-toggle').on('click', function (e) {
             }
 
             // get list of original values
-            Dictionary<string, string> originalValues = GetVariables( variableFile );
+            Dictionary<string, string> originalValues = GetVariables( _variableFile );
 
             StringBuilder overrideFile = new StringBuilder();
+
+            if ( pnlFontAwesomeSettings.Visible )
+            {
+                overrideFile.AppendLine( FontAwesomeHelper.VariableOverridesTokens.StartRegion );
+                var selectedPrimaryWeight = FontAwesomeHelper.FontAwesomeIconCssWeights.FirstOrDefault( a => a.WeightName == ddlFontAwesomeIconWeight.SelectedValue );
+                overrideFile.AppendLine( string.Format( "{0} {1};", FontAwesomeHelper.VariableOverridesTokens.FontWeightValueLineStart, selectedPrimaryWeight.WeightValue ) );
+                overrideFile.AppendLine( string.Format( "{0} '{1}';", FontAwesomeHelper.VariableOverridesTokens.FontWeightNameLineStart, selectedPrimaryWeight.WeightName ) );
+                overrideFile.AppendLine();
+                overrideFile.AppendLine( "@import \"../../../Styles/FontAwesome/_rock-fa-mixins.less\";" );
+                overrideFile.AppendLine( "@fa-font-path: '../../../Assets/Fonts/FontAwesome';" );
+
+                foreach ( var alternateFontWeightName in cblFontAwesomeAlternateFonts.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value ).ToList() )
+                {
+                    var alternateFont = FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.WeightName == alternateFontWeightName ).FirstOrDefault();
+                    if ( alternateFont != null )
+                    {
+                        string suffixParam = string.Empty;
+                        if ( alternateFont.Suffix.IsNotNullOrWhitespace() )
+                        {
+                            // ensure the suffix has a space prefix
+                            suffixParam = " " + alternateFont.Suffix;
+                        }
+                        overrideFile.AppendLine(
+                            string.Format( "{0} '{1}', {2}, @fa-font-path, '{3}');",
+                                FontAwesomeHelper.VariableOverridesTokens.FontFaceLineStart,
+                                alternateFont.WeightName,
+                                alternateFont.WeightValue,
+                                suffixParam
+                                ) );
+                    }
+                }
+
+                overrideFile.AppendLine( FontAwesomeHelper.VariableOverridesTokens.EndRegion );
+            }
 
             foreach ( var control in phThemeControls.Controls )
             {
@@ -160,21 +201,139 @@ $('.js-panel-toggle').on('click', function (e) {
                     }
                 }
             }
-
-            System.IO.StreamWriter file = new System.IO.StreamWriter( variableOverrideFile );
-            file.WriteLine( overrideFile );
-            file.Dispose();
+            
+            File.WriteAllText( _variableOverrideFile, overrideFile.ToString() );
 
             // compile theme
             string messages = string.Empty;
             var theme = new RockTheme( _themeName );
-            theme.Compile();
-
-            NavigateToParentPage();
+            if ( !theme.Compile( out messages ) )
+            {
+                nbMessages.Text = "Unable to compile";
+                nbMessages.Visible = true;
+            }
+            else
+            {
+                NavigateToParentPage();
+            }
         }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlFontAwesomeIconWeight control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlFontAwesomeIconWeight_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var selectedWeight = ddlFontAwesomeIconWeight.SelectedValue;
+            LoadAlternateFontsCheckboxList( selectedWeight );
+        }
+
+        /// <summary>
+        /// Loads the alternate fonts checkbox list.
+        /// </summary>
+        /// <param name="selectedWeight">The selected weight.</param>
+        private void LoadAlternateFontsCheckboxList( string selectedWeight )
+        {
+            List<FontAwesomeHelper.FontAwesomeIconCssWeight> alternateFontWeights = null;
+            if ( FontAwesomeHelper.HasFontAwesomeProKey() )
+            {
+                alternateFontWeights = FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.WeightName != selectedWeight ).ToList();
+            }
+            else
+            {
+                alternateFontWeights = FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IncludedInFree && a.WeightName != selectedWeight ).ToList();
+            }
+
+            cblFontAwesomeAlternateFonts.Items.Clear();
+            foreach ( var fontWeight in alternateFontWeights )
+            {
+                cblFontAwesomeAlternateFonts.Items.Add( new ListItem( fontWeight.DisplayName, fontWeight.WeightName ) );
+            }
+        }
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        public void ShowDetail( string themeName )
+        {
+            // Font Awesome stuff
+            // TODO: Read LESS files for current setup
+
+            // Only show the FontAwesome settings if the _variableOverrideFile exists
+            if ( File.Exists( _variableOverrideFile ) )
+            {
+                pnlFontAwesomeSettings.Visible = true;
+
+                var fileLines = File.ReadAllLines( _variableOverrideFile ).ToList();
+
+                int fontAwesomeRegionStartLine = fileLines.IndexOf( FontAwesomeHelper.VariableOverridesTokens.StartRegion );
+                int fontAwesomeRegionEndLine = fileLines.IndexOf( FontAwesomeHelper.VariableOverridesTokens.EndRegion );
+                List<string> fontAwesomeLines = new List<string>();
+                if ( fontAwesomeRegionStartLine >= 0 && fontAwesomeRegionEndLine > fontAwesomeRegionStartLine )
+                {
+                    for ( int currentLine = fontAwesomeRegionStartLine; currentLine < fontAwesomeRegionEndLine; currentLine++ )
+                    {
+                        fontAwesomeLines.Add( fileLines[currentLine] );
+                    }
+                }
+
+                string primaryWeight = "solid";
+                List<string> alternateFonts = new List<string>();
+
+                if ( fontAwesomeLines.Any() )
+                {
+                    primaryWeight = fontAwesomeLines.Where( a => a.StartsWith( FontAwesomeHelper.VariableOverridesTokens.FontWeightNameLineStart ) )
+                        .Select( a => a.Split( new char[] { '\'' } ) ).Where( a => a.Length == 3 ).Select( a => a[1] ).FirstOrDefault();
+
+                    alternateFonts = fontAwesomeLines.Where( a => a.StartsWith( FontAwesomeHelper.VariableOverridesTokens.FontFaceLineStart ) ).Select( a => a.Split( new char[] { '\'' } ) )
+                        .Where( a => a.Length >= 3 ).Select( a => a[1] ).ToList();
+                }
+
+                ddlFontAwesomeIconWeight.SetValue( primaryWeight );
+                LoadAlternateFontsCheckboxList( ddlFontAwesomeIconWeight.SelectedValue );
+                foreach ( var cbAlternateFont in cblFontAwesomeAlternateFonts.Items.OfType<ListItem>() )
+                {
+                    cbAlternateFont.Selected = alternateFonts.Contains( cbAlternateFont.Value );
+                }
+            }
+            else
+            {
+                pnlFontAwesomeSettings.Visible = false;
+            }
+
+            // Other theme stuff
+            LoadCssOverrides();
+        }
+
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {
+            ddlFontAwesomeIconWeight.Items.Clear();
+
+            if ( FontAwesomeHelper.HasFontAwesomeProKey() )
+            {
+                // If they have pro, any of the weights can be used as the primary weight
+                foreach ( var fontAwesomeIconCssWeight in FontAwesomeHelper.FontAwesomeIconCssWeights )
+                {
+                    ddlFontAwesomeIconWeight.Items.Add( new ListItem( fontAwesomeIconCssWeight.DisplayName, fontAwesomeIconCssWeight.WeightName ) );
+                }
+            }
+            else
+            {
+                // If they don't have pro, include list the weights that are included in the free version, and are allowed to be used a primary weight
+                foreach ( var fontAwesomeIconCssWeight in FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IncludedInFree && !a.RequiresProForPrimary ) )
+                {
+                    ddlFontAwesomeIconWeight.Items.Add( new ListItem( fontAwesomeIconCssWeight.DisplayName, fontAwesomeIconCssWeight.WeightName ) );
+                }
+            }
+        }
 
         /// <summary>
         /// Builds the controls.
@@ -190,10 +349,7 @@ $('.js-panel-toggle').on('click', function (e) {
 
             if ( !string.IsNullOrWhiteSpace( _themeName ) )
             {
-                string variableFile = string.Format( @"{0}Themes/{1}/Styles/_variables.less", Request.PhysicalApplicationPath, _themeName );
-                string variableOverrideFile = string.Format( @"{0}Themes/{1}/Styles/_variable-overrides.less", Request.PhysicalApplicationPath, _themeName );
-
-                if ( !File.Exists( variableFile ) || !File.Exists( variableOverrideFile ) )
+                if ( !File.Exists( _variableFile ) || !File.Exists( _variableOverrideFile ) )
                 {
                     nbMessages.NotificationBoxType = NotificationBoxType.Warning;
                     nbMessages.Text = "This theme does not have a variables file(s) to allow overriding.";
@@ -202,9 +358,9 @@ $('.js-panel-toggle').on('click', function (e) {
                 }
 
                 // get list of current overrides
-                Dictionary<string, string> overrides = GetVariables( variableOverrideFile );
+                Dictionary<string, string> overrides = GetVariables( _variableOverrideFile );
 
-                foreach ( string line in File.ReadLines( variableFile ) )
+                foreach ( string line in File.ReadLines( _variableFile ) )
                 {
                     if ( line.Left( 4 ) == @"//--" )
                     {
