@@ -381,15 +381,29 @@ namespace RockWeb.Plugins.church_ccv.Finance
                         callbackField.HtmlEncode = false;
                     }
 
+                    // this will fill in the preview field for the employee contributions
                     callbackField.OnFormatDataValue += ( s, args ) =>
                     {
                         var financialAccountAmountInfoList = args.DataValue as List<FinancialAccountAmountInfo>;
                         if ( financialAccountAmountInfoList != null )
                         {
-                            var employeeAccountAmount = financialAccountAmountInfoList.FirstOrDefault( a => a.FinancialAccount == campusAccountMapping.FinancialAccount );
-                            if ( employeeAccountAmount != null && employeeAccountAmount.Amount.HasValue && employeeAccountAmount.Amount != 0)
+                            decimal amountTotal = 0;
+
+                            // get all accounts tied to this employee and this column's campus
+                            var employeeAccountAmountList = financialAccountAmountInfoList.Where( a => a.FinancialAccount == campusAccountMapping.FinancialAccount );
+                            foreach( FinancialAccountAmountInfo accountAmount in employeeAccountAmountList )
                             {
-                                args.FormattedValue = employeeAccountAmount.Amount.FormatAsCurrency();
+                                // sum their values
+                                if ( accountAmount.Amount.HasValue && accountAmount.Amount != 0 )
+                                {
+                                    amountTotal += accountAmount.Amount.Value;
+                                }
+                            }
+
+                            // either put the total contributions, or blank the column if they didn't give toward that campus.
+                            if( amountTotal > 0 )
+                            {
+                                args.FormattedValue = amountTotal.FormatAsCurrency( );
                             }
                             else
                             {
@@ -421,7 +435,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
                 foreach ( var importDataLine in importDataLines )
                 {
                     var importDataLineParts = importDataLine.Split( ',' );
-                    if ( importDataLines.Count >= campusColStartCol )
+                    if ( importDataLineParts.Count( ) >= campusColStartCol )
                     {
                         if ( importDataLineParts.Any( a => !string.IsNullOrWhiteSpace( a ) ) )
                         {
