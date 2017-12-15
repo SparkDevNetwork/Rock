@@ -163,10 +163,10 @@ namespace Rock.Utility
         /// </value>
         public static FontAwesomeIconCssWeight[] FontAwesomeIconCssWeights => new FontAwesomeIconCssWeight[]
         {
-            new FontAwesomeIconCssWeight( "solid", 900, false, true, null ),
-            new FontAwesomeIconCssWeight( "regular", 400, true, true, null ),
-            new FontAwesomeIconCssWeight( "light", 300, true, false, null ),
-            new FontAwesomeIconCssWeight( "brands", 400, true, true, "Brands" )
+            new FontAwesomeIconCssWeight( "solid", 900, false, true ),
+            new FontAwesomeIconCssWeight( "regular", 400, true, true ),
+            new FontAwesomeIconCssWeight( "light", 300, true, false ),
+            new FontAwesomeIconCssWeight( "brands", 400, true, true )
         };
 
         /// <summary>
@@ -182,14 +182,13 @@ namespace Rock.Utility
             /// <param name="requiresProForPrimary">if set to <c>true</c> [requires pro for primary].</param>
             /// <param name="includedInFree">if set to <c>true</c> [included in free].</param>
             /// <param name="suffix">The suffix.</param>
-            public FontAwesomeIconCssWeight( string weightName, int weightValue, bool requiresProForPrimary, bool includedInFree, string suffix )
+            public FontAwesomeIconCssWeight( string weightName, int weightValue, bool requiresProForPrimary, bool includedInFree )
             {
                 this.DisplayName = weightName.Transform( To.TitleCase );
                 this.WeightName = weightName;
                 this.WeightValue = weightValue;
                 this.RequiresProForPrimary = requiresProForPrimary;
                 this.IncludedInFree = includedInFree;
-                this.Suffix = suffix;
             }
 
             /// <summary>
@@ -231,14 +230,6 @@ namespace Rock.Utility
             ///   <c>true</c> if [included in free]; otherwise, <c>false</c>.
             /// </value>
             public bool IncludedInFree { get; internal set; }
-
-            /// <summary>
-            /// Gets the suffix.
-            /// </summary>
-            /// <value>
-            /// The suffix.
-            /// </value>
-            public string Suffix { get; internal set; }
         }
     }
 }
