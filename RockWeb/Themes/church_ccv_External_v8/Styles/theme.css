@@ -8514,6 +8514,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     line-height: 25px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: transparent;
 	position: fixed;
 	width: 100%;
 	z-index: 999;
@@ -11585,4 +11586,35 @@ html,body{
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+/* Mobile View Styling */
+@media screen and (max-width: 800px) {
+    /* Hide Main-Feature and Subnavbar section in mobile view.  */    
+    .main-feature, #subnavbar-bg {
+        display: none;
+    }
+
+    /* Change header to Black */
+    .masthead {
+        background-color: #000;
+    }
+
+    /* Push first section down below header */
+    #section-a-bg {
+        padding-top: 40px;
+    }
+
+    /* Footer Size Styling */
+    #mainfooter {
+        padding: 10px 40px 0px 40px;
+    }
+
+    .mainfooter-privacypolicy{
+        margin-top: 0px;
+    }
+
+    .mainfootersocial, .mainfooterweblinks {
+        margin: 15px;
+    }
 }
