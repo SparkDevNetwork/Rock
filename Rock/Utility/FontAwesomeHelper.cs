@@ -163,10 +163,10 @@ namespace Rock.Utility
         /// </value>
         public static FontAwesomeIconCssWeight[] FontAwesomeIconCssWeights => new FontAwesomeIconCssWeight[]
         {
-            new FontAwesomeIconCssWeight( "solid", 900, false, true ),
-            new FontAwesomeIconCssWeight( "regular", 400, true, true ),
-            new FontAwesomeIconCssWeight( "light", 300, true, false ),
-            new FontAwesomeIconCssWeight( "brands", 400, true, true )
+            new FontAwesomeIconCssWeight( "solid", 900, false, true, true ),
+            new FontAwesomeIconCssWeight( "regular", 400, true, true, true ),
+            new FontAwesomeIconCssWeight( "light", 300, true, false, true ),
+            new FontAwesomeIconCssWeight( "brands", 400, true, true, false )
         };
 
         /// <summary>
@@ -181,14 +181,15 @@ namespace Rock.Utility
             /// <param name="weightValue">The weight value.</param>
             /// <param name="requiresProForPrimary">if set to <c>true</c> [requires pro for primary].</param>
             /// <param name="includedInFree">if set to <c>true</c> [included in free].</param>
-            /// <param name="suffix">The suffix.</param>
-            public FontAwesomeIconCssWeight( string weightName, int weightValue, bool requiresProForPrimary, bool includedInFree )
+            /// <param name="isAllowedForPrimary">if set to <c>true</c> [is allowed for primary].</param>
+            public FontAwesomeIconCssWeight( string weightName, int weightValue, bool requiresProForPrimary, bool includedInFree, bool isAllowedForPrimary )
             {
                 this.DisplayName = weightName.Transform( To.TitleCase );
                 this.WeightName = weightName;
                 this.WeightValue = weightValue;
                 this.RequiresProForPrimary = requiresProForPrimary;
                 this.IncludedInFree = includedInFree;
+                this.IsAllowedForPrimary = isAllowedForPrimary;
             }
 
             /// <summary>
@@ -230,6 +231,14 @@ namespace Rock.Utility
             ///   <c>true</c> if [included in free]; otherwise, <c>false</c>.
             /// </value>
             public bool IncludedInFree { get; internal set; }
+
+            /// <summary>
+            /// Gets a value indicating whether this instance is allowed for primary.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is allowed for primary; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsAllowedForPrimary { get; internal set; }
         }
     }
 }

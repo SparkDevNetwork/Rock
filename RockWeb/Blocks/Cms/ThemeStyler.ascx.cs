@@ -193,7 +193,7 @@ $('.js-panel-toggle').on('click', function (e) {
                     }
                 }
             }
-            
+
             File.WriteAllText( _variableOverrideFile, overrideFile.ToString() );
 
             // compile theme
@@ -314,7 +314,7 @@ $('.js-panel-toggle').on('click', function (e) {
             if ( FontAwesomeHelper.HasFontAwesomeProKey() )
             {
                 // If they have pro, any of the weights can be used as the primary weight
-                foreach ( var fontAwesomeIconCssWeight in FontAwesomeHelper.FontAwesomeIconCssWeights )
+                foreach ( var fontAwesomeIconCssWeight in FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IsAllowedForPrimary ) )
                 {
                     ddlFontAwesomeIconWeight.Items.Add( new ListItem( fontAwesomeIconCssWeight.DisplayName, fontAwesomeIconCssWeight.WeightName ) );
                 }
@@ -322,7 +322,7 @@ $('.js-panel-toggle').on('click', function (e) {
             else
             {
                 // If they don't have pro, include list the weights that are included in the free version, and are allowed to be used a primary weight
-                foreach ( var fontAwesomeIconCssWeight in FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IncludedInFree && !a.RequiresProForPrimary ) )
+                foreach ( var fontAwesomeIconCssWeight in FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IsAllowedForPrimary && a.IncludedInFree && !a.RequiresProForPrimary ) )
                 {
                     ddlFontAwesomeIconWeight.Items.Add( new ListItem( fontAwesomeIconCssWeight.DisplayName, fontAwesomeIconCssWeight.WeightName ) );
                 }
