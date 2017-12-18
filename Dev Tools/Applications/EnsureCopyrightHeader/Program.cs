@@ -38,6 +38,7 @@ namespace EnsureCopyrightHeader
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Rest\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.SignNow\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.StatementGenerator\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot.Model\\" );
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );

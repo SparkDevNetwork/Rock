@@ -1351,7 +1351,6 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 dlgGroupTypeRoles.Title = "Edit Role";
-                dlgGroupTypeRoles.SubTitle = string.Format( "Id: {0}", groupTypeRole.Id );
             }
 
             hfRoleGuid.Value = groupTypeRole.Guid.ToString();

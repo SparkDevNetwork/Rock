@@ -632,9 +632,6 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             pnlDetails.Visible = true;
             hfMetricId.Value = metric.Id.ToString();
 
-            hlblMetricId.Text = "Id: " + metric.Id;
-            hlblMetricId.Visible = metric.Id != 0;
-
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
             nbEditModeMessage.Text = string.Empty;

@@ -232,77 +232,73 @@ namespace Rock.UniversalSearch.IndexModels
         /// <param name="person">The person.</param>
         /// <returns></returns>
         public static PersonIndex LoadByModel(Person person )
-        { 
+        {
             var personIndex = new PersonIndex();
-            try
+            personIndex.SourceIndexModel = "Rock.Model.Person";
+            personIndex.ModelConfiguration = "nofilters";
+
+            personIndex.Id = person.Id;
+            personIndex.FirstName = person.FirstName;
+            personIndex.NickName = person.NickName;
+            personIndex.LastName = person.LastName;
+
+            personIndex.ModelOrder = 10;
+
+            if ( person.SuffixValue != null )
             {
-                personIndex.SourceIndexModel = "Rock.Model.Person";
-                personIndex.ModelConfiguration = "nofilters";
-
-                personIndex.Id = person.Id;
-                personIndex.FirstName = person.FirstName;
-                personIndex.NickName = person.NickName;
-                personIndex.LastName = person.LastName;
-
-                personIndex.ModelOrder = 10;
-
-                if ( person.SuffixValue != null )
-                {
-                    personIndex.Suffix = person.SuffixValue.Value;
-                }
-
-                var campuses = person.GetCampusIds();
-
-                if ( campuses != null && campuses.Count > 0 )
-                {
-                    personIndex.CampusId = campuses.FirstOrDefault();
-                }
-
-                personIndex.ConnectionStatusValueId = person.ConnectionStatusValueId;
-                personIndex.RecordStatusValueId = person.RecordStatusValueId;
-                personIndex.PreviousLastNames = string.Join( ",", person.GetPreviousNames().Select( n => n.LastName ) );
-                personIndex.Age = person.Age;
-                personIndex.Gender = person.Gender.ToString();
-                personIndex.PhotoUrl = person.PhotoUrl;
-                personIndex.Email = person.Email;
-                personIndex.DocumentName = person.FullName;
-
-                if ( person.PhoneNumbers != null )
-                {
-                    personIndex.PhoneNumbers = string.Join( "|", person.PhoneNumbers.Select( p => p.NumberTypeValue.Value + "^" + p.Number ) );
-                }
-
-                // get family role
-                var familyRole = person.GetFamilyRole();
-
-                if ( familyRole != null )
-                {
-                    personIndex.FamilyRole = familyRole.Name;
-                }
-
-                // get home address
-                var address = person.GetHomeLocation();
-
-                if ( address != null )
-                {
-                    personIndex.StreetAddress = address.Street1 + " " + address.Street2;
-                    personIndex.City = address.City;
-                    personIndex.State = address.State;
-                    personIndex.PostalCode = address.PostalCode;
-                    personIndex.Country = address.Country;
-                }
-
-                // get spouse
-                var spouse = person.GetSpouse();
-
-                if ( spouse != null )
-                {
-                    personIndex.Spouse = person.GetSpouse().FullName;
-                }
-
-                AddIndexableAttributes( personIndex, person );
+                personIndex.Suffix = person.SuffixValue.Value;
             }
-            catch ( Exception ) { }
+
+            var campuses = person.GetCampusIds();
+
+            if ( campuses != null && campuses.Count > 0 )
+            {
+                personIndex.CampusId = campuses.FirstOrDefault();
+            }
+
+            personIndex.ConnectionStatusValueId = person.ConnectionStatusValueId;
+            personIndex.RecordStatusValueId = person.RecordStatusValueId;
+            personIndex.PreviousLastNames = string.Join(",", person.GetPreviousNames().Select( n => n.LastName ));
+            personIndex.Age = person.Age;
+            personIndex.Gender = person.Gender.ToString();
+            personIndex.PhotoUrl = person.PhotoUrl;
+            personIndex.Email = person.Email;
+            personIndex.DocumentName = person.FullName;
+
+            if ( person.PhoneNumbers != null )
+            {
+                personIndex.PhoneNumbers = string.Join( "|", person.PhoneNumbers.Select( p => p.NumberTypeValue.Value + "^" + p.Number ) );
+            }
+
+            // get family role
+            var familyRole = person.GetFamilyRole();
+
+            if (familyRole != null )
+            {
+                personIndex.FamilyRole = familyRole.Name;
+            }
+
+            // get home address
+            var address = person.GetHomeLocation();
+
+            if (address != null )
+            {
+                personIndex.StreetAddress = address.Street1 + " " + address.Street2;
+                personIndex.City = address.City;
+                personIndex.State = address.State;
+                personIndex.PostalCode = address.PostalCode;
+                personIndex.Country = address.Country;
+            }
+
+            // get spouse
+            var spouse = person.GetSpouse();
+
+            if ( spouse != null )
+            {
+                personIndex.Spouse = person.GetSpouse().FullName;
+            }
+
+            AddIndexableAttributes( personIndex, person );
 
             return personIndex;
         }
