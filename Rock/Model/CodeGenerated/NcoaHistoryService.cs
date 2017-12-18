@@ -93,6 +93,7 @@ namespace Rock.Model
             target.FamilyId = source.FamilyId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.LocationId = source.LocationId;
             target.MatchFlag = source.MatchFlag;
             target.MoveDate = source.MoveDate;
             target.MoveDistance = source.MoveDistance;
