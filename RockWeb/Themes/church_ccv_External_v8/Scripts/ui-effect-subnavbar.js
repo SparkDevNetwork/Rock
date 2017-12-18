@@ -1,4 +1,7 @@
-//<script type="text/javascript" src="https://localhost:44347/Themes/church_ccv_External_v8/Scripts/effects.js"></script>
+//<script type="text/javascript" src="/Themes/church_ccv_External_v8/Scripts/ui-effect-subnavbar.js"></script>
+
+//This will be true / false depending on the page width.
+var subNavbarEnabled = true; 
 
 // adds on "onload" hook to the window.onload function chain
 var oldonload = window.onload;
@@ -7,40 +10,59 @@ window.onload = (typeof window.onload != 'function') ?
    oldonload(); handleOnLoad();
 };
 
-function handleOnLoad() {
-  // setup a callback for when the media query triggers
-  const mq = window.matchMedia( "(min-width: 800px)" );
-  mq.addListener( mediaQueryTriggered );
-  
-  mediaQueryTriggered( mq );
+function handleOnLoad() {   
+   // setup a callback for when the media query triggers
+   const mq = window.matchMedia( "(min-width: 800px)" );
+   mq.addListener( subNavbarQueryTriggered );
+   
+   subNavbarQueryTriggered( mq );
+}
+
+function subNavbarQueryTriggered( mediaQuery ) {
+	
+   // we want to know if the browser is within our "desktop size" media query.
+   // if so, enable the navbar fade effect. If not, we'll turn it off
+	if( mediaQuery.matches ) {
+		toggleSubNavbar( true );
+	}
+	else {
+		toggleSubNavbar( false );
+	}
+}
+
+function toggleSubNavbar( enabled ) {
+   subNavbarEnabled = enabled;
+   
+   // if we're turning the navbar off, we need to cleanup
+   // any adjustments made while it was on.
+   if( subNavbarEnabled == false ) {
+      resetSubNavbarPos( );
+   }
 }
 
 $(document).scroll( function() {
-	
+   
    updateSubNavbarForScroll( );
 });
 
 $(window).resize(function() {
-	
-	updateSubNavbarForScroll();
+   
+   updateSubNavbarForScroll();
 });
 
 function updateSubNavbarForScroll( )
 {
-	// only do these things if there IS a subnav bar. (the actual zone will always exist,
-	// but the element ID won't if the page doesn't use one.)
-	var subNavbar = document.getElementById("subnavbar");
-	if( subNavbar != null )
-	{
-		updateSubNavbarSnap( );
+	if( subNavbarEnabled ) {
+      
+      updateSubNavbarSnap( );
 	
-		updateSubNavbarLinks( );
+      updateSubNavbarLinks( );
 	}
 }
 
 // "Snaps" the sub navbar to underneath the primary navbar when scrolling the page
-function updateSubNavbarSnap( )
-{
+function updateSubNavbarSnap( ) {
+   
 	// get the origin position of the subNavbar. This lets us know if we've scrolled beyond it or not,
 	// and thus whether to snap it to the top or not.
 	// Its origin is always below the "main-feature" section, so just get the bottom of that section.
@@ -56,8 +78,7 @@ function updateSubNavbarSnap( )
 	
 	// if the top navbar has clipped the sub navbar, we've gone far enough to snap
 	var topNavbar = document.getElementById("masthead");	
-	if( window.pageYOffset + topNavbar.offsetHeight >= subNavbarOriginPos )
-	{
+	if( window.pageYOffset + topNavbar.offsetHeight >= subNavbarOriginPos ) {
 		// snap the sub navbar to underneath the top navbar
 		subNavbar.style.top = topNavbar.offsetHeight + "px";
 		subNavbar.style.position = "fixed";
@@ -66,15 +87,21 @@ function updateSubNavbarSnap( )
 		// add the sub navbars height to the page so the page doesn't jump
 		sectionA.style.paddingTop = subNavbar.offsetHeight + "px";
 	}
-	else
-	{
-		// clear all styling to effectively put things like they were when the page loaded.
-		subNavbar.style.top = "";
-		subNavbar.style.position = "";
-		subNavbar.style.width = "";
-		
-		sectionA.style.paddingTop = "";	
+	else {
+		resetSubNavbarPos( );
 	}
+}
+
+function resetSubNavbarPos( ) {
+   
+   // clear all styling to effectively put things like they were when the page loaded.
+   var subNavbar = document.getElementById("subnavbar-bg");
+   subNavbar.style.top = "";
+   subNavbar.style.position = "";
+   subNavbar.style.width = "";
+   
+   var sectionA = document.getElementById("section-a-bg");
+   sectionA.style.paddingTop = "";	
 }
 
 // "Highlights" the appropriate sub navbar link based on where the user has scrolled in the page
@@ -83,11 +110,9 @@ function updateSubNavbarSnap( )
 // subnav-ID-NAME (ex: subnav-the-details)
 // The actual anchor should have the same ID, but without "subnav" prefixed.
 var subnavIdList = [];
-function updateSubNavbarLinks( )
-{
+function updateSubNavbarLinks( ) {
 	// seed the list array if we haven't yet (since we don't have OnLoad() access)
-	if( subnavIdList.length == 0 )
-	{
+	if( subnavIdList.length == 0 ) {
 		// first get all subnav links
 		var navLinks = $("#subnavbar ul li").children();
 		
@@ -132,4 +157,3 @@ function updateSubNavbarLinks( )
 	var subnavAnchorElem = $("#subnav-" + nearestElem[0].id);
 	subnavAnchorElem.addClass( "subnavbar-anchor-active");
 }
-//

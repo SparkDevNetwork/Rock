@@ -1,4 +1,7 @@
-//<script type="text/javascript" src="https://localhost:44347/Themes/church_ccv_External_v8/Scripts/effects.js"></script>
+//<script type="text/javascript" src="/Themes/church_ccv_External_v8/Scripts/ui-effect-navbar.js"></script>
+
+//This will be true / false depending on the page width.
+var navbarFadeEnabled = true;
 
 // adds on "onload" hook to the window.onload function chain
 var oldonload = window.onload;
@@ -10,9 +13,9 @@ window.onload = (typeof window.onload != 'function') ?
 function handleOnLoad() {
   // setup a callback for when the media query triggers
   const mq = window.matchMedia( "(min-width: 800px)" );
-  mq.addListener( mediaQueryTriggered );
+  mq.addListener( navbarQueryTriggered );
   
-  mediaQueryTriggered( mq );
+  navbarQueryTriggered( mq );
 }
 
 $(document).scroll( function() {
@@ -33,8 +36,7 @@ $(window).resize(function() {
    }
 });
 
-var navbarFadeEnabled = true;
-function mediaQueryTriggered( mediaQuery ) {
+function navbarQueryTriggered( mediaQuery ) {
 	
    // we want to know if the browser is within our "desktop size" media query.
    // if so, enable the navbar fade effect. If not, we'll turn it off
@@ -60,8 +62,7 @@ function toggleNavbarEffect( enabled ) {
    }
 }
 
-function updateNavbarForScroll( )
-{
+function updateNavbarForScroll( ) {
    // first get the navbar
    var navBar = $(".masthead");
 

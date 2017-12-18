@@ -1,4 +1,5 @@
-//<script type="text/javascript" src="https://localhost:44347/Themes/church_ccv_External_v8/Scripts/effects.js"></script>
+//<script type="text/javascript" src="/Themes/church_ccv_External_v8/Scripts/ui-effect-loading-spinner.js"></script>
+
  function displayLoader() {
 	var loaderBg = $(".loader-bg");
 	loaderBg.removeClass("loader-bg-hidden");
