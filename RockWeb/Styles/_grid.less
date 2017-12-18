@@ -177,22 +177,23 @@ td.wrap-contents {
   background-color: @grid-column-header-bg;
   border-color: @grid-column-header-border-color;
 
-   > a:not(.btn) {
+  > a:not(.btn) {
     display: block;
     color: @grid-column-header-text-color;
   }
-
   // sorting
   &.ascending a::before {
     padding-right: 5px;
-    font-family: FontAwesome;
-    content: "\f0d8";
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
+    content: @fa-var-caret-up;
   }
 
   &.descending a::before {
     padding-right: 5px;
-    font-family: FontAwesome;
-    content: "\f0d7";
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
+    content: @fa-var-caret-down;
   }
 }
 

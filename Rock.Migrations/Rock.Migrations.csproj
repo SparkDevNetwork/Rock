@@ -69,6 +69,10 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201712140417202_PbxProvider.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201712140417202_PbxProvider.Designer.cs">
+      <DependentUpon>201712140417202_PbxProvider.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationsLogger.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201609302332378_UniversalSearchModelUpdates.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201609302332378_UniversalSearchModelUpdates.Designer.cs">
@@ -2634,6 +2638,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201712140417202_PbxProvider.resx">
+      <DependentUpon>201712140417202_PbxProvider.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201609302332378_UniversalSearchModelUpdates.resx">
       <DependentUpon>201609302332378_UniversalSearchModelUpdates.cs</DependentUpon>
     </EmbeddedResource>

@@ -118,16 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="_001_StatementGenerator_Grace" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>001_statementgenerator_grace.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  <data name="_001_StatementGenerator_Alternate1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>001_statementgenerator_alternate1.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_001_StatementGenerator_Alternate2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>001_statementgenerator_alternate2.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_001_StatementGenerator_RockDefault" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>001_statementgenerator_rockdefault.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_001_StatementGenerator_RockDefault_Footer" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>001_statementgenerator_rockdefault.footer.html;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_001_StatementGenerator_Woodlands" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>001_statementgenerator_woodlands.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
 </root>
