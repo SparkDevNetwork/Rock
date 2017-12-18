@@ -163,8 +163,19 @@ namespace Rock.Pbx
     /// </summary>
     public enum CdrDirection
     {
+        /// <summary>
+        /// Incoming
+        /// </summary>
         Incoming,
+
+        /// <summary>
+        /// Outgoing
+        /// </summary>
         Outgoing,
+
+        /// <summary>
+        /// Unknown
+        /// </summary>
         Unknown
     }
 }

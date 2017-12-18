@@ -33,12 +33,39 @@ FROM
 WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 999 )]
     public abstract class PbxComponent : Component
     {
+        /// <summary>
+        /// Gets a value indicating whether the PBX supports originating calls.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [supports origination]; otherwise, <c>false</c>.
+        /// </value>
         public abstract bool SupportsOrigination { get; }
 
+        /// <summary>
+        /// Originates a call from the specified phone.
+        /// </summary>
+        /// <param name="fromPhone">From phone.</param>
+        /// <param name="toPhone">To phone.</param>
+        /// <param name="callerId">The caller identifier.</param>
+        /// <param name="message">The message.</param>
+        /// <returns></returns>
         public abstract bool Originate( string fromPhone, string toPhone, string callerId, out string message );
 
+        /// <summary>
+        /// Originates a call from the specified person.
+        /// </summary>
+        /// <param name="fromPerson">From person.</param>
+        /// <param name="toPhone">To phone.</param>
+        /// <param name="callerId">The caller identifier.</param>
+        /// <param name="message">The message.</param>
+        /// <returns></returns>
         public abstract bool Originate( Person fromPerson, string toPhone, string callerId, out string message );
 
+        /// <summary>
+        /// Downloads CDR Information
+        /// </summary>
+        /// <param name="startDate">The start date.</param>
+        /// <returns></returns>
         public abstract string DownloadCdr( DateTime? startDate = null );
     }
 
