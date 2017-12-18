@@ -519,6 +519,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string INTERACTIONCHANNELTYPE_WIFI_PRESENCE = "338CB800-C556-46CD-849D-8AE58FC7CB0E";
 
+        /// <summary>
+        /// The PBX CDR medium value
+        /// </summary>
+        public const string PBX_CDR_MEDIUM_VALUE = "B3904B57-62A2-57AC-43EA-94D4DEBA3D51";
+
         #endregion
 
     }
