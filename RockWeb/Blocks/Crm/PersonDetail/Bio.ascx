@@ -55,7 +55,7 @@
 
                     <Rock:TagList ID="taglPersonTags" runat="server" CssClass="clearfix" />
 
-                    <div class="summary">
+                    <div class="summary clearfix">
                         <div class="demographics">
                             <asp:Literal ID="lAge" runat="server" />
                             <asp:Literal ID="lGender" runat="server" /><br />
