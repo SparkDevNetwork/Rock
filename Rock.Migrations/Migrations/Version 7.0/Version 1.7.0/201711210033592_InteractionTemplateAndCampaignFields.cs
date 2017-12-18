@@ -1223,12 +1223,6 @@ order by YValue desc
             RockMigrationHelper.UpdateBlockTypeAttribute( "76A64656-7BAB-4ADC-82DD-9CD207F548F9", "9C204CD0-1233-41C5-818A-C5DA439445AA", "GroupId", "GroupId", "", @"The PowerBI GroupId that the report belongs to", 1, @"", "718A4891-4404-4253-8CF8-66F99105F20F" );
             // Attrib for BlockType: Power Bi Report Viewer:Power BI Account
             RockMigrationHelper.UpdateBlockTypeAttribute( "76A64656-7BAB-4ADC-82DD-9CD207F548F9", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Power BI Account", "PowerBiAccount", "", @"The Power BI account to use to retrieve the report.", 0, @"", "9FE23BB7-9FAD-42F3-AA80-7D14AB21850D" );
-            // Attrib for BlockType: My Connection Opportunities Lava:Detail Page
-            RockMigrationHelper.UpdateBlockTypeAttribute( "1B8E50A0-7AC4-475F-857C-50D0809A3F04", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", @"Page used to view details of a request.", 1, @"50f04e77-8d3b-4268-80ab-bc15dd6cb262", "848484B1-0666-4B2A-B63B-22CFBD00540E" );
-            // Attrib for BlockType: My Connection Opportunities Lava:Contents
-            RockMigrationHelper.UpdateBlockTypeAttribute( "1B8E50A0-7AC4-475F-857C-50D0809A3F04", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Contents", "Contents", "", @"The Lava template to use for displaying connection opportunities assigned to current user.", 3, @"{% include '~~/Assets/Lava/MyConnectionOpportunitiesSortable.lava' %}", "03C85B59-C957-4216-A750-B667188B4CB9" );
-            // Attrib for BlockType: My Connection Opportunities Lava:Connection Types
-            RockMigrationHelper.UpdateBlockTypeAttribute( "1B8E50A0-7AC4-475F-857C-50D0809A3F04", "E4E72958-4604-498F-956B-BA095976A60B", "Connection Types", "ConnectionTypes", "", @"Optional list of connection types to limit the display to (All will be displayed by default).", 2, @"", "2687FEFB-9012-499A-A37D-32838C952D3D" );
         }
 
         /// <summary>
