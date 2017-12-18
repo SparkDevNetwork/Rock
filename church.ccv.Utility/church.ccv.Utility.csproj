@@ -71,6 +71,7 @@
     <Compile Include="Group\ToolboxGroupMemberDetail.ascx.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Jobs\ChurchOnlinePlatformLiveCheck.cs" />
     <Compile Include="Jobs\ParentResourceNotifications.cs" />
     <Compile Include="Jobs\SendConnectionReport.cs" />
     <Compile Include="Jobs\CreateFirstVisitWorkflows.cs" />
