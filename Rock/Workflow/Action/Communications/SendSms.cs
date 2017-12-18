@@ -87,7 +87,7 @@ namespace Rock.Workflow.Action
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    recipients.Add( new RecipientData( toAttributeValue ) );
+                                    recipients.Add( new RecipientData( toAttributeValue, mergeFields ) );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -113,7 +113,7 @@ namespace Rock.Workflow.Action
                                                 smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                             }
 
-                                            var recipient = new RecipientData( smsNumber );
+                                            var recipient = new RecipientData( smsNumber, mergeFields );
                                             recipients.Add( recipient );
 
                                             var person = new PersonAliasService( rockContext ).GetPerson( personAliasGuid );
@@ -166,7 +166,7 @@ namespace Rock.Workflow.Action
                                                     smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                                 }
 
-                                                var recipient = new RecipientData( smsNumber );
+                                                var recipient = new RecipientData( smsNumber, mergeFields );
                                                 recipients.Add( recipient );
                                                 recipient.MergeFields.Add( "Person", person );
                                             }
@@ -182,7 +182,7 @@ namespace Rock.Workflow.Action
             {
                 if ( !string.IsNullOrWhiteSpace( toValue ) )
                 {
-                    recipients.Add( new RecipientData( toValue.ResolveMergeFields( mergeFields ) ) );
+                    recipients.Add( new RecipientData( toValue.ResolveMergeFields( mergeFields ), mergeFields ) );
                 }
             }
 
