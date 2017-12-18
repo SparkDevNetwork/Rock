@@ -1493,7 +1493,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="attribute">The attribute.</param>
         protected void SetSubTitleOnModal( Model.Attribute attribute )
         {
-            Control parent = this.Parent;
             ModalDialog modalDialog = this.FirstParentControlOfType<ModalDialog>();
             if ( modalDialog != null && string.IsNullOrEmpty(modalDialog.SubTitle) )
             {
