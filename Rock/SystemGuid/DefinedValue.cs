@@ -360,6 +360,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_NO_ACTIVITY = "64014FE6-943D-4ACF-8014-FED9F9169AE8";
 
+        /// <summary>
+        /// Inactive record status reason of Moved
+        /// </summary>
+        public const string PERSON_RECORD_STATUS_REASON_MOVED = "3684CF84-F30F-4CE0-9EB9-D6AFFEA9B99B";
+
         #endregion
 
         #region Person Record Type
