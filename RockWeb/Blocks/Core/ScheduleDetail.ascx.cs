@@ -347,9 +347,6 @@ namespace RockWeb.Blocks.Core
 
             pnlDetails.Visible = true;
             hfScheduleId.Value = schedule.Id.ToString();
-
-            schedule.LoadAttributes();
-            Rock.Attribute.Helper.AddDisplayControls( schedule, phDisplayAttributes, null, false, false );
             
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
