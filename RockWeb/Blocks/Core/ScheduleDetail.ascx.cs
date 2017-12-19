@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Core
             if ( !Page.IsPostBack )
             {
                 string scheduleIdParam = PageParameter( "scheduleId" );
-                if (!string.IsNullOrWhiteSpace(scheduleIdParam))
+                if ( !string.IsNullOrWhiteSpace( scheduleIdParam ) )
                 {
                     ShowDetail( scheduleIdParam.AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
                 }
@@ -59,6 +59,24 @@ namespace RockWeb.Blocks.Core
                 {
                     pnlDetails.Visible = false;
                 }
+            }
+            else if ( pnlDetails.Visible )
+            {
+                var rockContext = new RockContext();
+                Schedule schedule;
+                int? itemId = PageParameter( "scheduleId" ).AsIntegerOrNull();
+                if ( itemId.HasValue && itemId > 0 )
+                {
+                    schedule = new ScheduleService( rockContext ).Get( itemId.Value );
+                }
+                else
+                {
+                    schedule = new Schedule { Id = 0 };
+                }
+
+                schedule.LoadAttributes();
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( schedule, phAttributes, true, BlockValidationGroup );
             }
         }
 
@@ -128,6 +146,9 @@ namespace RockWeb.Blocks.Core
                 schedule.CheckInEndOffsetMinutes = null;
             }
 
+            schedule.LoadAttributes();
+            Rock.Attribute.Helper.GetEditValues( phAttributes, schedule );
+
             if ( !schedule.IsValid )
             {
                 // Controls will render the error messages
@@ -135,6 +156,7 @@ namespace RockWeb.Blocks.Core
             }
 
             rockContext.SaveChanges();
+            schedule.SaveAttributeValues( rockContext );
 
             Rock.CheckIn.KioskDevice.FlushAll();
 
@@ -326,6 +348,9 @@ namespace RockWeb.Blocks.Core
             pnlDetails.Visible = true;
             hfScheduleId.Value = schedule.Id.ToString();
 
+            schedule.LoadAttributes();
+            Rock.Attribute.Helper.AddDisplayControls( schedule, phDisplayAttributes, null, false, false );
+            
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
@@ -460,6 +485,9 @@ namespace RockWeb.Blocks.Core
             }
 
             lblMainDetails.Text = descriptionList.Html;
+            
+            schedule.LoadAttributes();
+            Rock.Attribute.Helper.AddDisplayControls( schedule, phDisplayAttributes, null, false, false );
         }
 
         /// <summary>
