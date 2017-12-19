@@ -36,27 +36,28 @@ namespace church.ccv.Utility
         {
             RockContext rockContext = new RockContext();
 
+            string isStreamLive = "False";
+            
             // Load Job Datamap for job settings
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-
-            // Get the Global Attribute used for live stream
+            
+            // Get global attribute
             AttributeService attributeService = new AttributeService( rockContext );
-            Rock.Model.Attribute liveStream = attributeService.GetGlobalAttribute( dataMap.GetString( "LiveStreamGlobalAttributeKey" ) );
+            Rock.Model.Attribute globalAttribute = attributeService.GetGlobalAttribute( dataMap.GetString( "LiveStreamGlobalAttributeKey" ) );
 
-            if (liveStream != null )
+            if(globalAttribute != null )
             {
-                // Get the value of liveStream attribute
-                AttributeValueService attributeValueService = new AttributeValueService( rockContext );
-                AttributeValue liveStreamValue = attributeValueService.GetByAttributeIdAndEntityId( liveStream.Id , null );
+                // Get the value of the Global Attribute
+                string globalAttributeValue = GlobalAttributesCache.Read().GetValue( globalAttribute.Key );
 
-                if ( liveStream != null)
+                if ( globalAttributeValue != null )
                 {
-                    // Get API Url from settings
+                    // Get API Url
                     string apiUrl = dataMap.GetString( "ChurchOnlinePlatformAPIUrl" );
-                    
+
                     if ( apiUrl != null )
                     {
-                        // Make API call to Church Online Platform
+                        // Make API call
                         string apiResponse = null;
 
                         using ( WebClient webClient = new WebClient() )
@@ -67,48 +68,49 @@ namespace church.ccv.Utility
                             }
                             catch ( WebException ex )
                             {
-                                //context.Result = String.Format( "API did not respond. Error code: {0}<br>Response: {1}", ex.Response, apiResponse );
-                                throw new Exception( String.Format( "API did not respond. Error: {0} - {1}", ex.Status, ex.Message ) );
+                                // Call failed, process error - save global attribute
+                                HandleError( globalAttribute.Key, isStreamLive, String.Format( "API did not respond. Error: {0} - {1}", ex.Status, ex.Message) );
                             }
                         }
 
-                        // If response contains "isLive":true then update global attribute to true, else set attribute to false
+                        // If apiResponse contains "isLive":true then set isStreamLive to true
                         if ( apiResponse.Contains( "\"isLive\":true" ) )
                         {
-                            liveStreamValue.Value = "True";
-                        }
-                        else
-                        {
-                            liveStreamValue.Value = "False";
+                            isStreamLive = "True";
                         }
 
-                        // Save Changes flush global attributes cache
-                        rockContext.SaveChanges();
-                        GlobalAttributesCache.Flush();
+                        // Save the attribute value
+                        GlobalAttributesCache.Read().SetValue( globalAttribute.Key, isStreamLive, true );
 
-                        // Display job execution result
-                        context.Result = string.Format( "{0} Global Attribute was changed to {1}", liveStream.Name, liveStreamValue.Value );                     
+                        // Update job execution result
+                        context.Result = string.Format( "{0} Global Attribute was changed to {1}", globalAttribute.Name, isStreamLive );
                     }
                     else
                     {
-                        // Display error
-                        //context.Result = String.Format( "Error loading Church Online Platform API url" );
-                        throw new Exception( "Error loading Church Online Platform API url" );
+                        // Process error - Save global attribute
+                        HandleError( globalAttribute.Key, isStreamLive, "Error loading Church Online Platform API url" );
                     }
                 }
                 else
                 {
-                    // Display error
-                    //context.Result = string.Format( "Error loading value of Global Attribute" );
-                    throw new Exception( "Error loading value of Global Attribute" );
+                    // Process error - Save global attribute
+                    HandleError( globalAttribute.Key, isStreamLive, "Error loading value of the Global Attribute" );
                 }
             }
             else
             {
-                // Display error
-                //context.Result = string.Format( "Error loading Global Attribute" );
-                throw new Exception( "Error Loading Global Attribute" );
+                // Throw error - dont save any changes
+                throw new Exception( "Error getting Global Attribute" );
             }
+        }
+      
+        private void HandleError( string attributeKey, string attributeValue, string message )
+        {
+            // Save Value of attribute
+            GlobalAttributesCache.Read().SetValue( attributeKey, attributeValue, true );
+
+            // Throw exception
+            throw new Exception( message );
         }
     }
 }
