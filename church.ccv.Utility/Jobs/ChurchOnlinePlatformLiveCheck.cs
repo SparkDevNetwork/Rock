@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using Newtonsoft.Json.Linq;
 using Quartz;
 using Rock.Attribute;
 using Rock.Data;
@@ -10,9 +9,10 @@ using Rock.Web.Cache;
 namespace church.ccv.Utility
 {
     /// <summary>
-    /// Checks Church Online Platform current event api if the event is live. Sets CCVLive global attribute to true or false based on response.
+    /// Checks Church Online Platform current event api if the event is live. Sets specified global attribute to true or false based on response.
     /// </summary>
     [TextField("Church Online Platform API Url", "The Church Online Platform API Url", true)]
+    [TextField("Live Stream Global Attribute Key","The key of the global attribute used to store if live stream is active",true)]
 
     [DisallowConcurrentExecution]
     class ChurchOnlinePlatformLiveCheck : IJob
@@ -36,73 +36,78 @@ namespace church.ccv.Utility
         {
             RockContext rockContext = new RockContext();
 
-            // Load Job Datamap
+            // Load Job Datamap for job settings
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            // Get the CCVLive Global Attribute
+            // Get the Global Attribute used for live stream
             AttributeService attributeService = new AttributeService( rockContext );
-            Rock.Model.Attribute ccvLive = attributeService.GetGlobalAttribute( "CCVLive" );
+            Rock.Model.Attribute liveStream = attributeService.GetGlobalAttribute( dataMap.GetString( "LiveStreamGlobalAttributeKey" ) );
 
-            if (ccvLive != null )
+            if (liveStream != null )
             {
-                // Get the attribute value of ccvLive
+                // Get the value of liveStream attribute
                 AttributeValueService attributeValueService = new AttributeValueService( rockContext );
-                AttributeValue ccvLiveValue = attributeValueService.GetByAttributeIdAndEntityId( ccvLive.Id, null );
+                AttributeValue liveStreamValue = attributeValueService.GetByAttributeIdAndEntityId( liveStream.Id , null );
 
-                if ( ccvLiveValue != null)
+                if ( liveStream != null)
                 {
                     // Get API Url from settings
                     string apiUrl = dataMap.GetString( "ChurchOnlinePlatformAPIUrl" );
                     
-                    // End job if no apiURL is loaded
-                    if ( apiUrl == null )
+                    if ( apiUrl != null )
                     {
-                        context.Result = String.Format( "Error loading API url" );
-                        return;
-                    }
+                        // Make API call to Church Online Platform
+                        string apiResponse = null;
 
-                    // Make API call to Church Online Platform
-                    string response = null;
-                  
-                    using ( WebClient wc = new WebClient() )
-                    {
-                        try
+                        using ( WebClient webClient = new WebClient() )
                         {
-                            response = wc.DownloadString( apiUrl );
+                            try
+                            {
+                                apiResponse = webClient.DownloadString( apiUrl );
+                            }
+                            catch ( WebException ex )
+                            {
+                                //context.Result = String.Format( "API did not respond. Error code: {0}<br>Response: {1}", ex.Response, apiResponse );
+                                throw new Exception( String.Format( "API did not respond. Error: {0} - {1}", ex.Status, ex.Message ) );
+                            }
                         }
-                        catch ( WebException ex )
-                        {
-                            context.Result = String.Format( "API did not respond. Error code: {0}", ex.Response );
-                            return;
-                        }
-                    }
 
-                    // If response back was 200 and isLive:true then update global attribute to true, else set attribute to false
-                    if ( response.Contains( "\"status\":200" ) && response.Contains( "\"isLive\":true" ) )
-                    {
-                        ccvLiveValue.Value = "True";
+                        // If response contains "isLive":true then update global attribute to true, else set attribute to false
+                        if ( apiResponse.Contains( "\"isLive\":true" ) )
+                        {
+                            liveStreamValue.Value = "True";
+                        }
+                        else
+                        {
+                            liveStreamValue.Value = "False";
+                        }
+
+                        // Save Changes flush global attributes cache
+                        rockContext.SaveChanges();
+                        GlobalAttributesCache.Flush();
+
+                        // Display job execution result
+                        context.Result = string.Format( "{0} Global Attribute was changed to {1}", liveStream.Name, liveStreamValue.Value );                     
                     }
                     else
                     {
-                        ccvLiveValue.Value = "False";
+                        // Display error
+                        //context.Result = String.Format( "Error loading Church Online Platform API url" );
+                        throw new Exception( "Error loading Church Online Platform API url" );
                     }
-                    
-                    // Save Changes
-                    rockContext.SaveChanges();
-
-                    // Display job execution status
-                    context.Result = string.Format( "{0} Global Attribute was changed to {1}", ccvLive.Name, ccvLiveValue.Value );
                 }
                 else
                 {
                     // Display error
-                    context.Result = string.Format( "Error loading value of Global Attribute" );
+                    //context.Result = string.Format( "Error loading value of Global Attribute" );
+                    throw new Exception( "Error loading value of Global Attribute" );
                 }
             }
             else
             {
                 // Display error
-                context.Result = string.Format( "Error loading Global Attribute" );
+                //context.Result = string.Format( "Error loading Global Attribute" );
+                throw new Exception( "Error Loading Global Attribute" );
             }
         }
     }
