@@ -87,26 +87,6 @@ namespace Rock.Model
         [Required]
         public int ChannelId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the list lava template.
-        /// Used when rendering the interaction component in a list using lava
-        /// </summary>
-        /// <value>
-        /// The list template.
-        /// </value>
-        [DataMember]
-        public string ListTemplate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the detail lava template.
-        /// Used when rendering the interaction component's details using lava
-        /// </summary>
-        /// <value>
-        /// The detail template.
-        /// </value>
-        [DataMember]
-        public string DetailTemplate { get; set; }
-
         #endregion
 
         #region Virtual Properties
