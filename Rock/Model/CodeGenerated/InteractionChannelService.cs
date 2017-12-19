@@ -95,17 +95,23 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.ChannelData = source.ChannelData;
+            target.ChannelDetailTemplate = source.ChannelDetailTemplate;
             target.ChannelEntityId = source.ChannelEntityId;
+            target.ChannelListTemplate = source.ChannelListTemplate;
             target.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
             target.ComponentCacheDuration = source.ComponentCacheDuration;
+            target.ComponentDetailTemplate = source.ComponentDetailTemplate;
             target.ComponentEntityTypeId = source.ComponentEntityTypeId;
-            target.DetailTemplate = source.DetailTemplate;
+            target.ComponentListTemplate = source.ComponentListTemplate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InteractionDetailTemplate = source.InteractionDetailTemplate;
             target.InteractionEntityTypeId = source.InteractionEntityTypeId;
-            target.ListTemplate = source.ListTemplate;
+            target.InteractionListTemplate = source.InteractionListTemplate;
             target.Name = source.Name;
             target.RetentionDuration = source.RetentionDuration;
+            target.SessionDetailTemplate = source.SessionDetailTemplate;
+            target.SessionListTemplate = source.SessionListTemplate;
             target.UsesSession = source.UsesSession;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
