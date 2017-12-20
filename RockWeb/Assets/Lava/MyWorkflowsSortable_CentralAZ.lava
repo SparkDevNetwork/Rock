@@ -28,6 +28,7 @@
             <th>Type</th>
             {% if showPriority %}<th>Priority</th>{% endif %}
             {% if showDue %}<th>Due</th>{% endif %}
+            <th>Last Updated</th>
           </tr>
         </thead>
         <tbody>
@@ -54,6 +55,16 @@
               {% if showDue %}
                 <td data-dateformat="M/D/YY">{{ workflowDueDate | Date:'M/d/yy' }}</td>
               {% endif %}
+              {% assign lastCompletedAction = action.Activity.Actions | Sort:'CompletedDateTime' | Last %}
+              {% assign lastUpdate =  lastCompletedAction.CompletedDateTime %}
+              {% if lastUpdate %}
+              {% else %}
+                {% assign lastUpdate = action.Activity.Actions | Sort:'LastProcessedDateTime' | Last %}
+                {% assign lastUpdate = lastUpdate.LastProcessedDateTime %}
+              {% endif %}
+              <td data-dateformat="M/D/YY">
+                <span class="js-date-rollover" data-toggle="tooltip" data-placement="top" data-original-title="{{ lastUpdate }}" title='{{ lastUpdate }}'>{{ lastUpdate | Date:'M/d/yy' }}</span>
+              </td>
             </tr>
           {% endfor %}
         </tbody>
