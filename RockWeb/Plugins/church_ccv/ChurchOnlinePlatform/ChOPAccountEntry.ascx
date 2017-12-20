@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="COPAccountEntry.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.COP.AccountEntry" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ChOPAccountEntry.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.ChurchOnlinePlatform.ChOPAccountEntry" %>
 <script type="text/javascript">
 
     Sys.Application.add_load(function () {
@@ -59,7 +59,7 @@
     <div class="sso-createaccount-panel-wrapper">
         <asp:PlaceHolder ID="phUserInfo" runat="server" Visible="true">
             <div id="create-panel-title" style="margin-bottom: 25px;">
-                <img src="themes/church_ccv_external_v8/assets/ccv_logo-hi-res.png" style="width: 125px;"/>
+                <img src="/themes/church_ccv_external_v8/assets/ccv_logo-hi-res.png" style="width: 125px;"/>
                 <h1 class="lm-form-title text-center">REGISTER</h1>
                 <p class="small-paragraph-bold">Create your account by filling out the form below.</p>
                 <div id="sso-ca-form-result-panel" class="alert alert-info" style="visibility: hidden; display: none;">
@@ -69,25 +69,27 @@
             
             <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-danger"/>
 
-            <div class="sso-entry-row">
-                <div class="sso-entry-col">
-                    <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
+            <asp:Panel ID="pnlEntryForm" runat="server">
+                <div class="sso-entry-row">
+                    <div class="sso-entry-col">
+                        <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" ></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
 
-                    <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirmation" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
-                    <asp:CompareValidator ID="covalPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="Password and Confirmation do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
+                        <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirmation" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
+                        <asp:CompareValidator ID="covalPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="Password and Confirmation do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
+                    </div>
+
+                    <div class="sso-entry-col">
+                        <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
+                        <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" />
+                        <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
+                    </div>
                 </div>
 
-                <div class="sso-entry-col">
-                    <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
-                    <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" />
-                    <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
+                <div class="actions" style="margin-left: 50px; margin-top:25px;">
+                    <asp:Button ID="btnUserInfoNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnUserInfoNext_Click" />
                 </div>
-            </div>
-
-            <div class="actions" style="margin-left: 50px; margin-top:25px;">
-                <asp:Button ID="btnUserInfoNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnUserInfoNext_Click" />
-            </div>
+            </asp:Panel>
         
         </asp:PlaceHolder>
 

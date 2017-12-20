@@ -31,7 +31,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.church_ccv.COP
+namespace RockWeb.Plugins.church_ccv.ChurchOnlinePlatform
 {
     /// <summary>
     /// Block for user to create a new login account.
@@ -53,7 +53,10 @@ namespace RockWeb.Plugins.church_ccv.COP
     [SystemEmailField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", order: 11 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", order: 12 )]
-    public partial class AccountEntry : Rock.Web.UI.RockBlock
+    [TextField( "Church Online Platform Sso Key", "You can find the Sso key on the Tools > Sso page in Church Online Platform.", false, "", "", 13, "ChOPSSOKey" )]
+    [TextField( "Church Online Platform Url", "Your Church Online Platform Url", false, "", "", 14, "ChOPUrl" )]
+
+    public partial class ChOPAccountEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -95,6 +98,14 @@ namespace RockWeb.Plugins.church_ccv.COP
         protected override void OnLoad( System.EventArgs e )
         {
             base.OnLoad( e );
+
+            // Check if ChOP block settings are set
+            if ( ( GetAttributeValue( "ChOPSSOKey" ).IsNullOrWhiteSpace() ) || ( GetAttributeValue( "ChOPUrl" ).IsNullOrWhiteSpace() ) )
+            {
+                ShowErrorMessage( "Missing Church Online Platform Block Settings" );
+                pnlEntryForm.Visible = false;
+                return;
+            }
 
             pnlMessage.Controls.Clear();
             pnlMessage.Visible = false;
@@ -248,17 +259,10 @@ namespace RockWeb.Plugins.church_ccv.COP
 
         protected void btnContinue_Click( object sender, EventArgs e )
         {
-            //string returnUrl = Request.QueryString["returnurl"];
-            //if ( !string.IsNullOrWhiteSpace( returnUrl ) )
-            //{
-            //    Response.Redirect( Server.UrlDecode( returnUrl ), false );
-            //    Context.ApplicationInstance.CompleteRequest();
-            //}
-
             // Login to Church Online Platform
             Person currentPerson = CurrentPerson;
 
-            string chOPUrl = ChurchOnlinePlatform.CreateSSOUrlChOP( currentPerson );
+            string chOPUrl = church.ccv.Authentication.ChurchOnlinePlatform.CreateSSOUrlChOP( currentPerson, GetAttributeValue( "ChOPSSOKey" ), GetAttributeValue( "ChOPUrl" ) );
             if ( !chOPUrl.IsNullOrWhiteSpace() )
             {
                 // Redirect to return URL and end processing
@@ -496,18 +500,7 @@ namespace RockWeb.Plugins.church_ccv.COP
                         ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Site.Id, CurrentPersonAlias );
                     }
 
-                    //string returnUrl = Request.QueryString["returnurl"];
-                    //btnContinue.Visible = !string.IsNullOrWhiteSpace( returnUrl );
-
-                    //lSuccessCaption.Text = GetAttributeValue( "SuccessCaption" );
-                    //if ( lSuccessCaption.Text.Contains( "{0}" ) )
-                    //{
-                    //    lSuccessCaption.Text = string.Format( lSuccessCaption.Text, person.FirstName );
-                    //}
-
-                    //ShowPanel( 5 );
-
-                    string chOPUrl = ChurchOnlinePlatform.CreateSSOUrlChOP( person );
+                    string chOPUrl = church.ccv.Authentication.ChurchOnlinePlatform.CreateSSOUrlChOP( person, GetAttributeValue( "ChOPSSOKey" ), GetAttributeValue( "ChOPUrl" ) );
                     if ( !chOPUrl.IsNullOrWhiteSpace() )
                     {
                         // Redirect to return URL and end processing

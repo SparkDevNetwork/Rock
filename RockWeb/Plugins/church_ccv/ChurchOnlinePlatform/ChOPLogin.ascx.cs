@@ -39,7 +39,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using church.ccv.Authentication;
 
-namespace RockWeb.Plugins.church_ccv.COP
+namespace RockWeb.Plugins.church_ccv.ChurchOnlinePlatform
 {
     /// <summary>
     /// Prompts user for login credentials.
@@ -62,10 +62,10 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
     [TextField( "New Account Text", "The text to show on the New Account button.", false, "Register", "", 7, "NewAccountButtonText" )]
     [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 9 )]
 
-    // Church Online Block Settings - Currently hardcoded...maybe gonna make as a CONST...if so remove from here.
-    //[TextField( "Church Online Platform Sso Key", "You can find the Sso key on the Tools > Sso page in Church Online Platform.", false, "", "", 10, "ChOPSSOKey" )]
-    //[TextField( "Church Online Platform Url", "Your Church Online Platform Url", false, "", "", 11, "ChOPUrl" )]
-    public partial class Login : Rock.Web.UI.RockBlock
+    [TextField( "Church Online Platform Sso Key", "You can find the Sso key on the Tools > Sso page in Church Online Platform.", false, "", "", 10, "ChOPSSOKey" )]
+    [TextField( "Church Online Platform Url", "Your Church Online Platform Url", false, "", "", 11, "ChOPUrl" )]
+
+    public partial class ChOPLogin : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
 
@@ -88,11 +88,44 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
 
             if ( !Page.IsPostBack )
             {
-                // Check if person is already logged in and redirect back to sending URL
-                var currentPerson = CurrentPerson;
+                // Check if ChOP block settings are set
+                if ( ( GetAttributeValue( "ChOPSSOKey" ).IsNullOrWhiteSpace() ) || ( GetAttributeValue( "ChOPUrl" ).IsNullOrWhiteSpace() ) )
+                {
+                    DisplayError( "Missing Church Online Platform Block Settings" );
+                    pnlLoginForm.Visible = false;
+                    return;
+                }
+                
+                // If person is logged in, redirect back to Church Online Platform using current person
+                // If person is administrator dont redirect so they can edit block settings
+                Person currentPerson = CurrentPerson;
                 if ( currentPerson != null )
                 {
-                    //LoginChOP( currentPerson );
+                    // Generate ChOP SSO Login Url
+                    string chOPSSOLoginUrl = LoginChOP( currentPerson );
+
+                    if ( chOPSSOLoginUrl != null )
+                    {
+                        // If current person is administrator, dont redirect, hide login form, display message with url
+                        if ( IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
+                        {
+                            pnlLoginForm.Visible = false;
+                            DisplayError( string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to here: <a href='{0}'>ChOP SSO Url</a>.", chOPSSOLoginUrl ) );
+                            return;
+                        }
+                        else
+                        {
+                            // Redirect current person
+                            Response.Redirect( chOPSSOLoginUrl, false );
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        // Something went wrong with generating URL, display error
+                        DisplayError( string.Format( "Authentication to Church Online Platform failed" ) );
+                    }
                 }
 
                 lPromptMessage.Text = GetAttributeValue( "PromptMessage" );
@@ -131,16 +164,16 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                                 // If authentication is successful and user is confirmed and not locked out
                                 // Update Last Login
                                 UserLoginService.UpdateLastLogin( userLogin.UserName );
-
-                                bool rememberMe = cbRememberMe.Checked;
-
+                                
                                 // Set Auth Cookie
+                                bool rememberMe = cbRememberMe.Checked;
                                 Rock.Security.Authorization.SetAuthCookie( userLogin.UserName, rememberMe, false );
 
                                 // TODO: Login PMG2...do we need to remove the response.End below?
 
-                                // Login to Church Online Platform
-                                string chOPUrl = ChurchOnlinePlatform.CreateSSOUrlChOP( userLogin.Person );
+                                // Generate Church Online Platform login Url
+                                string chOPUrl = LoginChOP( userLogin.Person );
+
                                 if ( !chOPUrl.IsNullOrWhiteSpace() )
                                 {
                                     // Redirect to return URL and end processing
@@ -149,8 +182,9 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                                 }
                                 else
                                 {
-                                    DisplayError( string.Format( "Authentication to Church Online Platform failed") );
+                                    DisplayError( string.Format( "Authentication to Church Online Platform failed" ) );
                                 }
+
                             }
                             else
                             {
@@ -260,9 +294,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;
         }
-
-
-
+        
         /// <summary>
         /// Sends the confirmation.
         /// </summary>
@@ -288,8 +320,16 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
         }
 
+        /// <summary>
+        /// Generates Church Online Platform SSO login URL
+        /// </summary>
+        /// <param name="userLogin">The user login.</param>
+        private string LoginChOP( Person person )
+        {
+            // Generate and return sso login URL
+            return church.ccv.Authentication.ChurchOnlinePlatform.CreateSSOUrlChOP( person, GetAttributeValue( "ChOPSSOKey" ), GetAttributeValue( "ChOPUrl" ) );
+        }
+
         #endregion
     }
-
-
 }

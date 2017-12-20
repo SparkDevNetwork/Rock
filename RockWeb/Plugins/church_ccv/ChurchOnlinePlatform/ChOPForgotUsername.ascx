@@ -1,9 +1,9 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="COPForgotUsername.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.COP.ForgotUserName" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ChOPForgotUsername.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.ChurchOnlinePlatform.ChOPForgotUsername" %>
 
 <asp:UpdatePanel id="upnlContent" runat="server">
 <ContentTemplate>
     <div class="sso-createaccount-panel-wrapper">
-        <img src="themes/church_ccv_external_v8/assets/ccv_logo-hi-res.png" style="width: 125px; margin-bottom: 25px;"/>
+        <img src="/themes/church_ccv_external_v8/assets/ccv_logo-hi-res.png" style="width: 125px; margin-bottom: 25px;"/>
 
         <asp:Panel ID="pnlEntry" runat="server">
             <asp:Literal ID="lCaption" runat="server" ></asp:Literal> 

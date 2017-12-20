@@ -11,15 +11,13 @@ namespace church.ccv.Authentication
     public static class ChurchOnlinePlatform
     {
         /// <summary>
-        /// Logs in the user.
+        /// Generates Login Url for Church Online Platform
         /// </summary>
         /// <param name="person">User person object</param>
-        public static string CreateSSOUrlChOP( Person person )
+        /// <param name="ssoKey">Church Online Platform SSO Key</param>
+        /// <param name="chOPUrl">Church Online Platform Url</param>
+        public static string CreateSSOUrlChOP( Person person, string ssoKey, string chOPUrl )
         {
-            // For now hardcoding Church Online Platform SSO key and URL...need to implement better solution later.
-            string ssoKey = "4c4cb8e422eea142aed426ab9f8c82065b2cd6ac7836f7b2511c416be39fcaea";
-            string chOPUrl = "http://live.ccv.church";
-
             // Create json of Multipass
             ChOPCredentials credentials = new ChOPCredentials( person );
             string json = JsonConvert.SerializeObject( credentials );
@@ -84,7 +82,11 @@ namespace church.ccv.Authentication
             return encrypted;
         }
 
-        //  Create SHA1 hash of the signature using the SSOKey and multipass
+        /// <summary>
+        /// Creates SHA1 hash of sso Key
+        /// </summary>
+        /// <param name="multipass">Multipass</param>
+        /// <param name="ssoKey">Church Online Platform SSO Key</param>
         private static byte[] Signature( string multipass, string ssoKey )
         {
             byte[] signature;
@@ -99,7 +101,10 @@ namespace church.ccv.Authentication
             return signature;
         }
 
-        //  Create SHA256 hash of the SSOKey and return as byte[]
+        /// <summary>
+        /// Create SHA256 hash of the SSOKey and return as byte[]
+        /// </summary>
+        /// <param name="ssoKey">Church Online Platform SSO Key</param>
         private static byte[] GetSHA256ReturnByte( string ssoKey )
         {
             var byteKey = Encoding.UTF8.GetBytes( ssoKey );

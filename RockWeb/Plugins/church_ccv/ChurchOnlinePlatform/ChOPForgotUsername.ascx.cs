@@ -28,7 +28,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 
-namespace RockWeb.Plugins.church_ccv.COP
+namespace RockWeb.Plugins.church_ccv.ChurchOnlinePlatform
 {
     /// <summary>
     /// Block for user to request a forgotten username.
@@ -44,7 +44,7 @@ namespace RockWeb.Plugins.church_ccv.COP
     [LinkedPage( "Login Page", "Page to navigate to when user elects to login (if blank will use 'Login' page route)", false, "", "", 3 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "", 4 )]
     [SystemEmailField( "Forgot Username Email Template", "Email Template to send", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "", 5, "EmailTemplate" )]
-    public partial class ForgotUserName : Rock.Web.UI.RockBlock
+    public partial class ChOPForgotUsername : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
 
