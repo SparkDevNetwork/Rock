@@ -269,6 +269,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            if ( Page.IsPostBack )
+            {
+                EnsureChildControls();
+                ssnArea.Attributes["value"] = ssnArea.Text;
+                ssnGroup.Attributes["value"] = ssnGroup.Text;
+            }
+
+            base.OnLoad( e );  
+        }
+
+        /// <summary>
         /// Gets or sets the selected value.
         /// </summary>
         /// <value>
@@ -343,7 +359,7 @@ namespace Rock.Web.UI.Controls
             hfSSN.ID = this.ID;
             hfSSN.CssClass = "js-ssn";
 
-            ssnArea = new TextBox();
+            ssnArea =  new TextBox();
             ssnArea.CssClass = "form-control ssn-part ssn-area";
             ssnArea.ID = "ssnArea_" + this.ID;
             ssnArea.TextMode = TextBoxMode.Password;

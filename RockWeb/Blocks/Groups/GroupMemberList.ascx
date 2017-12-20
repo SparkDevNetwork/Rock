@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupMemberList.ascx.cs" Inherits="RockWeb.Blocks.Groups.GroupMemberList" %>
 
+<script type="text/javascript">
+    Sys.Application.add_load(function () {
+        $('.js-group-member-note').tooltip();
+    });
+</script>
+
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
 
@@ -60,6 +66,7 @@
                                     <Rock:DateField DataField="DateTimeAdded" HeaderText="Date Added" SortExpression="DateTimeAdded" />
                                     <Rock:DateField DataField="FirstAttended" HeaderText="First Attended" SortExpression="FirstAttended" />
                                     <Rock:DateField DataField="LastAttended" HeaderText="Last Attended" SortExpression="LastAttended" />
+                                    <Rock:RockBoundField DataField="Note" HeaderText="Note" SortExpression="Note" ItemStyle-CssClass="small" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

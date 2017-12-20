@@ -129,7 +129,15 @@ namespace Rock.Data
         /// The analytics source dates.
         /// </value>
         public DbSet<AnalyticsSourceDate> AnalyticsSourceDates { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the analytics dim campuses.
+        /// </summary>
+        /// <value>
+        /// The analytics dim campuses.
+        /// </value>
+        public DbSet<AnalyticsDimCampus> AnalyticsDimCampuses { get; set; }
+
         /// <summary>
         /// Gets or sets the analytics dim family currents.
         /// </summary>
@@ -217,6 +225,14 @@ namespace Rock.Data
         /// The analytics source attendances.
         /// </value>
         public DbSet<AnalyticsSourceAttendance> AnalyticsSourceAttendances { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics source campuses.
+        /// </summary>
+        /// <value>
+        /// The analytics source campuses.
+        /// </value>
+        public DbSet<AnalyticsSourceCampus> AnalyticsSourceCampuses { get; set; }
 
         /// <summary>
         /// Gets or sets the analytics source family historicals.
@@ -1599,6 +1615,18 @@ namespace Rock.Data
         {
             if ( useSqlBulkCopy )
             {
+                // ensure CreatedDateTime and ModifiedDateTime is set
+                var currentDateTime = RockDateTime.Now;
+                foreach( var record in records )
+                {
+                    var model = record as IModel;
+                    if ( model != null )
+                    {
+                        model.CreatedDateTime = model.CreatedDateTime ?? currentDateTime;
+                        model.ModifiedDateTime = model.ModifiedDateTime ?? currentDateTime;
+                    }
+                }
+
                 // set timeout to 5 minutes, just in case (the default is 30 seconds)
                 EntityFramework.Utilities.Configuration.BulkCopyTimeout = 300;
                 EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;

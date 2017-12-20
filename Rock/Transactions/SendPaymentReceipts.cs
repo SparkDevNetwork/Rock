@@ -102,6 +102,7 @@ namespace Rock.Transactions
                         mergeFields.Add( "LastName", person.LastName );
                         mergeFields.Add( "FirstNames", person.NickName );
                         mergeFields.Add( "TransactionCode", transaction.TransactionCode );
+                        mergeFields.Add( "ForeignKey", transaction.ForeignKey );
                         mergeFields.Add( "Transaction", transaction );
                         mergeFields.Add( "Amounts", accountAmounts );
 

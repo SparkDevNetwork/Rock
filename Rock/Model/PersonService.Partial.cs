@@ -30,7 +30,7 @@ namespace Rock.Model
     /// Data Access/Service class for <see cref="Rock.Model.Person"/> entity objects.
     /// </summary>
     public partial class PersonService
-    {
+    {     
         /// <summary>
         /// Gets the specified unique identifier.
         /// </summary>
@@ -434,6 +434,14 @@ namespace Rock.Model
                         var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
 
                         qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
+                    }
+
+                    //
+                    // If searching for businesses, search by the full name as well to handle "," in the name
+                    //
+                    if ( includeBusinesses )
+                    {
+                        qry = qry.Union( GetByLastName( fullName, includeDeceased, includeBusinesses ) );
                     }
 
                     return qry;
@@ -1538,6 +1546,60 @@ namespace Rock.Model
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.Person"/> entity of the provided Person's head of household.
+        /// </summary>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> entity of the Person to retrieve the head of household of.</param>
+        /// <param name="family">The <see cref="Rock.Model.Group"/> entity of the Group to retrieve the head of household of.</param>
+        /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's head of household. If the provided Person's family head of household is not found, this value will be null.</returns>
+        public Person GetHeadOfHousehold( Person person, Group family )
+        {
+            if ( family == null )
+            {
+                family = GetFamilies( person.Id ).FirstOrDefault();
+            }
+
+            if ( family == null )
+            {
+                return null;
+            }
+            return GetFamilyMembers( family, person.Id, true )
+                .OrderBy( m => m.GroupRole.Order )
+                .ThenBy( m => m.Person.Gender )
+                .Select( a => a.Person )
+                .FirstOrDefault();
+        }
+
+
+        #endregion
+
+        #region Update Person
+
+        /// <summary>
+        /// Inactivates a person.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="reason">The reason.</param>
+        /// <param name="reasonNote">The reason note.</param>
+        /// <returns></returns>
+        public List<string> InactivatePerson( Person person, DefinedValueCache reason, string reasonNote )
+        {
+            var changes = new List<string>();
+
+            var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+            if ( inactiveStatus != null && reason != null )
+            {
+                History.EvaluateChange( changes, "Record Status", person.RecordStatusValue?.Value, inactiveStatus.Value );
+                History.EvaluateChange( changes, "Record Status Reason", person.RecordStatusReasonValue?.Value, reason.Value );
+                History.EvaluateChange( changes, "Inactive Reason Note", person.InactiveReasonNote, reasonNote );
+
+                person.RecordStatusValueId = inactiveStatus.Id;
+                person.RecordStatusReasonValueId = reason.Id;
+                person.InactiveReasonNote = reasonNote;
+            }
+
+            return changes;
+        }
 
         #endregion
 
@@ -1567,6 +1629,8 @@ namespace Rock.Model
                     l.Location.GeoPoint != null )
                 .Select( l => l.Location.GeoPoint );
         }
+
+        #region Static Methods 
 
         /// <summary>
         /// Adds a person alias, known relationship group, implied relationship group, and optionally a family group for
@@ -1903,8 +1967,9 @@ namespace Rock.Model
             RemovePersonFromOtherGroupsOfType( familyId, personId, rockContext );
         }
 
-        #region User Preferences
+        #endregion
 
+        #region User Preferences
         /// <summary>
         /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
         /// </summary>

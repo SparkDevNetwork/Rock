@@ -21,7 +21,7 @@
                             <Rock:RockCheckBox ID="cbIncludeInactive" runat="server" Label="Include Inactive Schedules" Text="Yes" />
                         </Rock:GridFilter>
                         <Rock:Grid ID="gList" AllowSorting="true" runat="server" EmptyDataText="No Scheduled Transactions Found"
-                            ShowConfirmDeleteDialog="true" RowItemText="Scheduled Transaction" OnRowSelected="gList_Edit" ExportSource="ColumnOutput">
+                            ShowConfirmDeleteDialog="true" RowItemText="Scheduled Transaction" ExportSource="ColumnOutput">
                             <Columns>
                                 <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullNameReversed" HeaderText="Contributor"
                                     SortExpression="AuthorizedPersonAlias.Person.LastName,AuthorizedPersonAlias.Person.NickName" />

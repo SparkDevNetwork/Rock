@@ -307,36 +307,10 @@ namespace Rock.Web.UI.Controls
             {
                 ( (WebControl)this ).AddCssClass( "chosen-select" );
 
-                var script = new System.Text.StringBuilder();
-                script.AppendFormat( @"
-    $('#{0}').chosen({{
-        width: '100%',
-        allow_single_deselect: true,
-        placeholder_text_multiple: ' ',
-        placeholder_text_single: ' '
-    }});
-", this.ClientID );
-
                 if ( DisplayEnhancedAsAbsolute )
                 {
-                    script.AppendFormat( @"
-    $( '#{0}').on('chosen:showing_dropdown', function( evt, params ) {{
-        $(this).next('.chosen-container').find('.chosen-drop').css('position','relative');
-    }});
-    $('#{0}').on('chosen:hiding_dropdown', function( evt, params ) {{
-        $(this).next('.chosen-container').find('.chosen-drop').css('position','absolute');
-    }});
-", this.ClientID );
+                    ( ( WebControl ) this ).AddCssClass( "chosen-select-absolute" );
                 }
-                
-                script.AppendFormat( @"
-    $( '#{0}').on('chosen:showing_dropdown chosen:hiding_dropdown', function( evt, params ) {{
-        // update the outer modal  
-        Rock.dialogs.updateModalScrollBar('{0}');
-    }});
-", this.ClientID );
-
-                ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script.ToString(), true );
             }
 
             base.RenderControl( writer );

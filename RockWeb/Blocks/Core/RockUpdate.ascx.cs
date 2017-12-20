@@ -139,13 +139,16 @@ namespace RockWeb.Blocks.Core
                     try
                     {
                         _isEarlyAccessOrganization = CheckEarlyAccess();
+
+                        btnIssues.NavigateUrl = string.Format( "http://www.rockrms.com/earlyaccessissues?RockInstanceId={0}", Rock.Web.SystemSettings.GetRockInstanceId() );
+
                         if ( _isEarlyAccessOrganization )
                         {
                             hlblEarlyAccess.LabelType = Rock.Web.UI.Controls.LabelType.Success;
                             hlblEarlyAccess.Text = "Early Access: Enabled";
 
-                            lEarlyAccessNotEnabled.Visible = false;
-                            lEarlyAccessEnabled.Visible = true;
+                            pnlEarlyAccessNotEnabled.Visible = false;
+                            pnlEarlyAccessEnabled.Visible = true;
                         }
 
                         VersionCheckResult result = CheckFrameworkVersion();
@@ -174,6 +177,7 @@ namespace RockWeb.Blocks.Core
                         if ( IsUpdateAvailable() )
                         {
                             pnlUpdatesAvailable.Visible = true;
+                            pnlUpdates.Visible = true;
                             pnlNoUpdates.Visible = false;
                             cbIncludeStats.Visible = true;
                             BindGrid();
@@ -213,6 +217,7 @@ namespace RockWeb.Blocks.Core
             try
             {
                 pnlUpdatesAvailable.Visible = false;
+                pnlUpdates.Visible = false;
 
                 if ( !UpdateRockPackage( version ) )
                 {

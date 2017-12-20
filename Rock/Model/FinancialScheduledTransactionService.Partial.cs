@@ -319,7 +319,10 @@ namespace Rock.Model
                     FinancialTransaction originalTxn = null;
                     var txns = financialTransactionService
                         .Queryable( "TransactionDetails" )
-                        .Where( t => t.TransactionCode == payment.TransactionCode )
+                        .Where( t =>
+                            t.FinancialGatewayId.HasValue &&
+                            t.FinancialGatewayId.Value == gateway.Id &&
+                            t.TransactionCode == payment.TransactionCode )
                         .ToList();
                     if ( txns.Any() )
                     {
@@ -345,6 +348,11 @@ namespace Rock.Model
                             transaction.SettledDate = payment.SettledDate;
                             transaction.StatusMessage = payment.StatusMessage;
                             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+
+                            if ( payment.ForeignKey.IsNotNullOrWhitespace() )
+                            {
+                                transaction.ForeignKey = payment.ForeignKey;
+                            }
 
                             FinancialPaymentDetail financialPaymentDetail = null;
                             List<ITransactionDetail> originalTxnDetails = new List<ITransactionDetail>();

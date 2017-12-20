@@ -35,7 +35,7 @@ namespace Rock.Data
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
     [IgnoreModelErrors( new[] { "ParentAuthority" } )]
     [DataContract]
-    public abstract class Model<T> : Entity<T>, IModel, ISecured, IHasAttributes
+    public abstract class Model<T> : Entity<T>, IModel, ISecured, IHasAttributes, IHasInheritedAttributes
         where T : Model<T>, ISecured, new()
     {
         #region Entity Properties
@@ -212,7 +212,6 @@ namespace Rock.Data
         /// <param name="state"></param>
         public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
         {
-            PreSaveChanges( dbContext, dbContext.ChangeTracker.Entries<IModel>().Where( a => a.Entity == this ).FirstOrDefault(), state );
         }
 
         /// <summary>
@@ -233,6 +232,7 @@ namespace Rock.Data
         /// <param name="state">The state.</param>
         public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state )
         {
+            PreSaveChanges( dbContext, entry );
         }
 
         /// <summary>
@@ -686,6 +686,28 @@ namespace Rock.Data
             {
                 this.AttributeValues[key].Value = value;
             }
+        }
+
+        #endregion
+
+        #region IHasInheritedAttributes implementation
+
+        /// <summary>
+        /// Get a list of all inherited Attributes that should be applied to this entity.
+        /// </summary>
+        /// <returns>A list of all inherited AttributeCache objects.</returns>
+        public virtual List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Get any alternate Ids that should be used when loading attribute value for this entity.
+        /// </summary>
+        /// <returns>A list of any alternate entity Ids that should be used when loading attribute values.</returns>
+        public virtual List<int> GetAlternateEntityIds( Rock.Data.RockContext rockContext )
+        {
+            return null;
         }
 
         #endregion

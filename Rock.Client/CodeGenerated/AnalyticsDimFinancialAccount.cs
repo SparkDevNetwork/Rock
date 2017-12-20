@@ -50,6 +50,9 @@ namespace Rock.Client
         public string CampusShortCode { get; set; }
 
         /// <summary />
+        public int Count { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -115,6 +118,7 @@ namespace Rock.Client
             this.ActiveStatus = source.ActiveStatus;
             this.CampusName = source.CampusName;
             this.CampusShortCode = source.CampusShortCode;
+            this.Count = source.Count;
             this.Description = source.Description;
             this.EndDate = source.EndDate;
             this.ForeignGuid = source.ForeignGuid;

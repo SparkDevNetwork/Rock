@@ -31,13 +31,14 @@
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0"
                         Style="{StaticResource panelBanner}">
-                <Label Content="STEP 5:"
+                <Label Content="STEP 7:"
                        Style="{StaticResource labelStyleBannerTitle}" />
                 <Label Content="Save Settings"
                        Style="{StaticResource labelStyleBannerText}" />
             </StackPanel>
-            <StackPanel VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
+            <StackPanel VerticalAlignment="Top"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource indentStyle}"
                         Grid.Column="1"
                         Grid.Row="1">
 

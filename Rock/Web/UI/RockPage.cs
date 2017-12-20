@@ -816,7 +816,7 @@ namespace Rock.Web.UI
                         }
                         else
                         {
-                            body.Attributes.Add( "class", "layout-class" );
+                            body.Attributes.Add( "class", this.BodyCssClass );
                         }
                     }
                 }

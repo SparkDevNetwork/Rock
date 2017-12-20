@@ -24,6 +24,11 @@ namespace Rock.SystemGuid
     public class Attribute
     {
         /// <summary>
+        /// The binaryfiletype filestorage rootpath attribute
+        /// </summary>
+        public const string BINARYFILETYPE_FILESTORAGE_ROOTPATH = "3CAFA34D-9208-439B-A046-CB727FB729DE";
+
+        /// <summary>
         /// The global email link preference
         /// </summary>
         public const string GLOBAL_EMAIL_LINK_PREFERENCE = "F1BECEF9-1047-E89F-4CC8-8F856750E5D0";
@@ -156,6 +161,15 @@ namespace Rock.SystemGuid
         /// Group attribute for groups of GroupType CommunicationList to define category
         /// </summary>
         public const string GROUP_COMMUNICATION_LIST_CATEGORY = "E3810936-182E-2585-4F8E-030A0E18B27A";
+
+        #endregion
+
+        #region Communication List (group member) attributes
+
+        /// <summary>
+        /// The groupmember (of a communication list) preferred communication medium
+        /// </summary>
+        public const string GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM = "D7941908-1F65-CC9B-416C-CCFABE4221B9";
 
         #endregion
 
