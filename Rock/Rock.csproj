@@ -1192,12 +1192,9 @@
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
-<<<<<<< HEAD
     <Compile Include="PersonProfile\Badge\TopPersonSignal.cs" />
     <Compile Include="PersonProfile\Badge\PersonalDevice.cs" />
-=======
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
->>>>>>> origin/pre-alpha-spark
     <Compile Include="Reporting\DataFilter\Person\FinancialPledgeDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialTransactionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasSignalFilter.cs" />
