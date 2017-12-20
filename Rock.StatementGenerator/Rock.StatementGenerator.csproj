@@ -57,6 +57,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="Migrations\001_StatementGenerator.cs" />
     <Compile Include="Migrations\MigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
