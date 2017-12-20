@@ -5,7 +5,7 @@
         
         <h4>{{ title }}</h4>
 
-        <p class="strong uppercase"><small><span class="color-theme-3">{{ date | Date:'MMM d, yyyy hh:mm tt' }}</span>{% if department != empty %} &middot; <a href="{{ departmentUrl }}">{{ department }}</a>{% endif %}</small></p>
+        <p class="strong uppercase color-theme-3"><small><span>{{ date | Date:'MMM d, yyyy hh:mm tt' }}</span>{% if departmentName %} &middot; {% if departmentUrl %}<a href="{{ departmentUrl }}">{% endif %}{{ departmentName }}{% if departmentUrl %}</a>{% endif %}{% endif %}</small></p>
         
         {% if contentLength > 140 and linkUrl == empty %}
 

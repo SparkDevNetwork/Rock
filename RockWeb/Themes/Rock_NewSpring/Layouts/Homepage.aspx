@@ -32,25 +32,27 @@
             </div>
         </div>
     </main>
+    
+    <section class="background-theme-5 soft-half lg-soft-top lg-soft-sides lg-soft-half-bottom">
+        <Rock:Zone Name="Section A" runat="server" />
+    </section>
 
     <section class="soft-half lg-soft">
         <div class="row">
-            <div class="col-md-4 col-sm-6">
-                <Rock:Zone Name="Section A" runat="server" />
-            </div>
             <div class="col-md-4 col-sm-6">
                 <Rock:Zone Name="Section B" runat="server" />
             </div>
             <div class="col-md-4 col-sm-6">
                 <Rock:Zone Name="Section C" runat="server" />
             </div>
+            <div class="col-md-4 col-sm-6">
+                <Rock:Zone Name="Section D" runat="server" />
+            </div>
         </div>
-        <Rock:Zone Name="Section D" runat="server" />
     </section>
 
-        <!-- End Content Area -->
+    <!-- End Content Area -->
 
 	
         
 </asp:Content>
-

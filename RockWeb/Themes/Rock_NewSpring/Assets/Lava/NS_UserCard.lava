@@ -1,24 +1,21 @@
-{% assign staffMember = 1 | PersonById %}
-{% assign nickName = staffMember.NickName %}
-
 <div class="panel">
     <div class="panel-body">
 
         <div class="row">
-            <div class="col-md-4 col-sm-3 col-xs-4 hard-right text-center">
-
-                <a href="/Person/{{ staffMember.Id }}" class="relative inline-block full-width">
-                    <img src="/Assets/Images/person-no-photo-{{ staffMember | Property:'Gender' }}.svg?" class="rounded-corners" alt="">
-                    <span class="absolute top-zero right-zero label label-primary">NEW</span>
-                </a>
+            <div class="col-md-4 col-sm-3 col-xs-4 hard-right text-center something">
+                <div class="ratio -ratio--square">
+                    <div class="ratio__item"></div>
+                </div>
+                <!-- <a href="/Person/{{ person.Id }}" class="relative inline-block full-width">
+                    <img src="{{ image | Trim }}" class="rounded-corners full-width" alt="">
+                    {% if newStatus == 'Yes' %}<span class="absolute top-zero right-zero label label-primary">NEW</span>{% endif %}
+                </a> -->
 
             </div>
             <div class="col-md-8 col-sm-9 col-xs-8">
-
-                <a href="/Person/{{ staffMember.Id }}"><h4 class="push-quarter-bottom">{{ staffMember.NickName }} {{ staffMember.LastName }}</h4></a>
-                <p class="push-quarter-bottom strong">{% cycle 'CLE', 'CEN', 'GVL' %}</p>
-                <p>{% cycle 'Next Steps Director', 'Fuse Pastor', 'Audio Coordinator', 'KidSpring Director', 'Admin is no longer on staff.' %}</p>
-
+                <a href="/Person/{{ person.Id }}"><h4 class="push-quarter-bottom">{{ person.NickName }} {{ person.LastName }}</h4></a>
+                {% if campus %}<p class="push-quarter-bottom strong">{{ campus }}</p>{% endif %}
+                <p class="flush">{{ content }}</p>
             </div>
         </div>
         
