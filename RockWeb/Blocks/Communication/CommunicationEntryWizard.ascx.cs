@@ -239,15 +239,18 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                if ( !communication.CommunicationTemplateId.HasValue || !communication.CommunicationTemplate.SupportsEmailWizard() )
+                if ( !string.IsNullOrEmpty( communication.Message ) )
                 {
-                    // If this communication was previously created, but doesn't have a CommunicationTemplateId or uses a template that doesn't suport the EmailWizard, 
-                    // it is a communication (or a copy of a communication) that was created created using the 'Simple Editor' or the editor prior to v7.
-                    // So, if they use the wizard, the main Html Content will be reset when they get to the Select Template step
-                    // since the wizard requires that the communication uses a Template that supports the Email Wizard.
-                    // So, if this is the case, warn them and explain that they can continue with the wizard but start over on the content,
-                    // or to use the 'Use Simple Editor' to keep the content, but not use the wizard
-                    nbCommunicationNotWizardCompatible.Visible = true;
+                    if ( !communication.CommunicationTemplateId.HasValue || !communication.CommunicationTemplate.SupportsEmailWizard() )
+                    {
+                        // If this communication was previously created, but doesn't have a CommunicationTemplateId or uses a template that doesn't suport the EmailWizard, 
+                        // it is a communication (or a copy of a communication) that was created created using the 'Simple Editor' or the editor prior to v7.
+                        // So, if they use the wizard, the main Html Content will be reset when they get to the Select Template step
+                        // since the wizard requires that the communication uses a Template that supports the Email Wizard.
+                        // So, if this is the case, warn them and explain that they can continue with the wizard but start over on the content,
+                        // or to use the 'Use Simple Editor' to keep the content, but not use the wizard
+                        nbCommunicationNotWizardCompatible.Visible = true;
+                    }
                 }
             }
 
