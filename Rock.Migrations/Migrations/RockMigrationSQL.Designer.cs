@@ -4207,5 +4207,38 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 52.2
+        ///WHERE [Id] = 1
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 59.4
+        ///WHERE [Id] = 2
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 54
+        ///WHERE [Id] = 3
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 50.2
+        ///WHERE [Id] = 4
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 76.5
+        ///WHERE [Id] = 9
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 51.5
+        ///WHERE [Id] = 8
+        ///
+        ///UPDATE [MetaPersonicxLifestageClus [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201712191949335_CampusTimeZone_PersonicxMeanAge {
+            get {
+                return ResourceManager.GetString("_201712191949335_CampusTimeZone_PersonicxMeanAge", resourceCulture);
+            }
+        }
     }
 }

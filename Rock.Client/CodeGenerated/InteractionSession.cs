@@ -35,9 +35,6 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public string DetailTemplate { get; set; }
-
-        /// <summary />
         public int? DeviceTypeId { get; set; }
 
         /// <summary />
@@ -51,9 +48,6 @@ namespace Rock.Client
 
         /// <summary />
         public string IpAddress { get; set; }
-
-        /// <summary />
-        public string ListTemplate { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -96,13 +90,11 @@ namespace Rock.Client
         public void CopyPropertiesFrom( InteractionSession source )
         {
             this.Id = source.Id;
-            this.DetailTemplate = source.DetailTemplate;
             this.DeviceTypeId = source.DeviceTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InteractionMode = source.InteractionMode;
             this.IpAddress = source.IpAddress;
-            this.ListTemplate = source.ListTemplate;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.SessionData = source.SessionData;
             this.CreatedDateTime = source.CreatedDateTime;

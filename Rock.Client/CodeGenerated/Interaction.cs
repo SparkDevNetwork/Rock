@@ -41,9 +41,6 @@ namespace Rock.Client
         public string Content { get; set; }
 
         /// <summary />
-        public string DetailTemplate { get; set; }
-
-        /// <summary />
         public int? EntityId { get; set; }
 
         /// <summary />
@@ -66,9 +63,6 @@ namespace Rock.Client
 
         /// <summary />
         public string InteractionSummary { get; set; }
-
-        /// <summary />
-        public string ListTemplate { get; set; }
 
         /// <summary />
         public string Medium { get; set; }
@@ -131,7 +125,6 @@ namespace Rock.Client
             this.Id = source.Id;
             this.Campaign = source.Campaign;
             this.Content = source.Content;
-            this.DetailTemplate = source.DetailTemplate;
             this.EntityId = source.EntityId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -140,7 +133,6 @@ namespace Rock.Client
             this.InteractionDateTime = source.InteractionDateTime;
             this.InteractionSessionId = source.InteractionSessionId;
             this.InteractionSummary = source.InteractionSummary;
-            this.ListTemplate = source.ListTemplate;
             this.Medium = source.Medium;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Operation = source.Operation;

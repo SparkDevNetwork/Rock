@@ -67,5 +67,10 @@ namespace Rock.SystemKey
         /// The font awesome pro key
         /// </summary>
         public const string FONT_AWESOME_PRO_KEY = "core_FontAwesomeProKey";
+
+        /// <summary>
+        /// Enable multi time zone support. Default is false
+        /// </summary>
+        public const string ENABLE_MULTI_TIME_ZONE_SUPPORT = "core_EnableMultiTimeZoneSupport";
     }
 }
