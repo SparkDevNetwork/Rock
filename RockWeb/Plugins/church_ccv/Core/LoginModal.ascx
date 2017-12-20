@@ -145,7 +145,7 @@
                     <div class="row">
                         <div class="col-md-12 col-sm-8 col-xs-12 text-center">
                             <div style="margin: 25px 0 25px 0;"></div>
-                            <asp:Button runat="server" UseSubmitBehavior="false" Text="Done" CssClass="lm-form-button btn btn-primary" OnClientClick="hideLoginModal(); return false;" CausesValidation="false" />
+                            <asp:Button runat="server" UseSubmitBehavior="false" Text="Done" CssClass="lm-form-button btn btn-primary" OnClientClick="popToLoginPage(); return false;" CausesValidation="false" />
                         </div>
                     </div>
                 </div>
@@ -168,8 +168,9 @@
                     </div>
 
                     <div id="forgotpassword-panel-buttons">
-                        <asp:Button UseSubmitBehavior="false" runat="server" Text="Cancel" CssClass="btn btn-action lm-button" OnClientClick="hideForgotPasswordPanel(); return false;" CausesValidation="false" />
-                        <asp:Button UseSubmitBehavior="false" runat="server" Text="Confirm" CssClass="btn btn-primary lm-button" OnClientClick="sendForgotPasswordEmail(); return false;" CausesValidation="false" />
+                        <asp:Button ID="forgotPasswordButtonCancel" UseSubmitBehavior="false" runat="server" Text="Cancel" CssClass="btn btn-action lm-button" OnClientClick="hideForgotPasswordPanel(); return false;" CausesValidation="false"/>
+                        <asp:Button ID="forgotPasswordButtonConfirm" UseSubmitBehavior="false" runat="server" Text="Confirm" CssClass="btn btn-primary lm-button" OnClientClick="sendForgotPasswordEmail(); return false;" CausesValidation="false"/>
+                        <asp:Button ID="forgotPasswordReturnButton" UseSubmitBehavior="false" runat="server" Text="Return" CssClass="btn btn-primary lm-button" OnClientClick="hideForgotPasswordPanel(); return false;" CausesValidation="false"/>
                     </div>
                 </div>
 
@@ -181,24 +182,65 @@
 <%-- END LOGIN WRAPPER MODAL--%>
 
 <script type="text/javascript">
+
+    var dismissLoginAllowed = false;
+    var loginDisplayed = false;
+    var bodyCssOverflow = null;
+    var activePanel = null;
+
     // ---- UTILITY ----
    $(document).keydown(function(e) {
 		// ESCAPE key pressed
-		if (e.keyCode == 27) {
-			hideLoginModal();
+       if (e.keyCode == 27) {
+           if (dismissLoginAllowed) {
+               hideLoginModal();
+           }
 		}
    });
 
-   //$(window).resize(function () {
-   //    if (loginDisplayed == true) {
+   function getMaxPageHeight() {
 
-   //    }
-   //});
+       var maxHeight = 0;
+       maxHeight = Math.max(maxHeight, $("#forgotpassword-panel").outerHeight());
+       maxHeight = Math.max(maxHeight, $("#accountcreationduplicates-panel").outerHeight());
+       maxHeight = Math.max(maxHeight, $("#accountcreationresult-panel").outerHeight());
+       maxHeight = Math.max(maxHeight, $("#createaccount-panel").outerHeight());
+
+       return maxHeight;
+   }
+
+   function updatePanelHeights() {
+
+       // first, remove any height restrictions set. This will cause the browser
+       // to calculate the size each panel actually requires
+       $("#forgotpassword-panel").css("min-height", "");
+       $("#accountcreationduplicates-panel").css("min-height", "");
+       $("#accountcreationresult-panel").css("min-height", "");
+       $("#createaccount-panel").css("min-height", "");
+
+       // now get the height of the largest panel
+       var height = getMaxPageHeight();
+
+       // force all panels to match that.
+       $("#forgotpassword-panel").css("min-height", height + "px");
+       $("#accountcreationduplicates-panel").css("min-height", height + "px");
+       $("#accountcreationresult-panel").css("min-height", height + "px");
+       $("#createaccount-panel").css("min-height", height + "px");
+   }
+
+   $(window).resize(function () {
+       if (loginDisplayed == true) {
+
+           updatePanelHeights();
+       }
+   });
 	
 	var modal = document.querySelector("#bg-screen");
 	modal.addEventListener("click", function (e) {
 	    if (this == e.target) {
-	        hideLoginModal();
+	        if (dismissLoginAllowed) {
+	            hideLoginModal();
+	        }
 	    }
 	}, false);
 
@@ -213,12 +255,11 @@
 	}
     // ---- END UTILITY ----
 	
-	var loginDisplayed = false;
-	var bodyCssOverflow = null;
-
-	function displayLoginModal() {
+	function displayLoginModal(dismissable) {
 
 	    if (loginDisplayed == false) {
+
+	        dismissLoginAllowed = dismissable;
 
 	        // fade in the bg screen (the grey overlay)
 	        var bgScreen = $("#bg-screen");
@@ -240,6 +281,16 @@
 
 	        // make sure the loader is hidden
 	        hideLoader();
+
+	        // if the login is dismissable, show the close button (used for mobile)
+	        if (dismissLoginAllowed == true) {
+	            $(".close-button").show();
+	        }
+	        else {
+	            $(".close-button").hide();
+	        }
+
+	        updatePanelHeights();
 
 	        loginDisplayed = true;
 	    }
@@ -270,17 +321,6 @@
 
 	        loginDisplayed = false;
 	    }
-	}
-
-	// used so that child panels can match the login-panel's height
-	function updateChildPanelHeight( parentPanelId, childPanelId ) {
-	    var parentPanel = $(parentPanelId);
-	    var height = parentPanel.outerHeight();
-
-	    // since the child panels all cover login-panel, they need to be at least
-	    // the height of login-panel, but larger is fine.
-	    var childPanel = $(childPanelId);
-	    childPanel.css("min-height", height + "px");
 	}
     
 	function showResponsePanel(panelId, panelMessageId, errorMsg) {
@@ -399,8 +439,18 @@
     }
 
     function handleLoginSucceeded() {
-        // reload the page so they show as logged in.
-		location.reload();
+
+        // try parsing the query param, if it exists
+        var returnUrl = getParameterByName('returnurl');
+        if (returnUrl != null) {
+            
+            var decodedUrl = decodeURIComponent(returnUrl);
+            window.location.href = window.location.origin + decodedUrl;
+        }
+        else {
+            // no page to redirect tou, so just reload the page so they show as logged in.
+            location.reload();
+        }
     }
     // ---- END LOGIN ----
 
@@ -409,7 +459,8 @@
         var createAccountPanel = $("#createaccount-panel");
 
         hideResponsePanel("#ca-form-result-panel", "#ca-form-result-message");
-        updateChildPanelHeight("#login-panel", "#createaccount-panel");
+        
+        updatePanelHeights();
 
         createAccountPanel.removeClass("createaccount-panel-hidden");
 
@@ -436,14 +487,14 @@
         createAccountPanel.addClass("createaccount-panel-hidden");
     }
 
-    function displayAccountCreationResultPanel(currPanelId, createAccountResponse) {
+    function displayAccountCreationResultPanel(createAccountResponse) {
         var accountCreatedPanel = $("#accountcreationresult-panel");
 
         // hide the response panel
         hideResponsePanel("#ca-form-result-panel", "#ca-form-result-message");
 
         // use the currPanelId as the 'parent' of this results panel, which we can use to get the height we need.
-        updateChildPanelHeight(currPanelId, "#accountcreationresult-panel");
+        updatePanelHeights();
 
         accountCreatedPanel.removeClass("accountcreationresult-panel-hidden");
         accountCreatedPanel.addClass("accountcreationresult-panel-visible");
@@ -475,6 +526,14 @@
         var panel = $("#accountcreationresult-panel");
         panel.removeClass("accountcreationresult-panel-visible");
         panel.addClass("accountcreationresult-panel-hidden");
+    }
+
+    function popToLoginPage() {
+
+        // hide all the account panels, so we return to the login modal
+        hideAccountCreationDuplicatesPanel();
+        hideAccountCreationResultPanel();
+        hideCreateAccountPanel(false);
     }
 
     function registerUser() {
@@ -550,7 +609,7 @@
             // if there were no duplicates, just register them.
             // if we did find duplicates, they need to decide what to do
             if (duplicatesList.length == 0) {
-                createPersonWithLogin("#createaccount-panel");
+                createPersonWithLogin();
             }
             else {
                 hideLoader();
@@ -559,7 +618,7 @@
         }); 
     }
 
-    function createPersonWithLogin(currPanelId) {
+    function createPersonWithLogin() {
 
         // get the input fields
         var username = $("#tb-ca-username").val();
@@ -593,7 +652,7 @@
                 })
         }).done(function (registerResponse) {
             hideLoader();
-            displayAccountCreationResultPanel(currPanelId, registerResponse);
+            displayAccountCreationResultPanel(registerResponse);
         });
     }
 
@@ -637,7 +696,7 @@
 
         hideResponsePanel("#ac-dup-form-result-panel", "#ac-dup-form-result-message");
 
-        updateChildPanelHeight("#createaccount-panel", "#accountcreationduplicates-panel");
+        updatePanelHeights();
 
         panel.removeClass("accountcreationduplicates-panel-hidden");
         panel.addClass("accountcreationduplicates-panel-visible");
@@ -667,7 +726,6 @@
         
         // get the values they input on the registration page
 
-
         // see which option they selected
         var selectedOption = $("#duplicates-form input[type=radio]:checked")[0];
         if (selectedOption != null) {
@@ -676,7 +734,7 @@
 
             // if they said none of the above, this will be easy. we can register them as we normally would.
             if (selectedOption.value == -1) {
-                createPersonWithLogin("#accountcreationduplicates-panel");
+                createPersonWithLogin();
             }
             else {
                 createLogin("#accountcreationduplicates-panel", selectedOption.value);
@@ -699,10 +757,15 @@
     function displayForgotPasswordPanel() {
         var forgotPasswordPanel = $("#forgotpassword-panel");
 
+        $("#forgotpassword-panel-form").show();
+        $("#<%=forgotPasswordButtonCancel.ClientID %>").show();
+        $("#<%=forgotPasswordButtonConfirm.ClientID %>").show();
+        $("#<%=forgotPasswordReturnButton.ClientID %>").hide();
+
         // hide the response panel
         hideResponsePanel("#fp-form-result-panel", "#fp-form-result-message");
 
-        updateChildPanelHeight("#login-panel", "#forgotpassword-panel");
+        updatePanelHeights();
 
         forgotPasswordPanel.removeClass("forgotpassword-panel-hidden");
         forgotPasswordPanel.addClass("forgotpassword-panel-visible");
@@ -755,7 +818,12 @@
     function handleForgotPasswordResponse(responseData) {
         hideLoader();
 
-        hideLoginModal();
+        $("#forgotpassword-panel-form").hide();
+        $("#<%=forgotPasswordButtonCancel.ClientID %>").hide();
+        $("#<%=forgotPasswordButtonConfirm.ClientID %>").hide();
+        $("#<%=forgotPasswordReturnButton.ClientID %>").show();
+
+        showResponsePanel("#fp-form-result-panel", "#fp-form-result-message", "Thanks. We will send an email to the address provided if a record is found.");
     }
     // ---- END FORGOT PASSWORD ----
 </script>

@@ -11025,7 +11025,7 @@ html,body{
 	right: 0;
 	bottom: 0;
 	left: 0;
-	background: #444;
+	background: #fff;
     z-index: 1499;
 	display: block;
 	overflow-x: hidden;
@@ -11102,6 +11102,11 @@ html,body{
 	font-size: 18px;
 }
 
+.lm-base-panel .close-button a:hover {
+   cursor: pointer;
+   text-decoration: none;
+}
+
 @media screen and (min-width: 813px) {
 	.lm-base-panel .close-button {
 		visibility: hidden;
@@ -11114,13 +11119,13 @@ html,body{
 	box-sizing: border-box; 
 	font-family: Roboto, sans-serif; 
 	-webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
-	box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 45px, rgba(0, 0, 0, 0.22) 0px 10px 18px; 
 	padding-bottom: 25px;
 }
 
 @media screen and (min-width: 813px) {
 	.lm-base-panel {
 		border-radius: 2px;
+      box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 45px, rgba(0, 0, 0, 0.22) 0px 10px 18px; 
 	}
 }
 
