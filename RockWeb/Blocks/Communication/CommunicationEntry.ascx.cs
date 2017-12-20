@@ -546,7 +546,7 @@ namespace RockWeb.Blocks.Communication
                         communicationService.Add( testCommunication );
                         rockContext.SaveChanges();
 
-                        foreach ( var medium in testCommunication.Mediums )
+                        foreach ( var medium in testCommunication.GetMediums() )
                         {
                             medium.Send( testCommunication );
                         }
@@ -786,7 +786,7 @@ namespace RockWeb.Blocks.Communication
 
             CommunicationId = communication.Id;
 
-            var firstMedium = communication.Mediums.FirstOrDefault();
+            var firstMedium = communication.GetMediums().FirstOrDefault();
             if ( firstMedium != null && firstMedium.EntityType != null )
             {
                 MediumEntityTypeId = firstMedium.EntityType.Id;
@@ -855,8 +855,9 @@ namespace RockWeb.Blocks.Communication
             var mediums = new Dictionary<int, string>();
             foreach ( var item in MediumContainer.Instance.Components.Values )
             {
-                if ( item.Value.IsActive &&
-                    ( !selectedGuids.Any() || selectedGuids.Contains( item.Value.EntityType.Guid ) ) )
+                if ( ( !selectedGuids.Any() || selectedGuids.Contains( item.Value.EntityType.Guid ) ) &&
+                    item.Value.IsActive &&
+                    item.Value.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     var entityType = item.Value.EntityType;
                     mediums.Add( entityType.Id, item.Metadata.ComponentName );

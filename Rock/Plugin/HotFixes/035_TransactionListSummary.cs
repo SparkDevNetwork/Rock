@@ -29,9 +29,10 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.UpdateBlockTypeAttribute( "E04320BC-67C3-452D-9EF6-D74D8C177154", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Account Summary", "ShowAccountSummary", "", "Should the account summary be displayed at the bottom of the list?", 6, @"False", "4C92974B-FB99-4E89-B215-A457646D77E1" );
-            RockMigrationHelper.AddBlockAttributeValue( "B447AB11-3A19-4527-921A-2266A6B4E181", "4C92974B-FB99-4E89-B215-A457646D77E1", "True" );
-            RockMigrationHelper.AddBlockAttributeValue( "1133795B-3325-4D81-B603-F442F0AC892B", "4C92974B-FB99-4E89-B215-A457646D77E1", "True" );
+            // in core migration: 201710021015059_MigrationRollups1002
+            //RockMigrationHelper.UpdateBlockTypeAttribute( "E04320BC-67C3-452D-9EF6-D74D8C177154", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Account Summary", "ShowAccountSummary", "", "Should the account summary be displayed at the bottom of the list?", 6, @"False", "4C92974B-FB99-4E89-B215-A457646D77E1" );
+            //RockMigrationHelper.AddBlockAttributeValue( "B447AB11-3A19-4527-921A-2266A6B4E181", "4C92974B-FB99-4E89-B215-A457646D77E1", "True" );
+            //RockMigrationHelper.AddBlockAttributeValue( "1133795B-3325-4D81-B603-F442F0AC892B", "4C92974B-FB99-4E89-B215-A457646D77E1", "True" );
         }
 
         /// <summary>

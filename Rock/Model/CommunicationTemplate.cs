@@ -88,6 +88,15 @@ namespace Rock.Model
         private bool _isActive = true;
 
         /// <summary>
+        /// Gets or sets a value indicating whether [CSS inlining enabled].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [CSS inlining enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CssInliningEnabled { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the sender of the Communication
         /// </summary>
         /// <value>
@@ -210,6 +219,26 @@ namespace Rock.Model
         [DataMember]
         public string MessageMetaData { get; set; }
 
+        /// <summary>
+        /// The internal storage for <see cref="CommunicationTemplate.LavaFields"/>
+        /// </summary>
+        /// <value>
+        /// The lava fields json
+        /// </value>
+        [DataMember]
+        public string LavaFieldsJson
+        {
+            get
+            {
+                return LavaFields.ToJson( Formatting.None );
+            }
+
+            set
+            {
+                LavaFields = value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+            }
+        }
+
         #endregion
 
         #region SMS Properties
@@ -270,6 +299,16 @@ namespace Rock.Model
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// A Dictionary of Key,DefaultValue for Lava MergeFields that can be used when processing Lava in the CommunicationTemplate
+        /// By convention, a Key with a 'Color' suffix will indicate that the Value is selected using a ColorPicker. Otherwise,it is just text
+        /// </summary>
+        /// <value>
+        /// The merge fields.
+        /// </value>
+        [DataMember]
+        public virtual Dictionary<string, string> LavaFields { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Gets or sets the attachments.

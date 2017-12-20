@@ -196,7 +196,7 @@ namespace Rock.Data
                 if ( entry.Entity is IModel )
                 {
                     var model = entry.Entity as IModel;
-                    model.PreSaveChanges( this, entry );
+                    model.PreSaveChanges( this, entry, entry.State ); 
 
                     if ( !preSavedEntities.Contains( model.Guid ) )
                     {

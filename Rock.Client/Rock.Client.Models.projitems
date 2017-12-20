@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimCampus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyHeadOfHousehold.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyHistorical.cs" />
@@ -22,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsFactAttendance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceAttendance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceCampus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceDate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
@@ -142,6 +144,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricPartition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValuePartition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NcoaHistory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Note.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NoteType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Notification.cs" />

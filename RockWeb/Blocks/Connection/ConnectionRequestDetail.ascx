@@ -161,22 +161,40 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <asp:Label ID="asdasd" runat="server" Text="New Opportunity" Font-Bold="true" />
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <Rock:RockDropDownList ID="ddlTransferOpportunity" runat="server" />
+
+                            <Rock:RockControlWrapper ID="rcwTransferOpportunity" runat="server" Label="New Opportunity">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <Rock:RockDropDownList ID="ddlTransferOpportunity" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlTransferOpportunity_SelectedIndexChanged" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:BootstrapButton ID="btnSearch" runat="server" CssClass="btn btn-primary" Text="Search" OnClick="btnSearch_Click" />
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <Rock:BootstrapButton ID="btnSearch" runat="server" CssClass="btn btn-primary" Text="Search" OnClick="btnSearch_Click" />
+                            </Rock:RockControlWrapper>
+
+                            <Rock:RockControlWrapper ID="rcwConnector" runat="server" Label="Connector">
+                                <div>
+                                    <Rock:RockRadioButton ID="rbTransferDefaultConnector" runat="server" CssClass="js-transfer-connector" Text="Default Connector" GroupName="TransferOpportunityConnector" />
                                 </div>
-                            </div>
+                                <div>
+                                    <Rock:RockRadioButton ID="rbTransferCurrentConnector" runat="server" CssClass="js-transfer-connector" Text="Current Connector" GroupName="TransferOpportunityConnector" />
+                                </div>
+                                <div>
+                                    <Rock:RockRadioButton ID="rbTransferSelectConnector" runat="server" CssClass="js-transfer-connector" Text="Select Connector" GroupName="TransferOpportunityConnector" />
+                                    <Rock:RockDropDownList ID="ddlTransferOpportunityConnector" CssClass="margin-l-lg" runat="server" Style="display: none" />
+                                </div>
+                                <div>
+                                    <Rock:RockRadioButton ID="rbTransferNoConnector" runat="server" CssClass="js-transfer-connector" Text="No Connector" GroupName="TransferOpportunityConnector" />
+                                </div>
+                            </Rock:RockControlWrapper>
+
+
                         </div>
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlTransferStatus" runat="server" Label="Status" />
                         </div>
                     </div>
-
-                    <Rock:RockCheckBox ID="cbClearConnector" Checked="true" runat="server" Text=" Clear Connector" />
 
                     <Rock:RockTextBox ID="tbTransferNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
 
@@ -268,6 +286,15 @@
                 </div>
             </Content>
         </Rock:ModalDialog>
+        <script>
+            Sys.Application.add_load(function () {
+                $(".js-transfer-connector").on("click", function (a) {
+                    $("#<%=ddlTransferOpportunityConnector.ClientID%>").toggle($(this).is('#<%=rbTransferSelectConnector.ClientID%>'));
+                });
+                
+                $("#<%=ddlTransferOpportunityConnector.ClientID%>").toggle($('#<%=rbTransferSelectConnector.ClientID%>').is(":checked"));
+            })
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>

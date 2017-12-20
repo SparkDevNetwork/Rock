@@ -242,7 +242,13 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
             base.OnInit( e );
+        }
 
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        private void RegisterJavaScript()
+        {
             string script = string.Format( @" function ValidateCheckboxList_{0}(source, args) {{
                 var checkboxes = $(""input[id ^= '{0}']"");
                 var isValid = false;
@@ -263,7 +269,7 @@ namespace Rock.Web.UI.Controls
 
                 args.IsValid = isValid;
 
-        }}", this.ClientID);
+        }}", this.ClientID );
             ScriptManager.RegisterClientScriptBlock( this, typeof( RockCheckBoxList ), "RockCheckBoxListScript_" + this.ClientID, script, true );
         }
 
@@ -367,6 +373,8 @@ namespace Rock.Web.UI.Controls
             base.RenderControl( writer );
             CustomValidator.RenderControl( writer );
             writer.RenderEndTag();
+
+            RegisterJavaScript();
         }
 
         /// <summary>

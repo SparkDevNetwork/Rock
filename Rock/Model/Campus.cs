@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Campus" )]
     [DataContract]
+    [Analytics( false, true )]
     public partial class Campus : Model<Campus>, IOrdered
     {
         #region Entity Properties
@@ -139,6 +140,18 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the time zone identifier (<see cref="System.TimeZoneInfo.Id"/>)
+        /// If this is not set, the Campus time zone will be the default Rock time zone (<see cref="Rock.RockDateTime.OrgTimeZoneInfo" /> )
+        /// </summary>
+        /// <value>
+        /// The time zone identifier. 
+        /// NOTE: System.TimeZoneInfo.Id can be any length, but documentation recommends that it 32 chars or less, so we'll limit it to 50
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string TimeZoneId { get; set; }
 
         #endregion
 

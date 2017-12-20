@@ -1409,6 +1409,15 @@ function(item) {
                         SortExpression = "LastEverGift"
                     } );
 
+                gGiversGifts.Columns.Add(
+                    new RockBoundField
+                    {
+                        DataField = "GivingId",
+                        HeaderText = "Giving Id",
+                        Visible = false,
+                        ExcelExportBehavior = ExcelExportBehavior.AlwaysInclude
+                    } );
+
                 ti.end = DateTime.Now;
 
             } ) );

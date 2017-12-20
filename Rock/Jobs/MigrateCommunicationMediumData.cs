@@ -50,6 +50,8 @@ namespace Rock.Jobs
 
             int howMany = dataMap.GetString( "HowMany" ).AsIntegerOrNull() ?? 300000;
 
+            CommunicationSchemaUpdates();
+
             bool anyRemaining = UpdateCommunicationRecords( true, howMany );
 
             if ( !anyRemaining )
@@ -81,6 +83,57 @@ namespace Rock.Jobs
             }
         }
 
+        /// <summary>
+        /// Does any of the Communication Schema Updates that could take too long to do in the migration
+        /// </summary>
+        public static void CommunicationSchemaUpdates()
+        {
+            // (if it hasn't already) Create Indexes that weren't created in the migration
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_MediumEntityTypeId' AND object_id = OBJECT_ID('CommunicationRecipient'))
+BEGIN
+CREATE INDEX [IX_MediumEntityTypeId] ON [dbo].[CommunicationRecipient] ([MediumEntityTypeId])
+END
+" );
+                rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_CommunicationTemplateId' AND object_id = OBJECT_ID('Communication'))
+BEGIN
+CREATE INDEX [IX_CommunicationTemplateId] ON [dbo].[Communication] ([CommunicationTemplateId])
+END
+" );
+                rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_SMSFromDefinedValueId' AND object_id = OBJECT_ID('Communication'))
+BEGIN
+CREATE INDEX [IX_SMSFromDefinedValueId] ON [dbo].[Communication] ([SMSFromDefinedValueId])
+END
+" );
+                rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_SMSFromDefinedValueId' AND object_id = OBJECT_ID('CommunicationTemplate'))
+BEGIN
+CREATE INDEX [IX_SMSFromDefinedValueId] ON [dbo].[CommunicationTemplate] ([SMSFromDefinedValueId])
+END
+" );
+
+                // (if it hasn't already) Create FK_dbo.CommunicationRecipient_dbo.EntityType_MediumEntityTypeId
+                rockContext.Database.ExecuteSqlCommand( @"
+IF (OBJECT_ID('[FK_dbo.CommunicationRecipient_dbo.EntityType_MediumEntityTypeId]', 'F') IS NULL)
+BEGIN
+	ALTER TABLE [dbo].[CommunicationRecipient] ADD CONSTRAINT [FK_dbo.CommunicationRecipient_dbo.EntityType_MediumEntityTypeId] FOREIGN KEY ([MediumEntityTypeId]) REFERENCES [dbo].[EntityType] ([Id])
+END" );
+
+                // (if it hasn't already) Create FK_dbo.Communication_dbo.CommunicationTemplate_CommunicationTemplateId]
+                rockContext.Database.ExecuteSqlCommand( @"
+IF (OBJECT_ID('[FK_dbo.Communication_dbo.CommunicationTemplate_CommunicationTemplateId]', 'F') IS NULL)
+BEGIN
+	print 'yep'
+	ALTER TABLE [dbo].[Communication] ADD CONSTRAINT [FK_dbo.Communication_dbo.CommunicationTemplate_CommunicationTemplateId] FOREIGN KEY ([CommunicationTemplateId]) REFERENCES [dbo].[CommunicationTemplate] ([Id])
+END
+" );
+            }
+        }
+
         #region Static Methods 
 
         /// <summary>
@@ -92,6 +145,8 @@ namespace Rock.Jobs
         public static bool UpdateCommunicationRecords( bool updateTemplates, int howManyToConvert )
         {
             bool anyRemaining = true;
+
+            
 
             if ( updateTemplates )
             {
@@ -197,8 +252,8 @@ namespace Rock.Jobs
                     commDetails.FromName = ConvertMediumData( mediumData, "FromName", commDetails.FromName );
                     commDetails.FromEmail = ConvertMediumData( mediumData, "FromAddress", commDetails.FromEmail );
                     commDetails.ReplyToEmail = ConvertMediumData( mediumData, "ReplyTo", commDetails.ReplyToEmail );
-                    commDetails.CCEmails = ConvertMediumData( mediumData, "CC", commDetails.Message );
-                    commDetails.BCCEmails = ConvertMediumData( mediumData, "BCC", commDetails.Message );
+                    commDetails.CCEmails = ConvertMediumData( mediumData, "CC", commDetails.CCEmails );
+                    commDetails.BCCEmails = ConvertMediumData( mediumData, "BCC", commDetails.BCCEmails );
                     commDetails.Message = ConvertMediumData( mediumData, "HtmlMessage", commDetails.Message );
                     attachmentBinaryFileIds = ConvertMediumData( mediumData, "Attachments", commDetails.EmailAttachmentBinaryFileIds.ToList().AsDelimited( "," ) ).SplitDelimitedValues().AsIntegerList();
                 }

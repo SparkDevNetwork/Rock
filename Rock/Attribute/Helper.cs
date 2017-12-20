@@ -358,182 +358,58 @@ namespace Rock.Attribute
 
                 rockContext = rockContext ?? new RockContext();
 
-                // Event item's will load attributes for child calendar items. Use this to store the child values.
-                var altEntityIds = new List<int>();
+                var attributes = new List<Rock.Web.Cache.AttributeCache>();
+                var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
+                var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( entityType );
 
-                // Check for group type attributes
-                var groupTypeIds = new List<int>();
-                if ( entity is GroupMember || entity is Group || entity is GroupType )
+                List<Rock.Web.Cache.AttributeCache> allAttributes = null;
+                List<int> altEntityIds = null;
+
+                //
+                // If this entity can provide inherited attribute information then
+                // load that data now. If they don't provide any then generate empty lists.
+                //
+                if ( entity is IHasInheritedAttributes )
                 {
-                    // Can't use GroupTypeCache here since it loads attributes and would result in a recursive stack overflow situation
-                    var groupTypeService = new GroupTypeService( rockContext );
-                    GroupType groupType = null;
-
-                    if ( entity is GroupMember )
-                    {
-                        var group = ( (GroupMember)entity ).Group ?? new GroupService( rockContext )
-                            .Queryable().AsNoTracking().FirstOrDefault(g => g.Id == ( (GroupMember)entity ).GroupId );
-                        if ( group != null )
-                        {
-                            groupType = group.GroupType ?? groupTypeService
-                                .Queryable().AsNoTracking().FirstOrDefault( t => t.Id == group.GroupTypeId );
-                        }
-                    }
-                    else if ( entity is Group )
-                    {
-                        groupType = ( (Group)entity ).GroupType ?? groupTypeService
-                            .Queryable().AsNoTracking().FirstOrDefault( t => t.Id == ( (Group)entity ).GroupTypeId );
-                    }
-                    else
-                    {
-                        groupType = ( (GroupType)entity );
-                    }
-
-                    while ( groupType != null )
-                    {
-                        groupTypeIds.Insert( 0, groupType.Id );
-
-                        // Check for inherited group type id's
-                        if ( groupType.InheritedGroupTypeId.HasValue )
-                        {
-                            groupType = groupType.InheritedGroupType ?? groupTypeService
-                                .Queryable().AsNoTracking().FirstOrDefault( t => t.Id == ( groupType.InheritedGroupTypeId ?? 0 ) );
-                        }
-                        else
-                        {
-                            groupType = null;
-                        }
-                    }
-
+                    allAttributes = ( ( IHasInheritedAttributes ) entity ).GetInheritedAttributes( rockContext );
+                    altEntityIds = ( ( IHasInheritedAttributes ) entity ).GetAlternateEntityIds( rockContext );
                 }
 
-                // Check for registration template type attributes
-                int? registrationTemplateId = null;
-                if ( entity is RegistrationRegistrant )
-                {
-                    RegistrationInstance registrationInstance = null;
-                    var registration = ( (RegistrationRegistrant)entity ).Registration ?? new RegistrationService( rockContext )
-                        .Queryable().AsNoTracking().FirstOrDefault( r => r.Id == ( (RegistrationRegistrant)entity ).RegistrationId );
-                    if ( registration != null )
-                    {
-                        registrationInstance = registration.RegistrationInstance ?? new RegistrationInstanceService( rockContext )
-                            .Queryable().AsNoTracking().FirstOrDefault( r => r.Id == registration.RegistrationInstanceId );
-                        if ( registrationInstance != null )
-                        {
-                            registrationTemplateId = registrationInstance.RegistrationTemplateId;
-                        }
-                    }
-                }
+                allAttributes = allAttributes ?? new List<Rock.Web.Cache.AttributeCache>();
+                altEntityIds = altEntityIds ?? new List<int>();
 
-                // Get the calendar ids for any event items
-                var calendarIds = new List<int>();
-                if ( entity is EventItem )
-                {
-                    var calendarItems = ( (EventItem)entity ).EventCalendarItems.ToList() ?? new EventCalendarItemService( rockContext )
-                        .Queryable().AsNoTracking().Where( c => c.EventItemId == ( (EventItem)entity ).Id ).ToList();
-                    calendarIds = calendarItems.Select( c => c.EventCalendarId ).ToList();
-                    altEntityIds = calendarItems.Select( c => c.Id ).ToList();
-                }
-
+                //
+                // Generate a list of all this entities properties for quick reference while
+                // loading the attributes.
+                //
                 foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
                     properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
 
-                Rock.Model.AttributeService attributeService = new Rock.Model.AttributeService( rockContext );
-                Rock.Model.AttributeValueService attributeValueService = new Rock.Model.AttributeValueService( rockContext );
-
-                var inheritedAttributes = new Dictionary<int, List<Rock.Web.Cache.AttributeCache>>();
-                if ( groupTypeIds.Any() )
-                {
-                    groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<Rock.Web.Cache.AttributeCache>() ) );
-                }
-                else if ( calendarIds.Any() )
-                {
-                    calendarIds.ForEach( c => inheritedAttributes.Add( c, new List<Rock.Web.Cache.AttributeCache>() ) );
-                }
-                else
-                {
-                    inheritedAttributes.Add( 0, new List<Rock.Web.Cache.AttributeCache>() );
-                }
-
-                // Check for any calendar item attributes that event item inherits
-                if ( calendarIds.Any() )
-                {
-                    var calendarItemEntityType = EntityTypeCache.Read( typeof( EventCalendarItem ) );
-                    if ( calendarItemEntityType != null )
-                    {
-                        foreach ( var calendarItemEntityAttributes in AttributeCache
-                            .GetByEntity( calendarItemEntityType.Id )
-                            .Where( a =>
-                                a.EntityTypeQualifierColumn == "EventCalendarId" &&
-                                calendarIds.Contains( a.EntityTypeQualifierValue.AsInteger() ) ) )
-                        {
-                            foreach ( var attributeId in calendarItemEntityAttributes.AttributeIds )
-                            {
-                                inheritedAttributes[calendarItemEntityAttributes.EntityTypeQualifierValue.AsInteger()].Add(
-                                    AttributeCache.Read( attributeId ) );
-                            }
-                        }
-                    }
-                }
-
-                var attributes = new List<Rock.Web.Cache.AttributeCache>();
-
-                // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
-                var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( entityType);
+                //
+                // Get all the attributes that apply to this entity type and this entity's
+                // properties match any attribute qualifiers.
+                //
                 if ( entityTypeCache != null )
                 {
                     int entityTypeId = entityTypeCache.Id;
                     foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeCache.Id ) )
                     {
-                        // group type ids exist (entity is either GroupMember, Group, or GroupType) and qualifier is for a group type id
-                        if ( groupTypeIds.Any() && (
-                                ( entity is GroupMember && string.Compare( entityAttributes.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
-                                ( entity is Group && string.Compare( entityAttributes.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
-                                ( entity is GroupType && string.Compare( entityAttributes.EntityTypeQualifierColumn, "Id", true ) == 0 ) ) )
-                        {
-                            int groupTypeIdValue = int.MinValue;
-                            if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
-                            {
-                                foreach( int attributeId in entityAttributes.AttributeIds )
-                                {
-                                    inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attributeId ) );
-                                }
-                            }
-                        }
-
-                        // Registrant attribute ( by RegistrationTemplateId )
-                        else if ( entity is RegistrationRegistrant && 
-                            registrationTemplateId.HasValue &&
-                            entityAttributes.EntityTypeQualifierValue.AsInteger() == registrationTemplateId.Value )
+                        if ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierColumn ) ||
+                            ( properties.ContainsKey( entityAttributes.EntityTypeQualifierColumn.ToLower() ) &&
+                            ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierValue ) ||
+                            ( properties[entityAttributes.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "" ).ToString() == entityAttributes.EntityTypeQualifierValue ) ) )
                         {
                             foreach ( int attributeId in entityAttributes.AttributeIds )
                             {
                                 attributes.Add( Rock.Web.Cache.AttributeCache.Read( attributeId ) );
                             }
                         }
-
-                        else if ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierColumn ) ||
-                            ( properties.ContainsKey( entityAttributes.EntityTypeQualifierColumn.ToLower() ) &&
-                            ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierValue ) ||
-                            ( properties[entityAttributes.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "" ).ToString() == entityAttributes.EntityTypeQualifierValue ) ) )
-                        {
-                            foreach( int attributeId in entityAttributes.AttributeIds )
-                            {
-                                attributes.Add( Rock.Web.Cache.AttributeCache.Read( attributeId ) );
-                            }
-                        }
                     }
                 }
 
-                var allAttributes = new List<Rock.Web.Cache.AttributeCache>();
-
-                foreach ( var attributeGroup in inheritedAttributes )
-                {
-                    foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )
-                    {
-                        allAttributes.Add( attribute );
-                    }
-                }
+                //
+                // Append these attributes to our inherited attributes, in order.
+                //
                 foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
                 {
                     allAttributes.Add( attribute );
@@ -553,11 +429,32 @@ namespace Rock.Attribute
                     if ( !entityTypeCache.IsEntity || entity.Id != 0 )
                     {
                         List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
-                        foreach ( var attributeValue in attributeValueService.Queryable().AsNoTracking()
-                            .Where( v => 
-                                v.EntityId.HasValue &&
-                                ( v.EntityId.Value == entity.Id || altEntityIds.Contains( v.EntityId.Value ) )
-                                && attributeIds.Contains( v.AttributeId ) ) )
+                        IQueryable<AttributeValue> attributeValueQuery;
+
+                        if ( altEntityIds.Any() )
+                        {
+                            attributeValueQuery = attributeValueService.Queryable().AsNoTracking()
+                                .Where( v =>
+                                    v.EntityId.HasValue &&
+                                    ( v.EntityId.Value == entity.Id || altEntityIds.Contains( v.EntityId.Value ) ) );
+                        }
+                        else
+                        {
+                            attributeValueQuery = attributeValueService.Queryable().AsNoTracking()
+                                .Where( v => v.EntityId.HasValue && v.EntityId.Value == entity.Id );
+                        }
+
+                        if ( attributeIds.Count != 1 )
+                        {
+                            attributeValueQuery = attributeValueQuery.Where( v => attributeIds.Contains( v.AttributeId ) );
+                        }
+                        else
+                        {
+                            int attributeId = attributeIds[0];
+                            attributeValueQuery = attributeValueQuery.Where( v => v.AttributeId == attributeId );
+                        }
+
+                        foreach ( var attributeValue in attributeValueQuery )
                         {
                             var attributeKey = AttributeCache.Read( attributeValue.AttributeId ).Key;
                             attributeValues[attributeKey] = new AttributeValueCache( attributeValue );

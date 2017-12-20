@@ -410,6 +410,9 @@ validity of the request before completing this merge." :
                         primaryPerson.SystemNote = GetNewStringValue( "InactiveReasonNote", changes );
                         primaryPerson.SystemNote = GetNewStringValue( "SystemNote", changes );
 
+                        primaryPerson.CreatedDateTime = MergeData.People
+                                                        .Min( a => a.CreatedDateTime );
+
                         // Update phone numbers
                         var phoneTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
                         foreach ( var phoneType in phoneTypes )
@@ -1297,6 +1300,7 @@ validity of the request before completing this merge." :
         public int Id { get; set; }
         public string FullName { get; set; }
         public DateTime? ModifiedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         public string ModifiedBy { get; set; }
         public string Email { get; set; }
         public bool HasLogins { get; set; }
@@ -1307,6 +1311,7 @@ validity of the request before completing this merge." :
             Id = person.Id;
             FullName = person.FullName;
             ModifiedDateTime = person.ModifiedDateTime;
+            CreatedDateTime = person.CreatedDateTime;
             Email = person.Email;
             HasLogins = person.Users.Any();
             Guid = person.Guid;

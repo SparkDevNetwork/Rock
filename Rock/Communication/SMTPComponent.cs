@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
@@ -226,6 +227,16 @@ namespace Rock.Communication.Transport
                             message.Subject = subject;
                             message.Body = body;
 
+                            var metaData = new Dictionary<string, string>( emailMessage.MessageMetaData );
+
+                            // If a communicatoin is going to get created, create a guid for tracking the opens/clicks
+                            Guid? recipientGuid = null;
+                            if ( emailMessage.CreateCommunicationRecord )
+                            {
+                                recipientGuid = Guid.NewGuid();
+                                metaData.Add( "communication_recipient_guid", recipientGuid.Value.ToString() );
+                            }
+
                             using ( var rockContext = new RockContext() )
                             {
                                 // Recreate the attachments
@@ -243,7 +254,7 @@ namespace Rock.Communication.Transport
                                     }
                                 }
 
-                                AddAdditionalHeaders( message, emailMessage.MessageMetaData );
+                                AddAdditionalHeaders( message, metaData );
 
                                 smtpClient.Send( message );
                             }
@@ -251,6 +262,7 @@ namespace Rock.Communication.Transport
                             if ( emailMessage.CreateCommunicationRecord )
                             {
                                 var transaction = new SaveCommunicationTransaction( recipientData.To, emailMessage.FromName, emailMessage.FromName, subject, body );
+                                transaction.RecipientGuid = recipientGuid;
                                 RockQueue.TransactionQueue.Enqueue( transaction );
                             }
                         }
@@ -278,9 +290,9 @@ namespace Rock.Communication.Transport
             {
                 // Requery the Communication
                 communication = new CommunicationService( communicationRockContext )
-                    .Queryable( "CreatedByPersonAlias.Person" )
+                    .Queryable().Include( a => a.CreatedByPersonAlias.Person ).Include( a => a.CommunicationTemplate )
                     .FirstOrDefault( c => c.Id == communication.Id );
-                
+
                 bool hasPendingRecipients;
                 if ( communication != null && 
                     communication.Status == Model.CommunicationStatus.Approved && 
@@ -306,6 +318,7 @@ namespace Rock.Communication.Transport
                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                     string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
+                    var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
 
                     // From - if none is set, use the one in the Organization's GlobalAttributes.
                     string fromAddress = communication.FromEmail;
@@ -440,6 +453,13 @@ namespace Rock.Communication.Transport
 
                                         if ( !string.IsNullOrWhiteSpace( htmlBody ) )
                                         {
+                                            if ( cssInliningEnabled )
+                                            {
+                                                // move styles inline to help it be compatible with more email clients
+                                                htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes();
+                                            }
+
+                                            // add the main Html content to the email
                                             AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
                                             message.AlternateViews.Add( htmlView );
                                         }
@@ -635,6 +655,8 @@ namespace Rock.Communication.Transport
                 }
             }
         }
+
+        
 
         #region Obsolete
 

@@ -36,6 +36,7 @@
                             <Rock:RockBoundField DataField="CreatedByPersonAlias.Person.FullName" SortExpression="CreatedByPersonAlias.Person.FullName" HeaderText="Created By" />
                             <Rock:BoolField DataField="IsActive" SortExpression="IsActive" HeaderText="Active" />
                             <Rock:SecurityField TitleField="Name" />
+                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="gCommunicationTemplates_Copy" HeaderStyle-HorizontalAlign="Center" />
                             <Rock:DeleteField OnClick="gCommunicationTemplates_Delete" />
                         </Columns>
                     </Rock:Grid>

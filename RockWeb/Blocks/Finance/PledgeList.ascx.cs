@@ -33,12 +33,16 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Generic list of all pledges in the system." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page", "", false )]
     [BooleanField("Show Account Column", "Allows the account column to be hidden.", true, "", 1)]
     [BooleanField("Show Last Modified Date Column", "Allows the Last Modified Date column to be hidden.", true, "", 2)]
     [BooleanField( "Show Group Column", "Allows the group column to be hidden.", false, "", 3 )]
     [BooleanField( "Limit Pledges To Current Person", "Limit the results to pledges for the current person.", false, "", 4)]
+<<<<<<< HEAD
     [BooleanField( "Show Account Summary", "Should the account summary be displayed at the bottom of the list?", false, order: 5 )]
+=======
+    [AccountsField( "Accounts", "Limit the results to pledges that match the selected accounts.", false, "", "", 5 )]
+>>>>>>> origin/pre-alpha-spark
 
     [BooleanField( "Show Person Filter", "Allows person filter to be hidden.", true, "Display Filters", 0)]
     [BooleanField( "Show Account Filter", "Allows account filter to be hidden.", true, "Display Filters", 1 )]
@@ -69,13 +73,17 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
             gPledges.DataKeyNames = new[] { "id" };
             gPledges.RowDataBound += GPledges_RowDataBound;
-            gPledges.Actions.AddClick += gPledges_Add;
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DetailPage" ) ) )
+            {
+                gPledges.Actions.AddClick += gPledges_Add;
+                gPledges.RowSelected += gPledges_Edit;
+            }
             gPledges.GridRebind += gPledges_GridRebind;
             gfPledges.ApplyFilterClick += gfPledges_ApplyFilterClick;
             gfPledges.DisplayFilterValue += gfPledges_DisplayFilterValue;
 
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-            gPledges.Actions.ShowAdd = canAddEditDelete;
+            gPledges.Actions.ShowAdd = canAddEditDelete && !string.IsNullOrWhiteSpace( GetAttributeValue( "DetailPage" ) );
             gPledges.IsDeleteEnabled = canAddEditDelete;
 
             AddAttributeColumns();
@@ -182,7 +190,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             // show/hide filters
-            apFilterAccount.Visible = GetAttributeValue( "ShowAccountFilter" ).AsBoolean();
+            apFilterAccount.Visible = GetAttributeValue( "ShowAccountFilter" ).AsBoolean() && string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) );
             drpDates.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
             drpLastModifiedDates.Visible = GetAttributeValue( "ShowLastModifiedFilter" ).AsBoolean();
 
@@ -384,6 +392,13 @@ namespace RockWeb.Blocks.Finance
             {
                 // if a person is specified, get pledges for that person ( and also anybody in their GivingUnit )
                 pledges = pledges.Where( p => p.PersonAlias.Person.GivingId == person.GivingId );
+            }
+
+            // Filter by configured limit accounts if specified.
+            var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+            if ( accountGuids.Any() )
+            {
+                pledges = pledges.Where( p => accountGuids.Contains( p.Account.Guid ) );
             }
 
             // get the accounts and make sure they still exist by checking the database
