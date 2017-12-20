@@ -406,19 +406,6 @@
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711052343544_RemoveDupDeviceTypeCol.Designer.cs">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
     </Compile>
-<<<<<<< HEAD
-    <Compile Include="Migrations\201711081308214_AddGroupViewLavaTemplate.cs" />
-    <Compile Include="Migrations\201711081308214_AddGroupViewLavaTemplate.Designer.cs">
-      <DependentUpon>201711081308214_AddGroupViewLavaTemplate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201711141738284_PersonSignals.cs" />
-    <Compile Include="Migrations\201711141738284_PersonSignals.Designer.cs">
-      <DependentUpon>201711141738284_PersonSignals.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201712051648183_AddSocialFieldType.cs" />
-    <Compile Include="Migrations\201712051648183_AddSocialFieldType.Designer.cs">
-      <DependentUpon>201712051648183_AddSocialFieldType.cs</DependentUpon>
-=======
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711071643407_GatewayTransactionKey2.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711071643407_GatewayTransactionKey2.Designer.cs">
       <DependentUpon>201711071643407_GatewayTransactionKey2.cs</DependentUpon>
@@ -458,7 +445,6 @@
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup.Designer.cs">
       <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
->>>>>>> origin/pre-alpha-spark
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -2913,16 +2899,6 @@
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711052343544_RemoveDupDeviceTypeCol.resx">
       <DependentUpon>201711052343544_RemoveDupDeviceTypeCol.cs</DependentUpon>
     </EmbeddedResource>
-<<<<<<< HEAD
-    <EmbeddedResource Include="Migrations\201711081308214_AddGroupViewLavaTemplate.resx">
-      <DependentUpon>201711081308214_AddGroupViewLavaTemplate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711141738284_PersonSignals.resx">
-      <DependentUpon>201711141738284_PersonSignals.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201712051648183_AddSocialFieldType.resx">
-      <DependentUpon>201712051648183_AddSocialFieldType.cs</DependentUpon>
-=======
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711071643407_GatewayTransactionKey2.resx">
       <DependentUpon>201711071643407_GatewayTransactionKey2.cs</DependentUpon>
     </EmbeddedResource>
@@ -2953,7 +2929,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201711271827181_V7Rollup.resx">
       <DependentUpon>201711271827181_V7Rollup.cs</DependentUpon>
->>>>>>> origin/pre-alpha-spark
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
