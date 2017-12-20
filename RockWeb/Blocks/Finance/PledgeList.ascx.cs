@@ -38,12 +38,8 @@ namespace RockWeb.Blocks.Finance
     [BooleanField("Show Last Modified Date Column", "Allows the Last Modified Date column to be hidden.", true, "", 2)]
     [BooleanField( "Show Group Column", "Allows the group column to be hidden.", false, "", 3 )]
     [BooleanField( "Limit Pledges To Current Person", "Limit the results to pledges for the current person.", false, "", 4)]
-<<<<<<< HEAD
     [BooleanField( "Show Account Summary", "Should the account summary be displayed at the bottom of the list?", false, order: 5 )]
-=======
     [AccountsField( "Accounts", "Limit the results to pledges that match the selected accounts.", false, "", "", 5 )]
->>>>>>> origin/pre-alpha-spark
-
     [BooleanField( "Show Person Filter", "Allows person filter to be hidden.", true, "Display Filters", 0)]
     [BooleanField( "Show Account Filter", "Allows account filter to be hidden.", true, "Display Filters", 1 )]
     [BooleanField( "Show Date Range Filter", "Allows date range filter to be hidden.", true, "Display Filters", 2 )]
