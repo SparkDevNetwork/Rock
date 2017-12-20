@@ -479,9 +479,12 @@ namespace Rock.StatementGenerator.Rest
                                 adjustedPedgeEndDate = statementYearEnd;
                             }
 
-                            if ( adjustedPedgeEndDate > RockDateTime.Now )
+                            if ( options.EndDate.HasValue )
                             {
-                                adjustedPedgeEndDate = RockDateTime.Now;
+                                if ( adjustedPedgeEndDate > options.EndDate.Value )
+                                {
+                                    adjustedPedgeEndDate = options.EndDate.Value;
+                                }
                             }
 
                             var pledgeFinancialTransactionDetailQry = new FinancialTransactionDetailService( rockContext ).Queryable().Where( t =>
