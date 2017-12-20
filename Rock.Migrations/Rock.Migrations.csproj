@@ -69,6 +69,14 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201712192301416_MoveInteractionTemplates.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201712192301416_MoveInteractionTemplates.Designer.cs">
+      <DependentUpon>201712192301416_MoveInteractionTemplates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201712191949335_CampusTimeZone.cs" />
+    <Compile Include="Migrations\Version 7.0\Version 1.7.0\201712191949335_CampusTimeZone.Designer.cs">
+      <DependentUpon>201712191949335_CampusTimeZone.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201712140417202_PbxProvider.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201712140417202_PbxProvider.Designer.cs">
       <DependentUpon>201712140417202_PbxProvider.cs</DependentUpon>
@@ -2638,6 +2646,12 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201712192301416_MoveInteractionTemplates.resx">
+      <DependentUpon>201712192301416_MoveInteractionTemplates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201712191949335_CampusTimeZone.resx">
+      <DependentUpon>201712191949335_CampusTimeZone.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201712140417202_PbxProvider.resx">
       <DependentUpon>201712140417202_PbxProvider.cs</DependentUpon>
     </EmbeddedResource>
@@ -4851,6 +4865,9 @@
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor_TransactionData.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201606231511599_RegistrationWorkflow_Indexes.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201607102235065_ScheduledTransactionType.sql" />
+    <Content Include="Migrations\Version 7.0\Version 1.7.0\201712191949335_CampusTimeZone_PersonicxMeanAge.sql">
+      <DependentUpon>201712191949335_CampusTimeZone.cs</DependentUpon>
+    </Content>
     <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP1.sql" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP2.sql" />
