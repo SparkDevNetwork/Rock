@@ -398,8 +398,8 @@
                         <Rock:RockDropDownList ID="ddlFieldSource" runat="server" Label="Source" AutoPostBack="true" OnSelectedIndexChanged="ddlFieldSource_SelectedIndexChanged" ValidationGroup="Field" />
                         <Rock:RockLiteral ID="lPersonField" runat="server" Label="Person Field" Visible="false" />
                         <Rock:RockDropDownList ID="ddlPersonField" runat="server" Label="Person Field" Visible="false" ValidationGroup="Field" />
-                        <Rock:RockDropDownList ID="ddlPersonAttributes" runat="server" Label="Person Attribute" Visible="false" ValidationGroup="Field" />
-                        <Rock:RockDropDownList ID="ddlGroupTypeAttributes" runat="server" Label="Group Member Attribute" Visible="false" ValidationGroup="Field" />
+                        <Rock:RockDropDownList ID="ddlPersonAttributes" runat="server" Label="Person Attribute" Visible="false" ValidationGroup="Field" EnhanceForLongLists="true" />
+                        <Rock:RockDropDownList ID="ddlGroupTypeAttributes" runat="server" Label="Group Member Attribute" Visible="false" ValidationGroup="Field" EnhanceForLongLists="true" />
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbInternalField" runat="server" Label="Internal Field" Text="Yes" Visible="false" ValidationGroup="Field"
