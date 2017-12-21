@@ -10813,7 +10813,7 @@ html,body{
    }
    
    .event-page-wrapper .event-calendar .event-item .details .info h4 {
-      max-width: none;
+      max-width: 300px;
    }
 }
 /* ---- Overrides for desktop size ---- */
