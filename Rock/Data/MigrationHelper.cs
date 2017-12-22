@@ -1808,6 +1808,12 @@ namespace Rock.Data
         /// deleting any previously existing attribute value first.
         /// </summary>
         /// <param name="skipIfAlreadyExists">if set to <c>true</c>, the block attribute value will only be set if it doesn't already exist (based on Attribute.Guid and Block.Guid)</param>
+        /// <remarks>
+        ///   set skipIfAlreadyExists to TRUE (don't overwrite) in these cases
+        ///     - the AttributeGuid or BlockGuid was introduced in a Hotfix (Plugin Migration). We don't want to overwrite, because if they already ran the hotfix, they could have customized it
+        ///   set skipIfAlreadyExists to FALSE (do overwrite) in these cases
+        ///     - the AttributeGuid was introduced in an EF Migration. We DO want to overwrite, because a hotfix "intentionally" needed to overwrite it to
+        /// </remarks>
         /// <param name="blockGuid">The block GUID.</param>
         /// <param name="attributeGuid">The attribute GUID.</param>
         /// <param name="value">The value.</param>
