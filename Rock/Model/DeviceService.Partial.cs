@@ -76,52 +76,41 @@ namespace Rock.Model
         /// </returns>
         public Device GetByIPAddress( string ipAddress, int deviceTypeValueId, bool skipReverseLookup = true )
         {
-            string hostValue = ipAddress;
-
-            if ( !skipReverseLookup )
+            // Check if we have a device entry that matches the IP address.
+            var device = Queryable()
+                .Where( d =>
+                    d.DeviceTypeValueId == deviceTypeValueId &&
+                    d.IPAddress == ipAddress )
+                .FirstOrDefault();
+            if ( device != null || skipReverseLookup )
             {
-                // Lookup the system's "name" (as seen in the DNS) using the given IP
-                // address because when using DHCP the kiosk may have a different IP from time to time
-                // -- however the fully qualified name should always be the same.
-                try
-                {
-                    hostValue = System.Net.Dns.GetHostEntry( ipAddress ).HostName;
-                }
-                catch ( SocketException )
-                {
-                    // TODO: consider whether we want to log the IP address that caused this error.
-                    // As per http://msdn.microsoft.com/en-us/library/ms143998.aspx it *may* mean 
-                    // a stale DNS record for an IPv4 address that actually belongs to a
-                    // different host was going to be returned (there is a DNS PTR record for
-                    // the IPv4 address, but no DNS A record for the IPv4 address).
-                    hostValue = ipAddress;
-                }
+                return device;
             }
 
-            Device device = null;
-
-            // If we still have an IPv4 address then try to find it based on IP
-            if ( Regex.IsMatch( hostValue, @"\d+\.\d+\.\d+\.\d+" ) )
+            // Lookup the system's "name" (as seen in the DNS) using the given IP
+            // address because when using DHCP the kiosk may have a different IP from time to time
+            // -- however the fully qualified name should always be the same.
+            try
             {
-                // find by IP
-                device = Queryable()
+                string hostValue = ipAddress;
+
+                hostValue = System.Net.Dns.GetHostEntry( ipAddress ).HostName;
+
+                return Queryable()
                     .Where( d =>
                         d.DeviceTypeValueId == deviceTypeValueId &&
-                        d.IPAddress == hostValue)
+                        d.IPAddress == hostValue )
                     .FirstOrDefault();
             }
-            else
+            catch ( SocketException )
             {
-                // find by name
-                device = Queryable()
-                    .Where( d =>
-                        d.DeviceTypeValueId == deviceTypeValueId &&
-                        d.Name == hostValue )
-                    .FirstOrDefault();
+                // TODO: consider whether we want to log the IP address that caused this error.
+                // As per http://msdn.microsoft.com/en-us/library/ms143998.aspx it *may* mean 
+                // a stale DNS record for an IPv4 address that actually belongs to a
+                // different host was going to be returned (there is a DNS PTR record for
+                // the IPv4 address, but no DNS A record for the IPv4 address).
+                return null;
             }
-
-            return device;
         }
-
     }
 }
