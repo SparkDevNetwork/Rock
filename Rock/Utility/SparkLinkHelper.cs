@@ -22,6 +22,8 @@ using System.Net;
 using Newtonsoft.Json;
 
 using RestSharp;
+
+using Rock.Data;
 using Rock.Model;
 using Rock.Store;
 using Rock.Web.Cache;
@@ -39,18 +41,33 @@ namespace Rock.Utility
         /// Sends to spark.
         /// </summary>
         /// <returns></returns>
-        public static List<Notification> SendToSpark()
+        public static List<Notification> SendToSpark( RockContext rockContext )
         {
             var notifications = new List<Notification>();
 
             var installedPackages = InstalledPackageService.GetInstalledPackages();
 
-            var sparkLinkRequest = new SparkLinkRequest();
+            var sparkLinkRequest = new SparkLinkRequestV2();
             sparkLinkRequest.RockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
-            sparkLinkRequest.OrganizationName = GlobalAttributesCache.Value( "OrganizationName" );
             sparkLinkRequest.VersionIds = installedPackages.Select( i => i.VersionId ).ToList();
             sparkLinkRequest.RockVersion = VersionInfo.VersionInfo.GetRockSemanticVersionNumber();
 
+            var globalAttributes = GlobalAttributesCache.Read();
+            sparkLinkRequest.OrganizationName = globalAttributes.GetValue( "OrganizationName" );
+            sparkLinkRequest.PublicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
+
+            sparkLinkRequest.NumberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
+
+            // Fetch the organization address
+            var organizationAddressLocationGuid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
+            if ( !organizationAddressLocationGuid.Equals( Guid.Empty ) )
+            {
+                var location = new LocationService( rockContext ).Get( organizationAddressLocationGuid );
+                if ( location != null )
+                {
+                    sparkLinkRequest.OrganizationLocation = new SparkLinkLocation( location );
+                }
+            }
 
             var sparkLinkRequestJson = JsonConvert.SerializeObject( sparkLinkRequest );
 
@@ -107,7 +124,7 @@ namespace Rock.Utility
             /// <value>
             /// The name of the organization.
             /// </value>
-            public string OrganizationName { get;  set;}
+            public string OrganizationName { get; set; }
 
             /// <summary>
             /// Gets or sets the rock version.
@@ -126,6 +143,120 @@ namespace Rock.Utility
             public List<int> VersionIds { get; set; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <seealso cref="Rock.Utility.SparkLinkHelper.SparkLinkRequest" />
+        public class SparkLinkRequestV2 : SparkLinkRequest
+        {
+            /// <summary>
+            /// Gets or sets the ip address.
+            /// </summary>
+            /// <value>
+            /// The ip address.
+            /// </value>
+            public string IpAddress { get; set; }
+
+            /// <summary>
+            /// Gets or sets the public URL.
+            /// </summary>
+            /// <value>
+            /// The public URL.
+            /// </value>
+            public string PublicUrl { get; set; }
+
+            /// <summary>
+            /// Gets or sets the organization location.
+            /// </summary>
+            /// <value>
+            /// The organization location.
+            /// </value>
+            public SparkLinkLocation OrganizationLocation { get; set; }
+
+            /// <summary>
+            /// Gets or sets the number of active records.
+            /// </summary>
+            /// <value>
+            /// The number of active records.
+            /// </value>
+            public int NumberOfActiveRecords { get; set; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class SparkLinkLocation
+        {
+            /// <summary>
+            /// Gets or sets the street1.
+            /// </summary>
+            /// <value>
+            /// The street1.
+            /// </value>
+            public string Street1 { get; set; }
+
+            /// <summary>
+            /// Gets or sets the street2.
+            /// </summary>
+            /// <value>
+            /// The street2.
+            /// </value>
+            public string Street2 { get; set; }
+
+            /// <summary>
+            /// Gets or sets the city.
+            /// </summary>
+            /// <value>
+            /// The city.
+            /// </value>
+            public string City { get; set; }
+
+            /// <summary>
+            /// Gets or sets the state.
+            /// </summary>
+            /// <value>
+            /// The state.
+            /// </value>
+            public string State { get; set; }
+
+            /// <summary>
+            /// Gets or sets the postal code.
+            /// </summary>
+            /// <value>
+            /// The postal code.
+            /// </value>
+            public string PostalCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the country.
+            /// </summary>
+            /// <value>
+            /// The country.
+            /// </value>
+            public string Country { get; set; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SparkLinkLocation"/> class.
+            /// </summary>
+            public SparkLinkLocation()
+            {
+
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SparkLinkLocation" /> class.
+            /// </summary>
+            /// <param name="location">The location.</param>
+            public SparkLinkLocation( Location location )
+            {
+                Street1 = location.Street1;
+                Street2 = location.Street2;
+                City = location.City;
+                State = location.State;
+                PostalCode = location.PostalCode;
+                Country = location.Country;
+            }
+        }
         #endregion
 
     }
