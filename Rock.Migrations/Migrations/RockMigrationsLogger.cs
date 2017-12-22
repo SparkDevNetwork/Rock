@@ -35,11 +35,27 @@ namespace Rock.Migrations
         /// </value>
         public bool LogVerbose { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [log information].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [log information]; otherwise, <c>false</c>.
+        /// </value>
+        public bool LogInfo { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [log warning].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [log warning]; otherwise, <c>false</c>.
+        /// </value>
+        public bool LogWarning { get; set; } = false;
+
         private string lastMigrationName = null;
         private Stopwatch stopwatch = null;
         private StreamWriter logFile = null;
         
-        private const string MIGRATIONS_LOG_FILENAME = "Migrations";
+        private const string MIGRATIONS_LOG_FILENAME = "MigrationLog";
 
         /// <summary>
         /// Logs an informational message.
@@ -47,18 +63,21 @@ namespace Rock.Migrations
         /// <param name="message">The message to be logged.</param>
         public override void Info( string message )
         {
-            if ( message.StartsWith( "Applying explicit migration:" ) )
+            if ( LogInfo )
             {
-                LogCompletedMigration();
-
-                lastMigrationName = message.Replace( "Applying explicit migration:", string.Empty ).Trim();
-                stopwatch = Stopwatch.StartNew();
-            }
-            else
-            {
-                if ( message.Equals( "Running Seed method." ) )
+                if ( message.StartsWith( "Applying explicit migration:" ) )
                 {
                     LogCompletedMigration();
+
+                    lastMigrationName = message.Replace( "Applying explicit migration:", string.Empty ).Trim();
+                    stopwatch = Stopwatch.StartNew();
+                }
+                else
+                {
+                    if ( message.Equals( "Running Seed method." ) )
+                    {
+                        LogCompletedMigration();
+                    }
                 }
             }
         }
@@ -100,7 +119,7 @@ namespace Rock.Migrations
                     }
 
                     string filePath = Path.Combine( directory, MIGRATIONS_LOG_FILENAME + ".csv" );
-                    logFile = new StreamWriter( filePath );
+                    logFile = new StreamWriter( filePath, true  );
                 }
 
                 logFile.WriteLine( message );
@@ -118,7 +137,10 @@ namespace Rock.Migrations
         /// <param name="message">The message to be logged.</param>
         public override void Warning( string message )
         {
-            // don't output warnings
+            if ( this.LogWarning )
+            {
+                WriteToLog( "WARNING: " + message );
+            }
         }
 
         /// <summary>
