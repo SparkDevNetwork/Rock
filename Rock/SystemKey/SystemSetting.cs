@@ -24,11 +24,6 @@ namespace Rock.SystemKey
     public class SystemSetting
     {
         /// <summary>
-        /// Sample System Setting
-        /// </summary>
-        //public const string SAMPLE_SYSTEM_SETTING = "core_SampleSystemSetting";
-
-        /// <summary>
         /// Percent Confidence threshold for automatically setting gender based on a name
         /// </summary>
         public const string GENDER_AUTO_FILL_CONFIDENCE = "core_GenderAutoFillConfidence";

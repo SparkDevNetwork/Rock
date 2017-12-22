@@ -22,8 +22,10 @@
 // -------------------------
 @import "./FontAwesome/_rock-upgrade-map-variables.less";
 @import "./FontAwesome/_rock-fa-mixins.less";
-.fa-font-face( @fa-theme-weight-name );
 
+@fa-theme-weight: 900;
+@fa-theme-weight-name: 'solid';
+.fa-font-face( @fa-theme-weight-name );
 
 h1, h2, h3 {
   letter-spacing: -.03em;

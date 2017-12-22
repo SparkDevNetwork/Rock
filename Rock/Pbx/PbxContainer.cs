@@ -55,12 +55,12 @@ namespace Rock.Pbx
             }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether [indexing enabled].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [indexing enabled]; otherwise, <c>false</c>.
-        /// </value>
+        ///// <summary>
+        ///// Gets a value indicating whether [indexing enabled].
+        ///// </summary>
+        ///// <value> 
+        /////   <c>true</c> if [indexing enabled]; otherwise, <c>false</c>.
+        ///// </value>
         /*public static bool IndexingEnabled
         {
             get
