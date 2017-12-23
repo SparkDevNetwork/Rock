@@ -181,7 +181,7 @@ namespace RockWeb
                         // If any migrations ran (version was likely updated)
                         try
                         {
-                            Rock.Utility.SparkLinkHelper.SendToSpark();
+                            Rock.Utility.SparkLinkHelper.SendToSpark( rockContext );
                         }
                         catch ( Exception ex )
                         {
