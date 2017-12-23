@@ -50,6 +50,41 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the time in millisecond to reset the button text back to original after setting the Completed text.
+        /// </summary>
+        /// <value>
+        /// The button text
+        /// </value>
+        [
+        Bindable( true ),
+        Description( "The time in millisecond to reset the button text back to original after setting the Completed text." )
+        ]
+        public string CompletedTextTimeout
+        {
+            get { return ViewState["CompletedTextTimeout"] as string ?? string.Empty; }
+            set { ViewState["CompletedTextTimeout"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets text to use when the button has been clicked.
+        /// </summary>
+        /// <value>
+        /// The button text
+        /// </value>
+        [
+        Bindable( true ),
+        Description( "The text to use when the postback is completed." )
+        ]
+        public string CompletedText
+        {
+            get { return ViewState["CompletedText"] as string ?? string.Empty; }
+            set { ViewState["CompletedText"] = value; }
+        }
+
+        private bool _isButtonClicked;
+
+
+        /// <summary>
         /// Adds the attributes of the <see cref="T:System.Web.UI.WebControls.LinkButton" /> control to the output stream for rendering on the client.
         /// </summary>
         /// <param name="writer">A <see cref="T:System.Web.UI.HtmlTextWriter" /> that contains the output stream to render on the client.</param>
@@ -64,7 +99,7 @@ namespace Rock.Web.UI.Controls
 
             // Check for enabled/disabled
             bool isEnabled = base.IsEnabled;
-            if ( this.Enabled && !isEnabled && this.SupportsDisabledAttribute )
+            if ( ( this.Enabled && !isEnabled && this.SupportsDisabledAttribute ) || _isButtonClicked )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Disabled, "disabled" );
             }
@@ -122,8 +157,29 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "data-loading-text", DataLoadingText );
             }
 
+            writer.AddAttribute( "data-completed-text", CompletedText );
+
+            writer.AddAttribute( "data-timeout-text", CompletedTextTimeout );
+
+            writer.AddAttribute( "data-init-text", Text );
+
             writer.AddAttribute( HtmlTextWriterAttribute.Onclick, "Rock.controls.bootstrapButton.showLoading(this);" );
             writer.AddAttribute( HtmlTextWriterAttribute.Href, postBackEventReference );
+        }
+
+        protected override void OnCommand( CommandEventArgs e )
+        {
+            base.OnCommand( e );
+
+            if ( !string.IsNullOrEmpty( CompletedText ) )
+            {
+                _isButtonClicked = true;
+                var script = string.Format(
+            @"
+            Rock.controls.bootstrapButton.onCompleted({0})", this.ClientID );
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "BootstrapButton_" + this.ClientID, script, true );
+            }
+
         }
 
     }

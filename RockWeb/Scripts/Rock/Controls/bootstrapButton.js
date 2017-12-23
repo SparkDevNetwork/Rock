@@ -28,6 +28,20 @@
                 }
 
                 return true;
+            },
+            onCompleted: function (btn) {
+                var $btn = $(btn);
+                $btn.prop('disabled', true);
+                $btn.attr('disabled', 'disabled');
+                $btn.addClass('disabled');
+                $btn.html($btn.attr('data-completed-text'));
+                setTimeout(function () {
+                    $btn.prop('disabled', false );
+                    $btn.removeAttr('disabled');
+                    $btn.removeClass('disabled');
+                    $btn.html($btn.attr('data-init-text'));
+                }, 3000);
+
             }
         };
 
