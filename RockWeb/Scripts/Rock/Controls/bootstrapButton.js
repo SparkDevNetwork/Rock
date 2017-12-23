@@ -35,12 +35,16 @@
                 $btn.attr('disabled', 'disabled');
                 $btn.addClass('disabled');
                 $btn.html($btn.attr('data-completed-text'));
+                var timeout = $btn.attr('data-timeout-text');
+                if (timeout === '') {
+                    timeout = '3000';
+                }
                 setTimeout(function () {
                     $btn.prop('disabled', false );
                     $btn.removeAttr('disabled');
                     $btn.removeClass('disabled');
                     $btn.html($btn.attr('data-init-text'));
-                }, 3000);
+                }, timeout);
 
             }
         };
