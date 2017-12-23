@@ -486,8 +486,8 @@ namespace Rock.Reporting.Dashboard
                 int? result = null;
                 if ( GetEntityFromContextEnabled )
                 {
-                    MetricPartitionEntityId primaryMetricPartitionEntityId = GetPrimaryMetricPartitionEntityIdFromContext();
-                    result = primaryMetricPartitionEntityId.EntityId;
+                    MetricPartitionEntityId primaryMetricPartitionEntityId = GetPrimaryMetricPartitionEntityIdFromContext().FirstOrDefault();
+                    result = primaryMetricPartitionEntityId?.EntityId;
                 }
                 else
                 {
@@ -521,43 +521,53 @@ namespace Rock.Reporting.Dashboard
         /// Gets the primary partition entity identifier from context.
         /// </summary>
         /// <returns></returns>
-        private MetricPartitionEntityId GetPrimaryMetricPartitionEntityIdFromContext()
+        private List<MetricPartitionEntityId> GetPrimaryMetricPartitionEntityIdFromContext()
         {
-            EntityTypeCache entityTypeCache = null;
-            MetricPartitionEntityId result = new MetricPartitionEntityId();
-            if ( this.MetricId.HasValue )
+            List<MetricPartitionEntityId> results = new List<MetricPartitionEntityId>();
+
+            if ( !this.MetricId.HasValue )
             {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                return results;
+            }
+
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                var metric = new Rock.Model.MetricService( rockContext ).Get( this.MetricId ?? 0 );
+                if ( metric == null )
                 {
-                    var metric = new Rock.Model.MetricService( rockContext ).Get( this.MetricId ?? 0 );
-                    if ( metric != null )
+                    return results;
+                }
+
+                foreach ( var mp in metric.MetricPartitions.OrderBy( a => a.Order ) )
+                {
+                    var result = new MetricPartitionEntityId();
+
+                    result.MetricPartition = mp;
+                    var entityTypeCache = EntityTypeCache.Read( result.MetricPartition.EntityTypeId ?? 0 );
+
+                    if ( entityTypeCache != null && this.ContextEntity( entityTypeCache.Name ) != null )
                     {
-                        // for backwards compatibily, get the first metric partition
-                        result.MetricPartition = metric.MetricPartitions.OrderBy( a => a.Order ).First();
-                        entityTypeCache = EntityTypeCache.Read( result.MetricPartition.EntityTypeId ?? 0 );
+                        result.EntityId = this.ContextEntity( entityTypeCache.Name ).Id;
                     }
+
+                    // if Getting the EntityFromContext, and we didn't get it from ContextEntity, get it from the Page Param
+                    if ( !result.EntityId.HasValue )
+                    {
+                        // figure out what the param name should be ("CampusId, GroupId, etc") depending on metric's entityType
+                        var entityParamName = "EntityId";
+                        if ( entityTypeCache != null )
+                        {
+                            entityParamName = entityTypeCache.Name + "Id";
+                        }
+
+                        result.EntityId = this.PageParameter( entityParamName ).AsIntegerOrNull();
+                    }
+
+                    results.Add( result );
                 }
             }
 
-            if ( entityTypeCache != null && this.ContextEntity( entityTypeCache.Name ) != null )
-            {
-                result.EntityId = this.ContextEntity( entityTypeCache.Name ).Id;
-            }
-
-            // if Getting the EntityFromContext, and we didn't get it from ContextEntity, get it from the Page Param
-            if ( !result.EntityId.HasValue )
-            {
-                // figure out what the param name should be ("CampusId, GroupId, etc") depending on metric's entityType
-                var entityParamName = "EntityId";
-                if ( entityTypeCache != null )
-                {
-                    entityParamName = entityTypeCache.Name + "Id";
-                }
-
-                result.EntityId = this.PageParameter( entityParamName ).AsIntegerOrNull();
-            }
-
-            return result;
+            return results;
         }
 
         /// <summary>
@@ -685,10 +695,12 @@ namespace Rock.Reporting.Dashboard
             
             if ( this.GetEntityFromContextEnabled )
             {
-                MetricPartitionEntityId primaryMetricPartitionEntityId = GetPrimaryMetricPartitionEntityIdFromContext();
-                if ( primaryMetricPartitionEntityId != null && primaryMetricPartitionEntityId.MetricPartition != null )
+                var metricPartitionEntityIds = GetPrimaryMetricPartitionEntityIdFromContext();
+                metricPartitionEntityIds = metricPartitionEntityIds.Where( a => a.MetricPartition != null ).ToList();
+                if ( metricPartitionEntityIds.Any() )
                 {
-                    flotChartControl.MetricValuePartitionEntityIds = string.Format( "{0}|{1}", primaryMetricPartitionEntityId.MetricPartition.EntityTypeId, primaryMetricPartitionEntityId.EntityId );
+                    flotChartControl.MetricValuePartitionEntityIds = string.Join( ",",
+                        metricPartitionEntityIds.Select( a => string.Format( "{0}|{1}", a.MetricPartition.EntityTypeId, a.EntityId ) ) );
                 }
             }
             else
