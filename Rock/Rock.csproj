@@ -395,7 +395,6 @@
     <Compile Include="Attribute\EmailFieldAttribute.cs" />
     <Compile Include="Attribute\GroupMemberFieldAttribute.cs" />
     <Compile Include="Attribute\IHasInheritedAttributes.cs" />
-    <Compile Include="Attribute\LabelFieldAttribute.cs" />
     <Compile Include="Attribute\MatrixFieldAttribute.cs" />
     <Compile Include="Attribute\SSNFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowFieldAttribute.cs" />
@@ -569,7 +568,6 @@
     <Compile Include="Field\Types\InteractionChannelFieldType.cs" />
     <Compile Include="Field\Types\CommunicationPreferenceFieldType.cs" />
     <Compile Include="Field\Types\DataViewsFieldType.cs" />
-    <Compile Include="Field\Types\LabelFieldType.cs" />
     <Compile Include="Field\Types\LavaFieldType.cs" />
     <Compile Include="Field\Types\AccountFieldType.cs" />
     <Compile Include="Field\Types\AccountsFieldType.cs" />
