@@ -181,7 +181,7 @@ namespace RockWeb
                         // If any migrations ran (version was likely updated)
                         try
                         {
-                            Rock.Utility.SparkLinkHelper.SendToSpark();
+                            Rock.Utility.SparkLinkHelper.SendToSpark( rockContext );
                         }
                         catch ( Exception ex )
                         {
@@ -560,7 +560,11 @@ namespace RockWeb
                     LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
                     
                     var lastMigration = pendingMigrations.Last();
-                    var migratorLoggingDecorator = new MigratorLoggingDecorator( migrator, new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false } );
+
+                    // create a logger, but don't enable any of the logs
+                    var migrationLogger = new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false, LogInfo = false, LogWarning = false };
+
+                    var migratorLoggingDecorator = new MigratorLoggingDecorator( migrator, migrationLogger );
 
                     // NOTE: we need to specify the last migration vs null so it won't detect/complain about pending changes
                     migratorLoggingDecorator.Update( lastMigration );
