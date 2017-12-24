@@ -31,6 +31,20 @@
                     <Rock:NumberBox ID="nbGenderAutoFill" runat="server" AppendText="%" CssClass="input-width-md" Label="Gender AutoFill Confidence" MinimumValue="0" MaximumValue="100" NumberType="Integer" />
                 </Rock:PanelWidget>
 
+                   <Rock:PanelWidget ID="pwBootstrapButtonConfiguration" runat="server" Title="Bootstrap Button Configuration">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <Rock:RockTextBox ID="tbDataLoadingText" runat="server"  Label="Data Loading Text" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:RockTextBox ID="tbCompleteText" runat="server"  Label="Complete Text" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:NumberBox ID="nbCompletedTimeout" runat="server" AppendText="milliseconds" CssClass="input-width-lg" Label="Completed Timeout" NumberType="Integer" />
+                        </div>
+                    </div>
+                </Rock:PanelWidget>
+
                 <Rock:PanelWidget ID="pwNcoaConfiguration" runat="server" Title="NCOA Configuration">
                     <div class="row">
                         <div class="col-md-4">
