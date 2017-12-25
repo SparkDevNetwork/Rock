@@ -334,6 +334,11 @@ namespace Rock.Data
                 }
                 else
                 {
+                    if ( item.Audit.AuditType == AuditType.Add )
+                    {
+                        TriggerWorkflows( item, WorkflowTriggerType.PostAdd, personAlias );
+                    }
+
                     TriggerWorkflows( item, WorkflowTriggerType.ImmediatePostSave, personAlias );
                     TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
                 }
@@ -484,10 +489,17 @@ namespace Rock.Data
                     var currentValue = currentProperty != null ? currentProperty.ToString() : string.Empty;
                     var previousValue = string.Empty;
 
-                    var dbPropertyEntry = dbEntity.Property( propertyInfo.Name );
-                    if ( dbPropertyEntry != null )
+                    if ( item.OriginalValues != null && item.OriginalValues.ContainsKey( propertyInfo.Name ) )
                     {
-                        previousValue = dbEntity.State == EntityState.Added ? string.Empty : dbPropertyEntry.OriginalValue.ToStringSafe();
+                        previousValue = item.OriginalValues[propertyInfo.Name].ToStringSafe();
+                    }
+                    else
+                    {
+                        var dbPropertyEntry = dbEntity.Property( propertyInfo.Name );
+                        if ( dbPropertyEntry != null )
+                        {
+                            previousValue = item.Audit.AuditType == AuditType.Add ? string.Empty : dbPropertyEntry.OriginalValue.ToStringSafe();
+                        }
                     }
 
                     if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreDelete ||
@@ -496,13 +508,14 @@ namespace Rock.Data
                         match = ( previousValue == trigger.EntityTypeQualifierValue );
                     }
 
-                    if ( trigger.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave ||
-                        trigger.WorkflowTriggerType == WorkflowTriggerType.PostSave )
+                    if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PostAdd )
                     {
                         match = ( currentValue == trigger.EntityTypeQualifierValue );
                     }
 
-                    if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreSave )
+                    if ( trigger.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave ||
+                        trigger.WorkflowTriggerType == WorkflowTriggerType.PostSave ||
+                        trigger.WorkflowTriggerType == WorkflowTriggerType.PreSave )
                     {
                         if ( hasCurrent && !hasPrevious )
                         {
@@ -523,11 +536,9 @@ namespace Rock.Data
                         }
                         else if ( !hasCurrent && !hasPrevious )
                         {
-                            // If they used an entity type qualifier column, at least one qualifier value is required.
-                            // TODO: log as silent exception? 
+                            match = previousValue != currentValue;
                         }
                     }
-
                 }
             }
             catch ( Exception ex )
@@ -672,6 +683,15 @@ namespace Rock.Data
             public Audit Audit { get; set; }
 
             /// <summary>
+            /// Gets or sets the collection of original entity values before the save occurs,
+            /// only valid when the entity-state is Modified.
+            /// </summary>
+            /// <value>
+            /// The original entity values.
+            /// </value>
+            public Dictionary<string, object> OriginalValues { get; set; }
+
+            /// <summary>
             /// Initializes a new instance of the <see cref="ContextItem" /> class.
             /// </summary>
             /// <param name="entity">The entity.</param>
@@ -697,6 +717,19 @@ namespace Rock.Data
                     case EntityState.Modified:
                         {
                             Audit.AuditType = AuditType.Modify;
+
+                            var triggers = TriggerCache.Triggers( entity.TypeName )
+                                .Where( t => t.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave || t.WorkflowTriggerType == WorkflowTriggerType.PostSave );
+
+                            if ( triggers.Any() )
+                            {
+                                OriginalValues = new Dictionary<string, object>();
+                                foreach ( var p in DbEntityEntry.OriginalValues.PropertyNames )
+                                {
+                                    OriginalValues.Add( p, DbEntityEntry.OriginalValues[p] );
+                                }
+                            }
+
                             break;
                         }
                 }
