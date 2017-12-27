@@ -1080,19 +1080,10 @@ namespace Rock.Web.UI.Controls
         {
             base.OnLoad( e );
 
+            // Load qualifier data now so the save event handler has access to it.
             if ( Page.IsPostBack && FieldTypeId.HasValue )
             {
-                var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
-                var qualifierControls = new List<Control>();
-                foreach ( Control control in _phQualifiers.Controls )
-                {
-                    qualifierControls.Add( control );
-                }
-
-                DefaultValue = _phDefaultValue.Controls.Count >= 1 ?
-                    field.GetEditValue( _phDefaultValue.Controls[0], Qualifiers ) : string.Empty;
-
-                Qualifiers = field.ConfigurationValues( qualifierControls );
+                UpdateQualifiers();
             }
 
             ReloadQualifiers = Page.IsPostBack && FieldTypeId.HasValue;
@@ -1106,16 +1097,10 @@ namespace Rock.Web.UI.Controls
         {
             base.OnPreRender( e );
 
+            // Reload qualifiers in case any postback events caused them to change.
             if ( ReloadQualifiers )
             {
-                var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
-                var qualifierControls = new List<Control>();
-                foreach ( Control control in _phQualifiers.Controls )
-                {
-                    qualifierControls.Add( control );
-                }
-
-                Qualifiers = field.ConfigurationValues( qualifierControls );
+                UpdateQualifiers();
             }
 
             // Recreate the qualifiers and default control in case they changed due to new field type or
@@ -1504,6 +1489,24 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Reads the qualifiers and default value from the page contents.
+        /// </summary>
+        protected void UpdateQualifiers()
+        {
+            var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
+            var qualifierControls = new List<Control>();
+            foreach ( Control control in _phQualifiers.Controls )
+            {
+                qualifierControls.Add( control );
+            }
+
+            DefaultValue = _phDefaultValue.Controls.Count >= 1 ?
+                field.GetEditValue( _phDefaultValue.Controls[0], Qualifiers ) : string.Empty;
+
+            Qualifiers = field.ConfigurationValues( qualifierControls );
         }
 
         /// <summary>
