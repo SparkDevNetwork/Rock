@@ -56,7 +56,7 @@ namespace Rock.Field.Types
                         mergeFields.Add( "Entity", entity );
                     }
                 }
-                newValue = value.ResolveMergeFields( mergeFields );
+                newValue = value.ResolveMergeFields( mergeFields ).Trim();
             }
 
             return base.FormatValue( parentControl, entityTypeId, entityId, newValue, configurationValues, condensed );
