@@ -24,7 +24,7 @@ namespace Rock.StatementGenerator
     /// 
     /// </summary>
     /// <seealso cref="Rock.StatementGenerator.PledgeSummary" />
-    public class PledgeSummaryByAccount : PledgeSummary
+    public class PledgeSummaryByAccount
     {
         /// <summary>
         /// Gets or sets the pledge list.
@@ -40,7 +40,7 @@ namespace Rock.StatementGenerator
         /// <value>
         /// The pledge start date.
         /// </value>
-        public override DateTime? PledgeStartDate => PledgeList.Min( a => a.StartDate );
+        public DateTime? PledgeStartDate => PledgeList.Min( a => a.StartDate );
 
         /// <summary>
         /// Gets or sets the pledge end date.
@@ -48,7 +48,7 @@ namespace Rock.StatementGenerator
         /// <value>
         /// The pledge end date.
         /// </value>
-        public override DateTime? PledgeEndDate => PledgeList.Max( a => a.EndDate );
+        public DateTime? PledgeEndDate => PledgeList.Max( a => a.EndDate );
 
         /// <summary>
         /// Gets or sets the amount pledged.
@@ -56,53 +56,8 @@ namespace Rock.StatementGenerator
         /// <value>
         /// The amount pledged.
         /// </value>
-        public override decimal AmountPledged => PledgeList.Sum( a => a.TotalAmount );
-    }
+        public decimal AmountPledged => PledgeList.Sum( a => a.TotalAmount );
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <seealso cref="Rock.StatementGenerator.PledgeSummary" />
-    public class PledgeSummaryByPledge : PledgeSummary
-    {
-        /// <summary>
-        /// Gets or sets the pledges that use contribute to the account
-        /// </summary>
-        /// <value>
-        /// The pledge.
-        /// </value>
-        public Rock.Model.FinancialPledge Pledge { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pledge start date.
-        /// </summary>
-        /// <value>
-        /// The pledge start date.
-        /// </value>
-        public override DateTime? PledgeStartDate => Pledge.StartDate;
-
-        /// <summary>
-        /// Gets or sets the pledge end date.
-        /// </summary>
-        /// <value>
-        /// The pledge end date.
-        /// </value>
-        public override DateTime? PledgeEndDate => Pledge.EndDate;
-
-        /// <summary>
-        /// Gets or sets the amount pledged.
-        /// </summary>
-        /// <value>
-        /// The amount pledged.
-        /// </value>
-        public override decimal AmountPledged => Pledge.TotalAmount;
-    }
-
-    /// <summary>
-    /// Pledge Summary Class
-    /// </summary>
-    public abstract class PledgeSummary : DotLiquid.Drop
-    {
         /// <summary>
         /// Gets or sets the pledge account identifier.
         /// </summary>
@@ -152,30 +107,6 @@ namespace Rock.StatementGenerator
         /// The account.
         /// </value>
         public Rock.Model.FinancialAccount Account { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pledge start date.
-        /// </summary>
-        /// <value>
-        /// The pledge start date.
-        /// </value>
-        public abstract DateTime? PledgeStartDate { get;  }
-
-        /// <summary>
-        /// Gets or sets the pledge end date.
-        /// </summary>
-        /// <value>
-        /// The pledge end date.
-        /// </value>
-        public abstract DateTime? PledgeEndDate { get; }
-
-        /// <summary>
-        /// Gets or sets the amount pledged.
-        /// </summary>
-        /// <value>
-        /// The amount pledged.
-        /// </value> 
-        public abstract decimal AmountPledged { get;  }
 
         /// <summary>
         /// Gets the percent complete.
