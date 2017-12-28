@@ -462,7 +462,5 @@ namespace Rock.Reporting
         {
             ScriptManager.RegisterClientScriptInclude( filterField, filterField.GetType(), "reporting-include", filterField.RockBlock().RockPage.ResolveRockUrl( "~/Scripts/Rock/reportingInclude.js", true ) );
         }
-
-        
     }
 }
