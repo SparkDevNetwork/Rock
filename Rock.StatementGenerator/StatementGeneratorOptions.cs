@@ -22,7 +22,7 @@ namespace Rock.StatementGenerator
     /// <summary>
     /// 
     /// </summary>
-    public class StatementGeneratorOptions
+    public class StatementGeneratorOptions : DotLiquid.Drop
     {
         /// <summary>
         /// Gets or sets the start date.
