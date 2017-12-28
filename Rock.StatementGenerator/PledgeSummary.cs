@@ -21,10 +21,10 @@ using System.Linq;
 namespace Rock.StatementGenerator
 {
     /// <summary>
-    /// 
+    /// A Pledge (or Multiple Pledges) for a specific Account
     /// </summary>
-    /// <seealso cref="Rock.StatementGenerator.PledgeSummary" />
-    public class PledgeSummaryByAccount
+    /// <seealso cref="DotLiquid.Drop" />
+    public class PledgeSummary: DotLiquid.Drop
     {
         /// <summary>
         /// Gets or sets the pledge list.
@@ -131,5 +131,16 @@ namespace Rock.StatementGenerator
         /// The amount given.
         /// </value>
         public decimal AmountGiven { get; set; }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return $"{this.AccountName} AmountGiven:{this.AmountGiven}, AmountPledged:{this.AmountPledged}";
+        }
     }
 }
