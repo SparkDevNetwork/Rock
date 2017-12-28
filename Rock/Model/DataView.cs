@@ -235,18 +235,32 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<IEntity> GetQuery( SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
         {
-            return GetQuery( sortProperty, null, databaseTimeoutSeconds, out errorMessages );
+            return GetQuery( sortProperty, null, null, databaseTimeoutSeconds, out errorMessages );
         }
 
         /// <summary>
-        /// Gets the query using the specified dbContext 
+        /// Gets the query using the specified dbContext
         /// </summary>
         /// <param name="sortProperty">The sort property.</param>
-        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         /// <param name="dbContext">The database context.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public IQueryable<IEntity> GetQuery( SortProperty sortProperty, System.Data.Entity.DbContext dbContext, int? databaseTimeoutSeconds, out List<string> errorMessages )
+        {
+            return GetQuery( sortProperty, dbContext, null, databaseTimeoutSeconds, out errorMessages );
+        }
+
+        /// <summary>
+        /// Gets the query.
+        /// </summary>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, System.Data.Entity.DbContext dbContext, DataViewFilterOverrides dataViewFilterOverrides, int? databaseTimeoutSeconds, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -274,7 +288,7 @@ namespace Rock.Model
                         if ( serviceInstance != null )
                         {
                             ParameterExpression paramExpression = serviceInstance.ParameterExpression;
-                            Expression whereExpression = GetExpression( serviceInstance, paramExpression, out errorMessages );
+                            Expression whereExpression = GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides, out errorMessages );
 
                             MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
                             if ( getMethod != null )
@@ -318,6 +332,19 @@ namespace Rock.Model
         /// <returns></returns>
         public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, out List<string> errorMessages )
         {
+            return this.GetExpression( serviceInstance, paramExpression, null, out errorMessages );
+        }
+
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="paramExpression">The parameter expression.</param>
+        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, DataViewFilterOverrides dataViewFilterOverrides, out List<string> errorMessages )
+        {
             errorMessages = new List<string>();
 
             var cachedEntityType = EntityTypeCache.Read( EntityTypeId.Value );
@@ -327,7 +354,7 @@ namespace Rock.Model
 
                 if ( filteredEntityType != null )
                 {
-                    Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( filteredEntityType, serviceInstance, paramExpression, errorMessages ) : null;
+                    Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( filteredEntityType, serviceInstance, paramExpression, dataViewFilterOverrides, errorMessages ) : null;
 
                     Expression transformedExpression = GetTransformExpression( serviceInstance, paramExpression, filterExpression, errorMessages );
                     if ( transformedExpression != null )
