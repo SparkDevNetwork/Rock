@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Reporting
 
                             if ( filterControl.ShowCheckbox )
                             {
-                                checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull();
+                                checkedUserPreference = this.GetUserPreference( string.Format( "{0}_{1}_Checked", GetReportDataKeyPrefix(), filterControl.DataViewFilterGuid.ToString( "N" ) ) ).AsBooleanOrNull() ?? true;
                             }
                         }
 
@@ -556,11 +556,11 @@ namespace RockWeb.Blocks.Reporting
             {
                 nbConfigurationWarning.Visible = false;
 
-                report.DataView.DataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
-
                 string errorMessage;
 
-                ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, null, out errorMessage );
+                DataViewFilterOverrides dataViewFilterOverrides = ReportingHelper.GetFilterOverridesFromControls( phFilters );
+
+                ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, dataViewFilterOverrides, null, out errorMessage );
 
                 if ( report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>() )
                 {
