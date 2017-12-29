@@ -620,8 +620,8 @@ namespace RockWeb.Blocks.Reporting
                 var filters = new List<FilterInfo>();
                 GetFilterListRecursive( filters, report.DataView.DataViewFilter, report.EntityType );
 
-                // remove the top level group filter
-                filters = filters.Where( a => a.ParentFilter != null ).ToList();
+                // remove the top level group filter if it just a GROUPALL
+                filters = filters.Where( a => a.ParentFilter != null || a.FilterExpressionType != FilterExpressionType.GroupAll ).ToList();
 
                 // set the Title and Summary of Grouped Filters based on the GroupFilter's child filter titles
                 foreach ( var groupedFilter in filters.Where( a => a.FilterExpressionType != FilterExpressionType.Filter ) )
@@ -637,9 +637,6 @@ namespace RockWeb.Blocks.Reporting
                 {
                     ddlPersonIdField.Items.Add( new ListItem( reportField.ColumnHeaderText, reportField.ColumnHeaderText ) );
                 }
-
-                // remove any filter that are part of a child group filter
-                filters = filters.Where( a => a.ParentFilter != null && a.ParentFilter.ParentFilter == null ).ToList();
 
                 grdDataFilters.Visible = true;
                 mdConfigure.ServerSaveLink.Disabled = false;
@@ -721,8 +718,11 @@ namespace RockWeb.Blocks.Reporting
                     {
                         if ( parentFilter.ParentFilter == null )
                         {
-                            // don't include the root group filter
-                            break;
+                            // don't include the root group filter if it is just a 'Group All'
+                            if ( parentFilter.FilterExpressionType == FilterExpressionType.GroupAll )
+                            {
+                                break;
+                            }
                         }
 
                         parentPath = parentFilter.Title + " > " + parentPath;
