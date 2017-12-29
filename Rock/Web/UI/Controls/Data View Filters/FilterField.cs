@@ -330,6 +330,44 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        public string PreHtml
+        {
+            get
+            {
+                return ViewState["PreHtml"] as string;
+            }
+
+            set
+            {
+                ViewState["PreHtml"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the post HTML.
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        public string PostHtml
+        {
+            get
+            {
+                return ViewState["PostHtml"] as string;
+            }
+
+            set
+            {
+                ViewState["PostHtml"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="FilterField" /> is expanded.
         /// </summary>
         /// <value>
@@ -469,6 +507,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            if ( !string.IsNullOrEmpty( PreHtml ) )
+            {
+                writer.Write( PreHtml );
+            }
+
             DataFilterComponent component = null;
             string clientFormatString = string.Empty;
             if ( !string.IsNullOrWhiteSpace( FilterEntityTypeName ) )
@@ -595,6 +638,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderEndTag();
+            }
+
+            if ( !string.IsNullOrEmpty( PostHtml ) )
+            {
+                writer.Write( PostHtml );
             }
         }
 
