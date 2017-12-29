@@ -90,13 +90,6 @@ namespace Rock.Reporting.DataFilter
                     filterControl.cbIncludeFilter.Text = filterLabel;
                     filterControl.cbIncludeFilter.RenderControl( writer );
                 }
-                else
-                {
-                    writer.AddAttribute( "class", "filterfield-label" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                    writer.Write( filterLabel );
-                    writer.RenderEndTag();
-                }
             }
 
             // generate result for "none"
