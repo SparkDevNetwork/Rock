@@ -1421,6 +1421,7 @@
     <Compile Include="Reporting\DataTransform\Person\ParentTransform.cs" />
     <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
+    <Compile Include="Reporting\IDataFilterWithOverrides.cs" />
     <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Reporting\SelectExpressionExtractor.cs" />
     <Compile Include="Scripting.evaluator.cs" />
