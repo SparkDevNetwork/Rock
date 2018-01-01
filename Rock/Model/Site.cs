@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -363,6 +364,16 @@ namespace Rock.Model
         [DataMember]
         public int? FavIconBinaryFileId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the FontAwesome icon CSS weight that will be used for the Site
+        /// </summary>
+        /// <value>
+        /// The icon CSS weight.
+        /// </value>
+        [DataMember]
+        [Obsolete("Moved to Theme")]
+        public IconCssWeight IconCssWeight { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -393,6 +404,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<SiteDomain> SiteDomains { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon extensions.
+        /// </summary>
+        /// <value>
+        /// The icon extensions.
+        /// </value>
+        [Obsolete( "Moved to Theme" )]
+        public virtual ICollection<DefinedValue> IconExtensions { get; set; } = new Collection<DefinedValue>();
 
         /// <summary>
         /// Gets or sets the default <see cref="Rock.Model.Page"/> page for the site.
@@ -674,6 +694,38 @@ namespace Rock.Model
         #endregion
     }
 
+    #region enums
+
+    /// <summary>
+    /// Font Awesome Icon CSS Weight
+    /// </summary>
+    [Obsolete("Moved to Theme")]
+    public enum IconCssWeight
+    {
+
+        /// <summary>
+        /// regular
+        /// </summary>
+        Regular,
+
+        /// <summary>
+        /// solid
+        /// </summary>
+        Solid,
+
+        /// <summary>
+        /// light
+        /// </summary>
+        Light,
+
+        /// <summary>
+        /// thin
+        /// </summary>
+        Thin
+    }
+
+    #endregion
+
     #region Entity Configuration
 
     /// <summary>
@@ -700,6 +752,16 @@ namespace Rock.Model
             this.HasOptional( p => p.CommunicationPageRoute ).WithMany().HasForeignKey( p => p.CommunicationPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.MobilePage ).WithMany().HasForeignKey( p => p.MobilePageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.FavIconBinaryFile ).WithMany().HasForeignKey( p => p.FavIconBinaryFileId ).WillCascadeOnDelete( false );
+
+#pragma warning disable 0618
+            // Need Associative table for IconExtensions (which are Defined Values)
+            this.HasMany( p => p.IconExtensions ).WithMany().Map( p =>
+            {
+                p.MapLeftKey( "SiteId" );
+                p.MapRightKey( "DefinedValueId" );
+                p.ToTable( "SiteIconExtensions" );
+            } );
+#pragma warning restore 0618
         }
     }
 

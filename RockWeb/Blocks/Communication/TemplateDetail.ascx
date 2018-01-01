@@ -51,7 +51,7 @@
                             <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbFromAddress" runat="server" Label="From Address" />
+                            <Rock:EmailBox ID="tbFromAddress" runat="server" Label="From Address" AllowMultiple="false" />
                             <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
                             <div class="pull-right">
                                 <a href="#" class="btn btn-xs btn-link js-show-additional-fields">Show Additional Fields</a>
@@ -62,17 +62,17 @@
                     <asp:Panel ID="pnlEmailSummaryAdditionalFields" runat="server" CssClass="js-additional-fields" Style="display: none">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbReplyToAddress" runat="server" Label="Reply To Address" />
+                                <Rock:EmailBox ID="tbReplyToAddress" runat="server" Label="Reply To Address" />
                             </div>
                             <div class="col-md-6">
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbCCList" runat="server" Label="CC List" />
+                                <Rock:EmailBox ID="tbCCList" runat="server" Label="CC List" AllowMultiple="true" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbBCCList" runat="server" Label="BCC List" />
+                                <Rock:EmailBox ID="tbBCCList" runat="server" Label="BCC List" AllowMultiple="true" />
                             </div>
                         </div>
                     </asp:Panel>
@@ -107,7 +107,8 @@
                                 <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" />
                             </div>
                             <div class="col-md-4">
-                                <Rock:KeyValueList ID="kvlMergeFields" runat="server" Label="Lava Fields" KeyPrompt="Key" ValuePrompt="Default Value" />
+                                <Rock:RockCheckBox ID="cbCssInliningEnabled" runat="server" Text="CSS Inlining Enabled" Help="Enable CSS Inlining to move styles to inline attributes. This can help maximize compatibility with email clients." />
+                                <Rock:KeyValueList ID="kvlMergeFields" runat="server" Label="Lava Fields" KeyPrompt="Key" Help="Add any fields and their default values that can be used as lava merge fields within the template html. Any fields with a 'Color' suffix will use a Color Picker as the value editor." ValuePrompt="Default Value" />
                             </div>
                         </div>
                     </asp:Panel>
@@ -125,7 +126,7 @@
                                             <Rock:RockControlWrapper ID="rcwPreviewMode" runat="server" Label="Preview Mode">
                                                 
                                                 <div class="btn-group" role="group">
-                                                    <button type="button" class="btn btn-xs btn-default js-preview-desktop">
+                                                    <button type="button" class="btn btn-xs btn-info active js-preview-desktop">
                                                         <i class="fa fa-desktop"></i>
                                                         Desktop
                                                     </button>
@@ -231,6 +232,8 @@
                     var $emailPreviewIframe = $('.js-emailpreview-iframe');
 
                     if ($(this).hasClass('js-preview-mobile')) {
+                        $('.js-preview-mobile').removeClass('btn-default').addClass('btn-info').addClass('active')
+                        $('.js-preview-desktop').removeClass('btn-info').removeClass('active').addClass('btn-default');
                         var mobileContainerHeight = '585px';
 
                         $('.js-email-preview').removeClass("device-browser").addClass("device-mobile");
@@ -240,6 +243,8 @@
                         $('#<%=pnlEmailPreviewContainer.ClientID%>').height(mobileContainerHeight);
                     }
                     else {
+                        $('.js-preview-desktop').removeClass('btn-default').addClass('btn-info').addClass('active')
+                        $('.js-preview-mobile').removeClass('btn-info').removeClass('active').addClass('btn-default');
                         $('.js-email-preview').removeClass("device-mobile").addClass("device-browser");
                         $emailPreviewIframe.height('auto');
 
@@ -251,6 +256,19 @@
 
                         $('#<%=pnlEmailPreviewContainer.ClientID%>').height(newHeight);
                     }
+                });
+
+                $('.js-revertlavavalue').off('click').on('click', function () {
+                    var valueControlId = $(this).attr('data-value-control');
+                    var defaultValue = $(this).attr('data-default');
+                    var $colorPicker = $('#' + valueControlId).closest('.rock-colorpicker-input');
+                    if ($colorPicker.length) {
+                        $colorPicker.colorpicker('setValue', defaultValue);
+                    }
+                    else {
+                        $('#' + valueControlId).val(defaultValue);
+                    }
+                    $(this).css('visibility', 'hidden');
                 });
             });
 

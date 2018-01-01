@@ -200,13 +200,16 @@ namespace Rock.Web.UI.Controls
                     {
                         ids.Add( group.Id.ToString() );
                         names.Add( group.Name );
-                        var parentGroup = group.ParentGroup;
-                        var groupParentIds = GetGroupAncestorsIdList( parentGroup );
-                        foreach ( var groupParentId in groupParentIds )
+                        if ( group.ParentGroup != null && !parentIds.Contains( group.ParentGroup.Id ) )
                         {
-                            if ( !parentIds.Contains( groupParentId ) )
+                            var parentGroup = group.ParentGroup;
+                            var groupParentIds = GetGroupAncestorsIdList( parentGroup );
+                            foreach ( var groupParentId in groupParentIds )
                             {
-                                parentIds.Add( groupParentId );
+                                if ( !parentIds.Contains( groupParentId ) )
+                                {
+                                    parentIds.Add( groupParentId );
+                                }
                             }
                         }
                     }
@@ -238,8 +241,19 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var groups = new GroupService( new RockContext() ).Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
-            this.SetValues( groups );
+            var groupIds = ItemIds.Where( i => i != "0" ).AsIntegerList();
+            if ( groupIds.Any() )
+            {
+                var groups = new GroupService( new RockContext() )
+                    .Queryable()
+                    .Where( g => groupIds.Contains( g.Id ) )
+                    .ToList();
+                this.SetValues( groups );
+            }
+            else
+            {
+                this.SetValues( null );
+            }
         }
 
         /// <summary>

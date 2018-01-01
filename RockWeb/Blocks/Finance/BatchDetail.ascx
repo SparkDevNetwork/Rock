@@ -15,6 +15,7 @@
                     <Rock:HighlightLabel ID="hlBatchId" runat="server" LabelType="Info" />
                     <Rock:HighlightLabel ID="hlStatus" runat="server" />
                     <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
+                    <Rock:HighlightLabel ID="hlIsAutomated" runat="server" LabelType="Warning" Text="Automated" Visible="false" ToolTip="This is an automated batch. The system will automatically set this batch to OPEN when all transactions have been downloaded." />
                 </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>

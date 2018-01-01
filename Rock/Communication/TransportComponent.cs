@@ -96,11 +96,18 @@ namespace Rock.Communication
                 }
                 else if ( recipient.Communication.ListGroupId.HasValue  )
                 {
-                    // if this communication is begin sent to a list, make sure the recipient is still an active member of the list
-                    var groupMember = new GroupMemberService( new Rock.Data.RockContext() ).Queryable().Where( a => a.PersonId == person.Id ).AsNoTracking().FirstOrDefault();
-                    if ( groupMember != null )
+                    // if this communication is being sent to a list, make sure the recipient is still an active member of the list
+                    GroupMemberStatus? groupMemberStatus = null;
+                    using ( var rockContext = new Rock.Data.RockContext() )
                     {
-                        if ( groupMember.GroupMemberStatus == GroupMemberStatus.Inactive )
+                        groupMemberStatus = new GroupMemberService( rockContext ).Queryable()
+                            .Where( a => a.PersonId == person.Id && a.GroupId == recipient.Communication.ListGroupId )
+                            .Select(a => a.GroupMemberStatus ).FirstOrDefault();
+                    }
+
+                    if ( groupMemberStatus != null )
+                    {
+                        if ( groupMemberStatus == GroupMemberStatus.Inactive )
                         {
                             recipient.Status = CommunicationRecipientStatus.Failed;
                             recipient.StatusNote = "Person is not active member of communication list: " + recipient.Communication.ListGroup.Name;

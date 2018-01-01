@@ -3994,7 +3994,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimPersonHistorical]&apos;, &apos;V&apos;) IS NOT NULL
-        ///	DROP VIEW AnalyticsDimPersonHistorical
+        ///    DROP VIEW AnalyticsDimPersonHistorical
         ///GO
         ///
         ///CREATE VIEW AnalyticsDimPersonHistorical
@@ -4015,7 +4015,7 @@ namespace Rock.Migrations.Migrations {
         ///			THEN &apos;Female&apos;
         ///		ELSE &apos;Unknown&apos;
         ///		END [GenderText]
-        ///	,CASE  [rest of string was truncated]&quot;;.
+        ///	,CA [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201711092125120_Analytics5_AnalyticsDimPersonHistorical {
             get {
@@ -4052,6 +4052,192 @@ namespace Rock.Migrations.Migrations {
         public static string _201711092125120_Analytics5_spAnalytics_ETL_Campus {
             get {
                 return ResourceManager.GetString("_201711092125120_Analytics5_spAnalytics_ETL_Campus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF OBJECT_ID(N&apos;[dbo].[AnalyticsDimFinancialAccount]&apos;, &apos;V&apos;) IS NOT NULL
+        ///    DROP VIEW AnalyticsDimFinancialAccount
+        ///GO
+        ///
+        ///CREATE VIEW AnalyticsDimFinancialAccount
+        ///AS
+        ///SELECT fa.Id [AccountId]
+        ///    ,fa.[Name]
+        ///    ,fa.[PublicName]
+        ///    ,fa.[Description]
+        ///    ,fa.[PublicDescription]
+        ///    ,CASE fa.[IsTaxDeductible]
+        ///        WHEN 1
+        ///            THEN &apos;Not Taxable&apos;
+        ///        ELSE &apos;Taxable&apos;
+        ///        END [TaxStatus]
+        ///    ,fa.[GlCode]
+        ///    ,fa.[Order]
+        ///    ,CASE fa.IsActive
+        ///        WHEN 1
+        ///            THEN &apos;Active&apos; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711141624083_CommunicationTemplateCssInliningEnabled_AnalyticsDimFinancialAccount {
+            get {
+                return ResourceManager.GetString("_201711141624083_CommunicationTemplateCssInliningEnabled_AnalyticsDimFinancialAcc" +
+                        "ount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spCrm_PersonDuplicateFinder]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A- [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711141624083_CommunicationTemplateCssInliningEnabled_spCrm_PersonDuplicateFinder {
+            get {
+                return ResourceManager.GetString("_201711141624083_CommunicationTemplateCssInliningEnabled_spCrm_PersonDuplicateFin" +
+                        "der", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE
+        ///	@BinaryFileId int
+        ///	,@BinaryFileTypeIdDefault int = (SELECT TOP 1 Id from [BinaryFileType] where [Guid] = &apos;C1142570-8CD6-4A20-83B1-ACB47C1CD377&apos;)
+        ///	,@StorageEntityTypeIdDatabase int = (SELECT TOP 1 Id FROM [EntityType] WHERE [Guid] = &apos;0AA42802-04FD-4AEC-B011-FEB127FC85CD&apos;)
+        ///
+        ///-- Add communication-template-sidebar.svg
+        ///IF NOT EXISTS (SELECT * FROM [BinaryFile] WHERE [Guid] = &apos;26D240BC-B9AC-4120-8632-B63470A71414&apos; )
+        ///BEGIN
+        ///INSERT INTO [BinaryFile] ([IsTemporary], [IsSystem], [BinaryFileTypeId], [Fi [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711211752271_NcoaHistory_UpdateCommunicationTemplateBinaryFiles {
+            get {
+                return ResourceManager.GetString("_201711211752271_NcoaHistory_UpdateCommunicationTemplateBinaryFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /* Update the System &apos;Blank&apos; communication template */
+        ///
+        ///UPDATE [dbo].[CommunicationTemplate] 
+        ///	SET [CategoryId] = (SELECT TOP 1 Id FROM [Category] WHERE [Guid] = &apos;A7F79054-5539-4910-A13F-AA5884B8C01D&apos;)
+        ///	,[Message] = &apos;&lt;!DOCTYPE html&gt;
+        ///&lt;html&gt;
+        ///&lt;head&gt;
+        ///&lt;title&gt;A Responsive Email Template&lt;/title&gt;
+        ///
+        ///&lt;meta charset=&quot;utf-8&quot;&gt;
+        ///&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+        ///&lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot; &gt;
+        ///&lt;style type=&quot;text/css&quot;&gt;
+        ///    /* CLIENT-SPECIFIC STYLES */
+        ///    [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711211752271_NcoaHistory_UpdateCommunicationTemplates {
+            get {
+                return ResourceManager.GetString("_201711211752271_NcoaHistory_UpdateCommunicationTemplates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [DefinedType]
+        ///SET [helptext] = &apos;
+        ///Label merge fields are defined with a liquid syntax. Click the &apos;&apos;Show Merge Fields&apos;&apos; button below to view the available merge fields.
+        ///&lt;p&gt;&lt;a data-toggle=&quot;collapse&quot; href=&quot;#collapseMergeFields&quot; class=&quot;btn btn-action btn-xs&quot;&gt;Show/Hide Merge Fields&lt;/a&gt;&lt;/p&gt;&lt;div id=&quot;collapseMergeFields&quot; class=&quot;panel-collapse collapse&quot;&gt;&lt;div class=&quot;alert alert-info lava-debug&quot;&gt;&lt;div class=&quot;panel panel-default panel-lavadebug&quot;&gt;&lt;div class=&quot;panel-heading clearfix collapsed&quot; data-toggle=&quot;collaps [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711271827181_V7Rollup_021_UpdateCheckInMergefieldDebugInfo {
+            get {
+                return ResourceManager.GetString("_201711271827181_V7Rollup_021_UpdateCheckInMergefieldDebugInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @EntityTypeId INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [EntityType]
+        ///		WHERE [Name] = &apos;Rock.Model.Block&apos;
+        ///		)
+        ///DECLARE @PersonEditBlockId INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [Block]
+        ///		WHERE [Guid] = &apos;59C7EA79-2073-4EA9-B439-7E74F06E8F5B&apos;
+        ///		)
+        ///DECLARE @RockAdminGroupId INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [Group]
+        ///		WHERE [Guid] = &apos;628C51A8-4613-43ED-A18D-4A6FB999273E&apos;
+        ///		)
+        ///DECLARE @Order INT = (
+        ///		SELECT MAX([Order])
+        ///		FROM [Auth]
+        ///		WHERE EntityTypeId = @EntityTypeId
+        ///			AND EntityId = @PersonEdi [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711271827181_V7Rollup_026_PersonEditConnectionRecordStatus {
+            get {
+                return ResourceManager.GetString("_201711271827181_V7Rollup_026_PersonEditConnectionRecordStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Add &apos;ReopenBatch&apos; as a security action on Rock.Model.FinancialBatch and default it to whatever might be there for EDIT on BatchDetail, and ensure that FinanceAdmin, FinanceWorker, and Admin have &apos;ReopenBatch&apos; security
+        ///DECLARE @EntityTypeIdBlock INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [EntityType]
+        ///		WHERE [Name] = &apos;Rock.Model.Block&apos;
+        ///		)
+        ///DECLARE @EntityTypeIdFinancialBatch INT = (
+        ///		SELECT TOP 1 [Id]
+        ///		FROM [EntityType]
+        ///		WHERE [Name] = &apos;Rock.Model.FinancialBatch&apos;
+        ///		)
+        ///DECLARE @BatchDetailBlockId INT  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity {
+            get {
+                return ResourceManager.GetString("_201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 52.2
+        ///WHERE [Id] = 1
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 59.4
+        ///WHERE [Id] = 2
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 54
+        ///WHERE [Id] = 3
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 50.2
+        ///WHERE [Id] = 4
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 76.5
+        ///WHERE [Id] = 9
+        ///
+        ///UPDATE [MetaPersonicxLifestageCluster]
+        ///SET [MeanAge] = 51.5
+        ///WHERE [Id] = 8
+        ///
+        ///UPDATE [MetaPersonicxLifestageClus [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201712191949335_CampusTimeZone_PersonicxMeanAge {
+            get {
+                return ResourceManager.GetString("_201712191949335_CampusTimeZone_PersonicxMeanAge", resourceCulture);
             }
         }
     }

@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField("Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4)]
     [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, "ShowAttendance" )]
     [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6 )]
+    [BooleanField( "Show Note Column", "Should the note be displayed as a seperate grid column (instead of displaying a note icon under person's name)?", false, "", 7 )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Private Variables
@@ -183,7 +184,7 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.ShowConfirmDeleteDialog = false;
 
                     // make sure they have Auth to edit the block OR edit to the Group
-                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || _group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson );
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
                 }
@@ -1204,6 +1205,9 @@ namespace RockWeb.Blocks.Groups
                     bool showDateAdded = GetAttributeValue( "ShowDateAdded" ).AsBoolean();
                     gGroupMembers.ColumnsOfType<DateField>().First( a => a.DataField == "DateTimeAdded" ).Visible = showDateAdded;
 
+                    bool showNoteColumn = GetAttributeValue( "ShowNoteColumn" ).AsBoolean();
+                    gGroupMembers.ColumnsOfType<RockBoundField>().First( a => a.DataField == "Note" ).Visible = showNoteColumn;
+
                     var dataSource = groupMembersList.Select( m => new
                     {
                         m.Id,
@@ -1217,16 +1221,17 @@ namespace RockWeb.Blocks.Groups
                             + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) ) 
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )
-                            + ( !string.IsNullOrEmpty( m.Note )
-                                ? " <i class='fa fa-file-text-o text-info'></i>"
+                            + ( ( !showNoteColumn && !string.IsNullOrEmpty( m.Note ) )
+                                ? " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='" + m.Note.EncodeHtml() + "'><i class='fa fa-file-text-o text-info'></i></span>"
                                 : string.Empty )
-                            + ((personIdsThatHaventSigned.Contains( m.PersonId ))
+                            + ( ( personIdsThatHaventSigned.Contains( m.PersonId ) )
                                 ? " <i class='fa fa-pencil-square-o text-danger'></i>"
                                 : string.Empty)),
                         m.Person.BirthDate,
                         m.Person.Age,
                         m.Person.ConnectionStatusValueId,
                         m.DateTimeAdded,
+                        m.Note,
                         FirstAttended = attendanceFirstLast.Where( a => a.Key == m.PersonId ).Select( a => a.Value.Start ).FirstOrDefault(),
                         LastAttended = attendanceFirstLast.Where( a => a.Key == m.PersonId ).Select( a => a.Value.End ).FirstOrDefault(),
                         Email = m.Person.Email,
@@ -1251,7 +1256,7 @@ namespace RockWeb.Blocks.Groups
                         m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
                         IsDeceased = m.Person.IsDeceased,
-                        m.Person.MaritalStatusValueId
+                        m.Person.MaritalStatusValueId,
                     } ).ToList();
 
                     if ( sortProperty != null )

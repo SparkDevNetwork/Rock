@@ -429,11 +429,32 @@ namespace Rock.Attribute
                     if ( !entityTypeCache.IsEntity || entity.Id != 0 )
                     {
                         List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
-                        foreach ( var attributeValue in attributeValueService.Queryable().AsNoTracking()
-                            .Where( v =>
-                                v.EntityId.HasValue &&
-                                ( v.EntityId.Value == entity.Id || altEntityIds.Contains( v.EntityId.Value ) )
-                                && attributeIds.Contains( v.AttributeId ) ) )
+                        IQueryable<AttributeValue> attributeValueQuery;
+
+                        if ( altEntityIds.Any() )
+                        {
+                            attributeValueQuery = attributeValueService.Queryable().AsNoTracking()
+                                .Where( v =>
+                                    v.EntityId.HasValue &&
+                                    ( v.EntityId.Value == entity.Id || altEntityIds.Contains( v.EntityId.Value ) ) );
+                        }
+                        else
+                        {
+                            attributeValueQuery = attributeValueService.Queryable().AsNoTracking()
+                                .Where( v => v.EntityId.HasValue && v.EntityId.Value == entity.Id );
+                        }
+
+                        if ( attributeIds.Count != 1 )
+                        {
+                            attributeValueQuery = attributeValueQuery.Where( v => attributeIds.Contains( v.AttributeId ) );
+                        }
+                        else
+                        {
+                            int attributeId = attributeIds[0];
+                            attributeValueQuery = attributeValueQuery.Where( v => v.AttributeId == attributeId );
+                        }
+
+                        foreach ( var attributeValue in attributeValueQuery )
                         {
                             var attributeKey = AttributeCache.Read( attributeValue.AttributeId ).Key;
                             attributeValues[attributeKey] = new AttributeValueCache( attributeValue );

@@ -196,7 +196,10 @@ namespace Rock.PayFlowPro
                             var rockContext = new RockContext();
                             var savedAccount = new FinancialPersonSavedAccountService( rockContext )
                                 .Queryable()
-                                .Where( s => s.TransactionCode == reference.TransactionCode )
+                                .Where( s => 
+                                    s.TransactionCode == reference.TransactionCode &&
+                                    s.FinancialGatewayId.HasValue &&
+                                    s.FinancialGatewayId.Value == financialGateway.Id )
                                 .FirstOrDefault();
                             if ( savedAccount != null )
                             {

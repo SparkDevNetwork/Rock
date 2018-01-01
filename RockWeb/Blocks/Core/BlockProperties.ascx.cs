@@ -95,6 +95,8 @@ namespace RockWeb.Blocks.Core
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
                 Block _block = new BlockService( new RockContext() ).Get( blockId );
 
+                dialogPage.SubTitle = "Id: " + blockId;
+
                 if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
                     var blockType = BlockTypeCache.Read( _block.BlockTypeId );

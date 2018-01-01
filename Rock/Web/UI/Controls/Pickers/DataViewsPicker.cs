@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    class DataViewsPicker : RockListBox
+    public class DataViewsPicker : RockListBox
     {
         /// <summary>
         /// Gets or sets the data view entity type identifier.

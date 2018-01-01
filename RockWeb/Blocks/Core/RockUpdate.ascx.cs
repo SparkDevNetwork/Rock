@@ -177,6 +177,7 @@ namespace RockWeb.Blocks.Core
                         if ( IsUpdateAvailable() )
                         {
                             pnlUpdatesAvailable.Visible = true;
+                            pnlUpdates.Visible = true;
                             pnlNoUpdates.Visible = false;
                             cbIncludeStats.Visible = true;
                             BindGrid();
@@ -216,6 +217,7 @@ namespace RockWeb.Blocks.Core
             try
             {
                 pnlUpdatesAvailable.Visible = false;
+                pnlUpdates.Visible = false;
 
                 if ( !UpdateRockPackage( version ) )
                 {

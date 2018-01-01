@@ -15,10 +15,14 @@
 //--------------------------------
 @import "./FontAwesome/mixins.less";
 @import "./FontAwesome/variables.less";
+@import "./FontAwesome/_rock-upgrade-map-variables.less";
+@import "./FontAwesome/_rock-fa-mixins.less";
 @import "./JCrop/jcrop.less";
 @import "./chosen/bootstrap-chosen-variables.less";
 @import "./chosen/bootstrap-chosen.less";
 
+.fa-font-face( @fa-theme-weight-name );
+.fa-font-face( 'brands' );
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.css";
@@ -47,7 +51,6 @@
 @import "_page-specific.less";
 
 @import "_scroll.less";
-@import "_global-variables.less";
 @import "_helpers.less";
 
 @import "_devices.less";
@@ -619,7 +622,6 @@ th[align=center] {
 
 .btn-authentication {
   width: 100%;
-
   .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
 
   &:hover {
@@ -628,19 +630,22 @@ th[align=center] {
 
   &.facebook:before {
     margin-right: 12px;
-    font-family: 'FontAwesome';
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
     content: @fa-var-facebook;
   }
 
   &.google:before {
     margin-right: 12px;
-    font-family: 'FontAwesome';
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
     content: @fa-var-google;
   }
 
   &.twitter:before {
     margin-right: 12px;
-    font-family: 'FontAwesome';
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
     content: @fa-var-twitter;
   }
 }

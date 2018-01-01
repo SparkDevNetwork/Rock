@@ -76,6 +76,9 @@ namespace Rock.Client
         public string ShortCode { get; set; }
 
         /// <summary />
+        public string TimeZoneId { get; set; }
+
+        /// <summary />
         public string Url { get; set; }
 
         /// <summary>
@@ -124,6 +127,7 @@ namespace Rock.Client
             this.PhoneNumber = source.PhoneNumber;
             this.ServiceTimes = source.ServiceTimes;
             this.ShortCode = source.ShortCode;
+            this.TimeZoneId = source.TimeZoneId;
             this.Url = source.Url;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Account Label", "The label to use to describe accounts.", true, "Accounts", "", 2 )]
     [AccountsField( "Accounts", "List of accounts to allow the person to view", false, "", "", 3 )]
     [BooleanField( "Show Transaction Code", "Show the transaction code column in the table.", true, "", 4, "ShowTransactionCode" )]
+    [BooleanField( "Show Foreign Key", "Show the transaction foreign key column in the table.", true, "", 4, "ShowForeignKey" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
     [BooleanField( "Use Person Context", "Determines if the person context should be used instead of the CurrentPerson.", false, order: 5 )]
 
@@ -290,13 +291,16 @@ namespace RockWeb.Blocks.Finance
                 t.TransactionDateTime,
                 CurrencyType = FormatCurrencyType( t ),
                 t.TransactionCode,
+                t.ForeignKey,
                 Summary = FormatSummary( t ),
                 t.TotalAmount
             } ).ToList();
 
-            gTransactions.Columns
-                .Cast<Rock.Web.UI.Controls.RockBoundField>()
-                .FirstOrDefault( c => c.HeaderText == "Transaction Code" ).Visible = GetAttributeValue( "ShowTransactionCode" ).AsBoolean();
+            gTransactions.ColumnsOfType<Rock.Web.UI.Controls.RockBoundField>().First( c => c.HeaderText == "Transaction Code" ).Visible =
+                GetAttributeValue( "ShowTransactionCode" ).AsBoolean();
+
+            gTransactions.ColumnsOfType<Rock.Web.UI.Controls.RockBoundField>().First( c => c.HeaderText == "Foreign Key" ).Visible =
+                GetAttributeValue( "ShowForeignKey" ).AsBoolean();
 
             gTransactions.DataBind();
         }
