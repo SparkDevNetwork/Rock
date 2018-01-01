@@ -868,6 +868,14 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the reload qualifiers value.
+        /// </summary>
+        /// <value>
+        /// True if the OnPreRender method should reload the qualifiers.
+        /// </value>
+        private bool ReloadQualifiers { get; set; }
+
         #endregion
 
         #region Overridden Control Methods
@@ -1039,12 +1047,10 @@ namespace Rock.Web.UI.Controls
 
                 _phQualifiers = new PlaceHolder();
                 _phQualifiers.ID = "phQualifiers";
-                _phQualifiers.EnableViewState = false;
                 Controls.Add( _phQualifiers );
 
                 _phDefaultValue = new PlaceHolder();
                 _phDefaultValue.ID = "phDefaultValue";
-                _phDefaultValue.EnableViewState = false;
                 Controls.Add( _phDefaultValue );
 
                 _btnSave = new LinkButton();
@@ -1074,21 +1080,13 @@ namespace Rock.Web.UI.Controls
         {
             base.OnLoad( e );
 
+            // Load qualifier data now so the save event handler has access to it.
             if ( Page.IsPostBack && FieldTypeId.HasValue )
             {
-                var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
-                var qualifierControls = new List<Control>();
-                foreach ( Control control in _phQualifiers.Controls )
-                {
-                    qualifierControls.Add( control );
-                }
-
-                DefaultValue = _phDefaultValue.Controls.Count >= 1 ?
-                    field.GetEditValue( _phDefaultValue.Controls[0], Qualifiers ) : string.Empty;
-
-                Qualifiers = field.ConfigurationValues( qualifierControls );
+                UpdateQualifiers();
             }
 
+            ReloadQualifiers = Page.IsPostBack && FieldTypeId.HasValue;
         }
 
         /// <summary>
@@ -1098,6 +1096,12 @@ namespace Rock.Web.UI.Controls
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
+
+            // Reload qualifiers in case any postback events caused them to change.
+            if ( ReloadQualifiers )
+            {
+                UpdateQualifiers();
+            }
 
             // Recreate the qualifiers and default control in case they changed due to new field type or
             // new qualifier values
@@ -1368,6 +1372,8 @@ namespace Rock.Web.UI.Controls
                 this.Qualifiers = qualifiers;
                 this.DefaultValue = attribute.DefaultValue;
 
+                this.ReloadQualifiers = false;
+                
                 SetSubTitleOnModal( attribute );
             }
 
@@ -1449,16 +1455,16 @@ namespace Rock.Web.UI.Controls
                 var field = Rock.Web.Cache.FieldTypeCache.Read( fieldTypeId.Value ).Field;
 
                 var configControls = field.ConfigurationControls();
-                if ( recreate )
-                {
-                    field.SetConfigurationValues( configControls, Qualifiers );
-                }
-
                 int i = 0;
                 foreach ( var control in configControls )
                 {
                     control.ID = string.Format( "qualifier_{0}", i++ );
                     _phQualifiers.Controls.Add( control );
+                }
+
+                if ( recreate )
+                {
+                    field.SetConfigurationValues( configControls, Qualifiers );
                 }
 
                 // default control id needs to be unique to field type because some field types will transform
@@ -1488,6 +1494,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Reads the qualifiers and default value from the page contents.
+        /// </summary>
+        protected void UpdateQualifiers()
+        {
+            var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
+            var qualifierControls = new List<Control>();
+            foreach ( Control control in _phQualifiers.Controls )
+            {
+                qualifierControls.Add( control );
+            }
+
+            DefaultValue = _phDefaultValue.Controls.Count >= 1 ?
+                field.GetEditValue( _phDefaultValue.Controls[0], Qualifiers ) : string.Empty;
+
+            Qualifiers = field.ConfigurationValues( qualifierControls );
+        }
+        
         /// Set the Subtitle of modal dialog
         /// </summary>
         /// <param name="attribute">The attribute.</param>
