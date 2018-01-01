@@ -382,7 +382,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     foreach ( var activity in _workflow.ActiveActivities )
                     {
-                        _action = activity.Actions.Where( a => a.ActionTypeId == ActionTypeId.Value ).FirstOrDefault();
+                        _action = activity.ActiveActions.Where( a => a.ActionTypeId == ActionTypeId.Value ).FirstOrDefault();
                         if ( _action != null )
                         {
                             _activity = activity;
