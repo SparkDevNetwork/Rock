@@ -814,10 +814,14 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( HydrateObjects() && _action != null && _action.Id != previousActionId )
                     {
-                        var cb = CurrentPageReference;
-                        cb.Parameters.AddOrReplace( "WorkflowId", _workflow.Id.ToString() );
-                        Response.Redirect( cb.BuildUrl(), false );
-                        Context.ApplicationInstance.CompleteRequest();
+                        // If we are already being directed (presumably from the Redirect Action), don't redirect again.
+                        if (!Response.IsRequestBeingRedirected)
+                        {
+                            var cb = CurrentPageReference;
+                            cb.Parameters.AddOrReplace( "WorkflowId", _workflow.Id.ToString() );
+                            Response.Redirect( cb.BuildUrl(), false );
+                            Context.ApplicationInstance.CompleteRequest();
+                        }
                     }
                     else
                     {
