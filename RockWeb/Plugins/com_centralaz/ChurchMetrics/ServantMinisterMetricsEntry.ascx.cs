@@ -571,16 +571,17 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                                    s.CategoryId.Value == eventScheduleCategory.Id )
                                 .ToList() // Here we ToList so that we can take advantage of the NextStartDateTime property
                                 .Where( s =>
-                                    s.NextStartDateTime.HasValue &&
-                                    s.NextStartDateTime.Value.DayOfWeek == RockDateTime.Now.DayOfWeek )
-                               .OrderBy( s => s.NextStartDateTime.Value.TimeOfDay ) )
+                                    s.EffectiveStartDate.HasValue &&
+                                    ( s.EffectiveStartDate.Value.Date == RockDateTime.Now.Date ) )
+                                    .ToList()
+                               .OrderBy( s => s.GetFirstStartDateTime().Value.TimeOfDay ) )
                             {
                                 services.Add( schedule );
                             }
                         }
                     }
 
-                    services = services.Distinct().OrderBy( s => s.NextStartDateTime.Value.TimeOfDay ).ToList();
+                    services = services.Distinct().OrderBy( s => s.GetFirstStartDateTime().Value.TimeOfDay ).ToList();
                 }
             }
 
@@ -645,7 +646,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
 
                             if ( metricValue != null )
                             {
-                                serviceMetric.Value = (int?)metricValue.YValue;
+                                serviceMetric.Value = ( int? ) metricValue.YValue;
                                 serviceMetric.ModifiedDateTime = metricValue.ModifiedDateTime;
 
                                 if ( !string.IsNullOrWhiteSpace( metricValue.Note ) &&
