@@ -136,7 +136,7 @@ function() {
             lp.ID = filterControl.ID + "_lp";
             lp.Label = "Location";
             lp.AllowedPickerModes = LocationPickerMode.Named | LocationPickerMode.Polygon;
-            lp.CurrentPickerMode = lp.GetBestPickerModeForLocation( null );
+            lp.SetBestPickerModeForLocation( null );
             lp.CssClass = "col-lg-4";
             filterControl.Controls.Add( lp );
 
@@ -207,7 +207,7 @@ function() {
             if ( location != null )
             {
                 LocationPicker locationPicker = controls[0] as LocationPicker;
-                locationPicker.GetBestPickerModeForLocation( location );
+                locationPicker.SetBestPickerModeForLocation( location );
                 locationPicker.Location = location;
             }
 
