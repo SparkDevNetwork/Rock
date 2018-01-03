@@ -1426,8 +1426,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                    }
 	
 	                    _group.LoadAttributes();
-	                    Rock.Attribute.Helper.GetEditValues( phGroupAttributes, _group );
-	                    _group.SaveAttributeValues( rockContext );
+
+                        Dictionary<string, AttributeValueCache> originalGroupAttributes = new Dictionary<string, AttributeValueCache>();
+                        foreach ( var attribute in _group.AttributeValues )
+                        {
+                            originalGroupAttributes.Add( attribute.Key, attribute.Value );
+                        }
+
+                        Rock.Attribute.Helper.GetEditValues( phGroupAttributes, _group );
+
+                        foreach ( var attribute in _group.AttributeValues )
+                        {
+                            History.EvaluateChange( groupChanges, attribute.Key, originalGroupAttributes[attribute.Key] != null ? originalGroupAttributes[attribute.Key].Value : string.Empty, attribute.Value.Value );
+                        }
+
+                        _group.SaveAttributeValues( rockContext );
 	
 	                    if ( _isFamilyGroupType )
 	                    {
