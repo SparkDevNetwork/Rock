@@ -822,7 +822,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             if ( displayOtherTab )
                             {
-                                locpGroupLocation.CurrentPickerMode = locpGroupLocation.GetBestPickerModeForLocation( groupLocation.Location );
+                                locpGroupLocation.SetBestPickerModeForLocation( groupLocation.Location );
 
                                 locpGroupLocation.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
 
