@@ -54,7 +54,7 @@
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
-<body runat="server" id="body">
+<body runat="server" id="body" class="navbar-side-close">
 
     <form id="form1" runat="server">
 
@@ -142,19 +142,24 @@
     </form>
 
     <script>
-        // enable sidbar sub menus
+        // enable sidebar sub menus
         $(document).on('click', '.navbar-side li', function () {
             if(!$(this).hasClass('open')) {
                 $('.navbar-side li').removeClass('open');
                 $(this).addClass('open');
+                $('body').removeClass('navbar-side-close');
+                $('body').addClass('navbar-side-open');
+            } else {
+                $(this).removeClass('open');
+                $('body').removeClass('navbar-side-open');
+                $('body').addClass('navbar-side-close');
             }
-
-            $('body').addClass('navbar-side-open');
         });
 
-        $(document).on('click', '#content-wrapper', function () {
+        $(document).on('click', '#content-wrapper main', function () {
             $('.navbar-side li').removeClass('open');
             $('body').removeClass('navbar-side-open');
+            $('body').addClass('navbar-side-close');
         });
 
         // show/hide sidebar nav
@@ -163,15 +168,12 @@
             var body = $('body');
 
             if(body.hasClass('navbar-side-close')) {
-                console.log('a');
                 body.addClass('navbar-side-open');
                 body.removeClass('navbar-side-close');
             } else {
-                console.log('b');
                 body.removeClass('navbar-side-open');
                 body.addClass('navbar-side-close');
             };
-            // $('body').toggleClass('navbar-side-close').toggleClass('navbar-side-open');
         });
     </script>
 

@@ -18,6 +18,10 @@
 	text-transform: uppercase;
 }
 
+.background-cover {
+	background-size: cover;
+}
+
 .borderless {
 	border: 0px;
 }
@@ -40,6 +44,30 @@
 
 .inline {
 	display: inline;
+}
+
+.flex {
+	display: flex;
+	align-items: center;
+}
+
+@media (max-width: @screen-md-min) {
+	.handheld-block {
+		display: block;
+	}
+
+	.handheld-inline-block {
+		display: inline-block;
+	}
+
+	.handheld-inline {
+		display: inline;
+	}
+
+	.handheld-flex {
+		display: flex;
+		align-items: center;
+	}
 }
 
 // Soft

@@ -73,11 +73,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
                 }
 
                 // set the default display
-                var spanLiteral = "<i internal class='fa fa-bell-o'></i>";
+                var spanLiteral = "";
                 if ( activeIncompleteWorkflows > 0 )
                 {
                     // add the count of how many workflows need to be assigned/completed
-                    spanLiteral = string.Format( "<i class='fa fa-bell'> <span class='badge badge-danger'>{0}</span> </i>", activeIncompleteWorkflows );
+                    spanLiteral = string.Format( "<span class='badge badge-danger'>{0}</span>", activeIncompleteWorkflows );
                 }
 
                 lbListingPage.Controls.Add( new LiteralControl( spanLiteral ) );

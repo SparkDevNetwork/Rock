@@ -54,13 +54,15 @@ body.navbar-side-open #content-wrapper {
 	overflow-y: auto;
 }
 
+@media (min-width: 1441px) {
+	body.navbar-side-close #content-wrapper {
+		left: 230px;
+	}
+}
+
 @media (min-width: @screen-md-min) {
 	body #content-wrapper {
 		left: 65px;
-	}
-
-	body.navbar-side-close #content-wrapper {
-		left: 230px;
 	}
 }
 

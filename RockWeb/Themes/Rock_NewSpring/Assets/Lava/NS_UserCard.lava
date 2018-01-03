@@ -1,20 +1,22 @@
 <div class="panel">
     <div class="panel-body">
-
-        <div class="row">
-            <div class="col-md-4 col-sm-3 col-xs-4 hard-right text-center something">
-                <div class="ratio -ratio--square">
-                    <div class="ratio__item"></div>
-                </div>
-                <!-- <a href="/Person/{{ person.Id }}" class="relative inline-block full-width">
-                    <img src="{{ image | Trim }}" class="rounded-corners full-width" alt="">
-                    {% if newStatus == 'Yes' %}<span class="absolute top-zero right-zero label label-primary">NEW</span>{% endif %}
-                </a> -->
-
+        <div class="row flex handheld-block">
+            <div class="col-lg-4 col-md-5 col-xs-5 text-center">
+                {% if imageLink != empty %}<a href="{{ imageLink }}">{% endif %}
+                    <div class="ratio ratio-square relative background-cover rounded-corners" style="background-image:url('{{ image | Trim }}');">
+                        <div class="ratio-item">
+                            {% if newStatus == 'Yes' %}<span class="absolute top-zero right-zero push-quarter-top push-quarter-right label label-primary">NEW</span>{% endif %}
+                        </div>
+                    </div>
+                {% if imageLink != empty %}</a>{% endif %}
             </div>
-            <div class="col-md-8 col-sm-9 col-xs-8">
-                <a href="/Person/{{ person.Id }}"><h4 class="push-quarter-bottom">{{ person.NickName }} {{ person.LastName }}</h4></a>
+            <div class="col-lg-8 col-md-7 col-xs-7">
+                {% if personLink != empty %}<a href="{{ personLink }}">{% endif %}
+                    <h4 class="push-quarter-bottom">{{ name }}</h4>
+                {% if personLink != empty %}</a>{% endif %}
+
                 {% if campus %}<p class="push-quarter-bottom strong">{{ campus }}</p>{% endif %}
+
                 <p class="flush">{{ content }}</p>
             </div>
         </div>

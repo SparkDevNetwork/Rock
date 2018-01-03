@@ -1,77 +1,29 @@
-._fixed-ratio(@width, @height, @child){
-
-    // Get percentage based off of width and height variables
-    @percentage : (@height/@width * 100%);
-
-    // Set position as relative to contain absolute child
-    position: relative;
-    display: block;
-    margin-bottom: @base-spacing-unit/2;
-
-    // Use pseudo element to inflate container to ratio size
-    &:before{
-        content: "";
-        display: block;
-        padding-top: @percentage;
-    }
-
-    // Set child to fill all of parent element
-    .@{child}{
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-    }
-}
-
-
-
-
-._ratio-setup(@namespace: -) {
-
-    .@{namespace}ratio--landscape { ._fixed-ratio(2, 1, ratio__item ); }
-    .@{namespace}ratio--square { ._fixed-ratio(1, 1, ratio__item ); }
-    .@{namespace}ratio--portrait { ._fixed-ratio(1, 2, ratio__item ); }
-}
-
-
-
-
 .ratio {
-    padding: 0;
-    margin: 0;
-    margin-bottom: @base-spacing-unit;
-    list-style: none;
-
-    .ratio__item {
-        display:inline-block;
-        z-index: 1;
-        width:100%;
-        background-size: cover;
-        box-sizing: border-box;
-    }
+    position: relative;
+    width: 100%;
 }
 
-._ratio-setup();
-
-
-@include media-query(xs) {
-    ._ratio-setup(xs-);
+.ratio:after {
+    content: '';
+    display: block;
 }
 
-@include media-query(sm) {
-    ._ratio-setup(sm-);
+.ratio-item {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
 }
 
-@include media-query(md) {
-    ._ratio-setup(md-);
+.ratio-portrait:after {
+    padding-bottom: 200%;
 }
 
-@include media-query(lg) {
-    ._ratio-setup(lg-);
+.ratio-square:after {
+    padding-bottom: 100%;
 }
 
-@include media-query(xl) {
-    ._ratio-setup(xl-);
+.ratio-landscape:after {
+    padding-bottom: 50%;
 }

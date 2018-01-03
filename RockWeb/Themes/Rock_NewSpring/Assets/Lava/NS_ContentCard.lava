@@ -18,7 +18,7 @@
                 {{ content }}
             </div>
 
-            <a href="{{ linkUrl }}" class="btn btn-sm btn-primary push-half-bottom" data-action="expand">
+            <a href="{{ linkUrl }}" class="btn btn-sm btn-default push-half-bottom" data-action="expand">
                 {{ linkText }} <i class="btn-icon fa {{ linkIconClass }}"></i>
             </a>
 
@@ -28,7 +28,7 @@
             {{ content }}
 
             {% if linkUrl != empty %}
-                <a href="{{ linkUrl }}" class="btn btn-sm btn-primary push-half-bottom" target="{{ linkTarget }}">
+                <a href="{{ linkUrl }}" class="btn btn-sm btn-default push-half-bottom" target="{{ linkTarget }}">
                     {{ linkText }} <i class="btn-icon fa {{ linkIconClass }}"></i>
                 </a>
             {% endif %}

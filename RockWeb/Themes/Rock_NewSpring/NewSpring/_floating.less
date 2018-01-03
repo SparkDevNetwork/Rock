@@ -1,6 +1,7 @@
 .floating(@vertical, @horizontal) {
 
     text-align: @horizontal;
+    
     &:before {
         content: '';
         display: inline-block;
@@ -9,7 +10,7 @@
         margin-right: -0.25em;
     }
 
-    .floating__item{
+    .floating-item{
         display: inline-block;
         vertical-align: @vertical;
     }
@@ -19,28 +20,28 @@
 .floating {
     .floating(middle, center);
 
-    &.floating--left {
+    &.floating-left {
         text-align: left;
     }
 
-    &.floating--right {
+    &.floating-right {
         text-align: right;
     }
 
-    &.floating--top {
+    &.floating-top {
         &:before {
             vertical-align: top;
         }
-        .floating__item {
+        .floating-item {
             vertical-align: top;
         }
     }
 
-    &.floating--bottom {
+    &.floating-bottom {
         &:before {
             vertical-align: bottom;
         }
-        .floating__item {
+        .floating-item {
             vertical-align: bottom;
         }
     }
