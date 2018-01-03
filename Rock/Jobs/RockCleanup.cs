@@ -200,54 +200,52 @@ namespace Rock.Jobs
         private void PersonCleanup( JobDataMap dataMap )
         {
             // Add any missing person aliases
-            using ( var personRockContext = new Rock.Data.RockContext() )
+            var personRockContext = new Rock.Data.RockContext();
+            PersonService personService = new PersonService( personRockContext );
+            PersonAliasService personAliasService = new PersonAliasService( personRockContext );
+            var personAliasServiceQry = personAliasService.Queryable();
+            foreach ( var person in personService.Queryable( "Aliases" )
+                .Where( p => !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
+                .Take( 300 ) )
             {
-                PersonService personService = new PersonService( personRockContext );
-                PersonAliasService personAliasService = new PersonAliasService( personRockContext );
-                var personAliasServiceQry = personAliasService.Queryable();
-                foreach ( var person in personService.Queryable( "Aliases" )
-                    .Where( p => !p.Aliases.Any() && !personAliasServiceQry.Any( pa => pa.AliasPersonId == p.Id ) )
-                    .Take( 300 ) )
+                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+            }
+
+            personRockContext.SaveChanges();
+
+            // Add any missing metaphones
+            int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsIntegerOrNull() ?? 500;
+            if ( namesToProcess > 0 )
+            {
+                var firstNameQry = personService.Queryable().Select( p => p.FirstName ).Where( p => p != null );
+                var nickNameQry = personService.Queryable().Select( p => p.NickName ).Where( p => p != null );
+                var lastNameQry = personService.Queryable().Select( p => p.LastName ).Where( p => p != null );
+                var nameQry = firstNameQry.Union( nickNameQry.Union( lastNameQry ) );
+
+                var metaphones = personRockContext.Metaphones;
+                var existingNames = metaphones.Select( m => m.Name ).Distinct();
+
+                // Get the names that have not yet been processed
+                var namesToUpdate = nameQry
+                    .Where( n => !existingNames.Contains( n ) )
+                    .Take( namesToProcess )
+                    .ToList();
+
+                foreach ( string name in namesToUpdate )
                 {
-                    person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+                    string mp1 = string.Empty;
+                    string mp2 = string.Empty;
+                    Rock.Utility.DoubleMetaphone.doubleMetaphone( name, ref mp1, ref mp2 );
+
+                    var metaphone = new Metaphone();
+                    metaphone.Name = name;
+                    metaphone.Metaphone1 = mp1;
+                    metaphone.Metaphone2 = mp2;
+
+                    metaphones.Add( metaphone );
                 }
 
                 personRockContext.SaveChanges();
-
-                // Add any missing metaphones
-                int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsIntegerOrNull() ?? 500;
-                if ( namesToProcess > 0 )
-                {
-                    var firstNameQry = personService.Queryable().Select( p => p.FirstName ).Where( p => p != null );
-                    var nickNameQry = personService.Queryable().Select( p => p.NickName ).Where( p => p != null );
-                    var lastNameQry = personService.Queryable().Select( p => p.LastName ).Where( p => p != null );
-                    var nameQry = firstNameQry.Union( nickNameQry.Union( lastNameQry ) );
-
-                    var metaphones = personRockContext.Metaphones;
-                    var existingNames = metaphones.Select( m => m.Name ).Distinct();
-
-                    // Get the names that have not yet been processed
-                    var namesToUpdate = nameQry
-                        .Where( n => !existingNames.Contains( n ) )
-                        .Take( namesToProcess )
-                        .ToList();
-
-                    foreach ( string name in namesToUpdate )
-                    {
-                        string mp1 = string.Empty;
-                        string mp2 = string.Empty;
-                        Rock.Utility.DoubleMetaphone.doubleMetaphone( name, ref mp1, ref mp2 );
-
-                        var metaphone = new Metaphone();
-                        metaphone.Name = name;
-                        metaphone.Metaphone1 = mp1;
-                        metaphone.Metaphone2 = mp2;
-
-                        metaphones.Add( metaphone );
-                    }
-
-                    personRockContext.SaveChanges();
-                }
             }
 
             //// Add any missing Implied/Known relationship groups
@@ -256,24 +254,6 @@ namespace Rock.Jobs
 
             // Implied Relationship Group
             AddMissingRelationshipGroups( GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() );
-
-            // Find family groups that have no members or that have only 'inactive' people (record status) and mark the groups inactive.
-            using ( var familyRockContext = new Rock.Data.RockContext() )
-            {
-                int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
-                int recordStatusInactiveValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
-
-                var activeFamilyWithNoActiveMembersList = new GroupService( familyRockContext ).Queryable()
-                    .Where( a => a.GroupTypeId == familyGroupTypeId && a.IsActive == true )
-                    .Where( a => !a.Members.Where( m => m.Person.RecordStatusValueId != recordStatusInactiveValueId ).Any() ).ToList();
-
-                foreach ( var activeFamilyWithNoMembers in activeFamilyWithNoActiveMembersList )
-                {
-                    activeFamilyWithNoMembers.IsActive = false;
-                }
-
-                familyRockContext.SaveChanges();
-            }
         }
 
         /// <summary>
