@@ -484,6 +484,25 @@ namespace Rock.Model
         [DataMember]
         public int? TopSignalId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the age classification of the Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.AgeClassification"/> enum value representing the Person's age classification.  Valid values are <c>AgeClassification.Unknown</c> if the Person's age is unknown,
+        /// <c>AgeClassification.Adult</c> if the Person's age falls under Adult Range, <c>AgeClassification.Child</c> if the Person is under the age of 18
+        /// </value>
+        [DataMember]
+        public AgeClassification AgeClassification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group id for the primary family
+        /// </summary>
+        /// <value>
+        /// The primary family id.
+        /// </value>
+        [DataMember]
+        public int? PrimaryFamilyId { get; set; }
+
         #endregion
 
         #region Constructors
@@ -497,7 +516,7 @@ namespace Rock.Model
             _users = new Collection<UserLogin>();
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
-            _aliases = new Collection<PersonAlias>();
+            _aliases = new Collection<PersonAlias>();          
             CommunicationPreference = CommunicationType.Email;
         }
 
@@ -988,6 +1007,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual MetaPersonicxLifestageGroup MetaPersonicxLifestageGroup { get; set; }
+
+        /// <summary>
+        /// Gets or sets the primary family.
+        /// </summary>
+        /// <value>
+        /// The primary family.
+        /// </value>
+        [LavaInclude]
+        public virtual Group PrimaryFamily { get; set; }
 
         /// <summary>
         /// Gets the Person's birth date. Note: Use SetBirthDate to set the Birthdate
@@ -1695,6 +1723,20 @@ namespace Rock.Model
                 }
             }
 
+            if ( this.Age.HasValue && this.AgeClassification == AgeClassification.Unknown )
+            {
+                this.AgeClassification = this.Age < 18 ? AgeClassification.Child : AgeClassification.Adult;   
+            }
+
+            if ( !this.PrimaryFamilyId.HasValue )
+            {
+                var primaryFamily = this.GetFamilies( ( RockContext ) dbContext ).FirstOrDefault();
+                if ( primaryFamily != null )
+                {
+                    this.PrimaryFamily = primaryFamily;
+                }
+            }
+
             CalculateSignals();
 
             if ( this.IsValid )
@@ -1765,20 +1807,23 @@ namespace Rock.Model
         /// </summary>
         public void CalculateSignals()
         {
-            var rockContext = new RockContext();
-            var topSignal = Signals
-                .Select( s => new
-                {
-                    Id = s.Id,
-                    SignalType = Rock.Web.Cache.SignalTypeCache.Read( s.SignalTypeId )
-                } )
-                .OrderBy( s => s.SignalType.Order )
-                .ThenBy( s => s.SignalType.Id )
-                .FirstOrDefault();
+            if ( Signals != null )
+            {
+                var rockContext = new RockContext();
+                var topSignal = Signals
+                    .Select( s => new
+                    {
+                        Id = s.Id,
+                        SignalType = Rock.Web.Cache.SignalTypeCache.Read( s.SignalTypeId )
+                    } )
+                    .OrderBy( s => s.SignalType.Order )
+                    .ThenBy( s => s.SignalType.Id )
+                    .FirstOrDefault();
 
-            TopSignalId = topSignal?.Id;
-            TopSignalIconCssClass = topSignal?.SignalType.SignalIconCssClass;
-            TopSignalColor = topSignal?.SignalType.SignalColor;
+                TopSignalId = topSignal?.Id;
+                TopSignalIconCssClass = topSignal?.SignalType.SignalIconCssClass;
+                TopSignalColor = topSignal?.SignalType.SignalColor;
+            }
         }
 
         #endregion
@@ -2980,6 +3025,7 @@ namespace Rock.Model
             this.HasOptional( p => p.GivingGroup ).WithMany().HasForeignKey( p => p.GivingGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.MetaPersonicxLifestageCluster ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageClusterId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.MetaPersonicxLifestageGroup ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageGroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -3006,6 +3052,27 @@ namespace Rock.Model
         /// Female
         /// </summary>
         Female = 2
+    }
+
+    /// <summary>
+    /// The age classification of a person
+    /// </summary>
+    public enum AgeClassification
+    {
+        /// <summary>
+        /// Unknown
+        /// </summary>
+        Unknown = 0,
+
+        /// <summary>
+        /// Adult
+        /// </summary>
+        Adult = 1,
+
+        /// <summary>
+        /// Child
+        /// </summary>
+        Child = 2
     }
 
     /// <summary>

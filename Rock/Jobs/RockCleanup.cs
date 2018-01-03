@@ -248,6 +248,33 @@ namespace Rock.Jobs
                 personRockContext.SaveChanges();
             }
 
+            //Add any Missing Primary Family
+            var missingPrimaryFamilyQry = personService.Queryable().Where( p => p.PrimaryFamilyId == null );
+            foreach ( var person in missingPrimaryFamilyQry.Take( 500 ) )
+            {
+                var family = person.GetFamilies( personRockContext ).FirstOrDefault();
+                if ( family != null )
+                {
+                    person.PrimaryFamilyId = family.Id;
+                }
+            }
+            personRockContext.SaveChanges();
+
+            //calculate missing age classification
+            var missingAgeQualificationQry = personService.Queryable().Where( p => p.AgeClassification == AgeClassification.Unknown && p.BirthDate != null );
+            foreach ( var person in missingAgeQualificationQry.Take( 500 ) )
+            {
+                if ( person.Age < 18 )
+                {
+                    person.AgeClassification = AgeClassification.Child;
+                }
+                else
+                {
+                    person.AgeClassification = AgeClassification.Adult;
+                }
+            }
+            personRockContext.SaveChanges();
+
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group
             AddMissingRelationshipGroups( GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
