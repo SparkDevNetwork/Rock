@@ -263,16 +263,15 @@ namespace Rock.Jobs
                 int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
                 int recordStatusInactiveValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
-                var activeFamilyWithNoActiveMembersList = new GroupService( familyRockContext ).Queryable()
+                var activeFamilyWithNoActiveMembers = new GroupService( familyRockContext ).Queryable()
                     .Where( a => a.GroupTypeId == familyGroupTypeId && a.IsActive == true )
-                    .Where( a => !a.Members.Where( m => m.Person.RecordStatusValueId != recordStatusInactiveValueId ).Any() ).ToList();
+                    .Where( a => !a.Members.Where( m => m.Person.RecordStatusValueId != recordStatusInactiveValueId ).Any() );
 
-                foreach ( var activeFamilyWithNoMembers in activeFamilyWithNoActiveMembersList )
+                familyRockContext.BulkUpdate( activeFamilyWithNoActiveMembers, x => new Rock.Model.Group
                 {
-                    activeFamilyWithNoMembers.IsActive = false;
-                }
-
-                familyRockContext.SaveChanges();
+                    IsActive = false,
+                    ModifiedDateTime = RockDateTime.Now
+                } );
             }
         }
 
@@ -543,29 +542,11 @@ namespace Rock.Jobs
             if ( exceptionExpireDays.HasValue )
             {
                 var exceptionLogRockContext = new Rock.Data.RockContext();
+                exceptionLogRockContext.Database.CommandTimeout = (int)TimeSpan.FromMinutes( 10 ).TotalSeconds;
                 DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
+                var exceptionLogsToDelete = new ExceptionLogService( exceptionLogRockContext ).Queryable().Where( a => a.CreatedDateTime < exceptionExpireDate );
 
-                // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
-                bool keepDeleting = true;
-                while ( keepDeleting )
-                {
-                    var dbTransaction = exceptionLogRockContext.Database.BeginTransaction();
-                    try
-                    {
-                        string sqlCommand = @"DELETE TOP (@batchAmount) FROM [ExceptionLog] WHERE [CreatedDateTime] < @createdDateTime";
-
-                        int rowsDeleted = exceptionLogRockContext.Database.ExecuteSqlCommand( sqlCommand,
-                            new SqlParameter( "batchAmount", batchAmount ),
-                            new SqlParameter( "createdDateTime", exceptionExpireDate )
-                        );
-                        keepDeleting = rowsDeleted > 0;
-                        totalRowsDeleted += rowsDeleted;
-                    }
-                    finally
-                    {
-                        dbTransaction.Commit();
-                    }
-                }
+                totalRowsDeleted = exceptionLogRockContext.BulkDelete( exceptionLogsToDelete, batchAmount );
             }
 
             return totalRowsDeleted;
