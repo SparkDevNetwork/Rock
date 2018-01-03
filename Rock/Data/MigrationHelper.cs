@@ -2314,21 +2314,25 @@ BEGIN
                 DECLARE @AttributeId int
                 SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
 
-                IF (1={overwriteIfAlreadyExists.Bit()} OR NOT EXISTS( SELECT * FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @DefinedValueId) )
+                IF @DefinedValueId IS NOT NULL AND @AttributeId IS NOT NULL
                 BEGIN
-                    -- Delete existing attribute value first (might have been created by Rock system)
-                    DELETE [AttributeValue]
-                    WHERE [AttributeId] = @AttributeId
-                    AND [EntityId] = @DefinedValueId
 
-                    INSERT INTO [AttributeValue] (
-                        [IsSystem],[AttributeId],[EntityId],
-                        [Value],
-                        [Guid])
-                    VALUES(
-                        1,@AttributeId,@DefinedValueId,
-                        '{value.Replace( "'", "''")}',
-                        NEWID())
+                    IF (1={overwriteIfAlreadyExists.Bit()} OR NOT EXISTS( SELECT * FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @DefinedValueId) )
+                    BEGIN
+                        -- Delete existing attribute value first (might have been created by Rock system)
+                        DELETE [AttributeValue]
+                        WHERE [AttributeId] = @AttributeId
+                        AND [EntityId] = @DefinedValueId
+
+                        INSERT INTO [AttributeValue] (
+                            [IsSystem],[AttributeId],[EntityId],
+                            [Value],
+                            [Guid])
+                        VALUES(
+                            1,@AttributeId,@DefinedValueId,
+                            '{value.Replace( "'", "''")}',
+                            NEWID())
+                    END
                 END
 ";
 

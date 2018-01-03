@@ -358,7 +358,7 @@ namespace RockWeb.Blocks.Finance
             leftDescription.Add( "Is Tax Deductible", account.IsTaxDeductible );
             lLeftDetails.Text = leftDescription.Html;
             account.LoadAttributes();
-            Helper.AddDisplayControls( account, Helper.GetAttributeCategories( account, true, false ), lRightDetails, null, false );
+            Helper.AddDisplayControls( account, Helper.GetAttributeCategories( account, true, false ), phAttributesView, null, false );
         }
 
         /// <summary>
