@@ -50,30 +50,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the time in millisecond to reset the button text back to original after setting the Completed text.
+        /// Gets or sets the time in seconds to display the completed text and message before reverting back to the original text.
         /// </summary>
         /// <value>
         /// The button text
         /// </value>
         [
         Bindable( true ),
-        Description( "The time in millisecond to reset the button text back to original after setting the Completed text." )
+        Description( "The time in seconds to display the completed text and message before reverting back to the original text." )
         ]
-        public string CompletedTextTimeout
+        public string CompletedDuration
         {
-            get { return ViewState["CompletedTextTimeout"] as string ?? string.Empty; }
-            set { ViewState["CompletedTextTimeout"] = value; }
+            get { return ViewState["CompletedDuration"] as string ?? string.Empty; }
+            set { ViewState["CompletedDuration"] = value; }
         }
 
         /// <summary>
-        /// Gets or sets text to use when the button has been clicked.
+        /// Gets or sets the text to use for the button when the postback is completed.
         /// </summary>
         /// <value>
         /// The button text
         /// </value>
         [
         Bindable( true ),
-        Description( "The text to use when the postback is completed." )
+        Description( "The text to use for the button when the postback is completed." )
         ]
         public string CompletedText
         {
@@ -81,8 +81,23 @@ namespace Rock.Web.UI.Controls
             set { ViewState["CompletedText"] = value; }
         }
 
-        private bool _isButtonClicked;
+        /// <summary>
+        /// Gets or sets the text to display to the right of the button when the postback is completed.
+        /// </summary>
+        /// <value>
+        /// The button text
+        /// </value>
+        [
+        Bindable( true ),
+        Description( "The text to display to the right of the button when the postback is completed." )
+        ]
+        public string CompletedMessage
+        {
+            get { return ViewState["CompletedMessage"] as string ?? string.Empty; }
+            set { ViewState["CompletedMessage"] = value; }
+        }
 
+        private bool _isButtonClicked;
 
         /// <summary>
         /// Adds the attributes of the <see cref="T:System.Web.UI.WebControls.LinkButton" /> control to the output stream for rendering on the client.
@@ -156,11 +171,9 @@ namespace Rock.Web.UI.Controls
             {
                 writer.AddAttribute( "data-loading-text", DataLoadingText );
             }
-
             writer.AddAttribute( "data-completed-text", CompletedText );
-
-            writer.AddAttribute( "data-timeout-text", CompletedTextTimeout );
-
+            writer.AddAttribute( "data-completed-message", CompletedMessage );
+            writer.AddAttribute( "data-timeout-text", CompletedDuration );
             writer.AddAttribute( "data-init-text", Text );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Onclick, "Rock.controls.bootstrapButton.showLoading(this);" );
@@ -171,7 +184,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnCommand( e );
 
-            if ( !string.IsNullOrEmpty( CompletedText ) )
+            if ( CompletedText.IsNotNullOrWhitespace() || CompletedMessage.IsNotNullOrWhitespace() )
             {
                 _isButtonClicked = true;
                 var script = string.Format(
