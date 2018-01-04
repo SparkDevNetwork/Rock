@@ -492,6 +492,7 @@ namespace Rock.Model
         /// <c>AgeClassification.Adult</c> if the Person's age falls under Adult Range, <c>AgeClassification.Child</c> if the Person is under the age of 18
         /// </value>
         [DataMember]
+        [Previewable]
         public AgeClassification AgeClassification { get; set; }
 
         /// <summary>
