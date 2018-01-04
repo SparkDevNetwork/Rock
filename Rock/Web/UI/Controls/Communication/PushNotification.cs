@@ -81,6 +81,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbTitle.TextMode = TextBoxMode.SingleLine;
             tbTitle.Required = false;
             tbTitle.Label = "Title";
+            tbTitle.MaxLength = 100;
             Controls.Add(tbTitle);
 
 
