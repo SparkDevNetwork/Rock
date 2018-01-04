@@ -32,11 +32,18 @@ If ( (Get-WebAppPoolState -Name $Site.applicationPool).Value -eq "Started" ) {
 # wait for 10 seconds before continuing
 Start-Sleep 10
 
-# delete the contents of the temp directory
+# delete the contents of the temp directory or create it
 If (Test-Path "$rootfolder\temp"){
 	Remove-Item "$rootfolder\temp\*" -Force -Confirm:$False -Recurse
 } Else {
   New-Item -ItemType Directory -Force -Path "$rootfolder\temp"
+}
+
+# delete the contents of the temp\Plugins directory or create it
+If (Test-Path "$rootfolder\temp\Plugins"){
+	Remove-Item "$rootfolder\temp\Plugins\*" -Force -Confirm:$False -Recurse
+} Else {
+  New-Item -ItemType Directory -Force -Path "$rootfolder\temp\Plugins"
 }
 
 # move content folder to temp
@@ -57,7 +64,17 @@ Move-Item "$webroot\Themes\Ulfberht" "$rootfolder\temp\" -Force
 
 # move custom Children's check-in theme to temp (since it contains live files)
 Write-Host "Moving Themes\CheckinKids_CentralAZ folder to temp directory"
-Move-Item "$webroot\Themes\CheckinKids_CentralAZ" "$rootfolder\temp\" -Force
+If (Test-Path "$rootfolder\temp\CheckinKids_CentralAZ"){
+	Remove-Item "$rootfolder\temp\CheckinKids_CentralAZ\*" -Force -Confirm:$False -Recurse
+} Else {
+  New-Item -ItemType Directory -Force -Path "$rootfolder\temp\CheckinKids_CentralAZ"
+}
+Move-Item "$webroot\Themes\CheckinKids_CentralAZ\Assets" "$rootfolder\temp\CheckinKids_CentralAZ\Assets" -Force
+
+# move non com_centralaz plugins to temp\Plugins folder
+Write-Host "Moving non com_centralaz Plugins to temp Plugins directory"
+$files = GCI -path "$webroot\Plugins\" | Where-Object {$_.name -ne "com_centralaz"}
+foreach ($file in $files) { Move-Item  "$webroot\Plugins\$file" -Destination "$rootfolder\temp\Plugins" }
 
 # move a robots file if it exists
 If (Test-Path "$webroot\robots.txt"){

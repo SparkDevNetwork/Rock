@@ -35,9 +35,20 @@ Move-Item "$rootfolder\temp\App_Data" "$webroot\"
 Write-Host "Moving Themes\Ulfberht folder back from temp directory"
 Move-Item "$rootfolder\temp\Ulfberht" "$webroot\Themes"
 
-# move custom Children's check-in theme back from temp
-Write-Host "Moving Themes\CheckinKids_CentralAZ folder back from temp directory"
-Move-Item "$rootfolder\temp\CheckinKids_CentralAZ" "$webroot\Themes" -Force
+# remove any items that were deployed into the CheckinKids_CentralAZ Assets folder
+# ...otherwise the move back from temp will not work correctly.
+If (Test-Path "$webroot\Themes\CheckinKids_CentralAZ\Assets"){
+	Remove-Item "$webroot\Themes\CheckinKids_CentralAZ\Assets" -Force -Confirm:$False -Recurse
+}
+
+# move custom Children's check-in theme Assets folder back from temp
+Write-Host "Moving Themes\CheckinKids_CentralAZ\Assets folder back from temp directory"
+Move-Item "$rootfolder\temp\CheckinKids_CentralAZ\Assets" "$webroot\Themes\CheckinKids_CentralAZ" -Force
+
+# move non com_centralaz plugins back from temp\Plugins folder
+Write-Host "Moving non com_centralaz Plugins back from temp Plugins directory"
+$files = GCI -path "$rootfolder\temp\Plugins" | Where-Object {$_.name -ne "com_centralaz"}
+foreach ($file in $files) { Move-Item  "$rootfolder\temp\Plugins\$file" -Destination "$webroot\Plugins\" }
 
 # move a robots file back from temp if it exists
 If (Test-Path "$rootfolder\temp\robots.txt"){
