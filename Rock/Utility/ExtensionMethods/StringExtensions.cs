@@ -299,6 +299,26 @@ namespace Rock
         }
 
         /// <summary>
+        /// Trims a string using an entities MaxLength attribute value
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns></returns>
+        public static string TrimForMaxLength( this string str, Data.IEntity entity, string propertyName )
+        {
+            if ( str.IsNotNullOrWhitespace() )
+            {
+                var maxLengthAttr = entity.GetAttributeFrom<System.ComponentModel.DataAnnotations.MaxLengthAttribute>( propertyName );
+                if ( maxLengthAttr != null )
+                {
+                    return str.Left( maxLengthAttr.Length );
+                }
+            }
+            return str;
+        }
+
+        /// <summary>
         /// Removes any non-numeric characters.
         /// </summary>
         /// <param name="str"></param>
