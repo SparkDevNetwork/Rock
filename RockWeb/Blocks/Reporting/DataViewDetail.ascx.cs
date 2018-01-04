@@ -288,6 +288,7 @@ $(document).ready(function() {
             dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             dataView.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
+            dataView.PersistedScheduleIntervalMinutes = nbPersistedScheduleIntervalMinutes.Text.AsIntegerOrNull();
 
             var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
             
@@ -614,6 +615,7 @@ $(document).ready(function() {
             tbDescription.Text = dataView.Description;
             etpEntityType.SelectedEntityTypeId = dataView.EntityTypeId;
             cpCategory.SetValue( dataView.CategoryId );
+            nbPersistedScheduleIntervalMinutes.Text = dataView.PersistedScheduleIntervalMinutes.ToString();
 
             var rockContext = new RockContext();
             BindDataTransformations( rockContext );
