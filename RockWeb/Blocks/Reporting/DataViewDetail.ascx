@@ -31,6 +31,17 @@
                                 <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.DataView" Label="Category" Required="true" />
                             </div>
                         </div>
+
+                        <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:NumberBox ID="nbPersistedScheduleIntervalMinutes" runat="server" NumberType="Integer" Required="false" Label="Persisted Schedule Interval (Minutes)" MinimumValue="1" MaxLength="9"
+                                    Help="To persist this dataview, enter how often this dataview should be persisted (cached). A peristed dataview can sometimes improve performance. Leave this blank to not persist this dataview." />
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
                     </fieldset>
 
                     <asp:PlaceHolder ID="phFilters" runat="server"></asp:PlaceHolder>
@@ -51,6 +62,7 @@
                         <h1 class="panel-title"><i class="fa fa-filter"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
                         <div class="panel-labels">
                              <Rock:HighlightLabel ID="hlblDataViewId" runat="server" />
+                             <Rock:HighlightLabel ID="hlblPersisted" LabelType="Info" Text="Persisted" Visible="false" runat="server" />
                         </div>
                     </div>
                     <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -68,6 +80,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <asp:Literal ID="lFilters" runat="server" />
+                                    <asp:Literal ID="lPersisted" runat="server" />
                                     <asp:Literal ID="lDataViews" runat="server" />
                                     <asp:Literal ID="lReports" runat="server" />
                                     <asp:Literal ID="lGroups" runat="server" />
