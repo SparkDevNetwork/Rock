@@ -415,7 +415,16 @@ namespace Rock.Model
 
                 if ( filteredEntityType != null )
                 {
-                    if ( this.PersistedScheduleIntervalMinutes.HasValue && this.PersistedLastRefreshDateTime.HasValue )
+                    bool usePersistedValues = this.PersistedScheduleIntervalMinutes.HasValue && this.PersistedLastRefreshDateTime.HasValue;
+                    usePersistedValues = usePersistedValues && ( dataViewFilterOverrides?.UsePersistedValuesIfAvailable ?? true );
+
+                    // don't use persisted values if there are dataViewFilterOverrides
+                    if ( usePersistedValues && dataViewFilterOverrides?.Any() == true )
+                    {
+                        usePersistedValues = false;
+                    }
+
+                    if ( usePersistedValues )
                     {
                         // If this is a persisted dataview, get the ids for the expression by querying DataViewPersistedValue instead of evaluating all the filters
                         var rockContext = serviceInstance.Context as RockContext;
@@ -425,20 +434,16 @@ namespace Rock.Model
                         }
 
                         var persistedValuesQuery = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
-
-                        IEnumerable<int> ids;
-                        if ( serviceInstance.Context is RockContext )
-                        {
-                            ids = persistedValuesQuery.Select( v => v.EntityId );
-                        }
-                        else
-                        {
-                            // if this DataView doesn't use a RockContext get the EntityIds as a List<int> instead of an IQueryable<int> so that we aren't use multiple dbContexts
-                            ids = persistedValuesQuery.Select( v => v.EntityId ).ToList();
-                        }
-
+                        var ids = persistedValuesQuery.Select( v => v.EntityId );
                         MemberExpression propertyExpression = Expression.Property( paramExpression, "Id" );
-                        ConstantExpression idsExpression = Expression.Constant( ids.AsQueryable(), typeof( IQueryable<int> ) );
+                        if ( !(serviceInstance.Context is RockContext) )
+                        {
+                            // if this DataView doesn't use a RockContext get the EntityIds into memory as as a List<int> then back into IQueryable<int> so that we aren't use multiple dbContexts
+                            ids = ids.ToList().AsQueryable();
+                        }
+
+                        var idsExpression = Expression.Constant( ids.AsQueryable(), typeof( IQueryable<int> ) );
+
                         Expression expression = Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, idsExpression, propertyExpression );
 
                         return expression;
@@ -467,61 +472,56 @@ namespace Rock.Model
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         public void PersistResult( int? databaseTimeoutSeconds = null )
         {
-            var origPersistedScheduleIntervalMinutes = this.PersistedScheduleIntervalMinutes;
-            try
+            List<string> errorMessages;
+            var dbContext = this.GetDbContext();
+            
+            // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
+            DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides { UsePersistedValuesIfAvailable = false };
+
+            var qry = this.GetQuery( null, dbContext, dataViewFilterOverrides, databaseTimeoutSeconds, out errorMessages );
+            if ( !errorMessages.Any() )
             {
-                // temporarily set PersistedScheduleIntervalMinutes to null to force GetQuery to not use the PersistedValues
-                this.PersistedScheduleIntervalMinutes = null;
-
-                this.PersistedLastRefreshDateTime = null;
-
-                List<string> errorMessages;
-                var dbContext = this.GetDbContext();
-                var qry = this.GetQuery( null, dbContext, databaseTimeoutSeconds, out errorMessages );
-                if ( !errorMessages.Any() )
+                RockContext rockContext = dbContext as RockContext;
+                if ( rockContext == null )
                 {
-                    RockContext rockContext = dbContext as RockContext;
-                    IEnumerable<int> updatedEntityIds;
-                    if ( rockContext == null )
-                    {
-                        rockContext = new RockContext();
-
-                        // if this DataView doesn't use a RockContext get the EntityIds as a List<int> instead of an IQueryable<int> so that we aren't use multiple dbContexts
-                        updatedEntityIds = qry.Select( a => a.Id ).ToList();
-                    }
-                    else
-                    {
-                        updatedEntityIds = qry.Select( a => a.Id );
-                    }
-
-                    rockContext.Database.CommandTimeout = databaseTimeoutSeconds;
-                    var savedDataViewPersistedValues = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
-
-                    var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIds.Any( x => x == a.EntityId ) );
-                    if ( persistedValuesToRemove.Any() )
-                    {
-                        int rowRemoved = rockContext.BulkDelete( persistedValuesToRemove );
-                    }
-
-                    var persistedEntityIdsToInsert = updatedEntityIds.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
-
-                    if ( persistedEntityIdsToInsert.Any() )
-                    {
-                        List<DataViewPersistedValue> persistedValuesToInsert = persistedEntityIdsToInsert
-                            .Select( a =>
-                            new DataViewPersistedValue
-                            {
-                                DataViewId = this.Id,
-                                EntityId = a
-                            } ).ToList();
-
-                        rockContext.BulkInsert( persistedValuesToInsert );
-                    }
+                    rockContext = new RockContext();
                 }
-            }
-            finally
-            {
-                this.PersistedScheduleIntervalMinutes = origPersistedScheduleIntervalMinutes;
+
+                rockContext.Database.CommandTimeout = databaseTimeoutSeconds;
+                var savedDataViewPersistedValues = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
+
+                var updatedEntityIdsQry = qry.Select( a => a.Id );
+
+                if ( !(rockContext is RockContext) )
+                {
+                    // if this DataView doesn't use a RockContext get the EntityIds into memory as as a List<int> then back into IQueryable<int> so that we aren't use multiple dbContexts
+                    updatedEntityIdsQry = updatedEntityIdsQry.ToList().AsQueryable();
+                }
+
+                var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
+                var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
+                
+                int removeCount = persistedValuesToRemove.Count();
+                if ( removeCount > 0 )
+                {
+                    // increase the batch size if there are a bunch of rows (and this is a narrow table with no references to it)
+                    int? deleteBatchSize = removeCount > 50000 ? 25000 : ( int? ) null;
+
+                    int rowRemoved = rockContext.BulkDelete( persistedValuesToRemove, deleteBatchSize );
+                }
+
+                if ( persistedEntityIdsToInsert.Any() )
+                {
+                    List<DataViewPersistedValue> persistedValuesToInsert = persistedEntityIdsToInsert.OrderBy( a => a )
+                        .Select( a =>
+                        new DataViewPersistedValue
+                        {
+                            DataViewId = this.Id,
+                            EntityId = a
+                        } ).ToList();
+
+                    rockContext.BulkInsert( persistedValuesToInsert );
+                }
             }
         }
 
