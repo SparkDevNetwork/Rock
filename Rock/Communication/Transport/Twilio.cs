@@ -153,7 +153,7 @@ namespace Rock.Communication.Transport
 
                 if ( hasPendingRecipients )
                 {
-                    var currentPerson = communication.CreatedByPersonAlias.Person;
+                    var currentPerson = communication.CreatedByPersonAlias?.Person;
                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                     string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );

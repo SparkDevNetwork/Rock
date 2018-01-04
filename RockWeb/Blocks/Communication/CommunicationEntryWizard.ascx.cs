@@ -2298,7 +2298,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 }
             }
 
-            communication.Name = tbCommunicationName.Text;
+            communication.Name = tbCommunicationName.Text.TrimForMaxLength( communication, "Name" );
             communication.IsBulkCommunication = tglBulkCommunication.Checked;
             communication.CommunicationType = ( CommunicationType ) hfMediumType.Value.AsInteger();
 
@@ -2393,9 +2393,9 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 communication.CommunicationTemplate = new CommunicationTemplateService( rockContext ).Get( communication.CommunicationTemplateId.Value );
             }
 
-            communication.FromName = tbFromName.Text;
-            communication.FromEmail = ebFromAddress.Text;
-            communication.ReplyToEmail = ebReplyToAddress.Text;
+            communication.FromName = tbFromName.Text.TrimForMaxLength( communication, "FromName" );
+            communication.FromEmail = ebFromAddress.Text.TrimForMaxLength( communication, "FromEmail" );
+            communication.ReplyToEmail = ebReplyToAddress.Text.TrimForMaxLength( communication, "ReplyToEmail" );
             communication.CCEmails = ebCCList.Text;
             communication.BCCEmails = ebBCCList.Text;
 
@@ -2426,7 +2426,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.SMS } );
             }
 
-            communication.Subject = tbEmailSubject.Text;
+            communication.Subject = tbEmailSubject.Text.TrimForMaxLength( communication, "Subject" );
             communication.Message = hfEmailEditorHtml.Value;
 
             communication.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();

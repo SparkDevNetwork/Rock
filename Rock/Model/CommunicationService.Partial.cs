@@ -98,10 +98,10 @@ namespace Rock.Model
                 communication.CommunicationType = CommunicationType.Email;
                 communication.Status = CommunicationStatus.Approved;
                 communication.SenderPersonAliasId = senderPersonAliasId;
-                communication.FromName = fromName;
-                communication.FromEmail = fromAddress;
-                communication.ReplyToEmail = replyTo;
-                communication.Subject = subject;
+                communication.FromName = fromName.TrimForMaxLength( communication, "FromName" );
+                communication.FromEmail = fromAddress.TrimForMaxLength( communication, "FromEmail" );
+                communication.ReplyToEmail = replyTo.TrimForMaxLength( communication, "ReplyToEmail" );
+                communication.Subject = subject.TrimForMaxLength( communication, "Subject" );
                 communication.Message = message;
                 communication.IsBulkCommunication = bulkCommunication;
                 communication.FutureSendDateTime = null;
