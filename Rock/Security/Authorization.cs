@@ -74,7 +74,7 @@ namespace Rock.Security
         /// <summary>
         /// Authorization to manage the group members
         /// </summary>
-        public const string MANAGE_MEMBERS = "Manage Members";
+        public const string MANAGE_MEMBERS = "ManageMembers";
 
         #endregion
 
