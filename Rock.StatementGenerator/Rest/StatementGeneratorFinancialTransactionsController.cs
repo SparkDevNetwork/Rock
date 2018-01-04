@@ -409,13 +409,15 @@ namespace Rock.StatementGenerator.Rest
                 if ( options.CurrencyTypeIdsCash != null )
                 {
                     transactionDetailListCash = transactionDetailListCash.Where( a => 
+                        a.Transaction.FinancialPaymentDetailId.HasValue &&
                         a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue 
                         && options.CurrencyTypeIdsCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ).ToList();
                 }
-
+                
                 if ( options.CurrencyTypeIdsNonCash != null )
                 {
-                    transactionDetailListNonCash = transactionDetailListAll.Where( a => 
+                    transactionDetailListNonCash = transactionDetailListAll.Where( a =>
+                        a.Transaction.FinancialPaymentDetailId.HasValue &&
                         a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue 
                         && options.CurrencyTypeIdsNonCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ).ToList();
                 }
@@ -517,7 +519,9 @@ namespace Rock.StatementGenerator.Rest
 
                             if ( pledgeCurrencyTypeIds != null )
                             {
-                                pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t => t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue && pledgeCurrencyTypeIds.Contains(t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value) );
+                                pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t =>
+                                    t.Transaction.FinancialPaymentDetailId.HasValue &&
+                                    t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue && pledgeCurrencyTypeIds.Contains(t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value) );
                             }
 
                             pledgeSummary.AmountGiven = pledgeFinancialTransactionDetailQry
