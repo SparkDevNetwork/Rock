@@ -73,8 +73,8 @@ Move-Item "$webroot\Themes\CheckinKids_CentralAZ\Assets" "$rootfolder\temp\Check
 
 # move non com_centralaz plugins to temp\Plugins folder
 Write-Host "Moving non com_centralaz Plugins to temp Plugins directory"
-$files = GCI -path "$webroot\Plugins\" | Where-Object {$_.name -ne "com_centralaz"}
-foreach ($file in $files) { Move-Item  "$webroot\Plugins\$file" -Destination "$rootfolder\temp\Plugins" }
+$files = GCI -path "$webroot\Plugins\" | Where-Object {$_.name -ne "com_centralaz" -and $_.name -ne ".gitignore" -and $_.name -ne "readme.txt"}
+foreach ($file in $files) { Move-Item  "$webroot\Plugins\$file" -Destination "$rootfolder\temp\Plugins" -Force }
 
 # move a robots file if it exists
 If (Test-Path "$webroot\robots.txt"){

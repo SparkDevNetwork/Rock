@@ -48,7 +48,7 @@ Move-Item "$rootfolder\temp\CheckinKids_CentralAZ\Assets" "$webroot\Themes\Check
 # move non com_centralaz plugins back from temp\Plugins folder
 Write-Host "Moving non com_centralaz Plugins back from temp Plugins directory"
 $files = GCI -path "$rootfolder\temp\Plugins" | Where-Object {$_.name -ne "com_centralaz"}
-foreach ($file in $files) { Move-Item  "$rootfolder\temp\Plugins\$file" -Destination "$webroot\Plugins\" }
+foreach ($file in $files) { Move-Item  "$rootfolder\temp\Plugins\$file" -Destination "$webroot\Plugins\" -Force }
 
 # move a robots file back from temp if it exists
 If (Test-Path "$rootfolder\temp\robots.txt"){
@@ -59,7 +59,7 @@ If (Test-Path "$rootfolder\temp\robots.txt"){
 # copy any dlls from the manual-fix\bin folder to the web bin folder
 Write-Host "Copying any manual-fix\bin DLLs to web bin folder"
 $files = GCI -path "$rootfolder\manual-fixes\bin"
-foreach ($file in $files) { Copy-Item  "$rootfolder\manual-fixes\bin\$file" -Destination "$webroot\bin\" -force}
+foreach ($file in $files) { Copy-Item  "$rootfolder\manual-fixes\bin\$file" -Destination "$webroot\bin\" -Force}
 
 # copy new connection string file
 Write-Host "Copying new web.ConnectionStrings.config to web dir"
