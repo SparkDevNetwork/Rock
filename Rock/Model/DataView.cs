@@ -111,6 +111,24 @@ namespace Rock.Model
         [DataMember]
         public int? TransformEntityTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the persisted schedule interval minutes.
+        /// </summary>
+        /// <value>
+        /// The persisted schedule interval minutes.
+        /// </value>
+        [DataMember]
+        public int? PersistedScheduleIntervalMinutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted last refresh date time.
+        /// </summary>
+        /// <value>
+        /// The persisted last refresh date time.
+        /// </value>
+        [DataMember]
+        public DateTime? PersistedLastRefreshDateTime { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -151,6 +169,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual EntityType TransformEntityType { get; set; }
+
         #endregion
 
         #region Methods
@@ -253,6 +272,56 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the most appropriate database context for this DataView's EntityType
+        /// </summary>
+        /// <returns></returns>
+        public System.Data.Entity.DbContext GetDbContext()
+        {
+            if ( EntityTypeId.HasValue )
+            {
+                var cachedEntityType = EntityTypeCache.Read( EntityTypeId.Value );
+                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+                {
+                    Type entityType = cachedEntityType.GetEntityType();
+
+                    if ( entityType != null )
+                    {
+                        return Reflection.GetDbContextForEntityType( entityType );
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the most appropriate service instance for this DataView's EntityType
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns></returns>
+        public IService GetServiceInstance( System.Data.Entity.DbContext dbContext )
+        {
+            if ( EntityTypeId.HasValue )
+            {
+                var cachedEntityType = EntityTypeCache.Read( EntityTypeId.Value );
+                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+                {
+                    Type entityType = cachedEntityType.GetEntityType();
+
+                    if ( entityType != null )
+                    {
+                        if ( dbContext != null )
+                        {
+                            return Reflection.GetServiceForEntityType( entityType, dbContext );
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the query.
         /// </summary>
         /// <param name="sortProperty">The sort property.</param>
@@ -264,49 +333,40 @@ namespace Rock.Model
         public IQueryable<IEntity> GetQuery( SortProperty sortProperty, System.Data.Entity.DbContext dbContext, DataViewFilterOverrides dataViewFilterOverrides, int? databaseTimeoutSeconds, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-
-            if ( EntityTypeId.HasValue )
+            if ( dbContext == null )
             {
-                var cachedEntityType = EntityTypeCache.Read( EntityTypeId.Value );
-                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+                dbContext = this.GetDbContext();
+            }
+
+            IService serviceInstance = null;
+            if ( dbContext != null )
+            {
+                serviceInstance = this.GetServiceInstance( dbContext );
+
+                if ( databaseTimeoutSeconds.HasValue )
                 {
-                    Type entityType = cachedEntityType.GetEntityType();
+                    dbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+                }
+            }
 
-                    if ( entityType != null )
+            if ( serviceInstance != null )
+            {
+                ParameterExpression paramExpression = serviceInstance.ParameterExpression;
+                Expression whereExpression = GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides, out errorMessages );
+
+                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
+                if ( getMethod != null )
+                {
+                    if ( sortProperty == null )
                     {
-                        if ( dbContext == null )
-                        {
-                            dbContext = Reflection.GetDbContextForEntityType( entityType );
-                        }
-
-                        if ( databaseTimeoutSeconds.HasValue )
-                        {
-                            dbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
-                        }
-
-                        IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
-
-                        if ( serviceInstance != null )
-                        {
-                            ParameterExpression paramExpression = serviceInstance.ParameterExpression;
-                            Expression whereExpression = GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides, out errorMessages );
-
-                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
-                            if ( getMethod != null )
-                            {
-                                if ( sortProperty == null )
-                                {
-                                    // if no sorting is specified, just sort by Id
-                                    sortProperty = new SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
-                                }
-
-                                var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
-                                var qry = getResult as IQueryable<IEntity>;
-
-                                return qry;
-                            }
-                        }
+                        // if no sorting is specified, just sort by Id
+                        sortProperty = new SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
                     }
+
+                    var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
+                    var qry = getResult as IQueryable<IEntity>;
+
+                    return qry;
                 }
             }
 
@@ -355,19 +415,114 @@ namespace Rock.Model
 
                 if ( filteredEntityType != null )
                 {
-                    Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( filteredEntityType, serviceInstance, paramExpression, dataViewFilterOverrides, errorMessages ) : null;
-
-                    Expression transformedExpression = GetTransformExpression( serviceInstance, paramExpression, filterExpression, errorMessages );
-                    if ( transformedExpression != null )
+                    if ( this.PersistedScheduleIntervalMinutes.HasValue && this.PersistedLastRefreshDateTime.HasValue )
                     {
-                        return transformedExpression;
-                    }
+                        // If this is a persisted dataview, get the ids for the expression by querying DataViewPersistedValue instead of evaluating all the filters
+                        var rockContext = serviceInstance.Context as RockContext;
+                        if ( rockContext == null )
+                        {
+                            rockContext = new RockContext();
+                        }
 
-                    return filterExpression;
+                        var persistedValuesQuery = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
+
+                        IEnumerable<int> ids;
+                        if ( serviceInstance.Context is RockContext )
+                        {
+                            ids = persistedValuesQuery.Select( v => v.EntityId );
+                        }
+                        else
+                        {
+                            // if this DataView doesn't use a RockContext get the EntityIds as a List<int> instead of an IQueryable<int> so that we aren't use multiple dbContexts
+                            ids = persistedValuesQuery.Select( v => v.EntityId ).ToList();
+                        }
+
+                        MemberExpression propertyExpression = Expression.Property( paramExpression, "Id" );
+                        ConstantExpression idsExpression = Expression.Constant( ids.AsQueryable(), typeof( IQueryable<int> ) );
+                        Expression expression = Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, idsExpression, propertyExpression );
+
+                        return expression;
+                    }
+                    else
+                    {
+                        Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( filteredEntityType, serviceInstance, paramExpression, dataViewFilterOverrides, errorMessages ) : null;
+
+                        Expression transformedExpression = GetTransformExpression( serviceInstance, paramExpression, filterExpression, errorMessages );
+                        if ( transformedExpression != null )
+                        {
+                            return transformedExpression;
+                        }
+
+                        return filterExpression;
+                    }
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Persists the DataView to the database by updating the DataViewPersistedValues for this DataView. Returns true if successful
+        /// </summary>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
+        public void PersistResult( int? databaseTimeoutSeconds = null )
+        {
+            var origPersistedScheduleIntervalMinutes = this.PersistedScheduleIntervalMinutes;
+            try
+            {
+                // temporarily set PersistedScheduleIntervalMinutes to null to force GetQuery to not use the PersistedValues
+                this.PersistedScheduleIntervalMinutes = null;
+
+                this.PersistedLastRefreshDateTime = null;
+
+                List<string> errorMessages;
+                var dbContext = this.GetDbContext();
+                var qry = this.GetQuery( null, dbContext, databaseTimeoutSeconds, out errorMessages );
+                if ( !errorMessages.Any() )
+                {
+                    RockContext rockContext = dbContext as RockContext;
+                    IEnumerable<int> updatedEntityIds;
+                    if ( rockContext == null )
+                    {
+                        rockContext = new RockContext();
+
+                        // if this DataView doesn't use a RockContext get the EntityIds as a List<int> instead of an IQueryable<int> so that we aren't use multiple dbContexts
+                        updatedEntityIds = qry.Select( a => a.Id ).ToList();
+                    }
+                    else
+                    {
+                        updatedEntityIds = qry.Select( a => a.Id );
+                    }
+
+                    rockContext.Database.CommandTimeout = databaseTimeoutSeconds;
+                    var savedDataViewPersistedValues = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
+
+                    var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIds.Any( x => x == a.EntityId ) );
+                    if ( persistedValuesToRemove.Any() )
+                    {
+                        int rowRemoved = rockContext.BulkDelete( persistedValuesToRemove );
+                    }
+
+                    var persistedEntityIdsToInsert = updatedEntityIds.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
+
+                    if ( persistedEntityIdsToInsert.Any() )
+                    {
+                        List<DataViewPersistedValue> persistedValuesToInsert = persistedEntityIdsToInsert
+                            .Select( a =>
+                            new DataViewPersistedValue
+                            {
+                                DataViewId = this.Id,
+                                EntityId = a
+                            } ).ToList();
+
+                        rockContext.BulkInsert( persistedValuesToInsert );
+                    }
+                }
+            }
+            finally
+            {
+                this.PersistedScheduleIntervalMinutes = origPersistedScheduleIntervalMinutes;
+            }
         }
 
         /// <summary>

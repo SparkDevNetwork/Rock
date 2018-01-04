@@ -605,6 +605,14 @@ namespace Rock.Data
         public DbSet<DataViewFilter> DataViewFilters { get; set; }
 
         /// <summary>
+        /// Gets or sets the data view persisted values.
+        /// </summary>
+        /// <value>
+        /// The data view persisted values.
+        /// </value>
+        public DbSet<DataViewPersistedValue> DataViewPersistedValues { get; set; }
+
+        /// <summary>
         /// Gets or sets the Defined Types.
         /// </summary>
         /// <value>

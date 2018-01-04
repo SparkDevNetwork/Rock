@@ -328,6 +328,13 @@ $(document).ready(function() {
                 rockContext.SaveChanges();
             } );
 
+            if ( dataView.PersistedScheduleIntervalMinutes.HasValue )
+            {
+                dataView.PersistResult( GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
+                rockContext.SaveChanges();
+            }
+
             if ( adding )
             {
                 // add EDIT and ADMINISTRATE to the person who added the dataView
@@ -663,6 +670,15 @@ $(document).ready(function() {
             }
 
             lFilters.Text = descriptionListFilters.Html;
+
+            DescriptionList descriptionListPersisted = new DescriptionList();
+            hlblPersisted.Visible = dataView.PersistedScheduleIntervalMinutes.HasValue && dataView.PersistedLastRefreshDateTime.HasValue;
+            if ( hlblPersisted.Visible )
+            {
+                hlblPersisted.Text = string.Format( "Persisted {0}", dataView.PersistedLastRefreshDateTime.ToElapsedString() );
+            }
+
+            lPersisted.Text = descriptionListPersisted.Html;
 
             DescriptionList descriptionListDataviews = new DescriptionList();
             var dataViewFilterEntityId = EntityTypeCache.Read( typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ) ).Id;
