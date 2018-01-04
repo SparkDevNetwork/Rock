@@ -56,6 +56,11 @@ If (Test-Path "$rootfolder\temp\robots.txt"){
 	Move-Item "$rootfolder\temp\robots.txt" "$webroot"
 }
 
+# copy any dlls from the manual-fix\bin folder to the web bin folder
+Write-Host "Copying any manual-fix\bin DLLs to web bin folder"
+$files = GCI -path "$rootfolder\manual-fixes\bin"
+foreach ($file in $files) { Copy-Item  "$rootfolder\manual-fixes\bin\$file" -Destination "$webroot\bin\" -force}
+
 # copy new connection string file
 Write-Host "Copying new web.ConnectionStrings.config to web dir"
 Copy-Item "$rootfolder\config\web.ConnectionStrings.config" $webroot -force
