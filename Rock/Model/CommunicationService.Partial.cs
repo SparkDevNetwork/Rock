@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Rock.Communication;
 using Rock.Data;
@@ -101,7 +102,7 @@ namespace Rock.Model
                 communication.FromName = fromName;
                 communication.FromEmail = fromAddress;
                 communication.ReplyToEmail = replyTo;
-                communication.Subject = subject;
+                communication.Subject = string.IsNullOrEmpty( subject ) ? string.Empty : subject.Left( communication.GetAttributeFrom<MaxLengthAttribute>( "Subject" ).Length );
                 communication.Message = message;
                 communication.IsBulkCommunication = bulkCommunication;
                 communication.FutureSendDateTime = null;

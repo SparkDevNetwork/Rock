@@ -26,6 +26,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.ComponentModel.DataAnnotations;
 
 using Rock;
 using Rock.Attribute;
@@ -2426,7 +2427,8 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId, CommunicationType = CommunicationType.SMS } );
             }
 
-            communication.Subject = tbEmailSubject.Text;
+            var subjectMaxLength = communication.GetAttributeFrom<MaxLengthAttribute>( "Subject" ).Length;
+            communication.Subject = string.IsNullOrEmpty( tbEmailSubject.Text ) ? string.Empty : tbEmailSubject.Text.Left( subjectMaxLength );
             communication.Message = hfEmailEditorHtml.Value;
 
             communication.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
