@@ -257,42 +257,6 @@ h4, .h4 {
   border: 0;
 }
 
-.smartsearch {
-  float: right;
-  width: 92%;
-  margin: 12px 4%;
-  background-color: lighten(@theme-6, 5%);
-  border: 0;
-
-  input.searchinput {
-    color: @theme-6-text;
-  }
-
-  @media @md {
-    width: 290px;
-    height: @navbar-height;
-    margin: 0;
-    background-color: darken(@header-bg, 5%);
-    border-radius: 0;
-
-    input,
-    a.dropdown-toggle {
-      height: @navbar-height - 5px; // for IE11
-      line-height: @navbar-height - 12px;
-    }
-
-    > i {
-      margin-top: 0;
-      margin-left: 4px;
-      line-height: @navbar-height - 4px;
-    }
-
-    input.searchinput {
-      color: @header-text-color;
-    }
-  }
-}
-
 .loginstatus {
   margin-right: 2px;
 

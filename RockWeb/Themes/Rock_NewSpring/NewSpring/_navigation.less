@@ -1,4 +1,36 @@
+.nav li a {
+	padding: 11px 15px 9px;
+}
+
+.nav-pills a {
+	font-weight: 500;
+}
+
+#hlHome {
+	position: relative;
+	display: inline-block;
+	width: 100%;
+	padding: 16px;
+	padding-left: 68px;
+	color: @theme-2-text;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+// #hlHome {
+// 	vertical-align: top;
+// 	line-height: 56px;
+// 	color: @theme-2-text;
+// 	font-weight: 700;
+// }
+
 .navbar-static-side .navbar-header .logo {
+	position: absolute;
+	top: 5px;
+	left: 19px;
+	width: 24px;
+	height: 24px;
+	display: inline-block;
 	background-image: url('//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png');
 	opacity: 1;
 }
@@ -6,6 +38,7 @@
 #content-wrapper header .navbar-default {
 	background-color: @theme-1;
 	border-color: @theme-1;
+	border-bottom: 0;
 }
 
 .navbar-static-side .navbar-side > li {
@@ -59,7 +92,7 @@
 	li a {
 		color: @theme-1-text;
 		line-height: 22px;
-		padding: 6px 15px 4px;
+		padding: 8px 15px 6px;
 		margin-bottom: 2px;
 
 		@media (min-width: @screen-md-min) {
@@ -85,41 +118,6 @@
 	}
 }
 
-.smartsearch {
-	background-color: @panel-bg;
-	font-size: 14px;
-	font-weight: 500;
-
-	& > i {
-		color: @text-color;
-		opacity: 1;
-		margin-left: 8px;
-	}
-
-	input.searchinput {
-		padding: 4px 4px 4px 30px;
-		font-weight: 500;
-	}
-
-	a.dropdown-toggle:hover {
-		cursor: pointer;
-	}
-
-	.dropdown .dropdown-menu {
-		font-size: 14px;
-	}
-
-	.dropdown .navbar-link,
-	input.searchinput {
-		color: @text-color;
-	}
-
-	@media (max-width: @screen-md-min) {
-		margin: 0;
-		width: 100%;
-		border-radius: 0;
-	}
-}
 
 .loginstatus .profile-photo {
 	margin-right: 8px;

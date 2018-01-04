@@ -64,7 +64,7 @@
 
                 <div class="navbar-header">
                     <asp:HyperLink ID="hlHome" runat="server" NavigateUrl="~" ToolTip="Rock">
-                        <div class="logo"></div>
+                        <div class="logo"></div> Home
                     </asp:HyperLink>
                 </div>
 
