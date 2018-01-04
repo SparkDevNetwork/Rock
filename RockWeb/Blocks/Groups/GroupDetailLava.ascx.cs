@@ -51,10 +51,19 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Hide Group Description Edit", "Set this to true to hide the edit box for group 'Description'.", false, key: "HideGroupDescriptionEdit", order: 9 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 10 )]
     [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 11 )]
+    [BooleanField( "Allow Group Member Delete", "Should deleting of group members be allowed?", true, "", 12 )]
+    [CodeEditorField( "ConfirmGroupMemberDeleteMessage", "The lava template to use to format the delete confirmation.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, @"
+<div class='alert alert-warning'>
+<strong>Confirm Delete</strong><br/>
+Are you sure you want to delete (remove) {{GroupMember.Person.FullName}} from {{GroupMember.Group.Name}}?
+</div>
+", "", 13, "ConfirmGroupMemberDeleteMessage" )]
     [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 13 )]
     [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 14 )]
     [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 15 )]
     [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 16 )]
+    [CodeEditorField( "Delete Group Member Pre-HTML", "HTML to display before the delete group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 17 )]
+    [CodeEditorField( "Delete Group Member Post-HTML", "HTML to display after the delete group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 18 )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -119,9 +128,7 @@ namespace RockWeb.Blocks.Groups
         {
             get
             {
-                int groupMemberId = 0;
-                int.TryParse( ViewState["CurrentGroupMemberId"].ToString(), out groupMemberId );
-                return groupMemberId;
+                return ViewState["CurrentGroupMemberId"] as int? ?? 0;
             }
 
             set
@@ -389,8 +396,7 @@ namespace RockWeb.Blocks.Groups
             GroupTypeRole role = new GroupTypeRoleService( rockContext ).Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
 
             var groupMember = groupMemberService.Get( this.CurrentGroupMemberId );
-
-            if ( this.CurrentGroupMemberId == 0 )
+            if ( groupMember == null )
             {
                 groupMember = new GroupMember { Id = 0 };
                 groupMember.GroupId = _groupId;
@@ -495,6 +501,44 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the Click event of the btnConfirmDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnConfirmDelete_Click( object sender, EventArgs e )
+        {
+            if ( GetAttributeValue( "AllowGroupMemberDelete" ).AsBoolean() )
+            {
+                RockContext rockContext = new RockContext();
+                GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+
+                var groupMember = groupMemberService.Get( this.CurrentGroupMemberId );
+                if ( groupMember != null )
+                {
+                    groupMemberService.Delete( groupMember );
+                }
+
+                rockContext.SaveChanges();
+            }
+
+            pnlGroupMemberDelete.Visible = false;
+            pnlGroupView.Visible = true;
+            DisplayViewGroup();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelConfirmDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancelConfirmDelete_Click( object sender, EventArgs e )
+        {
+            pnlGroupMemberDelete.Visible = false;
+            pnlGroupView.Visible = true;
+            DisplayViewGroup();
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbLocationType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -558,11 +602,14 @@ namespace RockWeb.Blocks.Groups
                             break;
 
                         case "DeleteGroupMember":
-                            groupMemberId = int.Parse( parameters );
-                            DeleteGroupMember( groupMemberId );
-                            DisplayViewGroup();
+                            if ( GetAttributeValue( "AllowGroupMemberDelete" ).AsBoolean() )
+                            {
+                                groupMemberId = int.Parse( parameters );
+                                DisplayDeleteGroupMember( groupMemberId );
+                                sm.AddHistoryPoint( "Action", "DeleteMember" );
+                            }
                             break;
-
+                            
                         case "SendCommunication":
                             SendCommunication();
                             break;
@@ -588,6 +635,9 @@ namespace RockWeb.Blocks.Groups
 
             lGroupMemberEditPreHtml.Text = GetAttributeValue( "EditGroupMemberPre-HTML" );
             lGroupMemberEditPostHtml.Text = GetAttributeValue( "EditGroupMemberPost-HTML" );
+
+            lGroupMemberDeletePreHtml.Text = GetAttributeValue( "DeleteGroupMemberPre-HTML" );
+            lGroupMemberDeletePostHtml.Text = GetAttributeValue( "DeleteGroupMemberPost-HTML" );
 
             bool hideActiveGroupCheckbox = this.GetAttributeValue( "HideActiveGroupCheckbox" ).AsBooleanOrNull() ?? false;
             if ( hideActiveGroupCheckbox )
@@ -939,6 +989,7 @@ namespace RockWeb.Blocks.Groups
             pnlGroupEdit.Visible = false;
             pnlGroupView.Visible = false;
             pnlEditGroupMember.Visible = true;
+            pnlGroupMemberDelete.Visible = false;
 
             RockContext rockContext = new RockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
@@ -996,6 +1047,36 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Displays the delete group member.
+        /// </summary>
+        /// <param name="groupMemberId">The group member identifier.</param>
+        private void DisplayDeleteGroupMember( int groupMemberId )
+        {
+            RockContext rockContext = new RockContext();
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+
+            var groupMember = groupMemberService.Get( groupMemberId );
+            if ( groupMember != null )
+            {
+                // persist the group member id for use in partial postbacks
+                this.CurrentGroupMemberId = groupMember.Id;
+
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "GroupMember", groupMember );
+                lConfirmDeleteMsg.Text = GetAttributeValue( "ConfirmGroupMemberDeleteMessage" ).ResolveMergeFields( mergeFields );
+
+                pnlGroupEdit.Visible = false;
+                pnlGroupView.Visible = false;
+                pnlEditGroupMember.Visible = false;
+                pnlGroupMemberDelete.Visible = true;
+            }
+            else
+            {
+                DisplayViewGroup();
+            }
+        }
+
+        /// <summary>
         /// Loads the group member drop downs.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
@@ -1009,24 +1090,6 @@ namespace RockWeb.Blocks.Groups
             }
 
             rblStatus.BindToEnum<GroupMemberStatus>();
-        }
-
-        /// <summary>
-        /// Deletes the group member.
-        /// </summary>
-        /// <param name="groupMemberId">The group member identifier.</param>
-        private void DeleteGroupMember( int groupMemberId )
-        {
-            RockContext rockContext = new RockContext();
-            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-
-            var groupMember = groupMemberService.Get( groupMemberId );
-            if ( groupMember != null )
-            {
-                groupMemberService.Delete( groupMember );
-            }
-
-            rockContext.SaveChanges();
         }
 
         /// <summary>
