@@ -8802,7 +8802,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     background: #7A1315;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
     padding: 40px 0px;
 }
@@ -8810,74 +8809,71 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 .mainfooterlogo {
     font-size: 70%;
     color: #FFFFFF;
-    text-align: center;
 }
 
 .mainfootercontent {
-    margin-top: 5px;
+    margin-top: 10px;
 }
 
 .mainfootercontent a {
     color: #FFFFFF;
 }
 
-.mainfooter-privacypolicy {
-    margin-top: 10px;
-}
-
-.mainfooter-privacypolicy a {
-    color: #FFFFFF;
-}
-
-.mainfooterlinks {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    justify-content: center;
-    align-content: space-between;
-}
-
 .mainfootersocial {
+    display: flex;
+    flex-direction: column;
     color: #FFFFFF;
-    font-size: 18px;
-    margin: 30px 15px;
+    font-family: Akrobat;
+    font-size: 12px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    font-weight: bold;
+    padding: 10px 10px;
+}
+
+.mainfootersocial i {
+    color: #FFFFFF;
+    padding-right: 10px;
+    font-size: 20px;
 }
 
 .mainfootersocial a {
     color: #FFFFFF;
+    text-decoration: none;
+    padding: 5px 0px;
 }
 
-.mainfooterweblinks {
-    color: #FFFFFF;
-    font-family: akrobat;
-    font-size: 14px;
-    margin: 30px 15px;
+.mainfooter hr {
+    margin: 1em 0;
+    border-top: 1px solid;
 }
 
-.mainfooterlinks a {
-    color: #FFFFFF;
+.mainfooter-flex {
+    text-align: center;
 }
 
 @media screen and (min-width: 1224px) {
     .mainfooter {
-        padding: 10px 30px;
+        padding: 10px 40px;
         display: block;
     }
 
     .mainfooter-flex {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        text-align: start;
     }
 
     .mainfooterlogo {
         display: flex;
-        align-items: center;    
+        flex-direction: column;
+        width: 500px;
+        padding-top: 10px;
     }
 
-    .mainfootercontent {
-        margin: 20px;
+    .mainfootersocial {
+        width: 340px;
+        padding: 0px 10px 20px 10px;
     }
 
     .mainfooter-privacypolicy {
@@ -11618,19 +11614,6 @@ html,body{
     /* Push first section down below header */
     #section-a-bg {
         padding: 40px 0px;
-    }
-
-    /* Footer Size Styling */
-    #mainfooter {
-        padding: 10px 40px 0px 40px;
-    }
-
-    .mainfooter-privacypolicy{
-        margin-top: 0px;
-    }
-
-    .mainfootersocial, .mainfooterweblinks {
-        margin: 15px;
     }
 
     /* Style Form Fields */
