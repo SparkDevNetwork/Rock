@@ -1,4 +1,20 @@
-﻿using System.Linq;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System.Linq;
 using System.Text;
 using Quartz;
 using Rock.Attribute;
@@ -7,6 +23,10 @@ using Rock.Model;
 
 namespace Rock.Jobs
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
     [IntegerField( "SQL Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (300 seconds). ", false, 5 * 60, "General", 1, "SqlCommandTimeout" )]
     public class UpdatePersistedDataviews : IJob
