@@ -739,6 +739,7 @@
     <Compile Include="Jobs\SendRegistrationPaymentReminders.cs" />
     <Compile Include="Jobs\SparkLink.cs" />
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
+    <Compile Include="Jobs\UpdatePersistedDataviews.cs" />
     <Compile Include="Lava\Blocks\Execute.cs" />
     <Compile Include="Lava\Blocks\RockEntity.cs" />
     <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
