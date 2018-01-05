@@ -1,5 +1,5 @@
 IF OBJECT_ID(N'[dbo].[AnalyticsDimPersonHistoricalBirthDate]', 'V') IS NOT NULL
-    DROP VIEW AnalyticsDimPersonHistoricalBirthDate
+    DROP VIEW [dbo].AnalyticsDimPersonHistoricalBirthDate
 GO
 
 CREATE VIEW [dbo].AnalyticsDimPersonHistoricalBirthDate
