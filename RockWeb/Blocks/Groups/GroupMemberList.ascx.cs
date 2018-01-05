@@ -634,10 +634,11 @@ namespace RockWeb.Blocks.Groups
             AvailableAttributes = new List<AttributeCache>();
             if ( _group != null )
             {
+                var rockContext = new RockContext();
                 int entityTypeId = new GroupMember().TypeId;
                 string groupQualifier = _group.Id.ToString();
                 string groupTypeQualifier = _group.GroupTypeId.ToString();
-                foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                foreach ( var attributeModel in new AttributeService( rockContext ).Queryable()
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
@@ -648,6 +649,12 @@ namespace RockWeb.Blocks.Groups
                     .ThenBy( a => a.Name ) )
                 {
                     AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+                }
+
+                var inheritedAttribute = ( new GroupMember() { GroupId=_group.Id } ).GetInheritedAttributes( rockContext );
+                if ( inheritedAttribute.Count > 0 )
+                {
+                    AvailableAttributes.AddRange( inheritedAttribute );
                 }
             }
         }

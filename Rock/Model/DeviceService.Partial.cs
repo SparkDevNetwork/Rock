@@ -92,15 +92,19 @@ namespace Rock.Model
             // -- however the fully qualified name should always be the same.
             try
             {
-                string hostValue = ipAddress;
-
-                hostValue = System.Net.Dns.GetHostEntry( ipAddress ).HostName;
-
-                return Queryable()
-                    .Where( d =>
-                        d.DeviceTypeValueId == deviceTypeValueId &&
-                        d.IPAddress == hostValue )
-                    .FirstOrDefault();
+                string hostValue = System.Net.Dns.GetHostEntry( ipAddress ).HostName;
+                if ( hostValue.IsNotNullOrWhitespace() )
+                {
+                    return Queryable()
+                        .Where( d =>
+                            d.DeviceTypeValueId == deviceTypeValueId &&
+                            d.IPAddress == hostValue )
+                        .FirstOrDefault();
+                }
+                else
+                {
+                    return null;
+                }
             }
             catch ( SocketException )
             {
