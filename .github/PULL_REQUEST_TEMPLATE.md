@@ -7,7 +7,7 @@ the request. In fact, this approval should be recieved before writing the code t
 
 
 ## Contributor Agreement
-_Have you filled out and sent your [Spark Contributor Agreement](http://www.rockrms.com/Content/RockExternal/Misc/Contributor%20Agreement.pdf) to secretary [at] sparkdevnetwork.org?_
+_By contributing your code, you agree to license your contribution under the [Rock Community License Agreement](https://www.rockrms.com/license)._
 
 ## Context
 _What is the problem you encountered that lead to you creating this pull request?_
