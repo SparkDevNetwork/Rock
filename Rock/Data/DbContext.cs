@@ -21,11 +21,15 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using Z.EntityFramework.Plus;
 
 using Rock.Model;
 using Rock.Transactions;
 using Rock.UniversalSearch;
 using Rock.Workflow;
+
+using Audit = Rock.Model.Audit;
+using System.Linq.Expressions;
 
 namespace Rock.Data
 {
@@ -379,6 +383,77 @@ namespace Rock.Data
                 } );
             }
         }
+
+        #region Bulk Operations
+
+        /// <summary>
+        /// Use SqlBulkInsert to quickly insert a large number records.
+        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="records">The records.</param>
+        /// <param name="useSqlBulkCopy">if set to <c>true</c> [use SQL bulk copy].</param>
+        public virtual void BulkInsert<T>( IEnumerable<T> records ) where T : class
+        {
+            // ensure CreatedDateTime and ModifiedDateTime is set
+            var currentDateTime = RockDateTime.Now;
+            foreach ( var record in records )
+            {
+                var model = record as IModel;
+                if ( model != null )
+                {
+                    model.CreatedDateTime = model.CreatedDateTime ?? currentDateTime;
+                    model.ModifiedDateTime = model.ModifiedDateTime ?? currentDateTime;
+                }
+            }
+
+            // set timeout to 5 minutes, just in case (the default is 30 seconds)
+            EntityFramework.Utilities.Configuration.BulkCopyTimeout = 300;
+            EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;
+            EntityFramework.Utilities.EFBatchOperation.For( this, this.Set<T>() ).InsertAll( records );
+        }
+
+        /// <summary>
+        /// Does a direct bulk UPDATE. 
+        /// Example: rockContext.BulkUpdate( personQuery, p => new Person { LastName = "Decker", ModifiedDateTime = RockDateTime.Now, ModifiedByPersonAlias = CurrentPersonAlias } );
+        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable">The queryable for the records to update</param>
+        /// <param name="updateFactory">Linq expression to specify the updated property values</param>
+        /// <returns></returns>
+        public virtual int BulkUpdate<T>( IQueryable<T> queryable, Expression<Func<T, T>> updateFactory ) where T : class
+        {
+            int recordsUpdated = queryable.Update( updateFactory );
+            return recordsUpdated;
+        }
+
+        /// <summary>
+        /// Does a direct bulk DELETE.
+        /// Example: rockContext.BulkDelete( groupMembersToDeleteQuery );
+        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable">The queryable for the records to delete</param>
+        /// <param name="batchSize">The BatchSize property sets the amount of rows to delete in a single batch (Default 4000)</param>
+        /// <returns></returns>
+        public virtual int BulkDelete<T>( IQueryable<T> queryable, int? batchSize = null ) where T : class
+        {
+            int recordsUpdated;
+
+            if ( batchSize.HasValue )
+            {
+                recordsUpdated = queryable.Delete( d => d.BatchSize = batchSize.Value );
+            }
+            else
+            {
+                recordsUpdated = queryable.Delete();
+            }
+
+            return recordsUpdated;
+        }
+
+        #endregion Bulk Operations
 
         /// <summary>
         /// Triggers all the workflows of the given triggerType for the given entity item.
