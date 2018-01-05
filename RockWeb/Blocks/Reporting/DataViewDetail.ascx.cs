@@ -288,6 +288,7 @@ $(document).ready(function() {
             dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             dataView.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
+            dataView.PersistedScheduleIntervalMinutes = nbPersistedScheduleIntervalMinutes.Text.AsIntegerOrNull();
 
             var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
             
@@ -327,6 +328,13 @@ $(document).ready(function() {
                 dataView.DataViewFilter = newDataViewFilter;
                 rockContext.SaveChanges();
             } );
+
+            if ( dataView.PersistedScheduleIntervalMinutes.HasValue )
+            {
+                dataView.PersistResult( GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
+                rockContext.SaveChanges();
+            }
 
             if ( adding )
             {
@@ -607,6 +615,7 @@ $(document).ready(function() {
             tbDescription.Text = dataView.Description;
             etpEntityType.SelectedEntityTypeId = dataView.EntityTypeId;
             cpCategory.SetValue( dataView.CategoryId );
+            nbPersistedScheduleIntervalMinutes.Text = dataView.PersistedScheduleIntervalMinutes.ToString();
 
             var rockContext = new RockContext();
             BindDataTransformations( rockContext );
@@ -663,6 +672,15 @@ $(document).ready(function() {
             }
 
             lFilters.Text = descriptionListFilters.Html;
+
+            DescriptionList descriptionListPersisted = new DescriptionList();
+            hlblPersisted.Visible = dataView.PersistedScheduleIntervalMinutes.HasValue && dataView.PersistedLastRefreshDateTime.HasValue;
+            if ( hlblPersisted.Visible )
+            {
+                hlblPersisted.Text = string.Format( "Persisted {0}", dataView.PersistedLastRefreshDateTime.ToElapsedString() );
+            }
+
+            lPersisted.Text = descriptionListPersisted.Html;
 
             DescriptionList descriptionListDataviews = new DescriptionList();
             var dataViewFilterEntityId = EntityTypeCache.Read( typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ) ).Id;

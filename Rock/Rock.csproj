@@ -743,6 +743,7 @@
     <Compile Include="Jobs\SendRegistrationPaymentReminders.cs" />
     <Compile Include="Jobs\SparkLink.cs" />
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
+    <Compile Include="Jobs\UpdatePersistedDataviews.cs" />
     <Compile Include="Lava\Blocks\Execute.cs" />
     <Compile Include="Lava\Blocks\RockEntity.cs" />
     <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
@@ -818,6 +819,7 @@
     <Compile Include="Model\CommunicationAttachment.cs" />
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
+    <Compile Include="Model\DataViewPersistedValue.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
     <Compile Include="Model\InteractionComponent.Partial.cs" />

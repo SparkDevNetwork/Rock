@@ -125,8 +125,6 @@ namespace Rock.Web.UI.Controls
             set { ViewState["CompletedMessage"] = value; }
         }
 
-        private bool _isButtonClicked;
-
         /// <summary>
         /// Adds the attributes of the <see cref="T:System.Web.UI.WebControls.LinkButton" /> control to the output stream for rendering on the client.
         /// </summary>

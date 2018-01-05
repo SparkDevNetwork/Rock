@@ -77,6 +77,10 @@
     <Compile Include="Migrations\201801031733052_AddedPrimaryFamilyAndAgeToPerson.Designer.cs">
       <DependentUpon>201801031733052_AddedPrimaryFamilyAndAgeToPerson.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201801051826138_DataViewPersisted.cs" />
+    <Compile Include="Migrations\201801051826138_DataViewPersisted.Designer.cs">
+      <DependentUpon>201801051826138_DataViewPersisted.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201712192301416_MoveInteractionTemplates.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.0\201712192301416_MoveInteractionTemplates.Designer.cs">
       <DependentUpon>201712192301416_MoveInteractionTemplates.cs</DependentUpon>
@@ -2659,6 +2663,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201801031733052_AddedPrimaryFamilyAndAgeToPerson.resx">
       <DependentUpon>201801031733052_AddedPrimaryFamilyAndAgeToPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801051826138_DataViewPersisted.resx">
+      <DependentUpon>201801051826138_DataViewPersisted.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.0\201712192301416_MoveInteractionTemplates.resx">
       <DependentUpon>201712192301416_MoveInteractionTemplates.cs</DependentUpon>
