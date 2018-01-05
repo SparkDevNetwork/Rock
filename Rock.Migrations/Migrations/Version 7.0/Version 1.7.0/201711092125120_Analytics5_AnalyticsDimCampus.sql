@@ -1,8 +1,8 @@
 IF OBJECT_ID(N'[dbo].[AnalyticsDimCampus]', 'V') IS NOT NULL
-	DROP VIEW AnalyticsDimCampus
+	DROP VIEW [dbo].AnalyticsDimCampus
 GO
 
-CREATE VIEW AnalyticsDimCampus
+CREATE VIEW [dbo].AnalyticsDimCampus
 AS
 SELECT sc.*
 	,CONCAT (
