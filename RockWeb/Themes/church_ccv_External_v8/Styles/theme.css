@@ -11628,7 +11628,7 @@ html,body{
 }
 
 /* Email input on all form fields */
-.email-box .control-wrapper .input-group {
+.email-box .control-wrapper .input-group, .input-group {
     display: block;
     margin-bottom: 15px;
 }
