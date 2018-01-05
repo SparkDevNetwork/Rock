@@ -66,6 +66,7 @@ namespace RockWeb.Blocks.Crm
                         </div>
                     </div>
 ", "", 0 )]
+
     public partial class InteractionChannelDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
@@ -99,15 +100,21 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                var channelId = Convert.ToInt32( PageParameter( "channelId" ) );
-                if ( channelId == 0 )
+                int? channelId = PageParameter( "channelId" ).AsIntegerOrNull();
+                if ( !channelId.HasValue )
                 {
+                    lTitle.Text = "Interaction Channel";
+
                     nbWarningMessage.Title = "Missing Channel Information";
                     nbWarningMessage.Text = "<p>Make sure you have navigated to this page from Channel Listing page.</p>";
                     nbWarningMessage.Visible = true;
+
+                    pnlViewDetails.Visible = false;
+
                     return;
                 }
-                ShowDetail( channelId );
+
+                ShowDetail( channelId.Value );
             }
         }
 
@@ -216,8 +223,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            var qryParams = new Dictionary<string, string>();
+            qryParams["ChannelId"] = hfChannelId.Value;
+            NavigateToPage( RockPage.Guid, qryParams );
         }
+
         #endregion
 
         #region Methods
@@ -287,7 +297,7 @@ namespace RockWeb.Blocks.Crm
         private void SetEditMode( bool editable )
         {
             pnlEditDetails.Visible = editable;
-            fieldsetViewDetails.Visible = !editable;
+            pnlViewDetails.Visible = !editable;
 
             this.HideSecondaryBlocks( editable );
         }
