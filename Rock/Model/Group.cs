@@ -543,7 +543,7 @@ namespace Rock.Model
             // If the user is not authorized for group through normal security roles, and this is a logged
             // in user trying to view or edit, check to see if they should be allowed based on their role
             // in the group.
-            if ( !authorized && person != null && ( action == Authorization.VIEW || action == Authorization.EDIT ) )
+            if ( !authorized && person != null && ( action == Authorization.VIEW || action == Authorization.MANAGE_MEMBERS || action == Authorization.EDIT ) )
             {
                 // Get the cached group type
                 var groupType = GroupTypeCache.Read( this.GroupTypeId );
@@ -569,7 +569,7 @@ namespace Rock.Model
                                     return true;
                                 }
 
-                                if ( action == Authorization.EDIT && role.CanEdit )
+                                if ( ( action == Authorization.MANAGE_MEMBERS || action == Authorization.EDIT ) && role.CanEdit )
                                 {
                                     return true;
                                 }

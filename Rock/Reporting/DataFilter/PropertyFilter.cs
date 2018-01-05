@@ -145,6 +145,44 @@ namespace Rock.Reporting.DataFilter
         }
 
         /// <summary>
+        /// Gets the selection label.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public string GetSelectionLabel( Type entityType, string selection )
+        {
+            List<string> values;
+
+            // First value is the field id (property of attribute), remaining values are the field type's filter values
+            try
+            {
+                values = JsonConvert.DeserializeObject<List<string>>( selection );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+                return "Error";
+            }
+
+            if ( values.Count >= 1 )
+            {
+                // First value in array is always the name of the entity field being filtered
+                string fieldSelection = values[0];
+
+                var entityFields = EntityHelper.GetEntityFields( entityType );
+
+                var entityField = entityFields.FindFromFilterSelection( fieldSelection );
+                if ( entityField != null )
+                {
+                    return entityField.TitleWithoutQualifier;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>

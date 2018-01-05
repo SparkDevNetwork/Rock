@@ -30,6 +30,7 @@ using Rock.Security;
 using Rock.Data;
 using System.Web;
 using Rock.Web.UI.Controls;
+using System.Text;
 
 namespace RockWeb.Blocks.Core
 {
@@ -235,6 +236,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
+            bool reloadPage = false;
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
             if ( Page.IsValid )
             {
@@ -265,7 +267,14 @@ namespace RockWeb.Blocks.Core
                         block.Attributes.Add( CustomGridColumnsConfig.AttributeKey, null );
                     }
 
-                    block.SetAttributeValue( CustomGridColumnsConfig.AttributeKey, this.CustomGridColumnsConfigState.ToJson() );
+                    var customGridColumnsJSON = this.CustomGridColumnsConfigState.ToJson();
+                    if ( block.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ) != customGridColumnsJSON )
+                    {
+                        block.SetAttributeValue( CustomGridColumnsConfig.AttributeKey, customGridColumnsJSON );
+
+                        // if the CustomColumns changed, reload the whole page so that we can avoid issues with columns changing between postbacks
+                        reloadPage = true;
+                    }
                 }
                 else
                 {
@@ -279,8 +288,18 @@ namespace RockWeb.Blocks.Core
 
                 Rock.Web.Cache.BlockCache.Flush( block.Id );
 
-                string script = string.Format( "window.parent.Rock.controls.modal.close('BLOCK_UPDATED:{0}');", blockId );
-                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
+                StringBuilder scriptBuilder = new StringBuilder();
+
+                if ( reloadPage )
+                {
+                    scriptBuilder.AppendLine( "window.parent.location.reload();" );
+                }
+                else
+                {
+                    scriptBuilder.AppendLine( string.Format( "window.parent.Rock.controls.modal.close('BLOCK_UPDATED:{0}');", blockId ) );
+                }
+
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", scriptBuilder.ToString(), true );
             }
         }
 

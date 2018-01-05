@@ -89,6 +89,27 @@ namespace Rock.Web.UI.Controls
                 this.ViewState["LavaKey"] = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [convert to item dictionary].
+        /// Set this to false so that only "Row" is the merge field.
+        /// Leave this as true to include both "Row" and the individual properties of Row as the merge fields
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [convert to item dictionary]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ConvertToItemDictionary
+        {
+            get
+            {
+                return this.ViewState["ConvertToItemDictionary"] as bool? ?? false;
+            }
+
+            set
+            {
+                this.ViewState["ConvertToItemDictionary"] = value;
+            }
+        }
     }
 
     /// <summary>
@@ -135,9 +156,12 @@ namespace Rock.Web.UI.Controls
                 mergeValues.Add( "Row", gridViewRow.DataItem );
 
                 // in the case of a Report, the MergeKeys are determined by the ColumnHeader, so also add those
-                foreach ( var keyValue in this.ToGridItemsDictionary( gridViewRow, gridViewRow.DataItem ))
+                if ( LavaField.ConvertToItemDictionary )
                 {
-                    mergeValues.AddOrIgnore( keyValue.Key, keyValue.Value );
+                    foreach ( var keyValue in this.ToGridItemsDictionary( gridViewRow, gridViewRow.DataItem ) )
+                    {
+                        mergeValues.AddOrIgnore( keyValue.Key, keyValue.Value );
+                    }
                 }
 
                 lOutputText.Text = this.LavaField.LavaTemplate.ResolveMergeFields( mergeValues );
@@ -204,7 +228,7 @@ namespace Rock.Web.UI.Controls
                     dataFieldValue = definedValue != null ? definedValue.Value : null;
                 }
 
-                dictionary.Add( dataFieldItem.Key, dataFieldValue );
+                dictionary.Add( dataFieldItem.Key, Convert.ChangeType(dataFieldValue, dataFieldItem.Value.PropertyInfo.PropertyType) );
             }
 
             return dictionary;

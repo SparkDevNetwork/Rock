@@ -144,10 +144,18 @@ $('.js-panel-toggle').on('click', function (e) {
             if ( pnlFontAwesomeSettings.Visible )
             {
                 overrideFile.AppendLine( FontAwesomeHelper.VariableOverridesTokens.StartRegion );
+
                 var selectedPrimaryWeight = FontAwesomeHelper.FontAwesomeIconCssWeights.FirstOrDefault( a => a.WeightName == ddlFontAwesomeIconWeight.SelectedValue );
+
                 overrideFile.AppendLine( string.Format( "{0} {1};", FontAwesomeHelper.VariableOverridesTokens.FontWeightValueLineStart, selectedPrimaryWeight.WeightValue ) );
                 overrideFile.AppendLine( string.Format( "{0} '{1}';", FontAwesomeHelper.VariableOverridesTokens.FontWeightNameLineStart, selectedPrimaryWeight.WeightName ) );
                 overrideFile.AppendLine();
+
+                if ( !selectedPrimaryWeight.IncludedInFree )
+                {
+                    overrideFile.AppendLine( string.Format( "{0} {1};", FontAwesomeHelper.VariableOverridesTokens.FontEditionLineStart, FontAwesomeHelper.VariableOverridesTokens.FontEditionPro ) );
+                }
+
                 overrideFile.AppendLine( "@import \"../../../Styles/FontAwesome/_rock-fa-mixins.less\";" );
 
                 foreach ( var alternateFontWeightName in cblFontAwesomeAlternateFonts.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value ).ToList() )
@@ -157,7 +165,7 @@ $('.js-panel-toggle').on('click', function (e) {
                     {
                         string suffixParam = string.Empty;
                         overrideFile.AppendLine(
-                            string.Format( "{0} '{1}' );",
+                            string.Format( "{0} '{1}', 'pro' );",
                                 FontAwesomeHelper.VariableOverridesTokens.FontFaceLineStart,
                                 alternateFont.WeightName
                                 ) );

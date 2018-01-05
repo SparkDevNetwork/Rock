@@ -71,6 +71,21 @@ namespace Rock.Utility
             /// The font face line start
             /// </summary>
             public const string FontFaceLineStart = ".fa-font-face(";
+
+            /// <summary>
+            /// The font awesome edition
+            /// </summary>
+            public const string FontEditionLineStart = "@fa-edition:";
+
+            /// <summary>
+            /// The font awesome pro edition
+            /// </summary>
+            public const string FontEditionPro = "pro";
+
+            /// <summary>
+            /// The font awesome free edition
+            /// </summary>
+            public const string FontEditionFree = "free";
         }
 
         /// <summary>
@@ -164,7 +179,7 @@ namespace Rock.Utility
         public static FontAwesomeIconCssWeight[] FontAwesomeIconCssWeights => new FontAwesomeIconCssWeight[]
         {
             new FontAwesomeIconCssWeight( "solid", 900, false, true, true ),
-            new FontAwesomeIconCssWeight( "regular", 400, true, true, true ),
+            new FontAwesomeIconCssWeight( "regular", 400, true, false, true ),
             new FontAwesomeIconCssWeight( "light", 300, true, false, true ),
             new FontAwesomeIconCssWeight( "brands", 400, true, true, false )
         };

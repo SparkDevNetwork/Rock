@@ -19,13 +19,13 @@ using System;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select a comparison type.
+    /// Field Attribute to render a Lava template.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class ComparisonFieldAttribute : FieldAttribute
+    public class LavaFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ComparisonFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="LavaFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -34,8 +34,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public ComparisonFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.ComparisonFieldType ).FullName )
+        public LavaFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.LavaFieldType ).FullName )
         {
         }
     }
