@@ -1,9 +1,9 @@
 IF OBJECT_ID(N'[dbo].[AnalyticsFactAttendance]', 'V') IS NOT NULL
-    DROP VIEW AnalyticsFactAttendance
+    DROP VIEW [dbo].AnalyticsFactAttendance
 GO
 
 -- select top 10000 * from AnalyticsFactAttendance order by Id desc
-CREATE VIEW AnalyticsFactAttendance
+CREATE VIEW [dbo].AnalyticsFactAttendance
 AS
 SELECT asa.*
     ,adphPerson.PrimaryFamilyKey [FamilyKey]
