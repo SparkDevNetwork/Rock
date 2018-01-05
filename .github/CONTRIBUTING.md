@@ -55,7 +55,7 @@ If chat is more your speed, you can join the Rock community on Slack:
 
 ### License
 
-By contributing your code, you agree to license your contribution under the [Rock Community License Agreement](https://www.rockrms.com/license).  We also need you to sign and send a scanned copy of the [Spark Contributor Agreement](http://www.rockrms.com/Content/RockExternal/Misc/Contributor%20Agreement.pdf) back to the Spark Secretary (Secretary @ sparkdevnetwork.org ) to keep the lawyer off our backs. 
+By contributing your code, you agree to license your contribution under the [Rock Community License Agreement](https://www.rockrms.com/license).  This obviously means you don't get to claim any rights to that code -- but you still have the satisfaction of knowing you contributed to something very cool!
 
 ### Rock and Plugins
 
