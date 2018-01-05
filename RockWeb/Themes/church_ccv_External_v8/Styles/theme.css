@@ -977,7 +977,7 @@
         box-shadow: none;
     }
 
-@media screen and (min-width: 1224px) {
+@media screen and (min-width: 1024px) {
     #cms-admin-footer {
         opacity: 0;
         position: fixed;
@@ -8566,7 +8566,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     width: 225px;
 }
 
-@media screen and (min-width: 1224px){
+@media screen and (min-width: 1024px){
     .masthead-brand .logo {
         margin-left: 15px;
         margin-top: 12px;
@@ -8852,7 +8852,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     text-align: center;
 }
 
-@media screen and (min-width: 1224px) {
+@media screen and (min-width: 1024px) {
     .mainfooter {
         padding: 10px 40px;
         display: block;
@@ -10302,7 +10302,7 @@ legend {
     margin: 5px;
 }
 
-@media screen and (min-width: 1224px) {
+@media screen and (min-width: 1024px) {
     #subnavbar ul {
         margin: 0px;
     }
@@ -10450,6 +10450,7 @@ html,body{
 
 .contextsetter-campus-navbar .dropdown-menu li a, .masthead-navitems .dropdown-menu li a  {
     color: #999999;
+    padding: 3px 5px;
 }
 
 .contextsetter-campus-navbar {
@@ -10488,6 +10489,7 @@ html,body{
 
 .loginstatus .dropdown-menu li a {
     color: #999999;
+    padding: 3px 5px;
 }
 
 .loginstatus .dropdown-menu li a:hover, .masthead-navitems .dropdown-menu li a:hover {
@@ -10542,7 +10544,7 @@ html,body{
     display: block;
 }
 
-@media screen and (min-width: 1224px) {
+@media screen and (min-width: 1024px) {
     .announcement-bar {
         padding: 20px 0px;
         margin-bottom: 5px;
@@ -10570,7 +10572,7 @@ html,body{
     flex-wrap: wrap;
 }
 
-@media screen and (min-width: 1224px) {
+@media screen and (min-width: 1024px) {
     .event-item-list-container {
         justify-content: flex-start;
         margin-left: 10px;
@@ -11469,9 +11471,9 @@ html,body{
     margin-left: 15px;
 }
 
-/* Show Hamburger Menu on any device smaller than 768px */
+/* Show Hamburger Menu on any device smaller than 1024px */
 /* Overriding Bootstrap media query */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .navbar-toggle {
         display: inline-block;
     }
