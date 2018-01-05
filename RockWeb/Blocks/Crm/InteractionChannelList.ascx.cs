@@ -17,10 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using DotLiquid;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -185,46 +186,48 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         public void ShowList()
         {
-
-            var rockContext = new RockContext();
-
-            InteractionChannelService interactionChannelService = new InteractionChannelService( rockContext );
-            var interactionChannels = interactionChannelService.Queryable();
-
-            var channelMediumValueId = gfFilter.GetUserPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();
-            if ( channelMediumValueId.HasValue )
+            using ( var rockContext = new RockContext() )
             {
-                interactionChannels = interactionChannels.Where( a => a.ChannelTypeMediumValueId == channelMediumValueId.Value );
-            }
+                InteractionChannelService interactionChannelService = new InteractionChannelService( rockContext );
+                var interactionChannels = interactionChannelService.Queryable().AsNoTracking();
 
-            var channelItems = new List<ChannelItem>();
-            foreach ( var interacationChannel in interactionChannels )
-            {
-                if ( !interacationChannel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                var channelMediumValueId = gfFilter.GetUserPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();
+                if ( channelMediumValueId.HasValue )
                 {
-                    continue;
+                    interactionChannels = interactionChannels.Where( a => a.ChannelTypeMediumValueId == channelMediumValueId.Value );
                 }
-                string template = GetAttributeValue( "DefaultTemplate" );
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.AddOrIgnore( "Person", CurrentPerson );
-                mergeFields.Add( "ComponentListPage", LinkedPageRoute( "ComponentListPage" ) );
-                mergeFields.Add( "SessionListPage", LinkedPageRoute( "SessionListPage" ) );
-                mergeFields.Add( "InteractionChannel", interacationChannel );
-                if ( !string.IsNullOrEmpty( interacationChannel.ChannelListTemplate ) )
+
+                // Parse the default template so that it does not need to be parsed multiple times
+                var defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
+                var channelItems = new List<ChannelItem>();
+
+                foreach ( var interacationChannel in interactionChannels )
                 {
-                    template = interacationChannel.ChannelListTemplate;
+                    if ( !interacationChannel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        continue;
+                    }
+
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                    mergeFields.AddOrIgnore( "Person", CurrentPerson );
+                    mergeFields.Add( "ComponentListPage", LinkedPageRoute( "ComponentListPage" ) );
+                    mergeFields.Add( "SessionListPage", LinkedPageRoute( "SessionListPage" ) );
+                    mergeFields.Add( "InteractionChannel", interacationChannel );
+
+                    string html = interacationChannel.ChannelListTemplate.IsNotNullOrWhitespace() ?
+                        interacationChannel.ChannelListTemplate.ResolveMergeFields( mergeFields ) :
+                        defaultTemplate.Render( Hash.FromDictionary( mergeFields ) );
+
+                    channelItems.Add( new ChannelItem
+                    {
+                        Id = interacationChannel.Id,
+                        ChannelHtml = html
+                    } );
                 }
-                var html = template.ResolveMergeFields( mergeFields );
-                channelItems.Add( new ChannelItem
-                {
-                    Id = interacationChannel.Id,
-                    ChannelHtml = html
-                } );
+
+                rptChannel.DataSource = channelItems;
+                rptChannel.DataBind();
             }
-
-
-            rptChannel.DataSource = channelItems;
-            rptChannel.DataBind();
         }
 
         #endregion
