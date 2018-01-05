@@ -106,8 +106,13 @@
                {% assign eventMonth = eventOccurrenceSummary.DateTime | Date: 'MMMM' %}
                {% if startDateTime <= currentDateTime and eventMonth == viewingMonth %}
                   
-                  {% assign firstEventItemOccurrenceId = eventOccurrenceSummary.EventItemOccurrence.Id %}
-                  
+                  {% if firstEventItemOccurrenceId == -1 %}
+                    {% assign firstEventItemOccurrenceId = eventOccurrenceSummary.EventItemOccurrence.Id %}
+                    <script>
+                        var gfirstEventItemOccurrenceId = {{ firstEventItemOccurrenceId }};
+                    </script>
+                  {% endif %}  
+
                   {% comment %} EventCalendarId 1 is public calendar {% endcomment %}
                   {% assign eventCalendarItem = eventOccurrenceSummary.EventItem.EventCalendarItems | Where: 'EventCalendarId', calendarId | First %}
 
@@ -277,12 +282,13 @@
         handleOnLoad : function() { 
          oldonload(); handleOnLoad(); 
          };
-      // 
       
       function handleOnLoad() {
          // if there's at least one event for this month, we'll hide the "no events" banner
          if( gMonthHasEvents == true  ) {
-            $(".no-event-placeholder").css("display", "none");
+             $(".no-event-placeholder").css("display", "none");
+             // Display theevent panel for the first event item on page load
+             setSelectedEvent( gfirstEventItemOccurrenceId, false );
          }
          else {
             $(".no-event-placeholder").css("display", "inline");
