@@ -409,13 +409,15 @@ namespace Rock.StatementGenerator.Rest
                 if ( options.CurrencyTypeIdsCash != null )
                 {
                     transactionDetailListCash = transactionDetailListCash.Where( a => 
+                        a.Transaction.FinancialPaymentDetailId.HasValue &&
                         a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue 
                         && options.CurrencyTypeIdsCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ).ToList();
                 }
-
+                
                 if ( options.CurrencyTypeIdsNonCash != null )
                 {
-                    transactionDetailListNonCash = transactionDetailListAll.Where( a => 
+                    transactionDetailListNonCash = transactionDetailListAll.Where( a =>
+                        a.Transaction.FinancialPaymentDetailId.HasValue &&
                         a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue 
                         && options.CurrencyTypeIdsNonCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ).ToList();
                 }
@@ -441,13 +443,29 @@ namespace Rock.StatementGenerator.Rest
                                         .ThenBy( a => a.Account.PublicName )
                                         .ToList();
 
-                    var pledgeSummaryList = pledgeList
-                                        .Select( p => new PledgeSummaryByPledge
+                    var pledgeSummaryByPledgeList = pledgeList
+                                        .Select( p => new 
                                         {
-                                            Account = p.Account,
+                                            p.Account,
                                             Pledge = p
                                         } )
                                         .ToList();
+
+                    //// Pledges but organized by Account (in case more than one pledge goes to the same account)
+                    //// NOTE: In the case of multiple pledges to the same account (just in case they accidently or intentionally had multiple pledges to the same account)
+                    ////  -- Date Range
+                    ////    -- StartDate: Earliest StartDate of all the pledges for that account 
+                    ////    -- EndDate: Lastest EndDate of all the pledges for that account
+                    ////  -- Amount Pledged: Sum of all Pledges to that account
+                    ////  -- Amount Given: 
+                    ////    --  The sum of transaction amounts to that account between
+                    ////      -- Start Date: Earliest Start Date of all the pledges to that account
+                    ////      -- End Date: Whatever is earlier (Statement End Date or Pledges' End Date)
+                    var pledgeSummaryList = pledgeSummaryByPledgeList.GroupBy( a => a.Account ).Select( a => new PledgeSummary
+                    {
+                        Account = a.Key,
+                        PledgeList = a.Select( x => x.Pledge ).ToList()
+                    } ).ToList();
 
                     // add detailed pledge information
                     if ( pledgeSummaryList.Any() )
@@ -466,31 +484,24 @@ namespace Rock.StatementGenerator.Rest
 
                         foreach ( var pledgeSummary in pledgeSummaryList )
                         {
-                            DateTime adjustedPedgeEndDate = pledgeSummary.PledgeEndDate.Value.Date;
+                            DateTime adjustedPledgeEndDate = pledgeSummary.PledgeEndDate.Value.Date;
                             if ( pledgeSummary.PledgeEndDate.Value.Date < DateTime.MaxValue.Date )
                             {
-                                adjustedPedgeEndDate = pledgeSummary.PledgeEndDate.Value.Date.AddDays( 1 );
-                            }
-
-                            var statementYearEnd = new DateTime( statementPledgeYear + 1, 1, 1 );
-
-                            if ( adjustedPedgeEndDate > statementYearEnd )
-                            {
-                                adjustedPedgeEndDate = statementYearEnd;
+                                adjustedPledgeEndDate = pledgeSummary.PledgeEndDate.Value.Date.AddDays( 1 );
                             }
 
                             if ( options.EndDate.HasValue )
                             {
-                                if ( adjustedPedgeEndDate > options.EndDate.Value )
+                                if ( adjustedPledgeEndDate > options.EndDate.Value )
                                 {
-                                    adjustedPedgeEndDate = options.EndDate.Value;
+                                    adjustedPledgeEndDate = options.EndDate.Value;
                                 }
                             }
 
                             var pledgeFinancialTransactionDetailQry = new FinancialTransactionDetailService( rockContext ).Queryable().Where( t =>
                                                              t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value )
                                                              && t.Transaction.TransactionDateTime >= pledgeSummary.PledgeStartDate
-                                                             && t.Transaction.TransactionDateTime < adjustedPedgeEndDate );
+                                                             && t.Transaction.TransactionDateTime < adjustedPledgeEndDate );
 
                             if ( options.PledgesIncludeChildAccounts )
                             {
@@ -508,7 +519,9 @@ namespace Rock.StatementGenerator.Rest
 
                             if ( pledgeCurrencyTypeIds != null )
                             {
-                                pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t => t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue && pledgeCurrencyTypeIds.Contains(t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value) );
+                                pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t =>
+                                    t.Transaction.FinancialPaymentDetailId.HasValue &&
+                                    t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue && pledgeCurrencyTypeIds.Contains(t.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value) );
                             }
 
                             pledgeSummary.AmountGiven = pledgeFinancialTransactionDetailQry
@@ -517,16 +530,8 @@ namespace Rock.StatementGenerator.Rest
                         }
                     }
 
-                    // Pledges but organized by Account (in case more than one pledge goes to the same account)
-                    var pledgeAccounts = pledgeSummaryList.GroupBy( a => a.Account ).Select( a => new PledgeSummaryByAccount
-                    {
-                        Account = a.Key,
-                        PledgeList = a.Select( x => x.Pledge ).ToList(),
-                        AmountGiven = a.Sum(x => x.AmountGiven)
-                    } );
-
                     // Pledges ( organized by each Account in case an account is used by more than one pledge )
-                    mergeFields.Add( "Pledges", pledgeAccounts );
+                    mergeFields.Add( "Pledges", pledgeSummaryList );
                 }
 
                 mergeFields.Add( "Options", options );

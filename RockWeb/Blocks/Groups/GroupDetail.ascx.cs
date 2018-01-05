@@ -2069,7 +2069,7 @@ namespace RockWeb.Blocks.Groups
                         if ( displayOtherTab )
                         {
                             locpGroupLocation.AllowedPickerModes = modes;
-                            locpGroupLocation.CurrentPickerMode = locpGroupLocation.GetBestPickerModeForLocation( null );
+                            locpGroupLocation.SetBestPickerModeForLocation( null );
                         }
 
                         ddlLocationType.DataSource = groupType.LocationTypeValues.ToList();
@@ -2080,7 +2080,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             if ( displayOtherTab )
                             {
-                                locpGroupLocation.CurrentPickerMode = locpGroupLocation.GetBestPickerModeForLocation( groupLocation.Location );
+                                locpGroupLocation.SetBestPickerModeForLocation( groupLocation.Location );
 
                                 locpGroupLocation.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
 

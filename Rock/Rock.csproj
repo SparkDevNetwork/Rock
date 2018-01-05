@@ -334,6 +334,9 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="WindowsBase" />
+    <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.7.11.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.7.11\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
@@ -351,6 +354,7 @@
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\LabelFieldAttribute.cs" />
+    <Compile Include="Attribute\LavaFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
     <Compile Include="Attribute\FileFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileFieldAttribute.cs" />
@@ -363,7 +367,6 @@
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\CodeEditorFieldAttribute.cs" />
     <Compile Include="Attribute\CommunicationTemplateFieldAttribute .cs" />
-    <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ComponentFieldAttribute.cs" />
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\ConnectionActivityTypeFieldAttribute.cs" />
@@ -1438,6 +1441,7 @@
     <Compile Include="Reporting\DataTransform\Person\ParentTransform.cs" />
     <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
+    <Compile Include="Reporting\IDataFilterWithOverrides.cs" />
     <Compile Include="Reporting\ReportingHelper.cs" />
     <Compile Include="Reporting\SelectExpressionExtractor.cs" />
     <Compile Include="Scripting.evaluator.cs" />

@@ -1,3 +1,5 @@
+Before completing your first issue we highly recommend reading this post on [Effective Ways To Get Help from Maintainers](https://www.snoyman.com/blog/2017/10/effective-ways-help-from-maintainers).
+
 <!--
 
 If you have found a security bug in Rock and want to report it to us, DO NOT file an issue. Email info@sparkdevnetwork.org and we'll be in touch shortly.

@@ -187,7 +187,7 @@ function() {
             {
                 var locationPicker = controls[0] as LocationPicker;
                 var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsGuid() );
-                locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
+                locationPicker.SetBestPickerModeForLocation( selectedLocation );
                 locationPicker.Location = selectedLocation;
                 var numberBox = controls[1] as NumberBox;
                 numberBox.Text = selectionValues[1];

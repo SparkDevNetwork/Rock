@@ -120,6 +120,7 @@ namespace Rock.Web.UI
                 lavaField.HeaderStyle.CssClass = this.HeaderClass;
                 lavaField.ItemStyle.CssClass = this.ItemClass;
                 lavaField.LavaTemplate = this.LavaTemplate;
+                lavaField.ConvertToItemDictionary = false;
                 return lavaField;
             }
 

@@ -183,7 +183,7 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             GroupAndRolePicker editControl = new GroupAndRolePicker { ID = id };
-            if ( configurationValues != null )
+            if ( configurationValues != null && configurationValues.ContainsKey( CONFIG_GROUP_AND_ROLE_PICKER_LABEL ) )
             {
                 editControl.GroupControlLabel = configurationValues[CONFIG_GROUP_AND_ROLE_PICKER_LABEL].Value;
             }
