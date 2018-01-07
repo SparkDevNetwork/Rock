@@ -18,7 +18,7 @@
     
 </script>
 
-<html>
+<html style="overflow: hidden;">
 <head runat="server">
     <meta charset="utf-8">
     <title></title>
@@ -30,18 +30,18 @@
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js", true) %>"></script>
 
     <!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/Rock/Styles/bootstrap.css", true) %>"/>
-	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/Rock/Styles/theme.css", true) %>"/>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/Rock_NewSpring/Styles/bootstrap.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/Rock_NewSpring/Styles/theme.css", true) %>"/>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
 
     <script src="<%# ResolveRockUrl("~/Scripts/bootstrap.min.js", true) %>" ></script>
 
 </head>
-<body id="splash">
+<body id="splash" class="absolute top-zero right-zero bottom-zero left-zero floating">
 
-    <form id="form1" runat="server">
+    <form id="form1" runat="server" class="floating-item">
 
-        <div id="content">
+        <div id="content" class="text-left">
             <div id="logo">
                 <asp:Literal ID="lLogoSvg" runat="server" />
             </div>
