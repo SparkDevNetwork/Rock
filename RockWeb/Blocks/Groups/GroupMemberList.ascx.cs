@@ -642,8 +642,7 @@ namespace RockWeb.Blocks.Groups
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
-                        ( ( a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupQualifier ) ) ||
-                         ( a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupTypeQualifier ) ) ) )
+                        ( ( a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupQualifier ) ) ) )
                     .OrderByDescending( a => a.EntityTypeQualifierColumn )
                     .ThenBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
