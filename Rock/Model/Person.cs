@@ -1711,7 +1711,7 @@ namespace Rock.Model
                 this.Aliases.Add( new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() } );
             }
 
-            if ( this.AnniversaryDate.HasValue )
+            if ( this.AnniversaryDate.HasValue && this.Id > 0 )
             {
                 var dbPropertyEntry = entry.Property( "AnniversaryDate" );
                 if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
@@ -1722,11 +1722,6 @@ namespace Rock.Model
                         spouse.AnniversaryDate = this.AnniversaryDate;
                     }
                 }
-            }
-
-            if ( this.Age.HasValue && this.AgeClassification == AgeClassification.Unknown )
-            {
-                this.AgeClassification = this.Age < 18 ? AgeClassification.Child : AgeClassification.Adult;   
             }
 
             if ( !this.PrimaryFamilyId.HasValue )
@@ -1747,6 +1742,17 @@ namespace Rock.Model
             }
 
             base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            base.PostSaveChanges( dbContext );
+
+            PersonService.UpdatePersonAgeClassification( this.Id );
         }
 
         /// <summary>

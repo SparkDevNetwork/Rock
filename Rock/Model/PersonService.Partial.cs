@@ -2245,6 +2245,84 @@ namespace Rock.Model
             return values;
         }
 
+        /// <summary>
+        /// Ensures the person age classification is correct for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        public static void UpdatePersonAgeClassification( int personId )
+        {
+            UpdatePersonAgeClassifications( personId );
+        }
+
+        /// <summary>
+        /// Ensures the person age classification is correct for all the person records in the database
+        /// </summary>
+        public static void UpdatePersonAgeClassificationAll()
+        {
+            UpdatePersonAgeClassifications( null );
+        }
+
+        /// <summary>
+        /// Updates the person age classifications.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        private static void UpdatePersonAgeClassifications( int? personId )
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                var personQuery = new PersonService( rockContext ).Queryable();
+
+                if ( personId.HasValue )
+                {
+                    personQuery = personQuery.Where( a => a.Id == personId.Value );
+                }
+
+                // get the min birthdate of people 18 and younger;
+                var birthDateEighteen = RockDateTime.Now.AddYears( -18 );
+                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                int familyGroupTypeId = familyGroupType.Id;
+                int groupRoleAdultId = familyGroupType.Roles.FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+                int groupRoleChildId = familyGroupType.Roles.FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+
+                var familyPersonRoleQuery = new GroupMemberService( rockContext ).Queryable()
+                    .Where( a => a.Group.GroupTypeId == familyGroupTypeId )
+                    .Select( a => new
+                    {
+                        a.PersonId,
+                        a.GroupRoleId
+                    } );
+
+                if ( personId.HasValue )
+                {
+                    personQuery = personQuery.Where( a => a.Id == personId.Value );
+                    familyPersonRoleQuery = familyPersonRoleQuery.Where( a => a.PersonId == personId.Value );
+                }
+
+                var adultBasedOnBirthdateOrFamilyRole = personQuery
+                    .Where( p => ( p.BirthDate.HasValue && p.BirthDate.Value <= birthDateEighteen )
+                        || familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).All( f => f.GroupRoleId == groupRoleAdultId ) );
+
+                var childBasedOnBirthdateOrFamilyRole = personQuery
+                    .Where( p => ( p.BirthDate.HasValue && p.BirthDate.Value > birthDateEighteen )
+                        || familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).All( f => f.GroupRoleId == groupRoleChildId ) );
+
+                DateTime modifiedDateTime = RockDateTime.Now;
+
+                rockContext.BulkUpdate(
+                    adultBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Adult ),
+                    p => new Person { AgeClassification = AgeClassification.Adult, ModifiedDateTime = modifiedDateTime } );
+
+                rockContext.BulkUpdate(
+                    childBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Child ),
+                    p => new Person { AgeClassification = AgeClassification.Child, ModifiedDateTime = modifiedDateTime } );
+
+                // Set Age Classification to Unknown if Child or Adult can't be determined by either Age or Family Role
+                rockContext.BulkUpdate(
+                    personQuery.Where( a => !childBasedOnBirthdateOrFamilyRole.Union( adultBasedOnBirthdateOrFamilyRole ).Any( p => p.Id == a.Id ) ),
+                    p => new Person { AgeClassification = AgeClassification.Unknown, ModifiedDateTime = modifiedDateTime } );
+            }
+        }
+
         #endregion
     }
 }
