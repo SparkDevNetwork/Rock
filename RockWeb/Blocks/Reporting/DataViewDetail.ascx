@@ -29,7 +29,7 @@
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlTransform" runat="server" Label="Post-filter Transformation" />
                                 <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.DataView" Label="Category" Required="true" />
-                                <Rock:NumberBox ID="nbPersistedScheduleIntervalMinutes" runat="server" NumberType="Integer" Required="false" Label="Persisted Schedule Interval (Minutes)" MinimumValue="1" MaxLength="9"
+                                <Rock:NumberBox ID="nbPersistedScheduleIntervalMinutes" runat="server" NumberType="Integer" Required="false" Label="Persisted Schedule Interval (Minutes)" MinimumValue="1" MaxLength="9" CssClass="input-width-sm"
                                     Help="To persist this dataview, enter how often this dataview should be persisted (cached). A persisted dataview can improve performance, especially for complex dataviews. Leave this blank to not persist this dataview." />
                             </div>
                         </div>
