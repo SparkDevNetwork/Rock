@@ -17,12 +17,9 @@
 	text-decoration: none;
 }
 
-// #hlHome {
-// 	vertical-align: top;
-// 	line-height: 56px;
-// 	color: @theme-2-text;
-// 	font-weight: 700;
-// }
+.navbar-static-side .navbar-header {
+	background-color: transparent;
+}
 
 .navbar-static-side .navbar-header .logo {
 	position: absolute;
@@ -91,13 +88,13 @@
 
 	li a {
 		color: @theme-1-text;
-		line-height: 22px;
+		line-height: 20px;
 		padding: 8px 15px 6px;
 		margin-bottom: 2px;
 
 		@media (min-width: @screen-md-min) {
 			&:hover {
-				background-color: lighten(@theme-2, 15%);
+				background-color: lighten(@theme-2, 5%);
 				color: @theme-2-text;
 			}
 		}
@@ -110,7 +107,8 @@
 
 .navbar-static-side .navbar-side > li.open {
 	padding-bottom: 10px;
-	background-color: transparent;
+	background-color: @gray-darker;
+	border-color: @gray-darker;
 
 	.nav-childpages {
 		margin-top: 10px;

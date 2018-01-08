@@ -33,7 +33,7 @@
         </div>
     </main>
     
-    <section class="background-theme-5 soft-half lg-soft-top lg-soft-sides lg-soft-half-bottom">
+    <section class="background-theme-2 soft-half lg-soft-top lg-soft-sides lg-soft-half-bottom">
         <Rock:Zone Name="Section A" runat="server" />
     </section>
 
