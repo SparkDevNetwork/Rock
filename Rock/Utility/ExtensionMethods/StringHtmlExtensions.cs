@@ -200,9 +200,15 @@ namespace Rock
         /// <returns></returns>
         public static string ConvertHtmlStylesToInlineAttributes( this string html )
         {
-            var result = PreMailer.Net.PreMailer.MoveCssInline( html, false, ".ignore" );
-
-            return result.Html;
+            try
+            {
+                var result = PreMailer.Net.PreMailer.MoveCssInline( html, false, ".ignore" );
+                return result.Html;
+            }
+            catch
+            {
+                return html;
+            }
         }
     }
 }

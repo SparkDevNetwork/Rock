@@ -206,6 +206,10 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Href, postBackEventReference );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.WebControls.LinkButton.Command" /> event of the <see cref="T:System.Web.UI.WebControls.LinkButton" /> control.
+        /// </summary>
+        /// <param name="e">A <see cref="T:System.Web.UI.WebControls.CommandEventArgs" /> that contains the event data.</param>
         protected override void OnCommand( CommandEventArgs e )
         {
             base.OnCommand( e );
