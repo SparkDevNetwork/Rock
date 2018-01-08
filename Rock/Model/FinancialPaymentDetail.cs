@@ -164,6 +164,26 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the expiration date formatted as mm/yy
+        /// </summary>
+        /// <value>
+        /// The expiration date.
+        /// </value>
+        [NotMapped]
+        public string ExpirationDate
+        {
+            get
+            {
+                int? expMonth = ExpirationMonth;
+                int? expYear = ExpirationYear;
+                if ( expMonth.HasValue && expYear.HasValue )
+                {
+                    return $"{expMonth.Value:00}/{expYear.Value:00}";
+                }
+                return null;
+            }
+        }
+        /// <summary>
         /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
         /// transaction.
         /// </summary>
@@ -252,17 +272,17 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext )
         {
-            if ( !string.IsNullOrWhiteSpace( paymentInfo.MaskedNumber ) )
+            if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhitespace() )
             {
                 AccountNumberMasked = paymentInfo.MaskedNumber;
             }
 
-            if ( paymentInfo.CurrencyTypeValue != null )
+            if ( !CurrencyTypeValueId.HasValue && paymentInfo.CurrencyTypeValue != null )
             {
                 CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
             }
 
-            if ( paymentInfo.CreditCardTypeValue != null )
+            if ( !CreditCardTypeValueId.HasValue &&  paymentInfo.CreditCardTypeValue != null )
             {
                 CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
             }
@@ -275,18 +295,44 @@ namespace Rock.Model
                 var newLocation = new LocationService( rockContext ).Get(
                     ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry );
 
-                NameOnCardEncrypted = Encryption.EncryptString( nameOnCard );
-                ExpirationMonthEncrypted = Encryption.EncryptString( ccPaymentInfo.ExpirationDate.Month.ToString() );
-                ExpirationYearEncrypted = Encryption.EncryptString( ccPaymentInfo.ExpirationDate.Year.ToString() );
-                BillingLocationId = newLocation != null ? newLocation.Id : (int?)null;
+                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhitespace() )
+                {
+                    NameOnCardEncrypted = Encryption.EncryptString( nameOnCard );
+                }
+
+                if ( !ExpirationMonth.HasValue )
+                {
+                    ExpirationMonthEncrypted = Encryption.EncryptString( ccPaymentInfo.ExpirationDate.Month.ToString() );
+                }
+
+                if ( !ExpirationYear.HasValue )
+                {
+                    ExpirationYearEncrypted = Encryption.EncryptString( ccPaymentInfo.ExpirationDate.Year.ToString() );
+                }
+
+                if ( !BillingLocationId.HasValue && newLocation != null )
+                {
+                    BillingLocationId = newLocation.Id;
+                }
             }
             else if ( paymentInfo is SwipePaymentInfo )
             {
                 var swipePaymentInfo = (SwipePaymentInfo)paymentInfo;
 
-                NameOnCardEncrypted = Encryption.EncryptString( swipePaymentInfo.NameOnCard );
-                ExpirationMonthEncrypted = Encryption.EncryptString( swipePaymentInfo.ExpirationDate.Month.ToString() );
-                ExpirationYearEncrypted = Encryption.EncryptString( swipePaymentInfo.ExpirationDate.Year.ToString() );
+                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhitespace() )
+                {
+                    NameOnCardEncrypted = Encryption.EncryptString( swipePaymentInfo.NameOnCard );
+                }
+
+                if ( !ExpirationMonth.HasValue )
+                {
+                    ExpirationMonthEncrypted = Encryption.EncryptString( swipePaymentInfo.ExpirationDate.Month.ToString() );
+                }
+
+                if ( !ExpirationYear.HasValue )
+                {
+                    ExpirationYearEncrypted = Encryption.EncryptString( swipePaymentInfo.ExpirationDate.Year.ToString() );
+                }
             }
         }
 

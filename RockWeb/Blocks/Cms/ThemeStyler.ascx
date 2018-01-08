@@ -24,6 +24,12 @@
                                 <asp:LinkButton ID="btnBack" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancel_Click"  />
                             </div>
                         </div>
+                        
+                        <asp:Panel ID="pnlFontAwesomeSettings" runat="server">
+                            <Rock:RockDropDownList ID="ddlFontAwesomeIconWeight" runat="server" Label="Font Awesome Icon Weight" AutoPostBack="true" OnSelectedIndexChanged="ddlFontAwesomeIconWeight_SelectedIndexChanged" />
+                            <Rock:RockCheckBoxList ID="cblFontAwesomeAlternateFonts" runat="server" Label="Font Awesome Alternate Fonts" />
+                        </asp:Panel>
+
                         <Rock:CodeEditor ID="ceOverrides" runat="server" Label="CSS Overrides" EditorHeight="600"  />
                     </div>
                 </div>
