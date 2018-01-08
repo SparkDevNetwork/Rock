@@ -1511,6 +1511,7 @@ namespace Rock.Web.UI.Controls
             Qualifiers = field.ConfigurationValues( qualifierControls );
         }
         
+        /// <summary>
         /// Set the Subtitle of modal dialog
         /// </summary>
         /// <param name="attribute">The attribute.</param>

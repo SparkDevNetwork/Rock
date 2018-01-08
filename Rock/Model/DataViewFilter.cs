@@ -464,7 +464,6 @@ namespace Rock.Model
     /// <summary>
     /// A Dictionary of DataViewFilterOverride where the Key is the DataViewFilter.Guid
     /// </summary>
-    /// <seealso cref="System.Collections.Generic.Dictionary{System.Guid, Rock.Model.DataViewFilterOverride}" />
     public class DataViewFilterOverrides : Dictionary<Guid, DataViewFilterOverride>
     {
         /// <summary>
