@@ -34,45 +34,33 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm
 {
     /// <summary>
-    /// Presents the details of a interaction channel using Lava
+    /// Presents the details of a interaction component using Lava
     /// </summary>
-    [DisplayName( "Interaction Channel Detail" )]
+    [DisplayName( "Interaction Component Detail" )]
     [Category( "CRM" )]
     [Description( "Presents the details of a interaction channel using Lava" )]
 
     [CodeEditorField( "Default Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
          <div class='row'>
                         <div class='col-md-6'>
-                            {% if InteractionChannel.Name != '' %}
                                 <dl>
                                <dt>Name</dt>
-                               <dd>{{ InteractionChannel.Name }}<dd/>
+                               <dd>{{ InteractionComponent.Name }}<dd/>
                                </dl>
-                            {% endif %}
-                            {% if InteractionChannel.RetentionDuration != '' %}
-                                <dl>
-                               <dt>Retention Duration</dt
-                               <dd>{{ InteractionChannel.RetentionDuration }}<dd/>
-                            </dl>
-                            {% endif %}
                         </div>
                         <div class='col-md-6'>
-                            {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}
+                        {% if InteractionComponentEntity != '' %}
                             <dl>
-                               <dt>Name</dt
-                               <dd>{{ InteractionChannel.ChannelTypeMediumValue.Value }}<dd/>
+                               <dt>Entity Name</dt>
+                               <dd>{{ InteractionComponentEntity }}<dd/>
                             </dl>
-                            {% endif %}
+                        {% endif %}
                         </div>
                     </div>
 ", "", 0 )]
 
-    public partial class InteractionChannelDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    public partial class InteractionComponentDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
-        #region Fields
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -84,7 +72,6 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", InteractionChannel.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Read(typeof(Rock.Model.InteractionChannel)).Id;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -101,10 +88,10 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                int? channelId = PageParameter( "channelId" ).AsIntegerOrNull();
-                if ( !channelId.HasValue )
+                int? componentId = PageParameter( "componentId" ).AsIntegerOrNull();
+                if ( !componentId.HasValue )
                 {
-                    lTitle.Text = "Interaction Channel";
+                    lTitle.Text = "Interaction Component";
 
                     nbWarningMessage.Title = "Missing Channel Information";
                     nbWarningMessage.Text = "<p>Make sure you have navigated to this page from Channel Listing page.</p>";
@@ -115,7 +102,7 @@ namespace RockWeb.Blocks.Crm
                     return;
                 }
 
-                ShowDetail( channelId.Value );
+                ShowDetail( componentId.Value );
             }
         }
 
@@ -132,7 +119,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var channelId = hfChannelId.Value.AsInteger();
+            var channelId = hfComponentId.Value.AsInteger();
             ShowDetail( channelId );
         }
 
@@ -144,9 +131,9 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            InteractionChannelService interactionChannelService = new InteractionChannelService( new RockContext() );
-            InteractionChannel interactionChannel = interactionChannelService.Get( hfChannelId.ValueAsInt() );
-            ShowEditDetails( interactionChannel );
+            InteractionComponentService interactionComponentService = new InteractionComponentService( new RockContext() );
+            InteractionComponent interactionComponent = interactionComponentService.Get( hfComponentId.ValueAsInt() );
+            ShowEditDetails( interactionComponent );
         }
 
         /// <summary>
@@ -158,7 +145,7 @@ namespace RockWeb.Blocks.Crm
         {
             RockContext rockContext = new RockContext();
             InteractionChannelService interactionChannelService = new InteractionChannelService( rockContext );
-            InteractionChannel interactionChannel = interactionChannelService.Get( hfChannelId.Value.AsInteger() );
+            InteractionChannel interactionChannel = interactionChannelService.Get( hfComponentId.Value.AsInteger() );
 
             if ( interactionChannel != null )
             {
@@ -190,30 +177,27 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            InteractionChannel interactionChannel;
+            InteractionComponent interactionComponent;
             var rockContext = new RockContext();
 
-            var interactionChannelService = new Rock.Model.InteractionChannelService( rockContext );
+            var interactionComponentService = new InteractionComponentService( rockContext );
 
-            interactionChannel = interactionChannelService.Get( hfChannelId.Value.AsInteger() );
+            interactionComponent = interactionComponentService.Get( hfComponentId.Value.AsInteger() );
 
-            interactionChannel.Name = tbName.Text;
-            interactionChannel.RetentionDuration = nbRetentionDuration.Text.AsIntegerOrNull();
-            interactionChannel.ChannelListTemplate = ceChannelList.Text;
-            interactionChannel.ChannelDetailTemplate = ceChannelDetail.Text;
-            interactionChannel.SessionListTemplate = ceSessionList.Text;
-            interactionChannel.ComponentListTemplate = ceComponentList.Text;
-            interactionChannel.ComponentDetailTemplate = ceComponentDetail.Text;
-            interactionChannel.InteractionListTemplate = ceInteractionList.Text;
-            interactionChannel.InteractionDetailTemplate = ceInteractionDetail.Text;
+            interactionComponent.Name = tbName.Text;
 
-            interactionChannel.ModifiedDateTime = RockDateTime.Now;
-            interactionChannel.ModifiedByPersonAliasId = CurrentPersonAliasId;
+            if ( epEntityPicker.Visible )
+            {
+                interactionComponent.EntityId = epEntityPicker.EntityId;
+            }
+
+            interactionComponent.ModifiedDateTime = RockDateTime.Now;
+            interactionComponent.ModifiedByPersonAliasId = CurrentPersonAliasId;
 
             rockContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["ChannelId"] = interactionChannel.Id.ToString();
+            qryParams["componentId"] = interactionComponent.Id.ToString();
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -225,7 +209,7 @@ namespace RockWeb.Blocks.Crm
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            qryParams["ChannelId"] = hfChannelId.Value;
+            qryParams["ComponentId"] = hfComponentId.Value;
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -236,37 +220,46 @@ namespace RockWeb.Blocks.Crm
         /// <summary>
         /// Shows the edit details.
         /// </summary>
-        /// <param name="channel">The interaction channel.</param>
-        private void ShowEditDetails( InteractionChannel channel )
+        /// <param name="component">The interaction component.</param>
+        private void ShowEditDetails( InteractionComponent component )
         {
-            lTitle.Text = channel.Name.FormatAsHtmlTitle();
+            lTitle.Text = component.Name.FormatAsHtmlTitle();
             SetEditMode( true );
 
-            tbName.Text = channel.Name;
-            nbRetentionDuration.Text = channel.RetentionDuration.ToString();
-            ceChannelList.Text = channel.ChannelListTemplate;
-            ceChannelDetail.Text = channel.ChannelDetailTemplate;
-            ceSessionList.Text = channel.SessionListTemplate;
-            ceComponentList.Text = channel.ComponentListTemplate;
-            ceComponentDetail.Text = channel.ComponentDetailTemplate;
-            ceInteractionList.Text = channel.InteractionListTemplate;
-            ceInteractionDetail.Text = channel.InteractionDetailTemplate;
+            tbName.Text = component.Name;
+            if ( component.Channel.ComponentEntityType.SingleValueFieldTypeId.HasValue )
+            {
+                epEntityPicker.Visible = true;
+                epEntityPicker.EntityTypeId = component.Channel.ComponentEntityTypeId;
+                epEntityPicker.Label = component.Channel.ComponentEntityType.FriendlyName;
+                epEntityPicker.EntityId = component.EntityId;
+            }
+            else
+            {
+                epEntityPicker.Visible = false;
+            }
         }
 
         /// <summary>
         /// Shows the detail with lava.
         /// </summary>
-        public void ShowDetail( int channelId )
+        public void ShowDetail( int componentId )
         {
             bool viewAllowed = false;
             bool editAllowed = IsUserAuthorized( Authorization.EDIT );
 
             RockContext rockContext = new RockContext();
-            InteractionChannelService interactionChannelService = new InteractionChannelService( rockContext );
-            var interactionChannel = interactionChannelService.Queryable().Where( a => a.Id == channelId ).FirstOrDefault();
+            InteractionComponentService interactionComponentService = new InteractionComponentService( rockContext );
+            var interactionComponent = interactionComponentService.Queryable().Where( a => a.Id == componentId ).FirstOrDefault();
 
-            viewAllowed = editAllowed || interactionChannel.IsAuthorized( Authorization.VIEW, CurrentPerson );
-            editAllowed = editAllowed || interactionChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            IEntity componentEntity = null;
+            if ( interactionComponent.EntityId.HasValue )
+            {
+                componentEntity = GetComponentEntity( rockContext, interactionComponent );
+            }
+
+            viewAllowed = editAllowed || interactionComponent.IsAuthorized( Authorization.VIEW, CurrentPerson );
+            editAllowed = editAllowed || interactionComponent.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             pnlDetails.Visible = viewAllowed;
             if ( !editAllowed )
@@ -274,24 +267,42 @@ namespace RockWeb.Blocks.Crm
                 btnEdit.Visible = false;
                 btnDelete.Visible = false;
             }
-            btnSecurity.Visible = interactionChannel.IsAuthorized(Authorization.ADMINISTRATE, CurrentPerson);
-            btnSecurity.EntityId = interactionChannel.Id;
-
             SetEditMode( false );
 
-            hfChannelId.SetValue( interactionChannel.Id );
-            lTitle.Text = interactionChannel.Name.FormatAsHtmlTitle();
+            hfComponentId.SetValue( interactionComponent.Id );
+            lTitle.Text = interactionComponent.Name.FormatAsHtmlTitle();
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.AddOrIgnore( "Person", CurrentPerson );
-            mergeFields.Add( "InteractionChannel", interactionChannel );
+            mergeFields.Add( "InteractionChannel", interactionComponent.Channel );
+            mergeFields.Add( "InteractionComponent", interactionComponent );
+            mergeFields.Add( "InteractionComponentEntity", componentEntity.ToString() );
 
             string template = GetAttributeValue( "DefaultTemplate" );
-            if ( !string.IsNullOrEmpty( interactionChannel.ChannelDetailTemplate ) )
+            if ( !string.IsNullOrEmpty( interactionComponent.Channel.ComponentDetailTemplate ) )
             {
-                template = interactionChannel.ChannelDetailTemplate;
+                template = interactionComponent.Channel.ComponentDetailTemplate;
             }
             lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
+        }
+
+        /// <summary>
+        /// Gets the Component Entity
+        /// </summary>
+        /// <param name="rockContext">The db context.</param>
+        /// <param name="component">The interaction component.</param>
+        private IEntity GetComponentEntity( RockContext rockContext, InteractionComponent interactionComponent )
+        {
+            IEntity componentEntity = null;
+            var componentEntityType = EntityTypeCache.Read( interactionComponent.Channel.ComponentEntityTypeId.Value ).GetEntityType();
+            IService serviceInstance = Reflection.GetServiceForEntityType( componentEntityType, rockContext );
+            if ( serviceInstance != null )
+            {
+                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                componentEntity = getMethod.Invoke( serviceInstance, new object[] { interactionComponent.EntityId.Value } ) as Rock.Data.IEntity;
+            }
+
+            return componentEntity;
         }
 
         /// <summary>
