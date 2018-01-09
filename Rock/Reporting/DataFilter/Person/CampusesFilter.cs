@@ -111,19 +111,18 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return string.Format( @"
+            return $@"
 function() {{
     var result = 'Campuses';
-    var campusesPicker = $('.{0}', $content);
-    var checkedCampuses = $('.{0}', $content).find(':checked').closest('label');
+    var campusesPicker = $('.{this.ControlClassName}', $content);
+    var checkedCampuses = $('.{this.ControlClassName}', $content).find(':checked').closest('label');
     if (checkedCampuses.length) {{
-        var campusCommaList = checkedCampuses.map(function() { return $(this).text() }).get().join(',');
+        var campusCommaList = checkedCampuses.map(function() {{ return $(this).text() }}).get().join(',');
         result = 'Campuses: ' + campusCommaList;
     }}
 
     return result;
-}}
-", ControlClassName );
+}}";
         }
 
         /// <summary>
