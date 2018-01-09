@@ -140,9 +140,39 @@ namespace Rock.StatementGenerator.Rest
 
                 var givingIdsQry = unionJoinLocationQry.Select( a => new { a.PersonId, a.GroupId } );
 
-                var result = givingIdsQry.ToList().Select( a => new StatementGeneratorRecipient { GroupId = a.GroupId, PersonId = a.PersonId } ).ToList();
+                var recipientList = givingIdsQry.ToList().Select( a => new StatementGeneratorRecipient { GroupId = a.GroupId, PersonId = a.PersonId } ).ToList();
 
-                return result;
+                if ( options.DataViewId.HasValue )
+                {
+                    var dataView = new DataViewService( new RockContext() ).Get( options.DataViewId.Value );
+                    if ( dataView != null )
+                    {
+                        List<string> errorMessages = new List<string>();
+                        var personList = dataView.GetQuery( null, null, out errorMessages ).OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();
+                        HashSet<int> personIds = new HashSet<int>( personList.Select( a => a.Id ) );
+                        HashSet<int> groupsIds = new HashSet<int>( personList.Where( a => a.GivingGroupId.HasValue ).Select( a => a.GivingGroupId.Value ).Distinct() );
+
+                        foreach ( var recipient in recipientList.ToList() )
+                        {
+                            if ( recipient.PersonId.HasValue )
+                            {
+                                if ( !personIds.Contains( recipient.PersonId.Value ) )
+                                {
+                                    recipientList.Remove( recipient );
+                                }
+                            }
+                            else
+                            {
+                                if ( !groupsIds.Contains( recipient.GroupId ) )
+                                {
+                                    recipientList.Remove( recipient );
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return recipientList;
             }
         }
 
@@ -536,10 +566,11 @@ namespace Rock.StatementGenerator.Rest
 
                 mergeFields.Add( "Options", options );
 
-                result.Html = lavaTemplateLava.ResolveMergeFields( mergeFields );
+                var currentPerson = this.GetPerson();
+                result.Html = lavaTemplateLava.ResolveMergeFields( mergeFields, currentPerson );
                 if ( !string.IsNullOrEmpty( lavaTemplateFooterLava ) )
                 {
-                    result.FooterHtml = lavaTemplateFooterLava.ResolveMergeFields( mergeFields );
+                    result.FooterHtml = lavaTemplateFooterLava.ResolveMergeFields( mergeFields, currentPerson );
                 }
 
                 result.Html = result.Html.Trim();

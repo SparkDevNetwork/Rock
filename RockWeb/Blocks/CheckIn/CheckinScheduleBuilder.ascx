@@ -33,6 +33,50 @@
             </div>
         </div>
 
+        <script>
+            function updateScheduleBuilderHeaderCheckboxes($table)
+            {
+                $table.find('thead > tr > th').each(function (columnIndex) {
+                    if ($(this).find('a.fa').length > 0) {
+                        columnIndex += 1;
+                        var $cbs = $table.find('tbody > tr > td:nth-child(' + columnIndex + ') input');
+                        if ($cbs.length == $cbs.filter(':checked').length) {
+                            $(this).find('a.fa').addClass('fa-check-square-o').removeClass('fa-square-o');
+                        }
+                        else {
+                            $(this).find('a.fa').addClass('fa-square-o').removeClass('fa-check-square-o');
+                        }
+                    }
+                });
+            }
+
+            Sys.Application.add_load(function () {
+                // set the default state of the header checkbox based on if all item row checkboxes are checked                
+                var $table = $('#<%=gGroupLocationSchedule.ClientID%>');
+                updateScheduleBuilderHeaderCheckboxes($table);
+                
+                $table.find('tbody > tr > td input[type="checkbox"]').click(function () { 
+                    updateScheduleBuilderHeaderCheckboxes($table); 
+                });
+                
+                // toggle all check boxes when the user clicks the header checkbox.
+                $('.js-sched-select-all').click(function (e) {
+                    e.preventDefault();
+                    var $th = $(this).closest('th');
+                    var $table = $(this).closest('table');
+                    var columnIndex = $th.parent().children().index($th) + 1;
+                    var $cbs = $table.find('tbody > tr > td:nth-child(' + columnIndex + ') input');
+                    if ($(this).hasClass('fa-square-o')) {
+                        $(this).addClass('fa-check-square-o').removeClass('fa-square-o');
+                        $cbs.prop('checked', true);
+                    } else {
+                        $(this).addClass('fa-square-o').removeClass('fa-check-square-o');
+                        $cbs.prop('checked', false);
+                    }
+                });
+            })
+        </script>
+
     </ContentTemplate>
 </asp:UpdatePanel>
 
