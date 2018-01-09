@@ -1304,6 +1304,7 @@ a.aspNetDisabled {
 .form-group {
     font-size: 14px;
     line-height: 1.42857143;
+    margin-bottom: 5px;
 }
 
 .form-group .checkbox:last-child {
@@ -10219,6 +10220,10 @@ legend {
   color: #000
 }
 
+.input-group .form-control {
+    float: none;
+}
+
 .input-group-addon {
 	font-size: 0px;
 	width: 0px;
@@ -10238,7 +10243,7 @@ legend {
 .btn-default {
 	color: #6f1315;
 	font-weight: 600;
-	width: 100px;
+	min-width: 100px;
 	border-width: 1px;
 	font-family: akrobat;
 }
