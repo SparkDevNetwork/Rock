@@ -270,28 +270,29 @@ namespace Rock.Reporting.DataSelect.Person
             callbackField.OnFormatDataValue += ( sender, e ) =>
             {
                 var phoneNumber = e.DataValue as PhoneNumber;
-
-                if ( enableOrigination )
+                if ( phoneNumber != null )
                 {
-                    if (phoneNumber == null )
+                    if ( enableOrigination )
                     {
-                        e.FormattedValue = string.Empty;
-                        return;
-                    }
+                        if ( _currentPerson == null )
+                        {
+                            e.FormattedValue = phoneNumber.NumberFormatted;
+                            return;
+                        }
 
-                    if ( _currentPerson == null )
+                        var jsScript = string.Format( "javascript: Rock.controls.pbx.originate('{0}', '{1}', '{2}','{3}','{4}');", _currentPerson.Guid, phoneNumber.Number, _currentPerson.FullName, "", phoneNumber.ToString() );
+
+                        e.FormattedValue = string.Format( "<a class='originate-call js-originate-call' href=\"{0}\">{1}</a>", jsScript, phoneNumber.NumberFormatted );
+                    }
+                    else
                     {
                         e.FormattedValue = phoneNumber.NumberFormatted;
-                        return;
                     }
-
-                    var jsScript = string.Format( "javascript: Rock.controls.pbx.originate('{0}', '{1}', '{2}','{3}','{4}');", _currentPerson.Guid, phoneNumber.Number, _currentPerson.FullName, "", phoneNumber.ToString() );
-
-                    e.FormattedValue = string.Format( "<a class='originate-call js-originate-call' href=\"{0}\">{1}</a>", jsScript, phoneNumber.NumberFormatted );
                 }
                 else
                 {
-                    e.FormattedValue = phoneNumber.NumberFormatted;
+                    e.FormattedValue = string.Empty;
+                    return;
                 }
             };
 
