@@ -213,7 +213,11 @@ namespace Rock.Jobs
                 }
 
                 personRockContext.SaveChanges();
+            }
 
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                PersonService personService = new PersonService( personRockContext );
                 // Add any missing metaphones
                 int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsIntegerOrNull() ?? 500;
                 if ( namesToProcess > 0 )
@@ -246,37 +250,15 @@ namespace Rock.Jobs
                         metaphones.Add( metaphone );
                     }
 
-                    personRockContext.SaveChanges();
+                    personRockContext.SaveChanges( disablePrePostProcessing: true );
                 }
-
-                //Add any Missing Primary Family
-                var missingPrimaryFamilyQry = personService.Queryable().Where( p => p.PrimaryFamilyId == null );
-                foreach ( var person in missingPrimaryFamilyQry.Take( 500 ) )
-                {
-                    var family = person.GetFamilies( personRockContext ).FirstOrDefault();
-                    if ( family != null )
-                    {
-                        person.PrimaryFamilyId = family.Id;
-                    }
-                }
-                personRockContext.SaveChanges();
-
-                //calculate missing age classification
-                var missingAgeQualificationQry = personService.Queryable().Where( p => p.AgeClassification == AgeClassification.Unknown && p.BirthDate != null );
-                foreach ( var person in missingAgeQualificationQry.Take( 500 ) )
-                {
-                    if ( person.Age < 18 )
-                    {
-                        person.AgeClassification = AgeClassification.Child;
-                    }
-                    else
-                    {
-                        person.AgeClassification = AgeClassification.Adult;
-                    }
-                }
-
-                personRockContext.SaveChanges();
             }
+
+            // Ensures the PrimaryFamily is correct for all person records in the database
+            int primaryFamilyUpdates = PersonService.UpdatePrimaryFamilyAll();
+
+            // update any updated or incorrect age classifications on persons
+            int ageClassificationUpdates = PersonService.UpdatePersonAgeClassificationAll();
 
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group
@@ -295,10 +277,11 @@ namespace Rock.Jobs
                     .Where( a => a.GroupTypeId == familyGroupTypeId && a.IsActive == true )
                     .Where( a => !a.Members.Where( m => m.Person.RecordStatusValueId != recordStatusInactiveValueId ).Any() );
 
+                var currentDateTime = RockDateTime.Now;
+
                 familyRockContext.BulkUpdate( activeFamilyWithNoActiveMembers, x => new Rock.Model.Group
                 {
-                    IsActive = false,
-                    ModifiedDateTime = RockDateTime.Now
+                    IsActive = false
                 } );
             }
         }
