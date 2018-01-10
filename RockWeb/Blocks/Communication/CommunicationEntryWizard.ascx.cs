@@ -1527,6 +1527,8 @@ namespace RockWeb.Blocks.Communication
 
                         personToDeleteService.Delete( personToDelete );
                     }
+
+                    deleteRockContext.SaveChanges( disablePrePostProcessing: true );
                 }
             }
         }
