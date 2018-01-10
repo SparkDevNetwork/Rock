@@ -6,6 +6,7 @@ Sys.Application.add_load(function () {
 
         resizeBody();
         bodyScroll = new IScroll('.js-kioskscrollpanel .scrollpanel', {
+            click: true,
             scrollbars: true,
             mouseWheel: true,
             interactiveScrollbars: true,

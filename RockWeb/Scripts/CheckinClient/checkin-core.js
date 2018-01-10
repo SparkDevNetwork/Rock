@@ -19,6 +19,7 @@ Sys.Application.add_load(function () {
 
     if ($('.checkin-scroll-panel').length) {
       bodyScroll = new IScroll('.checkin-scroll-panel', {
+        click: true,
         scrollbars: true,
         mouseWheel: true,
         interactiveScrollbars: true,
