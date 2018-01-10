@@ -1856,11 +1856,11 @@ namespace RockWeb.Blocks.Event
             fee.FeeType = rblFeeType.SelectedValueAsEnum<RegistrationFeeType>();
             if ( fee.FeeType == RegistrationFeeType.Single )
             {
-                fee.CostValue = cCost.Text;
+                fee.CostValue = cCost.Text.Replace("$", "");
             }
             else
             {
-                fee.CostValue = kvlMultipleFees.Value;
+                fee.CostValue = kvlMultipleFees.Value.Replace("$", "");
             }
             fee.AllowMultiple = cbAllowMultiple.Checked;
             fee.DiscountApplies = cbDiscountApplies.Checked;
