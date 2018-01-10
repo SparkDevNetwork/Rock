@@ -1262,6 +1262,10 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                 Debug.WriteLine( "ValueAsDateTime RowsUpdated: " + rowsUpdated.ToString() );
             }
 
+            // since we bypassed Rock SaveChanges when Inserting Person records, sweep thru and ensure the AgeClassification and PrimaryFamily is set
+            PersonService.UpdatePersonAgeClassificationAll();
+            PersonService.UpdatePrimaryFamilyAll();
+
             stopwatchTotal.Stop();
             if ( personsToInsert.Any() || groupMemberRecordsToInsertList.Any() || familiesToInsert.Any() )
             {

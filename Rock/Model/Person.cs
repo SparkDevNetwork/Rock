@@ -1724,15 +1724,6 @@ namespace Rock.Model
                 }
             }
 
-            if ( !this.PrimaryFamilyId.HasValue )
-            {
-                var primaryFamily = this.GetFamilies( ( RockContext ) dbContext ).FirstOrDefault();
-                if ( primaryFamily != null )
-                {
-                    this.PrimaryFamily = primaryFamily;
-                }
-            }
-
             CalculateSignals();
 
             if ( this.IsValid )
@@ -1753,6 +1744,7 @@ namespace Rock.Model
             base.PostSaveChanges( dbContext );
 
             PersonService.UpdatePersonAgeClassification( this.Id );
+            PersonService.UpdatePrimaryFamily( this.Id );
         }
 
         /// <summary>
