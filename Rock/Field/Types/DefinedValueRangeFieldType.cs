@@ -260,7 +260,11 @@ namespace Rock.Field.Types
             {
                 RockDropDownList lowerValueControl = pnlRange.Controls.OfType<RockDropDownList>().FirstOrDefault( a => a.ID.EndsWith( "_ddlLower" ) );
                 RockDropDownList upperValueControl = pnlRange.Controls.OfType<RockDropDownList>().FirstOrDefault( a => a.ID.EndsWith( "_ddlUpper" ) );
-                return string.Format( "{0},{1}", lowerValueControl.SelectedValue, upperValueControl.SelectedValue );
+
+                if ( !string.IsNullOrEmpty( lowerValueControl.SelectedValue ) || !string.IsNullOrEmpty( upperValueControl.SelectedValue ) )
+                {
+                    return string.Format( "{0},{1}", lowerValueControl.SelectedValue, upperValueControl.SelectedValue );
+                }
             }
 
             return null;
