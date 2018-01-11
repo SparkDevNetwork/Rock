@@ -1724,20 +1724,6 @@ namespace Rock.Model
                 }
             }
 
-            if ( this.Age.HasValue && this.AgeClassification == AgeClassification.Unknown )
-            {
-                this.AgeClassification = this.Age < 18 ? AgeClassification.Child : AgeClassification.Adult;   
-            }
-
-            if ( !this.PrimaryFamilyId.HasValue )
-            {
-                var primaryFamily = this.GetFamilies( ( RockContext ) dbContext ).FirstOrDefault();
-                if ( primaryFamily != null )
-                {
-                    this.PrimaryFamily = primaryFamily;
-                }
-            }
-
             CalculateSignals();
 
             if ( this.IsValid )
@@ -1747,6 +1733,18 @@ namespace Rock.Model
             }
 
             base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            base.PostSaveChanges( dbContext );
+
+            PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
+            PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
         }
 
         /// <summary>
@@ -1786,7 +1784,7 @@ namespace Rock.Model
         /// <returns></returns>
         public Campus GetCampus()
         {
-            var firstFamily = this.GetFamilies().FirstOrDefault();
+            var firstFamily = this.GetFamily();
             return firstFamily != null ? firstFamily.Campus : null;
         }
 
@@ -3123,7 +3121,15 @@ namespace Rock.Model
         /// <returns></returns>
         public static Group GetFamily( this Person person, RockContext rockContext = null )
         {
-            return person.GetFamilies( rockContext ).FirstOrDefault();
+            // If PrimaryFamily has been calculated, use that. Otherwise, get it from GetFamilies()
+            if ( person.PrimaryFamily != null )
+            {
+                return person.PrimaryFamily;
+            }
+            else
+            {
+                return person.GetFamilies( rockContext ).FirstOrDefault();
+            }
         }
 
         /// <summary>
