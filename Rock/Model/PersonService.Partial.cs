@@ -1461,14 +1461,43 @@ namespace Rock.Model
         /// <returns></returns>
         public GroupTypeRole GetFamilyRole( Person person, RockContext rockContext = null )
         {
-            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            var familyGroupRoles = GroupTypeCache.GetFamilyGroupType().Roles;
+            int? groupTypeRoleId = null;
+            if ( person.AgeClassification == AgeClassification.Adult )
+            {
+                groupTypeRoleId = familyGroupRoles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).FirstOrDefault()?.Id;
+            }
+            else if ( person.AgeClassification == AgeClassification.Child )
+            {
+                groupTypeRoleId = familyGroupRoles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).FirstOrDefault()?.Id;
+            }
 
-            return new GroupMemberService( rockContext == null ? new RockContext() : rockContext ).Queryable()
-                                    .Where( gm => gm.PersonId == person.Id && gm.Group.GroupTypeId == groupTypeFamilyId )
-                                    .OrderBy( gm => gm.GroupOrder ?? int.MaxValue )
-                                    .ThenBy( gm => gm.GroupRole.Order )
-                                    .Select( gm => gm.GroupRole )
-                                    .FirstOrDefault();
+            rockContext = rockContext ?? new RockContext();
+
+            if ( groupTypeRoleId.HasValue )
+            {
+                return new GroupTypeRoleService( rockContext ).Get( groupTypeRoleId.Value );
+            }
+            else
+            {
+                // just in case the AgeClassification method didn't work...
+                var primaryFamilyId = person.GetFamily( rockContext )?.Id;
+                if ( primaryFamilyId.HasValue )
+                {
+                    rockContext = rockContext ?? new RockContext();
+
+                    return new GroupMemberService( rockContext ).Queryable()
+                                            .Where( gm => gm.PersonId == person.Id && gm.GroupId == primaryFamilyId )
+                                            .OrderBy( gm => gm.GroupOrder ?? int.MaxValue )
+                                            .ThenBy( gm => gm.GroupRole.Order )
+                                            .Select( gm => gm.GroupRole )
+                                            .FirstOrDefault();
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         /// <summary>
@@ -1534,7 +1563,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's head of household. If the provided Person's family head of household is not found, this value will be null.</returns>
         public Person GetHeadOfHousehold( Person person )
         {
-            var family = GetFamilies( person.Id ).FirstOrDefault();
+            var family = person.GetFamily( this.Context as RockContext );
             if ( family == null )
             {
                 return null;
@@ -1556,7 +1585,7 @@ namespace Rock.Model
         {
             if ( family == null )
             {
-                family = GetFamilies( person.Id ).FirstOrDefault();
+                family = person.GetFamily( this.Context as RockContext );
             }
 
             if ( family == null )
