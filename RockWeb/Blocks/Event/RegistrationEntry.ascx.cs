@@ -1904,7 +1904,7 @@ namespace RockWeb.Blocks.Event
             // Set the family guid for any other registrants that were selected to be in the same family
             if ( registrar != null )
             {
-                var family = registrar.GetFamilies( rockContext ).FirstOrDefault();
+                var family = registrar.GetFamily( rockContext );
                 if ( family != null )
                 {
                     multipleFamilyGroupIds.AddOrIgnore( RegistrationState.FamilyGuid, family.Id );
@@ -2470,7 +2470,7 @@ namespace RockWeb.Blocks.Event
                 rockContext.SaveChanges();
 
                 // Set the family guid for any other registrants that were selected to be in the same family
-                var family = person.GetFamilies( rockContext ).FirstOrDefault();
+                var family = person.GetFamily( rockContext );
                 if ( family != null )
                 {
                     familyId = family.Id;
@@ -4572,7 +4572,7 @@ namespace RockWeb.Blocks.Event
                         {
                             registrant.PersonId = person.Id;
                             registrant.PersonName = person.FullName;
-                            family = person.GetFamilies( rockContext ).FirstOrDefault();
+                            family = person.GetFamily( rockContext );
                         }
                         else
                         {
