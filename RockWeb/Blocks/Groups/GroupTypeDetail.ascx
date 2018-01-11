@@ -9,7 +9,7 @@
 <asp:UpdatePanel ID="upGroupType" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-users"></i>
@@ -118,6 +118,14 @@
                                     Help="By default, whenever a person record is inactivated, all of that person's group memberships are also inactivated. Check this option if members in groups of this type should not be inactivated when their person record is inactivated." />
                                 <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Enable Indexing"
                                     Help="Determines if groups of this type should be indexed." />
+                                <Rock:RockCheckBox ID="cbAllowSpecificGrpMemAttributes" runat="server" Label="Allow Specific Group Member Attributes"
+                                    Help="Determine if specific groups are allowed to have their own group member attributes. If set to false then the 'Member Attributes' configuration would be hidden on the Group Details block." />
+                                <Rock:RockCheckBox ID="cbEnableSpecificGroupReq" runat="server" Label="Enable Specific Group Requirements"
+                                    Help="Determine if the Group Requirements section will be shown on the Group Details block." />
+                                <Rock:RockCheckBox ID="cbAllowGroupSync" runat="server" Label="Allow Group Sync"
+                                    Help="Determine if groups of this type are allowed to be sync'ed. This will show/hide the 'Group Sync Settings' section on the Group Details block." />
+                                <Rock:RockCheckBox ID="cbAllowSpecificGrpMemWorkFlows" runat="server" Label="Allow Specific Group Member Workflows"
+                                    Help="Determine if groups of this type should be allowed to have Group Member Workflows. This would show/hide the 'Group Member Workflows' section on the Group Details block." />
                             </div>
                         </div>
                     </Rock:PanelWidget>
