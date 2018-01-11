@@ -255,10 +255,16 @@ namespace Rock.Jobs
             }
 
             // Ensures the PrimaryFamily is correct for all person records in the database
-            int primaryFamilyUpdates = PersonService.UpdatePrimaryFamilyAll();
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                int primaryFamilyUpdates = PersonService.UpdatePrimaryFamilyAll( personRockContext );
+            }
 
             // update any updated or incorrect age classifications on persons
-            int ageClassificationUpdates = PersonService.UpdatePersonAgeClassificationAll();
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                int ageClassificationUpdates = PersonService.UpdatePersonAgeClassificationAll( personRockContext );
+            }
 
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group

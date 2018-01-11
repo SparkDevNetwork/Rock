@@ -1743,8 +1743,8 @@ namespace Rock.Model
         {
             base.PostSaveChanges( dbContext );
 
-            PersonService.UpdatePersonAgeClassification( this.Id );
-            PersonService.UpdatePrimaryFamily( this.Id );
+            PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
+            PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
         }
 
         /// <summary>
@@ -1784,7 +1784,7 @@ namespace Rock.Model
         /// <returns></returns>
         public Campus GetCampus()
         {
-            var firstFamily = this.GetFamilies().FirstOrDefault();
+            var firstFamily = this.GetFamily();
             return firstFamily != null ? firstFamily.Campus : null;
         }
 
@@ -3121,7 +3121,15 @@ namespace Rock.Model
         /// <returns></returns>
         public static Group GetFamily( this Person person, RockContext rockContext = null )
         {
-            return person.GetFamilies( rockContext ).FirstOrDefault();
+            // If PrimaryFamily has been calculated, use that. Otherwise, get it from GetFamilies()
+            if ( person.PrimaryFamily != null )
+            {
+                return person.PrimaryFamily;
+            }
+            else
+            {
+                return person.GetFamilies( rockContext ).FirstOrDefault();
+            }
         }
 
         /// <summary>
