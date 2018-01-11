@@ -317,6 +317,15 @@ namespace Rock.Model
         public string RequestEntryName { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration instructions.
+        /// </summary>
+        /// <value>
+        /// The registration instructions.
+        /// </value>
+        [DataMember]
+        public string RegistrationInstructions { get; set; }
+
+        /// <summary>
         /// Gets or sets the success title.
         /// </summary>
         /// <value>
