@@ -594,6 +594,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             srpResource.SetExtraRestParams( srpResource.ShowAllResources );
 
             BaseResourceRestUrl = srpResource.ItemRestUrlExtraParams;
+            ddlCampus.Focus();
         }
 
         /// <summary>
