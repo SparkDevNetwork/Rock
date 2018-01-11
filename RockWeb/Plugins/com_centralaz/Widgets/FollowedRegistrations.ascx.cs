@@ -33,6 +33,7 @@ using System.Text;
 using Rock.Security;
 using System.Reflection;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace RockWeb.Plugins.com_centralaz.Widgets
 {
@@ -402,190 +403,200 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         protected void LoadContent()
         {
-            pnlEdit.Visible = false;
-            pnlView.Visible = true;
-            List<int> toRemove = new List<int>();
-            var entityType = EntityTypeCache.Read( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066".AsGuid() );
-
-            if ( entityType != null )
+            try
             {
-                int personId = this.CurrentPersonId.Value;
+                pnlEdit.Visible = false;
+                pnlView.Visible = true;
+                List<int> toRemove = new List<int>();
+                var entityType = EntityTypeCache.Read( "5CD9C0C8-C047-61A0-4E36-0FDB8496F066".AsGuid() );
 
-                RockContext rockContext = new RockContext();
-                var followingService = new FollowingService( rockContext );
-                var attributeValueService = new AttributeValueService( rockContext );
-                var attributeQualifierService = new AttributeQualifierService( rockContext );
-                var registrationInstanceService = new RegistrationInstanceService( rockContext );
-                
-                IQueryable<IEntity> qryFollowedItems = followingService.GetFollowedItems( entityType.Id, personId );
-
-                var userPreference = this.GetUserPreference( "FollowedRegistrations" );
-                List<RegistrationInstanceCount> registrationList = new List<RegistrationInstanceCount>();
-
-                if ( !String.IsNullOrWhiteSpace( userPreference ) )
+                if ( entityType != null )
                 {
-                    registrationList = JsonConvert.DeserializeObject<List<RegistrationInstanceCount>>( userPreference );
+                    int personId = this.CurrentPersonId.Value;
 
-                    // remove item no longer followed
-                    foreach ( var registrationInstance in registrationList )
+                    RockContext rockContext = new RockContext();
+                    var followingService = new FollowingService( rockContext );
+                    var attributeValueService = new AttributeValueService( rockContext );
+                    var attributeQualifierService = new AttributeQualifierService( rockContext );
+                    var registrationInstanceService = new RegistrationInstanceService( rockContext );
+
+                    IQueryable<IEntity> qryFollowedItems = followingService.GetFollowedItems( entityType.Id, personId );
+
+                    var userPreference = this.GetUserPreference( "FollowedRegistrations" );
+                    List<RegistrationInstanceCount> registrationList = new List<RegistrationInstanceCount>();
+
+                    if ( !String.IsNullOrWhiteSpace( userPreference ) )
                     {
-                        if ( !qryFollowedItems.Any( f => f.Id == registrationInstance.InstanceId ) )
-                        {
-                            toRemove.Add( registrationInstance.InstanceId );
-                        }
-                    }
-                    registrationList.RemoveAll( x => toRemove.Contains( x.InstanceId ) );
+                        registrationList = JsonConvert.DeserializeObject<List<RegistrationInstanceCount>>( userPreference );
 
-                    foreach ( var registrationInstance in registrationList )
-                    {
-                        var registration = registrationInstanceService.Get( registrationInstance.InstanceId );
-                        if ( registration != null )
+                        // remove item no longer followed
+                        foreach ( var registrationInstance in registrationList )
                         {
-                            var registrantIdList = registration.Registrations.SelectMany( r => r.Registrants ).Select( s => s.Id ).Distinct().ToList();
-                            var personIdList = registration.Registrations.SelectMany( r => r.Registrants ).Select( s => s.PersonId ).Distinct().ToList();
-
-                            // Display subtotals for each matching attribute
-                            foreach ( var registrationAttribute in registrationInstance.InstanceAttributes.Where( a => a.IsSelected ).ToList() )
+                            if ( !qryFollowedItems.Any( f => f.Id == registrationInstance.InstanceId ) )
                             {
-                                var qualifier = attributeQualifierService.Queryable().AsNoTracking().Where( q => q.Key == "values" && q.AttributeId == registrationAttribute.AttributeId ).FirstOrDefault();
-                                if ( qualifier != null && !String.IsNullOrWhiteSpace( qualifier.Value ) )
+                                toRemove.Add( registrationInstance.InstanceId );
+                            }
+                        }
+                        registrationList.RemoveAll( x => toRemove.Contains( x.InstanceId ) );
+
+                        foreach ( var registrationInstance in registrationList )
+                        {
+                            var registration = registrationInstanceService.Get( registrationInstance.InstanceId );
+                            if ( registration != null )
+                            {
+                                var registrantIdList = registration.Registrations.SelectMany( r => r.Registrants ).Select( s => s.Id ).Distinct().ToList();
+                                var personIdList = registration.Registrations.SelectMany( r => r.Registrants ).Select( s => s.PersonId ).Distinct().ToList();
+
+                                // Display subtotals for each matching attribute
+                                if ( registrationInstance.InstanceAttributes != null )
                                 {
-                                    registrationAttribute.AttributeValues = new List<AttributeValueCount>();
-                                    foreach ( var qualifierValue in qualifier.Value.SplitDelimitedValues( false ) )
+                                    foreach ( var registrationAttribute in registrationInstance.InstanceAttributes.Where( a => a.IsSelected ).ToList() )
                                     {
-                                        var attributeValueCount = new AttributeValueCount();
-                                        string[] nameAndValue = qualifierValue.Trim().Split( new char[] { '^' } );
-
-                                        if ( nameAndValue.Length == 1 )
+                                        var qualifier = attributeQualifierService.Queryable().AsNoTracking().Where( q => q.Key == "values" && q.AttributeId == registrationAttribute.AttributeId ).FirstOrDefault();
+                                        if ( qualifier != null && !String.IsNullOrWhiteSpace( qualifier.Value ) )
                                         {
-                                            attributeValueCount.ValueName = nameAndValue[0];
+                                            registrationAttribute.AttributeValues = new List<AttributeValueCount>();
+                                            foreach ( var qualifierValue in qualifier.Value.SplitDelimitedValues( false ) )
+                                            {
+                                                var attributeValueCount = new AttributeValueCount();
+                                                string[] nameAndValue = qualifierValue.Trim().Split( new char[] { '^' } );
 
-                                            attributeValueCount.Count = attributeValueService.Queryable().AsNoTracking().Where( av =>
-                                                av.AttributeId == registrationAttribute.AttributeId &&
-                                                av.EntityId.HasValue &&
-                                                ( ( av.Attribute.EntityType.Guid == _registrantGuid && registrantIdList.Contains( av.EntityId.Value ) ) ||
-                                                ( av.Attribute.EntityType.Guid != _registrantGuid && personIdList.Contains( av.EntityId.Value ) ) ) &&
-                                                ( "," + av.Value + "," ).Contains( "," + attributeValueCount.ValueName + "," ) )
-                                                .Count();
+                                                if ( nameAndValue.Length == 1 )
+                                                {
+                                                    attributeValueCount.ValueName = nameAndValue[0];
+
+                                                    attributeValueCount.Count = attributeValueService.Queryable().AsNoTracking().Where( av =>
+                                                        av.AttributeId == registrationAttribute.AttributeId &&
+                                                        av.EntityId.HasValue &&
+                                                        ( ( av.Attribute.EntityType.Guid == _registrantGuid && registrantIdList.Contains( av.EntityId.Value ) ) ||
+                                                        ( av.Attribute.EntityType.Guid != _registrantGuid && personIdList.Contains( av.EntityId.Value ) ) ) &&
+                                                        ( "," + av.Value + "," ).Contains( "," + attributeValueCount.ValueName + "," ) )
+                                                        .Count();
+                                                }
+                                                else if ( nameAndValue.Length > 1 )
+                                                {
+                                                    var value = nameAndValue[0];
+                                                    attributeValueCount.ValueName = nameAndValue[1];
+
+                                                    attributeValueCount.Count = attributeValueService.Queryable().AsNoTracking().Where( av =>
+                                                        av.AttributeId == registrationAttribute.AttributeId &&
+                                                        av.EntityId.HasValue &&
+                                                        ( ( av.Attribute.EntityType.Guid == _registrantGuid && registrantIdList.Contains( av.EntityId.Value ) ) ||
+                                                        ( av.Attribute.EntityType.Guid != _registrantGuid && personIdList.Contains( av.EntityId.Value ) ) ) &&
+                                                        ( "," + av.Value + "," ).Contains( "," + value + "," ) )
+                                                        .Count();
+                                                }
+
+                                                registrationAttribute.AttributeValues.Add( attributeValueCount );
+                                            }
                                         }
-                                        else
-                                        {
-                                            var value = nameAndValue[0];
-                                            attributeValueCount.ValueName = nameAndValue[1];
-
-                                            attributeValueCount.Count = attributeValueService.Queryable().AsNoTracking().Where( av =>
-                                                av.AttributeId == registrationAttribute.AttributeId &&
-                                                av.EntityId.HasValue &&
-                                                ( ( av.Attribute.EntityType.Guid == _registrantGuid && registrantIdList.Contains( av.EntityId.Value ) ) ||
-                                                ( av.Attribute.EntityType.Guid != _registrantGuid && personIdList.Contains( av.EntityId.Value ) ) ) &&
-                                                ( "," + av.Value + "," ).Contains( "," + value + "," ) )
-                                                .Count();
-                                        }
-
-                                        registrationAttribute.AttributeValues.Add( attributeValueCount );
                                     }
                                 }
-                            }
 
-                            // Display subtotals for each matching Fee
-                            if ( registrationInstance.InstanceFees != null )
-                            {
-                                var feeIds = registrationInstance.InstanceFees.Where( a => a.IsSelected ).Select( f => f.RegistrationTemplateFeeId ).ToList();
-                                var fees = registration.Registrations.SelectMany( r => r.Registrants )
-                                    .SelectMany( rr => rr.Fees )
-                                    .Where( f => feeIds.Contains( f.RegistrationTemplateFeeId ) );
-
-                                foreach ( var registrationFee in registrationInstance.InstanceFees.Where( f => f.IsSelected ).ToList() )
+                                // Display subtotals for each matching Fee
+                                if ( registrationInstance.InstanceFees != null )
                                 {
-                                    registrationFee.FeeValues = new List<AttributeValueCount>();
+                                    var feeIds = registrationInstance.InstanceFees.Where( a => a.IsSelected ).Select( f => f.RegistrationTemplateFeeId ).ToList();
+                                    var fees = registration.Registrations.SelectMany( r => r.Registrants )
+                                        .SelectMany( rr => rr.Fees )
+                                        .Where( f => feeIds.Contains( f.RegistrationTemplateFeeId ) );
 
-                                    // Process multiple type fees:
-                                    var multipleTypeOptions = fees.Where( f => f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Multiple )
-                                        .OrderBy( f => f.RegistrationTemplateFee.Name )
-                                        .Select( o => o.Option ).Distinct();
-
-                                    foreach ( var feeOption in multipleTypeOptions )
+                                    foreach ( var registrationFee in registrationInstance.InstanceFees.Where( f => f.IsSelected ).ToList() )
                                     {
-                                        var feeValueCount = new AttributeValueCount();
-                                        feeValueCount.ValueName = feeOption;
-                                        feeValueCount.Count = fees.Where( f => f.Option == feeOption && f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Multiple )
-                                            .Sum( f=>f.Quantity );
-                                        registrationFee.FeeValues.Add( feeValueCount );
-                                    }
+                                        registrationFee.FeeValues = new List<AttributeValueCount>();
 
-                                    // Process single type fees:
-                                    var singleTypeOptions = fees.Where( f => f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Single )
-                                        .OrderBy( f => f.RegistrationTemplateFee.Order )
-                                        .Select( f => f.RegistrationTemplateFee.Name ).Distinct();
+                                        // Process multiple type fees:
+                                        var multipleTypeOptions = fees.Where( f => f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Multiple )
+                                            .OrderBy( f => f.RegistrationTemplateFee.Name )
+                                            .Select( o => o.Option ).Distinct();
 
-                                    foreach ( var feeOption in singleTypeOptions )
-                                    {
-                                        var feeValueCount = new AttributeValueCount();
-                                        feeValueCount.ValueName = feeOption;
-                                        var matchingFees = fees.Where( f => f.RegistrationTemplateFee.Name == feeOption && f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Single );
-                                        feeValueCount.Count = matchingFees.Sum( f => f.Quantity );
+                                        foreach ( var feeOption in multipleTypeOptions )
+                                        {
+                                            var feeValueCount = new AttributeValueCount();
+                                            feeValueCount.ValueName = feeOption;
+                                            feeValueCount.Count = fees.Where( f => f.Option == feeOption && f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Multiple )
+                                                .Sum( f => f.Quantity );
+                                            registrationFee.FeeValues.Add( feeValueCount );
+                                        }
 
-                                        registrationFee.FeeValues.Add( feeValueCount );
+                                        // Process single type fees:
+                                        var singleTypeOptions = fees.Where( f => f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Single )
+                                            .OrderBy( f => f.RegistrationTemplateFee.Order )
+                                            .Select( f => f.RegistrationTemplateFee.Name ).Distinct();
+
+                                        foreach ( var feeOption in singleTypeOptions )
+                                        {
+                                            var feeValueCount = new AttributeValueCount();
+                                            feeValueCount.ValueName = feeOption;
+                                            var matchingFees = fees.Where( f => f.RegistrationTemplateFee.Name == feeOption && f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Single );
+                                            feeValueCount.Count = matchingFees.Sum( f => f.Quantity );
+
+                                            registrationFee.FeeValues.Add( feeValueCount );
+                                        }
                                     }
                                 }
-                            }
 
-                            registrationInstance.Count = registrantIdList.Count;
+                                registrationInstance.Count = registrantIdList.Count;
+                            }
                         }
                     }
-                }
 
-                // Add any followed items that are not pre-defined.
-                var registrationListIds = registrationList.Select( r => r.InstanceId ).Distinct().ToList();
-                qryFollowedItems = qryFollowedItems.Where( i => !registrationListIds.Contains( i.Id ) );
-                foreach ( var item in qryFollowedItems.ToList() )
-                {
-                    var registration = registrationInstanceService.Get( item.Id );
-
-                    var registrationInstance = new RegistrationInstanceCount();
-                    registrationInstance.Count = registration.Registrations.SelectMany( r => r.Registrants ).Select( s => s.Id ).Distinct().Count();
-                    registrationInstance.InstanceName = registration.Name;
-                    registrationInstance.InstanceId = registration.Id;
-                    registrationList.Add( registrationInstance );
-                }
-
-                int quantity = GetAttributeValue( "MaxResults" ).AsInteger();
-                var items = registrationList.Take( quantity + 1 ).ToList();
-
-                bool hasMore = ( quantity < items.Count );
-                items = items.Take( quantity ).ToList();
-
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.Add( "FollowingItems", items );
-                mergeFields.Add( "HasMore", hasMore );
-                mergeFields.Add( "Quantity", quantity );
-
-                mergeFields.Add( "LinkUrl", GetAttributeValue( "LinkUrl" ) );
-
-                string template = GetAttributeValue( "LavaTemplate" );
-                lContent.Text = template.ResolveMergeFields( mergeFields );
-
-                // Resave followed registrations if we removed some that are no longer followed.
-                if ( toRemove.Count > 0 )
-                {
-                    var jsonSetting = new JsonSerializerSettings
+                    // Add any followed items that are not pre-defined.
+                    var registrationListIds = registrationList.Select( r => r.InstanceId ).Distinct().ToList();
+                    qryFollowedItems = qryFollowedItems.Where( i => !registrationListIds.Contains( i.Id ) );
+                    foreach ( var item in qryFollowedItems.ToList() )
                     {
-                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                        ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
-                    };
-                    this.SetUserPreference( "FollowedRegistrations", JsonConvert.SerializeObject( registrationList, Formatting.None, jsonSetting ) );
+                        var registration = registrationInstanceService.Get( item.Id );
+
+                        var registrationInstance = new RegistrationInstanceCount();
+                        registrationInstance.Count = registration.Registrations.SelectMany( r => r.Registrants ).Select( s => s.Id ).Distinct().Count();
+                        registrationInstance.InstanceName = registration.Name;
+                        registrationInstance.InstanceId = registration.Id;
+                        registrationList.Add( registrationInstance );
+                    }
+
+                    int quantity = GetAttributeValue( "MaxResults" ).AsInteger();
+                    var items = registrationList.Take( quantity + 1 ).ToList();
+
+                    bool hasMore = ( quantity < items.Count );
+                    items = items.Take( quantity ).ToList();
+
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                    mergeFields.Add( "FollowingItems", items );
+                    mergeFields.Add( "HasMore", hasMore );
+                    mergeFields.Add( "Quantity", quantity );
+
+                    mergeFields.Add( "LinkUrl", GetAttributeValue( "LinkUrl" ) );
+
+                    string template = GetAttributeValue( "LavaTemplate" );
+                    lContent.Text = template.ResolveMergeFields( mergeFields );
+
+                    // Resave followed registrations if we removed some that are no longer followed.
+                    if ( toRemove.Count > 0 )
+                    {
+                        var jsonSetting = new JsonSerializerSettings
+                        {
+                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                            ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                        };
+                        this.SetUserPreference( "FollowedRegistrations", JsonConvert.SerializeObject( registrationList, Formatting.None, jsonSetting ) );
+                    }
+
+                    // show debug info
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                    {
+                        lDebug.Visible = true;
+                        lDebug.Text = mergeFields.lavaDebugInfo();
+                    }
+                }
+                else
+                {
+                    lContent.Text = string.Format( "<div class='alert alert-warning'>Please configure an entity in the block settings." );
                 }
 
-                // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
-                }
-            }
-            else
+            } catch ( Exception ex )
             {
-                lContent.Text = string.Format( "<div class='alert alert-warning'>Please configure an entity in the block settings." );
+                lContent.Text = string.Format( "<div class='alert alert-warning'>Sorry. There is a problem in here that prevented the block from working. ({0})", ex.Message );
             }
         }
 

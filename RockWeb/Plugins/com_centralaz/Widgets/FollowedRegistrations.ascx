@@ -9,6 +9,8 @@
                     <asp:LinkButton ID="lbEdit" runat="server" CssClass="fa fa-cog" OnClick="lbEdit_Click" />
                 </div>
             </div>
+
+            <Rock:NotificationBox runat="server" ID="nbError" NotificationBoxType="Danger"></Rock:NotificationBox>
             <asp:Panel ID="pnlView" runat="server" Visible="true" class='panel-body'>
 
                 <asp:Literal ID="lContent" runat="server"></asp:Literal>
@@ -41,8 +43,6 @@
                         <br />
                     </ItemTemplate>
                 </asp:Repeater>
-
-
 
                 <div class="actions">
                     <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
