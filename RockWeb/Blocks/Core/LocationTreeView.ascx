@@ -50,6 +50,7 @@
                 var scrollContainer = scrollbCategory.find('.viewport');
                 var scrollIndicator = scrollbCategory.find('.track');
                 locationIScroll = new IScroll(scrollContainer[0], {
+                    click: true,
                     mouseWheel: false,
                     scrollX: true,
                     scrollY: false,

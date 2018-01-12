@@ -56,6 +56,7 @@
 
                             // init scroll bars for folder divs
                             <%=pnlTreeViewPort.ClientID%>IScroll = new IScroll('#<%=pnlTreeViewPort.ClientID%>', {
+                                click: true,
                                 mouseWheel: true,
                                 indicators: {
                                     el: '#<%=pnlTreeTrack.ClientID%>',
@@ -77,6 +78,7 @@
                         // init the file list RockList on every load
                         $('.js-file-list .js-listview').rockList();
                         new IScroll('#<%=pnlListViewPort.ClientID%>', {
+                            click: true,
                             mouseWheel: true,
                             indicators: {
                                 el: '#<%=pnlListTrack.ClientID%>',

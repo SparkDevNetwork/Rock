@@ -45,6 +45,7 @@
                 var $scrollContainer = $control.find('.scroll-container .viewport');
                 var $scrollIndicator = $control.find('.track');
                 this.iScroll = new IScroll($scrollContainer[0], {
+                    click: true,
                     mouseWheel: true,
                     indicators: {
                         el: $scrollIndicator[0],
