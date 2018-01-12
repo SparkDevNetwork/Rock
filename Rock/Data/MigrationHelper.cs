@@ -4122,7 +4122,7 @@ END
                 SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
 
                 DECLARE @EntityTypeId int
-                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{attributeGuid}')
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{entityTypeGuid}')
 
                 UPDATE [Attribute] SET
                         [Key] = '{attributeKey}'
