@@ -38,6 +38,7 @@ namespace church.ccv.Promotions.Data
         /// <param name="startDate"></param>
         /// <param name="approvedByPersonAliasId"></param>
         /// <param name="title"></param>
+        /// <param name="audiences"></param>
         /// <param name="content"></param>
         /// <param name="contentChannelItemCampusGuid"></param>
         /// <param name="campusId"></param>
@@ -46,7 +47,8 @@ namespace church.ccv.Promotions.Data
                                                       int contentChannelTypeId, 
                                                       DateTime startDate, 
                                                       int? approvedByPersonAliasId, 
-                                                      string title, 
+                                                      string title,
+                                                      string audiences, 
                                                       string content, 
                                                       string contentChannelItemCampusGuid, 
                                                       string campusGuids,
@@ -68,7 +70,7 @@ namespace church.ccv.Promotions.Data
                 contentService.Add( contentItem );
                 rockContext.SaveChanges( );
 
-                // now set the campus, (if the event has one and this content channel type supports one)
+                // now set the campus and audience, (if the event has them and this content channel type supports them)
                 contentItem.LoadAttributes( rockContext );
             
                 // this will either be the key for a single campus attribute, or the multi-campus attribute. It's
@@ -79,6 +81,18 @@ namespace church.ccv.Promotions.Data
                     contentItem.SetAttributeValue( attribute.Key, campusGuids );
                 
                     contentItem.SaveAttributeValues( rockContext );
+                }
+
+                // check for an audience attribute and if found populate with audience string passed by caller
+                var audienceAttribute = contentItem.Attributes.Where( a => a.Key == "Audience" ).Select( a => a.Value ).FirstOrDefault();
+                if ( audienceAttribute != null)
+                {
+                    if ( !audiences.IsNullOrWhiteSpace() )
+                    {
+                        contentItem.SetAttributeValue( audienceAttribute.Key, audiences );
+
+                        contentItem.SaveAttributeValues( rockContext );
+                    }                    
                 }
 
                 // finally, create the promotion occurrence item

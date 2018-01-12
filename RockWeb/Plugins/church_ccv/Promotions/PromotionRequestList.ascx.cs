@@ -241,12 +241,12 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                     // get the event item linked to the request
                     EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
                     var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
-            
+
                     // figure out if this promo should be using single "Campus" or multiple "Campuses"
                     var campusObj = new CampusService( rockContext ).Get( ddlCampus.SelectedValue.AsInteger( ) );
-            
+                    
                     bool multiCampus = PromotionsUtil.IsContentChannelMultiCampus( rockContext, promoRequest.ContentChannel.Id );
-
+                    
                     // the campus attribute type (multi or single), along with the event's campus,
                     // will determine how we setup the data
 
@@ -273,11 +273,20 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                             campusAttributeGuid = Rock.SystemGuid.FieldType.CAMPUS;
                         }
 
+                        // Check If event item has audiences, Loop through them to create a string of their guids
+                        string audiences = "";
+
+                        if ( eventItem.EventItem.EventItemAudiences.Count() > 0 )
+                        {
+                            audiences = GetAudiences( eventItem );
+                        }
+
                         PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id,
                                                                   promoRequest.ContentChannel.ContentChannelTypeId,
                                                                   dpTargetPromoDate.SelectedDate.Value,
                                                                   CurrentPersonAliasId,
                                                                   eventItem.EventItem.Name,
+                                                                  audiences,
                                                                   BuildPromoContent( eventItem ),
                                                                   campusAttributeGuid,
                                                                   campusGuids,
@@ -396,12 +405,21 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                     }
                 }
 
+                // Check If event item has audiences, Loop through them to create a string of their guids
+                string audiences = "";
+
+                if ( eventItem.EventItem.EventItemAudiences.Count() > 0 )
+                {
+                    audiences = GetAudiences( eventItem );
+                }
+
                 // create the combined promo occurrence
                 PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id, 
                                                           promoRequest.ContentChannel.ContentChannelTypeId, 
                                                           dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : RockDateTime.Now, 
                                                           CurrentPersonAliasId, 
                                                           eventItem.EventItem.Name,
+                                                          audiences,
                                                           BuildPromoContent( eventItem ),
                                                           Rock.SystemGuid.FieldType.CAMPUSES,
                                                           campusGuids,
@@ -643,6 +661,33 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             {
                 return "N/A";
             }
+        }
+
+        /// <summary>
+        /// Return audiences of an event item as a string of guid's
+        /// </summary>
+        string GetAudiences(EventItemOccurrence eventItem)
+        {
+            string audiences = "";
+
+            // Check if eventItem has audiences
+            if ( eventItem.EventItem.EventItemAudiences.Count() > 0 )
+            {
+                // Loop through each audience
+                for ( int i = 0; i < eventItem.EventItem.EventItemAudiences.Count(); i++ )
+                {
+                    // add the audience guid to the return string
+                    audiences += eventItem.EventItem.EventItemAudiences.ElementAt( i ).DefinedValue.Guid.ToString();
+
+                    // Add a comma to the return string if its not the last item
+                    if ( i != ( eventItem.EventItem.EventItemAudiences.Count - 1 ) )
+                    {
+                        audiences += ", ";
+                    }
+                }
+            }
+
+            return audiences;
         }
         
         #endregion

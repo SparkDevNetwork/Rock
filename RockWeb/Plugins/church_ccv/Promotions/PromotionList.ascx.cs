@@ -234,12 +234,13 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
                     // the campus attribute type (multi or single) will determine how we setup the data
                     string campusGuid = multiCampus == true ? Rock.SystemGuid.FieldType.CAMPUSES : Rock.SystemGuid.FieldType.CAMPUS;
-
+                    
                     PromotionsUtil.CreatePromotionOccurrence( contentChannel.Id,
                                                               contentChannel.ContentChannelTypeId,
                                                               dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : RockDateTime.Now,
                                                               CurrentPersonAliasId,
                                                               "New Promotion Occurrence",
+                                                              string.Empty,
                                                               string.Empty,
                                                               campusGuid,
                                                               campusObj.Guid.ToString( ),
