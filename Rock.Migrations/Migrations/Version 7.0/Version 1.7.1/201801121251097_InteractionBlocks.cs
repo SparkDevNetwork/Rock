@@ -41,6 +41,9 @@ namespace Rock.Migrations
             Sql( @"
     UPDATE [Page] SET [BreadCrumbDisplayName] = 0
     WHERE [Guid] in ( '756D37B7-7BE2-497D-8D37-CC273FE29659', 'AF2FBEB8-1E47-4F51-A503-3D73C0D66B4E', '9043D8F9-F9FD-4BE6-A50B-ABF9821EC0CD' )
+
+    DECLARE @ChannelTypeMediumValueWebsiteId INT = ( SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = 'E503E77D-CF35-E09F-41A2-B213184F48E8' )
+    UPDATE [InteractionChannel] SET [UsesSession] = 1 WHERE [ChannelTypeMediumValueId] = @ChannelTypeMediumValueWebsiteId
 " );
 
             RockMigrationHelper.AddPageRoute( "756D37B7-7BE2-497D-8D37-CC273FE29659", "sessions/{ChannelId}", "81DD168F-AE66-4751-961F-75C79B282043" );// for Page:Sessions
