@@ -682,7 +682,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                     // Add a comma to the return string if its not the last item
                     if ( i != ( eventItem.EventItem.EventItemAudiences.Count - 1 ) )
                     {
-                        audiences += ", ";
+                        audiences += ",";
                     }
                 }
             }
