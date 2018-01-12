@@ -20,65 +20,43 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+
 using DotLiquid;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Crm
+namespace RockWeb.Blocks.Reporting
 {
     /// <summary>
     /// List all the Interaction Channel.
     /// </summary>
     [DisplayName( "Interaction Channel List" )]
-    [Category( "CRM" )]
+    [Category( "Reporting" )]
     [Description( "List all the Interaction Channel" )]
 
     [LinkedPage( "Session List Page", "Page reference to the session list page. This will be included as a variable in the Lava.", false, order: 0 )]
     [LinkedPage( "Component List Page", "Page reference to the component list page. This will be included as a variable in the Lava.", false, order: 1 )]
-    [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, order: 2, defaultValue: @"
+    [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"
 {% if InteractionChannel != null and InteractionChannel != '' %}
-
-                    {% if InteractionChannel.UsesSession == false and ComponentListPage != ''  %}
-                        <a href = '{{ ComponentListPage }}?channelId={{ InteractionChannel.Id }}' >
-                    {% elseif InteractionChannel.UsesSession == true and SessionListPage != ''  %}
-                        <a href = '{{ SessionListPage }}?channelId={{ InteractionChannel.Id }}' >
-                    {% endif %}
-                    <div class='row'>
-                        <div class='col-md-6'>
-                            {% if InteractionChannel.Name != '' %}
-                                <dl>
-                               <dt>Name</dt>
-                               <dd>{{ InteractionChannel.Name }}<dd/>
-                               </dl>
-                            {% endif %}
-                            {% if InteractionChannel.RetentionDuration != '' %}
-                                <dl>
-                               <dt>Retention Duration</dt
-                               <dd>{{ InteractionChannel.RetentionDuration }}<dd/>
-                            </dl>
-                            {% endif %}
-                        </div>
-                        <div class='col-md-6'>
-                            {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}
-                            <dl>
-                               <dt>Name</dt
-                               <dd>{{ InteractionChannel.ChannelTypeMediumValue.Value }}<dd/>
-                            </dl>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% if (InteractionChannel.UsesSession == false and ComponentListPage != '') or (InteractionChannel.UsesSession == true and SessionListPage != '') %}
-                        </a>
-                    {% endif %}
+    <a href = '{% if InteractionChannel.UsesSession == true %}{{ SessionListPage }}{% else  %}{{ ComponentListPage }}{% endif %}?ChannelId={{ InteractionChannel.Id }}' >
+        <div class='row'>
+            <div class='col-md-6'>
+                {% if InteractionChannel.Name != '' %}<dl><dt>Name</dt><dd>{{ InteractionChannel.Name }}<dd/></dl>{% endif %}
+                {% if InteractionChannel.RetentionDuration != '' %}<dl><dt>Retention Duration</dt><dd>{{ InteractionChannel.RetentionDuration }}<dd/></dl>{% endif %}
+            </div>
+            <div class='col-md-6'>
+                {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}<dl><dt>Name</dt><dd>{{ InteractionChannel.ChannelTypeMediumValue.Value }}<dd/></dl>{% endif %}
+            </div>
+        </div>
+    </a>
 {% endif %}" )]
+
     public partial class InteractionChannelList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -162,6 +140,11 @@ namespace RockWeb.Blocks.Crm
                         e.Value = mediumTypeValue.Value;
                     }
                     break;
+                default:
+                    {
+                        e.Value = string.Empty;
+                        break;
+                    }
             }
         }
 
@@ -188,20 +171,20 @@ namespace RockWeb.Blocks.Crm
         {
             using ( var rockContext = new RockContext() )
             {
-                InteractionChannelService interactionChannelService = new InteractionChannelService( rockContext );
-                var interactionChannels = interactionChannelService.Queryable().AsNoTracking();
+                var channelQry = new InteractionChannelService( rockContext )
+                    .Queryable().AsNoTracking();
 
                 var channelMediumValueId = gfFilter.GetUserPreference( MEDIUM_TYPE_FILTER ).AsIntegerOrNull();
                 if ( channelMediumValueId.HasValue )
                 {
-                    interactionChannels = interactionChannels.Where( a => a.ChannelTypeMediumValueId == channelMediumValueId.Value );
+                    channelQry = channelQry.Where( a => a.ChannelTypeMediumValueId == channelMediumValueId.Value );
                 }
 
                 // Parse the default template so that it does not need to be parsed multiple times
                 var defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
                 var channelItems = new List<ChannelItem>();
 
-                foreach ( var interacationChannel in interactionChannels )
+                foreach ( var interacationChannel in channelQry )
                 {
                     if ( !interacationChannel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
@@ -231,12 +214,19 @@ namespace RockWeb.Blocks.Crm
         }
 
         #endregion
-
     }
 
+    #region Helper Classes
+
+    /// <summary>
+    /// Class for binding repeater
+    /// </summary>
     public class ChannelItem
     {
         public int Id { get; set; }
+
         public string ChannelHtml { get; set; }
     }
+
+    #endregion
 }
