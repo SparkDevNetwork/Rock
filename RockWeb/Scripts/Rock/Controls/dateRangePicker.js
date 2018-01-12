@@ -23,15 +23,12 @@
 
         var isValid = true;
 
-        if (required && (lowerValue.dates.length != 1 || upperValue.dates.length != 1))
-        {
-          isValid = false;
-          validator.errormessage = itemLabelText + " is Required";
-        }
-        else if ((upperValue.dates.length == 1 || lowerValue.dates.length == 1) && upperValue.dates.length != lowerValue.dates.length)
-        {
-          isValid = false;
-          validator.errormessage = itemLabelText + " is Required";
+        if (required) {
+            // if required, then make sure that both the start and end are specified (make sure neither are blank)
+            if (lowerValue.dates.length != 1 || upperValue.dates.length != 1) {
+                isValid = false;
+                validator.errormessage = itemLabelText + " is Required";
+            }
         }
 
         var control = $dateRangePicker
