@@ -3762,6 +3762,7 @@ namespace Rock.Web.UI.Controls
                 PageLink[i] = new LinkButton();
                 PageLinkListItem[i].Controls.Add( PageLink[i] );
                 PageLink[i].ID = string.Format( "pageLink{0}", i );
+                PageLink[i].CausesValidation = false;
                 PageLink[i].Command += lbPage_Command;
             }
 

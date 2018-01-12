@@ -6,13 +6,14 @@ Sys.Application.add_load(function () {
 
         resizeBody();
         bodyScroll = new IScroll('.js-kioskscrollpanel .scrollpanel', {
-            click: true,
             scrollbars: true,
             mouseWheel: true,
             interactiveScrollbars: true,
             shrinkScrollbars: 'scale',
             fadeScrollbars: false,
-            scrollbars: 'custom'
+            scrollbars: 'custom',
+            click: false,
+            preventDefaultException: { tagName: /.*/ }
         });
 
         $(window).on('resize', function () {

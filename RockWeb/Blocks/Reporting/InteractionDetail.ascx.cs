@@ -23,6 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -48,6 +49,10 @@ namespace RockWeb.Blocks.Reporting
                         <dt>Channel</dt><dd>{{ InteractionChannel.Name }}<dd/>
                         <dt>Date / Time</dt><dd>{{ Interaction.InteractionDateTime }}<dd/>
                         <dt>Operation</dt><dd>{{ Interaction.Operation }}<dd/>
+                        
+                        {% if InteractionEntityName != '' %}
+                            <dt>Related Entity</dt><dd>{{ InteractionEntityName }}<dd/>
+                        {% endif %}
                     </dl>
                 </div>
                 <div class='col-md-6'>
@@ -56,7 +61,14 @@ namespace RockWeb.Blocks.Reporting
                         {% if Interaction.PersonAlias.Person.FullName != '' %}
                             <dt>Person</dt><dd>{{ Interaction.PersonAlias.Person.FullName }}<dd/>
                         {% endif %}
-                        <dt>Interaction</dt><dd>{{ Interaction.InteractionData }}<dd/>
+                        
+                        {% if Interaction.InteractionSummary && Interaction.InteractionSummary != '' %}
+                            <dt>Interaction Summary</dt><dd>{{ Interaction.InteractionSummary }}<dd/>
+                        {% endif %}
+                        
+                        {% if Interaction.InteractionData && Interaction.InteractionData != '' %}
+                            <dt>Interaction Data</dt><dd>{{ Interaction.InteractionData }}<dd/>
+                        {% endif %}
                     </dl>
                 </div>
             </div>
@@ -121,6 +133,13 @@ namespace RockWeb.Blocks.Reporting
             using ( var rockContext = new RockContext() )
             {
                 var interaction = new InteractionService( rockContext ).Get( interactionId );
+
+                IEntity interactionEntity = null;
+                if ( interaction.EntityId.HasValue )
+                {
+                    interactionEntity = GetInteractionEntity( rockContext, interaction );
+                }
+
                 if ( interaction != null && ( UserCanEdit || interaction.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
@@ -128,6 +147,17 @@ namespace RockWeb.Blocks.Reporting
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", interaction.InteractionComponent.Channel );
                     mergeFields.Add( "InteractionComponent", interaction.InteractionComponent );
+                    mergeFields.Add( "InteractionEntity", interactionEntity );
+
+                    if ( interactionEntity != null )
+                    {
+                        mergeFields.Add( "InteractionEntityName", interactionEntity.ToString() );
+                    }
+                    else
+                    {
+                        mergeFields.Add( "InteractionEntityName", string.Empty );
+                    }
+                    
                     mergeFields.Add( "Interaction", interaction );
 
                     lContent.Text = interaction.InteractionComponent.Channel.InteractionDetailTemplate.IsNotNullOrWhitespace() ?
@@ -135,6 +165,25 @@ namespace RockWeb.Blocks.Reporting
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the Component Entity
+        /// </summary>
+        /// <param name="rockContext">The db context.</param>
+        /// <param name="interaction">The interaction .</param>
+        private IEntity GetInteractionEntity( RockContext rockContext, Interaction interaction )
+        {
+            IEntity interactionEntity = null;
+            var interactionEntityType = EntityTypeCache.Read( interaction.InteractionComponent.Channel.InteractionEntityTypeId.Value ).GetEntityType();
+            IService serviceInstance = Reflection.GetServiceForEntityType( interactionEntityType, rockContext );
+            if ( serviceInstance != null )
+            {
+                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                interactionEntity = getMethod.Invoke( serviceInstance, new object[] { interaction.EntityId.Value } ) as Rock.Data.IEntity;
+            }
+
+            return interactionEntity;
         }
 
         #endregion
