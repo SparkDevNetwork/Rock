@@ -56,7 +56,6 @@
 
                             // init scroll bars for folder divs
                             <%=pnlTreeViewPort.ClientID%>IScroll = new IScroll('#<%=pnlTreeViewPort.ClientID%>', {
-                                click: true,
                                 mouseWheel: true,
                                 indicators: {
                                     el: '#<%=pnlTreeTrack.ClientID%>',
@@ -64,7 +63,9 @@
                                     resize: false,
                                     listenY: true,
                                     listenX: false,
-                                }
+                                },
+                                click: false,
+                                preventDefaultException: { tagName: /.*/ }
                             });
 
                             $('.js-folder-treeview .treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
@@ -78,7 +79,6 @@
                         // init the file list RockList on every load
                         $('.js-file-list .js-listview').rockList();
                         new IScroll('#<%=pnlListViewPort.ClientID%>', {
-                            click: true,
                             mouseWheel: true,
                             indicators: {
                                 el: '#<%=pnlListTrack.ClientID%>',
@@ -86,7 +86,9 @@
                                     resize: false,
                                     listenY: true,
                                     listenX: false,
-                                }
+                            },
+                            click: false,
+                            preventDefaultException: { tagName: /.*/ }
                         });
 
                         // js for when a file delete is clicked
