@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Reporting
 
     [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
     [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"
-    <div class='panel panel-block'>
+     <div class='panel panel-block'>
         <div class='panel-heading'>
 	        <h1 class='panel-title'>
                 <i class='fa fa-user'></i>
@@ -46,34 +46,52 @@ namespace RockWeb.Blocks.Reporting
             </h1>
         </div>
         <div class='panel-body'>
-	        <ul class='list-group margin-all-md'>
+
 	        {% for interaction in Interactions %}
 		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
-                    <a href='{{ InteractionDetailPage }}?InteractionId={{ interaction.Id }}'>
+                    <a href = '{{ InteractionDetailPage }}?interactionId={{ interaction.Id }}'>
                 {% endif %}
-		        <li class='list-group-item margin-b-md' style='background-color: #edeae6;'>
-                    <div class='row'>
-                        <div class='col-md-6'>
-                            <dl>
-                                <dt>Date / Time</dt><dd>{{ interaction.InteractionDateTime }}<dd/>
-                                <dt>Operation</dt><dd>{{ interaction.Operation }}<dd/>
-                            </dl>
+		        
+		         <div class='panel panel-widget'>
+                    <div class='panel-heading'>
+                        
+                        <div class='row'>
+                            <div class='col-md-12'>
+                                <span class='label label-info pull-left margin-r-md'>{{ interaction.Operation }}</span>
+                            
+                                {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ interaction.InteractionDateTime }}</h1>{% endif %}
+                                
+                                <div class='pull-right'><i class='fa fa-chevron-right'></i></div>
+                            </div>
                         </div>
-                        <div class='col-md-6'>
-                            <dl>
-                                <dt>Interaction</dt><dd>{{ interaction.InteractionData }}<dd/>
-                                {% if interaction.PersonAlias != null and interaction.PersonAlias.Person.Name.FullName != '' %}
-                                    <dt>Person</dt><dd>{{ interaction.PersonAlias.Person.FullName }}<dd/>
-                                {% endif %}
-                            </dl>
+                        
+                        <div class='row margin-t-md'>
+                            {% if interaction.InteractionSummary && interaction.InteractionSummary != '' %}
+                            <div class='col-md-6'>
+                                <dl>
+                                    <dt>Interaction Summary</dt>
+                                    <dd>{{ interaction.InteractionSummary }}</dd>
+                                </dl>
+                            </div>
+                            {% endif %}
+                            
+                            {% if interaction.InteractionData && interaction.InteractionData != '' %}
+                            <div class='col-md-6'>
+                                <dl>
+                                    <dt>Interaction Data</dt>
+                                    <dd>{{ interaction.InteractionData }}</dd>
+                                </dl>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
-		        </li>
+                </div>
+		        
 		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
     		        </a>
 		        {% endif %}
 	        {% endfor %}	
-	        </ul>
+	 
         </div>
     </div>" )]
     public partial class InteractionList : Rock.Web.UI.RockBlock

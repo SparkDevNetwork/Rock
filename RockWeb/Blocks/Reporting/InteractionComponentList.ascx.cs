@@ -46,31 +46,24 @@ namespace RockWeb.Blocks.Reporting
             </h1>
         </div>
 		<div class='panel-body'>
-		    <ul class='list-group margin-all-md'>
 			{% for component in InteractionComponents %}
-				<li class='list-group-item margin-b-md' style='background-color: #edeae6;'>
-                    <div class='row'>
-                        <div class='col-md-6'>
-                            <dl>
-                                <dt>Name</dt>
-                                <dd>
-                                    {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
-                                        <a href = '{{ ComponentDetailPage }}?ComponentId={{ component.Id }}'> Started {{ component.Name }}</a>
-                                    {% else %}
-							            {{ component.Name }}
-    							   {% endif %}
-                                <dd/>
-                            </dl>
-                        </div>
-                        {% if InteractionChannel.Name != '' %}
-                            <div class='col-md-6'>
-                                <dl><dt>Channel Name</dt><dd>{{ InteractionChannel.Name }}<dd/></dl>
-                            </div>
-                        {% endif %}
+			
+				 {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
+                    <a href = '{{ ComponentDetailPage }}?ComponentId={{ component.Id }}'>
+                {% endif %}
+                
+				 <div class='panel panel-widget'>
+                    <div class='panel-heading clearfix'>
+                        {% if component.Name != '' %}<h1 class='panel-title pull-left'>{{ component.Name }}</h1>{% endif %}
+                        <div class='pull-right'><i class='fa fa-chevron-right'></i></div>
                     </div>
-				</li>
+                </div>
+                {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
+                    </a>
+                {% endif %}
+				
 			{% endfor %}	
-			</ul>
+
 		</div>
 	</div>" )]
     public partial class InteractionComponentList : Rock.Web.UI.RockBlock
