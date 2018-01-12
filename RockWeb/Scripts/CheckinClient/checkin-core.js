@@ -19,14 +19,14 @@ Sys.Application.add_load(function () {
 
     if ($('.checkin-scroll-panel').length) {
       bodyScroll = new IScroll('.checkin-scroll-panel', {
-        click: true,
         scrollbars: true,
         mouseWheel: true,
         interactiveScrollbars: true,
         shrinkScrollbars: 'scale',
         fadeScrollbars: false,
-        scrollbars: 'custom'
-      });
+        scrollbars: 'custom',
+        click: false,
+        preventDefaultException: { tagName: /.*/ }      });
     }
 
 });

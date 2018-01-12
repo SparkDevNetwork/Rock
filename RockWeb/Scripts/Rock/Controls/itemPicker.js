@@ -45,7 +45,6 @@
                 var $scrollContainer = $control.find('.scroll-container .viewport');
                 var $scrollIndicator = $control.find('.track');
                 this.iScroll = new IScroll($scrollContainer[0], {
-                    click: true,
                     mouseWheel: true,
                     indicators: {
                         el: $scrollIndicator[0],
@@ -53,7 +52,9 @@
                         resize: false,
                         listenY: true,
                         listenX: false,
-                    }
+                    },
+                    click: false,
+                    preventDefaultException: { tagName: /.*/ }
                 });
 
                 // Since some hanlers are "live" events, they need to be bound before tree is initialized

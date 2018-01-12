@@ -84,7 +84,6 @@
                 var scrollContainer = scrollbCategory.find('.viewport');
                 var scrollIndicator = scrollbCategory.find('.track');
                 <%=hfSelectedGroupId.ClientID%>IScroll = new IScroll(scrollContainer[0], {
-                    click: true,
                     mouseWheel: false,
                     scrollX: true,
                     scrollY: false,
@@ -94,7 +93,9 @@
                         resize: false,
                         listenX: true,
                         listenY: false,
-                    }
+                    },
+                    click: false,
+                    preventDefaultException: { tagName: /.*/ }
                 });
 
                 // resize scrollbar when the window resizes
