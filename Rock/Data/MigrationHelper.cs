@@ -4107,13 +4107,41 @@ END
         }
 
         /// <summary>
+        /// Ensures the attribute for the specified attributeGuid (if it already exists) has the correct AttributeKey, EntityType, FieldType, EntityTypeQualifierColumn, and EntityTypeQualifierValue
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="">The .</param>
+        public void EnsureAttributeByGuid( string attributeGuid, string attributeKey, string entityTypeGuid, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            Migration.Sql( $@"
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
+
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{attributeGuid}')
+
+                UPDATE [Attribute] SET
+                        [Key] = '{attributeKey}'
+                        ,[EntityTypeId] = @EntityTypeId
+                        ,[FieldTypeId] = @FieldTypeId
+                        ,[EntityTypeQualifierColumn] = '{entityTypeQualifierColumn ?? string.Empty}'
+                        ,[EntityTypeQualifierValue] = '{entityTypeQualifierValue ?? string.Empty}'
+                    WHERE [Guid] = '{attributeGuid}'"
+            );
+        }
+
+        /// <summary>
         /// Updates the Person Attribute for the given key (if it exists);
         /// otherwise it inserts a new record.
         /// </summary>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="name">The name.</param>
-        /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core person attribute, specify the key with a 'core.' prefix</param>
+        /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core person attribute, specify the key with a 'core_' prefix</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="description">The description.</param>
         /// <param name="order">The order.</param>

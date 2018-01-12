@@ -299,6 +299,7 @@
             });
 
             this.iScroll = new IScroll('#personpicker-scroll-container_' + this.controlId + ' .viewport', {
+                click: true,
                 mouseWheel: true,
                 indicators: {
                     el: '#personpicker-scroll-container_' + this.controlId + ' .track',
