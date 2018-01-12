@@ -182,28 +182,32 @@ namespace RockWeb.Blocks.Reporting
 
                 // Parse the default template so that it does not need to be parsed multiple times
                 var defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
-                var channelItems = new List<ChannelItem>();
+                var options = new Rock.Lava.CommonMergeFieldsOptions();
+                options.GetPageContext = false;
+                options.GetLegacyGlobalMergeFields = false;
 
-                foreach ( var interacationChannel in channelQry )
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, options );
+                mergeFields.Add( "ComponentListPage", LinkedPageRoute( "ComponentListPage" ) );
+                mergeFields.Add( "SessionListPage", LinkedPageRoute( "SessionListPage" ) );
+
+                var channelItems = new List<ChannelItem>();
+                foreach ( var channel in channelQry )
                 {
-                    if ( !interacationChannel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    if ( !channel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         continue;
                     }
 
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                    mergeFields.AddOrIgnore( "Person", CurrentPerson );
-                    mergeFields.Add( "ComponentListPage", LinkedPageRoute( "ComponentListPage" ) );
-                    mergeFields.Add( "SessionListPage", LinkedPageRoute( "SessionListPage" ) );
-                    mergeFields.Add( "InteractionChannel", interacationChannel );
+                    var channelMergeFields = new Dictionary<string, object>( mergeFields );
+                    channelMergeFields.Add( "InteractionChannel", channel );
 
-                    string html = interacationChannel.ChannelListTemplate.IsNotNullOrWhitespace() ?
-                        interacationChannel.ChannelListTemplate.ResolveMergeFields( mergeFields ) :
-                        defaultTemplate.Render( Hash.FromDictionary( mergeFields ) );
+                    string html = channel.ChannelListTemplate.IsNotNullOrWhitespace() ?
+                        channel.ChannelListTemplate.ResolveMergeFields( channelMergeFields ) :
+                        defaultTemplate.Render( Hash.FromDictionary( channelMergeFields ) );
 
                     channelItems.Add( new ChannelItem
                     {
-                        Id = interacationChannel.Id,
+                        Id = channel.Id,
                         ChannelHtml = html
                     } );
                 }
