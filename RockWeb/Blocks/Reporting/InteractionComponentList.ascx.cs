@@ -15,38 +15,35 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-using DotLiquid;
+using System.Web.UI.WebControls; 
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Crm
+namespace RockWeb.Blocks.Reporting
 {
     /// <summary>
     /// List all the Interaction Component.
     /// </summary>
     [DisplayName( "Interaction Component List" )]
-    [Category( "CRM" )]
+    [Category( "Reporting" )]
     [Description( "List all the Interaction Component" )]
 
-    [LinkedPage( "Component Detail Page", "Page reference to the component detail page. This will be included as a variable in the Lava.", false, order: 1 )]
+    [LinkedPage( "Component Detail Page", "Page reference to the component detail page. This will be included as a variable in the Lava.", false, order: 0 )]
     [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
-    [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, order: 2, defaultValue: @"
+    [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"
 	<div class='panel panel-block'>
         <div class='panel-heading'>
-			<h1 class='panel-title'><i class='fa fa-th'></i> Components</h1>
+			<h1 class='panel-title'>
+                <i class='fa fa-th'></i>
+                Components
+            </h1>
         </div>
 		<div class='panel-body'>
 		    <ul class='list-group margin-all-md'>
@@ -54,24 +51,22 @@ namespace RockWeb.Blocks.Crm
 				<li class='list-group-item margin-b-md' style='background-color: #edeae6;'>
                     <div class='row'>
                         <div class='col-md-6'>
-                                <dl>
-                               <dt>Name</dt>
-							   {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
-                               <dd><a href = '{{ ComponentDetailPage }}?ComponentId={{ component.Id }}' > Started {{ component.Name }}</a><dd/>
-							   {% else %}
-							   <dd>{{ component.Name }}<dd/>
-							   {% endif %}
-                               </dl>
-                          
-                        </div>
-                        <div class='col-md-6'>
-                            {% if InteractionChannel.Name != '' %}
-                                <dl>
-                               <dt>Channel Name</dt
-                               <dd>{{ InteractionChannel.Name }} <dd/>
+                            <dl>
+                                <dt>Name</dt>
+                                <dd>
+                                    {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
+                                        <a href = '{{ ComponentDetailPage }}?ComponentId={{ component.Id }}'> Started {{ component.Name }}</a>
+                                    {% else %}
+							            {{ component.Name }}
+    							   {% endif %}
+                                <dd/>
                             </dl>
-                            {% endif %}
                         </div>
+                        {% if InteractionChannel.Name != '' %}
+                            <div class='col-md-6'>
+                                <dl><dt>Channel Name</dt><dd>{{ InteractionChannel.Name }}<dd/></dl>
+                            </div>
+                        {% endif %}
                     </div>
 				</li>
 			{% endfor %}	
@@ -97,7 +92,6 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             _channelId = PageParameter( "channelId" ).AsIntegerOrNull();
-
             if ( !_channelId.HasValue )
             {
                 upnlContent.Visible = false;
@@ -132,8 +126,6 @@ namespace RockWeb.Blocks.Crm
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -153,29 +145,27 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         public void ShowList()
         {
+            using ( var rockContext = new RockContext() )
+            {
+                var interactionChannel = new InteractionChannelService( rockContext ).Get( _channelId.Value );
+                if ( interactionChannel != null )
+                {
+                    var interactionComponentQry = new InteractionComponentService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( a =>
+                            a.ChannelId == _channelId.Value );
 
-            var rockContext = new RockContext();
-            InteractionComponentService interactionComponentService = new InteractionComponentService( rockContext );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                    mergeFields.Add( "ComponentDetailPage", LinkedPageRoute( "ComponentDetailPage" ) );
+                    mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
+                    mergeFields.Add( "InteractionChannel", interactionChannel );
+                    mergeFields.Add( "InteractionComponents", interactionComponentQry.ToList() );
 
-            var interactionChannel = new InteractionChannelService( rockContext ).Get( _channelId.Value );
-
-            var interactionComponentQry = interactionComponentService.Queryable().AsNoTracking()
-                                .Where( a => a.ChannelId == _channelId.Value );
-
-            // Parse the default template so that it does not need to be parsed multiple times
-            var defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
-
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.AddOrIgnore( "Person", CurrentPerson );
-            mergeFields.Add( "ComponentDetailPage", LinkedPageRoute( "ComponentDetailPage" ) );
-            mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
-            mergeFields.Add( "InteractionChannel", interactionChannel );
-            mergeFields.Add( "InteractionComponents", interactionComponentQry.ToList() );
-
-            lContent.Text = interactionChannel.ComponentListTemplate.IsNotNullOrWhitespace() ?
-                interactionChannel.ComponentListTemplate.ResolveMergeFields( mergeFields ) :
-                defaultTemplate.Render( Hash.FromDictionary( mergeFields ) );
-
+                    lContent.Text = interactionChannel.ComponentListTemplate.IsNotNullOrWhitespace() ?
+                        interactionChannel.ComponentListTemplate.ResolveMergeFields( mergeFields ) :
+                        GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
+                }
+            }
         }
 
         #endregion
