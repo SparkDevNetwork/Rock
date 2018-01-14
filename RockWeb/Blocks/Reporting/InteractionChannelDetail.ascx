@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="InteractionChannelDetail.ascx.cs" Inherits="RockWeb.Blocks.Crm.InteractionChannelDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="InteractionChannelDetail.ascx.cs" Inherits="RockWeb.Blocks.Reporting.InteractionChannelDetail" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
