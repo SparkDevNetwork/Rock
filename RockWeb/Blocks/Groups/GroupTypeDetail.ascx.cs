@@ -515,7 +515,10 @@ namespace RockWeb.Blocks.Groups
             groupType.IgnorePersonInactivated = cbDontInactivateMembers.Checked;
             groupType.IsIndexEnabled = cbEnableIndexing.Checked;
             groupType.EnableLocationSchedules = cbEnableLocationSchedules.Checked;
-
+            groupType.AllowSpecificGroupMemberAttributes = cbAllowSpecificGroupMemberAttributes.Checked;
+            groupType.AllowGroupSync = cbAllowGroupSync.Checked;
+            groupType.EnableSpecificGroupRequirements = cbEnableSpecificGroupReq.Checked;
+            groupType.AllowSpecificGroupMemberWorkflows = cbAllowSpecificGrpMemWorkFlows.Checked;
             groupType.ChildGroupTypes = new List<GroupType>();
             groupType.ChildGroupTypes.Clear();
             foreach ( var item in ChildGroupTypesList )
@@ -836,6 +839,11 @@ namespace RockWeb.Blocks.Groups
 
             cbDontInactivateMembers.Checked = groupType.IgnorePersonInactivated;
             cbEnableIndexing.Checked = groupType.IsIndexEnabled;
+
+            cbAllowSpecificGroupMemberAttributes.Checked = groupType.AllowSpecificGroupMemberAttributes;
+            cbAllowGroupSync.Checked = groupType.AllowGroupSync;
+            cbEnableSpecificGroupReq.Checked = groupType.EnableSpecificGroupRequirements;
+            cbAllowSpecificGrpMemWorkFlows.Checked = groupType.AllowSpecificGroupMemberWorkflows;
 
             GroupTypeRolesState = new List<GroupTypeRole>();
             foreach ( var role in groupType.Roles )

@@ -226,6 +226,42 @@ namespace Rock.Web.Cache
         public bool IsIndexEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if specific groups are allowed to have their own member attributes.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this specific group are allowed to have their own member attributes, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowSpecificGroupMemberAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if group requirements section is enabled for group of this type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if group requirements section is enabled for group of this type, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableSpecificGroupRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if groups of this type are allowed to be sync'ed.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type are allowed to be sync'ed, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowGroupSync { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if groups of this type should be allowed to have Group Member Workflows.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type should be allowed to have group member workflows, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowSpecificGroupMemberWorkflows { get; set; }
+
+        /// <summary>
         /// Gets the type of the inherited group.
         /// </summary>
         /// <value>
@@ -490,7 +526,10 @@ namespace Rock.Web.Cache
                 this.IsIndexEnabled = groupType.IsIndexEnabled;
                 this.GroupViewLavaTemplate = groupType.GroupViewLavaTemplate;
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
-
+                this.AllowSpecificGroupMemberAttributes = groupType.AllowSpecificGroupMemberAttributes;
+                this.EnableSpecificGroupRequirements = groupType.EnableSpecificGroupRequirements;
+                this.AllowGroupSync = groupType.AllowGroupSync;
+                this.AllowSpecificGroupMemberWorkflows = groupType.AllowSpecificGroupMemberWorkflows;
                 this.Roles = new List<GroupTypeRoleCache>();
                 groupType.Roles
                     .OrderBy( r => r.Order )

@@ -1429,7 +1429,7 @@ namespace RockWeb.Blocks.Groups
                 // Save value to viewstate for use later when binding location grid
                 AllowMultipleLocations = groupType != null && groupType.AllowMultipleLocations;
 
-                // show/hide group sync panel based on permissions from the group type
+                // show/hide different Panel based on permissions from the group type
                 if ( group.GroupTypeId != 0 )
                 {
                     using ( var rockContext = new RockContext() )
@@ -1437,7 +1437,8 @@ namespace RockWeb.Blocks.Groups
                         GroupType selectedGroupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
                         if ( selectedGroupType != null )
                         {
-                            wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                            wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) && selectedGroupType.AllowGroupSync;
+                            wpMemberWorkflowTriggers.Visible = selectedGroupType.AllowSpecificGroupMemberWorkflows;
                         }
                     }
                 }
@@ -1590,7 +1591,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             mergeFields.Add( "MapStyle", mapStyleValue );
-            
+
 
             string groupMapUrl = LinkedPageUrl( "GroupMapPage", pageParams );
             mergeFields.Add( "GroupMapUrl", groupMapUrl );
@@ -2529,6 +2530,11 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupMemberAttributesInheritedGrid()
         {
+            if ( CurrentGroupTypeCache != null )
+            {
+                wpGroupMemberAttributes.Visible = GroupMemberAttributesInheritedState.Any() || CurrentGroupTypeCache.AllowSpecificGroupMemberAttributes;
+                rcwGroupMemberAttributes.Visible = CurrentGroupTypeCache.AllowSpecificGroupMemberAttributes;
+            }
             gGroupMemberAttributesInherited.AddCssClass( "inherited-attribute-grid" );
             gGroupMemberAttributesInherited.DataSource = GroupMemberAttributesInheritedState;
             gGroupMemberAttributesInherited.DataBind();
@@ -2561,6 +2567,8 @@ namespace RockWeb.Blocks.Groups
             if ( CurrentGroupTypeCache != null )
             {
                 lGroupTypeGroupRequirementsFrom.Text = string.Format( "(From <a href='{0}' target='_blank'>{1}</a>)", this.ResolveUrl( "~/GroupType/" + CurrentGroupTypeCache.Id ), CurrentGroupTypeCache.Name );
+                rcwGroupRequirements.Visible = CurrentGroupTypeCache.EnableSpecificGroupRequirements;
+                wpGroupRequirements.Visible = groupTypeGroupRequirements.Any() || CurrentGroupTypeCache.EnableSpecificGroupRequirements;
             }
 
             gGroupTypeGroupRequirements.AddCssClass( "grouptype-group-requirements-grid" );
