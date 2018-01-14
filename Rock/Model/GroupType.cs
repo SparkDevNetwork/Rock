@@ -374,11 +374,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this specific group are allowed to have their own member attributes, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowSpecificGroupMemberAttributes {
-            get { return _allowSpecificGroupMemberAttributes; }
-            set { _allowSpecificGroupMemberAttributes = value; }
-        }
-        private bool _allowSpecificGroupMemberAttributes = false;
+        public bool AllowSpecificGroupMemberAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if group requirements section is enabled for group of this type.
@@ -387,11 +383,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if group requirements section is enabled for group of this type, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool EnableSpecificGroupRequirements {
-            get { return _enableSpecificGroupRequirements; }
-            set { _enableSpecificGroupRequirements = value; }
-        }
-        private bool _enableSpecificGroupRequirements = false;
+        public bool EnableSpecificGroupRequirements { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if groups of this type are allowed to be sync'ed.
@@ -400,11 +392,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type are allowed to be sync'ed, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowGroupSync {
-            get { return _allowGroupSync; }
-            set { _allowGroupSync = value; }
-        }
-        private bool _allowGroupSync = false;
+        public bool AllowGroupSync { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if groups of this type should be allowed to have Group Member Workflows.
@@ -413,11 +401,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type should be allowed to have group member workflows, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowSpecificGroupMemberWorkflows {
-            get { return _allowSpecificGroupMemberWorkflows; }
-            set { _allowSpecificGroupMemberWorkflows = value; }
-        }
-        private bool _allowSpecificGroupMemberWorkflows = false;
+        public bool AllowSpecificGroupMemberWorkflows { get; set; }
 
         #endregion
 
