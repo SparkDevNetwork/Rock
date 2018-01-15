@@ -306,7 +306,9 @@
                     resize: false,
                     listenY: true,
                     listenX: false,
-                }
+                },
+                click: false,
+                preventDefaultException: { tagName: /.*/ }
             });
 
             this.initializeEventHandlers();
