@@ -66,15 +66,15 @@ namespace RockWeb.Blocks.Reporting
 			{% endfor %}	
             <div class ='nav-paging'>
             {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != ''  %}
-            <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i>Prev<a/>
+                <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i>Prev<a/>
             {% endif %}
             {% if NextPageNavigateUrl != null and NextPageNavigateUrl != ''  %}
-            <a Id ='hlNext' class = 'btn btn-primary btn-next' href='{{ NextPageNavigateUrl }}'> Next <i class='fa fa-chevron-right'></i><a/>
+                <a Id ='hlNext' class = 'btn btn-primary btn-next' href='{{ NextPageNavigateUrl }}'> Next <i class='fa fa-chevron-right'></i><a/>
             {% endif %}
             </div>
 		</div>
 	</div>" )]
-    [IntegerField( "Session Count", "The number of sessions to show per page.", true, 20, "", 3 )]
+    [IntegerField( "Page Size", "The number of components to show per page.", true, 20, "", 3 )]
     public partial class InteractionComponentList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -153,9 +153,9 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public void ShowList()
         {
-            int sessionCount = GetAttributeValue( "SessionCount" ).AsInteger();
+            int pageSize = GetAttributeValue( "PageSize" ).AsInteger();
 
-            int skipCount = pageNumber * sessionCount;
+            int skipCount = pageNumber * pageSize;
 
             using ( var rockContext = new RockContext() )
             {
@@ -168,16 +168,16 @@ namespace RockWeb.Blocks.Reporting
                             a.ChannelId == _channelId.Value )
                         .OrderByDescending( a => a.ModifiedDateTime )
                         .Skip( skipCount )
-                        .Take( sessionCount + 1 );
+                        .Take( pageSize + 1 );
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.Add( "ComponentDetailPage", LinkedPageRoute( "ComponentDetailPage" ) );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", interactionChannel );
-                    mergeFields.Add( "InteractionComponents", interactionComponentQry.ToList().Take( sessionCount ) );
+                    mergeFields.Add( "InteractionComponents", interactionComponentQry.ToList().Take( pageSize ) );
 
                     // set next button
-                    if ( interactionComponentQry.Count() > sessionCount )
+                    if ( interactionComponentQry.Count() > pageSize )
                     {
                         Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
                         queryStringNext.Add( "ChannelId", _channelId.ToString() );

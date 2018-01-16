@@ -40,49 +40,49 @@ namespace RockWeb.Blocks.Reporting
     [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
     [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"
 {% if InteractionChannel != null and InteractionChannel != '' %}
-		        {% for session in WebSessions %}
-		        <div class='panel panel-widget pageviewsession'>
-			     <header class='panel-heading clearfix'>
-				 <div class='pull-left'>
-				      <h4 class='panel-title'>
-					        Started {{ session.StartDateTime | HumanizeDateTime }}
-					        <small>
-					        Duration: {{ session.StartDateTime | HumanizeTimeSpan:session.EndDateTime, 1 }}
-					        </small>
-				     </h4>
-				      <span class='label label-primary'>{{ session.PersonAlias.Person.FullName }}</span>
-				      <span class='label label-info'>{{ InteractionChannel.Name }}</span>
-				        </div> 
-				        {% assign icon = '' %}
-				        {% case session.InteractionSession.DeviceType.ClientType %}
-				            {% when 'Desktop' %}{% assign icon = 'fa-desktop' %}
-				            {% when 'Tablet' %}{% assign icon = 'fa-tablet' %}
-				            {% when 'Mobile' %}{% assign icon = 'fa-mobile-phone' %}
-				            {% else %}{% assign icon = '' %}
-				        {% endcase %}
-				        <div class='pageviewsession-client pull-right'>
-                            <div class='pull-left'>
-                                <small>{{ session.InteractionSession.DeviceType.Application }} <br>
-                                {{ session.InteractionSession.DeviceType.OperatingSystem }} </small>
-                            </div>
-                            <i class='fa {{ icon }} fa-2x pull-right'></i>
-                        </div>
-			        </header>
-			        <div class='panel-body'>
-				        {% assign interactionCount = 0 %}
-				        <ol>
-				        {% for interaction in session.Interactions %}
-				            {% assign interactionCount = interactionCount | Plus: 1 %}
-				            {% assign componentDetailPage = interaction.InteractionData %}
-				            {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
-    				            {% assign componentDetailPage = ComponentDetailPage %}
-				            {% endif %}
-				            <li><a href = '{{ componentDetailPage }}?ComponentId={{ interaction.InteractionComponentId }}'>{{ interaction.InteractionComponent.Name }}</a></li>
-				        {% endfor %}				
-				        </ol>
-			        </div>
-		        </div>
-		        {% endfor %}
+    {% for session in WebSessions %}
+        <div class='panel panel-widget pageviewsession'>
+	        <header class='panel-heading clearfix'>
+	        <div class='pull-left'>
+		        <h4 class='panel-title'>
+			        Started {{ session.StartDateTime | HumanizeDateTime }}
+			        <small>
+			        Duration: {{ session.StartDateTime | HumanizeTimeSpan:session.EndDateTime, 1 }}
+			        </small>
+		        </h4>
+		        <span class='label label-primary'>{{ session.PersonAlias.Person.FullName }}</span>
+		        <span class='label label-info'>{{ InteractionChannel.Name }}</span>
+		        </div> 
+		        {% assign icon = '' %}
+		        {% case session.InteractionSession.DeviceType.ClientType %}
+			        {% when 'Desktop' %}{% assign icon = 'fa-desktop' %}
+			        {% when 'Tablet' %}{% assign icon = 'fa-tablet' %}
+			        {% when 'Mobile' %}{% assign icon = 'fa-mobile-phone' %}
+			        {% else %}{% assign icon = '' %}
+		        {% endcase %}
+		        <div class='pageviewsession-client pull-right'>
+                    <div class='pull-left'>
+                        <small>{{ session.InteractionSession.DeviceType.Application }} <br>
+                        {{ session.InteractionSession.DeviceType.OperatingSystem }} </small>
+                    </div>
+                    <i class='fa {{ icon }} fa-2x pull-right'></i>
+                </div>
+	        </header>
+	        <div class='panel-body'>
+		        {% assign interactionCount = 0 %}
+		        <ol>
+		        {% for interaction in session.Interactions %}
+			        {% assign interactionCount = interactionCount | Plus: 1 %}
+			        {% assign componentDetailPage = interaction.InteractionData %}
+			        {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
+    			        {% assign componentDetailPage = ComponentDetailPage %}
+			        {% endif %}
+			        <li><a href = '{{ componentDetailPage }}?ComponentId={{ interaction.InteractionComponentId }}'>{{ interaction.InteractionComponent.Name }}</a></li>
+		        {% endfor %}				
+		        </ol>
+	        </div>
+        </div>
+    {% endfor %}
 {% endif %}" )]
     [IntegerField( "Session Count", "The number of sessions to show per page.", true, 20, "", 3 )]
     public partial class InteractionSessionList : Rock.Web.UI.RockBlock
