@@ -881,6 +881,13 @@ namespace Rock.Migrations
 
             #endregion
 
+            #region Migration Catch-up
+
+            // Attrib for BlockType: Pledge List:Show Account Summary
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Account Summary", "ShowAccountSummary", "", @"Should the account summary be displayed at the bottom of the list?", 5, @"False", "B9594D47-4E75-4336-9F92-6C96B8CBEB42" );
+
+            #endregion
+
         }
 
         /// <summary>
