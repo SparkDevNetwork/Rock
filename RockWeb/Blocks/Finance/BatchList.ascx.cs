@@ -740,7 +740,7 @@ namespace RockWeb.Blocks.Finance
             string title = gfBatchFilter.GetUserPreference( "Title" );
             if ( !string.IsNullOrEmpty( title ) )
             {
-                qry = qry.Where( batch => batch.Name.StartsWith( title ) );
+                qry = qry.Where( batch => batch.Name.Contains( title ) );
             }
 
             // filter by accounting code
@@ -749,7 +749,7 @@ namespace RockWeb.Blocks.Finance
                 string accountingCode = gfBatchFilter.GetUserPreference( "Accounting Code" );
                 if ( !string.IsNullOrEmpty( accountingCode ) )
                 {
-                    qry = qry.Where( batch => batch.AccountingSystemCode.StartsWith( accountingCode ) );
+                    qry = qry.Where( batch => batch.AccountingSystemCode.Contains( accountingCode ) );
                 }
             }
 
