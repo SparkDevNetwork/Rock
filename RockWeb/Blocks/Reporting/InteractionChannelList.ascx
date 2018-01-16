@@ -20,9 +20,13 @@
                     <ul class="list-group margin-all-md">
                         <asp:Repeater ID="rptChannel" runat="server">
                             <ItemTemplate>
+<<<<<<< HEAD
                                 <li class="list-group-item margin-b-md" style="background-color: #edeae6;">
                                     <asp:Literal ID="lContent" runat="server" Text='<%# Eval("ChannelHtml") %>'></asp:Literal>
                                 </li>
+=======
+                                <asp:Literal ID="lContent" runat="server" Text='<%# Eval("ChannelHtml") %>'></asp:Literal>
+>>>>>>> origin/develop
                             </ItemTemplate>
                         </asp:Repeater>
                     </ul>

@@ -245,35 +245,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Registers the java script.
-        /// </summary>
-        private void RegisterJavaScript()
-        {
-            string script = string.Format( @" function ValidateCheckboxList_{0}(source, args) {{
-                var checkboxes = $(""input[id ^= '{0}']"");
-                var isValid = false;
-                for ( var i = 0; i < checkboxes.length; i++ )
-                {{
-                    if ( checkboxes[i].checked) {{
-                        isValid = true;
-                        break;
-                    }}
-                }}
-
-                var control = $(""label[for='{0}']"").closest('.rock-check-box-list');
-                if (isValid) {{
-                    control.removeClass('has-error');
-                }} else {{
-                    control.addClass('has-error');
-                }}
-
-                args.IsValid = isValid;
-
-        }}", this.ClientID );
-            ScriptManager.RegisterClientScriptBlock( this, typeof( RockCheckBoxList ), "RockCheckBoxListScript_" + this.ClientID, script, true );
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="RockCheckBoxList"/> class.
         /// </summary>
         public RockCheckBoxList()
@@ -302,7 +273,7 @@ namespace Rock.Web.UI.Controls
 
             // add custom validator
             CustomValidator.ID = this.ID + "_cfv";
-            CustomValidator.ClientValidationFunction = "ValidateCheckboxList_" + this.ClientID;
+            CustomValidator.ClientValidationFunction = "Rock.controls.rockCheckBoxList.clientValidate";
             CustomValidator.ErrorMessage = this.Label != string.Empty ? this.Label + " is Required." : string.Empty;
             CustomValidator.CssClass = "validation-error help-inline";
             CustomValidator.Enabled = this.Required;
@@ -362,7 +333,7 @@ namespace Rock.Web.UI.Controls
         {
             _hfCheckListBoxId.RenderControl( writer );
             
-            writer.AddAttribute( "class", "controls" );
+            writer.AddAttribute( "class", "controls js-rockcheckboxlist" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( Items.Count == 0 )
@@ -373,8 +344,6 @@ namespace Rock.Web.UI.Controls
             base.RenderControl( writer );
             CustomValidator.RenderControl( writer );
             writer.RenderEndTag();
-
-            RegisterJavaScript();
         }
 
         /// <summary>

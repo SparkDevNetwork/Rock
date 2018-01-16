@@ -15,11 +15,19 @@
 // </copyright>
 //
 using System;
+<<<<<<< HEAD
+=======
+using System.Collections.Generic;
+>>>>>>> origin/develop
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+<<<<<<< HEAD
 using System.Web.UI.WebControls; 
+=======
+using System.Web.UI.WebControls;
+>>>>>>> origin/develop
 
 using Rock;
 using Rock.Attribute;
@@ -46,6 +54,7 @@ namespace RockWeb.Blocks.Reporting
             </h1>
         </div>
 		<div class='panel-body'>
+<<<<<<< HEAD
 		    <ul class='list-group margin-all-md'>
 			{% for component in InteractionComponents %}
 				<li class='list-group-item margin-b-md' style='background-color: #edeae6;'>
@@ -73,10 +82,44 @@ namespace RockWeb.Blocks.Reporting
 			</ul>
 		</div>
 	</div>" )]
+=======
+			{% for component in InteractionComponents %}
+			
+				 {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
+                    <a href = '{{ ComponentDetailPage }}?ComponentId={{ component.Id }}'>
+                {% endif %}
+                
+				 <div class='panel panel-widget'>
+                    <div class='panel-heading clearfix'>
+                        {% if component.Name != '' %}<h1 class='panel-title pull-left'>{{ component.Name }}</h1>{% endif %}
+                        <div class='pull-right'><i class='fa fa-chevron-right'></i></div>
+                    </div>
+                </div>
+                {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
+                    </a>
+                {% endif %}
+				
+			{% endfor %}	
+            <div class ='nav-paging'>
+            {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != ''  %}
+                <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i>Prev<a/>
+            {% endif %}
+            {% if NextPageNavigateUrl != null and NextPageNavigateUrl != ''  %}
+                <a Id ='hlNext' class = 'btn btn-primary btn-next' href='{{ NextPageNavigateUrl }}'> Next <i class='fa fa-chevron-right'></i><a/>
+            {% endif %}
+            </div>
+		</div>
+	</div>" )]
+    [IntegerField( "Page Size", "The number of components to show per page.", true, 20, "", 3 )]
+>>>>>>> origin/develop
     public partial class InteractionComponentList : Rock.Web.UI.RockBlock
     {
         #region Fields
 
+<<<<<<< HEAD
+=======
+        private int pageNumber = 0;
+>>>>>>> origin/develop
         private int? _channelId = null;
 
         #endregion
@@ -117,6 +160,14 @@ namespace RockWeb.Blocks.Reporting
             {
                 if ( _channelId.HasValue )
                 {
+<<<<<<< HEAD
+=======
+                    if ( !string.IsNullOrEmpty( PageParameter( "Page" ) ) )
+                    {
+                        pageNumber = PageParameter( "Page" ).AsInteger();
+                    }
+                    
+>>>>>>> origin/develop
                     ShowList();
                 }
             }
@@ -145,6 +196,13 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public void ShowList()
         {
+<<<<<<< HEAD
+=======
+            int pageSize = GetAttributeValue( "PageSize" ).AsInteger();
+
+            int skipCount = pageNumber * pageSize;
+
+>>>>>>> origin/develop
             using ( var rockContext = new RockContext() )
             {
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( _channelId.Value );
@@ -153,13 +211,46 @@ namespace RockWeb.Blocks.Reporting
                     var interactionComponentQry = new InteractionComponentService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( a =>
+<<<<<<< HEAD
                             a.ChannelId == _channelId.Value );
+=======
+                            a.ChannelId == _channelId.Value )
+                        .OrderByDescending( a => a.ModifiedDateTime )
+                        .Skip( skipCount )
+                        .Take( pageSize + 1 );
+>>>>>>> origin/develop
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.Add( "ComponentDetailPage", LinkedPageRoute( "ComponentDetailPage" ) );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", interactionChannel );
+<<<<<<< HEAD
                     mergeFields.Add( "InteractionComponents", interactionComponentQry.ToList() );
+=======
+                    mergeFields.Add( "InteractionComponents", interactionComponentQry.ToList().Take( pageSize ) );
+
+                    // set next button
+                    if ( interactionComponentQry.Count() > pageSize )
+                    {
+                        Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
+                        queryStringNext.Add( "ChannelId", _channelId.ToString() );
+                        queryStringNext.Add( "Page", ( pageNumber + 1 ).ToString() );
+
+                        var pageReferenceNext = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringNext );
+                        mergeFields.Add( "NextPageNavigateUrl", pageReferenceNext.BuildUrl() );
+                    }
+
+                    // set prev button
+                    if ( pageNumber != 0 )
+                    {
+                        Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
+                        queryStringPrev.Add( "ChannelId", _channelId.ToString() );
+                        queryStringPrev.Add( "Page", ( pageNumber - 1 ).ToString() );
+
+                        var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
+                        mergeFields.Add( "PreviousPageNavigateUrl", pageReferencePrev.BuildUrl() );
+                    }
+>>>>>>> origin/develop
 
                     lContent.Text = interactionChannel.ComponentListTemplate.IsNotNullOrWhitespace() ?
                         interactionChannel.ComponentListTemplate.ResolveMergeFields( mergeFields ) :

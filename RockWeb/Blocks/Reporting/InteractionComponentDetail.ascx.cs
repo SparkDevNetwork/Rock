@@ -153,7 +153,21 @@ namespace RockWeb.Blocks.Reporting
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeFields.Add( "InteractionChannel", _component.Channel );
                 mergeFields.Add( "InteractionComponent", _component );
+<<<<<<< HEAD
                 mergeFields.Add( "InteractionComponentEntity", componentEntity.ToString() );
+=======
+
+                if ( componentEntity != null )
+                {
+                    mergeFields.Add( "InteractionComponentEntityName", componentEntity.ToString() );
+                }
+                else
+                {
+                    mergeFields.Add( "InteractionComponentEntityName", string.Empty );
+                }
+                
+                mergeFields.Add( "InteractionComponentEntity", componentEntity);
+>>>>>>> origin/develop
 
                 string template = _component.Channel.ComponentDetailTemplate.IsNotNullOrWhitespace() ?
                     _component.Channel.ComponentDetailTemplate :
