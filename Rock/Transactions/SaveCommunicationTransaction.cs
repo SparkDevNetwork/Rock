@@ -172,11 +172,15 @@ namespace Rock.Transactions
         {
             using ( var rockContext = new RockContext() )
             {
-                var sender = new PersonService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( p => p.Email == FromAddress )
-                    .FirstOrDefault();
-                int? senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
+                int? senderPersonAliasId = null;
+                if ( FromAddress.IsNotNullOrWhitespace() )
+                {
+                    var sender = new PersonService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( p => p.Email == FromAddress )
+                        .FirstOrDefault();
+                    senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
+                }
 
                 var communication = new CommunicationService( rockContext ).CreateEmailCommunication(
                     RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication,
