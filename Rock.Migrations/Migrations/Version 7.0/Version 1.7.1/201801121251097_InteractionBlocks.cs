@@ -187,7 +187,7 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateBlockTypeAttribute( "468119E3-41AB-4EC4-B631-77F326632B35", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Interaction Detail Page", "InteractionDetailPage", "", @"Page reference to the interaction detail page. This will be included as a variable in the Lava.", 1, @"", "06BE5064-934B-4EA2-A3FE-CB841A6FE278" );
             // Attrib for BlockType: Interaction List:Default Template
             RockMigrationHelper.UpdateBlockTypeAttribute( "468119E3-41AB-4EC4-B631-77F326632B35", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Default Template", "DefaultTemplate", "", @"The Lava template to use as default.", 2, @"
-        <div class='panel panel-block'>
+    <div class='panel panel-block'>
         <div class='panel-heading'>
 	        <h1 class='panel-title'>
                 <i class='fa fa-user'></i>
@@ -240,67 +240,61 @@ namespace Rock.Migrations
     		        </a>
 		        {% endif %}
 	        {% endfor %}	
-	 
+	        <div class ='nav-paging'>
+            {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != ''  %}
+                <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i>Prev<a/>
+            {% endif %}
+            {% if NextPageNavigateUrl != null and NextPageNavigateUrl != ''  %}
+                <a Id ='hlNext' class = 'btn btn-primary btn-next' href='{{ NextPageNavigateUrl }}'> Next <i class='fa fa-chevron-right'></i><a/>
+            {% endif %}
+            </div>
         </div>
     </div>", "2507A83C-CC50-49B9-8F46-E7844D44E371" );
             // Attrib for BlockType: Interaction Session List:Default Template
             RockMigrationHelper.UpdateBlockTypeAttribute( "EA90EF4F-C783-48CD-B575-AD785DE896E9", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Default Template", "DefaultTemplate", "", @"The Lava template to use as default.", 2, @"
 {% if InteractionChannel != null and InteractionChannel != '' %}
-    {% for personSessionList in PersonSessionLists %}
-	    <div class='panel panel-block'>
-            <header class='panel-heading clearfix'>
-			    <div class='pull-left'>
-					<h4 class='panel-title'>
-                        <i class='fa fa-desktop'></i>
-                        {{ personSessionList.PersonAlias.Person.FullName }}
-                    </h4>
-			    </div>
-		    </header>
+    {% for session in WebSessions %}
+        <div class='panel panel-widget pageviewsession'>
+	        <header class='panel-heading clearfix'>
+	        <div class='pull-left'>
+		        <h4 class='panel-title'>
+			        Started {{ session.StartDateTime | HumanizeDateTime }}
+			        <small>
+			        Duration: {{ session.StartDateTime | HumanizeTimeSpan:session.EndDateTime, 1 }}
+			        </small>
+		        </h4>
+		        <span class='label label-primary'>{{ session.PersonAlias.Person.FullName }}</span>
+		        <span class='label label-info'>{{ InteractionChannel.Name }}</span>
+		        </div> 
+		        {% assign icon = '' %}
+		        {% case session.InteractionSession.DeviceType.ClientType %}
+			        {% when 'Desktop' %}{% assign icon = 'fa-desktop' %}
+			        {% when 'Tablet' %}{% assign icon = 'fa-tablet' %}
+			        {% when 'Mobile' %}{% assign icon = 'fa-mobile-phone' %}
+			        {% else %}{% assign icon = '' %}
+		        {% endcase %}
+		        <div class='pageviewsession-client pull-right'>
+                    <div class='pull-left'>
+                        <small>{{ session.InteractionSession.DeviceType.Application }} <br>
+                        {{ session.InteractionSession.DeviceType.OperatingSystem }} </small>
+                    </div>
+                    <i class='fa {{ icon }} fa-2x pull-right'></i>
+                </div>
+	        </header>
 	        <div class='panel-body'>
-		        {% for session in personSessionList.Sessions %}
-		        <div class='panel panel-widget pageviewsession'>
-			        <header class='panel-heading clearfix'>
-				        <div class='pull-left'>
-					        <h4 class='panel-title'>
-					        Started {{ session.StartDateTime | HumanizeDateTime }}
-					        <small>
-					        Duration: {{ session.StartDateTime | HumanizeTimeSpan:session.EndDateTime, 1 }}
-					        </small>
-					        </h4>
-					        <span class='label label-info'>{{ InteractionChannel.Name }}</span>
-				        </div> 
-				        {% assign icon = '' %}
-				        {% case session.InteractionSession.DeviceType.ClientType %}
-				            {% when 'Desktop' %}{% assign icon = 'fa-desktop' %}
-				            {% when 'Tablet' %}{% assign icon = 'fa-tablet' %}
-				            {% when 'Mobile' %}{% assign icon = 'fa-mobile-phone' %}
-				            {% else %}{% assign icon = '' %}
-				        {% endcase %}
-				        <div class='pageviewsession-client pull-right'>
-                            <div class='pull-left'>
-                                <small>{{ session.InteractionSession.DeviceType.Application }} <br>
-                                {{ session.InteractionSession.DeviceType.OperatingSystem }} </small>
-                            </div>
-                            <i class='fa {{ icon }} fa-2x pull-right'></i>
-                        </div>
-			        </header>
-			        <div class='panel-body'>
-				        {% assign interactionCount = 0 %}
-				        <ol>
-				        {% for interaction in session.Interactions %}
-				            {% assign interactionCount = interactionCount | Plus: 1 %}
-				            {% assign componentDetailPage = interaction.InteractionData %}
-				            {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
-    				            {% assign componentDetailPage = ComponentDetailPage %}
-				            {% endif %}
-				            <li><a href = '{{ componentDetailPage }}?ComponentId={{ interaction.InteractionComponentId }}'>{{ interaction.InteractionComponent.Name }}</a></li>
-				        {% endfor %}				
-				        </ol>
-			        </div>
-		        </div>
-		        {% endfor %}
+		        {% assign interactionCount = 0 %}
+		        <ol>
+		        {% for interaction in session.Interactions %}
+			        {% assign interactionCount = interactionCount | Plus: 1 %}
+			        {% assign componentDetailPage = interaction.InteractionData %}
+			        {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
+    			        {% assign componentDetailPage = ComponentDetailPage %}
+			        {% endif %}
+			        <li><a href = '{{ componentDetailPage }}?ComponentId={{ interaction.InteractionComponentId }}'>{{ interaction.InteractionComponent.Name }}</a></li>
+		        {% endfor %}				
+		        </ol>
 	        </div>
-	    </div>
+        </div>
     {% endfor %}
 {% endif %}", "DF74EDE5-3B7D-4A79-B1F2-499D18FE6F2C" );
             // Attrib for BlockType: Interaction Session List:Component Detail Page
@@ -338,182 +332,34 @@ namespace Rock.Migrations
                 {% endif %}
 				
 			{% endfor %}	
-
+            <div class ='nav-paging'>
+            {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != ''  %}
+                <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i>Prev<a/>
+            {% endif %}
+            {% if NextPageNavigateUrl != null and NextPageNavigateUrl != ''  %}
+                <a Id ='hlNext' class = 'btn btn-primary btn-next' href='{{ NextPageNavigateUrl }}'> Next <i class='fa fa-chevron-right'></i><a/>
+            {% endif %}
+            </div>
 		</div>
 	</div>", "18BBB704-ECE7-4FEB-A9A0-9D023CEE1B49" );
             
-            
-            
-
-
-
-
-
-            
-            
-            
-            // Attrib Value for Block:Interaction Channel List, Attribute:Default Template Page: Interactions, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "8C11CA76-6AD8-4C1F-8889-A9C38FE5C966", "E84F0710-5973-44D1-9BE5-1900090DB8CF", @"" );
             // Attrib Value for Block:Interaction Channel List, Attribute:Session List Page Page: Interactions, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "8C11CA76-6AD8-4C1F-8889-A9C38FE5C966", "8A119119-E8D0-41E7-B1E4-E6978FD39CA9", @"756d37b7-7be2-497d-8d37-cc273fe29659" );
             // Attrib Value for Block:Interaction Channel List, Attribute:Component List Page Page: Interactions, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "8C11CA76-6AD8-4C1F-8889-A9C38FE5C966", "C797358E-FC24-4F8E-905F-476CDF934886", @"af2fbeb8-1e47-4f51-a503-3d73c0d66b4e" );
-            // Attrib Value for Block:Interaction Session List, Attribute:Default Template Page: Sessions, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "0FCDA1B8-B3F1-4E78-8FCF-E81F2CA77D05", "DF74EDE5-3B7D-4A79-B1F2-499D18FE6F2C", @"{% if InteractionChannel != null and InteractionChannel != '' %}
-    {% for personSessionList in PersonSessionLists %}
-	    <div class='panel panel-block'>
-            <header class='panel-heading clearfix'>
-			    <div class='pull-left'>
-					<h4 class='panel-title'>
-                        <i class='fa fa-desktop'></i>
-                        {{ personSessionList.PersonAlias.Person.FullName }}
-                    </h4>
-			    </div>
-		    </header>
-	        <div class='panel-body'>
-		        {% for session in personSessionList.Sessions %}
-		        <div class='panel panel-widget pageviewsession'>
-			        <header class='panel-heading clearfix'>
-				        <div class='pull-left'>
-					        <h4 class='panel-title'>
-					        Started {{ session.StartDateTime | HumanizeDateTime }}
-					        <small>
-					        Duration: {{ session.StartDateTime | HumanizeTimeSpan:session.EndDateTime, 1 }}
-					        </small>
-					        </h4>
-					        <span class='label label-info'>{{ InteractionChannel.Name }}</span>
-				        </div> 
-				        {% assign icon = '' %}
-				        {% case session.InteractionSession.DeviceType.ClientType %}
-				            {% when 'Desktop' %}{% assign icon = 'fa-desktop' %}
-				            {% when 'Tablet' %}{% assign icon = 'fa-tablet' %}
-				            {% when 'Mobile' %}{% assign icon = 'fa-mobile-phone' %}
-				            {% else %}{% assign icon = '' %}
-				        {% endcase %}
-				        <div class='pageviewsession-client pull-right'>
-                            <div class='pull-left'>
-                                <small>{{ session.InteractionSession.DeviceType.Application }} <br>
-                                {{ session.InteractionSession.DeviceType.OperatingSystem }} </small>
-                            </div>
-                            <i class='fa {{ icon }} fa-2x pull-right'></i>
-                        </div>
-			        </header>
-			        <div class='panel-body'>
-				        {% assign interactionCount = 0 %}
-				        <ol>
-				        {% for interaction in session.Interactions %}
-				            {% assign interactionCount = interactionCount | Plus: 1 %}
-				            {% assign componentDetailPage = interaction.InteractionData %}
-				            {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
-    				            {% assign componentDetailPage = ComponentDetailPage %}
-				            {% endif %}
-				            <li><a href = '{{ componentDetailPage }}?componentId={{ interaction.InteractionComponentId }}'>{{ interaction.InteractionComponent.Name }}</a></li>
-				        {% endfor %}				
-				        </ol>
-			        </div>
-		        </div>
-		        {% endfor %}
-	        </div>
-	    </div>
-    {% endfor %}
-{% endif %}" );
+
             // Attrib Value for Block:Interaction Session List, Attribute:Component Detail Page Page: Sessions, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "0FCDA1B8-B3F1-4E78-8FCF-E81F2CA77D05", "26D25CD6-AF12-4A0C-80E0-0CD4CFEB4C6E", @"9043d8f9-f9fd-4be6-a50b-abf9821ec0cd" );
             // Attrib Value for Block:Interaction Session List, Attribute:Interaction Detail Page Page: Sessions, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "0FCDA1B8-B3F1-4E78-8FCF-E81F2CA77D05", "922BDC9E-D1ED-4553-B84D-1C301B291F5F", @"9043d8f9-f9fd-4be6-a50b-abf9821ec0cd" );
+
             // Attrib Value for Block:Interaction Component List, Attribute:Component Detail Page Page: Components, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "16884BC7-3185-4E8F-A93A-AF9F3B165DE0", "CCF5FD98-6F00-4DE6-9D8C-D1C86C2FE34C", @"9043d8f9-f9fd-4be6-a50b-abf9821ec0cd" );
             // Attrib Value for Block:Interaction Component List, Attribute:Interaction Detail Page Page: Components, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "16884BC7-3185-4E8F-A93A-AF9F3B165DE0", "12942C84-503C-4D18-A610-E3A2A3CC33E9", @"b6f6ab6f-a572-45fe-a143-2e4b8f192c8d" );
-            // Attrib Value for Block:Interaction Component List, Attribute:Default Template Page: Components, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "16884BC7-3185-4E8F-A93A-AF9F3B165DE0", "18BBB704-ECE7-4FEB-A9A0-9D023CEE1B49", @"	<div class='panel panel-block'>
-        <div class='panel-heading'>
-			<h1 class='panel-title'>
-                <i class='fa fa-th'></i>
-                Components
-            </h1>
-        </div>
-		<div class='panel-body'>
-			{% for component in InteractionComponents %}
-			
-				 {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
-                    <a href = '{{ ComponentDetailPage }}?ComponentId={{ component.Id }}'>
-                {% endif %}
-                
-				 <div class='panel panel-widget'>
-                    <div class='panel-heading clearfix'>
-                        {% if component.Name != '' %}<h1 class='panel-title pull-left'>{{ component.Name }}</h1>{% endif %}
-                        <div class='pull-right'><i class='fa fa-chevron-right'></i></div>
-                    </div>
-                </div>
-                {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
-                    </a>
-                {% endif %}
-				
-			{% endfor %}	
 
-		</div>
-	</div>" );
             // Attrib Value for Block:Interaction List, Attribute:Interaction Detail Page Page: Component, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "5BB4CDA1-8B5A-49BB-910C-7BC9B31F5575", "06BE5064-934B-4EA2-A3FE-CB841A6FE278", @"b6f6ab6f-a572-45fe-a143-2e4b8f192c8d" );
-            // Attrib Value for Block:Interaction List, Attribute:Default Template Page: Component, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "5BB4CDA1-8B5A-49BB-910C-7BC9B31F5575", "2507A83C-CC50-49B9-8F46-E7844D44E371", @"        <div class='panel panel-block'>
-        <div class='panel-heading'>
-	        <h1 class='panel-title'>
-                <i class='fa fa-user'></i>
-                Interactions
-            </h1>
-        </div>
-        <div class='panel-body'>
-
-	        {% for interaction in Interactions %}
-		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
-                    <a href = '{{ InteractionDetailPage }}?interactionId={{ interaction.Id }}'>
-                {% endif %}
-		        
-		         <div class='panel panel-widget'>
-                    <div class='panel-heading'>
-                        
-                        <div class='row'>
-                            <div class='col-md-12'>
-                                <span class='label label-info pull-left margin-r-md'>{{ interaction.Operation }}</span>
-                            
-                                {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ interaction.InteractionDateTime }}</h1>{% endif %}
-                                
-                                <div class='pull-right'><i class='fa fa-chevron-right'></i></div>
-                            </div>
-                        </div>
-                        
-                        <div class='row margin-t-md'>
-                            {% if interaction.InteractionSummary && interaction.InteractionSummary != '' %}
-                            <div class='col-md-6'>
-                                <dl>
-                                    <dt>Interaction Summary</dt>
-                                    <dd>{{ interaction.InteractionSummary }}</dd>
-                                </dl>
-                            </div>
-                            {% endif %}
-                            
-                            {% if interaction.InteractionData && interaction.InteractionData != '' %}
-                            <div class='col-md-6'>
-                                <dl>
-                                    <dt>Interaction Data</dt>
-                                    <dd>{{ interaction.InteractionData }}</dd>
-                                </dl>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-		        
-		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
-    		        </a>
-		        {% endif %}
-	        {% endfor %}	
-	 
-        </div>
-    </div>" );
-            RockMigrationHelper.UpdateFieldType( "Time Zone", "", "Rock", "Rock.Field.Types.TimeZoneFieldType", "456DA639-132D-4AEE-B26A-14D1C8AE4178" );
 
             #endregion
 

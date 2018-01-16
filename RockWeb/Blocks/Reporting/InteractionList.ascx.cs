@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -91,11 +92,24 @@ namespace RockWeb.Blocks.Reporting
     		        </a>
 		        {% endif %}
 	        {% endfor %}	
-	 
+	        <div class ='nav-paging'>
+            {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != ''  %}
+                <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i>Prev<a/>
+            {% endif %}
+            {% if NextPageNavigateUrl != null and NextPageNavigateUrl != ''  %}
+                <a Id ='hlNext' class = 'btn btn-primary btn-next' href='{{ NextPageNavigateUrl }}'> Next <i class='fa fa-chevron-right'></i><a/>
+            {% endif %}
+            </div>
         </div>
     </div>" )]
+    [IntegerField( "Page Size", "The number of interactions to show per page.", true, 20, "", 3 )]
     public partial class InteractionList : Rock.Web.UI.RockBlock
     {
+        #region Fields
+
+        private int pageNumber = 0;
+
+        #endregion
 
         #region Base Control Methods
 
@@ -122,6 +136,11 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
+                if ( !string.IsNullOrEmpty( PageParameter( "Page" ) ) )
+                {
+                    pageNumber = PageParameter( "Page" ).AsInteger();
+                }
+
                 ShowList( PageParameter( "componentId" ).AsInteger() );
             }
         }
@@ -151,6 +170,10 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public void ShowList( int componentId )
         {
+            int pageSize = GetAttributeValue( "PageSize" ).AsInteger();
+
+            int skipCount = pageNumber * pageSize;
+
             using ( var rockContext = new RockContext() )
             {
                 var component = new InteractionComponentService( rockContext ).Get( componentId );
@@ -160,18 +183,43 @@ namespace RockWeb.Blocks.Reporting
                         .Queryable().AsNoTracking()
                         .Where( a =>
                             a.InteractionComponentId == componentId )
-                        .ToList();
+                        .OrderByDescending( a => a.InteractionDateTime )
+                        .Skip( skipCount )
+                        .Take( pageSize + 1 );
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.AddOrIgnore( "Person", CurrentPerson );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", component.Channel );
                     mergeFields.Add( "InteractionComponent", component );
-                    mergeFields.Add( "Interactions", interactions.ToList() );
+                    mergeFields.Add( "Interactions", interactions.ToList().Take( pageSize ) );
+
+                    // set next button
+                    if ( interactions.Count() > pageSize )
+                    {
+                        Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
+                        queryStringNext.Add( "ComponentId", componentId.ToString() );
+                        queryStringNext.Add( "Page", ( pageNumber + 1 ).ToString() );
+
+                        var pageReferenceNext = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringNext );
+                        mergeFields.Add( "NextPageNavigateUrl", pageReferenceNext.BuildUrl() );
+                    }
+
+                    // set prev button
+                    if ( pageNumber != 0 )
+                    {
+                        Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
+                        queryStringPrev.Add( "ComponentId", componentId.ToString() );
+                        queryStringPrev.Add( "Page", ( pageNumber - 1 ).ToString() );
+
+                        var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
+                        mergeFields.Add( "PreviousPageNavigateUrl", pageReferencePrev.BuildUrl() );
+                    }
 
                     lContent.Text = component.Channel.InteractionListTemplate.IsNotNullOrWhitespace() ?
                         component.Channel.InteractionListTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
+
                 }
             }
         }
