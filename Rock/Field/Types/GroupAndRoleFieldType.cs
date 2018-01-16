@@ -234,7 +234,10 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return string.Format( "{0}|{1}|{2}", groupTypeGuid, groupGuid, groupTypeRoleGuid );
+                if ( groupTypeGuid.HasValue || groupGuid.HasValue || groupTypeRoleGuid.HasValue )
+                {
+                    return string.Format( "{0}|{1}|{2}", groupTypeGuid, groupGuid, groupTypeRoleGuid );
+                }
             }
 
             return null;

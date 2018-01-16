@@ -12,7 +12,10 @@
 
         <div class="panel panel-block panel-analytics">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Attendance Analysis</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-check-square-o"></i>
+                    Attendance Analytics
+                </h1>
 
                 <div class="panel-labels">
                     <asp:Button ID="btnCheckinDetails" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnCheckinDetails_Click" Text="Check-in Detail" />

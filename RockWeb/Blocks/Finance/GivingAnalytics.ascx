@@ -23,7 +23,10 @@
 
         <div class="panel panel-block panel-analytics">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Giving Analytics</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-check-square-o"></i>
+                    Giving Analytics
+                </h1>
 
                 <div class="panel-labels">
                     <a href="#" onclick="$('.js-slidingdaterange-help').toggle()">

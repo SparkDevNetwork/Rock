@@ -210,7 +210,10 @@ namespace Rock.Field.Types
                     }
                 }
 
-                return string.Format( "{0}|{1}", groupTypeGuid, groupGuid );
+                if ( groupTypeGuid.HasValue || groupGuid.HasValue )
+                {
+                    return string.Format( "{0}|{1}", groupTypeGuid, groupGuid );
+                }
             }
 
             return null;

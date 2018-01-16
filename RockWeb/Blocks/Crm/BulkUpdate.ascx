@@ -80,6 +80,10 @@
                                     </div>
                                 </div>
                                 <Rock:CampusPicker ID="cpCampus" runat="server" />
+                                <Rock:RockDropDownList ID="ddlCommunicationPreference" runat="server" Label="Communication Preference">
+                                    <asp:ListItem Text="Email" Value="1" />
+                                    <asp:ListItem Text="SMS" Value="2" />
+                                </Rock:RockDropDownList>
                             </div>
                             <div class="col-sm-6">
                                 <Rock:RockDropDownList ID="ddlSuffix" runat="server" />
