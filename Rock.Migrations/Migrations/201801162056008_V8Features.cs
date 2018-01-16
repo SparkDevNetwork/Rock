@@ -53,7 +53,7 @@ namespace Rock.Migrations
         public override void Up()
         {
 
-            #region Database Changes
+            #region Table Changes
 
             CreateTable(
                 "dbo.PersonSignal",
@@ -114,10 +114,33 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
             
+            CreateTable(
+                "dbo.DataViewPersistedValue",
+                c => new
+                    {
+                        DataViewId = c.Int(nullable: false),
+                        EntityId = c.Int(nullable: false),
+                    })
+                .PrimaryKey(t => new { t.DataViewId, t.EntityId })
+                .ForeignKey("dbo.DataView", t => t.DataViewId, cascadeDelete: true)
+                .Index(t => t.DataViewId);
+            
             AddColumn("dbo.Person", "TopSignalColor", c => c.String(maxLength: 100));
             AddColumn("dbo.Person", "TopSignalIconCssClass", c => c.String(maxLength: 100));
             AddColumn("dbo.Person", "TopSignalId", c => c.Int());
+            AddColumn("dbo.Person", "AgeClassification", c => c.Int(nullable: false));
+            AddColumn("dbo.Person", "PrimaryFamilyId", c => c.Int());
             AddColumn("dbo.GroupType", "GroupViewLavaTemplate", c => c.String());
+            AddColumn("dbo.GroupType", "AllowSpecificGroupMemberAttributes", c => c.Boolean(nullable: false));
+            AddColumn("dbo.GroupType", "EnableSpecificGroupRequirements", c => c.Boolean(nullable: false));
+            AddColumn("dbo.GroupType", "AllowGroupSync", c => c.Boolean(nullable: false));
+            AddColumn("dbo.GroupType", "AllowSpecificGroupMemberWorkflows", c => c.Boolean(nullable: false));
+            AddColumn("dbo.DataView", "PersistedScheduleIntervalMinutes", c => c.Int());
+            AddColumn("dbo.DataView", "PersistedLastRefreshDateTime", c => c.DateTime());
+            AddColumn("dbo.RegistrationInstance", "RegistrationInstructions", c => c.String());
+            AddColumn("dbo.RegistrationTemplate", "RegistrationInstructions", c => c.String());
+            CreateIndex("dbo.Person", "PrimaryFamilyId");
+            AddForeignKey("dbo.Person", "PrimaryFamilyId", "dbo.Group", "Id");
 
             #endregion
 
@@ -775,6 +798,89 @@ namespace Rock.Migrations
 " );
 
             #endregion
+
+            #region Add/Update Persisted Dataviews Job
+
+            Sql( @"
+    INSERT INTO [dbo].[ServiceJob] (
+         [IsSystem]
+        ,[IsActive]
+        ,[Name]
+        ,[Description]
+        ,[Class]
+        ,[CronExpression]
+        ,[NotificationStatus]
+        ,[Guid]
+    )
+    VALUES (
+         0 
+        ,1 
+        ,'Update Persisted DataViews'
+        ,'Job to makes sure that persisted dataviews are updated based on their schedule interval.'
+        ,'Rock.Jobs.UpdatePersistedDataviews'
+        ,'0 0/1 * 1/1 * ? *'
+        ,3
+        ,'11900FEC-B5D4-4CF8-8B48-136F5BF06CB0')
+" );
+
+            #endregion
+
+            #region Update Group Config
+
+            Sql(
+               @"DECLARE @securityRoleId INT, @groupMemberEntityType INT;
+        SELECT @securityRoleId = [Id] FROM [GroupType] WHERE [Guid]='AECE949F-704C-483E-A4FB-93D5E4720C4C'
+
+        SELECT @groupMemberEntityType = [Id] FROM [EntityType] WHERE [Guid]='49668B95-FEDC-43DD-8085-D2B0D6343C48'
+
+        UPDATE 
+	        [GroupType] 
+        SET 
+	        [AllowGroupSync] = 1 
+        WHERE [Id] IN 
+			        (SELECT Distinct [GroupTypeId] FROM [Group] WHERE [SyncDataViewId] IS NOT NULL) OR
+			        [Id] IN (SELECT [Id] FROM [GroupType] WHERE [InheritedGroupTypeId]=@securityRoleId ) OR 
+			        [Id]=@securityRoleId
+
+        UPDATE 
+	        [GroupType] 
+        SET 
+	        [EnableSpecificGroupRequirements] = 1 
+        WHERE 
+	        [Id] IN  (
+	        SELECT A.[GroupTypeId] FROM [Group] A INNER JOIN [GroupRequirement] B ON A.[Id]=B.[GroupId]
+	        ) 
+
+        UPDATE 
+	        [GroupType]
+        SET 
+	        [AllowSpecificGroupMemberAttributes] = 1 
+        WHERE 
+	        [Id] IN  (
+	        SELECT A.[GroupTypeId]
+	        FROM 
+		        [Group] A INNER JOIN 
+		        [Attribute] B  
+	        ON 
+		        A.[Id] = CONVERT(INT,B.[EntityTypeQualifierValue]) 
+	        WHERE 
+		        B.[EntityTypeQualifierColumn]='GroupId' AND
+		        B.[EntityTypeId]=@groupMemberEntityType) 
+
+
+
+        UPDATE 
+	        [GroupType] 
+        SET 
+	        [AllowSpecificGroupMemberWorkflows] = 1 
+        WHERE 
+	        [Id] IN  (
+	        SELECT A.[GroupTypeId] FROM [Group] A INNER JOIN [GroupMemberWorkflowTrigger] B ON A.[Id]=B.[GroupId]
+        ) 
+" );
+
+            #endregion
+
         }
 
         /// <summary>
@@ -782,6 +888,12 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            #region Delete Persisted Dataviews Job
+
+            Sql( "DELETE FROM [ServiceJob] where [Guid] = '11900FEC-B5D4-4CF8-8B48-136F5BF06CB0'" );
+
+            #endregion
+
             #region Data Integrity
 
             RockMigrationHelper.DeleteAttribute( "E47870C0-17C7-4556-A922-D7866DFC2C57" ); // AllowAutomatedReactivation	0
@@ -790,7 +902,7 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlock( "816CBFA2-B0CD-4EAB-8E42-7F77216815DA" );
             RockMigrationHelper.DeleteBlockType( "BA4292F9-AB6A-4464-9F0B-FC580B92C4BF" ); // Data Integrity Settings
             RockMigrationHelper.DeletePage( "4818E7C6-4D21-4657-B4E7-464B61160EB2" ); //  Page: Data Integrity Settings, Layout: Full Width, Site: Rock RMS
-            
+
             #endregion
 
             #region Personal Device Type UI
@@ -872,13 +984,16 @@ namespace Rock.Migrations
 
             #region Database Changes
 
-            DropForeignKey( "dbo.PersonSignal", "SignalTypeId", "dbo.SignalType");
+            DropForeignKey( "dbo.DataViewPersistedValue", "DataViewId", "dbo.DataView");
+            DropForeignKey("dbo.PersonSignal", "SignalTypeId", "dbo.SignalType");
             DropForeignKey("dbo.SignalType", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.SignalType", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.PersonSignal", "PersonId", "dbo.Person");
             DropForeignKey("dbo.PersonSignal", "OwnerPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.PersonSignal", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.PersonSignal", "CreatedByPersonAliasId", "dbo.PersonAlias");
+            DropForeignKey("dbo.Person", "PrimaryFamilyId", "dbo.Group");
+            DropIndex("dbo.DataViewPersistedValue", new[] { "DataViewId" });
             DropIndex("dbo.SignalType", new[] { "Guid" });
             DropIndex("dbo.SignalType", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.SignalType", new[] { "CreatedByPersonAliasId" });
@@ -889,10 +1004,22 @@ namespace Rock.Migrations
             DropIndex("dbo.PersonSignal", new[] { "OwnerPersonAliasId" });
             DropIndex("dbo.PersonSignal", new[] { "SignalTypeId" });
             DropIndex("dbo.PersonSignal", new[] { "PersonId" });
+            DropIndex("dbo.Person", new[] { "PrimaryFamilyId" });
+            DropColumn("dbo.RegistrationTemplate", "RegistrationInstructions");
+            DropColumn("dbo.RegistrationInstance", "RegistrationInstructions");
+            DropColumn("dbo.DataView", "PersistedLastRefreshDateTime");
+            DropColumn("dbo.DataView", "PersistedScheduleIntervalMinutes");
+            DropColumn("dbo.GroupType", "AllowSpecificGroupMemberWorkflows");
+            DropColumn("dbo.GroupType", "AllowGroupSync");
+            DropColumn("dbo.GroupType", "EnableSpecificGroupRequirements");
+            DropColumn("dbo.GroupType", "AllowSpecificGroupMemberAttributes");
             DropColumn("dbo.GroupType", "GroupViewLavaTemplate");
+            DropColumn("dbo.Person", "PrimaryFamilyId");
+            DropColumn("dbo.Person", "AgeClassification");
             DropColumn("dbo.Person", "TopSignalId");
             DropColumn("dbo.Person", "TopSignalIconCssClass");
             DropColumn("dbo.Person", "TopSignalColor");
+            DropTable("dbo.DataViewPersistedValue");
             DropTable("dbo.SignalType");
             DropTable("dbo.PersonSignal");
 
