@@ -1203,6 +1203,7 @@
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialPledgeDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialTransactionDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasPhoneFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasSignalFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
