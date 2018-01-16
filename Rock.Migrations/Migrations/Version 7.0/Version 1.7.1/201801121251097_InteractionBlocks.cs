@@ -126,6 +126,7 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateBlockTypeAttribute( "FBC2066B-8E7C-43CB-AFD2-FA9408F6699D", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Session List Page", "SessionListPage", "", @"Page reference to the session list page. This will be included as a variable in the Lava.", 0, @"", "8A119119-E8D0-41E7-B1E4-E6978FD39CA9" );
             // Attrib for BlockType: Interaction Channel List:Component List Page
             RockMigrationHelper.UpdateBlockTypeAttribute( "FBC2066B-8E7C-43CB-AFD2-FA9408F6699D", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Component List Page", "ComponentListPage", "", @"Page reference to the component list page. This will be included as a variable in the Lava.", 1, @"", "C797358E-FC24-4F8E-905F-476CDF934886" );
+
             // Attrib for BlockType: Interaction Component Detail:Default Template
             RockMigrationHelper.UpdateBlockTypeAttribute( "926261B2-CF4C-4B1F-A384-CD83696CFBC2", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Default Template", "DefaultTemplate", "", @"Lava template to use to display content", 0, @"
         <div class='row'>
@@ -140,8 +141,8 @@ namespace Rock.Migrations
             </div>
         {% endif %}
     </div>
-
 ", "ED07DC7B-E700-435D-99B4-6B8CDB8DF244" );
+
             // Attrib for BlockType: Interaction Detail:Default Template
             RockMigrationHelper.UpdateBlockTypeAttribute( "B6AD2D98-0DF3-4DFB-AE2B-A8CF6E21E5C0", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Default Template", "DefaultTemplate", "", @"The Lava template to use as default.", 2, @"
     <div class='panel panel-block'>
@@ -183,6 +184,7 @@ namespace Rock.Migrations
             </div>
         </div>
     </div>", "3C71A209-E094-4DED-A786-0435E61CA885" );
+
             // Attrib for BlockType: Interaction List:Interaction Detail Page
             RockMigrationHelper.UpdateBlockTypeAttribute( "468119E3-41AB-4EC4-B631-77F326632B35", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Interaction Detail Page", "InteractionDetailPage", "", @"Page reference to the interaction detail page. This will be included as a variable in the Lava.", 1, @"", "06BE5064-934B-4EA2-A3FE-CB841A6FE278" );
             // Attrib for BlockType: Interaction List:Default Template
@@ -250,6 +252,9 @@ namespace Rock.Migrations
             </div>
         </div>
     </div>", "2507A83C-CC50-49B9-8F46-E7844D44E371" );
+            // Attrib for BlockType: Interaction List:Page Size
+            RockMigrationHelper.UpdateBlockTypeAttribute( "468119E3-41AB-4EC4-B631-77F326632B35", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Page Size", "PageSize", "", @"The number of interactions to show per page.", 3, @"20", "1818A217-B052-4CC6-A4B8-4FCD9B4BB118" );
+
             // Attrib for BlockType: Interaction Session List:Default Template
             RockMigrationHelper.UpdateBlockTypeAttribute( "EA90EF4F-C783-48CD-B575-AD785DE896E9", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Default Template", "DefaultTemplate", "", @"The Lava template to use as default.", 2, @"
 {% if InteractionChannel != null and InteractionChannel != '' %}
@@ -301,6 +306,9 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateBlockTypeAttribute( "EA90EF4F-C783-48CD-B575-AD785DE896E9", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Component Detail Page", "ComponentDetailPage", "", @"Page reference to the component detail page. This will be included as a variable in the Lava.", 0, @"", "26D25CD6-AF12-4A0C-80E0-0CD4CFEB4C6E" );
             // Attrib for BlockType: Interaction Session List:Interaction Detail Page
             RockMigrationHelper.UpdateBlockTypeAttribute( "EA90EF4F-C783-48CD-B575-AD785DE896E9", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Interaction Detail Page", "InteractionDetailPage", "", @"Page reference to the interaction detail page. This will be included as a variable in the Lava.", 1, @"", "922BDC9E-D1ED-4553-B84D-1C301B291F5F" );
+            // Attrib for BlockType: Interaction Session List:Session Count
+            RockMigrationHelper.UpdateBlockTypeAttribute( "EA90EF4F-C783-48CD-B575-AD785DE896E9", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Session Count", "SessionCount", "", @"The number of sessions to show per page.", 3, @"20", "2C5717C7-9911-466A-AC49-48DF46996A4F" );
+
             // Attrib for BlockType: Interaction Component List:Component Detail Page
             RockMigrationHelper.UpdateBlockTypeAttribute( "00FF58B1-A433-43AA-82C9-45F8F58FBE9F", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Component Detail Page", "ComponentDetailPage", "", @"Page reference to the component detail page. This will be included as a variable in the Lava.", 0, @"", "CCF5FD98-6F00-4DE6-9D8C-D1C86C2FE34C" );
             // Attrib for BlockType: Interaction Component List:Interaction Detail Page
@@ -342,7 +350,9 @@ namespace Rock.Migrations
             </div>
 		</div>
 	</div>", "18BBB704-ECE7-4FEB-A9A0-9D023CEE1B49" );
-            
+            // Attrib for BlockType: Interaction Component List:Page Size
+            RockMigrationHelper.UpdateBlockTypeAttribute( "00FF58B1-A433-43AA-82C9-45F8F58FBE9F", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Page Size", "PageSize", "", @"The number of components to show per page.", 3, @"20", "29D1072F-6E5D-45D3-A483-C436D9A4EC39" );
+
             // Attrib Value for Block:Interaction Channel List, Attribute:Session List Page Page: Interactions, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "8C11CA76-6AD8-4C1F-8889-A9C38FE5C966", "8A119119-E8D0-41E7-B1E4-E6978FD39CA9", @"756d37b7-7be2-497d-8d37-cc273fe29659" );
             // Attrib Value for Block:Interaction Channel List, Attribute:Component List Page Page: Interactions, Site: Rock RMS
@@ -468,6 +478,39 @@ INSERT INTO [LavaShortCode]
 }
 {% endstylesheet %}',2,'','type^scroll|speed^50|image^|zindex^1|noandriod^false|noios^false|videourl^|height^200px|contentpadding^0|contentcolor^#fff|contentalign^center','4B6452EF-6FEA-4A66-9FB9-1A7CCE82E7A4')
 " );
+
+            #endregion
+
+            #region DT: Block Type Catch-Up
+
+            RockMigrationHelper.UpdateBlockType( "Data Integrity Settings", "Block used to set values specific to data integrity (NCOA, Data Automation, Etc).", "~/Blocks/Administration/DataIntegritySettings.ascx", "Administration", "C438CBDC-9D35-40F2-8D09-9A1079016A9D" );
+            RockMigrationHelper.UpdateBlockType( "Ncoa History Detail", "Parse the Ncoa History CSV", "~/Blocks/Crm/NcoaHistoryDetail.ascx", "CRM", "972B7955-ECF9-43B9-80B2-BFF40675FFB8" );
+            RockMigrationHelper.UpdateBlockType( "Ncoa Results", "Display the Ncoa History Record", "~/Blocks/Crm/NcoaResults.ascx", "CRM", "3997FE75-E069-4879-B8BA-C8B19C367CD3" );
+
+            // Attrib for BlockType: Theme List:core.CustomGridColumnsConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute( "FD99E0AA-E1CB-4049-A6F6-9C5F2A34F694", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomGridColumnsConfig", "core.CustomGridColumnsConfig", "", @"", 0, @"", "C8EFFEFB-05BA-40BA-8AF8-6BCF4CD55676" );
+            // Attrib for BlockType: Template List:core.CustomGridColumnsConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute( "EACDBBD4-C355-4D38-B604-779BC55D3876", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomGridColumnsConfig", "core.CustomGridColumnsConfig", "", @"", 0, @"", "D05D5C44-3BF0-40AC-9776-729FEE79E917" );
+            // Attrib for BlockType: Registration Instance Active List:core.CustomGridColumnsConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute( "CFE8CAFA-587B-4EF2-A457-18047AC6BA39", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomGridColumnsConfig", "core.CustomGridColumnsConfig", "", @"", 0, @"", "C7C0B4FB-C802-4618-93CB-45CC2E6391A1" );
+            // Attrib for BlockType: Registration Instance List:core.CustomGridColumnsConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute( "632F63A9-5629-4731-BE6A-AB534EDD9BC9", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomGridColumnsConfig", "core.CustomGridColumnsConfig", "", @"", 0, @"", "81154ECD-2ADD-4011-BB5C-A52233FA05ED" );
+            // Attrib for BlockType: Report Data:DataFiltersPrePostHtmlConfig
+            RockMigrationHelper.UpdateBlockTypeAttribute( "C7C069DB-9EEE-4245-9DF2-34E3A1FF4CCB", "9C204CD0-1233-41C5-818A-C5DA439445AA", "DataFiltersPrePostHtmlConfig", "DataFiltersPrePostHtmlConfig", "", @"JSON for the Dictionary<Guid,DataFilterPrePostHtmlConfig>", 0, @"", "0F6FF419-28D4-483C-914E-86ACB632DEF5" );
+            // Attrib for BlockType: Group Attendance Detail:Restrict Future Occurrence Date
+            RockMigrationHelper.UpdateBlockTypeAttribute( "FC6B5DC8-3A90-4D78-8DC2-7F7698A6E73B", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Restrict Future Occurrence Date", "RestrictFutureOccurrenceDate", "", @"Should prevent block to select future date of Occurrence?", 6, @"False", "8ACF5559-F44F-454E-B447-7245E1B986C8" );
+            // Attrib for BlockType: Group Detail Lava:Allow Group Member Delete
+            RockMigrationHelper.UpdateBlockTypeAttribute( "218B057F-B214-4317-8E84-7A95CF88067E", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Allow Group Member Delete", "AllowGroupMemberDelete", "", @"Should deleting of group members be allowed?", 12, @"True", "F08413A8-5B03-4ACC-9C4D-74044E9888B6" );
+            // Attrib for BlockType: Group Member List:Show Note Column
+            RockMigrationHelper.UpdateBlockTypeAttribute( "88B7EFA9-7419-4D05-9F88-38B936E61EDD", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Note Column", "ShowNoteColumn", "", @"Should the note be displayed as a seperate grid column (instead of displaying a note icon under person's name)?", 7, @"False", "5F54C068-1418-44FA-B215-FBF70072F6A5" );
+            // Attrib for BlockType: Group Registration:Enable Passing Group Id
+            RockMigrationHelper.UpdateBlockTypeAttribute( "9D0EF3AC-D0F7-4FA7-9C64-E7B0855648C7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Passing Group Id", "EnablePassingGroupId", "", @"If enabled, allows the ability to pass in a group's Id (GroupId=) instead of the Guid.", 0, @"True", "FFA01B86-334D-454A-AC2D-CDBE6CC68C09" );
+            // Attrib for BlockType: Ncoa Results:Result Count
+            RockMigrationHelper.UpdateBlockTypeAttribute( "3997FE75-E069-4879-B8BA-C8B19C367CD3", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Result Count", "ResultCount", "", @"Number of result to display per page (default 20).", 0, @"20", "959300D2-92DD-4EB8-A917-0E32B5EBF866" );
+            // Attrib for BlockType: Attendance Analytics:Data View Category(s)
+            RockMigrationHelper.UpdateBlockTypeAttribute( "3CD3411C-C076-4344-A9D5-8F3B4F01E31D", "775899FB-AC17-4C2C-B809-CF3A1D2AA4E1", "Data View Category(s)", "DataViewCategories", "", @"The optional data view categories that should be included as an option to filter attendance for. If a category is not selected, all data views will be included.", 6, @"", "CBDD26BF-9076-4281-8458-B1CB5E0BADFA" );
+
+            RockMigrationHelper.UpdateFieldType( "Time Zone", "", "Rock", "Rock.Field.Types.TimeZoneFieldType", "3FC8C1D3-3EBB-4887-A5A4-B9F300FC7B90" );
 
             #endregion
 
