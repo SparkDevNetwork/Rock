@@ -61,7 +61,7 @@ namespace Rock.Workflow.Action
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -133,6 +133,7 @@ namespace Rock.Workflow.Action
                                     Send( toValue, fromEmail, fromName, subject, body, mergeFields, rockContext, createCommunicationRecord, attachments );
                                     break;
                                 }
+
                             case "Rock.Field.Types.PersonFieldType":
                                 {
                                     Guid personAliasGuid = toValue.AsGuid();
@@ -165,15 +166,17 @@ namespace Rock.Workflow.Action
                                             Send( person.Email, fromEmail, fromName, subject, body, personDict, rockContext, createCommunicationRecord, attachments );
                                         }
                                     }
+
                                     break;
                                 }
+
                             case "Rock.Field.Types.GroupFieldType":
                             case "Rock.Field.Types.SecurityRoleFieldType":
                                 {
                                     int? groupId = toValue.AsIntegerOrNull();
                                     Guid? groupGuid = toValue.AsGuidOrNull();
 
-                                    //Get the Group Role attribute value
+                                    // Get the Group Role attribute value
                                     Guid? groupRoleValueGuid = GetGroupRoleValue( action );
 
                                     IQueryable<GroupMember> qry = null;
@@ -183,17 +186,15 @@ namespace Rock.Workflow.Action
                                     {
                                         qry = new GroupMemberService( rockContext ).GetByGroupId( groupId.Value );
                                     }
-
-                                    // Handle situations where the attribute value stored is the Guid
-                                    else if ( groupGuid.HasValue )
+                                    else if ( groupGuid.HasValue ) 
                                     {
+                                        // Handle situations where the attribute value stored is the Guid
                                         qry = new GroupMemberService( rockContext ).GetByGroupGuid( groupGuid.Value );
                                     }
                                     else
                                     {
                                         action.AddLogEntry( "Invalid Recipient: No valid group id or Guid", true );
                                     }
-
 
                                     if ( groupRoleValueGuid.HasValue )
                                     {
@@ -206,7 +207,7 @@ namespace Rock.Workflow.Action
                                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                                             .Select( m => m.Person ) )
                                         {
-                                            if ( ( person.IsEmailActive ) &&
+                                            if ( person.IsEmailActive &&
                                                 person.EmailPreference != EmailPreference.DoNotEmail &&
                                                 !string.IsNullOrWhiteSpace( person.Email ) )
                                             {
@@ -216,6 +217,7 @@ namespace Rock.Workflow.Action
                                             }
                                         }
                                     }
+
                                     break;
                                 }
                         }
@@ -252,6 +254,7 @@ namespace Rock.Workflow.Action
             {
                 emailMessage.AddRecipient( new RecipientData( recipient, mergeFields ) );
             }
+
             emailMessage.FromEmail = fromEmail;
             emailMessage.FromName = fromName;
             emailMessage.Subject = subject;
