@@ -259,16 +259,17 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateBlockTypeAttribute( "EA90EF4F-C783-48CD-B575-AD785DE896E9", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Default Template", "DefaultTemplate", "", @"The Lava template to use as default.", 2, @"
 {% if InteractionChannel != null and InteractionChannel != '' %}
     {% for session in WebSessions %}
-        <div class='panel panel-widget pageviewsession'>
+        <div class='panel panel-widget'>
 	        <header class='panel-heading clearfix'>
 	        <div class='pull-left'>
 		        <h4 class='panel-title'>
-			        Started {{ session.StartDateTime | HumanizeDateTime }}
+		            {{ session.PersonAlias.Person.FullName }}
 			        <small>
-			        Duration: {{ session.StartDateTime | HumanizeTimeSpan:session.EndDateTime, 1 }}
+			            Started {{ session.StartDateTime }} / 
+			            Duration: {{ session.StartDateTime | HumanizeTimeSpan:session.EndDateTime, 1 }}
 			        </small>
 		        </h4>
-		        <span class='label label-primary'>{{ session.PersonAlias.Person.FullName }}</span>
+		        <span class='label label-primary'></span>
 		        <span class='label label-info'>{{ InteractionChannel.Name }}</span>
 		        </div> 
 		        {% assign icon = '' %}
@@ -278,13 +279,15 @@ namespace Rock.Migrations
 			        {% when 'Mobile' %}{% assign icon = 'fa-mobile-phone' %}
 			        {% else %}{% assign icon = '' %}
 		        {% endcase %}
-		        <div class='pageviewsession-client pull-right'>
-                    <div class='pull-left'>
-                        <small>{{ session.InteractionSession.DeviceType.Application }} <br>
-                        {{ session.InteractionSession.DeviceType.OperatingSystem }} </small>
+		        {% if icon != '' %}
+    		        <div class='pageviewsession-client pull-right'>
+                        <div class='pull-left'>
+                            <small>{{ session.InteractionSession.DeviceType.Application }} <br>
+                            {{ session.InteractionSession.DeviceType.OperatingSystem }} </small>
+                        </div>
+                        <i class='fa {{ icon }} fa-2x pull-right'></i>
                     </div>
-                    <i class='fa {{ icon }} fa-2x pull-right'></i>
-                </div>
+                {% endif %}
 	        </header>
 	        <div class='panel-body'>
 		        {% assign interactionCount = 0 %}
