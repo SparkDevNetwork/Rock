@@ -15,19 +15,12 @@
 // </copyright>
 //
 using System;
-<<<<<<< HEAD
-=======
 using System.Collections.Generic;
->>>>>>> origin/develop
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
-<<<<<<< HEAD
-using System.Web.UI.WebControls; 
-=======
 using System.Web.UI.WebControls;
->>>>>>> origin/develop
 
 using Rock;
 using Rock.Attribute;
@@ -54,35 +47,6 @@ namespace RockWeb.Blocks.Reporting
             </h1>
         </div>
 		<div class='panel-body'>
-<<<<<<< HEAD
-		    <ul class='list-group margin-all-md'>
-			{% for component in InteractionComponents %}
-				<li class='list-group-item margin-b-md' style='background-color: #edeae6;'>
-                    <div class='row'>
-                        <div class='col-md-6'>
-                            <dl>
-                                <dt>Name</dt>
-                                <dd>
-                                    {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
-                                        <a href = '{{ ComponentDetailPage }}?ComponentId={{ component.Id }}'> Started {{ component.Name }}</a>
-                                    {% else %}
-							            {{ component.Name }}
-    							   {% endif %}
-                                <dd/>
-                            </dl>
-                        </div>
-                        {% if InteractionChannel.Name != '' %}
-                            <div class='col-md-6'>
-                                <dl><dt>Channel Name</dt><dd>{{ InteractionChannel.Name }}<dd/></dl>
-                            </div>
-                        {% endif %}
-                    </div>
-				</li>
-			{% endfor %}	
-			</ul>
-		</div>
-	</div>" )]
-=======
 			{% for component in InteractionComponents %}
 			
 				 {% if ComponentDetailPage != null and ComponentDetailPage != ''  %}
@@ -111,15 +75,11 @@ namespace RockWeb.Blocks.Reporting
 		</div>
 	</div>" )]
     [IntegerField( "Page Size", "The number of components to show per page.", true, 20, "", 3 )]
->>>>>>> origin/develop
     public partial class InteractionComponentList : Rock.Web.UI.RockBlock
     {
         #region Fields
 
-<<<<<<< HEAD
-=======
         private int pageNumber = 0;
->>>>>>> origin/develop
         private int? _channelId = null;
 
         #endregion
@@ -160,14 +120,11 @@ namespace RockWeb.Blocks.Reporting
             {
                 if ( _channelId.HasValue )
                 {
-<<<<<<< HEAD
-=======
                     if ( !string.IsNullOrEmpty( PageParameter( "Page" ) ) )
                     {
                         pageNumber = PageParameter( "Page" ).AsInteger();
                     }
-                    
->>>>>>> origin/develop
+
                     ShowList();
                 }
             }
@@ -196,13 +153,10 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public void ShowList()
         {
-<<<<<<< HEAD
-=======
             int pageSize = GetAttributeValue( "PageSize" ).AsInteger();
 
             int skipCount = pageNumber * pageSize;
 
->>>>>>> origin/develop
             using ( var rockContext = new RockContext() )
             {
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( _channelId.Value );
@@ -211,22 +165,15 @@ namespace RockWeb.Blocks.Reporting
                     var interactionComponentQry = new InteractionComponentService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( a =>
-<<<<<<< HEAD
-                            a.ChannelId == _channelId.Value );
-=======
                             a.ChannelId == _channelId.Value )
                         .OrderByDescending( a => a.ModifiedDateTime )
                         .Skip( skipCount )
                         .Take( pageSize + 1 );
->>>>>>> origin/develop
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.Add( "ComponentDetailPage", LinkedPageRoute( "ComponentDetailPage" ) );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", interactionChannel );
-<<<<<<< HEAD
-                    mergeFields.Add( "InteractionComponents", interactionComponentQry.ToList() );
-=======
                     mergeFields.Add( "InteractionComponents", interactionComponentQry.ToList().Take( pageSize ) );
 
                     // set next button
@@ -250,7 +197,6 @@ namespace RockWeb.Blocks.Reporting
                         var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
                         mergeFields.Add( "PreviousPageNavigateUrl", pageReferencePrev.BuildUrl() );
                     }
->>>>>>> origin/develop
 
                     lContent.Text = interactionChannel.ComponentListTemplate.IsNotNullOrWhitespace() ?
                         interactionChannel.ComponentListTemplate.ResolveMergeFields( mergeFields ) :
