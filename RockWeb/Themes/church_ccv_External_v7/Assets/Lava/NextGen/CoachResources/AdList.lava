@@ -1,0 +1,87 @@
+﻿{% comment %} {% assign useTopMargin = true %} {% endcomment %}
+{% comment %} {% assign maxItems = 4 %} {% endcomment %}
+{% comment %} {% assign useCampusContext = true %} {% endcomment %}
+
+{% comment %}
+{% include '~~/Assets/Lava/NextGen/CoachResources/AdList.lava' %}
+{% endcomment %}
+
+
+{% comment %} Default values of lava settings {% endcomment %}
+{% unless useTopMargin or useTopMargin == false %}
+  {% assign useTopMargin = true %}
+{% endunless %}
+{% unless maxItems %}
+  {% assign maxItems = 4 %}
+{% endunless %}
+{% unless useCampusContext or useCampusContext == false %}
+  {% assign useCampusContext = true %}
+{% endunless %}
+
+{% comment %} Init values {% endcomment %}
+{% assign hasVisibleItems = false %}
+{% assign itemCount = 0 %}
+
+{% comment %} Check if there are any visible items at all {% endcomment %}
+{% for item in Items %}
+  {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
+  {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
+  {% if itemCount < maxItems %}
+    {% if useCampusContext %}
+      {% if itemCampusesRaw == empty %}
+        {% assign hasVisibleItems = true %}
+      {% else %}
+        {% for itemCampus in itemCampuses %}
+          {% if itemCampus == Context.Campus.Name %}
+            {% assign hasVisibleItems = true %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% else %}
+      {% assign hasVisibleItems = true %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{% comment %} Render {% endcomment %}
+{% if hasVisibleItems %}
+      <div class="row">
+        <ul>
+          {% for item in Items %}
+
+            {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
+            {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
+            {% assign showItem = false %}
+            {% assign externalUrl = item | Attribute: 'ExternalLink' %}
+            {% capture internalUrl %}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{% endcapture %}
+            {% assign itemLink = externalUrl | Default: internalUrl %}
+
+            {% if itemCount < maxItems %}
+              {% if useCampusContext %}
+                {% if itemCampusesRaw == empty %}
+                  {% assign showItem = true %}
+                {% else %}
+                  {% for itemCampus in itemCampuses %}
+                    {% if itemCampus == Context.Campus.Name %}
+                      {% assign showItem = true %}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+              {% else %}
+                {% assign showItem = true %}
+              {% endif %}
+            {% endif %}
+
+            {% if showItem %}
+              {% assign itemCount = itemCount | Plus: 1 %}
+                <li>
+                  <a href="{{ itemLink }}">
+                    <h5 class="hoverthumb-bar">{{ item.Title }}</h5>
+                  </a>
+                </li>
+            {% endif %}
+
+          {% endfor %}
+        </ul>
+      </div>
+{% endif %}

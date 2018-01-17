@@ -1,0 +1,48 @@
+{% comment %}
+  {% include '~~/Assets/Lava/NextGen/CoachResources/EarlyKids.lava' %}
+{% endcomment %}
+
+{% assign resultList = Items | Where:'Id', PageParameter.ContentId %}
+{% assign count = resultList | Size %}
+
+{% comment %}If the result list is empty or invalid, show the latest item{% endcomment%}
+{% if count > 0 %}
+	{% assign viewedItem = resultList | First %} 
+{% else %}
+	{% assign viewedItem = Items | First %}
+{% endif %}
+
+<h4 class="page-header">Lessons</h4>
+<p><b>{{ viewedItem | Attribute: 'WeekendDates'}}</b></p>
+<p>{{ viewedItem.Content }}</p>
+
+{% assign guide = viewedItem | Attribute: 'Guide' %}
+
+{% if guide != '' %}
+  <p>
+    <b>Coach Guide</b>
+    {{ guide }}
+  </p>
+{% endif %}
+
+{% assign training = viewedItem | Attribute: 'LinktoCoachTrainingVideo' %}
+
+{% if training != '' %}
+  <p>
+    <b>Coach Training Video</b>
+    <div class="embed-responsive embed-responsive-16by9">
+      <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/{{ training }}" width="320" height="180" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+    </div>
+  </p>
+{% endif %}
+
+{% assign message = viewedItem | Attribute: 'LinktoWeekendMessageVideo' %}
+
+{% if message != '' %}
+  <p>
+    <b>Weekend Message</b>
+    <div class="embed-responsive embed-responsive-16by9">
+      <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/{{ message }}" width="320" height="180" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+    </div>
+  </p>
+{% endif %}

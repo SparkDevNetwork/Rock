@@ -1,0 +1,19 @@
+{% comment %}
+  {% include '~~/Assets/Lava/NextGen/Resources/PickAge.lava' %}
+{% endcomment %}
+
+<h4 class="page-header">Coach Resources</h4>
+
+<p class="lead">Select an age group to continue</p>
+
+<div class="row">
+  <div class="col-sm-6 margin-b-lg">
+    <a href="/page/1701" class="btn btn-block btn-default">Forgot Name<br><span class="no-caps">2 Years</span></a>
+  </div>
+  <div class="col-sm-6 margin-b-lg">
+    <a href="/page/1701" class="btn btn-block btn-default">Early Kids<br><span class="no-caps">3 Years - 1st Grade</span></a>
+  </div>
+  <div class="col-sm-6 margin-b-lg">
+    <a href="/page/1701" class="btn btn-block btn-default">Later Kids<br><span class="no-caps">2nd - 6th Grade</span></a>
+  </div>
+</div>
