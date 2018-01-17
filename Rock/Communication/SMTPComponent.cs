@@ -249,7 +249,7 @@ namespace Rock.Communication.Transport
                                         var attachment = binaryFileService.Get( binaryFileId );
                                         if ( attachment != null )
                                         {
-                                            message.Attachments.Add( new Attachment( attachment.ContentStream, attachment.FileName ) );
+                                            message.Attachments.Add( new Attachment( attachment.ContentStream, attachment.FileName, attachment.MimeType ) );
                                         }
                                     }
                                 }
@@ -473,7 +473,7 @@ namespace Rock.Communication.Transport
                                         message.Attachments.Clear();
                                         foreach ( var binaryFile in communication.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFile ) )
                                         {
-                                            message.Attachments.Add( new Attachment( binaryFile.ContentStream, binaryFile.FileName ) );
+                                            message.Attachments.Add( new Attachment( binaryFile.ContentStream, binaryFile.FileName, binaryFile.MimeType ) );
                                         }
 
                                         smtpClient.Send( message );
