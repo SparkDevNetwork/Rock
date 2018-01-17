@@ -988,7 +988,7 @@ namespace RockWeb.Blocks.Finance
         #region Attributes
 
         /// <summary>
-        /// Binds the attributes.
+        /// Binds the attributes
         /// </summary>
         private void BindAttributes()
         {
