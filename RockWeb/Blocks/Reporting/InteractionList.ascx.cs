@@ -15,10 +15,7 @@
 // </copyright>
 //
 using System;
-<<<<<<< HEAD
-=======
 using System.Collections.Generic;
->>>>>>> origin/develop
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -42,11 +39,7 @@ namespace RockWeb.Blocks.Reporting
 
     [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
     [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"
-<<<<<<< HEAD
-    <div class='panel panel-block'>
-=======
      <div class='panel panel-block'>
->>>>>>> origin/develop
         <div class='panel-heading'>
 	        <h1 class='panel-title'>
                 <i class='fa fa-user'></i>
@@ -54,31 +47,6 @@ namespace RockWeb.Blocks.Reporting
             </h1>
         </div>
         <div class='panel-body'>
-<<<<<<< HEAD
-	        <ul class='list-group margin-all-md'>
-	        {% for interaction in Interactions %}
-		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
-                    <a href='{{ InteractionDetailPage }}?InteractionId={{ interaction.Id }}'>
-                {% endif %}
-		        <li class='list-group-item margin-b-md' style='background-color: #edeae6;'>
-                    <div class='row'>
-                        <div class='col-md-6'>
-                            <dl>
-                                <dt>Date / Time</dt><dd>{{ interaction.InteractionDateTime }}<dd/>
-                                <dt>Operation</dt><dd>{{ interaction.Operation }}<dd/>
-                            </dl>
-                        </div>
-                        <div class='col-md-6'>
-                            <dl>
-                                <dt>Interaction</dt><dd>{{ interaction.InteractionData }}<dd/>
-                                {% if interaction.PersonAlias != null and interaction.PersonAlias.Person.Name.FullName != '' %}
-                                    <dt>Person</dt><dd>{{ interaction.PersonAlias.Person.FullName }}<dd/>
-                                {% endif %}
-                            </dl>
-                        </div>
-                    </div>
-		        </li>
-=======
 
 	        {% for interaction in Interactions %}
 		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
@@ -120,18 +88,10 @@ namespace RockWeb.Blocks.Reporting
                     </div>
                 </div>
 		        
->>>>>>> origin/develop
 		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
     		        </a>
 		        {% endif %}
 	        {% endfor %}	
-<<<<<<< HEAD
-	        </ul>
-        </div>
-    </div>" )]
-    public partial class InteractionList : Rock.Web.UI.RockBlock
-    {
-=======
 	        <div class ='nav-paging'>
             {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != ''  %}
                 <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i>Prev<a/>
@@ -150,7 +110,6 @@ namespace RockWeb.Blocks.Reporting
         private int pageNumber = 0;
 
         #endregion
->>>>>>> origin/develop
 
         #region Base Control Methods
 
@@ -177,14 +136,11 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-<<<<<<< HEAD
-=======
                 if ( !string.IsNullOrEmpty( PageParameter( "Page" ) ) )
                 {
                     pageNumber = PageParameter( "Page" ).AsInteger();
                 }
 
->>>>>>> origin/develop
                 ShowList( PageParameter( "componentId" ).AsInteger() );
             }
         }
@@ -214,13 +170,10 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public void ShowList( int componentId )
         {
-<<<<<<< HEAD
-=======
             int pageSize = GetAttributeValue( "PageSize" ).AsInteger();
 
             int skipCount = pageNumber * pageSize;
 
->>>>>>> origin/develop
             using ( var rockContext = new RockContext() )
             {
                 var component = new InteractionComponentService( rockContext ).Get( componentId );
@@ -230,22 +183,15 @@ namespace RockWeb.Blocks.Reporting
                         .Queryable().AsNoTracking()
                         .Where( a =>
                             a.InteractionComponentId == componentId )
-<<<<<<< HEAD
-                        .ToList();
-=======
                         .OrderByDescending( a => a.InteractionDateTime )
                         .Skip( skipCount )
                         .Take( pageSize + 1 );
->>>>>>> origin/develop
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.AddOrIgnore( "Person", CurrentPerson );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", component.Channel );
                     mergeFields.Add( "InteractionComponent", component );
-<<<<<<< HEAD
-                    mergeFields.Add( "Interactions", interactions.ToList() );
-=======
                     mergeFields.Add( "Interactions", interactions.ToList().Take( pageSize ) );
 
                     // set next button
@@ -269,15 +215,10 @@ namespace RockWeb.Blocks.Reporting
                         var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
                         mergeFields.Add( "PreviousPageNavigateUrl", pageReferencePrev.BuildUrl() );
                     }
->>>>>>> origin/develop
 
                     lContent.Text = component.Channel.InteractionListTemplate.IsNotNullOrWhitespace() ?
                         component.Channel.InteractionListTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/develop
                 }
             }
         }

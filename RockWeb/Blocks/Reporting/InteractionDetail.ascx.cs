@@ -23,10 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-<<<<<<< HEAD
-=======
 using Rock.Web.Cache;
->>>>>>> origin/develop
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -52,13 +49,10 @@ namespace RockWeb.Blocks.Reporting
                         <dt>Channel</dt><dd>{{ InteractionChannel.Name }}<dd/>
                         <dt>Date / Time</dt><dd>{{ Interaction.InteractionDateTime }}<dd/>
                         <dt>Operation</dt><dd>{{ Interaction.Operation }}<dd/>
-<<<<<<< HEAD
-=======
                         
                         {% if InteractionEntityName != '' %}
                             <dt>Related Entity</dt><dd>{{ InteractionEntityName }}<dd/>
                         {% endif %}
->>>>>>> origin/develop
                     </dl>
                 </div>
                 <div class='col-md-6'>
@@ -67,9 +61,6 @@ namespace RockWeb.Blocks.Reporting
                         {% if Interaction.PersonAlias.Person.FullName != '' %}
                             <dt>Person</dt><dd>{{ Interaction.PersonAlias.Person.FullName }}<dd/>
                         {% endif %}
-<<<<<<< HEAD
-                        <dt>Interaction</dt><dd>{{ Interaction.InteractionData }}<dd/>
-=======
                         
                         {% if Interaction.InteractionSummary && Interaction.InteractionSummary != '' %}
                             <dt>Interaction Summary</dt><dd>{{ Interaction.InteractionSummary }}<dd/>
@@ -78,7 +69,6 @@ namespace RockWeb.Blocks.Reporting
                         {% if Interaction.InteractionData && Interaction.InteractionData != '' %}
                             <dt>Interaction Data</dt><dd>{{ Interaction.InteractionData }}<dd/>
                         {% endif %}
->>>>>>> origin/develop
                     </dl>
                 </div>
             </div>
@@ -143,8 +133,6 @@ namespace RockWeb.Blocks.Reporting
             using ( var rockContext = new RockContext() )
             {
                 var interaction = new InteractionService( rockContext ).Get( interactionId );
-<<<<<<< HEAD
-=======
 
                 IEntity interactionEntity = null;
                 if ( interaction.EntityId.HasValue )
@@ -152,7 +140,6 @@ namespace RockWeb.Blocks.Reporting
                     interactionEntity = GetInteractionEntity( rockContext, interaction );
                 }
 
->>>>>>> origin/develop
                 if ( interaction != null && ( UserCanEdit || interaction.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
@@ -160,8 +147,6 @@ namespace RockWeb.Blocks.Reporting
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", interaction.InteractionComponent.Channel );
                     mergeFields.Add( "InteractionComponent", interaction.InteractionComponent );
-<<<<<<< HEAD
-=======
                     mergeFields.Add( "InteractionEntity", interactionEntity );
 
                     if ( interactionEntity != null )
@@ -173,7 +158,6 @@ namespace RockWeb.Blocks.Reporting
                         mergeFields.Add( "InteractionEntityName", string.Empty );
                     }
                     
->>>>>>> origin/develop
                     mergeFields.Add( "Interaction", interaction );
 
                     lContent.Text = interaction.InteractionComponent.Channel.InteractionDetailTemplate.IsNotNullOrWhitespace() ?
@@ -183,8 +167,6 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
-<<<<<<< HEAD
-=======
         /// <summary>
         /// Gets the Component Entity
         /// </summary>
@@ -204,7 +186,6 @@ namespace RockWeb.Blocks.Reporting
             return interactionEntity;
         }
 
->>>>>>> origin/develop
         #endregion
 
     }
