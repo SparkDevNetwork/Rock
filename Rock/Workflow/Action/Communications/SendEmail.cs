@@ -43,10 +43,14 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Send to Group Role", "An optional Group Role attribute to limit recipients to if the 'Send to Email Address' is a group or security role.", false, "", "", 2, "GroupRole",
         new string[] { "Rock.Field.Types.GroupRoleFieldType" } )]
     [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-lava'></span>", false, "", "", 3 )]
-    [WorkflowAttribute( "Attachment", "Workflow attribute that contains the email attachment. Note file size that can be sent is limited by both the sending and receiving email services typically 10 - 25 MB.", false, "", "", 3, null,
-        new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
     [CodeEditorField( "Body", "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 4 )]
-    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 5 )]
+    [WorkflowAttribute( "Attachment One", "Workflow attribute that contains the email attachment. Note file size that can be sent is limited by both the sending and receiving email services typically 10 - 25 MB.", false, "", "", 5, "AttachmentOne",
+        new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
+    [WorkflowAttribute( "Attachment Two", "Workflow attribute that contains the email attachment. Note file size that can be sent is limited by both the sending and receiving email services typically 10 - 25 MB.", false, "", "", 6, "AttachmentTwo",
+        new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
+    [WorkflowAttribute( "Attachment Three", "Workflow attribute that contains the email attachment. Note file size that can be sent is limited by both the sending and receiving email services typically 10 - 25 MB.", false, "", "", 7, "AttachmentThree",
+        new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
+    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 8 )]
     public class SendEmail : ActionComponent
     {
         /// <summary>
@@ -67,7 +71,10 @@ namespace Rock.Workflow.Action
             string fromValue = GetAttributeValue( action, "From" );
             string subject = GetAttributeValue( action, "Subject" );
             string body = GetAttributeValue( action, "Body" );
-            BinaryFile attachment = new BinaryFileService( rockContext ).Get( GetAttributeValue( action, "Attachment", true ).AsGuid() );
+            BinaryFile[] attachments = { new BinaryFileService( rockContext ).Get( GetAttributeValue( action, "AttachmentOne", true ).AsGuid() ),
+                new BinaryFileService( rockContext ).Get( GetAttributeValue( action, "AttachmentTwo", true ).AsGuid() ),
+                new BinaryFileService( rockContext ).Get( GetAttributeValue( action, "AttachmentThree", true ).AsGuid() ) };
+
             bool createCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
 
             string fromEmail = string.Empty;
@@ -123,7 +130,7 @@ namespace Rock.Workflow.Action
                             case "Rock.Field.Types.TextFieldType":
                             case "Rock.Field.Types.EmailFieldType":
                                 {
-                                    Send( toValue, fromEmail, fromName, subject, body, mergeFields, rockContext, createCommunicationRecord, attachment );
+                                    Send( toValue, fromEmail, fromName, subject, body, mergeFields, rockContext, createCommunicationRecord, attachments );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -155,7 +162,7 @@ namespace Rock.Workflow.Action
                                         {
                                             var personDict = new Dictionary<string, object>( mergeFields );
                                             personDict.Add( "Person", person );
-                                            Send( person.Email, fromEmail, fromName, subject, body, personDict, rockContext, createCommunicationRecord, attachment );
+                                            Send( person.Email, fromEmail, fromName, subject, body, personDict, rockContext, createCommunicationRecord, attachments );
                                         }
                                     }
                                     break;
@@ -205,7 +212,7 @@ namespace Rock.Workflow.Action
                                             {
                                                 var personDict = new Dictionary<string, object>( mergeFields );
                                                 personDict.Add( "Person", person );
-                                                Send( person.Email, fromEmail, fromName, subject, body, personDict, rockContext, createCommunicationRecord, attachment );
+                                                Send( person.Email, fromEmail, fromName, subject, body, personDict, rockContext, createCommunicationRecord, attachments );
                                             }
                                         }
                                     }
@@ -217,7 +224,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                Send( to.ResolveMergeFields( mergeFields ), fromEmail, fromName, subject, body, mergeFields, rockContext, createCommunicationRecord, attachment );
+                Send( to.ResolveMergeFields( mergeFields ), fromEmail, fromName, subject, body, mergeFields, rockContext, createCommunicationRecord, attachments );
             }
 
             return true;
@@ -238,7 +245,7 @@ namespace Rock.Workflow.Action
             return groupRoleGuid;
         }
 
-        private void Send( string recipients, string fromEmail, string fromName, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext, bool createCommunicationRecord, BinaryFile attachment )
+        private void Send( string recipients, string fromEmail, string fromName, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext, bool createCommunicationRecord, BinaryFile[] attachments )
         {
             var emailMessage = new RockEmailMessage();
             foreach ( string recipient in recipients.SplitDelimitedValues().ToList() )
@@ -250,10 +257,11 @@ namespace Rock.Workflow.Action
             emailMessage.Subject = subject;
             emailMessage.Message = body;
 
-            if ( attachment != null )
+            foreach (BinaryFile b in attachments)
             {
-                emailMessage.Attachments.Add( attachment );
+                emailMessage.Attachments.Add( b );
             }
+            
             emailMessage.CreateCommunicationRecord = createCommunicationRecord;
 
             emailMessage.Send();
