@@ -39,5 +39,10 @@ namespace church.ccv.Utility.SystemGuids
         /// </summary>
         public const string CARE_RESULT_TYPE = "DAD62E69-9FFE-4225-9097-2758969297F3";
 
+        /// <summary>
+        /// The types of statuses for a Care Request
+        /// </summary>
+        public const string CARE_RESULT_STATUS = "C52316F3-882A-4699-AB8C-9745F375BBA9";
+
     }
 }

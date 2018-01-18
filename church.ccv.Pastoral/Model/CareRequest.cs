@@ -124,6 +124,16 @@ namespace church.ccv.Pastoral.Model
         public int? WorkerPersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Id of the Defined Value <see cref="Rock.Model.DefinedValue"/> representing the status of the Care Request.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the status of the Care Request.
+        /// </value>
+        [DataMember]
+        [DefinedValue( church.ccv.Utility.SystemGuids.DefinedType.CARE_RESULT_STATUS )]
+        public int? RequestStatusValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the summary of the request result.
         /// </summary>
         /// <value>
@@ -243,6 +253,15 @@ namespace church.ccv.Pastoral.Model
         /// </value>
         [DataMember]
         public virtual Rock.Model.DefinedValue ConnectionStatusValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Care Request's status.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the Care Request's status.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.DefinedValue RequestStatusValue { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Location"/> that is associated with this Care Request.
@@ -378,6 +397,7 @@ namespace church.ccv.Pastoral.Model
             this.HasOptional( p => p.ConnectionStatusValue ).WithMany().HasForeignKey( p => p.ConnectionStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.RequestStatusValue ).WithMany().HasForeignKey( p => p.RequestStatusValueId ).WillCascadeOnDelete( false );
         }
     }
 
