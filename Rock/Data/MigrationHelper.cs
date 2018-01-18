@@ -4110,10 +4110,11 @@ END
         /// Ensures the attribute for the specified attributeGuid (if it already exists) has the correct AttributeKey, EntityType, FieldType, EntityTypeQualifierColumn, and EntityTypeQualifierValue
         /// </summary>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="attributeKey">The attribute key.</param>
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <param name="">The .</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
         public void EnsureAttributeByGuid( string attributeGuid, string attributeKey, string entityTypeGuid, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue )
         {
             Migration.Sql( $@"
