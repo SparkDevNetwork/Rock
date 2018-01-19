@@ -22,7 +22,7 @@ namespace RockWeb.Plugins.church_ccv.Pastoral
     /// Block used to list Counseling Requests
     /// </summary>
     [DisplayName( "Counseling Request List" )]
-    [Category( "Pastoral" )]
+    [Category( "CCV > Pastoral" )]
     [Description( "Block used to list Counseling Requests." )]
 
     [ContextAware( typeof( Person ) )]

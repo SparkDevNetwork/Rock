@@ -14,7 +14,7 @@ using church.ccv.Pastoral.Model;
 namespace RockWeb.Plugins.church_ccv.Pastoral
 {
     [DisplayName("Care Request Statement Lava")]
-    [Category( "Pastoral" )]
+    [Category( "CCV > Pastoral" )]
     [Description( "Block for displaying a Lava based Care Request detail." )]
     [CodeEditorField("Lava Template", "The Lava template to use for the Care Request statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"
 {% capture pageTitle %}

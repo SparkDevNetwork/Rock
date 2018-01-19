@@ -22,7 +22,7 @@ namespace RockWeb.Plugins.church_ccv.Pastoral
     /// Block used to list Care Requests
     /// </summary>
     [DisplayName( "Care Request List" )]
-    [Category( "Pastoral" )]
+    [Category( "CCV > Pastoral" )]
     [Description( "Block used to list Care Requests." )]
 
     [ContextAware( typeof( Person ) )]
@@ -296,6 +296,26 @@ namespace RockWeb.Plugins.church_ccv.Pastoral
 
                         stringBuilder.Append( "</div>" );
                         lResults.Text = stringBuilder.ToString();
+                    }
+
+                    HighlightLabel hlStatus = e.Row.FindControl( "hlStatus" ) as HighlightLabel;
+                    if ( hlStatus != null )
+                    {
+                        switch ( careRequest.RequestStatusValue.Value )
+                        {
+                            case "Approved":
+                                hlStatus.Text = "Approved";
+                                hlStatus.LabelType = LabelType.Success;
+                                return;
+                            case "Denied":
+                                hlStatus.Text = "Denied";
+                                hlStatus.LabelType = LabelType.Danger;
+                                return;
+                            case "Pending":
+                                hlStatus.Text = "Pending";
+                                hlStatus.LabelType = LabelType.Default;
+                                return;
+                        }
                     }
                 }
             }

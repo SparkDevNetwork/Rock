@@ -20,7 +20,7 @@ namespace RockWeb.Plugins.church_ccv.Pastoral
     /// Block for users to create, edit, and view counseling requests.
     /// </summary>
     [DisplayName( "Counseling Request Detail" )]
-    [Category( "Pastoral" )]
+    [Category( "CCV > Pastoral" )]
     [Description( "Block for users to create, edit, and view Counseling requests." )]
     [SecurityRoleField( "Worker Role", "The security role to draw workers from", true, church.ccv.Utility.SystemGuids.Group.GROUP_COUNSELING_WORKERS )]
     [LinkedPage("Counseling Request Statement Page", "The page which summarises a counseling request for printing", false)]

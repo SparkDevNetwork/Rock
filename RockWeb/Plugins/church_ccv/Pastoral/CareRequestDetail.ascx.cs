@@ -20,7 +20,7 @@ namespace RockWeb.Plugins.church_ccv.Pastoral
     /// Block for users to create, edit, and view care requests.
     /// </summary>
     [DisplayName( "Care Request Detail" )]
-    [Category( "Pastoral" )]
+    [Category( "CCV > Pastoral" )]
     [Description( "Block for users to create, edit, and view Care requests." )]
     [SecurityRoleField( "Worker Role", "The security role to draw workers from", true, church.ccv.Utility.SystemGuids.Group.GROUP_CARE_WORKERS )]
     [LinkedPage("Care Request Statement Page", "The page which summarises a care request for printing", false)]
@@ -732,7 +732,7 @@ namespace RockWeb.Plugins.church_ccv.Pastoral
                 if ( careRequest.RequestStatusValue.Value == "Pending" )
                 {
                     hlStatus.Text = "Pending";
-                    hlStatus.LabelType = LabelType.Warning;
+                    hlStatus.LabelType = LabelType.Default;
                 }
             }
 
@@ -772,6 +772,7 @@ namespace RockWeb.Plugins.church_ccv.Pastoral
         /// </summary>
         private void LoadDropDowns( CareRequest careRequest )
         {
+            ddlRequestStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.CARE_RESULT_STATUS ) ), false );
             ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
 
             Guid groupGuid = GetAttributeValue( "WorkerRole" ).AsGuid();
