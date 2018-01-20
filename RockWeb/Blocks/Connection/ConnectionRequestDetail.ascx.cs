@@ -1594,8 +1594,17 @@ namespace RockWeb.Blocks.Connection
             {
                 hlState.Visible = true;
                 hlState.Text = connectionRequest.ConnectionState.ConvertToString();
-                hlState.LabelType = connectionRequest.ConnectionState == ConnectionState.Inactive ? LabelType.Danger :
-                ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp ? LabelType.Info : LabelType.Success );
+                // append future follow-up date if that date has occurred and set the label type to danger
+                if ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp && connectionRequest.FollowupDate.HasValue && connectionRequest.FollowupDate.Value <= RockDateTime.Today )
+                {
+                    hlState.Text += string.Format( " ({0})", connectionRequest.FollowupDate.Value.ToShortDateString() );
+                    hlState.LabelType = LabelType.Danger;
+                }
+                else
+                {
+                    hlState.LabelType = connectionRequest.ConnectionState == ConnectionState.Inactive ? LabelType.Danger :
+                    ( connectionRequest.ConnectionState == ConnectionState.FutureFollowUp ? LabelType.Info : LabelType.Success );
+                }
 
                 hlStatus.Visible = true;
                 hlStatus.Text = connectionRequest.ConnectionStatus.Name;
