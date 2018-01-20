@@ -1103,7 +1103,7 @@ namespace RockWeb.Blocks.Connection
             {
                 case ConnectionState.Active: css = "success"; break;
                 case ConnectionState.Inactive: css = "danger"; break;
-                case ConnectionState.FutureFollowUp: css = ( followupDate.HasValue && followupDate.Value >= RockDateTime.Today.AddDays( 1 ) ) ? "info" : "info"; break;
+                case ConnectionState.FutureFollowUp: css = ( followupDate.HasValue && followupDate.Value > RockDateTime.Today ) ? "info" : "danger"; break;
                 case ConnectionState.Connected: css = "success"; break;
             }
 

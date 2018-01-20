@@ -721,7 +721,7 @@ namespace Rock.Web.UI.Controls
                 if ( !guid.Equals( Guid.Empty ) )
                 {
                     var location = new Rock.Model.LocationService( new Rock.Data.RockContext() ).Get( guid );
-                    if (location != null && location.GeoPoint != null && location.GeoPoint.Latitude != null && location.GeoPoint.Latitude != null )
+                    if (location != null && location.GeoPoint != null && location.GeoPoint.Latitude != null && location.GeoPoint.Longitude != null )
                     {
                         CenterPoint = location.GeoPoint;
                         options += string.Format( ", centerLatitude: '{0}', centerLongitude: '{1}'", location.GeoPoint.Latitude, location.GeoPoint.Longitude );
