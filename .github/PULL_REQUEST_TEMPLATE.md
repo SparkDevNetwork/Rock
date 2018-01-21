@@ -1,9 +1,9 @@
 # Rock PR Policy
 The Rock Community loves Pull Requests! In an effort to 'row in the same direction' and minimize wasted development time
 on your part and review time on ours, we have implemented the following guidelines for PRs:
-1. If you are submitting a PR for a logged Issue / Enchancement request please reference it in your commit
-2. If your PR is for an enchancment that has not been discussed and approved by the core team please get that approval BEFORE submitting
-the request. In fact, this approval should be recieved before writing the code to limit rework on your part. This will ensure that all code is working into the same vision and direction of the core project.
+1. If you are submitting a PR for a logged Issue / Enhancement request please reference it in your commit
+2. If your PR is for an enhancement that has not been discussed and approved by the core team please get that approval BEFORE submitting
+the request. In fact, this approval should be received before writing the code to limit rework on your part. This will ensure that all code is working into the same vision and direction of the core project.
 
 
 ## Contributor Agreement
