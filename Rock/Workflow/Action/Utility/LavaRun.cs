@@ -53,7 +53,7 @@ namespace Rock.Workflow.Action
             var attribute = AttributeCache.Read( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
             if ( attribute != null )
             {
-                string value = GetAttributeValue( action, "Value" ).ResolveMergeFields( GetMergeFields( action ) );
+                string value = GetAttributeValue( action, "Value" ).ResolveMergeFields( GetMergeFields( action ) ).Trim();
                 SetWorkflowAttributeValue( action, attribute.Guid, value );
                 action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
             }
