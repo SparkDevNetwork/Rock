@@ -1495,7 +1495,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
                     foreach ( var actionType in activityType.ActionTypes.OrderBy( a => a.Order ) )
                     {
-                        actionTypeText += string.Format( "<li>{0}</li>" + Environment.NewLine, actionType.Name );
+                        actionTypeText += string.Format( "<li>{0} <small class='text-muted'>({1})</small></li>" + Environment.NewLine, actionType.Name, Rock.Workflow.ActionContainer.GetComponentName( actionType.WorkflowAction.ToString() ) );
                     }
 
                     string actionsTitle = activityType.ActionTypes.Count > 0 ? "Actions:" : "No Actions";
