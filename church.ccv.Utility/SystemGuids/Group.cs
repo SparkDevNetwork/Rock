@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace church.ccv.Utility.SystemGuids
+﻿namespace church.ccv.Utility.SystemGuids
 {
     /// <summary>
     /// Group System Guids

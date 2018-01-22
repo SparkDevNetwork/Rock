@@ -85,6 +85,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\church.ccv.Utility\church.ccv.Utility.csproj">
+      <Project>{9199bfe3-3c75-486b-afa0-d043da822afa}</Project>
+      <Name>church.ccv.Utility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>

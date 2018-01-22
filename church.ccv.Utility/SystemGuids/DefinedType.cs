@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace church.ccv.Utility.SystemGuids
+﻿namespace church.ccv.Utility.SystemGuids
 {
+    /// <summary>
+    /// Defined Type Guids  
+    /// </summary>    
     public static class DefinedType
     {
         /// <summary>

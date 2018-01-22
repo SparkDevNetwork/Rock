@@ -96,33 +96,23 @@ namespace church.ccv.MarketingSite.Rest
             var qry = contentChannelItemService.Queryable();
 
             // Limit to External Website Ads
-            var externalWebSiteAdsGuid = new Guid( "8E213BB1-9E6F-40C1-B468-B3F8A60D5D24" );
-            qry = qry.Where( a => a.ContentChannel.Guid == externalWebSiteAdsGuid );
+            Guid externalWebsiteAds = church.ccv.Utility.SystemGuids.ContentChannel.CONTENT_CHANNEL_EXTERNAL_WEBSITE_ADS.AsGuid();
+            qry = qry.Where( a => a.ContentChannel.Guid == externalWebsiteAds );
 
             // Limit to Approved
             qry = qry.Where( a => a.Status == ContentChannelItemStatus.Approved );
 
-            // Primary Audience is "Homepage - Rotator" OR Secondary Audiences is "Homepage - Rotator"
-            var homepageRotatorAudienceGuid = "b364cdee-f000-4965-ae67-0c80dda365dc";
-            var allChurchAudienceGuid = "6107ea37-5dd3-4e4f-a2d0-1d4010811d4d";
-
+            // Audience is "Homepage - Rotator" OR "All Church"
             var entityTypeIdContentChannelItem = EntityTypeCache.GetId<ContentChannelItem>();
 
-            var primaryAudienceValueIds = new AttributeValueService( rockContext ).Queryable()
-                .Where( a => a.Attribute.Key == "PrimaryAudience" )
+            var audienceValueIds = new AttributeValueService( rockContext ).Queryable()
+                .Where( a => a.Attribute.Key == "Audience" )
                 .Where( a => a.Attribute.EntityTypeId == entityTypeIdContentChannelItem )
-                .Where( a => a.Value.Contains( homepageRotatorAudienceGuid ) || a.Value.Contains( allChurchAudienceGuid ) )
+                .Where( a => a.Value.Contains( church.ccv.Utility.SystemGuids.DefinedValue.AUDIENCE_TYPE_HOMEPAGE_ROTATOR ) || a.Value.Contains( church.ccv.Utility.SystemGuids.DefinedValue.AUDIENCE_TYPE_ALL_CHURCH ) )
                 .Where( a => a.EntityId.HasValue )
                 .Select( a => a.EntityId.Value );
 
-            var secondaryAudiencesValueIds = new AttributeValueService( rockContext ).Queryable()
-                .Where( a => a.Attribute.Key == "SecondaryAudiences" )
-                .Where( a => a.Attribute.EntityTypeId == entityTypeIdContentChannelItem )
-                .Where( a => a.Value.Contains( homepageRotatorAudienceGuid ) || a.Value.Contains( allChurchAudienceGuid ) )
-                .Where( a => a.EntityId.HasValue )
-                .Select( a => a.EntityId.Value );
-
-            qry = qry.Where( a => primaryAudienceValueIds.Contains( a.Id ) || secondaryAudiencesValueIds.Contains( a.Id ) );
+            qry = qry.Where( a => audienceValueIds.Contains( a.Id ) );
 
             var currentDateTime = RockDateTime.Now;
 

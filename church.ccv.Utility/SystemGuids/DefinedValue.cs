@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace church.ccv.Utility.SystemGuids
+﻿namespace church.ccv.Utility.SystemGuids
 {
+    /// <summary>
+    /// Defined Value Guids  
+    /// </summary>
     public static class DefinedValue
     {
+        #region Next Steps Group
         /// <summary>
         /// Coach wants to follow up with the group member at a later date
         /// </summary>
@@ -38,8 +36,9 @@ namespace church.ccv.Utility.SystemGuids
         /// </summary>
         public const string NEXT_STEPS_OPT_OUT_NO_LONGER_ATTENDING_CCV = "BA6C1F11-9020-4C15-BC2B-9E12FDF84168";
 
+        #endregion
 
-
+        #region Neighborhood Group
 
         /// <summary>
         /// Coach wants to follow up with the group member at a later date
@@ -61,8 +60,10 @@ namespace church.ccv.Utility.SystemGuids
         /// </summary>
         public const string NEIGHBORHOOD_OPT_OUT_NO_LONGER_ATTENDING_CCV = "7B58B1FC-1B52-409E-BFFE-1B8D2D0AA85E";
 
-        
-        
+        #endregion
+
+        #region NextGen Group
+
         /// <summary>
         /// Coach wants to follow up with the group member at a later date
         /// </summary>
@@ -88,6 +89,10 @@ namespace church.ccv.Utility.SystemGuids
         /// </summary>
         public const string NEXT_GEN_OPT_OUT_MOVED_SCHOOLS  = "878D7CE4-22A2-4833-B36A-792A5C731938";
 
+        #endregion
+
+        #region Short Term Group
+
         /// <summary>
         /// Person completed the short term group.
         /// </summary>
@@ -98,7 +103,10 @@ namespace church.ccv.Utility.SystemGuids
         /// </summary>
         public const string SHORT_TERM_OPT_OUT_DID_NOT_SHOW = "EC0BBE71-3937-4170-B7C4-EECB85397C11";
 
-        
+        #endregion
+
+        #region Residency
+
         /// <summary>
         /// Residency Competency Type
         /// </summary>
@@ -124,6 +132,8 @@ namespace church.ccv.Utility.SystemGuids
         /// </summary>
         public const string RESIDENCY_COMPETENCY_PERSONAL_COMPOSITION = "C4DE3D73-7168-4AE1-AF7C-B849E7296D81";
 
+        #endregion
+
         #region Person Payroll Wage Types
 
         /// <summary>
@@ -135,6 +145,20 @@ namespace church.ccv.Utility.SystemGuids
         /// Payroll Wage Type - Part Time Salary Exempt
         /// </summary>
         public const string PERSON_PAYROLL_WAGE_TYPE_PART_TIME_SALARY_EXEMPT = "CDDF9DDE-3D9D-495C-BD9B-E8186526600C";
+
+        #endregion
+
+        #region MarketingSite API
+
+        /// <summary>
+        /// Audience Type - Homepage - Rotator
+        /// </summary>
+        public const string AUDIENCE_TYPE_HOMEPAGE_ROTATOR = "b364cdee-f000-4965-ae67-0c80dda365dc";
+
+        /// <summary>
+        /// Audience Type - All Church
+        /// </summary>
+        public const string AUDIENCE_TYPE_ALL_CHURCH = "6107ea37-5dd3-4e4f-a2d0-1d4010811d4d";
 
         #endregion
     }

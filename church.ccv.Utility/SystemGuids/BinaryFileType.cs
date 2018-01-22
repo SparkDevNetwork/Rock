@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace church.ccv.Utility.SystemGuids
+﻿namespace church.ccv.Utility.SystemGuids
 {
     /// <summary>
     /// System file types.  
@@ -8,7 +6,7 @@ namespace church.ccv.Utility.SystemGuids
     public class BinaryFiletype
     {
         /// <summary>
-        /// The Default file type guid
+        /// Care Request file type guid
         /// </summary>
         public const string CARE_REQUEST_DOCUMENTS = "20D74315-B77F-42D0-BCE4-E26917B8B38A";
 

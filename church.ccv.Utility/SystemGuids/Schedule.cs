@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace church.ccv.Utility.SystemGuids
+﻿namespace church.ccv.Utility.SystemGuids
 {
     /// <summary>
-    /// 
+    /// Schedule Guid
     /// </summary>
     public static class Schedule
     {

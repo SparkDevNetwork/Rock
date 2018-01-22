@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace church.ccv.Utility.SystemGuids
+﻿namespace church.ccv.Utility.SystemGuids
 {
     /// <summary>
     /// System Attribute Guids
