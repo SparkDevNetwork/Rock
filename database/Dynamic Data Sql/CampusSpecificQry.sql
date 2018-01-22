@@ -262,7 +262,9 @@ Select *
 From @MetricValues
 where MetricId = 74
 
-
+Delete
+From @MetricValues
+Where MetricCategoryId not in ( Select Id from dbo.ufnChurchMetrics_GetDescendantCategoriesFromRoot(@ParentWeekendCategoryId))
 ----------------------------------------------------------------------------
 -- GRAB THE EXISTING CURRENT METRIC VALUES
 ----------------------------------------------------------------------------

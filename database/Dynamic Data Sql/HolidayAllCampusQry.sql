@@ -1,5 +1,6 @@
-Declare @SundayDate datetime = null
-Declare @Holiday nvarchar(20) = 'Christmas';
+--Declare @Holiday nvarchar(50) = 'Christmas'
+--Declare @SundayDate datetime = null
+
 ----------------------------------------------------------------------------
 -- GET THE CATEGORY IDS
 ----------------------------------------------------------------------------
@@ -260,7 +261,9 @@ Select *
 From @MetricValues
 where MetricId = 74
 
-
+Delete
+From @MetricValues
+Where MetricCategoryId not in ( Select Id from dbo.ufnChurchMetrics_GetDescendantCategoriesFromRoot(@ParentWeekendCategoryId))
 ----------------------------------------------------------------------------
 -- GRAB THE EXISTING CURRENT METRIC VALUES
 ----------------------------------------------------------------------------
@@ -309,7 +312,7 @@ From
 		,Sum(Attendance) as 'Attendance'
 		From @MetricValues mv
 		where MetricValueDateTime >= @LastYearStart and MetricValueDateTime <= @LastYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(RootMetricCategoryId)
 	) as lastYearService
 	on titleTable.AttendanceType = lastYearService.AttendanceType
@@ -319,7 +322,7 @@ From
 		,Sum(Attendance) as 'Attendance'
 		From @MetricValues
 		where MetricValueDateTime >= @TwoYearStart and MetricValueDateTime <= @TwoYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(RootMetricCategoryId)
 	) as TwoYearService
 	on titleTable.AttendanceType = TwoYearService.AttendanceType
@@ -365,7 +368,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @MetricValues
 		where MetricValueDateTime >= @LastYearStart and MetricValueDateTime <= @LastYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as lastYearService
 	on titleTable.Schedule = lastYearService.Schedule
@@ -375,7 +378,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @MetricValues
 		where MetricValueDateTime >= @TwoYearStart and MetricValueDateTime <= @TwoYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(ScheduleName)
 	) as TwoYearService
 	on titleTable.Schedule = TwoYearService.Schedule
@@ -420,7 +423,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @MetricValues
 		where MetricValueDateTime >= @LastYearStart and MetricValueDateTime <= @LastYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as lastYearService
 	on titleTable.Campus = lastYearService.Campus
@@ -430,7 +433,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @MetricValues
 		where MetricValueDateTime >= @TwoYearStart and MetricValueDateTime <= @TwoYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as TwoYearService
 	on titleTable.Campus = TwoYearService.Campus
@@ -475,7 +478,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @WorshipMetricValues
 		where MetricValueDateTime >= @LastYearStart and MetricValueDateTime <= @LastYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as lastYearService
 	on titleTable.Campus = lastYearService.Campus
@@ -485,7 +488,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @WorshipMetricValues
 		where MetricValueDateTime >= @TwoYearStart and MetricValueDateTime <= @TwoYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as TwoYearService
 	on titleTable.Campus = TwoYearService.Campus
@@ -530,7 +533,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @ChildrensMetricValues
 		where MetricValueDateTime >= @LastYearStart and MetricValueDateTime <= @LastYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as lastYearService
 	on titleTable.Campus = lastYearService.Campus
@@ -540,7 +543,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @ChildrensMetricValues
 		where MetricValueDateTime >= @TwoYearStart and MetricValueDateTime <= @TwoYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as TwoYearService
 	on titleTable.Campus = TwoYearService.Campus
@@ -585,7 +588,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @StudentsMetricValues
 		where MetricValueDateTime >= @LastYearStart and MetricValueDateTime <= @LastYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as lastYearService
 	on titleTable.Campus = lastYearService.Campus
@@ -595,7 +598,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @StudentsMetricValues
 		where MetricValueDateTime >= @TwoYearStart and MetricValueDateTime <= @TwoYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as TwoYearService
 	on titleTable.Campus = TwoYearService.Campus
@@ -640,7 +643,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @BaptismsMetricValues
 		where MetricValueDateTime >= @LastYearStart and MetricValueDateTime <= @LastYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as lastYearService
 	on titleTable.Campus = lastYearService.Campus
@@ -650,7 +653,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @BaptismsMetricValues
 		where MetricValueDateTime >= @TwoYearStart and MetricValueDateTime <= @TwoYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as TwoYearService
 	on titleTable.Campus = TwoYearService.Campus
@@ -695,7 +698,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @DiscoverCentralMetricValues
 		where MetricValueDateTime >= @LastYearStart and MetricValueDateTime <= @LastYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as lastYearService
 	on titleTable.Campus = lastYearService.Campus
@@ -705,7 +708,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @DiscoverCentralMetricValues
 		where MetricValueDateTime >= @TwoYearStart and MetricValueDateTime <= @TwoYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as TwoYearService
 	on titleTable.Campus = TwoYearService.Campus
@@ -750,7 +753,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @FirstTimeGuestMetricValues
 		where MetricValueDateTime >= @LastYearStart and MetricValueDateTime <= @LastYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as lastYearService
 	on titleTable.Campus = lastYearService.Campus
@@ -760,7 +763,7 @@ From (
 		,Sum(Attendance) as 'Attendance'
 		From @FirstTimeGuestMetricValues
 		where MetricValueDateTime >= @TwoYearStart and MetricValueDateTime <= @TwoYearEnd
-		and (@IsServicesOngoing = 0 or MetricKeyString in (select MetricKeyString from @CurrentMetrics))
+		and (@IsServicesOngoing = 0 or MetricKeyString in (select *from @CurrentMetrics))
 		group by Rollup(CampusId)
 	) as TwoYearService
 	on titleTable.Campus = TwoYearService.Campus
