@@ -219,7 +219,6 @@ namespace RockWeb.Blocks.Reporting
                     lContent.Text = component.Channel.InteractionListTemplate.IsNotNullOrWhitespace() ?
                         component.Channel.InteractionListTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
-
                 }
             }
         }

@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         pageNumber = PageParameter( "Page" ).AsInteger();
                     }
-                    
+
                     ShowList();
                 }
             }

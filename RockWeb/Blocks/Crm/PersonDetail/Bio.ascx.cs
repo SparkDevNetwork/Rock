@@ -60,11 +60,23 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 10 )]
     [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed", true, "", 11 )]
     [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 12 )]
-    [CategoryField( "Tag Category", "Optional category to limit the tags to. If specified all new personal tags will be added with this category.", false, 
+    [CategoryField( "Tag Category", "Optional category to limit the tags to. If specified all new personal tags will be added with this category.", false,
         "Rock.Model.Tag", "", "", false, "", "", 13 )]
+    [AttributeCategoryField( "Social Media Category", "The Attribute Category to display attributes from", false, "Rock.Model.Person", false, "DD8F467D-B83C-444F-B04C-C681167046A1", "", 14 )]
     [BooleanField( "Enable Call Origination", "Should click-to-call links be added to phone numbers.", true, "", 14 )]
     public partial class Bio : PersonBlock
     {
+
+        #region Fields
+
+        private const string NAME_KEY = "name";
+        private const string ICONCSSCLASS_KEY = "iconcssclass";
+        private const string COLOR_KEY = "color";
+        private const string TEXT_TEMPLATE = "texttemplate";
+        private const string BASEURL = "baseurl";
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -167,22 +179,27 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     hlVCard.NavigateUrl = ResolveRockUrl( string.Format( "~/GetVCard.ashx?Person={0}", Person.Id ) );
 
-                    var socialCategoryGuid = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL.AsGuid();
-                    if ( !socialCategoryGuid.IsEmpty() )
+                    var socialCategoryGuid = GetAttributeValue( "SocialMediaCategory" ).AsGuidOrNull();
+                    if ( socialCategoryGuid.HasValue )
                     {
-                        var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid ) );
-                        var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Value = v.Value } );
+                        var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid.Value ) );
+                        var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Value = v.Value, QualifierValues = a.Value.QualifierValues } );
 
                         rptSocial.DataSource = result
                             .Where( r =>
                                 r.Value != null &&
-                                r.Value.Value != string.Empty )
+                                r.Value.Value != string.Empty &&
+                                r.QualifierValues != null &&
+                                r.QualifierValues.Count > 0 )
                             .OrderBy( r => r.Attribute.Order )
                             .Select( r => new
                             {
                                 url = r.Value.Value,
-                                name = r.Attribute.Name,
-                                icon = r.Attribute.IconCssClass
+                                name = r.QualifierValues[NAME_KEY].Value,
+                                icon = r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value.Contains( "fa-fw" ) ?
+                                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value :
+                                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value + " fa-fw",
+                                color = r.Attribute.QualifierValues[COLOR_KEY].Value,
                             } )
                             .ToList();
                         rptSocial.DataBind();

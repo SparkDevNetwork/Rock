@@ -29,6 +29,21 @@ namespace Rock.SystemKey
         public const string GENDER_AUTO_FILL_CONFIDENCE = "core_GenderAutoFillConfidence";
 
         /// <summary>
+        /// Thetext to use when the postback is completed.
+        /// </summary>
+        public const string BOOTSTRAP_BUTTON_COMPLETE_TEXT = "core_BootstrapCompleteText";
+
+        /// <summary>
+        /// The text to use when the button has been clicked.
+        /// </summary>
+        public const string BOOTSTRAP_BUTTON_DATA_LOADING_TEXT = "core_BootstrapButtonDataLoadingText";
+
+        /// <summary>
+        /// The time in millisecond to reset the button text back to original after setting the Completed text.
+        /// </summary>
+        public const string BOOTSTRAP_BUTTON_COMPLETED_TIMEOUT = "core_BootstrapButtonCompletedTimeout";
+
+        /// <summary>
         /// The minimum distance in miles person/family has to have moved before automatically inactivatingn their record
         /// </summary>
         public const string NCOA_MINIMUM_MOVE_DISTANCE_TO_INACTIVATE = "core_MinimumMoveDistanceToInactivate";

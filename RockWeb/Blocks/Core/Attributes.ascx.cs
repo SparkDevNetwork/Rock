@@ -45,11 +45,11 @@ namespace RockWeb.Blocks.Core
     [EntityTypeField( "Entity", "Entity Name", false, "Applies To", 0 )]
     [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Applies To", 1 )]
     [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Applies To", 2 )]
-    [BooleanField( "Allow Setting of Values", "Should UI be available for setting values of the specified Entity ID?", false, "Advanced", 0 )]
-    [IntegerField( "Entity Id", "The entity id that values apply to", false, 0, "Advanced", 1 )]
-    [BooleanField( "Enable Show In Grid", "Should the 'Show In Grid' option be displayed when editing attributes?", false, "Advanced", 2 )]
-    [BooleanField( "Enable Ordering", "Should the attributes be allowed to be sorted?", false, "Advanced", 3 )]
-    [TextField( "Category Filter", "A comma separated list of category guids to limit the display of attributes to.", false, "", "Advanced", 4)]
+    [BooleanField( "Allow Setting of Values", "Should UI be available for setting values of the specified Entity ID?", false, order: 3 )]
+    [IntegerField( "Entity Id", "The entity id that values apply to", false, 0, order: 4 )]
+    [BooleanField( "Enable Show In Grid", "Should the 'Show In Grid' option be displayed when editing attributes?", false, order: 5 )]
+    [BooleanField( "Enable Ordering", "Should the attributes be allowed to be sorted?", false, order: 6 )]
+    [TextField( "Category Filter", "A comma separated list of category guids to limit the display of attributes to.", false, "", order: 7 )]
 
     public partial class Attributes : RockBlock, ICustomGridColumns
     {
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Core
                     reorderField.Visible = _enableOrdering;
                 }
 
-                var lEntityQualifierField = rGrid.ColumnsOfType<RockLiteralField>().FirstOrDefault(a=>a.ID== "lEntityQualifier" );
+                var lEntityQualifierField = rGrid.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lEntityQualifier" );
                 if ( lEntityQualifierField != null )
                 {
                     lEntityQualifierField.Visible = !_configuredType;   // qualifier
@@ -398,7 +398,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                int attributeId = (int)rGrid.DataKeys[e.Row.RowIndex].Value;
+                int attributeId = ( int ) rGrid.DataKeys[e.Row.RowIndex].Value;
 
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                 var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldTypeId );
@@ -661,7 +661,7 @@ namespace RockWeb.Blocks.Core
             }
 
             // if filtering by block setting of categories
-            if (!string.IsNullOrWhiteSpace( GetAttributeValue( "CategoryFilter" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "CategoryFilter" ) ) )
             {
                 try
                 {

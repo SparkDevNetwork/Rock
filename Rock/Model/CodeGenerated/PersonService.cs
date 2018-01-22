@@ -57,6 +57,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PersonAlias.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<PersonSignal>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PersonSignal.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -129,6 +135,9 @@ namespace Rock.Model
             target.SuffixValueId = source.SuffixValueId;
             target.SystemNote = source.SystemNote;
             target.TitleValueId = source.TitleValueId;
+            target.TopSignalColor = source.TopSignalColor;
+            target.TopSignalIconCssClass = source.TopSignalIconCssClass;
+            target.TopSignalId = source.TopSignalId;
             target.ViewedCount = source.ViewedCount;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
