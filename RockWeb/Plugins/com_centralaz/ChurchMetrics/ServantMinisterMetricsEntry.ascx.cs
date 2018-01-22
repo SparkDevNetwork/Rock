@@ -571,8 +571,9 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                                    s.CategoryId.Value == eventScheduleCategory.Id )
                                 .ToList() // Here we ToList so that we can take advantage of the NextStartDateTime property
                                 .Where( s =>
-                                    s.EffectiveStartDate.HasValue &&
-                                    ( s.EffectiveStartDate.Value.Date == RockDateTime.Now.Date ) )
+                                    (s.EffectiveStartDate.HasValue &&
+                                     s.EffectiveStartDate.Value.Date == RockDateTime.Now.Date ) || ( s.NextStartDateTime.HasValue &&
+                                    s.NextStartDateTime.Value.DayOfWeek == RockDateTime.Now.DayOfWeek) )
                                     .ToList()
                                .OrderBy( s => s.GetFirstStartDateTime().Value.TimeOfDay ) )
                             {
