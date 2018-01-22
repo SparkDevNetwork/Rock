@@ -49,6 +49,16 @@ namespace Rock.SystemGuid
         public const string GLOBAL_DEFAULT_SHORT_LINK_SITE = "DD0E0757-2A01-47BB-A74A-F6E69B0399C8";
 
         /// <summary>
+        /// The Google reCaptcha site key
+        /// </summary>
+        public const string GLOBAL_GOOGLE_RECAPTCHA_SITE_KEY = "BF1FD484-50F3-4C7E-975C-5E1CEB1F8C72";
+
+        /// <summary>
+        /// The Google reCaptcha secret key
+        /// </summary>
+        public const string GLOBAL_GOOGLE_RECAPTCHA_SECRET_KEY = "D36E5760-05FF-479F-AD1D-C048AE2E99E9";
+
+        /// <summary>
         /// The Facebook link attribute
         /// </summary>
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";

@@ -1474,6 +1474,7 @@
     <Compile Include="Web\Cache\InteractionChannelCache.cs" />
     <Compile Include="Web\Cache\InteractionComponentCache.cs" />
     <Compile Include="Web\Cache\LavaShortcodeCache.cs" />
+    <Compile Include="Web\UI\Controls\Captcha.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\Cache\WorkflowActionFormAttributeCache.cs" />
     <Compile Include="Web\Cache\WorkflowActivityTypeCache.cs" />
