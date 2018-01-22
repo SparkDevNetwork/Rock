@@ -214,7 +214,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Adds SignalType model to cache, and returns cached object
         /// </summary>
-        /// <param name="campusModel"></param>
+        /// <param name="signalTypeModel">The signal type model.</param>
         /// <returns></returns>
         public static SignalTypeCache Read( SignalType signalTypeModel )
         {

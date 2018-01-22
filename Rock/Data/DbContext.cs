@@ -402,7 +402,6 @@ namespace Rock.Data
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="records">The records.</param>
-        /// <param name="useSqlBulkCopy">if set to <c>true</c> [use SQL bulk copy].</param>
         public virtual void BulkInsert<T>( IEnumerable<T> records ) where T : class
         {
             // ensure CreatedDateTime and ModifiedDateTime is set
