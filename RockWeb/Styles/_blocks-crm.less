@@ -573,6 +573,24 @@
   }
 }
 
+.badge-signal {
+  .badge-content {
+    position: relative;
+
+    span.signal {
+      position: absolute;
+      top: 10px;
+      left: 0px;
+      width: 100%;
+      padding-left: 17%;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      color: @persondetails-badge-bg;
+    }
+  }
+}
+
 @-webkit-keyframes bar-grow {
   0% {
     height: 0;
@@ -601,6 +619,27 @@
   }
 }
 
+.badge-personaldevice {
+  .badge-content {
+    position: relative;
+    color: #4f89bd;
+
+    i {
+      font-size: 47px;
+    }
+
+    span.deviceCount {
+      position: absolute;
+      top: 17px;
+      right: 50%;
+      width: 36px;
+      margin-right: -18px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+    }
+  }
+}
 
 // 4. Family Bar
 // -------------------------

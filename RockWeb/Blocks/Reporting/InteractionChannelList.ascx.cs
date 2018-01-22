@@ -53,7 +53,6 @@ namespace RockWeb.Blocks.Reporting
                 <div class='panel-labels'> 
                     {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}<span class='label label-info'>{{ InteractionChannel.ChannelTypeMediumValue.Value }}</span>{% endif %}
                 </div>
-                 
             </div>
         </div>
     </a>
@@ -199,7 +198,6 @@ namespace RockWeb.Blocks.Reporting
                     {
                         continue;
                     }
-
                     var channelMergeFields = new Dictionary<string, object>( mergeFields );
                     channelMergeFields.Add( "InteractionChannel", channel );
 

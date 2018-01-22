@@ -126,6 +126,8 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
+            target.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
+            target.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             target.TransformEntityTypeId = source.TransformEntityTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

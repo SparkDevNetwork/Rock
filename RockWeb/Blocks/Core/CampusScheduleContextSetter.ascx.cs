@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Core
 
             if ( currentCampus == null && GetAttributeValue( "DefaultToCurrentUser" ).AsBoolean() && CurrentPerson != null )
             {
-                currentCampus = CurrentPerson.GetFamilies().First().Campus;
+                currentCampus = CurrentPerson.GetFamily().Campus;
             }
 
             if ( currentCampus != null )

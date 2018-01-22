@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
-
+using System.Text;
 using Rock;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -1461,14 +1461,43 @@ namespace Rock.Model
         /// <returns></returns>
         public GroupTypeRole GetFamilyRole( Person person, RockContext rockContext = null )
         {
-            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            var familyGroupRoles = GroupTypeCache.GetFamilyGroupType().Roles;
+            int? groupTypeRoleId = null;
+            if ( person.AgeClassification == AgeClassification.Adult )
+            {
+                groupTypeRoleId = familyGroupRoles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).FirstOrDefault()?.Id;
+            }
+            else if ( person.AgeClassification == AgeClassification.Child )
+            {
+                groupTypeRoleId = familyGroupRoles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).FirstOrDefault()?.Id;
+            }
 
-            return new GroupMemberService( rockContext == null ? new RockContext() : rockContext ).Queryable()
-                                    .Where( gm => gm.PersonId == person.Id && gm.Group.GroupTypeId == groupTypeFamilyId )
-                                    .OrderBy( gm => gm.GroupOrder ?? int.MaxValue )
-                                    .ThenBy( gm => gm.GroupRole.Order )
-                                    .Select( gm => gm.GroupRole )
-                                    .FirstOrDefault();
+            rockContext = rockContext ?? new RockContext();
+
+            if ( groupTypeRoleId.HasValue )
+            {
+                return new GroupTypeRoleService( rockContext ).Get( groupTypeRoleId.Value );
+            }
+            else
+            {
+                // just in case the AgeClassification method didn't work...
+                var primaryFamilyId = person.GetFamily( rockContext )?.Id;
+                if ( primaryFamilyId.HasValue )
+                {
+                    rockContext = rockContext ?? new RockContext();
+
+                    return new GroupMemberService( rockContext ).Queryable()
+                                            .Where( gm => gm.PersonId == person.Id && gm.GroupId == primaryFamilyId )
+                                            .OrderBy( gm => gm.GroupOrder ?? int.MaxValue )
+                                            .ThenBy( gm => gm.GroupRole.Order )
+                                            .Select( gm => gm.GroupRole )
+                                            .FirstOrDefault();
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         /// <summary>
@@ -1534,7 +1563,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's head of household. If the provided Person's family head of household is not found, this value will be null.</returns>
         public Person GetHeadOfHousehold( Person person )
         {
-            var family = GetFamilies( person.Id ).FirstOrDefault();
+            var family = person.GetFamily( this.Context as RockContext );
             if ( family == null )
             {
                 return null;
@@ -1556,7 +1585,7 @@ namespace Rock.Model
         {
             if ( family == null )
             {
-                family = GetFamilies( person.Id ).FirstOrDefault();
+                family = person.GetFamily( this.Context as RockContext );
             }
 
             if ( family == null )
@@ -2243,6 +2272,175 @@ namespace Rock.Model
             }
 
             return values;
+        }
+
+        /// <summary>
+        /// Ensures the person age classification is correct for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// If the person age classification was changed
+        /// </returns>
+        public static bool UpdatePersonAgeClassification( int personId, RockContext rockContext )
+        {
+            var recordsUpdated = UpdatePersonAgeClassifications( personId, rockContext );
+            return recordsUpdated != 0;
+        }
+
+        /// <summary>
+        /// Ensures the person age classifications are correct for all records in the database
+        /// In most cases this will take care of people that have become adults due to an 18th birthday, but will also
+        /// fix person records that somehow got marked as Adult but should be marked as Child (maybe incorrect Birthdate was fixed)
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The number of records updated
+        /// </returns>
+        public static int UpdatePersonAgeClassificationAll( RockContext rockContext )
+        {
+           return UpdatePersonAgeClassifications( null, rockContext );
+        }
+
+        /// <summary>
+        /// Updates the person age classifications
+        /// In most cases this will take care of people that have become adults due to an 18th birthday, but will also
+        /// fix person records that somehow got marked as Adult but should be marked as Child (maybe incorrect Birthdate was fixed)
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The number of records updated
+        /// </returns>
+        private static int UpdatePersonAgeClassifications( int? personId, RockContext rockContext )
+        {
+            var personQuery = new PersonService( rockContext ).Queryable( includeDeceased: true, includeBusinesses: false );
+
+            if ( personId.HasValue )
+            {
+                personQuery = personQuery.Where( a => a.Id == personId.Value );
+            }
+
+            // get the min birthdate of people 18 and younger;
+            var birthDateEighteen = RockDateTime.Now.AddYears( -18 );
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            int familyGroupTypeId = familyGroupType.Id;
+            int groupRoleAdultId = familyGroupType.Roles.FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+            int groupRoleChildId = familyGroupType.Roles.FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+
+            var familyPersonRoleQuery = new GroupMemberService( rockContext ).Queryable()
+                .Where( a => a.Group.GroupTypeId == familyGroupTypeId )
+                .Select( a => new
+                {
+                    a.PersonId,
+                    a.GroupRoleId
+                } );
+
+            if ( personId.HasValue )
+            {
+                personQuery = personQuery.Where( a => a.Id == personId.Value );
+                familyPersonRoleQuery = familyPersonRoleQuery.Where( a => a.PersonId == personId.Value );
+            }
+
+            // Adult if Age >= 18 OR has a role of Adult in one or more (ANY) families
+            var adultBasedOnBirthdateOrFamilyRole = personQuery
+                .Where( p => ( p.BirthDate.HasValue && p.BirthDate.Value <= birthDateEighteen )
+                    || familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).Any( f => f.GroupRoleId == groupRoleAdultId ) );
+
+            // Child if (not adultBasedOnBirthdateOrFamilyRole) AND (Age < 18 OR child in ALL families)
+            var childBasedOnBirthdateOrFamilyRole = personQuery
+                .Where( p => !adultBasedOnBirthdateOrFamilyRole.Any( a => a.Id == p.Id )
+                    &&
+                    ( ( p.BirthDate.HasValue && p.BirthDate.Value > birthDateEighteen )
+                        ||
+                        familyPersonRoleQuery.Where( f => f.PersonId == p.Id ).All( f => f.GroupRoleId == groupRoleChildId )
+                    ) );
+
+            DateTime modifiedDateTime = RockDateTime.Now;
+
+            // update records that aren't marked as Adult but now should be
+            int updatedAdultCount = rockContext.BulkUpdate(
+                adultBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Adult ),
+                p => new Person { AgeClassification = AgeClassification.Adult } );
+
+            // update records that aren't marked as Child but now should be
+            int updatedChildCount = rockContext.BulkUpdate(
+                childBasedOnBirthdateOrFamilyRole.Where( a => a.AgeClassification != AgeClassification.Child ),
+                p => new Person { AgeClassification = AgeClassification.Child } );
+
+            // NOTE: A person can't become 'AgeClassification.Unknown' if they have already bet set to Adult or Child so we don't have to recalculate for new AgeClassification.Unknown
+
+            return updatedAdultCount + updatedAdultCount;
+        }
+
+        /// <summary>
+        /// Ensures the PrimaryFamily is correct for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static bool UpdatePrimaryFamily( int personId, RockContext rockContext )
+        {
+            int recordsUpdated = UpdatePersonsPrimaryFamily( personId, rockContext );
+            return recordsUpdated != 0;
+        }
+
+        /// <summary>
+        /// Ensures the PrimaryFamily is correct for all person records in the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdatePrimaryFamilyAll( RockContext rockContext )
+        {
+            return UpdatePersonsPrimaryFamily( null, rockContext );
+        }
+
+        /// <summary>
+        /// Updates the person primary family for the specified person, or for all persons in the database if personId is null
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static int UpdatePersonsPrimaryFamily( int? personId, RockContext rockContext )
+        {
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+
+            // Use raw 'UPDATE SET FROM' update to quickly ensure that the Primary Family on each Person record matches the Calculated Primary Family
+            var sqlUpdateBuilder = new StringBuilder();
+            sqlUpdateBuilder.Append( $@"
+UPDATE x
+SET x.PrimaryFamilyId = x.CalculatedPrimaryFamilyId
+FROM (
+	SELECT p.Id
+		,p.NickName
+		,p.LastName
+		,p.PrimaryFamilyId
+		,pf.CalculatedPrimaryFamilyId
+	FROM Person p
+	OUTER APPLY (
+		SELECT TOP 1 g.Id [CalculatedPrimaryFamilyId]
+		FROM GroupMember gm
+		JOIN [Group] g ON g.Id = gm.GroupId
+		WHERE g.GroupTypeId = {groupTypeIdFamily}
+			AND gm.PersonId = p.Id
+		ORDER BY gm.GroupOrder
+			,gm.GroupId
+		) pf
+	WHERE (
+			p.PrimaryFamilyId IS NULL
+			OR (p.PrimaryFamilyId != pf.CalculatedPrimaryFamilyId)
+		    )" );
+
+            if ( personId.HasValue )
+            {
+                sqlUpdateBuilder.Append( $" AND ( p.Id = {personId}) " );
+            }
+
+            sqlUpdateBuilder.Append( @"	) x " );
+
+            int recordsUpdated = rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString() );
+
+            return recordsUpdated;
         }
 
         #endregion

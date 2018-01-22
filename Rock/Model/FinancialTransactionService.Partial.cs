@@ -15,14 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Service/Data access class for <see cref="Rock.Model.FinancialTransaction"/> entity objects.
     /// </summary>
-    public partial class FinancialTransactionService 
+    public partial class FinancialTransactionService
     {
         /// <summary>
         /// Gets a transaction by its transaction code.
@@ -79,5 +81,46 @@ namespace Rock.Model
 
             return base.Delete( item );
         }
+
+        /// <summary>
+        /// Process the refund for any of the specified item.
+        /// </summary>
+        /// <param name="refundTxn">The refund transaction.</param>
+        /// <param name="batchName">The Batch Name.</param>
+        /// <param name="batchTimeOffset">The Batch time offset.</param>
+        public void ProcessRefund( FinancialTransaction refundTxn, string batchName, TimeSpan batchTimeOffset )
+        {
+
+            var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
+            if ( registrationEntityType != null )
+            {
+                foreach ( var transactionDetail in refundTxn.TransactionDetails
+                    .Where( d =>
+                        d.EntityTypeId.HasValue &&
+                        d.EntityTypeId.Value == registrationEntityType.Id &&
+                        d.EntityId.HasValue ) )
+                {
+                    var registrationChanges = new List<string>();
+                    registrationChanges.Add( string.Format( "Processed refund for {0}.", transactionDetail.Amount.FormatAsCurrency() ) );
+                    HistoryService.SaveChanges(
+                        ( Rock.Data.RockContext ) this.Context,
+                        typeof( Registration ),
+                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                        transactionDetail.EntityId.Value,
+                        registrationChanges
+                    );
+                }
+            }
+
+            // Get the batch
+            var batchService = new FinancialBatchService( ( Rock.Data.RockContext ) this.Context );
+            var batch = batchService.GetByNameAndDate( batchName, refundTxn.TransactionDateTime.Value, batchTimeOffset );
+            decimal controlAmount = batch.ControlAmount + refundTxn.TotalAmount;
+            batch.ControlAmount = controlAmount;
+
+            refundTxn.BatchId = batch.Id;
+            batch.Transactions.Add( refundTxn );
+        }
+
     }
 }

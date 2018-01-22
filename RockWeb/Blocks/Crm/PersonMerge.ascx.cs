@@ -484,8 +484,8 @@ validity of the request before completing this merge." :
                             }
                         }
 
-                        //Update the family attributes
-                        var primaryFamily = primaryPerson.GetFamily();
+                        // Update the family attributes
+                        var primaryFamily = primaryPerson.GetFamily( rockContext );
                         if ( primaryFamily != null )
                         {
                             primaryFamily.LoadAttributes( rockContext );
