@@ -765,6 +765,17 @@ namespace Rock
                 yield return str.Substring( i, Math.Min( maxChunkSize, str.Length - i ) );
         }
 
+
+        /// <summary>
+        /// Removes any carriage return and/or line feed characters.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveCrLf( this string str )
+        {
+            return str.Replace( Environment.NewLine, " " ).Replace( "\x0A", " " );
+        }
+
         #endregion String Extensions
     }
 }
