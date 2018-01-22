@@ -4315,7 +4315,8 @@ namespace RockWeb.Blocks.Event
                         }
                         else
                         {
-                            registrant.FeeValues.Remove( fee.Id );
+                            // not possible since fee is null:
+                            //registrant.FeeValues.Remove( fee.Id );
                         }
                     }
                 }
