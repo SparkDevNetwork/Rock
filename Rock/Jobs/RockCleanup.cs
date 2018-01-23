@@ -213,7 +213,11 @@ namespace Rock.Jobs
                 }
 
                 personRockContext.SaveChanges();
+            }
 
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                PersonService personService = new PersonService( personRockContext );
                 // Add any missing metaphones
                 int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsIntegerOrNull() ?? 500;
                 if ( namesToProcess > 0 )
@@ -246,8 +250,20 @@ namespace Rock.Jobs
                         metaphones.Add( metaphone );
                     }
 
-                    personRockContext.SaveChanges();
+                    personRockContext.SaveChanges( disablePrePostProcessing: true );
                 }
+            }
+
+            // Ensures the PrimaryFamily is correct for all person records in the database
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                int primaryFamilyUpdates = PersonService.UpdatePrimaryFamilyAll( personRockContext );
+            }
+
+            // update any updated or incorrect age classifications on persons
+            using ( var personRockContext = new Rock.Data.RockContext() )
+            {
+                int ageClassificationUpdates = PersonService.UpdatePersonAgeClassificationAll( personRockContext );
             }
 
             //// Add any missing Implied/Known relationship groups
@@ -267,10 +283,11 @@ namespace Rock.Jobs
                     .Where( a => a.GroupTypeId == familyGroupTypeId && a.IsActive == true )
                     .Where( a => !a.Members.Where( m => m.Person.RecordStatusValueId != recordStatusInactiveValueId ).Any() );
 
+                var currentDateTime = RockDateTime.Now;
+
                 familyRockContext.BulkUpdate( activeFamilyWithNoActiveMembers, x => new Rock.Model.Group
                 {
-                    IsActive = false,
-                    ModifiedDateTime = RockDateTime.Now
+                    IsActive = false
                 } );
             }
         }

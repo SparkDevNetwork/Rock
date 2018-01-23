@@ -159,6 +159,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonBadge.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonSignal.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonViewed.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PhoneNumber.cs" />
@@ -181,6 +182,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ScheduleCategoryExclusion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceJob.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceLog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignalType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />

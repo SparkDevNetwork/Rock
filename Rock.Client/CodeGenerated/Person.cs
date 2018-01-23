@@ -155,6 +155,15 @@ namespace Rock.Client
         public int? TitleValueId { get; set; }
 
         /// <summary />
+        public string TopSignalColor { get; set; }
+
+        /// <summary />
+        public string TopSignalIconCssClass { get; set; }
+
+        /// <summary />
+        public int? TopSignalId { get; set; }
+
+        /// <summary />
         public int? ViewedCount { get; set; }
 
         /// <summary>
@@ -227,6 +236,9 @@ namespace Rock.Client
             this.SuffixValueId = source.SuffixValueId;
             this.SystemNote = source.SystemNote;
             this.TitleValueId = source.TitleValueId;
+            this.TopSignalColor = source.TopSignalColor;
+            this.TopSignalIconCssClass = source.TopSignalIconCssClass;
+            this.TopSignalId = source.TopSignalId;
             this.ViewedCount = source.ViewedCount;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

@@ -353,6 +353,7 @@
     <Compile Include="Attribute\AddressFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
+    <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\LabelFieldAttribute.cs" />
     <Compile Include="Attribute\LavaFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
@@ -399,6 +400,7 @@
     <Compile Include="Attribute\GroupMemberFieldAttribute.cs" />
     <Compile Include="Attribute\IHasInheritedAttributes.cs" />
     <Compile Include="Attribute\MatrixFieldAttribute.cs" />
+    <Compile Include="Attribute\SocialMediaAccountFieldAttribute.cs" />
     <Compile Include="Attribute\SSNFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowFieldAttribute.cs" />
     <Compile Include="Attribute\EncryptedTextFieldAttribute.cs" />
@@ -539,6 +541,7 @@
     <Compile Include="Data\NotEmptyGuidAttribute.cs" />
     <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Data\PreviewableAttribute.cs" />
+    <Compile Include="Data\RockBulkUpdateExpressionVisitor.cs" />
     <Compile Include="Data\RockClientIncludeAttribute.cs" />
     <Compile Include="Data\RockContext.cs" />
     <Compile Include="Data\RockContextConfig.cs" />
@@ -616,6 +619,7 @@
     <Compile Include="Field\Types\DefinedValueRangeFieldType.cs" />
     <Compile Include="Field\Types\EmailFieldType.cs" />
     <Compile Include="Field\Types\MatrixFieldType.cs" />
+    <Compile Include="Field\Types\SocialMediaAccountFieldType.cs" />
     <Compile Include="Field\Types\SSNFieldType.cs" />
     <Compile Include="Field\Types\WorkflowFieldType.cs" />
     <Compile Include="Field\Types\EncryptedTextFieldType.cs" />
@@ -698,6 +702,7 @@
     <Compile Include="Follow\Suggestion\InFollowedGroup.cs" />
     <Compile Include="Follow\Suggestion\InGroupTogether.cs" />
     <Compile Include="Jobs\CalculateFamilyAnalytics.cs" />
+    <Compile Include="Jobs\CalculatePersonSignals.cs" />
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
@@ -706,6 +711,7 @@
     </Compile>
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
+    <Compile Include="Jobs\MoveAdultToOwnHouseoldOnBirthday.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\RunDataAutomation.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
@@ -739,6 +745,7 @@
     <Compile Include="Jobs\SendRegistrationPaymentReminders.cs" />
     <Compile Include="Jobs\SparkLink.cs" />
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
+    <Compile Include="Jobs\UpdatePersistedDataviews.cs" />
     <Compile Include="Lava\Blocks\Execute.cs" />
     <Compile Include="Lava\Blocks\RockEntity.cs" />
     <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
@@ -808,10 +815,13 @@
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonSignalService.cs" />
+    <Compile Include="Model\CodeGenerated\SignalTypeService.cs" />
     <Compile Include="Model\CommunicationTemplateAttachment.cs" />
     <Compile Include="Model\CommunicationAttachment.cs" />
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
+    <Compile Include="Model\DataViewPersistedValue.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
     <Compile Include="Model\InteractionComponent.Partial.cs" />
@@ -1147,6 +1157,7 @@
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
+    <Compile Include="Model\PersonSignal.cs" />
     <Compile Include="Model\PersonToken.cs" />
     <Compile Include="Model\PersonTokenService.Partial.cs" />
     <Compile Include="Model\PersonViewed.cs" />
@@ -1177,6 +1188,7 @@
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
+    <Compile Include="Model\SignalType.cs" />
     <Compile Include="Model\SiteDomain.cs" />
     <Compile Include="Model\LavaShortCode.cs" />
     <Compile Include="Model\PageShortLinkService.Partial.cs" />
@@ -1187,9 +1199,13 @@
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
+    <Compile Include="PersonProfile\Badge\TopPersonSignal.cs" />
+    <Compile Include="PersonProfile\Badge\PersonalDevice.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialPledgeDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialTransactionDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasPhoneFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasSignalFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\LocationFilter.cs" />
@@ -1203,6 +1219,7 @@
     <Compile Include="Reporting\DataSelect\GroupMember\GroupAttributeSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\GroupFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonFormattedFieldSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\SignalSelect.cs" />
     <Compile Include="Reporting\DataTransform\Person\FatherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandchildTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandparentTransform.cs" />
@@ -1223,6 +1240,7 @@
     <Compile Include="Transactions\ShortLinkTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReceipts.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
+    <Compile Include="Transactions\UpdatePersonsTopSignal.cs" />
     <Compile Include="UniversalSearch\Crawler\Crawler.cs" />
     <Compile Include="UniversalSearch\Crawler\CrawledPage.cs" />
     <Compile Include="UniversalSearch\Crawler\RobotsTxt\AccessRule.cs" />
@@ -1474,6 +1492,7 @@
     <Compile Include="Web\Cache\InteractionChannelCache.cs" />
     <Compile Include="Web\Cache\InteractionComponentCache.cs" />
     <Compile Include="Web\Cache\LavaShortcodeCache.cs" />
+    <Compile Include="Web\Cache\SignalTypeCache.cs" />
     <Compile Include="Web\UI\Controls\Captcha.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\Cache\WorkflowActionFormAttributeCache.cs" />

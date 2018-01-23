@@ -60,6 +60,30 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Process the Refund.
+        /// </summary>
+        /// <param name="refundTransactionRequest">The refund transaction request.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/FinancialTransactions/ProcessRefund" )]
+        public HttpResponseMessage ProcessRefund( [FromBody]RefundTransactionRequest refundTransactionRequest )
+        {
+            var transaction = Get( refundTransactionRequest.TransactionId );
+            if ( transaction != null )
+            {
+                string errorMessage = string.Empty;
+                bool result = transaction.RefundTransaction( refundTransactionRequest.PaymentViaGateway, refundTransactionRequest.Amount, refundTransactionRequest.Summary, refundTransactionRequest.RefundReasonValueId, refundTransactionRequest.BatchSuffix, out errorMessage, ( RockContext ) Service.Context );
+                return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+
+            }
+            else
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+        }
+
+        /// <summary>
         /// Posts the specified value.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -375,6 +399,8 @@ namespace Rock.Rest.Controllers
             return Get().Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
         }
 
+        #region helper classes
+
         /// <summary>
         ///
         /// </summary>
@@ -436,5 +462,61 @@ namespace Rock.Rest.Controllers
             /// </value>
             public bool OrderByPostalCode { get; set; }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public class RefundTransactionRequest
+        {
+            /// <summary>
+            /// Gets or sets a value indicating whether [Payment to be processed through gateway].
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if [Payment to be processed through gateway]; otherwise, <c>false</c>.
+            /// </value>
+            public bool PaymentViaGateway { get; set; }
+
+            /// <summary>
+            /// Gets or sets the refund amount.
+            /// </summary>
+            /// <value>
+            /// The refund amount.
+            /// </value>
+            public decimal Amount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the refund summary.
+            /// </summary>
+            /// <value>
+            /// The refund summary.
+            /// </value>
+            public string Summary { get; set; }
+
+            /// <summary>
+            /// Gets or sets the DefinedValueId of the return reason.
+            /// </summary>
+            /// <value>
+            /// The DefinedValueId of the return reason.
+            /// </value>
+            public int? RefundReasonValueId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the suffix to append on new batch name.
+            /// </summary>
+            /// <value>
+            /// The suffix to append on new batch name.
+            /// </value>
+            public string BatchSuffix { get; set; }
+
+            /// <summary>
+            /// Gets or sets the original transaction identifier.
+            /// </summary>
+            /// <value>
+            /// The original transaction identifier.
+            /// </value>
+            public int TransactionId { get; set; }
+        }
+
+        #endregion
     }
 }
