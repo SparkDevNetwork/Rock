@@ -90,7 +90,19 @@ namespace Rock.Model
             
             // ignoring GroupRequirement,GroupId 
  
+            if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, GroupSync.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Person>( Context ).Queryable().Any( a => a.GivingGroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.PrimaryFamilyId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;
@@ -144,11 +156,9 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Group target, Group source )
         {
             target.Id = source.Id;
-            target.AddUserAccountsDuringSync = source.AddUserAccountsDuringSync;
             target.AllowGuests = source.AllowGuests;
             target.CampusId = source.CampusId;
             target.Description = source.Description;
-            target.ExitSystemEmailId = source.ExitSystemEmailId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupCapacity = source.GroupCapacity;
@@ -162,8 +172,6 @@ namespace Rock.Model
             target.ParentGroupId = source.ParentGroupId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             target.ScheduleId = source.ScheduleId;
-            target.SyncDataViewId = source.SyncDataViewId;
-            target.WelcomeSystemEmailId = source.WelcomeSystemEmailId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

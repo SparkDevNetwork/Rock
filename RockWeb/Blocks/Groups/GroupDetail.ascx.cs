@@ -89,6 +89,8 @@ namespace RockWeb.Blocks.Groups
 
         private bool AllowMultipleLocations { get; set; }
 
+        private List<GroupSync> GroupSyncState { get; set; }
+
         private List<GroupMemberWorkflowTrigger> MemberWorkflowTriggersState { get; set; }
 
         private GroupTypeCache CurrentGroupTypeCache
@@ -176,6 +178,16 @@ namespace RockWeb.Blocks.Groups
 
             AllowMultipleLocations = ViewState["AllowMultipleLocations"] as bool? ?? false;
 
+            json = ViewState["GroupSyncState"] as string;
+            if( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupSyncState = new List<GroupSync>();
+            }
+            else
+            {
+                GroupSyncState = JsonConvert.DeserializeObject<List<GroupSync>>( json );
+            }
+
             json = ViewState["MemberWorkflowTriggersState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -218,6 +230,11 @@ namespace RockWeb.Blocks.Groups
             gGroupRequirements.Actions.AddClick += gGroupRequirements_Add;
             gGroupRequirements.EmptyDataText = Server.HtmlEncode( None.Text );
             gGroupRequirements.GridRebind += gGroupRequirements_GridRebind;
+
+            gGroupSyncs.DataKeyNames = new string[] { "Guid" };
+            gGroupSyncs.Actions.ShowAdd = true;
+            gGroupSyncs.Actions.AddClick += gGroupSyncs_Add;
+            gGroupSyncs.GridRebind += gGroupSyncs_GridRebind;
 
             gMemberWorkflowTriggers.DataKeyNames = new string[] { "Guid" };
             gMemberWorkflowTriggers.Actions.ShowAdd = true;
@@ -296,6 +313,7 @@ namespace RockWeb.Blocks.Groups
             ViewState["GroupMemberAttributesState"] = JsonConvert.SerializeObject( GroupMemberAttributesState, Formatting.None, jsonSetting );
             ViewState["GroupRequirementsState"] = JsonConvert.SerializeObject( GroupRequirementsState, Formatting.None, jsonSetting );
             ViewState["AllowMultipleLocations"] = AllowMultipleLocations;
+            ViewState["GroupSyncState"] = JsonConvert.SerializeObject( GroupSyncState, Formatting.None, jsonSetting );
             ViewState["MemberWorkflowTriggersState"] = JsonConvert.SerializeObject( MemberWorkflowTriggersState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
@@ -456,6 +474,7 @@ namespace RockWeb.Blocks.Groups
             AttributeService attributeService = new AttributeService( rockContext );
             AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
             CategoryService categoryService = new CategoryService( rockContext );
+            GroupSyncService groupSyncService = new GroupSyncService( rockContext );
 
             var roleGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
             int roleGroupTypeId = roleGroupType != null ? roleGroupType.Id : int.MinValue;
@@ -502,8 +521,15 @@ namespace RockWeb.Blocks.Groups
                     groupMemberWorkflowTriggerService.Delete( trigger );
                     triggersUpdated = true;
                 }
-            }
 
+                // Remove any GroupSyncs that were removed in the UI
+                var selectedGroupSyncs = GroupSyncState.Select( s => s.Guid );
+                foreach ( var groupSync in group.GroupSyncs.Where( s => !selectedGroupSyncs.Contains( s.Guid ) ).ToList() )
+                {
+                    group.GroupSyncs.Remove( groupSync );
+                    groupSyncService.Delete( groupSync );
+                }
+            }
 
             List<GroupRequirement> groupRequirementsToInsert = new List<GroupRequirement>();
             // add/update any group requirements that were added or changed in the UI (we already removed the ones that were removed above)
@@ -553,6 +579,19 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            // Add/update GroupSyncs
+            foreach( var groupSyncState in GroupSyncState)
+            {
+                GroupSync groupSync = group.GroupSyncs.Where( s => s.Guid == groupSyncState.Guid ).FirstOrDefault();
+                if(groupSync == null)
+                {
+                    groupSync = new GroupSync();
+                    group.GroupSyncs.Add( groupSync );
+                }
+                groupSync.CopyPropertiesFrom( groupSyncState );
+            }
+
+            // Add/update workflow triggers
             foreach ( var triggerState in MemberWorkflowTriggersState )
             {
                 GroupMemberWorkflowTrigger trigger = group.GroupMemberWorkflowTriggers.Where( r => r.Guid == triggerState.Guid ).FirstOrDefault();
@@ -582,12 +621,6 @@ namespace RockWeb.Blocks.Groups
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
-
-            // save sync settings
-            group.SyncDataViewId = dvpSyncDataview.SelectedValue.AsIntegerOrNull();
-            group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
-            group.ExitSystemEmailId = ddlExitEmail.SelectedValue.AsIntegerOrNull();
-            group.AddUserAccountsDuringSync = rbCreateLoginDuringSync.Checked;
 
             string iCalendarContent = string.Empty;
 
@@ -1297,43 +1330,14 @@ namespace RockWeb.Blocks.Groups
             wpGroupRequirements.Visible = canAdministrate;
             wpGroupMemberAttributes.Visible = canAdministrate;
 
-            var systemEmails = new SystemEmailService( rockContext ).Queryable().OrderBy( e => e.Title )
-                .Select( a => new
-                {
-                    a.Id,
-                    a.Title
-                } );
-
-            // add a blank for the first option
-            ddlWelcomeEmail.Items.Add( new ListItem() );
-            ddlExitEmail.Items.Add( new ListItem() );
-
-            if ( systemEmails.Any() )
+            if ( canAdministrate )
             {
-                foreach ( var systemEmail in systemEmails )
+                GroupSyncState = new List<GroupSync>();
+                foreach(var sync in group.GroupSyncs)
                 {
-                    ddlWelcomeEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
-                    ddlExitEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                    GroupSyncState.Add( sync );
                 }
-            }
-
-            // set dataview
-            dvpSyncDataview.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
-            dvpSyncDataview.SetValue( group.SyncDataViewId );
-
-            if ( group.AddUserAccountsDuringSync.HasValue )
-            {
-                rbCreateLoginDuringSync.Checked = group.AddUserAccountsDuringSync.Value;
-            }
-
-            if ( group.WelcomeSystemEmailId.HasValue )
-            {
-                ddlWelcomeEmail.SetValue( group.WelcomeSystemEmailId );
-            }
-
-            if ( group.ExitSystemEmailId.HasValue )
-            {
-                ddlExitEmail.SetValue( group.ExitSystemEmailId );
+                BindGroupSyncGrid();
             }
 
             // GroupType depends on Selected ParentGroup
@@ -1651,7 +1655,11 @@ namespace RockWeb.Blocks.Groups
             if ( group == null )
             {
                 rockContext = rockContext ?? new RockContext();
-                group = new GroupService( rockContext ).Queryable( "GroupType,GroupLocations.Schedules" )
+                group = new GroupService( rockContext )
+                    .Queryable()
+                    .Include(g => g.GroupType)
+                    .Include(g => g.GroupLocations.Select(s => s.Schedules))
+                    .Include(g => g.GroupSyncs)
                     .Where( g => g.Id == groupId )
                     .FirstOrDefault();
                 RockPage.SaveSharedItem( key, group );
@@ -1784,6 +1792,9 @@ namespace RockWeb.Blocks.Groups
                 case "MEMBERWORKFLOWTRIGGERS":
                     dlgMemberWorkflowTriggers.Show();
                     break;
+                case "GROUPSYNCSETTINGS":
+                    mdGroupSyncSettings.Show();
+                    break;
             }
         }
 
@@ -1805,6 +1816,9 @@ namespace RockWeb.Blocks.Groups
                     break;
                 case "MEMBERWORKFLOWTRIGGERS":
                     dlgMemberWorkflowTriggers.Hide();
+                    break;
+                case "GROUPSYNCSETTINGS":
+                    mdGroupSyncSettings.Hide();
                     break;
             }
 
@@ -2395,6 +2409,215 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
+        #region Group Syncs Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gGroupSyncs control.
+        /// Shows the GroupSync modal and populates the conrols without explicitly assigning
+        /// a value
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gGroupSyncs_Add( object sender, EventArgs e )
+        {
+            ClearGroupSyncModal();
+
+            RockContext rockContext = new RockContext();
+
+            CreateDataViewDropDownList( rockContext );
+            CreateRoleDropDownList( rockContext );
+            CreateGroupSyncEmailDropDownLists( rockContext );
+            ShowDialog( "GROUPSYNCSETTINGS", true );
+        }
+
+
+        /// <summary>
+        /// Handles the Edit event of the gGroupSyncs control.
+        /// Shows the GroupSync modal, popluates the controls, and selects
+        /// the data for the selected group syc.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gGroupSyncs_Edit( object sender, RowEventArgs e )
+        {
+            ClearGroupSyncModal();
+
+            Guid syncGuid = ( Guid ) e.RowKeyValue;
+            GroupSync groupSync = GroupSyncState.Where( s => s.Guid == syncGuid ).FirstOrDefault();
+            RockContext rockContext = new RockContext();
+
+            CreateDataViewDropDownList( rockContext );
+            ddlSyncDataView.SetValue( groupSync.SyncDataViewId );
+
+            CreateRoleDropDownList( rockContext );
+            ddlGroupRoles.SetValue( groupSync.GroupTypeRoleId );
+
+            CreateGroupSyncEmailDropDownLists( rockContext );
+            ddlWelcomeEmail.SetValue( groupSync.WelcomeSystemEmailId );
+            ddlExitEmail.SetValue( groupSync.ExitSystemEmailId );
+
+            cbCreateLoginDuringSync.Checked = groupSync.AddUserAccountsDuringSync;
+
+            ShowDialog( "GROUPSYNCSETTINGS", true );
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gGroupSyncs control.
+        /// Removes the group sync from the List<> in the current state
+        /// and the grid. Will not be removed from the group until the group
+        /// is saved.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gGroupSyncs_Delete( object sender, RowEventArgs e)
+        {
+            Guid guid = ( Guid ) e.RowKeyValue;
+            GroupSyncState.RemoveEntity( guid );
+            BindGroupSyncGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupSyncs control.
+        /// This call BindGroupSyncGrid()
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gGroupSyncs_GridRebind( object sender, EventArgs e)
+        {
+            BindGroupSyncGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdGroupSyncSettings control.
+        /// Adds the group sync to the List for the current state and to the grid.
+        /// Won't be added to the group until the group is saved.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdGroupSyncSettings_SaveClick( object sender, EventArgs e)
+        {
+            RockContext rockContext = new RockContext();
+            Guid syncGuid = hfGroupSyncGuid.Value.AsGuid();
+
+            // Create a new obj
+            var groupSync = GroupSyncState.Where( s => s.Guid == syncGuid ).FirstOrDefault();
+            if(groupSync == null)
+            {
+                groupSync = new GroupSync();
+                groupSync.Guid = Guid.NewGuid();
+                GroupSyncState.Add( groupSync );
+            }
+
+            groupSync.GroupId = hfGroupId.ValueAsInt();
+            groupSync.GroupTypeRoleId = ddlGroupRoles.SelectedValue.AsInteger();
+            groupSync.GroupTypeRole = new GroupTypeRoleService( rockContext ).Get( groupSync.GroupTypeRoleId );
+            groupSync.SyncDataViewId = ddlSyncDataView.SelectedValue.AsInteger();
+            groupSync.SyncDataView = new DataViewService( rockContext ).Get( groupSync.SyncDataViewId );
+            groupSync.ExitSystemEmailId = ddlExitEmail.SelectedValue.AsIntegerOrNull();
+            groupSync.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
+            groupSync.AddUserAccountsDuringSync = cbCreateLoginDuringSync.Checked;
+
+            // May need validation here...
+
+            BindGroupSyncGrid();
+            HideDialog();
+        }
+
+
+        /// <summary>
+        /// Binds the GroupSync grid to the List stored in the current state
+        /// </summary>
+        private void BindGroupSyncGrid()
+        {
+            gGroupSyncs.DataSource = GroupSyncState;
+            gGroupSyncs.DataBind();
+        }
+
+
+        /// <summary>
+        /// Creates the group sync email drop down lists. Does not set a selected value.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void CreateGroupSyncEmailDropDownLists(RockContext rockContext)
+        {
+            // Populate the email fields
+            var systemEmails = new SystemEmailService( rockContext )
+                .Queryable()
+                .OrderBy( e => e.Title )
+                .Select( a => new { a.Id, a.Title } );
+
+            // add a blank for the first option
+            ddlWelcomeEmail.Items.Add( new ListItem() );
+            ddlExitEmail.Items.Add( new ListItem() );
+
+            if ( systemEmails.Any() )
+            {
+                foreach ( var systemEmail in systemEmails )
+                {
+                    ddlWelcomeEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                    ddlExitEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates the role drop down list.
+        /// Includes rols for the group type that are not already being Sync'd.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void CreateRoleDropDownList(RockContext rockContext)
+        {
+            // Cannot have duplicate Group/Roles for the sync but manual dups are okay
+            Group group = new GroupService( rockContext ).Get( hfGroupId.ValueAsInt() );
+
+            var currentSyncdRoles = new GroupSyncService( rockContext )
+                .Queryable()
+                .Where( s => s.GroupId == group.Id )
+                .Select( s => s.GroupTypeRoleId )
+                .ToList();
+
+            var roles = new GroupTypeRoleService( rockContext )
+                .Queryable()
+                .Where( r => r.GroupTypeId == group.GroupTypeId && !currentSyncdRoles.Contains( r.Id ) )
+                .ToList();
+
+            foreach ( var role in roles )
+            {
+                ddlGroupRoles.Items.Add( new ListItem( role.Name, role.Id.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Creates the data view drop down list without an filters.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void CreateDataViewDropDownList(RockContext rockContext)
+        {
+            var dataViews = new DataViewService( rockContext )
+                .Queryable()
+                .ToList();
+
+            foreach ( var dataView in dataViews )
+            {
+                ddlSyncDataView.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Clears the values from the group sync modal controls.
+        /// </summary>
+        private void ClearGroupSyncModal()
+        {
+            ddlSyncDataView.Items.Clear();
+            ddlGroupRoles.Items.Clear();
+            ddlWelcomeEmail.Items.Clear();
+            ddlExitEmail.Items.Clear();
+            cbCreateLoginDuringSync.Checked = false;
+        }
+
+        #endregion
+
 
         #region GroupMemberAttributes Grid and Picker
 

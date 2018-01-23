@@ -51,12 +51,6 @@ namespace Rock.Model
         public bool CanDelete( SignalType item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<PersonSignal>( Context ).Queryable().Any( a => a.SignalTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", SignalType.FriendlyTypeName, PersonSignal.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
