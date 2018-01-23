@@ -74,6 +74,18 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Returns true if the captcha control is available for use, meaning its settings have been
+        /// configured by the administrator.
+        /// </summary>
+        public bool IsAvailable
+        {
+            get
+            {
+                return !string.IsNullOrWhiteSpace( SiteKey ) && !string.IsNullOrWhiteSpace( SecretKey );
+            }
+        }
+
         #endregion
 
         #region IRockControl implementation
