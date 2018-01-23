@@ -200,7 +200,7 @@ namespace RockWeb.Plugins.church_ccv.Pastoral
             ddlResultType.Items.Clear();
             ddlResultType.AutoPostBack = false;
             ddlResultType.Required = true;
-            ddlResultType.BindToDefinedType( DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.CARE_RESULT_TYPE ) ), true );
+            ddlResultType.BindToDefinedType( DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.COUNSELING_RESULT_TYPE ) ), true );
             dtbResultSummary.Text = string.Empty;
             dtbAmount.Text = string.Empty;
 
@@ -223,7 +223,7 @@ namespace RockWeb.Plugins.church_ccv.Pastoral
                 ddlResultType.Items.Clear();
                 ddlResultType.AutoPostBack = false;
                 ddlResultType.Required = true;
-                ddlResultType.BindToDefinedType( DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.CARE_RESULT_TYPE ) ), true );
+                ddlResultType.BindToDefinedType( DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.COUNSELING_RESULT_TYPE ) ), true );
                 ddlResultType.SetValue( resultInfo.ResultTypeValueId );
                 dtbResultSummary.Text = resultInfo.ResultSummary;
                 dtbAmount.Text = resultInfo.Amount.ToString();

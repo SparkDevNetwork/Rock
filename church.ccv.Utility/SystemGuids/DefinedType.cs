@@ -34,7 +34,12 @@
         /// <summary>
         /// The types of results for a Care Request
         /// </summary>
-        public const string CARE_RESULT_TYPE = "DAD62E69-9FFE-4225-9097-2758969297F3";
+        public const string COUNSELING_RESULT_TYPE = "DAD62E69-9FFE-4225-9097-2758969297F3";
+
+        /// <summary>
+        /// The types of results for a Care Request
+        /// </summary>
+        public const string CARE_RESULT_TYPE = "9663C6CC-3F5E-4024-9CFE-DA2F5C8DE577";
 
         /// <summary>
         /// The types of statuses for a Care Request

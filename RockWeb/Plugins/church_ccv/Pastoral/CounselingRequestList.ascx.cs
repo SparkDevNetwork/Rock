@@ -400,7 +400,7 @@ namespace RockWeb.Plugins.church_ccv.Pastoral
             ddlWorker.Items.Insert( 0, new ListItem() );
             ddlWorker.SetValue( rFilter.GetUserPreference( "Worker" ) );
 
-            ddlResult.BindToDefinedType( DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.CARE_RESULT_TYPE ) ), true );
+            ddlResult.BindToDefinedType( DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.COUNSELING_RESULT_TYPE ) ), true );
             ddlResult.SetValue( rFilter.GetUserPreference( "Result" ) );
 
             // set attribute filters
@@ -600,7 +600,7 @@ namespace RockWeb.Plugins.church_ccv.Pastoral
             gList.DataBind();
 
             // Builds the Totals section
-            var definedTypeCache = DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.CARE_RESULT_TYPE ) );
+            var definedTypeCache = DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.COUNSELING_RESULT_TYPE ) );
             Dictionary<string, decimal> resultTotals = new Dictionary<string, decimal>();
             decimal grandTotal = 0;
             foreach ( CareRequest request in list )
