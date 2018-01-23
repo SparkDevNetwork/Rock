@@ -981,7 +981,14 @@ validity of the request before completing this merge." :
                     var phoneNumber = person.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
                     if ( phoneNumber != null )
                     {
-                        AddProperty( key, phoneType.Value, person.Id, phoneNumber.Number, phoneNumber.ToString() );
+                        if (phoneNumber.IsUnlisted)
+                        {
+                            AddProperty(key, phoneType.Value, person.Id, phoneNumber.Number, phoneNumber.NumberFormatted + " <em>(Unlisted)</em>");
+                        }
+                        else
+                        {
+                            AddProperty(key, phoneType.Value, person.Id, phoneNumber.Number, phoneNumber.NumberFormatted);
+                        }
                     }
                     else
                     {
