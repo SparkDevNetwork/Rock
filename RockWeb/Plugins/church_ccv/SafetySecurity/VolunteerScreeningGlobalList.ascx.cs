@@ -84,6 +84,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             rFilter.SaveUserPreference( "Application Type", ddlApplicationType.SelectedValue );
             rFilter.SaveUserPreference( "Applicant Name", tbApplicantName.Text );
+            rFilter.SaveUserPreference( "Ministry Leader", tbMinistryLeader.Text );
 
             BindFilter( );
             BindGrid( );
@@ -123,6 +124,12 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 case "Applicant Name":
                 {
                     e.Value = rFilter.GetUserPreference( "Applicant Name" );
+                    break;
+                }
+
+                case "Ministry Leader":
+                {
+                    e.Value = rFilter.GetUserPreference( "Ministry Leader" );
                     break;
                 }
 
@@ -175,6 +182,9 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
             // setup the Applicant Name
             tbApplicantName.Text = rFilter.GetUserPreference( "Applicant Name" );
+
+            // setup the Ministry Leader
+            tbMinistryLeader.Text = rFilter.GetUserPreference( "Ministry Leader" );
         }
         #endregion
 
@@ -304,21 +314,33 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 {
                     filteredQuery = filteredQuery.Where( vs => vs.PersonName.ToLower( ).Contains( personName.ToLower( ).Trim( ) ) ).ToList( );
                 }
-                // ---- End Filters ----
-            
-                if ( filteredQuery.Count( ) > 0 )
+
+                // Ministry Leader
+                // Build Query that has Ministry Leader populated so that we can filter by Ministry Leader
+                var filteredQueryWithMinistryLeader = filteredQuery.OrderByDescending( vs => vs.SentDate ).OrderByDescending( vs => vs.CompletedDate ).Select( vs =>
+                                                    new {
+                                                        Name = vs.PersonName,
+                                                        Id = vs.Id,
+                                                        SentDate = vs.SentDate.ToShortDateString(),
+                                                        CompletedDate = ParseCompletedDate( vs.SentDate, vs.CompletedDate ),
+                                                        State = VolunteerScreening.GetState( vs.SentDate, vs.CompletedDate, vs.Workflow.Status ),
+                                                        Campus = campusCache.Where( c => c.Guid == vs.CampusGuid.AsGuid() ).SingleOrDefault().Name,
+                                                        MinistryLeader = TryGetMinistryLead( vs.Workflow, ministryLeadResult, paService ),
+                                                        ApplicationType = ParseApplicationType( vs.Workflow, starsQueryResult )
+                                                    } ).ToList();
+
+                // Apple Filter
+                string ministryLeader = rFilter.GetUserPreference( "Ministry Leader" );
+                if( string.IsNullOrWhiteSpace( ministryLeader ) == false )
                 {
-                    gGrid.DataSource = filteredQuery.OrderByDescending( vs => vs.SentDate ).OrderByDescending( vs => vs.CompletedDate ).Select( vs => 
-                        new {
-                                Name = vs.PersonName,
-                                Id = vs.Id,
-                                SentDate = vs.SentDate.ToShortDateString( ),
-                                CompletedDate = ParseCompletedDate( vs.SentDate, vs.CompletedDate ),
-                                State = VolunteerScreening.GetState( vs.SentDate, vs.CompletedDate, vs.Workflow.Status ),
-                                Campus = campusCache.Where( c => c.Guid == vs.CampusGuid.AsGuid( ) ).SingleOrDefault( ).Name,
-                                MinistryLeader = TryGetMinistryLead( vs.Workflow, ministryLeadResult, paService ),
-                                ApplicationType = ParseApplicationType( vs.Workflow, starsQueryResult )
-                            } ).ToList( );
+                    filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.Where( vs => vs.MinistryLeader.ToLower( ).Contains( ministryLeader.ToLower( ).Trim( ) ) ).ToList();
+                }
+                // ---- End Filters ----
+                
+                // Bind filter to grid
+                if ( filteredQueryWithMinistryLeader.Count( ) > 0 )
+                {
+                    gGrid.DataSource = filteredQueryWithMinistryLeader;
                 }
 
                 gGrid.DataBind( );

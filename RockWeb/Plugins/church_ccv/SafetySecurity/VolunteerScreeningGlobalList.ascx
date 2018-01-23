@@ -18,6 +18,7 @@
                         <Rock:RockDropDownList ID="ddlApplicationType" runat="server" Label="Application Type" />
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                         <Rock:RockTextBox ID="tbApplicantName" runat="server" Label="Applicant Name" />
+                        <Rock:RockTextBox ID="tbMinistryLeader" runat="server" Label="Ministry Leader" />
                     </Rock:GridFilter>
 
                     <Rock:Grid ID="gGrid" runat="server" OnRowSelected="gGrid_Edit">
