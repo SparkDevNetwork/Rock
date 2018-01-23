@@ -4726,6 +4726,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
+                    divDiscountCode.Visible = false;
                     tbDiscountCode.Text = RegistrationState.DiscountCode;
                 }
 
