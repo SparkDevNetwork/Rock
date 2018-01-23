@@ -193,21 +193,15 @@
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Group Sync Settings">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:DataViewPicker ID="dvpSyncDataview" Label="Sync Data View" runat="server" EnhanceForLongLists="true" ></Rock:DataViewPicker>
-                                </div>
-                                <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="rbCreateLoginDuringSync" runat="server" Label="Create Login During Sync" Help="If the individual does not have a login should one be created during the sync process?" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:RockDropDownList ID="ddlWelcomeEmail" runat="server" Label="Welcome Email"></Rock:RockDropDownList>
-                                </div>
-                                <div class="col-md-6">
-                                    <Rock:RockDropDownList ID="ddlExitEmail" runat="server" Label="Exit Email"></Rock:RockDropDownList>
-                                </div>
+                            <div class="grid">
+                                <Rock:Grid ID="gGroupSyncs" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Group Sync for Role">
+                                    <Columns>
+                                        <Rock:RockBoundField DataField="GroupTypeRole.Name" HeaderText="Role Name"></Rock:RockBoundField>
+                                        <Rock:RockBoundField DataField="SyncDataView.Name" HeaderText="Data View Name"></Rock:RockBoundField>
+                                        <Rock:EditField OnClick="gGroupSyncs_Edit" />
+                                        <Rock:DeleteField OnClick="gGroupSyncs_Delete" />
+                                    </Columns>
+                                </Rock:Grid>
                             </div>
                         </Rock:PanelWidget>
 
@@ -324,6 +318,37 @@
             </Content>
         </Rock:ModalDialog>
 
+        <%-- Group Sync Settings Modal Dialog --%>
+        <Rock:ModalDialog ID="mdGroupSyncSettings" runat="server" Title="Group Sync Settings" OnSaveClick="mdGroupSyncSettings_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupSyncSettings">
+            <Content>
+                <asp:HiddenField ID="hfGroupSyncGuid" runat="server" />
+                <asp:ValidationSummary ID="valGroupSyncSettings" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupSyncSettings" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlSyncDataView" runat="server" Label="Sync Data View" Help="Select the Data View for the sync" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlGroupRoles" runat="server" Label="Group Role to Assign" Help="Select the role to assign the members added by the selected Data View" ValidationGroup="GroupSyncSettings" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlWelcomeEmail" runat="server" Label="Welcome Email" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlExitEmail" runat="server" Label="Exit Email" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbCreateLoginDuringSync" runat="server" Label="Create Login During Sync" Help="If the individual does not have a login should one be created during the sync process?" ValidationGroup="GroupSyncSettings" />
+                    </div>
+                </div>
+            </Content>
+        </Rock:ModalDialog>
+
+        <%-- Workflow Modal Dialog --%>
         <Rock:ModalDialog ID="dlgMemberWorkflowTriggers" runat="server" OnSaveClick="dlgMemberWorkflowTriggers_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Trigger">
             <Content>
                 <asp:HiddenField ID="hfTriggerGuid" runat="server" />

@@ -803,6 +803,7 @@
     <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupSyncService.cs" />
     <Compile Include="Model\CodeGenerated\LavaShortcodeService.cs" />
     <Compile Include="Model\CodeGenerated\MetaFirstNameGenderLookupService.cs" />
     <Compile Include="Model\CodeGenerated\MetaLastNameLookupService.cs" />
@@ -823,6 +824,7 @@
     <Compile Include="Model\DataViewPersistedValue.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
+    <Compile Include="Model\GroupSync.cs" />
     <Compile Include="Model\InteractionComponent.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />

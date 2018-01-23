@@ -73,6 +73,10 @@
     <Compile Include="Migrations\201801162056008_V8Features.Designer.cs">
       <DependentUpon>201801162056008_V8Features.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201801232006297_GroupSyncByRole.cs" />
+    <Compile Include="Migrations\201801232006297_GroupSyncByRole.Designer.cs">
+      <DependentUpon>201801232006297_GroupSyncByRole.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2656,6 +2660,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201801162056008_V8Features.resx">
       <DependentUpon>201801162056008_V8Features.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801232006297_GroupSyncByRole.resx">
+      <DependentUpon>201801232006297_GroupSyncByRole.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
