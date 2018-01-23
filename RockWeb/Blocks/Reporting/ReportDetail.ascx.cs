@@ -368,18 +368,6 @@ namespace RockWeb.Blocks.Reporting
             this.ShowResults = !this.ShowResults;
         }
 
-        protected void lbDataView_Click( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
-            var reportService = new ReportService( rockContext );
-            var report = reportService.Get( hfReportId.Value.AsInteger() );
-
-            if ( report != null && report.DataViewId.HasValue )
-            {
-                NavigateToLinkedPage( "DataViewPage", "DataViewId", report.DataViewId.Value );
-            }
-        }
-
         #region Edit Events
 
         /// <summary>
@@ -1123,6 +1111,11 @@ namespace RockWeb.Blocks.Reporting
             if ( report.DataView != null )
             {
                 lbDataView.Visible = UserCanEdit;
+
+                var queryParams = new Dictionary<string, string>();
+                queryParams.Add("DataViewId", report.DataViewId.ToString());
+                lbDataView.NavigateUrl = LinkedPageUrl("DataViewPage", queryParams);
+
                 lbDataView.ToolTip = report.DataView.Name;
             }
             else
