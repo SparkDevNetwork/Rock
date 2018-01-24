@@ -5,7 +5,7 @@
         $('#<%=hfActiveDialog.ClientID %>').val('');
     }
 
-    Sys.Application.add_load( function () {
+    Sys.Application.add_load(function () {
         $('.js-follow-status').tooltip();
     });
 </script>
@@ -24,7 +24,7 @@
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
                     </h1>
 
-                    <div class="panel-labels"> 
+                    <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlInactive" runat="server" CssClass="js-inactivegroup-label" LabelType="Danger" Text="Inactive" />
                         <Rock:HighlightLabel ID="hlIsPrivate" runat="server" CssClass="js-privategroup-label" LabelType="Default" Text="Private" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
@@ -32,11 +32,11 @@
                     </div>
 
                     <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></asp:Panel>
-                    
+
                 </div>
 
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
-                
+
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     <Rock:NotificationBox ID="nbRoleLimitWarning" runat="server" NotificationBoxType="Warning" Heading="Role Limit Warning" />
@@ -56,7 +56,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivegroup" Text="Active" />
-                                <Rock:RockCheckBox ID="cbInactivateChildGroups" runat="server" Text="Inactivate Child Groups" ContainerCssClass="margin-l-md js-inactivatechildgroups" style="display:none" />
+                                <Rock:RockCheckBox ID="cbInactivateChildGroups" runat="server" Text="Inactivate Child Groups" ContainerCssClass="margin-l-md js-inactivatechildgroups" Style="display: none" />
                                 <Rock:RockCheckBox ID="cbIsPublic" runat="server" CssClass="js-ispublicgroup" Text="Public" />
                             </div>
                         </div>
@@ -84,7 +84,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
-                                    <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document" 
+                                    <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document"
                                         Help="If members of this group need to have signed a document, select that document type here." />
                                 </div>
                             </div>
@@ -126,7 +126,7 @@
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupAttributes" runat="server" Title="Group Attribute Values">
-                            <Rock:DynamicPlaceHolder ID="phGroupAttributes" runat="server"></Rock:DynamicPlaceHolder>
+                            <Rock:DynamicPlaceholder ID="phGroupAttributes" runat="server"></Rock:DynamicPlaceholder>
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupMemberAttributes" runat="server" Title="Member Attributes" CssClass="group-type-attribute-panel">
@@ -136,8 +136,8 @@
                                 <div class="grid">
                                     <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Inherited Member Attribute">
                                         <Columns>
-                                            <Rock:RockBoundField DataField="Name" HeaderText="Attribute"/>
-                                            <Rock:RockBoundField DataField="Description" HeaderText="Description"/>
+                                            <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                            <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                             <Rock:RockTemplateField HeaderText="Inherited">
                                                 <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank'><%# Eval("GroupType") %></a>)</ItemTemplate>
                                             </Rock:RockTemplateField>
@@ -174,7 +174,7 @@
                                     </Rock:Grid>
                                 </div>
                             </Rock:RockControlWrapper>
-                            
+
                             <Rock:RockControlWrapper ID="rcwGroupRequirements" runat="server" Label="Specific Group Requirement(s)">
                                 <div class="grid">
                                     <Rock:Grid ID="gGroupRequirements" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Requirement" ShowConfirmDeleteDialog="false">
@@ -205,9 +205,9 @@
                             </div>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpMemberWorkflowTriggers" runat="server" Title="Group Member Workflows" >
-                            <Rock:NotificationBox ID="NotificationBox3" runat="server" NotificationBoxType="Info" 
-                            Text="The workflow(s) that should be launched when group members are changed in this group." />
+                        <Rock:PanelWidget ID="wpMemberWorkflowTriggers" runat="server" Title="Group Member Workflows">
+                            <Rock:NotificationBox ID="NotificationBox3" runat="server" NotificationBoxType="Info"
+                                Text="The workflow(s) that should be launched when group members are changed in this group." />
                             <div class="grid">
                                 <Rock:Grid ID="gMemberWorkflowTriggers" runat="server" EnableResponsiveTable="false" AllowPaging="false" DisplayType="Light" RowItemText="Workflow">
                                     <Columns>
@@ -306,11 +306,11 @@
             <Content>
                 <asp:HiddenField ID="hfGroupRequirementGuid" runat="server" />
 
-                <Rock:NotificationBox id="nbDuplicateGroupRequirement" runat="server" NotificationBoxType="Warning" />
+                <Rock:NotificationBox ID="nbDuplicateGroupRequirement" runat="server" NotificationBoxType="Warning" />
 
                 <asp:ValidationSummary ID="vsGroupRequirement" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vg_GroupRequirement" />
 
-                <Rock:RockDropDownList ID="ddlGroupRequirementType" runat="server" Label="Group Requirement Type" Required="true" ValidationGroup="vg_GroupRequirement"/>
+                <Rock:RockDropDownList ID="ddlGroupRequirementType" runat="server" Label="Group Requirement Type" Required="true" ValidationGroup="vg_GroupRequirement" />
 
                 <Rock:GroupRolePicker ID="grpGroupRequirementGroupRole" runat="server" Label="Group Role" Help="Select the group role that this requirement applies to. Leave blank if it applies to all group roles." ValidationGroup="vg_GroupRequirement" />
 
@@ -360,7 +360,7 @@
                         <Rock:RockTextBox ID="tbTriggerName" runat="server" Label="Name" Required="true" ValidationGroup="Trigger" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbTriggerIsActive" runat="server" Text="Active" ValidationGroup="Trigger"  />
+                        <Rock:RockCheckBox ID="cbTriggerIsActive" runat="server" Text="Active" ValidationGroup="Trigger" />
                     </div>
                 </div>
                 <div class="row">
@@ -386,10 +386,10 @@
         </Rock:ModalDialog>
 
         <script>
-            
+
             Sys.Application.add_load(function () {
                 function setIsActiveControls(activeCheckbox) {
-                    
+
                     var $inactiveLabel = $(activeCheckbox).closest(".js-group-panel").find('.js-inactivegroup-label');
                     if ($(activeCheckbox).is(':checked')) {
                         $inactiveLabel.hide();
