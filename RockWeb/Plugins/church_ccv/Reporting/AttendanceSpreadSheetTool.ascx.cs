@@ -86,7 +86,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             var formatString = "MMM d, yyyy";
             ddlSundayDate.Items.Clear();
-            while ( lastSundayDate > RockDateTime.Today.AddMonths( -6 ) )
+            while ( lastSundayDate > RockDateTime.Today.AddMonths( -36 ) )
             {
                 ddlSundayDate.Items.Add( new ListItem( string.Format( "{0} - {1}", lastSundayDate.AddDays( -1 ).ToString( formatString ), lastSundayDate.ToString( formatString ) ), lastSundayDate.ToString() ) );
                 lastSundayDate = lastSundayDate.AddDays( -7 );
