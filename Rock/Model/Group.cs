@@ -147,6 +147,7 @@ namespace Rock.Model
             get { return _isActive; }
             set { _isActive = value; }
         }
+
         private bool _isActive = true;
 
         /// <summary>
@@ -192,6 +193,7 @@ namespace Rock.Model
             get { return _isPublic; }
             set { _isPublic = value; }
         }
+
         private bool _isPublic = true;
 
         /// <summary>
@@ -273,6 +275,7 @@ namespace Rock.Model
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
             set { _groups = value; }
         }
+
         private ICollection<Group> _groups;
 
         /// <summary>
@@ -287,6 +290,7 @@ namespace Rock.Model
             get { return _members ?? ( _members = new Collection<GroupMember>() ); }
             set { _members = value; }
         }
+
         private ICollection<GroupMember> _members;
 
         /// <summary>
@@ -301,6 +305,7 @@ namespace Rock.Model
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
             set { _groupLocations = value; }
         }
+
         private ICollection<GroupLocation> _groupLocations;
 
         /// <summary>
@@ -315,6 +320,7 @@ namespace Rock.Model
             get { return _groupsRequirements ?? ( _groupsRequirements = new Collection<GroupRequirement>() ); }
             set { _groupsRequirements = value; }
         }
+
         private ICollection<GroupRequirement> _groupsRequirements;
 
         /// <summary>
@@ -329,14 +335,22 @@ namespace Rock.Model
             get { return _triggers ?? ( _triggers = new Collection<GroupMemberWorkflowTrigger>() ); }
             set { _triggers = value; }
         }
+
         private ICollection<GroupMemberWorkflowTrigger> _triggers;
 
+        /// <summary>
+        /// Gets or sets the group syncs.
+        /// </summary>
+        /// <value>
+        /// The group syncs.
+        /// </value>
         [DataMember]
         public virtual ICollection<GroupSync> GroupSyncs
         {
             get { return _groupSyncs ?? ( _groupSyncs = new Collection<GroupSync>() ); }
             set { _groupSyncs = value; }
         }
+
         private ICollection<GroupSync> _groupSyncs;
 
         /// <summary>
@@ -351,6 +365,7 @@ namespace Rock.Model
             get { return _linkages ?? ( _linkages = new Collection<EventItemOccurrenceGroupMap>() ); }
             set { _linkages = value; }
         }
+
         private ICollection<EventItemOccurrenceGroupMap> _linkages;
 
         /// <summary>
@@ -414,6 +429,7 @@ namespace Rock.Model
                     _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
                     _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                 }
+
                 return _supportedActions;
             }
         }

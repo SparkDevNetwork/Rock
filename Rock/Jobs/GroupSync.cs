@@ -36,7 +36,7 @@ namespace Rock.Jobs
     /// Job to run quick SQL queries on a schedule
     /// </summary>
     [DisallowConcurrentExecution]
-    [BooleanField("Require Password Reset On New Logins", "Determines if new logins should be created in such a way that the individual will need to reset the password on their first login.", Key = "RequirePasswordReset")]
+    [BooleanField( "Require Password Reset On New Logins", "Determines if new logins should be created in such a way that the individual will need to reset the password on their first login.", Key = "RequirePasswordReset" )]
     public class GroupSync : IJob
     {
         /// <summary> 
@@ -125,7 +125,7 @@ namespace Rock.Jobs
                                     var groupMemberService = new GroupMemberService( groupMemberContext );
                                     foreach ( var groupMember in groupMemberService
                                         .Queryable()
-                                        .Where( m => 
+                                        .Where( m =>
                                             m.GroupId == sync.GroupId &&
                                             m.GroupRoleId == sync.GroupTypeRoleId &&
                                             m.PersonId == personId )

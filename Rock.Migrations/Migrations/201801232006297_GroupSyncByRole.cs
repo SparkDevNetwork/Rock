@@ -29,7 +29,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            
             CreateTable(
                 "dbo.GroupSync",
                 c => new
