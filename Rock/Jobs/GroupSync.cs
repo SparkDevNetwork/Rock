@@ -133,6 +133,7 @@ namespace Rock.Jobs
                                     {
                                         groupMemberService.Delete( groupMember );
                                     }
+
                                     groupMemberContext.SaveChanges();
 
                                     // If the Group has an exit email, and person has an email address, send them the exit email
@@ -154,9 +155,6 @@ namespace Rock.Jobs
 
                                 hasSyncChanged = true;
                             }
-
-                            // Add people to the group that are in the dataview and not currently in the group
-                            //int groupRoleId = syncGroup.GroupType.DefaultGroupRoleId ?? syncGroup.GroupType.Roles.FirstOrDefault().Id;
 
                             foreach ( var personId in sourcePersonIds.Where( s => !targetPersonIds.Contains( s ) ) )
                             {
@@ -213,7 +211,6 @@ namespace Rock.Jobs
                                 }
 
                                 hasSyncChanged = true;
-
                             }
 
                             // Increment Groups Changed Counter (if people were deleted or added to the group)
@@ -248,9 +245,9 @@ namespace Rock.Jobs
                 {
                     resultMessage = string.Format( "{0} groups were sync'ed", groupsSynced );
                 }
+
                 resultMessage += string.Format( " and {0} groups were changed", groupsChanged );
                 context.Result = resultMessage;
-
             }
             catch ( System.Exception ex )
             {
@@ -259,6 +256,5 @@ namespace Rock.Jobs
                 throw;
             }
         }
-
     }
 }
