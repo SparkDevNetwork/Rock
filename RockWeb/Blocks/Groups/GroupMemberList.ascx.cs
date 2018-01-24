@@ -190,6 +190,11 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            if( _group != null && _group.GroupSyncs != null && _group.GroupSyncs.Count() > 0)
+            {
+                hlSyncStatus.Visible = true;
+            }
+
             string deleteScript = @"
     $('table.js-grid-group-members a.grid-delete-button').click(function( e ){
         var $btn = $(this);

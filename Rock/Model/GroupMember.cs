@@ -148,6 +148,14 @@ namespace Rock.Model
         [DataMember]
         public int? GroupOrder { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the member was added by a group sync
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if added by a group sync; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AddedBySync { get; set; }
         #endregion
 
         #region Virtual Properties
