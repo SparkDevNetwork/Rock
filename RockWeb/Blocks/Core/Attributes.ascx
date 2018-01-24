@@ -13,18 +13,19 @@
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-list-ul"></i> Attribute List</h1>
+                    <div class="form-inline pull-right clearfix">
+                        <Rock:EntityTypePicker ID="ddlEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged"  />
+                    </div>
                 </div>
                 <div class="panel-body">
-
-                    <div class="grid grid-panel">
-                        <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                            <Rock:EntityTypePicker ID="ddlEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" EnhanceForLongLists="true" />
+                    <asp:Panel ID="pnlGrid" runat="server" CssClass="grid grid-panel">
+                            <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                             <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
                             <Rock:RockCheckBox ID="cbAnalyticsEnabled" runat="server" Label="Show only attributes with Analytics Enabled" />
                         </Rock:GridFilter>
-                        <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" TooltipField="Description" OnRowSelected="rGrid_RowSelected">
+                            <Rock:Grid ID="rGrid" runat="server" RowItemText="setting" TooltipField="Description" OnRowSelected="rGrid_RowSelected">
                             <Columns>
-                                <Rock:ReorderField Visible="false" />
+                                <Rock:ReorderField />
                                 <Rock:RockBoundField
                                     DataField="Id"
                                     HeaderText="Id"
@@ -57,8 +58,7 @@
                                 <Rock:DeleteField OnClick="rGrid_Delete" />
                             </Columns>
                         </Rock:Grid>
-                    </div>
-
+                    </asp:Panel>
                 </div>
             </div>
 
