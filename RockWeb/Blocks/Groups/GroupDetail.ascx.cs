@@ -965,7 +965,6 @@ namespace RockWeb.Blocks.Groups
                         }
 
                         attributeService.Add( newAttribute );
-
                     }
 
                     rockContext.SaveChanges();
@@ -984,9 +983,9 @@ namespace RockWeb.Blocks.Groups
                         newAuth.ModifiedDateTime = RockDateTime.Now;
                         authService.Add( newAuth );
                     }
+
                     rockContext.SaveChanges();
                     Rock.Security.Authorization.Flush();
-
                 } );
 
                 NavigateToCurrentPage( new Dictionary<string, string> { { "GroupId", newGroup.Id.ToString() } } );
