@@ -26,6 +26,22 @@ namespace Rock.Plugin.HotFixes
 
             // Fix for Label Merge Fields Page HelpText corruption
             Sql( HotFixMigrationResource._039_MigrationRollupsForV7_2_UpdateCheckInMergefieldDebugInfo );
+
+            // Add Interaction Channel for CDR
+            Sql( @"DECLARE @ChannelGuid uniqueidentifier
+SET @ChannelGuid = CAST( 'B3904B57-62A2-57AC-43EA-94D4DEBA3D51' as uniqueidentifier )
+
+IF NOT EXISTS( SELECT * FROM[InteractionChannel]  WHERE[Guid] = @ChannelGuid )
+BEGIN
+  DECLARE @InteractionEntityTypeId int = ( SELECT TOP 1[Id] FROM[EntityType] WHERE[Name] = 'Rock.Model.Person' )
+  DECLARE @ChannelTypeMediumValueId int = ( SELECT TOP 1[Id] FROM[DefinedValue] WHERE[Guid] = 'B3904B57-62A2-57AC-43EA-94D4DEBA3D51')
+
+  INSERT INTO[InteractionChannel]
+
+    ([Name], [InteractionEntityTypeId], [ChannelTypeMediumValueId], [Guid])
+  VALUES
+    ( 'PBX CDR Records', @InteractionEntityTypeId, @ChannelTypeMediumValueId, @ChannelGuid )
+END" );
         }
 
         /// <summary>
