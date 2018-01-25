@@ -98,6 +98,7 @@ namespace Rock.Model
             target.GroupOrder = source.GroupOrder;
             target.GroupRoleId = source.GroupRoleId;
             target.GuestCount = source.GuestCount;
+            target.IsAddedBySync = source.IsAddedBySync;
             target.IsNotified = source.IsNotified;
             target.IsSystem = source.IsSystem;
             target.Note = source.Note;

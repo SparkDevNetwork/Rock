@@ -59,6 +59,9 @@ namespace Rock.Client
         public int? GuestCount { get; set; }
 
         /// <summary />
+        public bool IsAddedBySync { get; set; }
+
+        /// <summary />
         public bool IsNotified { get; set; }
 
         /// <summary />
@@ -116,6 +119,7 @@ namespace Rock.Client
             this.GroupOrder = source.GroupOrder;
             this.GroupRoleId = source.GroupRoleId;
             this.GuestCount = source.GuestCount;
+            this.IsAddedBySync = source.IsAddedBySync;
             this.IsNotified = source.IsNotified;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

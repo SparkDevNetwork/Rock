@@ -64,7 +64,7 @@ namespace Rock.Migrations
                 .Index(t => t.CreatedByPersonAliasId)
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
-
+            
             Sql( @"INSERT INTO [GroupSync] (GroupId
 	                , GroupTypeRoleId
 	                , SyncDataViewId
@@ -83,13 +83,25 @@ namespace Rock.Migrations
                 INNER JOIN GroupType ON [Group].GroupTypeId = GroupType.Id
                 WHERE [Group].SyncDataViewId IS NOT NULL" );
 
+            AddColumn( "dbo.GroupMember", "IsAddedBySync", c => c.Boolean( nullable: false ) );
+
+            Sql( @"UPDATE [GroupMember] SET IsAddedBySync = 0" );
+            Sql( @"UPDATE [GroupMember]
+                SET IsAddedBySync = 1
+                WHERE Id IN (
+	                SELECT [GroupMember].Id
+	                FROM [GroupMember]
+	                INNER JOIN [Group] ON [GroupMember].GroupId = [Group].id
+	                INNER JOIN [GroupType] ON [Group].GroupTypeId = [GroupType].Id
+	                WHERE [Group].SyncDataViewId IS NOT NULL AND [GroupType].DefaultGroupRoleId = [GroupMember].GroupRoleId)" );
+
             DropForeignKey( "dbo.Group", "ExitSystemEmailId", "dbo.SystemEmail" );
             DropForeignKey( "dbo.Group", "SyncDataViewId", "dbo.DataView" );
             DropForeignKey( "dbo.Group", "WelcomeSystemEmailId", "dbo.SystemEmail" );
             DropIndex( "dbo.Group", new[] { "WelcomeSystemEmailId" } );
             DropIndex( "dbo.Group", new[] { "ExitSystemEmailId" } );
             DropIndex( "dbo.Group", new[] { "SyncDataViewId" } );
-
+            
             DropColumn("dbo.Group", "WelcomeSystemEmailId");
             DropColumn("dbo.Group", "ExitSystemEmailId");
             DropColumn("dbo.Group", "SyncDataViewId");
@@ -119,6 +131,7 @@ namespace Rock.Migrations
             DropIndex("dbo.GroupSync", new[] { "WelcomeSystemEmailId" });
             DropIndex("dbo.GroupSync", new[] { "SyncDataViewId" });
             DropIndex("dbo.GroupSync", "IX_GroupIdGroupTypeRoleId");
+            DropColumn("dbo.GroupMember", "IsAddedBySync");
             DropTable("dbo.GroupSync");
             CreateIndex("dbo.Group", "SyncDataViewId");
             CreateIndex("dbo.Group", "ExitSystemEmailId");
