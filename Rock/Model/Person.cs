@@ -1488,10 +1488,34 @@ namespace Rock.Model
         /// <summary>
         /// Gets an anchor tag to send person a communication
         /// </summary>
+        /// <param name="rockUrlRoot">The rock URL root.</param>
+        /// <param name="cssClass">The CSS class.</param>
+        /// <param name="preText">The pre text.</param>
+        /// <param name="postText">The post text.</param>
+        /// <param name="styles">The styles.</param>
+        /// <returns></returns>
         /// <value>
         /// The email tag.
         /// </value>
         public string GetEmailTag( string rockUrlRoot, string cssClass = "", string preText = "", string postText = "", string styles = "" )
+        {
+            return GetEmailTag( rockUrlRoot, null, cssClass, preText, postText, styles );
+        }
+
+        /// <summary>
+        /// Gets an anchor tag to send person a communication
+        /// </summary>
+        /// <param name="rockUrlRoot">The rock URL root.</param>
+        /// <param name="communicationPageReference">The communication page reference.</param>
+        /// <param name="cssClass">The CSS class.</param>
+        /// <param name="preText">The pre text.</param>
+        /// <param name="postText">The post text.</param>
+        /// <param name="styles">The styles.</param>
+        /// <returns></returns>
+        /// <value>
+        /// The email tag.
+        /// </value>
+        public string GetEmailTag( string rockUrlRoot, Rock.Web.PageReference communicationPageReference, string cssClass = "", string preText = "", string postText = "", string styles = "" )
         {
             if ( !string.IsNullOrWhiteSpace( Email ) )
             {
@@ -1508,7 +1532,16 @@ namespace Rock.Model
                     // create link
                     if ( string.IsNullOrWhiteSpace(emailLinkPreference) || emailLinkPreference == "1" )
                     {
-                        emailLink = string.Format( "{0}Communication?person={1}", rockUrlRoot, Id );
+                        if ( communicationPageReference != null)
+                        {
+                            communicationPageReference.QueryString = new System.Collections.Specialized.NameValueCollection( communicationPageReference.QueryString ?? new System.Collections.Specialized.NameValueCollection() );
+                            communicationPageReference.QueryString["person"] = this.Id.ToString();
+                            emailLink = new Rock.Web.PageReference( communicationPageReference.PageId, communicationPageReference.RouteId, communicationPageReference.Parameters, communicationPageReference.QueryString ).BuildUrl();
+                        }
+                        else
+                        {
+                            emailLink = string.Format( "{0}Communication?person={1}", rockUrlRoot, Id );
+                        }
                     } else
                     {
                         emailLink = string.Format( "mailto:{0}", Email );
