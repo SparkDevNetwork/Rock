@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                dynamic groupMember = e.Row.DataItem;
+                GroupMemberDataRow groupMember = e.Row.DataItem as GroupMemberDataRow;
 
                 if ( groupMember != null )
                 {
@@ -305,12 +305,12 @@ namespace RockWeb.Blocks.Groups
                         e.Row.AddCssClass( "is-deceased" );
                     }
 
-                    if ( groupMember.IsAddedBySync == true )
+                    if ( _group.GroupSyncs.Any(a => a.GroupTypeRoleId == groupMember.GroupRoleId ))
                     {
-                        GroupMemberService groupMemberService = new GroupMemberService( new RockContext() );
-                        if ( groupMemberService.HasGroupSync( groupMember.Guid ) )
+                        var deleteField = gGroupMembers.ColumnsOfType<DeleteField>().FirstOrDefault();
+                        if ( deleteField != null && deleteField.Visible )
                         {
-                            TableCell cell = e.Row.Cells[e.Row.Cells.Count - 1];
+                            TableCell cell = e.Row.Cells[gGroupMembers.Columns.IndexOf( deleteField )];
                             cell.Text = "";
                             cell.ToolTip = "Cannot delete member managed by group sync";
                         }
@@ -1267,7 +1267,8 @@ namespace RockWeb.Blocks.Groups
                         RecordStatusValueId = m.Person.RecordStatusValueId,
                         IsDeceased = m.Person.IsDeceased,
                         MaritalStatusValueId = m.Person.MaritalStatusValueId,
-                        IsAddedBySync = m.IsAddedBySync,
+                        GroupRoleId = m.GroupRoleId,
+                        IsAddedBySync = _group.GroupSyncs.Any(a => a.GroupTypeRoleId == m.GroupRoleId)
                     } ).ToList();
 
                     if ( sortProperty != null )
@@ -1427,6 +1428,8 @@ namespace RockWeb.Blocks.Groups
         public bool IsDeceased { get; set; }
 
         public int? MaritalStatusValueId { get; set; }
+
+        public int GroupRoleId { get; set; }
 
         public bool IsAddedBySync { get; set; }
     }
