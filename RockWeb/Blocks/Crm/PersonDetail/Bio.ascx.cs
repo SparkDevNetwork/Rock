@@ -63,6 +63,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     [CategoryField( "Tag Category", "Optional category to limit the tags to. If specified all new personal tags will be added with this category.", false, 
         "Rock.Model.Tag", "", "", false, "", "", 13 )]
     [BooleanField( "Enable Call Origination", "Should click-to-call links be added to phone numbers.", true, "", 14 )]
+    [LinkedPage( "Communication Page", "The communication page to use for when the person's email address is clicked. Leave this blank to use the default.", false, "", "", 15 )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -224,8 +225,19 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         rptPhones.DataSource = Person.PhoneNumbers.ToList();
                         rptPhones.DataBind();
                     }
+                    
+                    var communicationLinkedPageValue = this.GetAttributeValue( "CommunicationPage" );
+                    Rock.Web.PageReference communicationPageReference;
+                    if ( communicationLinkedPageValue.IsNotNullOrWhitespace() )
+                    {
+                        communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
+                    }
+                    else
+                    {
+                        communicationPageReference = null;
+                    }
 
-                    lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ) );
+                    lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference );
 
                     if ( GetAttributeValue( "DisplayTags" ).AsBoolean( true ) )
                     {
