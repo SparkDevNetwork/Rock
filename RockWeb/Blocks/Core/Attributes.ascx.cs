@@ -828,7 +828,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 pnlGrid.Visible = false;
-                nbMessage.Text = "No Entity is selected to display attributes for.";
+                nbMessage.Text = "Please select an entity to display attributes for.";
                 nbMessage.Visible = true;
                 return false;
             }
