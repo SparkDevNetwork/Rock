@@ -155,7 +155,7 @@ namespace Rock.Model
         ///   <c>true</c> if added by a group sync; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AddedBySync { get; set; }
+        public bool IsAddedBySync { get; set; }
         #endregion
 
         #region Virtual Properties
