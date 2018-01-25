@@ -75,7 +75,7 @@
                 <div id="divNewCalendarItemPage3" runat="server" class="row">
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlCalendarItem" runat="server" Label="Calendar Item" Required="true" ValidationGroup="DlgPage3"
-                            DataTextField="Name" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlCalendarItem_SelectedIndexChanged"/>
+                            DataTextField="Name" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlCalendarItem_SelectedIndexChanged" EnhanceForLongLists="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlCalendarItemOccurrence" runat="server" Label="Campus" Required="true" ValidationGroup="DlgPage3"

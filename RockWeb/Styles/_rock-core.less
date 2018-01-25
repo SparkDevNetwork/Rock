@@ -21,7 +21,8 @@
 @import "./chosen/bootstrap-chosen-variables.less";
 @import "./chosen/bootstrap-chosen.less";
 
-.fa-font-face( @fa-theme-weight-name );
+.fa-font-face( @fa-theme-weight-name, @fa-edition );
+.fa-font-face( 'brands' );
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.css";
@@ -629,22 +630,22 @@ th[align=center] {
 
   &.facebook:before {
     margin-right: 12px;
-    font-family: @fa-font-face;
-    font-weight: @fa-theme-weight;
+    font-family: '@{fa-font-face} Brands';
+    font-weight: 400;
     content: @fa-var-facebook;
   }
 
   &.google:before {
     margin-right: 12px;
-    font-family: @fa-font-face;
-    font-weight: @fa-theme-weight;
+    font-family: '@{fa-font-face} Brands';
+    font-weight: 400;
     content: @fa-var-google;
   }
 
   &.twitter:before {
     margin-right: 12px;
-    font-family: @fa-font-face;
-    font-weight: @fa-theme-weight;
+    font-family: '@{fa-font-face} Brands';
+    font-weight: 400;
     content: @fa-var-twitter;
   }
 }

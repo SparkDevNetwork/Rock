@@ -44,9 +44,9 @@ namespace Rock.Reporting
         /// <param name="errorMessage">The error message.</param>
         public static void BindGrid( Report report, Grid gReport, Person currentPerson, int? databaseTimeoutSeconds, out string errorMessage )
         {
-            BindGrid( report, gReport, currentPerson, databaseTimeoutSeconds, false, out errorMessage );
+            BindGrid( report, gReport, currentPerson, null, databaseTimeoutSeconds, false, out errorMessage );
         }
-        
+
         /// <summary>
         /// Shows the preview.
         /// </summary>
@@ -57,6 +57,21 @@ namespace Rock.Reporting
         /// <param name="isCommunication">if set to <c>true</c> [is communication].</param>
         /// <param name="errorMessage">The error message.</param>
         public static void BindGrid( Report report, Grid gReport, Person currentPerson, int? databaseTimeoutSeconds, bool isCommunication, out string errorMessage )
+        {
+            BindGrid( report, gReport, currentPerson, null, databaseTimeoutSeconds, isCommunication, out errorMessage );
+        }
+
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
+        /// <param name="report">The report.</param>
+        /// <param name="gReport">The g report.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
+        /// <param name="isCommunication">if set to <c>true</c> [is communication].</param>
+        /// <param name="errorMessage">The error message.</param>
+        public static void BindGrid( Report report, Grid gReport, Person currentPerson, DataViewFilterOverrides dataViewFilterOverrides, int? databaseTimeoutSeconds, bool isCommunication, out string errorMessage )
         {
             errorMessage = null;
             if ( report != null )
@@ -342,7 +357,7 @@ namespace Rock.Reporting
 
                     var qryErrors = new List<string>();
                     System.Data.Entity.DbContext reportDbContext;
-                    dynamic qry = report.GetQueryable( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, databaseTimeoutSeconds ?? 180, isCommunication, out qryErrors, out reportDbContext );
+                    dynamic qry = report.GetQueryable( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, dataViewFilterOverrides, databaseTimeoutSeconds ?? 180, isCommunication, out qryErrors, out reportDbContext );
                     errors.AddRange( qryErrors );
 
                     if ( !string.IsNullOrEmpty( report.QueryHint ) && reportDbContext is RockContext)
@@ -392,6 +407,29 @@ namespace Rock.Reporting
                     errorMessage = "WARNING: There was a problem with one or more of the report's data components...<br/><br/> " + errors.AsDelimited( "<br/>" );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the filter overrides from controls.
+        /// </summary>
+        /// <param name="phFilters">The ph filters.</param>
+        /// <returns></returns>
+        public static DataViewFilterOverrides GetFilterOverridesFromControls( PlaceHolder phFilters )
+        {
+            if ( phFilters.Controls.Count > 0 )
+            {
+                var dataViewFilter = GetFilterFromControls( phFilters );
+                var list = phFilters.ControlsOfTypeRecursive<FilterField>().Select( a => new DataViewFilterOverride
+                {
+                    DataFilterGuid = a.DataViewFilterGuid,
+                    IncludeFilter = a.ShowCheckbox ? a.CheckBoxChecked.GetValueOrDefault( true ) : true,
+                    Selection = a.GetSelection()
+                } ).ToList();
+
+                return new DataViewFilterOverrides( list );
+            }
+
+            return null;
         }
 
         /// <summary>

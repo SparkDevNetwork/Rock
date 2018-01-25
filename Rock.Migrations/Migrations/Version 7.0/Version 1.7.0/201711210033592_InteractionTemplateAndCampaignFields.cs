@@ -662,7 +662,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             // Attrib for BlockType: Check-in Scheduled Locations:Workflow Type
             RockMigrationHelper.UpdateBlockTypeAttribute( "C8C4E323-C227-4EAA-938F-4B962BC2DD7E", "46A03F59-55D3-4ACE-ADD5-B4642225DD20", "Workflow Type", "WorkflowType", "", @"The workflow type to activate for check-in", 0, @"", "2B9D7D0C-2027-4364-ACD4-22BD4BE0E8FE" );
             // Attrib for BlockType: Email Form:HTML Form
-            RockMigrationHelper.UpdateBlockTypeAttribute( "48253494-F8A0-4DD8-B645-6CB481CEB7BD", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "HTML Form", "HTMLForm", "", @"The HTML for the form the user will complete. <span class='tip tip-lava'></span>", 4, @"{% if CurentUser %}
+            RockMigrationHelper.UpdateBlockTypeAttribute( "48253494-F8A0-4DD8-B645-6CB481CEB7BD", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "HTML Form", "HTMLForm", "", @"The HTML for the form the user will complete. <span class='tip tip-lava'></span>", 4, @"{% if CurrentPerson %}
     {{ CurrentPerson.NickName }}, could you please complete the form below.
 {% else %}
     Please complete the form below.
@@ -739,8 +739,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             RockMigrationHelper.UpdateBlockTypeAttribute( "48253494-F8A0-4DD8-B645-6CB481CEB7BD", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Submit Button Wrap CSS Class", "SubmitButtonWrapCssClass", "", @"CSS class to add to the div wrapping the button.", 9, @"", "36B200E1-2465-452F-83FB-92CC57B63F72" );
             // Attrib for BlockType: Email Form:Submit Button CSS Class
             RockMigrationHelper.UpdateBlockTypeAttribute( "48253494-F8A0-4DD8-B645-6CB481CEB7BD", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Submit Button CSS Class", "SubmitButtonCssClass", "", @"The CSS class add to the submit button.", 10, @"btn btn-primary", "2806FDA3-8130-4D8D-9D92-EA1720A103D9" );
-            // Attrib for BlockType: Email Form:Receipient Email(s)
-            RockMigrationHelper.UpdateBlockTypeAttribute( "48253494-F8A0-4DD8-B645-6CB481CEB7BD", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Receipient Email(s)", "RecipientEmail", "", @"Email addresses (comma delimited) to send the contents to.", 0, @"", "112B7E46-155A-4B50-97F7-A10F91BDF6E2" );
+            // Attrib for BlockType: Email Form:Recipient Email(s)
+            RockMigrationHelper.UpdateBlockTypeAttribute( "48253494-F8A0-4DD8-B645-6CB481CEB7BD", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Recipient Email(s)", "RecipientEmail", "", @"Email addresses (comma delimited) to send the contents to.", 0, @"", "112B7E46-155A-4B50-97F7-A10F91BDF6E2" );
             // Attrib for BlockType: Email Form:Subject
             RockMigrationHelper.UpdateBlockTypeAttribute( "48253494-F8A0-4DD8-B645-6CB481CEB7BD", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Subject", "Subject", "", @"The subject line for the email. <span class='tip tip-lava'></span>", 1, @"", "82E342A0-4F85-4720-B3BF-834375D6EB20" );
             // Attrib for BlockType: Email Form:From Email

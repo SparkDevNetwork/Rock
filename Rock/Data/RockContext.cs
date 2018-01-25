@@ -18,17 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
-using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
-using System.Web;
-using Rock.Model;
-using Rock.Utility;
-using Rock.Workflow;
-
 using InteractivePreGeneratedViews;
+using Rock.Model;
+using Z.EntityFramework.Plus;
 
 namespace Rock.Data
 {
@@ -320,7 +316,7 @@ namespace Rock.Data
         /// <value>
         /// the Attribute Values.
         /// </value>
-        public DbSet<Audit> Audits { get; set; }
+        public DbSet<Rock.Model.Audit> Audits { get; set; }
 
         /// <summary>
         /// Gets or sets the audit details.
@@ -1590,7 +1586,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Use SqlBulkInsert to quickly insert a large number records.
-        /// WARNING: This will bypass the Rock and a bunch of the EF Framework, so be careful!
+        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="records">The records.</param>
@@ -1622,6 +1618,46 @@ namespace Rock.Data
                 this.Set<T>().AddRange( records );
                 this.SaveChanges( true );
             }
+        }
+
+        /// <summary>
+        /// Does a direct bulk UPDATE. 
+        /// Example: rockContext.BulkUpdate( personQuery, p => new Person { LastName = "Decker", ModifiedDateTime = RockDateTime.Now, ModifiedByPersonAlias = CurrentPersonAlias } );
+        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable">The queryable for the records to update</param>
+        /// <param name="updateFactory">Linq expression to specify the updated property values</param>
+        /// <returns></returns>
+        public int BulkUpdate<T>( IQueryable<T> queryable, Expression<Func<T, T>> updateFactory ) where T : class, Rock.Data.IEntity, new()
+        {
+            int recordsUpdated = queryable.Update( updateFactory );
+            return recordsUpdated;
+        }
+
+        /// <summary>
+        /// Does a direct bulk DELETE.
+        /// Example: rockContext.BulkDelete( groupMembersToDeleteQuery );
+        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable">The queryable for the records to delete</param>
+        /// <param name="batchSize">The BatchSize property sets the amount of rows to delete in a single batch (Default 4000)</param>
+        /// <returns></returns>
+        public int BulkDelete<T>( IQueryable<T> queryable, int? batchSize = null ) where T : class, Rock.Data.IEntity, new()
+        {
+            int recordsUpdated;
+
+            if ( batchSize.HasValue )
+            {
+                recordsUpdated = queryable.Delete( d => d.BatchSize = batchSize.Value );
+            }
+            else
+            {
+                recordsUpdated = queryable.Delete();
+            }
+
+            return recordsUpdated;
         }
 
         /// <summary>

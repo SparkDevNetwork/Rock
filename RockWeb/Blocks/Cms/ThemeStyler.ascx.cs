@@ -144,10 +144,18 @@ $('.js-panel-toggle').on('click', function (e) {
             if ( pnlFontAwesomeSettings.Visible )
             {
                 overrideFile.AppendLine( FontAwesomeHelper.VariableOverridesTokens.StartRegion );
+
                 var selectedPrimaryWeight = FontAwesomeHelper.FontAwesomeIconCssWeights.FirstOrDefault( a => a.WeightName == ddlFontAwesomeIconWeight.SelectedValue );
+
                 overrideFile.AppendLine( string.Format( "{0} {1};", FontAwesomeHelper.VariableOverridesTokens.FontWeightValueLineStart, selectedPrimaryWeight.WeightValue ) );
                 overrideFile.AppendLine( string.Format( "{0} '{1}';", FontAwesomeHelper.VariableOverridesTokens.FontWeightNameLineStart, selectedPrimaryWeight.WeightName ) );
                 overrideFile.AppendLine();
+
+                if ( !selectedPrimaryWeight.IncludedInFree )
+                {
+                    overrideFile.AppendLine( string.Format( "{0} {1};", FontAwesomeHelper.VariableOverridesTokens.FontEditionLineStart, FontAwesomeHelper.VariableOverridesTokens.FontEditionPro ) );
+                }
+
                 overrideFile.AppendLine( "@import \"../../../Styles/FontAwesome/_rock-fa-mixins.less\";" );
 
                 foreach ( var alternateFontWeightName in cblFontAwesomeAlternateFonts.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value ).ToList() )
@@ -157,7 +165,7 @@ $('.js-panel-toggle').on('click', function (e) {
                     {
                         string suffixParam = string.Empty;
                         overrideFile.AppendLine(
-                            string.Format( "{0} '{1}' );",
+                            string.Format( "{0} '{1}', 'pro' );",
                                 FontAwesomeHelper.VariableOverridesTokens.FontFaceLineStart,
                                 alternateFont.WeightName
                                 ) );
@@ -230,11 +238,11 @@ $('.js-panel-toggle').on('click', function (e) {
             List<FontAwesomeHelper.FontAwesomeIconCssWeight> alternateFontWeights = null;
             if ( FontAwesomeHelper.HasFontAwesomeProKey() )
             {
-                alternateFontWeights = FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.WeightName != selectedWeight ).ToList();
+                alternateFontWeights = FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IsConfigurable && a.WeightName != selectedWeight ).ToList();
             }
             else
             {
-                alternateFontWeights = FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IncludedInFree && a.WeightName != selectedWeight ).ToList();
+                alternateFontWeights = FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IsConfigurable && a.IncludedInFree && a.WeightName != selectedWeight ).ToList();
             }
 
 
@@ -314,7 +322,7 @@ $('.js-panel-toggle').on('click', function (e) {
             if ( FontAwesomeHelper.HasFontAwesomeProKey() )
             {
                 // If they have pro, any of the weights can be used as the primary weight
-                foreach ( var fontAwesomeIconCssWeight in FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IsAllowedForPrimary ) )
+                foreach ( var fontAwesomeIconCssWeight in FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IsConfigurable ) )
                 {
                     ddlFontAwesomeIconWeight.Items.Add( new ListItem( fontAwesomeIconCssWeight.DisplayName, fontAwesomeIconCssWeight.WeightName ) );
                 }
@@ -322,7 +330,7 @@ $('.js-panel-toggle').on('click', function (e) {
             else
             {
                 // If they don't have pro, include list the weights that are included in the free version, and are allowed to be used a primary weight
-                foreach ( var fontAwesomeIconCssWeight in FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IsAllowedForPrimary && a.IncludedInFree && !a.RequiresProForPrimary ) )
+                foreach ( var fontAwesomeIconCssWeight in FontAwesomeHelper.FontAwesomeIconCssWeights.Where( a => a.IsConfigurable && a.IncludedInFree && !a.RequiresProForPrimary ) )
                 {
                     ddlFontAwesomeIconWeight.Items.Add( new ListItem( fontAwesomeIconCssWeight.DisplayName, fontAwesomeIconCssWeight.WeightName ) );
                 }

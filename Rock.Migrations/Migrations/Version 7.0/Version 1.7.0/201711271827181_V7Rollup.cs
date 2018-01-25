@@ -195,6 +195,8 @@ DECLARE @TemplateEntityTypeId int = ( SELECT TOP 1[Id] FROM[EntityType] WHERE[Na
 
             //// From 025_PersonGivingEnvelopeAttribute
             RockMigrationHelper.UpdatePersonAttributeCategory( "Finance Internal", "fa fa-money", "Internal Finance Attributes", SystemGuid.Category.PERSON_ATTRIBUTES_FINANCE_INTERNAL );
+
+            RockMigrationHelper.EnsureAttributeByGuid( SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER, "core_GivingEnvelopeNumber", SystemGuid.EntityType.PERSON, SystemGuid.FieldType.INTEGER, "", "" );
             RockMigrationHelper.UpdatePersonAttribute( SystemGuid.FieldType.INTEGER, SystemGuid.Category.PERSON_ATTRIBUTES_FINANCE_INTERNAL, "Envelope Number", "core_GivingEnvelopeNumber", "fa fa-money", "The Giving Envelope Number that is associated with this Person", 1, "", SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER );
             RockMigrationHelper.AddGlobalAttribute( SystemGuid.FieldType.BOOLEAN, null, null, "Enable Giving Envelope Number", "Enables the Giving Envelope Number feature", 0, false.ToString(), Rock.SystemGuid.Attribute.GLOBAL_ENABLE_GIVING_ENVELOPE, "core.EnableGivingEnvelopeNumber", false );
 
@@ -323,8 +325,10 @@ DECLARE @TemplateEntityTypeId int = ( SELECT TOP 1[Id] FROM[EntityType] WHERE[Na
 <span class='auto-select-location'>{{ Location.Name }}</span>", "55580865-E792-469F-B45C-45713477D033" );
 
             // Update Family Select Next Page to direct to Action Page
-            RockMigrationHelper.AddBlockAttributeValue( true, "CD97D61E-7BCE-436B-ACDD-4383EB7490BA", "90ECD00A-9570-4986-B32F-02F32B656A2A", @"0586648b-9490-43c6-b18d-7f403458c080" ); // Next Page
+            // NOTE: We want to overwrite the attribute value if already exists (the attribute was introduced in a prior EF Migration and we want it to be updated to this now)
+            RockMigrationHelper.AddBlockAttributeValue( false, "CD97D61E-7BCE-436B-ACDD-4383EB7490BA", "90ECD00A-9570-4986-B32F-02F32B656A2A", @"0586648b-9490-43c6-b18d-7f403458c080" ); // Next Page
 
+            /* START: All of these were introduced in the Hotfix, so skip if they already exist */
             // Attrib Value for Block:Action Select, Attribute:Workflow Activity Page: Action Select, Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( true, "F5C21AE7-4BB4-4628-9B15-7CF761C66891", "C0EEDB49-6B69-47B0-98DE-2A1A28188C5D", @"" );
             // Attrib Value for Block:Action Select, Attribute:Home Page Page: Action Select, Site: Rock Check-in
@@ -358,6 +362,7 @@ DECLARE @TemplateEntityTypeId int = ( SELECT TOP 1[Id] FROM[EntityType] WHERE[Na
 
             RockMigrationHelper.AddBlockAttributeValue( true, "0F82C7EB-3E71-496F-B5F4-83F32AD5EBB5", "4302646B-F6CD-492D-8850-96B9CA1CEA59", @"4af7a0e1-e991-4ae5-a2b5-c440f67a2e6a" ); // Auto Select Next Page
             RockMigrationHelper.AddBlockAttributeValue( true, "0F82C7EB-3E71-496F-B5F4-83F32AD5EBB5", "55580865-E792-469F-B45C-45713477D033", @"{{ Schedule.Name }} - {{ Group.Name }} - {{ Location.Name }}" ); // Pre-Selected Options Format
+            /* END: All of these were introduced in the Hotfix, so skip if they already exist */
 
             // Add Block to Page: Action Select, Site: Rock Check-in
             RockMigrationHelper.AddBlock( true, "0586648B-9490-43C6-B18D-7F403458C080", "", "49FC4B38-741E-4B0B-B395-7C1929340D88", "Idle Redirect", "Main", "", "", 1, "7A293980-9E28-4115-85EB-DA197734EED2" );
@@ -367,6 +372,8 @@ DECLARE @TemplateEntityTypeId int = ( SELECT TOP 1[Id] FROM[EntityType] WHERE[Na
             RockMigrationHelper.AddBlock( true, "21A855BA-6D68-4504-97B4-D787452CEC29", "", "49FC4B38-741E-4B0B-B395-7C1929340D88", "Idle Redirect", "Main", "", "", 1, "04BF66EF-66E5-465D-A590-D8BA02E217B7" );
             // update block order for pages with new blocks if the page,zone has multiple blocks
 
+            
+            /* START: All of these are for a Block that was introduced in the HotFix, so skip if it already exists  */
             // Attrib Value for Block:Idle Redirect, Attribute:Idle Seconds Page: Action Select, Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( true, "7A293980-9E28-4115-85EB-DA197734EED2", "1CAC7B16-041A-4F40-8AEE-A39DFA076C14", @"20" );
             // Attrib Value for Block:Idle Redirect, Attribute:New Location Page: Action Select, Site: Rock Check-in
@@ -379,6 +386,7 @@ DECLARE @TemplateEntityTypeId int = ( SELECT TOP 1[Id] FROM[EntityType] WHERE[Na
             RockMigrationHelper.AddBlockAttributeValue( true, "04BF66EF-66E5-465D-A590-D8BA02E217B7", "1CAC7B16-041A-4F40-8AEE-A39DFA076C14", @"20" );
             // Attrib Value for Block:Idle Redirect, Attribute:New Location Page: Check Out Success, Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( true, "04BF66EF-66E5-465D-A590-D8BA02E217B7", "2254B67B-9CB1-47DE-A63D-D0B56051ECD4", @"/checkin/welcome" );
+            /* END: All of these are for a Block that was introduced in HotFix, so skip if it already exists  */
 
             Sql( @"
 update DataViewFilter
@@ -519,6 +527,7 @@ where selection = '[
             // Attrib for BlockType: Check Out Success:Detail Message
             RockMigrationHelper.UpdateBlockTypeAttribute( "F499C4A9-9A60-404B-9383-B950EE6D7821", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Detail Message", "DetailMessage", "", "The message to display indicating person has been checked out. Use {0} for person, {1} for group, {2} for location, and {3} for schedule.", 6, @"{0} was checked out of {1} in {2} at {3}.", "A6C1FF95-43D8-4602-9175-B6F0B0523E61" );
 
+            /* START: All of these were introduced in the HotFix, so skip if they already exists */
             // Attrib Value for Block:Welcome, Attribute:Not Active Yet Caption Page: Welcome, Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( true, "296E50EB-AA26-4E9A-9981-FE1F37B1DFDE", "4ACAEE3E-1388-485E-A641-07C69562D317", @"This kiosk is not active yet.  Countdown until active: {0}." );
             // Attrib Value for Block:Welcome, Attribute:Not Active Yet Title Page: Welcome, Site: Rock Check-in
@@ -625,6 +634,7 @@ where selection = '[
             RockMigrationHelper.AddBlockAttributeValue( true, "32B345DD-0EF4-480E-B82A-7D7191CC374B", "3784B16E-BF23-42A4-8E04-0E93EB71C0D4", @"Checked Out" );
             // Attrib Value for Block:Check Out Success, Attribute:Detail Message Page: Check Out Success, Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( true, "32B345DD-0EF4-480E-B82A-7D7191CC374B", "A6C1FF95-43D8-4602-9175-B6F0B0523E61", @"{0} was checked out of {1} in {2} at {3}." );
+            /* END: All of these were introduced in the HotFix, so skip if they already exists */
 
             //// From 029_BatchDetailReopenBatchSecurity
             Sql( MigrationSQL._201711271827181_V7Rollup_029_BatchDetailReopenBatchSecurity );
@@ -633,6 +643,7 @@ where selection = '[
             RockMigrationHelper.UpdateBlockType( "My Connection Opportunities Lava", "Block to display connection opportunities that are assigned to the current user. The display format is controlled by a lava template.", "~/Blocks/Connection/MyConnectionOpportunitiesLava.ascx", "Connection", "1B8E50A0-7AC4-475F-857C-50D0809A3F04" );
             RockMigrationHelper.AddBlock( true, "AE1818D8-581C-4599-97B9-509EA450376A", "", "1B8E50A0-7AC4-475F-857C-50D0809A3F04", "My Connection Opportunities Lava", "Main", "", "", 2, "35B7FF3C-969E-44BE-BACA-EDB490450DFF" );
 
+            /* This block was introduced in the hotfix, so don't update the AttributeValue if it already exists*/
             RockMigrationHelper.AddBlockAttributeValue( true, "35B7FF3C-969E-44BE-BACA-EDB490450DFF", "9E6887CA-6D20-47EE-8158-3EC9F06F063D", @"50f04e77-8d3b-4268-80ab-bc15dd6cb262" ); // Detail Page
 
             // Attrib for BlockType: My Connection Opportunities Lava:Detail Page

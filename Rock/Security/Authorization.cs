@@ -71,6 +71,11 @@ namespace Rock.Security
         /// </summary>
         public const string REFUND = "Refund";
 
+        /// <summary>
+        /// Authorization to manage the group members
+        /// </summary>
+        public const string MANAGE_MEMBERS = "ManageMembers";
+
         #endregion
 
         #region Private Properties

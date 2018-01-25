@@ -316,7 +316,7 @@ namespace RockWeb.Blocks.Communication
             string subject = tbSubject.Text;
             if ( !string.IsNullOrWhiteSpace( subject ) )
             {
-                communications = communications.Where( c => c.Subject.Contains( subject ) );
+                communications = communications.Where( c => ( string.IsNullOrEmpty( c.Subject ) && c.Name.Contains( subject ) ) || c.Subject.Contains( subject ) );
             }
 
             var communicationType = ddlType.SelectedValueAsEnumOrNull<CommunicationType>();
@@ -337,8 +337,8 @@ namespace RockWeb.Blocks.Communication
                 if ( ppSender.PersonId.HasValue )
                 {
                     communications = communications
-                        .Where( c => 
-                            c.SenderPersonAlias != null && 
+                        .Where( c =>
+                            c.SenderPersonAlias != null &&
                             c.SenderPersonAlias.PersonId == ppSender.PersonId.Value );
                 }
             }
@@ -346,8 +346,8 @@ namespace RockWeb.Blocks.Communication
             {
                 // If can't approve, only show current person's communications
                 communications = communications
-                    .Where( c => 
-                        c.SenderPersonAlias != null && 
+                    .Where( c =>
+                        c.SenderPersonAlias != null &&
                         c.SenderPersonAlias.PersonId == CurrentPersonId );
             }
 
@@ -380,10 +380,11 @@ namespace RockWeb.Blocks.Communication
                 .ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Id ).ToList();
 
             var queryable = communications.Where(a => a.CommunicationTemplateId == null || authorizedCommunicationTemplateIds.Contains(a.CommunicationTemplateId.Value) )
-                .Select( c => new CommunicationItem {
+                .Select( c => new CommunicationItem
+                {
                     Id = c.Id,
                     CommunicationType = c.CommunicationType,
-                    Subject = c.Subject,
+                    Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
                     CreatedDateTime = c.CreatedDateTime,
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
                     ReviewedDateTime = c.ReviewedDateTime,

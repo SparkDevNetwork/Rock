@@ -71,6 +71,21 @@ namespace Rock.Utility
             /// The font face line start
             /// </summary>
             public const string FontFaceLineStart = ".fa-font-face(";
+
+            /// <summary>
+            /// The font awesome edition
+            /// </summary>
+            public const string FontEditionLineStart = "@fa-edition:";
+
+            /// <summary>
+            /// The font awesome pro edition
+            /// </summary>
+            public const string FontEditionPro = "pro";
+
+            /// <summary>
+            /// The font awesome free edition
+            /// </summary>
+            public const string FontEditionFree = "free";
         }
 
         /// <summary>
@@ -164,7 +179,7 @@ namespace Rock.Utility
         public static FontAwesomeIconCssWeight[] FontAwesomeIconCssWeights => new FontAwesomeIconCssWeight[]
         {
             new FontAwesomeIconCssWeight( "solid", 900, false, true, true ),
-            new FontAwesomeIconCssWeight( "regular", 400, true, true, true ),
+            new FontAwesomeIconCssWeight( "regular", 400, true, false, true ),
             new FontAwesomeIconCssWeight( "light", 300, true, false, true ),
             new FontAwesomeIconCssWeight( "brands", 400, true, true, false )
         };
@@ -181,15 +196,15 @@ namespace Rock.Utility
             /// <param name="weightValue">The weight value.</param>
             /// <param name="requiresProForPrimary">if set to <c>true</c> [requires pro for primary].</param>
             /// <param name="includedInFree">if set to <c>true</c> [included in free].</param>
-            /// <param name="isAllowedForPrimary">if set to <c>true</c> [is allowed for primary].</param>
-            public FontAwesomeIconCssWeight( string weightName, int weightValue, bool requiresProForPrimary, bool includedInFree, bool isAllowedForPrimary )
+            /// <param name="isConfigurable">if set to <c>true</c> [is configurable].</param>
+            public FontAwesomeIconCssWeight( string weightName, int weightValue, bool requiresProForPrimary, bool includedInFree, bool isConfigurable )
             {
                 this.DisplayName = weightName.Transform( To.TitleCase );
                 this.WeightName = weightName;
                 this.WeightValue = weightValue;
                 this.RequiresProForPrimary = requiresProForPrimary;
                 this.IncludedInFree = includedInFree;
-                this.IsAllowedForPrimary = isAllowedForPrimary;
+                this.IsConfigurable = isConfigurable;
             }
 
             /// <summary>
@@ -233,12 +248,12 @@ namespace Rock.Utility
             public bool IncludedInFree { get; internal set; }
 
             /// <summary>
-            /// Gets a value indicating whether this instance is allowed for primary.
+            /// Gets a value indicating whether the font can be individual selected as a Primary or Alternate Font
             /// </summary>
             /// <value>
-            ///   <c>true</c> if this instance is allowed for primary; otherwise, <c>false</c>.
+            ///   <c>true</c> if this instance is configurable; otherwise, <c>false</c>.
             /// </value>
-            public bool IsAllowedForPrimary { get; internal set; }
+            public bool IsConfigurable { get; internal set; }
         }
     }
 }

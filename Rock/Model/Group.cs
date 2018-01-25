@@ -459,6 +459,25 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions {
+            get {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                }
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
+
         #endregion
 
         #region Public Methods
@@ -524,7 +543,7 @@ namespace Rock.Model
             // If the user is not authorized for group through normal security roles, and this is a logged
             // in user trying to view or edit, check to see if they should be allowed based on their role
             // in the group.
-            if ( !authorized && person != null && ( action == Authorization.VIEW || action == Authorization.EDIT ) )
+            if ( !authorized && person != null && ( action == Authorization.VIEW || action == Authorization.MANAGE_MEMBERS || action == Authorization.EDIT ) )
             {
                 // Get the cached group type
                 var groupType = GroupTypeCache.Read( this.GroupTypeId );
@@ -550,7 +569,7 @@ namespace Rock.Model
                                     return true;
                                 }
 
-                                if ( action == Authorization.EDIT && role.CanEdit )
+                                if ( ( action == Authorization.MANAGE_MEMBERS || action == Authorization.EDIT ) && role.CanEdit )
                                 {
                                     return true;
                                 }
