@@ -805,50 +805,37 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdRefund_SaveClick( object sender, EventArgs e )
         {
-            decimal refundAmount = tbRefundAmount.Text.AsDecimal();
-            if ( refundAmount > 0.0m )
+            using ( var rockContext = new RockContext() )
             {
-                int? txnId = hfTransactionId.Value.AsIntegerOrNull();
-                if ( txnId.HasValue )
+                var txnService = new FinancialTransactionService( rockContext );
+                var txn = txnService.Get( hfTransactionId.Value.AsInteger() );
+
+                string errorMessage = string.Empty;
+                bool process = cbProcess.Visible && cbProcess.Checked;
+
+                var refundTxn = txnService.ProcessRefund( txn, tbRefundAmount.Text.AsDecimal(), ddlRefundReason.SelectedValueAsInt(), tbRefundSummary.Text, process, GetAttributeValue( "RefundBatchNameSuffix" ), out errorMessage );
+                if ( refundTxn != null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    rockContext.SaveChanges();
+
+                    var updatedTxn = GetTransaction( txn.Id );
+                    if ( updatedTxn != null )
                     {
-                        var txnService = new FinancialTransactionService( rockContext );
-                        var txn = txnService.Get( txnId.Value );
-                        if ( txn != null && txn.Batch != null )
-                        {
-                            string errorMessage = string.Empty;
-                            bool paymentViaGateway = cbProcess.Visible && cbProcess.Checked;
-                            bool result = txn.RefundTransaction(paymentViaGateway, refundAmount, tbRefundSummary.Text,ddlRefundReason.SelectedValueAsId(), GetAttributeValue("RefundBatchNameSuffix"),out errorMessage,rockContext);
-
-                            if (!result) {
-                                nbRefundError.Title = "Refund Error";
-                                nbRefundError.Text = errorMessage;
-                                nbRefundError.Visible = true;
-                                return;
-                            }
-                          
-                            var updatedTxn = GetTransaction( txn.Id );
-                            if ( updatedTxn != null )
-                            {
-                                updatedTxn.LoadAttributes( rockContext );
-                                updatedTxn.FinancialPaymentDetail.LoadAttributes(rockContext);
-                                ShowReadOnlyDetails( updatedTxn );
-                            }
-                        }
-                        else
-                        {
-                            nbRefundError.Title = "Transaction Error";
-                            nbRefundError.Text = "<p>Existing transaction does not hava a valid batch.</p>";
-                            nbRefundError.Visible = true;
-                            return;
-                        }
-
+                        updatedTxn.LoadAttributes( rockContext );
+                        updatedTxn.FinancialPaymentDetail.LoadAttributes( rockContext );
+                        ShowReadOnlyDetails( updatedTxn );
                     }
+
+                    HideDialog();
+                }
+                else
+                {
+                    nbRefundError.Title = "Transaction Error";
+                    nbRefundError.Text = string.Format( "<p>{0}</p>", errorMessage );
+                    nbRefundError.Visible = true;
+                    return;
                 }
             }
-
-            HideDialog();
         }
 
         /// <summary>
