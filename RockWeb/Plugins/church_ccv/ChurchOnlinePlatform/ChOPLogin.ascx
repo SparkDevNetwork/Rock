@@ -14,21 +14,27 @@
             </div>
 
             <asp:Panel id="pnlLoginForm" runat="server">
-                <div id="loginform" runat="server">
-                    <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
+                <div id="divSocialLogin" runat="server" class="col-sm-6 margin-b-lg">
+                    <p>Login with social account</p>
+                    <asp:PlaceHolder ID="phExternalLogins" runat="server"></asp:PlaceHolder>
+                </div>
+                 <div id="divOrgLogin" runat="server" class="col-sm-6">
+                    <div id="loginform" runat="server">
+                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
 
-                    <asp:Literal ID="lPromptMessage" runat="server" />
-                    <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" autocomplete="off" Required="true" DisplayRequiredIndicator="false" ValidateRequestMode="Disabled" TextMode="Password" ></Rock:RockTextBox>
-                    <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Remember me" />   
-                </div>     
+                        <asp:Literal ID="lPromptMessage" runat="server" />
+                        <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" autocomplete="off" Required="true" DisplayRequiredIndicator="false" ValidateRequestMode="Disabled" TextMode="Password" ></Rock:RockTextBox>
+                        <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Remember me" />   
+                    </div>     
                     
-                <div id="login-buttons">
-                    <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary btn-sso-login" OnClick="btnLogin_Click" />
-                    <asp:Button ID="btnHelp" runat="server" Text="Forgot username or password?" CssClass="small-paragraph lm-form-forgot" OnClick="btnHelp_Click" CausesValidation="false" />
-                    <br />
-                    <br />
-                    <asp:Button ID="btnNewAccount" runat="server" Text="Create Account" CssClass="lm-form-register btn btn-action" OnClick="btnNewAccount_Click" CausesValidation="false" />
+                    <div id="login-buttons">
+                        <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary btn-sso-login" OnClick="btnLogin_Click" />
+                        <asp:Button ID="btnHelp" runat="server" Text="Forgot username or password?" CssClass="small-paragraph lm-form-forgot" OnClick="btnHelp_Click" CausesValidation="false" />
+                        <br />
+                        <br />
+                        <asp:Button ID="btnNewAccount" runat="server" Text="Register" CssClass="lm-form-register btn btn-action" OnClick="btnNewAccount_Click" CausesValidation="false" />
+                    </div>
                 </div>
             </asp:Panel>
         </div>

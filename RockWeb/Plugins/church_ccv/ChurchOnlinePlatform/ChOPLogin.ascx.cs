@@ -60,8 +60,8 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
 ", "", 5 )]
     [BooleanField( "Hide New Account Option", "Should 'New Account' option be hidden?  For site's that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own account.", false, "", 6, "HideNewAccount" )]
     [TextField( "New Account Text", "The text to show on the New Account button.", false, "Register", "", 7, "NewAccountButtonText" )]
-    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 9 )]
-
+    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 8 )]
+    [RemoteAuthsField( "Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 9 )]
     [TextField( "Church Online Platform Sso Key", "You can find the Sso key on the Tools > Sso page in Church Online Platform.", false, "", "", 10, "ChOPSSOKey" )]
     [TextField( "Church Online Platform Url", "Your Church Online Platform Url", false, "", "", 11, "ChOPUrl" )]
 
@@ -76,6 +76,84 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // Apply block settings
+            btnNewAccount.Visible = !GetAttributeValue( "HideNewAccount" ).AsBoolean();
+            btnNewAccount.Text = this.GetAttributeValue( "NewAccountButtonText" ) ?? "Register";
+
+            // Add third-party providers if enabled in block settings
+            phExternalLogins.Controls.Clear();
+
+            int activeAuthProviders = 0;
+
+            var selectedGuids = new List<Guid>();
+            GetAttributeValue( "RemoteAuthorizationTypes" ).SplitDelimitedValues()
+                .ToList()
+                .ForEach( v => selectedGuids.Add( v.AsGuid() ) );
+
+            // Look for active external authentication providers
+            foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+
+                if ( component.IsActive &&
+                    component.RequiresRemoteAuthentication &&
+                    selectedGuids.Contains( component.EntityType.Guid ) )
+                {
+                    string loginTypeName = component.GetType().Name;
+
+                    // Check if returning from third-party authentication
+                    if ( !IsPostBack && component.IsReturningFromAuthentication( Request ) )
+                    {
+                        string userName = string.Empty;
+                        string returnUrl = string.Empty;
+                        string redirectUrlSetting = LinkedPageUrl( "RedirectPage" );
+                        
+                        // Authenticate user to third-party
+                        if ( component.Authenticate( Request, out userName, out returnUrl ) )
+                        {
+                            // Get UserLogin from username returned by third-party authentication
+                            var rockContext = new RockContext();
+                            var userLoginService = new UserLoginService( rockContext );
+                            var userLogin = userLoginService.GetByUserName( userName );
+
+                            // Login User and redirect to ChOp
+                            LoginUser( userLogin, false );
+                        }
+                    }
+
+                    activeAuthProviders++;
+
+                    // Build and Add authentication control
+                    LinkButton lbLogin = new LinkButton();
+                    phExternalLogins.Controls.Add( lbLogin );
+                    lbLogin.AddCssClass( "btn btn-authentication " + loginTypeName.ToLower() );
+                    lbLogin.ID = "lb" + loginTypeName + "Login";
+                    lbLogin.Click += lbLogin_Click;
+                    lbLogin.CausesValidation = false;
+
+                    if ( !string.IsNullOrWhiteSpace( component.ImageUrl() ) )
+                    {
+                        HtmlImage img = new HtmlImage();
+                        lbLogin.Controls.Add( img );
+                        img.Attributes.Add( "style", "border:none" );
+                        img.Src = Page.ResolveUrl( component.ImageUrl() );
+                    }
+                    else
+                    {
+                        lbLogin.Text = loginTypeName;
+                    }
+                }
+            }
+
+            // adjust the page if there are no social auth providers
+            if ( activeAuthProviders == 0 )
+            {
+                divSocialLogin.Visible = false;
+                divOrgLogin.RemoveCssClass( "col-sm-6" );
+                divOrgLogin.AddCssClass( "col-sm-12" );
+            }
+
         }
 
         /// <summary>
@@ -106,7 +184,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
 
                     if ( chOPSSOLoginUrl != null )
                     {
-                        // If current person is administrator, dont redirect, hide login form, display message with url
+                        // If current person is administrator, dont redirect, hide login form, display message with ChOp url
                         if ( IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
                         {
                             pnlLoginForm.Visible = false;
@@ -161,30 +239,9 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                         {
                             if ( ( userLogin.IsConfirmed ?? true ) && !( userLogin.IsLockedOut ?? false ) )
                             {
-                                // If authentication is successful and user is confirmed and not locked out
-                                // Update Last Login
-                                UserLoginService.UpdateLastLogin( userLogin.UserName );
-                                
-                                // Set Auth Cookie
-                                bool rememberMe = cbRememberMe.Checked;
-                                Rock.Security.Authorization.SetAuthCookie( userLogin.UserName, rememberMe, false );
-
-                                // TODO: Login PMG2...do we need to remove the response.End below?
-
-                                // Generate Church Online Platform login Url
-                                string chOPUrl = LoginChOP( userLogin.Person );
-
-                                if ( !chOPUrl.IsNullOrWhiteSpace() )
-                                {
-                                    // Redirect to return URL and end processing
-                                    Response.Redirect( chOPUrl, false );
-                                    Context.ApplicationInstance.CompleteRequest();
-                                }
-                                else
-                                {
-                                    DisplayError( string.Format( "Authentication to Church Online Platform failed" ) );
-                                }
-
+                                // If authentication is successful, user is confirmed, and user is not locked out
+                                // Login the user
+                                LoginUser( userLogin, cbRememberMe.Checked );
                             }
                             else
                             {
@@ -280,6 +337,44 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbLogin control.
+        /// NOTE: This is the lbLogin for External/Remote logins
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void lbLogin_Click( object sender, EventArgs e )
+        {
+            if ( sender is LinkButton )
+            {
+                LinkButton lb = ( LinkButton ) sender;
+
+                foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+                {
+                    var component = serviceEntry.Value.Value;
+                    if ( component.IsActive && component.RequiresRemoteAuthentication )
+                    {
+                        string loginTypeName = component.GetType().Name;
+                        if ( lb.ID == "lb" + loginTypeName + "Login" )
+                        {
+                            Uri uri = component.GenerateLoginUrl( Request );
+                            if ( uri != null )
+                            {
+                                Response.Redirect( uri.AbsoluteUri, false );
+                                Context.ApplicationInstance.CompleteRequest();
+                                return;
+                            }
+                            else
+                            {
+                                DisplayError( string.Format( "ERROR: {0} does not have a remote login URL", loginTypeName ) );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -318,6 +413,37 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
 
             Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
+        }
+
+        /// <summary>
+        /// Logs in the user.
+        /// </summary>
+        /// <param name="userLogin">UserLogin object</param>
+        /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
+        private void LoginUser( UserLogin userLogin, bool rememberMe )
+        {
+            // Update Last Login
+            UserLoginService.UpdateLastLogin( userLogin.UserName );
+
+            // Set Auth Cookie
+            //bool rememberMe = cbRememberMe.Checked;
+            Rock.Security.Authorization.SetAuthCookie( userLogin.UserName, rememberMe, false );
+
+            // TODO: Login PMG2...do we need to remove the response.End below?
+
+            // Generate Church Online Platform login Url
+            string chOPUrl = LoginChOP( userLogin.Person );
+
+            if ( !chOPUrl.IsNullOrWhiteSpace() )
+            {
+                // Redirect to return URL and end processing
+                Response.Redirect( chOPUrl, false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            else
+            {
+                DisplayError( string.Format( "Authentication to Church Online Platform failed" ) );
+            }
         }
 
         /// <summary>
