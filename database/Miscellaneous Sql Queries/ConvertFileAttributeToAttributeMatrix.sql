@@ -165,3 +165,9 @@ INSERT INTO [AttributeValue]
 
 End
 rollback Transaction
+
+print ''
+print 'IMPORTANT NOTE:'
+print ''
+print 'Remember to perform a commit and not a rollback'
+print 'Remember to flush the Rock cache'
