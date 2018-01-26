@@ -292,27 +292,19 @@ namespace RockWeb.Blocks.Communication
             var groupMemberService = new GroupMemberService( rockContext );
             var categoryService = new CategoryService( rockContext );
             int communicationListGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
-
-            // Find the default comm list role
-            GroupTypeService groupTypeService = new GroupTypeService( rockContext );
-            int commGroupTypeDefaultRoleId = groupTypeService
-                .Queryable()
-                .Where( a => a.Id == communicationListGroupTypeId )
-                .Select( a => a.Id )
-                .FirstOrDefault();
+            int? communicationListGroupTypeDefaultRoleId = GroupTypeCache.Read( communicationListGroupTypeId ).DefaultGroupRoleId;
 
             // Get a list of syncs for the communication list groups where the default role is sync'd
             var groupSyncService = new GroupSyncService( rockContext );
             var commGroupSyncsForDefaultRole = groupSyncService
                 .Queryable()
-                .Where( a => a.Group.GroupTypeId == communicationListGroupTypeId && a.GroupTypeRoleId == commGroupTypeDefaultRoleId )
-                .Select( a => a.GroupId )
-                .ToList();
+                .Where( a => a.Group.GroupTypeId == communicationListGroupTypeId && a.GroupTypeRoleId == communicationListGroupTypeDefaultRoleId )
+                .Select( a => a.GroupId );
 
             // If the default role is being sync'd then don't show it, otherwise include it
             var communicationListQry = groupService
                 .Queryable()
-                .Where( a => !commGroupSyncsForDefaultRole.Contains( a.Id ));
+                .Where( a => a.GroupTypeId == communicationListGroupTypeId && !commGroupSyncsForDefaultRole.Contains( a.Id ));
 
             var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
 
