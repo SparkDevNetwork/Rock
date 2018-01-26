@@ -26,7 +26,6 @@ namespace Rock.Model
     /// <summary>
     /// A collection of group and groupTypeRole values used to sync a group's roles to a dataview.
     /// </summary>
-    /// <seealso cref="Rock.Data.Model{Rock.Model.GroupSync}" />
     [RockDomain( "Group" )]
     [Table( "GroupSync" )]
     [DataContract]
@@ -148,7 +147,6 @@ namespace Rock.Model
     /// <summary>
     /// GroupSync configuration class
     /// </summary>
-    /// <seealso cref="System.Data.Entity.ModelConfiguration.EntityTypeConfiguration{Rock.Model.GroupSync}" />
     public partial class GroupSyncConfiguration : EntityTypeConfiguration<GroupSync>
     {
         /// <summary>
