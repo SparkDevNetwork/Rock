@@ -562,6 +562,10 @@ namespace Rock.Reporting
         /// </summary>
         public class FilterInfo
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="FilterInfo"/> class.
+            /// </summary>
+            /// <param name="dataViewFilter">The data view filter.</param>
             public FilterInfo( DataViewFilter dataViewFilter )
             {
                 DataViewFilter = dataViewFilter;

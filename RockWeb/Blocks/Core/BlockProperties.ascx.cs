@@ -280,6 +280,12 @@ namespace RockWeb.Blocks.Core
                 {
                     if ( block.Attributes.Any( a => a.Key == CustomGridColumnsConfig.AttributeKey ) )
                     {
+                        if ( block.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ) != null )
+                        {
+                            // if the CustomColumns were removed, reload the whole page so that we can avoid issues with columns changing between postbacks
+                            reloadPage = true;
+                        }
+
                         block.SetAttributeValue( CustomGridColumnsConfig.AttributeKey, null );
                     }
                 }

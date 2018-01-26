@@ -53,7 +53,7 @@
                                     <div id="waiting-message" class="alert alert-info" style="display: none;">
                                         <strong>Something To Keep In Mind...</strong>
                                         <p>
-                                            Rock can take a minute or two to intially start-up when the server has been shutdown. Once started 
+                                            Rock can take a minute or two to initially start-up when the server has been shutdown. Once started 
                                             though, pages will load quickly.
                                         </p>
                                         <span class="blink label label-info" style="margin-top: 6px;">Rock Loading...</span>

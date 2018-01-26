@@ -31,7 +31,7 @@ namespace Rock.Attribute
         private const string BASEURL = "baseurl";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SocialMediaAccountFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="SocialMediaAccountFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -40,6 +40,8 @@ namespace Rock.Attribute
         /// <param name="socialNetworkName">The name of the socal media network.</param>
         /// <param name="iconCssClass">The icon that represents the social media network.</param>
         /// <param name="color">The color to use for making buttons for the social media network.</param>
+        /// <param name="textTemplate">The text template.</param>
+        /// <param name="baseUrl">The base URL.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>

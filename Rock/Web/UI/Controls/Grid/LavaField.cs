@@ -91,9 +91,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [convert to item dictionary].
-        /// Set this to false so that only "Row" is the merge field.
-        /// Leave this as true to include both "Row" and the individual properties of Row as the merge fields
+        /// Gets or sets a value indicating whether [convert to item dictionary] instead of "Row"
+        /// Set this to false to have the entire "Row" as a the merge field instead of individual column values
+        /// Leave this as true to have the individual properties as the merge field (based on the Column Headers of the other stuff in the grid)
         /// </summary>
         /// <value>
         ///   <c>true</c> if [convert to item dictionary]; otherwise, <c>false</c>.
@@ -102,7 +102,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.ViewState["ConvertToItemDictionary"] as bool? ?? false;
+                return this.ViewState["ConvertToItemDictionary"] as bool? ?? true;
             }
 
             set
@@ -153,15 +153,18 @@ namespace Rock.Web.UI.Controls
             if ( gridViewRow.DataItem != null )
             {
                 Dictionary<string, object> mergeValues = new Dictionary<string, object>();
-                mergeValues.Add( "Row", gridViewRow.DataItem );
-
-                // in the case of a Report, the MergeKeys are determined by the ColumnHeader, so also add those
+                
                 if ( LavaField.ConvertToItemDictionary )
                 {
+                    // in the case of a Report, the MergeKeys are determined by the ColumnHeader, so add those as merge fields instead the Row object
                     foreach ( var keyValue in this.ToGridItemsDictionary( gridViewRow, gridViewRow.DataItem ) )
                     {
                         mergeValues.AddOrIgnore( keyValue.Key, keyValue.Value );
                     }
+                } 
+                else
+                {
+                    mergeValues.Add( "Row", gridViewRow.DataItem );
                 }
 
                 lOutputText.Text = this.LavaField.LavaTemplate.ResolveMergeFields( mergeValues );
@@ -228,7 +231,7 @@ namespace Rock.Web.UI.Controls
                     dataFieldValue = definedValue != null ? definedValue.Value : null;
                 }
 
-                dictionary.Add( dataFieldItem.Key, Convert.ChangeType(dataFieldValue, dataFieldItem.Value.PropertyInfo.PropertyType) );
+                dictionary.Add( dataFieldItem.Key, dataFieldValue );
             }
 
             return dictionary;
