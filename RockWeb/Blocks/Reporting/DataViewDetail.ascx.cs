@@ -734,25 +734,33 @@ $(document).ready(function() {
             descriptionListReports.Add( "Reports", sbReports );
             lReports.Text = descriptionListReports.Html;
 
-            // Groups using DataView in Group Sync
+            // Group-Roles using DataView in Group Sync
             DescriptionList descriptionListGroupSync = new DescriptionList();
             StringBuilder sbGroups = new StringBuilder();
 
-            GroupService groupService = new GroupService( rockContext );
-            var groups = groupService.Queryable().AsNoTracking().Where( g => g.SyncDataViewId == dataView.Id ).OrderBy( g => g.Name );
+            //GroupService groupService = new GroupService( rockContext );
+            //var groups = groupService.Queryable().AsNoTracking().Where( g => g.SyncDataViewId == dataView.Id ).OrderBy( g => g.Name );
+            GroupSyncService groupSyncService = new GroupSyncService( rockContext );
+            var groupSyncs = groupSyncService
+                .Queryable()
+                .Where( a => a.SyncDataViewId == dataView.Id )
+                .ToList();
+
             var groupDetailPage = GetAttributeValue( "GroupDetailPage" );
 
-            if ( groups.Count() > 0 )
+            if ( groupSyncs.Count() > 0 )
             {
-                foreach ( var group in groups )
+                foreach ( var groupSync in groupSyncs )
                 {
+                    string groupAndRole = string.Format( "{0} - {1}", groupSync.Group.Name, groupSync.GroupTypeRole.Name );
+
                     if ( !string.IsNullOrWhiteSpace( groupDetailPage ) )
                     {
-                        sbGroups.Append( "<a href=\"" + LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string>() { { "GroupId", group.Id.ToString() } } ) + "\">" + group.Name + "</a><br/>" );
+                        sbGroups.Append( "<a href=\"" + LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string>() { { "GroupId", groupSync.Group.Id.ToString() } } ) + "\">" + groupAndRole + "</a><br/>" );
                     }
                     else
                     {
-                        sbGroups.Append( group.Name + "<br/>" );
+                        sbGroups.Append( string.Format( "{0}<br/>", groupAndRole ) );
                     }
                 }
 
