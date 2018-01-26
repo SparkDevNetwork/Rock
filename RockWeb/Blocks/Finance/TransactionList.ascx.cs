@@ -1045,7 +1045,7 @@ namespace RockWeb.Blocks.Finance
             {
                 entityTypeId = new FinancialTransactionDetail().TypeId;
             }
-
+            
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -1282,7 +1282,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( attributeValues != null )
                 {
-                    financialTransactionDetailQry = financialTransactionDetailQry.Where( t => attributeValues.Select( v => v.EntityId ).Contains( t.Id ) );
+                    financialTransactionDetailQry = financialTransactionDetailQry.Where( t => attributeValues.Select( v => v.EntityId ).Contains( t.Transaction.Id ) );
                 }
 
                 // Filter to configured accounts.
@@ -1310,25 +1310,24 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 qry = financialTransactionDetailQry.Select( a => new FinancialTransactionRow
-                {
-                    Id = a.TransactionId,
-                    BatchId = a.Transaction.BatchId,
-                    TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
-                    ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
-                    AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
-                    TransactionDateTime = a.Transaction.TransactionDateTime.Value,
-                    SourceTypeValueId = a.Transaction.SourceTypeValueId,
-                    TotalAmount = a.Amount,
-                    TransactionCode = a.Transaction.TransactionCode,
-                    ForeignKey = a.Transaction.ForeignKey,
-                    Status = a.Transaction.Status,
-                    SettledDate = a.Transaction.SettledDate,
-                    SettledGroupId = a.Transaction.SettledGroupId,
-                    TransactionDetail = new DetailInfo { AccountId = a.AccountId, Amount = a.Amount, EntityId = a.EntityId, EntityTypeId = a.EntityId },
-                    Summary = a.Transaction.Summary,
-                    FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId },
-                    TransactionDetailId = a.Id
-                }
+                    {
+                        Id = a.TransactionId,
+                        BatchId = a.Transaction.BatchId,
+                        TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
+                        ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
+                        AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
+                        TransactionDateTime = a.Transaction.TransactionDateTime.Value,
+                        SourceTypeValueId = a.Transaction.SourceTypeValueId,
+                        TotalAmount = a.Amount,
+                        TransactionCode = a.Transaction.TransactionCode,
+                        ForeignKey = a.Transaction.ForeignKey,
+                        Status = a.Transaction.Status,
+                        SettledDate = a.Transaction.SettledDate,
+                        SettledGroupId = a.Transaction.SettledGroupId,
+                        TransactionDetail = new DetailInfo { AccountId = a.AccountId, Amount = a.Amount, EntityId = a.EntityId, EntityTypeId = a.EntityId },
+                        Summary = a.Transaction.Summary,
+                        FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId }
+                    }
                 );
             }
             else
@@ -1642,26 +1641,23 @@ namespace RockWeb.Blocks.Finance
                 {
                     var txns = new FinancialTransactionDetailService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( t => qry.Select( q => q.Id ).Contains( t.TransactionId ) )
+                        .Where( t => qry.Select( q => q.Id ).Contains( t.Id ) )
                         .ToList();
                     txns.ForEach( t => gTransactions.ObjectList.Add( t.Id.ToString(), t ) );
-                    gTransactions.EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialTransactionDetail>();
-                    gTransactions.DataKeyNames = new string[] { "TransactionDetailId" };
                 }
                 else
                 {
-
+                 
                     var txns = new FinancialTransactionService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( t => qry.Select( q => q.Id ).Contains( t.Id ) )
                         .ToList();
                     txns.ForEach( t => gTransactions.ObjectList.Add( t.Id.ToString(), t ) );
-                    gTransactions.EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialTransaction>();
-                    gTransactions.DataKeyNames = new string[] { "Id" };
                 }
-
+                
             }
 
+            gTransactions.EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialTransaction>();
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
 
@@ -1731,7 +1727,7 @@ namespace RockWeb.Blocks.Finance
 
             _isExporting = false;
         }
-
+    
         /// <summary>
         /// 
         /// </summary>
@@ -1959,7 +1955,7 @@ namespace RockWeb.Blocks.Finance
             public string Status { get; set; }
             public DateTime? SettledDate { get; set; }
             public string SettledGroupId { get; set; }
-            public int? TransactionDetailId { get; set; }
+
             /// <summary>
             /// NOTE: This will only be used in "Transaction Details" mode
             /// </summary>
