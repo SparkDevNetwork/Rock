@@ -82,18 +82,7 @@ namespace Rock.Communication
                     recipient.StatusNote = "Person is deceased";
                     valid = false;
                 }
-                else if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
-                {
-                    recipient.Status = CommunicationRecipientStatus.Failed;
-                    recipient.StatusNote = "Communication Preference of 'Do Not Send Communication'";
-                    valid = false;
-                }
-                else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && isBulkCommunication )
-                {
-                    recipient.Status = CommunicationRecipientStatus.Failed;
-                    recipient.StatusNote = "Communication Preference of 'No Bulk Communication'";
-                    valid = false;
-                }
+
                 else if ( recipient.Communication.ListGroupId.HasValue  )
                 {
                     // if this communication is being sent to a list, make sure the recipient is still an active member of the list
