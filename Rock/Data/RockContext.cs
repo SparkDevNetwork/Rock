@@ -1157,6 +1157,14 @@ namespace Rock.Data
         public DbSet<MetricValuePartition> MetricValuePartitions { get; set; }
 
         /// <summary>
+        /// Gets or sets the ncoa history.
+        /// </summary>
+        /// <value>
+        /// The ncoa historys.
+        /// </value>
+        public DbSet<NcoaHistory> NcoaHistorys { get; set; }
+
+        /// <summary>
         /// Gets or sets the notes.
         /// </summary>
         /// <value>

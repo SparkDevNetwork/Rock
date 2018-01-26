@@ -40,9 +40,9 @@ namespace Rock.Transactions
         public List<int> PersonIds { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UpdatePersonSignals" /> class.
+        /// Initializes a new instance of the <see cref="UpdatePersonsTopSignal"/> class.
         /// </summary>
-        /// <param name="personIds">The list of person identifiers to update.</param>
+        /// <param name="personIds">The person ids.</param>
         public UpdatePersonsTopSignal( List<int> personIds )
         {
             PersonIds = personIds;

@@ -3009,7 +3009,7 @@ namespace RockWeb.Blocks.Event
 
             if ( !string.IsNullOrEmpty( instructions ) )
             {
-                lInstructions.Text = string.Format( "<div class='well text-left'>{0}</div>", instructions );
+                lInstructions.Text = string.Format( "<div class='text-left'>{0}</div>", instructions);
             }
 
             lRegistrantTerm.Text = RegistrantTerm.Pluralize().ToLower();
@@ -4315,7 +4315,8 @@ namespace RockWeb.Blocks.Event
                         }
                         else
                         {
-                            registrant.FeeValues.Remove( fee.Id );
+                            // not possible since fee is null:
+                            //registrant.FeeValues.Remove( fee.Id );
                         }
                     }
                 }
@@ -4717,6 +4718,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
+                    divDiscountCode.Visible = false;
                     tbDiscountCode.Text = RegistrationState.DiscountCode;
                 }
 

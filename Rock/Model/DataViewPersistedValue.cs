@@ -74,7 +74,6 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="System.Data.Entity.ModelConfiguration.EntityTypeConfiguration{Rock.Model.DataViewPersistedValue}" />
     public partial class DataViewPersistedValueConfiguration : EntityTypeConfiguration<DataViewPersistedValue>
     {
         /// <summary>

@@ -270,7 +270,20 @@ namespace Rock.Model
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="paymentGateway">The payment gateway.</param>
         /// <param name="rockContext">The rock context.</param>
-        public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext )
+        /// <param name="changes">The changes.</param>
+        [Obsolete( "Use other SetFromPaymentInfo" )]
+        public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext, List<string> changes )
+        {
+            this.SetFromPaymentInfo( paymentInfo, paymentGateway, rockContext );
+        }
+
+        /// <summary>
+        /// Sets from payment information.
+        /// </summary>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="paymentGateway">The payment gateway.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext ) 
         {
             if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhitespace() )
             {

@@ -36,6 +36,18 @@ namespace Rock.Utility
     /// </summary>
     public static class SparkLinkHelper
     {
+        /// <summary>
+        /// Sends to spark.
+        /// </summary>
+        /// <returns></returns>
+        [Obsolete("Use SendToSpark(rockContext) to avoid error about multiple database contexts")]
+        public static List<Notification> SendToSpark()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return SendToSpark( rockContext );
+            }
+        }
 
         /// <summary>
         /// Sends to spark.
