@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -301,9 +301,10 @@ namespace RockWeb.Blocks.Groups
                         document.SignatureDocumentTemplateId = group.RequiredSignatureDocumentTemplate.Id;
                         document.AppliesToPersonAliasId = personAliasId.Value;
                         document.AssignedToPersonAliasId = personAliasId.Value;
-                        document.Name = string.Format( "{0}_{1}",
+                        document.Name = string.Format(
+                            "{0}_{1}",
                             group.Name.RemoveSpecialCharacters(),
-                            ( person != null ? person.FullName.RemoveSpecialCharacters() : string.Empty ) );
+                            person != null ? person.FullName.RemoveSpecialCharacters() : string.Empty );
                         document.Status = SignatureDocumentStatus.Signed;
                         document.LastStatusDate = RockDateTime.Now;
                         documentService.Add( document );
@@ -485,6 +486,7 @@ namespace RockWeb.Blocks.Groups
                     groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                     groupMember.DateTimeAdded = RockDateTime.Now;
+
                     // hide the panel drawer that show created and last modified dates
                     pdAuditDetails.Visible = false;
                 }
@@ -838,7 +840,6 @@ namespace RockWeb.Blocks.Groups
                             : "Not calculated yet";
                     }
 
-
                     lRequirementsLabels.Text += string.Format(
                         @"<span class='label label-{1}' title='{2}'>{0}</span>
                         ",
@@ -1037,7 +1038,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // Un-link any registrant records that point to this group member.
-            foreach( var registrant in new RegistrationRegistrantService( rockContext ).Queryable()
+            foreach ( var registrant in new RegistrationRegistrantService( rockContext ).Queryable()
                 .Where( r => r.GroupMemberId == groupMember.Id ) )
             {
                 registrant.GroupMemberId = null;
@@ -1116,6 +1117,5 @@ namespace RockWeb.Blocks.Groups
                 grpMoveGroupMember.Visible = false;
             }
         }
-
     }
 }
