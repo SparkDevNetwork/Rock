@@ -279,24 +279,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines whether a member has a group sync
-        /// </summary>
-        /// <param name="groupMemberGuid">The group member unique identifier.</param>
-        /// <returns>
-        ///   <c>true</c> if [has group synchronize] [the specified group member unique identifier]; otherwise, <c>false</c>.
-        /// </returns>
-        public bool HasGroupSync(Guid groupMemberGuid)
-        {
-            var groupMember = GetByGuids( new List<Guid> { groupMemberGuid } ).FirstOrDefault();
-            
-            return new GroupSyncService( new RockContext() )
-                .Queryable()
-                .Where( s => s.GroupId == groupMember.GroupId && s.GroupTypeRoleId == groupMember.GroupRoleId )
-                .Select( s => s.GroupTypeRoleId )
-                .Any();
-        }
-
-        /// <summary>
         /// Gets the inverse relationship.
         /// Returns the <see cref="Rock.Model.GroupMember" /> who has an inverse relationship to the provided <see cref="Rock.Model.GroupMember" />.
         /// </summary>
