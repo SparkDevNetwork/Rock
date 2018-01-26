@@ -877,10 +877,22 @@ namespace RockWeb.Blocks.Groups
         private void LoadDropDowns()
         {
             int groupId = hfGroupId.ValueAsInt();
-            Group group = new GroupService( new RockContext() ).Get( groupId );
+            RockContext rockContext = new RockContext();
+            Group group = new GroupService( rockContext ).Get( groupId );
             if ( group != null )
             {
-                ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
+                var currentSyncdRoles = new GroupSyncService( rockContext )
+                    .Queryable()
+                    .Where( s => s.GroupId == groupId )
+                    .Select( s => s.GroupTypeRoleId )
+                    .ToList();
+
+                ddlGroupRole.DataSource = new GroupTypeRoleService( rockContext )
+                    .Queryable()
+                    .Where( r => r.GroupTypeId == group.GroupTypeId && !currentSyncdRoles.Contains( r.Id ) )
+                    .OrderBy( a => a.Order )
+                    .ToList();
+
                 ddlGroupRole.DataBind();
             }
 
