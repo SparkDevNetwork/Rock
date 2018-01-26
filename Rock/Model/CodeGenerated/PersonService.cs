@@ -57,12 +57,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PersonAlias.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<PersonSignal>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PersonSignal.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -100,6 +94,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Person target, Person source )
         {
             target.Id = source.Id;
+            target.AgeClassification = source.AgeClassification;
             target.AnniversaryDate = source.AnniversaryDate;
             target.BirthDay = source.BirthDay;
             target.BirthMonth = source.BirthMonth;
@@ -126,6 +121,7 @@ namespace Rock.Model
             target.MiddleName = source.MiddleName;
             target.NickName = source.NickName;
             target.PhotoId = source.PhotoId;
+            target.PrimaryFamilyId = source.PrimaryFamilyId;
             target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
             target.RecordStatusValueId = source.RecordStatusValueId;

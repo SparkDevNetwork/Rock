@@ -45,6 +45,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum AgeClassification
+    {
+        Unknown = 0x0,
+        Adult = 0x1,
+        Child = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AttendanceGraphBy
     {
         Total = 0x0,

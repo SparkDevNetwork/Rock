@@ -332,7 +332,6 @@ namespace RockWeb.Blocks.Event
                     i.StartDateTime,
                     i.EndDateTime,
                     i.IsActive,
-                    Details = string.Empty,
                     Registrants = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => !r.OnWaitList ).Count(),
                     WaitList = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => r.OnWaitList ).Count()
                 } );

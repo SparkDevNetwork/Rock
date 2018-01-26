@@ -56,6 +56,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
         public const string PERSON_GIVING_ENVELOPE_NUMBER = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49";
         public const string PERSON_INSTAGRAM = "8796567C-4047-43C1-AF32-2FDBE030BEAC";
+        public const string PERSON_SNAPCHAT = "61099377-9EB3-43EA-BA37-75E329E55866";
         public const string PERSON_TWITTER = "12E9C8A7-03E4-472D-9E20-9EC8F3453B2F";
     }
 
@@ -406,6 +407,7 @@ namespace Rock.Client.SystemGuid
         public const string SINGLE_SELECT = "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0";
         public const string SITE = "BB7AB90F-4DE9-4804-A852-F5593A35C8A0";
         public const string SLIDING_DATE_RANGE = "55810BC5-45EA-4044-B783-0CCE0A445C6F";
+        public const string SOCIAL_MEDIA_ACCOUNT = "92C0E3A1-9F63-49D4-B23B-73624AC42546";
         public const string SSN = "4722C99A-C078-464A-968F-13AB5E8E318F";
         public const string TEXT = "9C204CD0-1233-41C5-818A-C5DA439445AA";
         public const string TIME = "2F8F5EC4-57FA-4F6C-AB15-9D6616994580";
