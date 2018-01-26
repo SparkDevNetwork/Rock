@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// DataView Service class
+    /// GroupSync Service class
     /// </summary>
-    public partial class DataViewService : Service<DataView>
+    public partial class GroupSyncService : Service<GroupSync>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataViewService"/> class
+        /// Initializes a new instance of the <see cref="GroupSyncService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public DataViewService(RockContext context) : base(context)
+        public GroupSyncService(RockContext context) : base(context)
         {
         }
 
@@ -48,39 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( DataView item, out string errorMessage )
+        public bool CanDelete( GroupSync item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.WarningDataViewId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.SyncDataViewId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, GroupSync.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Metric>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Metric.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Report>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Report.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -88,47 +58,44 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class DataViewExtensionMethods
+    public static partial class GroupSyncExtensionMethods
     {
         /// <summary>
-        /// Clones this DataView object to a new DataView object
+        /// Clones this GroupSync object to a new GroupSync object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static DataView Clone( this DataView source, bool deepCopy )
+        public static GroupSync Clone( this GroupSync source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as DataView;
+                return source.Clone() as GroupSync;
             }
             else
             {
-                var target = new DataView();
+                var target = new GroupSync();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another DataView object to this DataView object
+        /// Copies the properties from another GroupSync object to this GroupSync object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this DataView target, DataView source )
+        public static void CopyPropertiesFrom( this GroupSync target, GroupSync source )
         {
             target.Id = source.Id;
-            target.CategoryId = source.CategoryId;
-            target.DataViewFilterId = source.DataViewFilterId;
-            target.Description = source.Description;
-            target.EntityTypeId = source.EntityTypeId;
+            target.AddUserAccountsDuringSync = source.AddUserAccountsDuringSync;
+            target.ExitSystemEmailId = source.ExitSystemEmailId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
-            target.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
-            target.TransformEntityTypeId = source.TransformEntityTypeId;
+            target.GroupId = source.GroupId;
+            target.GroupTypeRoleId = source.GroupTypeRoleId;
+            target.SyncDataViewId = source.SyncDataViewId;
+            target.WelcomeSystemEmailId = source.WelcomeSystemEmailId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
