@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Reporting
                 pnlDetails.Visible = UserCanEdit || _component.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 IEntity componentEntity = null;
-                if ( _component.EntityId.HasValue )
+                if ( _component.Channel.ComponentEntityTypeId.HasValue )
                 {
                     componentEntity = GetComponentEntity( _rockContext, _component );
                 }

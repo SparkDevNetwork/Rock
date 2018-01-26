@@ -539,11 +539,27 @@ namespace Rock.Communication.Transport
             bool valid = base.ValidRecipient( recipient, isBulkCommunication );
             if ( valid )
             {
-                if ( string.IsNullOrWhiteSpace( recipient?.PersonAlias?.Person?.Email ) )
+                var person = recipient?.PersonAlias?.Person;
+                if ( person != null )
                 {
-                    recipient.Status = CommunicationRecipientStatus.Failed;
-                    recipient.StatusNote = "No Email Address";
-                    valid = false;
+                    if ( string.IsNullOrWhiteSpace( person.Email ) )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "No Email Address";
+                        valid = false;
+                    }
+                    else if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Communication Preference of 'Do Not Send Communication'";
+                        valid = false;
+                    }
+                    else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && isBulkCommunication )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Communication Preference of 'No Bulk Communication'";
+                        valid = false;
+                    }
                 }
             }
 

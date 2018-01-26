@@ -64,6 +64,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         "Rock.Model.Tag", "", "", false, "", "", 13 )]
     [AttributeCategoryField( "Social Media Category", "The Attribute Category to display attributes from", false, "Rock.Model.Person", false, "DD8F467D-B83C-444F-B04C-C681167046A1", "", 14 )]
     [BooleanField( "Enable Call Origination", "Should click-to-call links be added to phone numbers.", true, "", 14 )]
+    [LinkedPage( "Communication Page", "The communication page to use for when the person's email address is clicked. Leave this blank to use the default.", false, "", "", 15 )]
     public partial class Bio : PersonBlock
     {
 
@@ -241,8 +242,19 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         rptPhones.DataSource = Person.PhoneNumbers.ToList();
                         rptPhones.DataBind();
                     }
+                    
+                    var communicationLinkedPageValue = this.GetAttributeValue( "CommunicationPage" );
+                    Rock.Web.PageReference communicationPageReference;
+                    if ( communicationLinkedPageValue.IsNotNullOrWhitespace() )
+                    {
+                        communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
+                    }
+                    else
+                    {
+                        communicationPageReference = null;
+                    }
 
-                    lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ) );
+                    lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference );
 
                     if ( GetAttributeValue( "DisplayTags" ).AsBoolean( true ) )
                     {

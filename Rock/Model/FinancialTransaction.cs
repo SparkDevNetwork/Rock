@@ -33,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransaction" )]
     [DataContract]
-    [Analytics(false, false)]
+    [Analytics( false, false )]
     public partial class FinancialTransaction : Model<FinancialTransaction>
     {
         #region Entity Properties
@@ -472,111 +472,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Refund the transaction
+        /// Processes the refund.
         /// </summary>
-        /// <param name="paymentViaGateway">Whether payment to be processed through gateway.</param>
-        /// <param name="refundAmount">The refund amount.</param>
-        /// <param name="refundSummary">The refund summary.</param>
-        /// <param name="refundReasonValueId">The refund reason defined value.</param>
-        /// <param name="refundBatchSuffix">The new batch name suffix.</param>
         /// <param name="errorMessage">The error message.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public bool RefundTransaction( bool paymentViaGateway, decimal refundAmount, string refundSummary, int? refundReasonValueId, string refundBatchSuffix, out string errorMessage, RockContext rockContext = null )
+        public FinancialTransaction ProcessRefund( out string errorMessage )
         {
-
-            FinancialTransaction refundTxn = null;
-            rockContext = rockContext ?? new RockContext();
-            errorMessage = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( TransactionCode ) && FinancialGateway != null &&
-                paymentViaGateway )
-            {
-                var gateway = FinancialGateway.GetGatewayComponent();
-                if ( gateway != null )
-                {
-                    refundTxn = gateway.Credit( this, refundAmount, refundSummary, out errorMessage );
-                    if ( refundTxn == null )
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    errorMessage = "Transaction has a valid gateway, but we could not use it.";
-                    return false;
-                }
-            }
-            else
-            {
-                refundTxn = new FinancialTransaction();
-            }
-
-            refundTxn.AuthorizedPersonAliasId = AuthorizedPersonAliasId;
-            refundTxn.TransactionDateTime = RockDateTime.Now;
-            refundTxn.FinancialGatewayId = FinancialGatewayId;
-            refundTxn.TransactionTypeValueId = TransactionTypeValueId;
-            if ( FinancialPaymentDetail != null )
-            {
-                refundTxn.FinancialPaymentDetail = new FinancialPaymentDetail();
-                refundTxn.FinancialPaymentDetail.AccountNumberMasked = FinancialPaymentDetail.AccountNumberMasked;
-                refundTxn.FinancialPaymentDetail.BillingLocationId = FinancialPaymentDetail.BillingLocationId;
-                refundTxn.FinancialPaymentDetail.CreditCardTypeValueId = FinancialPaymentDetail.CreditCardTypeValueId;
-                refundTxn.FinancialPaymentDetail.CurrencyTypeValueId = FinancialPaymentDetail.CurrencyTypeValueId;
-                refundTxn.FinancialPaymentDetail.ExpirationMonthEncrypted = FinancialPaymentDetail.ExpirationMonthEncrypted;
-                refundTxn.FinancialPaymentDetail.ExpirationYearEncrypted = FinancialPaymentDetail.ExpirationYearEncrypted;
-                refundTxn.FinancialPaymentDetail.NameOnCardEncrypted = FinancialPaymentDetail.NameOnCardEncrypted;
-            }
-
-            decimal remBalance = refundAmount;
-            foreach ( var account in TransactionDetails.Where( a => a.Amount > 0 ) )
-            {
-                var transactionDetail = new FinancialTransactionDetail();
-                transactionDetail.AccountId = account.AccountId;
-                transactionDetail.EntityId = account.EntityId;
-                transactionDetail.EntityTypeId = account.EntityTypeId;
-                refundTxn.TransactionDetails.Add( transactionDetail );
-
-                if ( remBalance >= account.Amount )
-                {
-                    transactionDetail.Amount = 0 - account.Amount;
-                    remBalance -= account.Amount;
-                }
-                else
-                {
-                    transactionDetail.Amount = 0 - remBalance;
-                    remBalance = 0.0m;
-                }
-
-                if ( remBalance <= 0.0m )
-                {
-                    break;
-                }
-            }
-
-            refundTxn.RefundDetails = new FinancialTransactionRefund();
-            refundTxn.RefundDetails.RefundReasonValueId = refundReasonValueId;
-            refundTxn.RefundDetails.RefundReasonSummary = refundSummary;
-            refundTxn.RefundDetails.OriginalTransactionId = Id;
-
-            string batchName = Batch.Name;
-            string suffix = refundBatchSuffix;
-            if ( !string.IsNullOrWhiteSpace( suffix ) && !batchName.EndsWith( suffix ) )
-            {
-                batchName += suffix;
-            }
-
-            TimeSpan timespan = new TimeSpan();
-            if ( FinancialGateway != null )
-            {
-                timespan = FinancialGateway.GetBatchTimeOffset();
-            }
-
-            var financialTransactionService = new FinancialTransactionService( rockContext );
-            financialTransactionService.ProcessRefund( refundTxn, batchName, timespan );
-            rockContext.SaveChanges();
-
-            return true;
+            return this.ProcessRefund( null, null, string.Empty, true, string.Empty, out errorMessage );
         }
 
         /// <summary>
@@ -834,4 +736,42 @@ namespace Rock.Model
     }
 
     #endregion
+
+    #region Extension Methods
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static partial class FinancialTransactionExtensionMethods
+    {
+        /// <summary>
+        /// Process a refund for a transaction.
+        /// </summary>
+        /// <param name="transaction">The refund transaction.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="reasonValueId">The reason value identifier.</param>
+        /// <param name="summary">The summary.</param>
+        /// <param name="process">if set to <c>true</c> [process].</param>
+        /// <param name="batchNameSuffix">The batch name suffix.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public static FinancialTransaction ProcessRefund( this FinancialTransaction transaction, decimal? amount, int? reasonValueId, string summary, bool process, string batchNameSuffix, out string errorMessage )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new FinancialTransactionService( rockContext );
+                var refundTransaction = service.ProcessRefund( transaction, null, null, string.Empty, true, string.Empty, out errorMessage );
+
+                if ( refundTransaction != null )
+                {
+                    rockContext.SaveChanges();
+                }
+
+                return refundTransaction;
+            }
+        }
+    }
+
+    #endregion
+
 }

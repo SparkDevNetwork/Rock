@@ -22,7 +22,7 @@
                         </h1>
 
                         <div class="panel-labels">
-                            <asp:HyperLink ID="hlSyncSource" runat="server"><Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" /></asp:HyperLink> &nbsp;
+                            <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" /> &nbsp;
                         </div>
                     </div>
 
@@ -67,6 +67,7 @@
                                     <Rock:DateField DataField="FirstAttended" HeaderText="First Attended" SortExpression="FirstAttended" />
                                     <Rock:DateField DataField="LastAttended" HeaderText="Last Attended" SortExpression="LastAttended" />
                                     <Rock:RockBoundField DataField="Note" HeaderText="Note" SortExpression="Note" ItemStyle-CssClass="small" />
+                                    <Rock:BoolField DataField="IsAddedBySync" HeaderText="Added By Sync"></Rock:BoolField>
                                 </Columns>
                             </Rock:Grid>
                         </div>
