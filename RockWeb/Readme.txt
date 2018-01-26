@@ -1,3 +1,11 @@
+Rock McKinley 7.2
+
++ Fixed communications so that a person's email preference does not affect sending of SMS messages.
++ Updated Bio block on Person Profile page to have a 'Communication Page' block option that defaults to the simple communication page.
++ Fixed Registration Instance List Block by removing unused field from the grid.
++ Fixed issue where the Active Registration Instance List block did not show instances when blank dates were present.
+
+
 Rock McKinley 7.1
 
 + Added a delete confirmation when deleting members from the Leader Toolbox.
