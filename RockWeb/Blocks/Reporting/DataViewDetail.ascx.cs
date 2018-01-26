@@ -422,6 +422,7 @@ $(document).ready(function() {
                     }
                     catch
                     {
+                        // intentionally ignore if delete fails
                     }
 
                     dataViewService.Delete( dataView );
