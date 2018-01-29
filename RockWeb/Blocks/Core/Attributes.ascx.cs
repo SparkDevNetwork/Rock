@@ -85,7 +85,11 @@ namespace RockWeb.Blocks.Core
             if ( entityTypeGuid.HasValue )
             {
                 _isEntityTypeConfigured = true;
-                _entityTypeId = EntityTypeCache.Read( entityTypeGuid.Value ).Id;
+                if (default(Guid) == entityTypeGuid) {
+                    _entityTypeId = default(int);
+                } else {
+                    _entityTypeId = EntityTypeCache.Read(entityTypeGuid.Value).Id;
+                }
             }
             else
             {
@@ -602,20 +606,12 @@ namespace RockWeb.Blocks.Core
             IQueryable<Rock.Model.Attribute> query = null;
 
             AttributeService attributeService = new AttributeService( rockContext );
-            if ( _isEntityTypeConfigured )
+            if ( _entityTypeId.HasValue )
             {
-                query = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue );
-            }
-            else
-            {
-                if ( _entityTypeId.HasValue && _entityTypeId.Value == 0 )
-                {
-                    // Global Attributes
-                    query = attributeService.GetByEntityTypeId( null );
-                }
-                else
-                {
-                    query = attributeService.GetByEntityTypeId( _entityTypeId );
+                if (_entityTypeId == default(int)) {
+                    query = attributeService.GetByEntityTypeId(null);
+                } else {
+                    query = attributeService.Get(_entityTypeId, _entityQualifierColumn, _entityQualifierValue);
                 }
             }
 
