@@ -2571,26 +2571,27 @@ namespace RockWeb.Blocks.Groups
         /// Creates the role drop down list.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="RoleId">The role identifier if editing, otherwise leave null</param>
+        /// <param name="RoleId">The role identifier if editing, otherwise leave default</param>
         private void CreateRoleDropDownList( RockContext rockContext, int roleId = -1 )
         {
-            // Cannot have duplicate Group/Roles for the sync but manual dups are okay
-            Group group = new GroupService( rockContext ).Get( hfGroupId.ValueAsInt() );
+            List<int> currentSyncdRoles = new List<int>();
+            int groupTypeId = ddlGroupType.SelectedValue.AsInteger();
+            int groupId = hfGroupId.ValueAsInt();
 
-            var currentSyncdRoles = GroupSyncState
-                .Where( s => s.GroupId == group.Id )
-                .Select( s => s.GroupTypeRoleId )
-                .ToList();
-
-            // If editing a role we want to remove it from the current list that will be removed.
-            if( roleId > -1 )
+            // If not 0 then get the existing roles to remove, if 0 then this is a new group that has not yet been saved.
+            if ( groupId > 0)
             {
+                currentSyncdRoles = GroupSyncState
+                    .Where( s => s.GroupId == groupId )
+                    .Select( s => s.GroupTypeRoleId )
+                    .ToList();
+
                 currentSyncdRoles.Remove( roleId );
             }
 
             var roles = new GroupTypeRoleService( rockContext )
                 .Queryable()
-                .Where( r => r.GroupTypeId == group.GroupTypeId && !currentSyncdRoles.Contains( r.Id ) )
+                .Where( r => r.GroupTypeId == groupTypeId && !currentSyncdRoles.Contains( r.Id ) )
                 .ToList();
 
             // Give a blank for the first selection
