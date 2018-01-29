@@ -2452,10 +2452,12 @@ namespace RockWeb.Blocks.Groups
             GroupSync groupSync = GroupSyncState.Where( s => s.Guid == syncGuid ).FirstOrDefault();
             RockContext rockContext = new RockContext();
 
+            hfGroupSyncGuid.Value = syncGuid.ToString();
+
             CreateDataViewDropDownList( rockContext );
             ddlSyncDataView.SetValue( groupSync.SyncDataViewId );
 
-            CreateRoleDropDownList( rockContext );
+            CreateRoleDropDownList( rockContext, groupSync.GroupTypeRoleId );
             ddlGroupRoles.SetValue( groupSync.GroupTypeRoleId );
 
             CreateGroupSyncEmailDropDownLists( rockContext );
@@ -2523,6 +2525,8 @@ namespace RockWeb.Blocks.Groups
             groupSync.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
             groupSync.AddUserAccountsDuringSync = cbCreateLoginDuringSync.Checked;
 
+            hfGroupSyncGuid.Value = string.Empty;
+
             BindGroupSyncGrid();
             HideDialog();
         }
@@ -2562,26 +2566,35 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+
         /// <summary>
         /// Creates the role drop down list.
-        /// Includes rols for the group type that are not already being Sync'd.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        private void CreateRoleDropDownList( RockContext rockContext )
+        /// <param name="RoleId">The role identifier if editing, otherwise leave null</param>
+        private void CreateRoleDropDownList( RockContext rockContext, int roleId = -1 )
         {
             // Cannot have duplicate Group/Roles for the sync but manual dups are okay
             Group group = new GroupService( rockContext ).Get( hfGroupId.ValueAsInt() );
 
-            var currentSyncdRoles = new GroupSyncService( rockContext )
-                .Queryable()
+            var currentSyncdRoles = GroupSyncState
                 .Where( s => s.GroupId == group.Id )
                 .Select( s => s.GroupTypeRoleId )
                 .ToList();
+
+            // If editing a role we want to remove it from the current list that will be removed.
+            if( roleId > -1 )
+            {
+                currentSyncdRoles.Remove( roleId );
+            }
 
             var roles = new GroupTypeRoleService( rockContext )
                 .Queryable()
                 .Where( r => r.GroupTypeId == group.GroupTypeId && !currentSyncdRoles.Contains( r.Id ) )
                 .ToList();
+
+            // Give a blank for the first selection
+            ddlGroupRoles.Items.Add( new ListItem() );
 
             foreach ( var role in roles )
             {
@@ -2598,6 +2611,9 @@ namespace RockWeb.Blocks.Groups
             var dataViews = new DataViewService( rockContext )
                 .Queryable()
                 .ToList();
+
+            // Give a blank for the first selection
+            ddlSyncDataView.Items.Add( new ListItem() );
 
             foreach ( var dataView in dataViews )
             {

@@ -187,6 +187,12 @@ namespace RockWeb.Blocks.Groups
                     bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || _group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson );
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
+
+                    // If all of the roles in a group are sync'd then don't show the add button
+                    gGroupMembers.Actions.ShowAdd = _group.GroupType.Roles
+                        .Where( r => !_group.GroupSyncs.Select( s => s.GroupTypeRoleId )
+                        .Contains( r.Id ) )
+                        .Any();
                 }
             }
 
