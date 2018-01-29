@@ -191,7 +191,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                                 r.Value != null &&
                                 r.Value.Value != string.Empty &&
                                 r.QualifierValues != null &&
-                                r.QualifierValues.Count > 0 )
+                                r.QualifierValues.ContainsKey( NAME_KEY ) &&
+                                r.QualifierValues.ContainsKey( ICONCSSCLASS_KEY ) &&
+                                r.QualifierValues.ContainsKey( COLOR_KEY ) )
                             .OrderBy( r => r.Attribute.Order )
                             .Select( r => new
                             {
