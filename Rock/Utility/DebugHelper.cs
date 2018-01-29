@@ -209,10 +209,27 @@ namespace Rock
         private static DebugLoggingDbCommandInterceptor _debugLoggingDbCommandInterceptor = new DebugLoggingDbCommandInterceptor();
 
         /// <summary>
+        /// SQLs the logging start.
+        /// </summary>
+        public static void SQLLoggingStart()
+        {
+            SQLLoggingStart( null );
+        }
+
+        /// <summary>
+        /// Starts logging all EF SQL Calls to the Debug Output Window as T-SQL Blocks
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        public static void SQLLoggingStart( RockContext rockContext )
+        {
+            SQLLoggingStart( (DbContext)rockContext );
+        }
+
+        /// <summary>
         /// Starts logging all EF SQL Calls to the Debug Output Window as T-SQL Blocks
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public static void SQLLoggingStart( System.Data.Entity.DbContext dbContext = null )
+        public static void SQLLoggingStart( System.Data.Entity.DbContext dbContext )
         {
             _callCounts = 0;
             SQLLoggingStop();
@@ -226,15 +243,6 @@ namespace Rock
         public static void SQLLoggingStop()
         {
             DbInterception.Remove( _debugLoggingDbCommandInterceptor );
-        }
-
-        /// <summary>
-        /// Starts logging all EF SQL Calls to the Debug Output Window as T-SQL Blocks
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public static void SqlLoggingStart( this System.Data.Entity.DbContext dbContext )
-        {
-            DebugHelper.SQLLoggingStart( dbContext );
         }
 
         /// <summary>
