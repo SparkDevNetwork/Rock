@@ -102,7 +102,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             if ( familyLabelsAdded.Contains( labelCache.Guid ) ||
                                                 personLabelsAdded.Contains( labelCache.Guid ) )
                                             {
-                                                break;
+                                                continue;
                                             }
                                             else
                                             {
@@ -113,7 +113,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         {
                                             if ( personLabelsAdded.Contains( labelCache.Guid ) )
                                             {
-                                                break;
+                                                continue;
                                             }
                                             else
                                             {

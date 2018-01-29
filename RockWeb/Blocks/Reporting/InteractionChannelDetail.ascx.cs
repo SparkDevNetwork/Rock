@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.Reporting
                 lTitle.Text = _channel.Name.FormatAsHtmlTitle();
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.AddOrIgnore( "Person", CurrentPerson );
+                mergeFields.AddOrIgnore( "CurrentPerson", CurrentPerson );
                 mergeFields.Add( "InteractionChannel", _channel );
 
                 string template = GetAttributeValue( "DefaultTemplate" );
