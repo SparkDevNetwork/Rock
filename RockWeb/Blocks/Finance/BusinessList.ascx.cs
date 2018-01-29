@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            var workPhoneTypeGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid();
+            var workLocationTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
 
             var groupMemberQuery = new GroupMemberService( rockContext ).Queryable();
 
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Finance
                 Email = b.Email,
                 Address = b.Members
                                 .Where( m => m.Group.GroupType.Guid.ToString() == Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY )
-                                .SelectMany( m => m.Group.GroupLocations.Where( l => l.GroupLocationTypeValue != null && l.GroupLocationTypeValue.Guid == workPhoneTypeGuid ) )
+                                .SelectMany( m => m.Group.GroupLocations.Where( l => l.GroupLocationTypeValue != null && l.GroupLocationTypeValue.Guid == workLocationTypeGuid ) )
                                 .FirstOrDefault()
                                 .Location,
                 Contacts = b.Members
