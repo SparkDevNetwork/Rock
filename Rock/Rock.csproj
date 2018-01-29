@@ -711,7 +711,7 @@
     </Compile>
     <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
     <Compile Include="Jobs\MigrateInteractionsData.cs" />
-    <Compile Include="Jobs\MoveAdultToOwnHouseoldOnBirthday.cs" />
+    <Compile Include="Jobs\DataAutomation\AdultChildren.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\RunDataAutomation.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
