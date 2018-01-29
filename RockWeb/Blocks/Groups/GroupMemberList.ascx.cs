@@ -194,9 +194,12 @@ namespace RockWeb.Blocks.Groups
                         .Contains( r.Id ) )
                         .Any();
                 }
+
+                // If there are no groups being sync'd then don't show col IsAddedBySync.
+                gGroupMembers.ColumnsOfType<RockBoundField>().First( c => c.DataField == "IsAddedBySync" ).Visible = _group.GroupSyncs.Any();
             }
 
-            if( _group != null && _group.GroupSyncs != null && _group.GroupSyncs.Count() > 0)
+            if ( _group != null && _group.GroupSyncs != null && _group.GroupSyncs.Count() > 0)
             {
                 hlSyncStatus.Visible = true;
             }
