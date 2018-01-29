@@ -202,6 +202,24 @@
                     return result;
                 },
 
+                // NOTE: this is specifically for the Rock.Reporting.DataFilter.Person.HasPhoneFilter component
+                formatFilterForHasPhoneFilter: function ($content) {
+                    var has = $('.js-hasphoneoftype', $content).find(':selected').text();
+                    var phoneType = $('.js-phonetype', $content).find(':selected').text();
+                    var sms = $('.js-hassms', $content).find(':selected').text();
+
+                    if (sms == 'True') {
+                        sms = 'and Has SMS Enabled';
+                    }
+                    else if (sms == 'False') {
+                        sms = "and Doesn't have SMS Enabled";
+                    }
+
+                    var result = has + phoneType + ' Phone ' + sms;
+
+                    return result;
+                },
+
                 //
                 formatFilterDefault: function (title, $selectedContent) {
                     var compareTypeText = $('.js-filter-compare', $selectedContent).find(':selected').text();
