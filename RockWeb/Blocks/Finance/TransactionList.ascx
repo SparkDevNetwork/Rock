@@ -63,17 +63,11 @@
                                     SortExpression="_PERSONNAME_" /> 
                                 <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                
                                 <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" SortExpression="TotalAmount" />
-                                <Rock:RockTemplateField HeaderText="Currency Type" >
-                                    <ItemTemplate>
-                                        <asp:Literal ID="lCurrencyType" runat="server" />
-                                    </ItemTemplate>
-                                </Rock:RockTemplateField>
+                                <Rock:RockLiteralField ID="lCurrencyType" HeaderText="Currency Type" />
                                 <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />                
                                 <Rock:RockBoundField DataField="ForeignKey" HeaderText="Foreign Key" SortExpression="ForeignKey" ColumnPriority="DesktopSmall" />                
                                 <Rock:RockLiteralField ID="lBatchId" HeaderText="Batch Id" SortExpression="BatchId" ColumnPriority="DesktopSmall" ItemStyle-HorizontalAlign="Right" ExcelExportBehavior="NeverInclude"  />                
-                                <Rock:RockTemplateField HeaderText="Accounts" >
-                                    <ItemTemplate><%# GetAccounts( Container.DataItem ) %></ItemTemplate>
-                                </Rock:RockTemplateField>
+                                <Rock:RockLiteralField ID="lAccounts" HeaderText="Accounts" />
                                 <Rock:RockBoundField DataField="Status" HeaderText="Status" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                 <Rock:DateTimeField DataField="SettledDate" HeaderText="Settled Date/Time" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                 <Rock:RockBoundField DataField="SettledGroupId" HeaderText="Processor Batch Id" ExcelExportBehavior="AlwaysInclude" Visible="false" />
