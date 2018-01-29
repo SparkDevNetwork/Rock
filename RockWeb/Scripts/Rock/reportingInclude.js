@@ -204,18 +204,25 @@
 
                 // NOTE: this is specifically for the Rock.Reporting.DataFilter.Person.HasPhoneFilter component
                 formatFilterForHasPhoneFilter: function ($content) {
-                    var has = $('.js-hasphoneoftype', $content).find(':selected').text();
+
+                    var has;
+                    if ($('.js-hasphoneoftype', $content).find(':selected').val() == "True") {
+                        has = "Has ";
+                    } else {
+                        has = "Doesn't have ";
+                    }
+
                     var phoneType = $('.js-phonetype', $content).find(':selected').text();
                     var sms = $('.js-hassms', $content).find(':selected').text();
 
-                    if (sms == 'True') {
-                        sms = 'and Has SMS Enabled';
+                    if (sms == 'Yes') {
+                        sms = ' and Has SMS Enabled';
                     }
-                    else if (sms == 'False') {
-                        sms = "and Doesn't have SMS Enabled";
+                    else if (sms == 'No') {
+                        sms = " and Doesn't have SMS Enabled";
                     }
 
-                    var result = has + phoneType + ' Phone ' + sms;
+                    var result = has + phoneType + sms;
 
                     return result;
                 },
