@@ -300,7 +300,14 @@ namespace Rock.Field.Types
         {
             if ( value != null && control != null && control is TextBox && !string.IsNullOrEmpty( value ) )
             {
-                ( ( TextBox ) control ).Text = new Uri( value ).Segments.Last();
+                try
+                {
+                    ( (TextBox)control ).Text = new Uri( value ).Segments.Last();
+                }
+                catch
+                {
+                    ( (TextBox)control ).Text = value;
+                }
             }
         }
 
