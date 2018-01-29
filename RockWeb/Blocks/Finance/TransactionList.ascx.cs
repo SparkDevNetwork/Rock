@@ -890,7 +890,7 @@ namespace RockWeb.Blocks.Finance
                         }
                         rockContext.SaveChanges();
 
-                        string acctAction = rblReassingBankAccounts.SelectedValue;
+                        string acctAction = rblReassignBankAccounts.SelectedValue;
                         if ( acctAction != "NONE" && personId.HasValue && _person != null )
                         {
                             var bankAcctService = new FinancialPersonBankAccountService( rockContext );
