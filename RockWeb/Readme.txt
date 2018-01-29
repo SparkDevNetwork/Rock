@@ -1,3 +1,40 @@
+Rock McKinley 7.1
+
++ Added a delete confirmation when deleting members from the Leader Toolbox.
++ Added a new Attribute type of 'Lava Field', which allows a Lava template to be added to entities and will render its contents as the value. This will be helpful in creating more descriptive settings and configuration panels.
++ Added a new block setting that can be used to prevent entering a future date in the Group Attendance Detail block.
++ Added a new configuration option to the Attendance Analytics block to limit the available data views in the filter to specific category(s).
++ Added a new 'Label' field type. This makes it easier to add a label to a specific person and/or group that will always print when that person checks in, or when anyone checks into that group. This is an advanced configuration done outside the normal Check-in Configuration block.
++ Added a new Manage Members security action to the group and grouptype models that can be used to grant users the ability to add, edit, and delete members in a group without having the ability to edit or delete the group.
++ Added new blocks for viewing interaction data.
++ Fixed an exception that would occur in the statement generator if a pledge exists with a maximum end date value (12/31/9999).
++ Fixed an issue where the required field indicators were not showing on the New Family control.
++ Fixed an issue where workflows would process the wrong User Entry Form if multiple forms existed in the same Activity or a single Activity was activated multiple times.
++ Fixed an issue with Check-in not displaying the correct message or the countdown timer when the kiosk was closed but had an upcoming schedule for the same day.
++ Fixed an issue with Check-in using the people/group/location auto check-in option, which had allowed people to check-in again to the same service despite the option to prevent this being selected.
++ Fixed an issue with Font Awesome brand icons on the Login block.
++ Fixed an issue with NMI transactions not saving the Name On Card value after processing a transaction.
++ Fixed an issue with not being able to select items when using an iOS device.
++ Fixed Attribute Editor to allow editing the default values of field types that have multiple entry fields (i.e., Group Role).
++ Fixed the EnumField and EnumsField attributes so that they support being used more than once on a block.
++ Fixed various field types so that attribute values of the types can be reverted back to the default values.
++ Fixed workflow processing so that if a redirect action occurs with remaining workflow entry actions, the redirect still happens.
++ Updated communications to fix an exception that would occur if certain communication fields (e.g., subject, from name, etc.) were too long.
++ Updated the Attributes block to prevent  multiple global attributes being created with the same key.
++ Updated the Bootstrap Button to support a completed text and/or message that can be displayed for a set duration after the post back completes.
++ Updated the Bulk Update block to allow setting a new Communication Preference.
++ Updated the CodeEditor control to display correctly even if it is not initially set to be visible on a block.
++ Updated the Communication List block to use the communication name when subject is empty (i.e., for SMS communications).
++ Updated the Create Labels check-in action to look for labels configured on the person, group and/or location objects rather than only the group type object.
++ Updated the device search by hostname functionality in Check-in to match against the IPAddress field.
++ Updated the editing of family attributes so that updates are logged to history.
++ Updated the Group Member List block to display any group member note values when hovering the mouse over the note icon.  Also added an option to display the notes in a separate column instead of only showing an icon.
++ Updated the merge document process to no longer delete word fields from the template when merging data.
++ Updated the Metric Detail block to display the ID of the metric to assist in Lava development using metrics.
++ Updated the Person Property Update workflow action to support setting a person's communication preference value.
++ Updated the Schedule Detail block to support viewing and editing attributes associated with schedules.
+
+
 Rock McKinley 7.0
 
 + Added a block setting to the Group Detail block to toggle the display of the address below the map. This keeps you from having to edit the group to see the actual screen address of the group's location.
@@ -284,6 +321,7 @@ Rock McKinley 7.0
 + Updated the workflow entry block to evaluate route parameter values (in addition to just query string values) when attempting to match workflow attribute values to set.
 + Updated to make a child who is 18+ an adult in their own family when they are moved to a new family.
 + Updated transaction list to display and support filtering of attribute values and the foreign key field.
+
 
 Rock McKinley 6.10
 
