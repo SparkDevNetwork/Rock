@@ -92,7 +92,7 @@ namespace Rock.Reporting.DataFilter.Person
             ddlHasPhoneOfType.CssClass = "js-hasphoneoftype";
             ddlHasPhoneOfType.ID = $"{filterControl.ID}_ddlHasPhoneOfType";
             ddlHasPhoneOfType.Items.Add( new ListItem( "Has Phone Type", "True" ) );
-            ddlHasPhoneOfType.Items.Add( new ListItem( "Does't Have Phone Type", "False" ) );
+            ddlHasPhoneOfType.Items.Add( new ListItem( "Doesn't Have Phone Type", "False" ) );
             ddlHasPhoneOfType.SelectedValue = "True";
             filterControl.Controls.Add( ddlHasPhoneOfType );
 
@@ -221,7 +221,7 @@ namespace Rock.Reporting.DataFilter.Person
         {
             return @" 
 function() {
-  var has = $('.js-hasphoneoftype', $content)find(':selected').text();
+  var has = $('.js-hasphoneoftype', $content).find(':selected').text();
   var phoneType = $('.js-phonetype', $content).find(':selected').text();
   var sms = $('.js-hassms', $content).find(':selected').text();
 
@@ -245,7 +245,7 @@ function() {
             string[] selections = selection.Split( '|' );
             if ( selections.Length >= 3 )
             {
-                string hasPhoneOfType = selections[0].AsBoolean() ? "Has " : "Does't Have ";
+                string hasPhoneOfType = selections[0].AsBoolean() ? "Has " : "Doesn't Have ";
                 Guid? phoneType = selections[1].AsGuidOrNull();
 
                 string phoneTypeName = phoneType == null ? "Any Phone" : DefinedValueCache.Read( phoneType.Value ).Value + " Phone";
