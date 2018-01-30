@@ -50,7 +50,7 @@
                     <TextBlock Text="Hide transactions that are corrected on the same date. Transactions that have a matching negative dollar amount on the same date will not be shown." TextWrapping="Wrap" />
                 </CheckBox>
                 <StackPanel Name="pnlOrderByOptions"  >
-                    <Label Content="Order By" Margin="-4,0,0,0" />
+                    <Label Content="Order Statements By" Margin="-4,0,0,0" />
                     <ComboBox Name="ddlOrderBy" Style="{StaticResource comboBoxStyleXL}" Margin="0,0,0,8" />
                 </StackPanel>
             </StackPanel>
