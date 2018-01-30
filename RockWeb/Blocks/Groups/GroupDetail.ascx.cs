@@ -1444,7 +1444,8 @@ namespace RockWeb.Blocks.Groups
                         GroupType selectedGroupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
                         if ( selectedGroupType != null )
                         {
-                            wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) && selectedGroupType.AllowGroupSync;
+                            wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) && ( selectedGroupType.AllowGroupSync || GroupSyncState.Any() );
+                            gGroupSyncs.Actions.ShowAdd = selectedGroupType.AllowGroupSync;
                             wpMemberWorkflowTriggers.Visible = selectedGroupType.AllowSpecificGroupMemberWorkflows;
                         }
                     }
