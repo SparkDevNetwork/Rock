@@ -1335,16 +1335,13 @@ namespace RockWeb.Blocks.Groups
             wpGroupRequirements.Visible = canAdministrate;
             wpGroupMemberAttributes.Visible = canAdministrate;
 
-            if ( canAdministrate )
+            GroupSyncState = new List<GroupSync>();
+            foreach ( var sync in group.GroupSyncs )
             {
-                GroupSyncState = new List<GroupSync>();
-                foreach ( var sync in group.GroupSyncs )
-                {
-                    GroupSyncState.Add( sync );
-                }
-
-                BindGroupSyncGrid();
+                GroupSyncState.Add( sync );
             }
+
+            BindGroupSyncGrid();
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
