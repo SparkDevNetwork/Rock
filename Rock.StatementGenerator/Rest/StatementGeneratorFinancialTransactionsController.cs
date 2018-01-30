@@ -133,9 +133,42 @@ namespace Rock.StatementGenerator.Rest
                     unionJoinLocationQry = unionJoinLocationQry.Where( a => a.LocationId.HasValue );
                 }
 
-                if ( options.OrderByPostalCode )
+                if ( options.OrderBy == OrderBy.PostalCode )
                 {
                     unionJoinLocationQry = unionJoinLocationQry.OrderBy( a => a.PostalCode );
+                }
+                else if ( options.OrderBy == OrderBy.LastName )
+                {
+                    // get a query to look up LastName for recipients that give as a group
+                    var qryLastNameAsGroup = new PersonService( rockContext ).Queryable( false, true )
+                        .Where( a => a.GivingLeaderId == a.Id && a.GivingGroupId.HasValue )
+                        .Select( a => new
+                        {
+                            a.GivingGroupId,
+                            a.LastName,
+                            a.FirstName
+                        } );
+
+                    // get a query to look up LastName for recipients that give as individuals
+                    var qryLastNameAsIndividual = new PersonService( rockContext ).Queryable( false, true );
+
+                    unionJoinLocationQry = unionJoinLocationQry.Select( a => new
+                    {
+                        a.PersonId,
+                        a.GroupId,
+                        a.LocationId,
+                        a.PostalCode,
+                        GivingLeader = a.PersonId.HasValue ?
+                            qryLastNameAsIndividual.Where( p => p.Id == a.PersonId ).Select( x => new { x.LastName, x.FirstName } ).FirstOrDefault()
+                            : qryLastNameAsGroup.Where( gl => gl.GivingGroupId == a.GroupId ).Select( x => new { x.LastName, x.FirstName } ).FirstOrDefault()
+                    } ).OrderBy( a => a.GivingLeader.LastName ).ThenBy( a => a.GivingLeader.FirstName )
+                    .Select( a => new
+                    {
+                        a.PersonId,
+                        a.GroupId,
+                        a.LocationId,
+                        a.PostalCode
+                    } );
                 }
 
                 var givingIdsQry = unionJoinLocationQry.Select( a => new { a.PersonId, a.GroupId } );

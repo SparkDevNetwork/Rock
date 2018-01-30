@@ -167,7 +167,16 @@ namespace Rock.StatementGenerator
         /// <value>
         ///   <c>true</c> if [order by postal code]; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete("Use OrderBy Instead")]
         public bool OrderByPostalCode { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the order by.
+        /// </summary>
+        /// <value>
+        /// The order by.
+        /// </value>
+        public OrderBy OrderBy { get; set; } = OrderBy.PostalCode;
 
         /// <summary>
         /// Gets or sets the name of the base file.
@@ -192,6 +201,14 @@ namespace Rock.StatementGenerator
         /// The size of the chapter.
         /// </value>
         public int? StatementsPerChapter { get; set; }
-        
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum OrderBy
+    {
+        PostalCode = 0,
+        LastName = 1
     }
 }
