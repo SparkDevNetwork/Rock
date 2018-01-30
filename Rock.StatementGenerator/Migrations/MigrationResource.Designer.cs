@@ -126,5 +126,50 @@ namespace Rock.StatementGenerator.Migrations {
                 return ResourceManager.GetString("_001_StatementGenerator_RockDefault_Footer", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+        ///{% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+        ///{% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+        ///{% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+        ///{% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+        ///{% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+        ///{% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _002_StatementGeneratorUpdateTemplates_Alternate1 {
+            get {
+                return ResourceManager.GetString("_002_StatementGeneratorUpdateTemplates_Alternate1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+        ///{% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+        ///{% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+        ///{% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+        ///{% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+        ///{% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+        ///{% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _002_StatementGeneratorUpdateTemplates_Alternate2 {
+            get {
+                return ResourceManager.GetString("_002_StatementGeneratorUpdateTemplates_Alternate2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+        ///{% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+        ///{% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+        ///{% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+        ///{% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+        ///{% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+        ///{% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _002_StatementGeneratorUpdateTemplates_RockDefault {
+            get {
+                return ResourceManager.GetString("_002_StatementGeneratorUpdateTemplates_RockDefault", resourceCulture);
+            }
+        }
     }
 }

@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\002_StatementGeneratorUpdateTemplates.cs" />
     <Compile Include="Migrations\001_StatementGenerator.cs" />
     <Compile Include="Migrations\MigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -73,6 +74,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Migrations\002_StatementGeneratorUpdateTemplates_Alternate1.lava">
+      <DependentUpon>002_StatementGeneratorUpdateTemplates.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\002_StatementGeneratorUpdateTemplates_Alternate2.lava">
+      <DependentUpon>002_StatementGeneratorUpdateTemplates.cs</DependentUpon>
+    </None>
     <None Include="Migrations\001_StatementGenerator_Alternate1.lava">
       <DependentUpon>001_StatementGenerator.cs</DependentUpon>
     </None>
@@ -81,6 +88,9 @@
     </None>
     <None Include="Migrations\001_StatementGenerator_RockDefault.lava">
       <DependentUpon>001_StatementGenerator.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\002_StatementGeneratorUpdateTemplates_RockDefault.lava">
+      <DependentUpon>002_StatementGeneratorUpdateTemplates.cs</DependentUpon>
     </None>
     <None Include="packages.config" />
   </ItemGroup>
