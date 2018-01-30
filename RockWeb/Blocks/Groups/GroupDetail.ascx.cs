@@ -2566,7 +2566,6 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-
         /// <summary>
         /// Creates the role drop down list.
         /// </summary>
@@ -2587,6 +2586,8 @@ namespace RockWeb.Blocks.Groups
                     .ToList();
 
                 currentSyncdRoles.Remove( roleId );
+
+                groupTypeId = new GroupService( rockContext ).Get( groupId ).GroupTypeId;
             }
 
             var roles = new GroupTypeRoleService( rockContext )
