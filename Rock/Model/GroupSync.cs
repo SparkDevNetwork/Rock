@@ -154,7 +154,7 @@ namespace Rock.Model
         /// </summary>
         public GroupSyncConfiguration()
         {
-            HasRequired( g => g.Group ).WithMany( g => g.GroupSyncs ).HasForeignKey( g => g.GroupId ).WillCascadeOnDelete( false );
+            HasRequired( g => g.Group ).WithMany( g => g.GroupSyncs ).HasForeignKey( g => g.GroupId ).WillCascadeOnDelete( true );
             HasRequired( g => g.GroupTypeRole ).WithMany().HasForeignKey( g => g.GroupTypeRoleId ).WillCascadeOnDelete( false );
             HasRequired( g => g.SyncDataView ).WithMany().HasForeignKey( g => g.SyncDataViewId ).WillCascadeOnDelete( false );
             HasOptional( g => g.WelcomeSystemEmail ).WithMany().HasForeignKey( g => g.WelcomeSystemEmailId ).WillCascadeOnDelete( false );

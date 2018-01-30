@@ -194,13 +194,12 @@ namespace RockWeb.Blocks.Groups
                         .Contains( r.Id ) )
                         .Any();
                 }
-
-                // If there are no groups being sync'd then don't show col IsAddedBySync.
-                gGroupMembers.ColumnsOfType<RockBoundField>().First( c => c.DataField == "IsAddedBySync" ).Visible = _group.GroupSyncs.Any();
             }
 
             if ( _group != null && _group.GroupSyncs != null && _group.GroupSyncs.Count() > 0)
             {
+                string syncedRoles = string.Join( "\r\n", _group.GroupSyncs.Select( s => s.GroupTypeRole.Name ).ToArray() );
+                hlSyncStatus.ToolTip = syncedRoles;
                 hlSyncStatus.Visible = true;
             }
 
@@ -320,8 +319,11 @@ namespace RockWeb.Blocks.Groups
                         if ( deleteField != null && deleteField.Visible )
                         {
                             TableCell cell = e.Row.Cells[gGroupMembers.Columns.IndexOf( deleteField )];
-                            cell.Text = "";
-                            cell.ToolTip = "Cannot delete member managed by group sync";
+                            cell.Text = "<span class=\"btn btn-info btn-sm disabled\" ><i class=\"fa fa-exchange\"></i></span>";
+
+                            var groupTypeRoleService = new GroupTypeRoleService( new RockContext() );
+                            var groupTypeRoleName = groupTypeRoleService.Get( groupMember.GroupRoleId ).Name;
+                            cell.ToolTip = string.Format( "Managed by group sync for role \"{0}\".", groupTypeRoleName );
                         }
                     }
 
@@ -1281,8 +1283,7 @@ namespace RockWeb.Blocks.Groups
                         RecordStatusValueId = m.Person.RecordStatusValueId,
                         IsDeceased = m.Person.IsDeceased,
                         MaritalStatusValueId = m.Person.MaritalStatusValueId,
-                        GroupRoleId = m.GroupRoleId,
-                        IsAddedBySync = _group.GroupSyncs.Any(a => a.GroupTypeRoleId == m.GroupRoleId)
+                        GroupRoleId = m.GroupRoleId
                     } ).ToList();
 
                     if ( sortProperty != null )
@@ -1444,7 +1445,5 @@ namespace RockWeb.Blocks.Groups
         public int? MaritalStatusValueId { get; set; }
 
         public int GroupRoleId { get; set; }
-
-        public bool IsAddedBySync { get; set; }
     }
 }
