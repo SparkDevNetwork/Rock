@@ -128,7 +128,8 @@ namespace Rock.StatementGenerator.Rest
                                                l.Location.PostalCode
                                            };
 
-                if ( options.PersonId == null && !options.IncludeIndividualsWithNoAddress )
+                // Require that LocationId has a value unless this is for a specific person, a dataview, or the IncludeIndividualsWithNoAddress option is enabled
+                if ( options.PersonId == null && options.DataViewId == null && !options.IncludeIndividualsWithNoAddress )
                 {
                     unionJoinLocationQry = unionJoinLocationQry.Where( a => a.LocationId.HasValue );
                 }
@@ -304,7 +305,7 @@ namespace Rock.StatementGenerator.Rest
                     person = personList.FirstOrDefault();
                 }
 
-                if ( options.ExcludeOptedOutIndividuals == true )
+                if ( options.ExcludeOptedOutIndividuals == true && !options.DataViewId.HasValue )
                 {
                     int? doNotSendGivingStatementAttributeId = AttributeCache.Read( Rock.StatementGenerator.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.Id;
                     if ( doNotSendGivingStatementAttributeId.HasValue )
@@ -666,20 +667,24 @@ namespace Rock.StatementGenerator.Rest
                 }
                 else
                 {
-                    if ( !options.IncludeBusinesses )
+                    // unless we are using a DataView for filtering, filter based on the IncludeBusiness and ExcludeInActiveIndividuals options
+                    if ( !options.DataViewId.HasValue )
                     {
-                        int recordTypeValueIdPerson = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                        pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordTypeValueId == recordTypeValueIdPerson );
-                    }
+                        if ( !options.IncludeBusinesses )
+                        {
+                            int recordTypeValueIdPerson = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                            pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordTypeValueId == recordTypeValueIdPerson );
+                        }
 
-                    if ( options.ExcludeInActiveIndividuals )
-                    {
-                        int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-                        pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
-                    }
+                        if ( options.ExcludeInActiveIndividuals )
+                        {
+                            int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                            pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
+                        }
 
-                    // Only include Non-Deceased People even if we are including inactive individuals
-                    pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.IsDeceased == false );
+                        // Only include Non-Deceased People even if we are including inactive individuals
+                        pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.IsDeceased == false );
+                    }
                 }
             }
 
@@ -744,16 +749,20 @@ namespace Rock.StatementGenerator.Rest
                 }
                 else
                 {
-                    if ( !options.IncludeBusinesses )
+                    // unless we are using a DataView for filtering, filter based on the IncludeBusiness and ExcludeInActiveIndividuals options
+                    if ( !options.DataViewId.HasValue )
                     {
-                        int recordTypeValueIdPerson = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                        financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordTypeValueId == recordTypeValueIdPerson );
-                    }
+                        if ( !options.IncludeBusinesses )
+                        {
+                            int recordTypeValueIdPerson = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                            financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordTypeValueId == recordTypeValueIdPerson );
+                        }
 
-                    if ( options.ExcludeInActiveIndividuals )
-                    {
-                        int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-                        financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
+                        if ( options.ExcludeInActiveIndividuals )
+                        {
+                            int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                            financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
+                        }
                     }
 
                     // Only include Non-Deceased People even if we are including inactive individuals
