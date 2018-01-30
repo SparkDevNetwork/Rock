@@ -92,6 +92,10 @@ namespace com.centralaz.RoomManagement.Model
                             EventTimeDescription = GetFriendlyScheduleDescription( reservationDateTime.StartDateTime, reservationDateTime.EndDateTime, false ),
                             ReservationDateTimeDescription = GetFriendlyScheduleDescription( reservationDateTime.StartDateTime.AddMinutes( -reservation.SetupTime ?? 0 ), reservationDateTime.EndDateTime.AddMinutes( reservation.CleanupTime ?? 0 ) ),
                             ReservationTimeDescription = GetFriendlyScheduleDescription( reservationDateTime.StartDateTime.AddMinutes( -reservation.SetupTime ?? 0 ), reservationDateTime.EndDateTime.AddMinutes( reservation.CleanupTime ?? 0 ), false ),
+                            ReservationMinistry = reservation.ReservationMinistry,
+                            EventContactPersonAlias = reservation.EventContactPersonAlias,
+                            EventContactEmail = reservation.EventContactEmail,
+                            EventContactPhoneNumber = reservation.EventContactPhone,
                             SetupPhotoId = reservation.SetupPhotoId,
                             Note = reservation.Note
                         } );
@@ -118,7 +122,7 @@ namespace com.centralaz.RoomManagement.Model
         }
 
 
-        private string GetFriendlyScheduleDescription( DateTime startDateTime, DateTime endDateTime, bool showDate = true )
+        public string GetFriendlyScheduleDescription( DateTime startDateTime, DateTime endDateTime, bool showDate = true )
         {
             if ( startDateTime.Date == endDateTime.Date )
             {
@@ -284,6 +288,10 @@ namespace com.centralaz.RoomManagement.Model
             public DateTime ReservationEndDateTime { get; set; }
             public DateTime EventStartDateTime { get; set; }
             public DateTime EventEndDateTime { get; set; }
+            public ReservationMinistry ReservationMinistry { get; set; }
+            public PersonAlias EventContactPersonAlias { get; set; }
+            public String EventContactPhoneNumber { get; set; }
+            public String EventContactEmail { get; set; }
             public int? SetupPhotoId { get; set; }
             public string Note { get; set; }
         }
