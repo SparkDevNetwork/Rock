@@ -472,10 +472,10 @@ namespace Rock.StatementGenerator.Rest
                 
                 if ( options.CurrencyTypeIdsCash != null )
                 {
-                    transactionDetailListCash = transactionDetailListCash.Where( a => 
-                        a.Transaction.FinancialPaymentDetailId.HasValue &&
-                        a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue 
-                        && options.CurrencyTypeIdsCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ).ToList();
+                    // NOTE: if there isn't a FinancialPaymentDetail record, assume it is Cash
+                    transactionDetailListCash = transactionDetailListCash.Where( a =>
+                        ( a.Transaction.FinancialPaymentDetailId == null ) ||
+                        ( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue && options.CurrencyTypeIdsCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ) ).ToList();
                 }
                 
                 if ( options.CurrencyTypeIdsNonCash != null )
