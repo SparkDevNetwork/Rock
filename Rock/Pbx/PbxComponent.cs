@@ -66,6 +66,6 @@ WHERE dt.[Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'", true, order: 999 )]
         /// </summary>
         /// <param name="startDate">The start date.</param>
         /// <returns></returns>
-        public abstract string DownloadCdr( DateTime? startDate = null );
+        public abstract string DownloadCdr( out bool downloadSuccessful, DateTime? startDate = null );
     }
 }
