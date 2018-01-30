@@ -128,14 +128,48 @@ namespace Rock.StatementGenerator.Rest
                                                l.Location.PostalCode
                                            };
 
-                if ( options.PersonId == null && !options.IncludeIndividualsWithNoAddress )
+                // Require that LocationId has a value unless this is for a specific person, a dataview, or the IncludeIndividualsWithNoAddress option is enabled
+                if ( options.PersonId == null && options.DataViewId == null && !options.IncludeIndividualsWithNoAddress )
                 {
                     unionJoinLocationQry = unionJoinLocationQry.Where( a => a.LocationId.HasValue );
                 }
 
-                if ( options.OrderByPostalCode )
+                if ( options.OrderBy == OrderBy.PostalCode )
                 {
                     unionJoinLocationQry = unionJoinLocationQry.OrderBy( a => a.PostalCode );
+                }
+                else if ( options.OrderBy == OrderBy.LastName )
+                {
+                    // get a query to look up LastName for recipients that give as a group
+                    var qryLastNameAsGroup = new PersonService( rockContext ).Queryable( false, true )
+                        .Where( a => a.GivingLeaderId == a.Id && a.GivingGroupId.HasValue )
+                        .Select( a => new
+                        {
+                            a.GivingGroupId,
+                            a.LastName,
+                            a.FirstName
+                        } );
+
+                    // get a query to look up LastName for recipients that give as individuals
+                    var qryLastNameAsIndividual = new PersonService( rockContext ).Queryable( false, true );
+
+                    unionJoinLocationQry = unionJoinLocationQry.Select( a => new
+                    {
+                        a.PersonId,
+                        a.GroupId,
+                        a.LocationId,
+                        a.PostalCode,
+                        GivingLeader = a.PersonId.HasValue ?
+                            qryLastNameAsIndividual.Where( p => p.Id == a.PersonId ).Select( x => new { x.LastName, x.FirstName } ).FirstOrDefault()
+                            : qryLastNameAsGroup.Where( gl => gl.GivingGroupId == a.GroupId ).Select( x => new { x.LastName, x.FirstName } ).FirstOrDefault()
+                    } ).OrderBy( a => a.GivingLeader.LastName ).ThenBy( a => a.GivingLeader.FirstName )
+                    .Select( a => new
+                    {
+                        a.PersonId,
+                        a.GroupId,
+                        a.LocationId,
+                        a.PostalCode
+                    } );
                 }
 
                 var givingIdsQry = unionJoinLocationQry.Select( a => new { a.PersonId, a.GroupId } );
@@ -271,7 +305,7 @@ namespace Rock.StatementGenerator.Rest
                     person = personList.FirstOrDefault();
                 }
 
-                if ( options.ExcludeOptedOutIndividuals == true )
+                if ( options.ExcludeOptedOutIndividuals == true && !options.DataViewId.HasValue )
                 {
                     int? doNotSendGivingStatementAttributeId = AttributeCache.Read( Rock.StatementGenerator.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.Id;
                     if ( doNotSendGivingStatementAttributeId.HasValue )
@@ -438,10 +472,10 @@ namespace Rock.StatementGenerator.Rest
                 
                 if ( options.CurrencyTypeIdsCash != null )
                 {
-                    transactionDetailListCash = transactionDetailListCash.Where( a => 
-                        a.Transaction.FinancialPaymentDetailId.HasValue &&
-                        a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue 
-                        && options.CurrencyTypeIdsCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ).ToList();
+                    // NOTE: if there isn't a FinancialPaymentDetail record, assume it is Cash
+                    transactionDetailListCash = transactionDetailListCash.Where( a =>
+                        ( a.Transaction.FinancialPaymentDetailId == null ) ||
+                        ( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue && options.CurrencyTypeIdsCash.Contains( a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) ) ).ToList();
                 }
                 
                 if ( options.CurrencyTypeIdsNonCash != null )
@@ -633,20 +667,24 @@ namespace Rock.StatementGenerator.Rest
                 }
                 else
                 {
-                    if ( !options.IncludeBusinesses )
+                    // unless we are using a DataView for filtering, filter based on the IncludeBusiness and ExcludeInActiveIndividuals options
+                    if ( !options.DataViewId.HasValue )
                     {
-                        int recordTypeValueIdPerson = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                        pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordTypeValueId == recordTypeValueIdPerson );
-                    }
+                        if ( !options.IncludeBusinesses )
+                        {
+                            int recordTypeValueIdPerson = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                            pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordTypeValueId == recordTypeValueIdPerson );
+                        }
 
-                    if ( options.ExcludeInActiveIndividuals )
-                    {
-                        int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-                        pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
-                    }
+                        if ( options.ExcludeInActiveIndividuals )
+                        {
+                            int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                            pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
+                        }
 
-                    // Only include Non-Deceased People even if we are including inactive individuals
-                    pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.IsDeceased == false );
+                        // Only include Non-Deceased People even if we are including inactive individuals
+                        pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.IsDeceased == false );
+                    }
                 }
             }
 
@@ -711,16 +749,20 @@ namespace Rock.StatementGenerator.Rest
                 }
                 else
                 {
-                    if ( !options.IncludeBusinesses )
+                    // unless we are using a DataView for filtering, filter based on the IncludeBusiness and ExcludeInActiveIndividuals options
+                    if ( !options.DataViewId.HasValue )
                     {
-                        int recordTypeValueIdPerson = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                        financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordTypeValueId == recordTypeValueIdPerson );
-                    }
+                        if ( !options.IncludeBusinesses )
+                        {
+                            int recordTypeValueIdPerson = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                            financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordTypeValueId == recordTypeValueIdPerson );
+                        }
 
-                    if ( options.ExcludeInActiveIndividuals )
-                    {
-                        int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-                        financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
+                        if ( options.ExcludeInActiveIndividuals )
+                        {
+                            int recordStatusValueIdActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                            financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
+                        }
                     }
 
                     // Only include Non-Deceased People even if we are including inactive individuals
