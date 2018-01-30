@@ -193,6 +193,7 @@
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpRoles" runat="server" Title="Roles">
+                        <Rock:ModalAlert ID="mdGroupTypeRolesDeleteWarning" runat="server" />
                         <div class="grid">
                             <Rock:Grid ID="gGroupTypeRoles" runat="server" EnableResponsiveTable="false" AllowPaging="false" DisplayType="Light" RowItemText="Role" TooltipField="Description">
                                 <Columns>
