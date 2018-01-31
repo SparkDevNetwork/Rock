@@ -34,6 +34,10 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
+//----
+//CCV CORE
+// 1-31 - JHM - Fixed an issue causing the grade filter to always default to "12"
+//----
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
@@ -3270,7 +3274,7 @@ namespace RockWeb.Blocks.Event
                                     gpGradeFilter.UseAbbreviation = true;
                                     gpGradeFilter.UseGradeOffsetAsValue = true;
                                     gpGradeFilter.CssClass = "input-width-md";
-                                    gpGradeFilter.SetValue( fRegistrants.GetUserPreference( "Grade" ).AsIntegerOrNull() );
+                                    gpGradeFilter.SetValue( fRegistrants.GetUserPreference( "Grade" ) );
                                     phRegistrantFormFieldFilters.Controls.Add( gpGradeFilter );
 
                                     var gpGradeFilter2 = new GradePicker();
@@ -3279,7 +3283,7 @@ namespace RockWeb.Blocks.Event
                                     gpGradeFilter2.UseAbbreviation = true;
                                     gpGradeFilter2.UseGradeOffsetAsValue = true;
                                     gpGradeFilter2.CssClass = "input-width-md";
-                                    gpGradeFilter2.SetValue( fRegistrants.GetUserPreference( "WL-Grade" ).AsIntegerOrNull() );
+                                    gpGradeFilter2.SetValue( fRegistrants.GetUserPreference( "WL-Grade" ) );
                                     phWaitListFormFieldFilters.Controls.Add( gpGradeFilter2 );
 
                                     string dataFieldExpression = "PersonAlias.Person.GraduationYear";
