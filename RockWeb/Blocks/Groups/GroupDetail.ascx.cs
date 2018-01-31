@@ -1473,6 +1473,12 @@ namespace RockWeb.Blocks.Groups
                     wpGroupAttributes.Visible = true;
                     var excludeForEdit = group.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
                     Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, setValues, BlockValidationGroup, excludeForEdit );
+
+                    // Hide the panel if it won't show anything.
+                    if(excludeForEdit.Count() == group.Attributes.Count())
+                    {
+                        wpGroupAttributes.Visible = false;
+                    }
                 }
                 else
                 {
