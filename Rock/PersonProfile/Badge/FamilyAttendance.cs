@@ -27,7 +27,6 @@ using System.Data;
 using System;
 using System.Diagnostics;
 using Rock.Web.Cache;
-using System.Linq;
 
 namespace Rock.PersonProfile.Badge
 {
@@ -63,24 +62,14 @@ namespace Rock.PersonProfile.Badge
             }
 
             string tooltip = string.Empty;
-
-            using ( var rockContext = new RockContext() )
+            var groupTypeRole = Person.GetFamilyRole();
+            if ( groupTypeRole != null && groupTypeRole.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() )
             {
-                int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
-                var personId = Person.Id;
-                var groupTypeRole = new GroupMemberService( rockContext ).Queryable()
-                                    .Where( gm => gm.PersonId == personId && gm.Group.GroupTypeId == groupTypeFamilyId )
-                                    .Select( gm => gm.GroupRole )
-                                    .FirstOrDefault();
-
-                if ( groupTypeRole != null && groupTypeRole.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() )
-                {
-                    tooltip = $"{Person.NickName.ToPossessive().EncodeHtml()} attendance for the last 24 months. Each bar is a month.";
-                }
-                else
-                {
-                    tooltip = "Family attendance for the last 24 months. Each bar is a month.";
-                }
+                tooltip = $"{Person.NickName.ToPossessive().EncodeHtml()} attendance for the last 24 months. Each bar is a month.";
+            }
+            else
+            {
+                tooltip = "Family attendance for the last 24 months. Each bar is a month.";
             }
 
             writer.Write( String.Format( "<div class='badge badge-attendance{0} badge-id-{1}' data-toggle='tooltip' data-original-title='{2}'>", animateClass, badge.Id, tooltip ) );

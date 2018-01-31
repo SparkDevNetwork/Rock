@@ -501,6 +501,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
+                this.RequiredFieldValidator.ValidationGroup = value;
                 _tbStreet1.ValidationGroup = value;
                 _tbStreet2.ValidationGroup = value;
                 _tbCity.ValidationGroup = value;
@@ -662,6 +663,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "form-group " + ( this.Required ? "required" : string.Empty ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbStreet1.Attributes["placeholder"] = showAddressLine2 ? "Address Line 1" : "Address";
+                _tbStreet1.Attributes["autocomplete"] = showAddressLine2 ? "address-line1" : "street-address";
                 _tbStreet1.RenderControl( writer );
                 writer.RenderEndTag();  // div.form-group
 
@@ -670,6 +672,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( "class", "form-group" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _tbStreet2.Attributes["placeholder"] = "Address Line 2";
+                    _tbStreet2.Attributes["autocomplete"] = "address-line2";
                     _tbStreet2.RenderControl( writer );
                     writer.RenderEndTag();  // div.form-group
                 }
@@ -680,6 +683,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", ( ShowCounty ? "form-group col-sm-3" : "form-group col-sm-6" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbCity.Attributes["placeholder"] = cityLabel;
+                _tbCity.Attributes["autocomplete"] = "address-level2";
                 _tbCity.RenderControl( writer );
                 writer.RenderEndTag();  // div.form-group
 
@@ -688,6 +692,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( "class", "form-group col-sm-3" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _tbCounty.Attributes["placeholder"] = "County";
+                    _tbCounty.Attributes["autocomplete"] = "country";
                     _tbCounty.RenderControl( writer );
                     writer.RenderEndTag();  // div.form-group
                 }
@@ -695,6 +700,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "form-group col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbState.Attributes["placeholder"] = stateLabel;
+                _tbState.Attributes["autocomplete"] = "address-level1";
                 _tbState.RenderControl( writer );
                 _ddlState.RenderControl( writer );
                 writer.RenderEndTag();  // div.form-group
@@ -702,6 +708,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "form-group col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbPostalCode.Attributes["placeholder"] = postalCodeLabel;
+                _tbPostalCode.Attributes["autocomplete"] = "postal-code";
                 _tbPostalCode.RenderControl( writer );
                 writer.RenderEndTag();  // div.form-group
 

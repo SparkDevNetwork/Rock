@@ -287,7 +287,7 @@ namespace Rock.Jobs
                             .Distinct()
                             .ToList();
 
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
                         foreach ( var person in new PersonService( rockContext )
                             .Queryable().AsNoTracking()
@@ -335,13 +335,15 @@ namespace Rock.Jobs
                                 if ( personSuggestionNotices.Any() )
                                 {
                                     // Send the notice
-                                    var recipients = new List<RecipientData>();
                                     var mergeFields = new Dictionary<string, object>();
                                     mergeFields.Add( "Person", person );
                                     mergeFields.Add( "Suggestions", personSuggestionNotices.OrderBy( s => s.SuggestionType.Order ).ToList() );
-                                    recipients.Add( new RecipientData( person.Email, mergeFields ) );
-                                    Email.Send( systemEmailGuid.Value, recipients, appRoot );
-                                    followingSuggestionsEmailsSent += recipients.Count();
+
+                                    var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
+                                    emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                    emailMessage.Send();
+
+                                    followingSuggestionsEmailsSent += 1;
                                     followingSuggestionsSuggestionsTotal += personSuggestionNotices.Count();
                                 }
 

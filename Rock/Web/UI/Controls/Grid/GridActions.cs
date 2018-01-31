@@ -75,10 +75,10 @@ namespace Rock.Web.UI.Controls
         public bool ShowCommunicate
         {
             get 
-            { 
+            {
                 // if the Grid has the PersonIdField set, default ShowCommunicate to True
-                bool hasPersonIdField = !string.IsNullOrWhiteSpace(_parentGrid.PersonIdField);
-                
+                bool hasPersonIdField = _parentGrid.CommunicationRecipientPersonIdFields.Any() || _parentGrid.PersonIdField.IsNotNullOrWhitespace();
+
                 return ViewState["ShowCommunicate"] as bool? ?? hasPersonIdField; 
             }
             
@@ -99,7 +99,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 // if the Grid has the PersonIdField set, default ShowMergePerson to True
-                bool hasPersonIdField = !string.IsNullOrWhiteSpace( _parentGrid.PersonIdField );
+                bool hasPersonIdField = _parentGrid.PersonIdField.IsNotNullOrWhitespace();
 
                 return ViewState["ShowMergePerson"] as bool? ?? hasPersonIdField;
             }
@@ -121,7 +121,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 // if the Grid has the PersonIdField set, default ShowBulkUpdate to True
-                bool hasPersonIdField = !string.IsNullOrWhiteSpace( _parentGrid.PersonIdField );
+                bool hasPersonIdField = _parentGrid.PersonIdField.IsNotNullOrWhitespace();
 
                 return ViewState["ShowBulkUpdate"] as bool? ?? hasPersonIdField;
             }
@@ -283,7 +283,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lbAdd );
             _lbAdd.ID = "lbAdd";
             _lbAdd.CssClass = "btn-add btn btn-default btn-sm";
-            _lbAdd.ToolTip = "Add";
+            _lbAdd.ToolTip = "Alt+N";
             _lbAdd.Click += lbAdd_Click;
             _lbAdd.CausesValidation = false;
             _lbAdd.PreRender += lb_PreRender;

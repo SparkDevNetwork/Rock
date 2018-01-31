@@ -1,0 +1,103 @@
+//
+// Wizard
+// --------------------------------------------------
+
+.wizard {
+  padding: 8px 0;
+  margin: -15px;
+  margin-top: -16px;
+  margin-bottom: 24px;
+  background-color: @wizard-bg;
+
+  .clearfix();
+
+  @media only screen and (max-width : 480px) {
+    display: none;
+  }
+}
+
+.wizard-item-icon {
+  display: inline-block;
+  padding: 6px 8px;
+  margin: 0 auto;
+  color: @wizard-item-icon-color;
+  text-align: center;
+  background-color: @wizard-item-icon-bg;
+  border-radius: 24px;
+}
+
+.wizard-item-label {
+  font-size: 12px;
+  font-weight: @font-weight-light;
+  color: @wizard-item-label-color;
+}
+
+.wizard-item {
+  position: relative;
+  z-index: 1;
+  float: left;
+  min-width: 100px;
+  text-align: center;
+
+  @media @md {
+    min-width: 175px;
+  }
+
+  &:before {
+    position: absolute; /* positioning must be absolute here, and relative positioning must be applied to the parent */
+    top: 30%;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    margin: 0 auto; /* this centers the line to the full width specified */
+    content: "";
+    border-top: 4px solid @wizard-item-bar-color;
+  }
+
+  &.active {
+    &:before {
+      border-top: 4px solid @wizard-item-bar-complete-color;
+    }
+
+    .wizard-item-icon {
+      color: @wizard-item-icon-active-color;
+      background-color: @wizard-item-icon-active-bg;
+    }
+
+    .wizard-item-label {
+      color: @wizard-item-label-active-color;
+    }
+  }
+
+  &.complete {
+    &:before {
+      border-top: 4px solid @wizard-item-bar-complete-color;
+    }
+
+    .wizard-item-icon {
+      color: @wizard-item-icon-complete-color;
+      background-color: @wizard-item-icon-complete-bg;
+    }
+
+    .wizard-item-label {
+      color: @wizard-item-label-complete-color;
+    }
+  }
+
+  &:first-child:before {
+    left: 55px;
+
+    @media @md {
+      left: 100px;
+    }
+  }
+
+  &:last-child:before {
+    right: 55px;
+
+    @media @md {
+      right: 100px;
+    }
+  }
+}

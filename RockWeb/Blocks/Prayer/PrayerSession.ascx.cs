@@ -50,10 +50,6 @@ namespace RockWeb.Blocks.Prayer
         defaultValue: @"
 <div class='row'>
     <div class='col-md-6'>
-        {% if PrayerRequest.Campus %}
-        <strong>Campus</strong>
-        <p>{{ PrayerRequest.Campus.Name }}</p>
-        {% endif %} 
         <strong>Prayer Request</strong>
     </div>
     <div class='col-md-6 text-right'>
@@ -499,6 +495,7 @@ namespace RockWeb.Blocks.Prayer
             hlblPrayerCountTotal.Text = prayerRequest.PrayerCount.ToString() + " team prayers";
             hlblUrgent.Visible = prayerRequest.IsUrgent ?? false;
 
+            hlblCampus.Text = prayerRequest.CampusId.HasValue ? prayerRequest.Campus.Name : string.Empty;
             hlblCategory.Text = prayerRequest.Category.Name;
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
 

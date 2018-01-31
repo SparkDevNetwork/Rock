@@ -111,19 +111,18 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return string.Format( @"
+            return $@"
 function() {{
     var result = 'Campuses';
-    var campusesPicker = $('.{0}', $content);
-    var checkedCampuses = $('.{0}', $content).find(':checked').closest('label');
+    var campusesPicker = $('.{this.ControlClassName}', $content);
+    var checkedCampuses = $('.{this.ControlClassName}', $content).find(':checked').closest('label');
     if (checkedCampuses.length) {{
-        var campusCommaList = checkedCampuses.map(function() { return $(this).text() }).get().join(',');
+        var campusCommaList = checkedCampuses.map(function() {{ return $(this).text() }}).get().join(',');
         result = 'Campuses: ' + campusCommaList;
     }}
 
     return result;
-}}
-", ControlClassName );
+}}";
         }
 
         /// <summary>
@@ -274,10 +273,12 @@ function() {{
                 }
 
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+                var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
+                int groupTypeFamilyId = groupTypeFamily != null ? groupTypeFamily.Id : 0;
 
                 var groupMemberServiceQry = groupMemberService.Queryable()
-                    .Where( xx => xx.Group.GroupType.Guid == new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) )
-                    .Where( xx => xx.Group.CampusId.HasValue && campusIds.Contains( xx.Group.CampusId.Value ) );
+                    .Where( xx => xx.Group.GroupTypeId == groupTypeFamilyId )
+                    .Where( xx => campusIds.Contains( xx.Group.CampusId ?? 0 ) );
 
                 var qry = new PersonService( rockContext ).Queryable()
                     .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );

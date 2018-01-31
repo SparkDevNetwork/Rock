@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the linkage between event campus, registration instance, and group.
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "EventItemOccurrenceGroupMap" )]
     [DataContract]
     public partial class EventItemOccurrenceGroupMap : Model<EventItemOccurrenceGroupMap>
@@ -82,7 +83,7 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [DataMember]
         public string UrlSlug { get; set; }
-        
+
         #region Virtual Properties
 
         /// <summary>
@@ -91,6 +92,7 @@ namespace Rock.Model
         /// <value>
         /// The event item occurrence.
         /// </value>
+        [LavaInclude]
         public virtual EventItemOccurrence EventItemOccurrence { get; set; }
 
         /// <summary>

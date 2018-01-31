@@ -38,14 +38,14 @@ namespace Rock.Rest
 
     /// <summary>
     /// Base ApiController for Rock REST endpoints
-    /// Supports ODataV3 Queries and ODataRouting 
+    /// Supports ODataV3 Queries and ODataRouting
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <seealso cref="System.Web.Http.ApiController" />
     [ODataRouting]
     public class ApiControllerBase : ApiController
     {
         /// <summary>
-        /// Gets the peron alias.
+        /// Gets the currently logged in Person
         /// </summary>
         /// <returns></returns>
         protected virtual Rock.Model.Person GetPerson()
@@ -58,14 +58,26 @@ namespace Rock.Rest
             var principal = ControllerContext.Request.GetUserPrincipal();
             if ( principal != null && principal.Identity != null )
             {
-                var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
-                var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
-
-                if ( userLogin != null )
+                if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
                 {
-                    var person = userLogin.Person;
-                    Request.Properties.Add( "Person", person );
-                    return userLogin.Person;
+                    var personService = new Model.PersonService( new RockContext() );
+                    Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( principal.Identity.Name.Substring( 8 ), false, null );
+                    if ( impersonatedPerson != null )
+                    {
+                        return impersonatedPerson;
+                    }
+                }
+                else
+                {
+                    var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
+                    var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
+
+                    if ( userLogin != null )
+                    {
+                        var person = userLogin.Person;
+                        Request.Properties.Add( "Person", person );
+                        return userLogin.Person;
+                    }
                 }
             }
 
@@ -73,7 +85,7 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets the person alias.
+        /// Gets the primary person alias of the currently logged in person
         /// </summary>
         /// <returns></returns>
         protected virtual Rock.Model.PersonAlias GetPersonAlias()
@@ -86,6 +98,5 @@ namespace Rock.Rest
 
             return null;
         }
-
     }
 }

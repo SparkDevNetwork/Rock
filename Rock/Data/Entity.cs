@@ -24,8 +24,6 @@ using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
-using Rock.Model;
-
 namespace Rock.Data
 {
     /// <summary>
@@ -81,7 +79,6 @@ namespace Rock.Data
         /// <value>
         /// The foreign identifier.
         /// </value>
-        [Index]
         [DataMember]
         [HideFromReporting]
         public int? ForeignId { get; set; }
@@ -92,7 +89,6 @@ namespace Rock.Data
         /// <value>
         /// The foreign identifier.
         /// </value>
-        [Index]
         [DataMember]
         [HideFromReporting]
         public Guid? ForeignGuid { get; set; }
@@ -104,7 +100,6 @@ namespace Rock.Data
         /// The foreign identifier.
         /// </value>
         [MaxLength( 100 )]
-        [Index]
         [DataMember]
         [HideFromReporting]
         public string ForeignKey { get; set; }
@@ -237,6 +232,22 @@ namespace Rock.Data
                 return encodedKey.Replace( '%', '!' );
             }
             private set { }
+        }
+
+        /// <summary>
+        /// Gets the entity string value.
+        /// </summary>
+        /// <value>
+        /// The entity string value.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual string EntityStringValue
+        {
+            get
+            {
+                return this.ToStringSafe();
+            }
         }
 
         #endregion
@@ -549,6 +560,17 @@ namespace Rock.Data
         public static List<T> FromJsonAsList( string json )
         {
             return JsonConvert.DeserializeObject<List<T>>( json ); ;
+        }
+
+        /// <summary>
+        /// Gets the index result template.
+        /// </summary>
+        /// <value>
+        /// The index result template.
+        /// </value>
+        public static string GetIndexResultTemplate()
+        {
+            return Rock.Web.Cache.EntityTypeCache.Read( typeof( T ) ).IndexResultTemplate;
         }
 
         #endregion

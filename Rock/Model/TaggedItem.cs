@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an entity object that belongs to a Tag. The same entity object can belong to multiple tags.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "TaggedItem" )]
     [DataContract]
     public partial class TaggedItem : Model<TaggedItem>
@@ -53,7 +54,17 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int TagId { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The entity type identifier.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int EntityTypeId { get; set; }
+
         /// <summary>
         /// Gets or sets the GUID identifier of the tagged entity.
         /// </summary>
@@ -84,6 +95,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Tag Tag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of this item.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.EntityType"/> of this item.
+        /// </value>
+        [DataMember]
+        public virtual Model.EntityType EntityType { get; set; }
 
         #endregion
 
@@ -131,6 +151,7 @@ namespace Rock.Model
         public TaggedItemConfiguration()
         {
             this.HasRequired( p => p.Tag ).WithMany( p => p.TaggedItems ).HasForeignKey( p => p.TagId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

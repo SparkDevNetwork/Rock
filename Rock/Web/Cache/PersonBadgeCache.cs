@@ -17,7 +17,7 @@
 using System;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -54,6 +54,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The name.
         /// </value>
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -62,6 +63,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -70,6 +72,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The entity type id.
         /// </value>
+        [DataMember]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
@@ -78,6 +81,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The order.
         /// </value>
+        [DataMember]
         public int Order { get; set; }
 
         /// <summary>

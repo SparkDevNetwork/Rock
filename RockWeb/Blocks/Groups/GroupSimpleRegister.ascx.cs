@@ -150,9 +150,11 @@ namespace RockWeb.Blocks.Groups
                                         var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
                                         mergeFields.Add( "ConfirmationPage", pageReference.BuildUrl() );
 
-                                        var recipients = new List<RecipientData>();
-                                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
-                                        Email.Send( confirmationEmailTemplateGuid, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+                                        var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid );
+                                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                        emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                                        emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                                        emailMessage.Send();
                                     }
 
                                     ShowSuccess( GetAttributeValue( "SuccessMessage" ) );

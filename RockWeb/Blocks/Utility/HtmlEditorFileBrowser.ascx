@@ -15,7 +15,8 @@
             <ContentTemplate>
                 <div class="actions btn-group">
                     <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbCreateFolder_Click" CausesValidation="false" ToolTip="New Folder"><i class="fa fa-plus"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm  btn-default" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-pencil"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-pencil"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbMoveFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbMoveFolder_Click" CausesValidation="false" ToolTip="Move Folder"><i class="fa fa-external-link"></i></asp:LinkButton>
                     <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="Rock.dialogs.confirmDelete(event, 'folder and all its contents');" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete Folder"><i class="fa fa-times"></i></asp:LinkButton>
                     <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-sm  btn-default" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-refresh"></i></asp:LinkButton>
                 </div>
@@ -25,21 +26,22 @@
                 <div>
                     <div class="scroll-container scroll-container-vertical scroll-container-picker js-folder-treeview">
                         <div class="scrollbar">
-                            <div class="track">
+                            <asp:Panel ID="pnlTreeTrack" runat="server" CssClass="track">
                                 <div class="thumb">
                                     <div class="end"></div>
                                 </div>
-                            </div>
+                            </asp:Panel>
                         </div>
-                        <div class="viewport">
+                        <asp:Panel ID="pnlTreeViewPort" runat="server" CssClass="viewport">
                             <div class="overview">
                                 <asp:Label ID="lblFolders" CssClass="treeview treeview-items" runat="server" />
                             </div>
-                        </div>
+                        </asp:Panel>
                     </div>
                 </div>
-
+                 
                 <script type="text/javascript">
+                    var <%=pnlTreeViewPort.ClientID%>IScroll = null;
                     Sys.Application.add_load(function () {
 
                         var folderTreeData = $('.js-folder-treeview .treeview').data('rockTree');
@@ -53,17 +55,41 @@
                             });
 
                             // init scroll bars for folder divs
-                            $('.js-folder-treeview').tinyscrollbar({ size: 120, sizethumb: 20 });
+                            <%=pnlTreeViewPort.ClientID%>IScroll = new IScroll('#<%=pnlTreeViewPort.ClientID%>', {
+                                mouseWheel: true,
+                                indicators: {
+                                    el: '#<%=pnlTreeTrack.ClientID%>',
+                                    interactive: true,
+                                    resize: false,
+                                    listenY: true,
+                                    listenX: false,
+                                },
+                                click: false,
+                                preventDefaultException: { tagName: /.*/ }
+                            });
 
                             $('.js-folder-treeview .treeview').on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
                                 // update the folder treeview scroll bar
-                                $('.js-folder-treeview').tinyscrollbar_update('relative');
+                                if (<%=pnlTreeViewPort.ClientID%>IScroll) {
+                                    <%=pnlTreeViewPort.ClientID%>IScroll.refresh();
+                                }
                             });
                         }
 
                         // init the file list RockList on every load
                         $('.js-file-list .js-listview').rockList();
-                        $('.js-file-list').tinyscrollbar({ size: 120, sizethumb: 20 });
+                        new IScroll('#<%=pnlListViewPort.ClientID%>', {
+                            mouseWheel: true,
+                            indicators: {
+                                el: '#<%=pnlListTrack.ClientID%>',
+                                    interactive: true,
+                                    resize: false,
+                                    listenY: true,
+                                    listenX: false,
+                            },
+                            click: false,
+                            preventDefaultException: { tagName: /.*/ }
+                        });
 
                         // js for when a file delete is clicked
                         $('.js-file-list .js-delete-file').off('click');
@@ -77,6 +103,12 @@
                                     });
                                 }
                             });
+                        });
+
+                        // js for when a file download is clicked, allow standard href functionality.
+                        $('.js-file-list .js-download-file').off('click');
+                        $('.js-file-list .js-download-file').on('click', function (e, data) {
+                            e.stopPropagation();
                         });
 
                         // js for when a folder is selected
@@ -113,10 +145,12 @@
                         var selectedFolderPath = $('#<%=hfSelectedFolder.ClientID%>').val();
                         if (selectedFolderPath && selectedFolderPath != '') {
                             $('#<%=lbRenameFolder.ClientID%>').removeAttr('disabled');
+                            $('#<%=lbMoveFolder.ClientID%>').removeAttr('disabled');
                             $('#<%=lbDeleteFolder.ClientID%>').removeAttr('disabled');
                         }
                         else {
                             $('#<%=lbRenameFolder.ClientID%>').attr('disabled', 'disabled');
+                            $('#<%=lbMoveFolder.ClientID%>').attr('disabled', 'disabled');
                             $('#<%=lbDeleteFolder.ClientID%>').attr('disabled', 'disabled');
                         }
                     });
@@ -139,6 +173,13 @@
                     </Content>
                 </Rock:ModalDialog>
 
+                <Rock:ModalDialog runat="server" Title="Move Folder" ID="mdMoveFolder" OnSaveClick="mdMoveFolder_SaveClick" ValidationGroup="vgMoveFolder" ScrollbarEnabled="false">
+                    <Content>
+                        <Rock:RockTextBox runat="server" ID="tbMoveOrigFolderName" Label="Folder Name" ReadOnly="true" />
+                        <Rock:RockDropDownList runat="server" ID="ddlMoveFolderTarget" Label="Move To Folder" Required="true" ValidationGroup="vgMoveFolder" />
+                    </Content>
+                </Rock:ModalDialog>
+
                 <Rock:ModalDialog runat="server" Title="Create Folder" ID="mdCreateFolder" OnSaveClick="mdCreateFolder_SaveClick" ValidationGroup="vgCreateFolder" ScrollbarEnabled="false">
                     <Content>
                         <!-- prevent carriage return from making mdRenameFolder popup when you press enter( on FF and Chrome) -->
@@ -147,23 +188,25 @@
                 </Rock:ModalDialog>
 
                 <asp:HiddenField ID="hfSelectedFolder" runat="server" />
-                <Rock:FileUploader ID="fuprFileUpload" runat="server" IsBinaryFile="false" DisplayMode="Button" />
+                <div style="height: 45px;">
+                    <Rock:FileUploader ID="fuprFileUpload" runat="server" IsBinaryFile="false" DisplayMode="Button" />
+                </div>
 
                 <div>
                     <div class="scroll-container scroll-container-vertical scroll-container-picker js-file-list">
                         <div class="scrollbar">
-                            <div class="track">
+                            <asp:Panel ID="pnlListTrack" runat="server" CssClass="track">
                                 <div class="thumb">
                                     <div class="end"></div>
                                 </div>
-                            </div>
+                            </asp:Panel>
                         </div>
-                        <div class="viewport">
+                        <asp:Panel ID="pnlListViewPort" runat="server" CssClass="viewport">
                             <div class="overview">
                                 <Rock:NotificationBox ID="nbNoFilesInfo" runat="server" Text="No Files Found" Visible="false" NotificationBoxType="Info" />
                                 <asp:Label ID="lblFiles" CssClass="js-listview" runat="server" />
                             </div>
-                        </div>
+                        </asp:Panel>
                     </div>
                 </div>
 

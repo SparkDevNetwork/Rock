@@ -138,7 +138,7 @@ namespace Rock.Migrations
             UPDATE [BlockType] SET [Name]='Attribute Values', [Description]='Allows for editing the value(s) of a set of attributes for person.', [Category]='CRM > Person Detail' WHERE [Guid]='D70A59DC-16BE-43BE-9880-59598FA7A94C'
             UPDATE [BlockType] SET [Name]='Edit Family', [Description]='Allows you to edit a family.', [Category]='CRM > Person Detail' WHERE [Guid]='B4EB68FE-1A73-40FD-8236-78C9A015BDDE'
             UPDATE [BlockType] SET [Name]='Group Search', [Description]='Handles displaying group search results and redirects to the group detail page (via route ~/Group/) when only one match was found.', [Category]='Groups' WHERE [Guid]='F1E188A5-2F9D-4BA6-BCA1-82B2450DAC1C'
-            UPDATE [BlockType] SET [Name]='Scedule Builder', [Description]='Helps to build schedules to be used for checkin.', [Category]='Check-in' WHERE [Guid]='8CDB6E8D-A8DF-4144-99F8-7F78CC1AF7E4'
+            UPDATE [BlockType] SET [Name]='Schedule Builder', [Description]='Helps to build schedules to be used for checkin.', [Category]='Check-in' WHERE [Guid]='8CDB6E8D-A8DF-4144-99F8-7F78CC1AF7E4'
             UPDATE [BlockType] SET [Name]='Current Person', [Description]='Displays the name of the currenly logged in user.', [Category]='CMS' WHERE [Guid]='F7193487-1234-49D7-9CEC-7F5F452B7E3F'
             UPDATE [BlockType] SET [Name]='Group Type List', [Description]='Lists groups types that are available for checkin.', [Category]='Check-in' WHERE [Guid]='12E586CF-DB55-4654-A13E-1F825BBA1C7C'
             UPDATE [BlockType] SET [Name]='Ability Level Select', [Description]='Check-in Ability Level Select block', [Category]='Check-in' WHERE [Guid]='605389F5-5BC5-438F-8757-110328B0CED3'

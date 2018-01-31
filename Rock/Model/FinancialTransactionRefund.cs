@@ -30,6 +30,7 @@ namespace Rock.Model
     /// Represents a transaction where a giver/purchaser was refunded a full or partial amount 
     /// on a <see cref="Rock.Model.FinancialTransaction"/>.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialTransactionRefund" )]
     [DataContract]
     public partial class FinancialTransactionRefund : Model<FinancialTransactionRefund>

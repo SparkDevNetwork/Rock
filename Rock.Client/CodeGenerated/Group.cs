@@ -79,9 +79,6 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public bool? MustMeetRequirementsToAddMember { get; set; }
-
-        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
@@ -149,7 +146,6 @@ namespace Rock.Client
             this.IsSecurityRole = source.IsSecurityRole;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.MustMeetRequirementsToAddMember = source.MustMeetRequirementsToAddMember;
             this.Name = source.Name;
             this.Order = source.Order;
             this.ParentGroupId = source.ParentGroupId;

@@ -24,19 +24,38 @@ namespace Rock.Model
     /// </summary>
     public partial class FinancialTransactionService 
     {
+        /// <summary>
+        /// Gets a transaction by its transaction code.
+        /// </summary>
+        /// <param name="transactionCode">The transaction code.</param>
+        /// <returns></returns>
+        [Obsolete( "Use GetByTransactionCode(financialGatewayId, transaction). This one could return incorrect results if transactions from different financial gateways happen to use the same transaction code") ]
+        public FinancialTransaction GetByTransactionCode( string transactionCode )
+        {
+            return this.GetByTransactionCode( null, transactionCode );
+        }
 
         /// <summary>
         /// Gets a transaction by its transaction code.
         /// </summary>
-        /// <param name="transactionCode">A <see cref="System.String"/> representing the transaction code for the transaction</param>
-        /// <returns>The <see cref="Rock.Model.FinancialTransaction"/> that matches the transaction code, this value will be null if a match is not found.</returns>
-        public FinancialTransaction GetByTransactionCode( string transactionCode )
+        /// <param name="financialGatewayId">The financial gateway identifier.</param>
+        /// <param name="transactionCode">A <see cref="System.String" /> representing the transaction code for the transaction</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.FinancialTransaction" /> that matches the transaction code, this value will be null if a match is not found.
+        /// </returns>
+        public FinancialTransaction GetByTransactionCode( int? financialGatewayId, string transactionCode )
         {
             if ( !string.IsNullOrWhiteSpace( transactionCode ) )
             {
-                return Queryable()
-                    .Where( t => t.TransactionCode.Equals( transactionCode.Trim(), StringComparison.OrdinalIgnoreCase ) )
-                    .FirstOrDefault();
+                var qry = Queryable()
+                    .Where( t => t.TransactionCode.Equals( transactionCode.Trim(), StringComparison.OrdinalIgnoreCase ) );
+
+                if ( financialGatewayId.HasValue )
+                {
+                    qry = qry.Where( t => t.FinancialGatewayId.HasValue && t.FinancialGatewayId.Value == financialGatewayId.Value );
+                }
+
+                return qry.FirstOrDefault();
             }
             return null;
         }

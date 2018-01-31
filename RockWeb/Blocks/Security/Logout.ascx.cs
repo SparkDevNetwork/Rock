@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Security
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                 }
 
-                FormsAuthentication.SignOut();
+                Authorization.SignOut();
 
                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "RedirectPage" ) ) )
                 {

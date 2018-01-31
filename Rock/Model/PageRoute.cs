@@ -35,6 +35,7 @@ namespace Rock.Model
     /// for custom page routes to be created, which in turn allows us to use Friendlier Urls (for example the default New Account page can be accessed by /NewAccount 
     /// as well as /page/4).
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "PageRoute" )]
     [DataContract]
     public partial class PageRoute : Model<PageRoute>
@@ -86,6 +87,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Page"/> that is associated with the RoutePath.
         /// </value>
+        [LavaInclude]
         public virtual Page Page { get; set; }
 
         #endregion

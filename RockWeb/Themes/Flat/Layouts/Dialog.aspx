@@ -77,7 +77,6 @@
 
 <html class="no-js">
 <head runat="server">
-    <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title></title>
 
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>
@@ -139,6 +138,8 @@
 </html>
 <script>
     Sys.Application.add_load(function () {
-        Rock.controls.modal.updateSize();
+        new ResizeSensor($('#dialog'), function () {
+            $('#modal-popup iframe', window.parent.document).height($('#dialog').height());
+        });
     });
 </script>

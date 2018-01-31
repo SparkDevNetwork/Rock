@@ -133,6 +133,15 @@ namespace Rock.Client
         /// <summary />
         public DefinedValue CurrencyTypeValue { get; set; }
 
+        /// <summary />
+        public int? ExpirationMonth { get; set; }
+
+        /// <summary />
+        public int? ExpirationYear { get; set; }
+
+        /// <summary />
+        public string NameOnCard { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

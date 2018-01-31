@@ -40,18 +40,25 @@ namespace Rock.Rest.Controllers
             // get the ids of the page and layout so we can flush stuff after the base.Delete
             int? pageId = null;
             int? layoutId = null;
+            int? siteId = null;
 
             var block = this.Get( id );
             if ( block != null )
             {
                 pageId = block.PageId;
                 layoutId = block.LayoutId;
+                siteId = block.SiteId;
             }
 
             base.Delete( id );
 
             // flush all the cache stuff that involves the block
             Rock.Web.Cache.BlockCache.Flush( id );
+
+            if ( siteId.HasValue )
+            {
+                Rock.Web.Cache.PageCache.FlushSiteBlocks( siteId.Value );
+            }
 
             if ( layoutId.HasValue )
             {
@@ -69,8 +76,10 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Moves a block from one zone to another
         /// </summary>
-        /// <param name="block"></param>
-        /// <returns></returns>
+        /// <param name="id">The identifier.</param>
+        /// <param name="block">The block.</param>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/blocks/move/{id}" )]
@@ -91,12 +100,20 @@ namespace Rock.Rest.Controllers
 
             Rock.Web.Cache.BlockCache.Flush( id );
 
-            if ( model.LayoutId.HasValue && model.LayoutId != block.LayoutId )
+            if ( model.SiteId.HasValue && model.SiteId != block.SiteId )
+            {
+                Rock.Web.Cache.PageCache.FlushSiteBlocks( model.SiteId.Value );
+            }
+            else if ( model.LayoutId.HasValue && model.LayoutId != block.LayoutId )
             {
                 Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.LayoutId.Value );
             }
 
-            if ( block.LayoutId.HasValue )
+            if ( block.SiteId.HasValue )
+            {
+                Rock.Web.Cache.PageCache.FlushSiteBlocks( block.SiteId.Value );
+            }
+            else if ( block.LayoutId.HasValue )
             {
                 Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.LayoutId.Value );
             }
@@ -109,6 +126,7 @@ namespace Rock.Rest.Controllers
             model.Zone = block.Zone;
             model.PageId = block.PageId;
             model.LayoutId = block.LayoutId;
+            model.SiteId = block.SiteId;
 
             if ( model.IsValid )
             {

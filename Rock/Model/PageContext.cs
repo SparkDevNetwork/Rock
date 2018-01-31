@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <remarks>
     /// A good example of this is a <see cref="Rock.Model.Person"/> that is shared amongst all of the <see cref="Rock.Model.Block">Blocks</see> on the Person Detail Page.
     /// </remarks>
+    [RockDomain( "CMS" )]
     [Table( "PageContext" )]
     [DataContract]
     public partial class PageContext : Model<PageContext>
@@ -95,6 +96,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Page"/> that uses this PageContext.
         /// </value>
+        [LavaInclude]
         public virtual Page Page { get; set; }
 
         #endregion

@@ -1,0 +1,90 @@
+//
+// Update Panel Actions - animation for update panels
+// --------------------------------------------------
+
+.updateprogress-status {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  z-index: (@zindex-modal-background + 100);
+  padding: 15px 10px;
+  margin-left: -30px;
+  background-color: @spinner-bg;
+  border-radius: 120px;
+  box-shadow: 5px 5px 12px 3px rgba(0,0,0,.1);
+  opacity: 1;
+
+  .spinner {
+    width: 40px;
+    height: 30px;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .spinner > div {
+    display: inline-block;
+    width: 5px;
+    height: 100%;
+    background-color: @spinner-color;
+    -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
+            animation: stretchdelay 1.2s infinite ease-in-out;
+  }
+
+  .spinner .rect2 {
+    -webkit-animation-delay: -1.1s;
+            animation-delay: -1.1s;
+  }
+
+  .spinner .rect3 {
+    -webkit-animation-delay: -1.0s;
+            animation-delay: -1.0s;
+  }
+
+  .spinner .rect4 {
+    -webkit-animation-delay: -.9s;
+            animation-delay: -.9s;
+  }
+
+  .spinner .rect5 {
+    -webkit-animation-delay: -.8s;
+            animation-delay: -.8s;
+  }
+
+  @-webkit-keyframes stretchdelay {
+    0%, 40%, 100% {
+      -webkit-transform: scaleY(.4);
+    }
+
+    20% {
+      -webkit-transform: scaleY(1.0);
+    }
+  }
+
+  @keyframes stretchdelay {
+    0%, 40%, 100% {
+      -webkit-transform: scaleY(.4);
+              transform: scaleY(.4);
+    }
+
+    20% {
+      -webkit-transform: scaleY(1.0);
+              transform: scaleY(1.0);
+    }
+  }
+}
+
+@media @md {
+  .updateprogress-status {
+    padding: 30px 20px;
+    margin-left: -60px;
+
+    .spinner {
+      width: 80px;
+      height: 60px;
+
+      > div {
+        width: 10px;
+      }
+    }
+  }
+}

@@ -214,12 +214,17 @@ namespace Rock.Web.UI.Controls
             }
 
             // Get Id
-            object dataValue = DataBinder.Eval( container.DataItem, "id" );
-            if ( dataValue != DBNull.Value )
+            var idValue = DataBinder.Eval( container.DataItem, "id" ) as int?;
+            if ( idValue.HasValue && idValue > 0 )
             {
                 string url = page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
-                    EntityTypeId, dataValue.ToString(), title ) );
+                    EntityTypeId, idValue.ToString(), title ) );
                 lnk.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + url.EscapeQuotes() + "')" );
+                lnk.Visible = true;
+            }
+            else
+            {
+                lnk.Visible = false;
             }
         }
     }

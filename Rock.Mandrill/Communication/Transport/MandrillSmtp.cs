@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ namespace Rock.Communication.Transport
         {
             get
             {
-                return String.Format( "Email was recieved for delivery by Mandrill ({0})", RockDateTime.Now );
+                return String.Format( "Email was received for delivery by Mandrill ({0})", RockDateTime.Now );
             }
         }
 

@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class BenevolenceResultsController : Rock.Rest.ApiController<Rock.Model.BenevolenceResult>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BenevolenceResultsController"/> class.
+        /// </summary>
         public BenevolenceResultsController() : base( new Rock.Model.BenevolenceResultService( new Rock.Data.RockContext() ) ) { } 
     }
 }

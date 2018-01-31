@@ -216,6 +216,9 @@ namespace RockWeb.Blocks.Core
             entityType.Name = tbName.Text;
             entityType.FriendlyName = tbFriendlyName.Text;
             entityType.IsCommon = cbCommon.Checked;
+            entityType.IndexResultTemplate = ceIndexResultsTemplate.Text;
+            entityType.IndexDocumentUrl = ceIndexDocumentUrl.Text;
+            entityType.LinkUrlLavaTemplate = ceLinkUrl.Text;
 
             rockContext.SaveChanges();
 
@@ -278,6 +281,9 @@ namespace RockWeb.Blocks.Core
                 tbName.Enabled = false; // !entityType.IsEntity;
                 tbFriendlyName.Text = entityType.FriendlyName;
                 cbCommon.Checked = entityType.IsCommon;
+                ceIndexResultsTemplate.Text = entityType.IndexResultTemplate;
+                ceIndexDocumentUrl.Text = entityType.IndexDocumentUrl;
+                ceLinkUrl.Text = entityType.LinkUrlLavaTemplate;
             }
             else
             {
@@ -287,6 +293,9 @@ namespace RockWeb.Blocks.Core
                 tbName.Enabled = true;
                 tbFriendlyName.Text = string.Empty;
                 cbCommon.Checked = false;
+                ceIndexResultsTemplate.Text = string.Empty;
+                ceIndexDocumentUrl.Text = string.Empty;
+                ceLinkUrl.Text = string.Empty;
             }
 
             ShowDialog( "Edit" );

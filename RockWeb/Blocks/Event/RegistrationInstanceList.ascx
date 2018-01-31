@@ -32,8 +32,8 @@
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                                     <Rock:DateField DataField="StartDateTime" HeaderText="Start Date" SortExpression="StartDateTime" />
                                     <Rock:DateField DataField="EndDateTime" HeaderText="End Date" SortExpression="EndDateTime" />
-                                    <Rock:RockBoundField DataField="Details" HeaderText="Details" SortExpression="Details" />
-                                    <Rock:RockBoundField DataField="Registrants" HeaderText="Registrants" SortExpression="Registrants" />
+                                    <Rock:RockBoundField DataField="Registrants" HeaderText="Registrants" />
+                                    <Rock:RockBoundField DataField="WaitList" HeaderText="Wait List" />
                                     <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                                     <Rock:DeleteField OnClick="DeleteInstance_Click" />
                                 </Columns>

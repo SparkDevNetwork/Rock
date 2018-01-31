@@ -78,8 +78,8 @@
                         <Rock:RegistrationInstanceEditor ID="rieDetails" runat="server" />
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                            <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                            <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         </div>
                     </div>
 
@@ -99,16 +99,25 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockLiteral ID="lStartDate" runat="server" Label="Registration Starts" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockLiteral ID="lEndDate" runat="server" Label="Registration Ends" />
+                            </div>
+                        </div>
+
                         <Rock:RockLiteral ID="lDetails" runat="server" Label="Details"></Rock:RockLiteral>
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-instance-has-payments" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-instance" OnClick="btnDelete_Click" CausesValidation="false" />
                             <span class="pull-right">
                                 <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn btn-link" OnClick="btnPreview_Click" Visible="false" />
-                                <asp:LinkButton ID="btnSendPaymentReminder" runat="server" Text="Send Payment Reminder" CssClass="btn btn-link" OnClick="btnSendPaymentReminder_Click" Visible="false" />
+                                <asp:LinkButton ID="btnSendPaymentReminder" runat="server" Text="Send Payment Reminders" CssClass="btn btn-link" OnClick="btnSendPaymentReminder_Click" Visible="false" />
                             </span>
                         </div>
                     </fieldset>
@@ -129,6 +138,9 @@
                     </li>
                     <li id="liLinkage" runat="server">
                         <asp:LinkButton ID="lbLinkage" runat="server" Text="Linkages" OnClick="lbTab_Click" />
+                    </li>
+                     <li id="liWaitList" runat="server">
+                        <asp:LinkButton ID="lbWaitList" runat="server" Text="Wait List" OnClick="lbTab_Click" />
                     </li>
                     <li id="liGroupPlacement" runat="server">
                         <asp:LinkButton ID="lbGroupPlacement" runat="server" Text="Group Placement" OnClick="lbTab_Click" />
@@ -341,6 +353,40 @@
                     </div>
                 </asp:Panel>
 
+                <asp:Panel ID="pnlWaitList" runat="server" Visible="false" CssClass="panel panel-block">
+                    <div class="panel-heading">
+                        <h1 class="panel-title"><i class="fa fa-clock-o"></i> Wait List</h1>
+                    </div>
+                    <div class="panel-body">
+                        <Rock:ModalAlert ID="mdWaitListWarning" runat="server" />
+                        <div class="grid grid-panel">
+                            <Rock:GridFilter ID="fWaitList" runat="server" OnDisplayFilterValue="fWaitList_DisplayFilterValue" OnClearFilterClick="fWaitList_ClearFilterClick">
+                                <Rock:DateRangePicker ID="drpWaitListDateRange" runat="server" Label="Date Range" />
+                                <Rock:RockTextBox ID="tbWaitListFirstName" runat="server" Label="First Name" />
+                                <Rock:RockTextBox ID="tbWaitListLastName" runat="server" Label="Last Name" />
+                                <asp:PlaceHolder ID="phWaitListFormFieldFilters" runat="server" />
+                            </Rock:GridFilter>
+                            <Rock:Grid ID="gWaitList" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gWaitList_RowSelected" RowItemText="Wait List Individual" PersonIdField="PersonId" ExportSource="ColumnOutput">
+                                <Columns>
+                                    <Rock:SelectField ItemStyle-Width="48px" />
+                                    <Rock:RockTemplateField HeaderText="Wait List Order" >
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lWaitListOrder" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Wait List Individual" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName" ExcelExportBehavior="NeverInclude">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lWaitListIndividual" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockBoundField HeaderText="First Name" DataField="Person.NickName" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                    <Rock:RockBoundField HeaderText="Last Name" DataField="Person.LastName" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                    <Rock:RockBoundField HeaderText="Added Datetime" DataField="CreatedDateTime" SortExpression="CreatedDateTime" ExcelExportBehavior="AlwaysInclude" Visible="true" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                </asp:Panel>
+
                 <asp:Panel ID="pnlGroupPlacement" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
                         <h1 class="panel-title">
@@ -352,10 +398,12 @@
                         <Rock:SlidingDateRangePicker ID="sdrpGroupPlacementsDateRange" runat="server" Label="Registration Date Range" />
                         <Rock:RockTextBox ID="tbGroupPlacementsFirstName" runat="server" Label="First Name" />
                         <Rock:RockTextBox ID="tbGroupPlacementsLastName" runat="server" Label="Last Name" />
+                        <Rock:RockDropDownList ID="ddlGroupPlacementsInGroup" runat="server" Label="In Group"  />    
                         <Rock:RockDropDownList ID="ddlGroupPlacementsSignedDocument" runat="server" Label="Signed Document" />
                         <asp:PlaceHolder ID="phGroupPlacementsFormFieldFilters" runat="server" />
                     </Rock:GridFilter>
                     <div class="panel-body">
+                        <Rock:NotificationBox ID="nbPlacementNotifiction" runat="server" Visible="false" />
                         <div class="row">
                             <div class="col-sm-6">
                                 <Rock:GroupPicker ID="gpGroupPlacementParentGroup" runat="server" Label="Parent Group"

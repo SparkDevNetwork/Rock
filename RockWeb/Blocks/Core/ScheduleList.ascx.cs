@@ -15,9 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -34,8 +37,14 @@ namespace RockWeb.Blocks.Administration
     [Description( "Lists all the schedules." )]
 
     [LinkedPage("Detail Page")] 
-    public partial class ScheduleList : RockBlock
+    public partial class ScheduleList : RockBlock, ICustomGridColumns
     {
+        #region properties
+
+        private HashSet<int> _schedulesWithAttendance = null;
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -50,11 +59,59 @@ namespace RockWeb.Blocks.Administration
             gSchedules.Actions.ShowAdd = true;
             gSchedules.Actions.AddClick += gSchedules_Add;
             gSchedules.GridRebind += gSchedules_GridRebind;
+            gSchedules.RowDataBound += gSchedules_RowDataBound;
 
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gSchedules.Actions.ShowAdd = canAddEditDelete;
             gSchedules.IsDeleteEnabled = canAddEditDelete;
+
+            // make a custom delete confirmation dialog
+            gSchedules.ShowConfirmDeleteDialog = false;
+
+            string deleteScript = @"
+    $('table.js-grid-schedule-list a.grid-delete-button').click(function( e ){
+        var $btn = $(this);
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this schedule?', function (result) {
+            if (result) {
+                if ( $btn.closest('tr').hasClass('js-has-attendance') ) {
+                    Rock.dialogs.confirm('This schedule has attendance history. Are you sure that you want to delete this schedule and all of its attendance history?', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gSchedules, gSchedules.GetType(), "deleteScheduleScript", deleteScript, true );
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gSchedules control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
+        private void gSchedules_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var scheduleRow = e.Row.DataItem as object;
+
+                if ( scheduleRow != null )
+                {
+                    var scheduleId = (int)scheduleRow.GetPropertyValue( "Id" );
+                    
+                    if ( _schedulesWithAttendance.Contains(scheduleId) )
+                    {
+                        e.Row.AddCssClass( "js-has-attendance" );
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -140,7 +197,8 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            ScheduleService scheduleService = new ScheduleService( new RockContext() );
+            var rockContext = new RockContext();
+            ScheduleService scheduleService = new ScheduleService( rockContext );
             SortProperty sortProperty = gSchedules.SortProperty;
             var qry = scheduleService.Queryable().Select( a =>
                 new
@@ -150,14 +208,18 @@ namespace RockWeb.Blocks.Administration
                     CategoryName = a.Category.Name
                 } );
 
+            _schedulesWithAttendance = new HashSet<int>( new AttendanceService( rockContext ).Queryable().Where( a => a.ScheduleId.HasValue ).Select( a => a.ScheduleId.Value ).Distinct().ToList() );
+
             if ( sortProperty != null )
             {
-                gSchedules.DataSource = qry.Sort( sortProperty ).ToList();
+                qry = qry.Sort( sortProperty );
             }
             else
             {
-                gSchedules.DataSource = qry.OrderBy( s => s.Name ).ToList();
+                qry = qry.OrderBy( s => s.Name );
             }
+
+            gSchedules.SetLinqDataSource( qry.AsNoTracking() );
 
             gSchedules.EntityTypeId = EntityTypeCache.Read<Schedule>().Id;
             gSchedules.DataBind();

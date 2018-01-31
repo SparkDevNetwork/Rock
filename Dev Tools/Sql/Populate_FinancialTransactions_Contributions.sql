@@ -4,6 +4,7 @@ declare
   @authorizedPersonAliasId int = 1,
   @transactionCounter int = 0,
   @maxTransactionCount int = 200000, 
+  @MaxBatchNumber INT = 1000,
   @maxPersonAliasIdForTransactions int = (select max(Id) from (select top 40000 Id from PersonAlias order by Id) x),  /* limit to first 40000 persons in the database */ 
   @transactionDateTime datetime,
   @transactionAmount decimal(18,2),
@@ -12,8 +13,10 @@ declare
   @currencyTypeCash int = (select Id from DefinedValue where Guid = 'F3ADC889-1EE8-4EB6-B3FD-8C10F3C8AF93'),
   @creditCardTypeVisa int = (select Id from DefinedValue where Guid = 'FC66B5F8-634F-4800-A60D-436964D27B64'),
   @sourceTypeValueId int, 
-  @sourceTypeId int = (select top 1 Id from DefinedType where [Guid] = '4F02B41E-AB7D-4345-8A97-3904DDD89B01'), --FINANCIAL_SOURCE_TYPE 
+  @sourceTypeDefinedTypeId int = (select top 1 Id from DefinedType where [Guid] = '4F02B41E-AB7D-4345-8A97-3904DDD89B01'), --FINANCIAL_SOURCE_TYPE 
   @accountId int,
+  @batchId int,
+  @batchStatusOpen int = 1,
   @transactionId int,
   @financialPaymentDetailId int,
   @checkMicrEncrypted nvarchar(max) = null,
@@ -24,8 +27,42 @@ declare
 declare
   @daysBack int = @yearsBack * 366
 
+DECLARE 
+	@BatchNumber INT = 1
+	,@BatchName NVARCHAR(max)
+	,@BatchDate DATETIME = sysdatetime()
 
 begin
+
+-- create a bunch of batches
+WHILE @BatchNumber < @MaxBatchNumber
+BEGIN
+	SET @BatchName = CONCAT (
+			'Batch '
+			,@BatchNumber
+			);
+
+	if not exists(select * from FinancialBatch where Name = @BatchName)
+	begin
+	INSERT INTO [dbo].[FinancialBatch] (
+		[Name]
+		,[BatchStartDateTime]
+		,[Status]
+		,[ControlAmount]
+		,[Guid]
+		)
+	VALUES (
+		@BatchName
+		,@BatchDate
+		,1
+		,0.00
+		,newid()
+		)
+     end
+	SET @BatchNumber = @BatchNumber + 1;
+	SET @BatchDate = DATEADD(day, - 1, @BatchDate)
+END
+
 
 begin transaction
 
@@ -35,6 +72,9 @@ begin transaction
 */
 
 set @transactionDateTime = DATEADD(DAY, -@daysBack, SYSDATETIME())
+declare 
+  @MaxBatchId int = (select max(Id) from FinancialBatch),
+  @MaxAccountId int = (select max(Id) from FinancialAccount)
 
 while @transactionCounter < @maxTransactionCount
     begin
@@ -47,13 +87,19 @@ while @transactionCounter < @maxTransactionCount
           set @authorizedPersonAliasId =  (select top 1 Id from PersonAlias where Id <= rand() * @maxPersonAliasIdForTransactions order by Id desc);
         end
 
-		set @sourceTypeValueId = (select top 1 Id from DefinedValue where DefinedTypeId = @sourceTypeId order by NEWID())
+        set @sourceTypeValueId = (select top 1 Id from DefinedValue where DefinedTypeId = @sourceTypeDefinedTypeId order by NEWID())
 
         --set @checkMicrEncrypted = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
         set @checkMicrHash = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
 
 		insert into FinancialPaymentDetail ( CurrencyTypeValueId, CreditCardTypeValueId, [Guid] ) values (@currencyTypeCash, @creditCardTypeVisa, NEWID());
 		set @financialPaymentDetailId = SCOPE_IDENTITY()
+
+	   set @BatchId = null
+	   while @BatchId is null
+	   begin
+		  set @BatchId = (select top 1 id from FinancialBatch where Id = round(rand()*@MaxBatchId, 0))
+	   end
 
         INSERT INTO [dbo].[FinancialTransaction]
                    ([AuthorizedPersonAliasId]
@@ -70,13 +116,13 @@ while @transactionCounter < @maxTransactionCount
                    ,[Guid])
              VALUES
                    (@authorizedPersonAliasId
-                   ,null
+                   ,@batchId
                    ,@transactionDateTime
                    ,null
                    ,@transactionNote
                    ,@transactionTypeValueId
 				   ,@financialPaymentDetailId
-                   ,@sourceTypeId
+                   ,@sourceTypeValueId
                    ,@checkMicrEncrypted
                    ,@checkMicrHash
 				   ,@checkMicrParts
@@ -84,7 +130,11 @@ while @transactionCounter < @maxTransactionCount
         )
         set @transactionId = SCOPE_IDENTITY()
 
-        set @accountId = (select top 1 id from FinancialAccount where Id = round(RAND() * 2, 0) + 1)
+        set @accountId = null
+	   while @accountId is null
+	   begin
+		  set @accountId = (select top 1 id from FinancialAccount where Id = round(rand()*@MaxAccountId, 0))
+	   end
  
         -- For contributions, we just need to put in the AccountId (entitytype/entityid would be null)
         INSERT INTO [dbo].[FinancialTransactionDetail]

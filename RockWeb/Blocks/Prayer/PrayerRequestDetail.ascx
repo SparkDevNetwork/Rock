@@ -2,6 +2,9 @@
 
 <asp:UpdatePanel ID="upPrayerRequests" runat="server">
     <ContentTemplate>
+
+       <Rock:ModalAlert ID="maWarning" runat="server" />
+
         <asp:Panel ID="pnlDetails" runat="server">
 
             <div class="panel panel-block">
@@ -31,6 +34,7 @@
                                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                                     <Rock:DatePicker ID="dpExpirationDate" Text="Expires On" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="ExpirationDate" />
+                                    <Rock:CampusPicker ID="cpCampus" runat="server" />
                                 </div>
 
                                 <div class="col-md-3">
@@ -108,6 +112,7 @@
                         <div class="actions">
                             <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click" />
                             <asp:LinkButton ID="lbCancelView" runat="server" Text="Back" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                            <asp:LinkButton ID="lbDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="lbDelete_Click" />
                         </div>
 
                     </fieldset>

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Finance
 
     [ContextAware( typeof( Person ) )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the transaction summary.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/TransactionYearlySummary.lava' %}", "", 1 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 2 )]
+    [AccountsField( "Accounts", "Limit the results to transactions that match the selected accounts.", false, "", "", 2 )]
     public partial class TransactionYearlySummaryLava : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
@@ -116,6 +116,13 @@ namespace RockWeb.Blocks.Finance
                     qry = qry.Where( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId );
                 }
 
+                // Filter to configured Accounts.
+                var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+                if ( accountGuids.Any() )
+                {
+                    qry = qry.Where( t => accountGuids.Contains( t.Account.Guid ) );
+                }
+
                 List<SummaryRecord> summaryList;
 
                 using ( new Rock.Data.QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
@@ -157,10 +164,6 @@ namespace RockWeb.Blocks.Finance
                 mergeFields.Add( "Rows", yearsMergeObjects );
 
                 lLavaOutput.Text = string.Empty;
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lLavaOutput.Text = mergeFields.lavaDebugInfo( rockContext );
-                }
 
                 string template = GetAttributeValue( "LavaTemplate" );
 

@@ -30,9 +30,10 @@ namespace Rock.Model
     /// <remarks>
     /// A SiteDomain must have a matching Binding setup in IIS otherwise it will not resolve.
     /// </remarks>
+    [RockDomain( "CMS" )]
     [Table( "SiteDomain" )]
     [DataContract]
-    public partial class SiteDomain : Model<SiteDomain>
+    public partial class SiteDomain : Model<SiteDomain>, IOrdered
     {
 
         #region Entity Properties
@@ -71,6 +72,16 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Domain { get; set; }
 
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -81,6 +92,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site"/> that this SiteDomain is associated with.
         /// </value>
+        [LavaInclude]
         public virtual Site Site { get; set; }
 
         #endregion

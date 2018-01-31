@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ namespace Rock.Communication.Transport
     [TextField( "API Key", "The API Key provided by Mailgun " )]
     [IntegerField( "Port", "", false, 587, "", 3 )]
     [BooleanField( "Use SSL", "", true, "", 4 )]
+    [BooleanField( "Track Clicks", "", true, "", 5 )]
     public class MailgunSmtp : SMTPComponent
     {
         /// <summary>
@@ -49,7 +50,7 @@ namespace Rock.Communication.Transport
         {
             get
             {
-                return true;
+                return GetAttributeValue( "TrackClicks" ).AsBoolean( true );
             }
         }
 
@@ -63,7 +64,7 @@ namespace Rock.Communication.Transport
         {
             get
             {
-                return String.Format( "Email was recieved for delivery by Mailgun ({0})", RockDateTime.Now );
+                return String.Format( "Email was received for delivery by Mailgun ({0})", RockDateTime.Now );
             }
         }
 
@@ -74,10 +75,12 @@ namespace Rock.Communication.Transport
         /// <param name="headers">The headers.</param>
         public override void AddAdditionalHeaders( MailMessage message, Dictionary<string, string> headers )
         {
+            var trackClicks = GetAttributeValue( "TrackClicks" ).AsBoolean( true ) ? "yes" : "no";
+
             // add headers
-            message.Headers.Add( "X-Mailgun-Track", "yes" );
-            message.Headers.Add( "X-Mailgun-Track-Clicks", "yes" );
-            message.Headers.Add( "X-Mailgun-Track-Opens", "yes" );
+            message.Headers.Add( "X-Mailgun-Track", trackClicks );
+            message.Headers.Add( "X-Mailgun-Track-Clicks", trackClicks );
+            message.Headers.Add( "X-Mailgun-Track-Opens", trackClicks );
 
             if ( headers != null )
             {

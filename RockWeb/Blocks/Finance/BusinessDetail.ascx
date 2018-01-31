@@ -6,12 +6,16 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-briefcase"></i> <asp:Literal ID="lTitle" runat="server" /></h1>
+                    <h1 class="panel-title"><i class="fa fa-briefcase"></i>
+                        <asp:Literal ID="lTitle" runat="server" /></h1>
+                    <div class="panel-labels">
+                        <Rock:HighlightLabel ID="hlStatus" runat="server" />
+                    </div>
                 </div>
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 <div class="panel-body">
 
-                     <div id="pnlEditDetails" runat="server">
+                    <div id="pnlEditDetails" runat="server">
                         <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                         <asp:HiddenField ID="hfBusinessId" runat="server" />
                         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
@@ -25,8 +29,8 @@
                             </div>
                             <div class="col-md-9">
 
-                                <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" ValidationGroup="businessDetail" />
-                            
+                                <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" />
+
                                 <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
 
                                 <div class="row">
@@ -47,7 +51,7 @@
 
                                 <Rock:RockTextBox ID="tbEmail" runat="server" PrependText="<i class='fa fa-envelope'></i>" Label="Email Address" />
 
-                                <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference" >
+                                <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
                                     <asp:ListItem Text="Email Allowed" Value="EmailAllowed" Selected="True" />
                                     <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
                                     <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
@@ -84,13 +88,13 @@
                 </div>
             </div>
 
-            <div class="panel panel-block">
+            <asp:Panel ID="pnlContactList" runat="server" CssClass="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-users"></i> Business Contacts</h1>
                 </div>
                 <div class="panel-body">
                     <div class="grid grid-panel">
-                        <Rock:Grid ID="gContactList" runat="server" RowItemText="Contact" EmptyDataText="No Contacts Found" AllowSorting="true" OnRowSelected="gContactList_RowSelected" ShowConfirmDeleteDialog="false" >
+                        <Rock:Grid ID="gContactList" runat="server" RowItemText="Contact" EmptyDataText="No Contacts Found" AllowSorting="true" OnRowSelected="gContactList_RowSelected" ShowConfirmDeleteDialog="false">
                             <Columns>
                                 <Rock:RockBoundField DataField="FullName" HeaderText="Contact Name" SortExpression="FullName" />
                                 <Rock:DeleteField OnClick="gContactList_Delete" />
@@ -98,13 +102,13 @@
                         </Rock:Grid>
                     </div>
                 </div>
-            </div>
+            </asp:Panel>
 
 
             <Rock:ModalDialog ID="mdAddContact" runat="server" Title="Add Contact" ValidationGroup="AddContact">
                 <Content>
                     <asp:HiddenField ID="hfModalOpen" runat="server" />
-                    <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddContact"/>
+                    <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddContact" />
                     <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" ValidationGroup="AddContact" />
                 </Content>
             </Rock:ModalDialog>

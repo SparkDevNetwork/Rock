@@ -27,6 +27,11 @@ namespace Rock.SystemGuid
     public static class EntityType
     {
         /// <summary>
+        /// The guid for the Rock.Model.Attribute entity.
+        /// </summary>
+        public const string ATTRIBUTE = "5997C8D3-8840-4591-99A5-552919F90CBD";
+
+        /// <summary>
         /// The database authentication provider
         /// </summary>
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
@@ -42,14 +47,34 @@ namespace Rock.SystemGuid
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
 
         /// <summary>
+        /// The content channel type
+        /// </summary>
+        public const string CONTENT_CHANNEL = "44484685-477E-4668-89A6-84F29739EB68";
+
+        /// <summary>
+        /// The content channel item type
+        /// </summary>
+        public const string CONTENT_CHANNEL_ITEM = "BF12AE64-21FB-433B-A8A4-E40E8C426DDA";
+
+        /// <summary>
         /// The guid for the email communication medium
         /// </summary>
         public const string COMMUNICATION_MEDIUM_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";
 
         /// <summary>
+        /// The guid for the push notification communication medium
+        /// </summary>
+        public const string COMMUNICATION_MEDIUM_PUSH_NOTIFICATION = "3638C6DF-4FF3-4A52-B4B8-AFB754991597";
+
+        /// <summary>
         /// The guid for the email communication medium
         /// </summary>
         public const string COMMUNICATION_MEDIUM_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
+
+        /// <summary>
+        /// The guid for Rock.Model.CommunicationTemplate
+        /// </summary>
+        public const string COMMUNICATION_TEMPLATE = "A9493AFE-4316-4651-800D-5028E4C7444D";
 
         /// <summary>
         /// The guid for the Rock.Model.ConnectionActivityType entity
@@ -101,6 +126,11 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.DataView entity.
         /// </summary>
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
+
+        /// <summary>
+        /// The guid for the Rock.Model.DefinedType entity.
+        /// </summary>
+        public const string DEFINED_TYPE = "6028D502-79F4-4A74-9323-525E90F900C7";
 
         /// <summary>
         /// The guid for the Rock.Model.FinancialAccount entity.
@@ -163,6 +193,11 @@ namespace Rock.SystemGuid
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
 
         /// <summary>
+        /// The guid for the Rock.Model.RegistrationTemplate entity
+        /// </summary>
+        public const string REGISTRATION_TEMPLATE = "A01E3E99-A8AD-4C6C-BAAC-98795738BA70";
+
+        /// <summary>
         /// The LiquidSelect DataSelect field for Reporting
         /// </summary>
         public const string REPORTING_DATASELECT_LIQUIDSELECT = "C130DC52-CA31-45EE-A4F2-6C53A838EF3D";        
@@ -197,5 +232,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
 
+        /// <summary>
+        /// The guid for the Test Financial Gateway entity type
+        /// </summary>
+        public const string FINANCIAL_GATEWAY_TEST_GATEWAY = "C22B0247-7C9F-411B-A1F5-0051FCBAC199";
     }
 }

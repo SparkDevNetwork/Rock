@@ -82,6 +82,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<Communication>( Context ).Queryable().Any( a => a.SMSFromDefinedValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Communication.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<CommunicationTemplate>( Context ).Queryable().Any( a => a.SMSFromDefinedValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, CommunicationTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Device>( Context ).Queryable().Any( a => a.DeviceTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Device.FriendlyTypeName );
@@ -172,6 +184,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<InteractionChannel>( Context ).Queryable().Any( a => a.ChannelTypeMediumValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, InteractionChannel.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Location>( Context ).Queryable().Any( a => a.LocationTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Location.FriendlyTypeName );
@@ -229,6 +247,12 @@ namespace Rock.Model
             if ( new Service<Person>( Context ).Queryable().Any( a => a.TitleValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<PersonalDevice>( Context ).Queryable().Any( a => a.PersonalDeviceTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PersonalDevice.FriendlyTypeName );
                 return false;
             }  
  

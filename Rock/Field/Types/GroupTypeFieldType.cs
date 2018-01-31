@@ -29,6 +29,7 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a single (or null) GroupType
+    /// Stored as GroupType.Guid
     /// </summary>
     public class GroupTypeFieldType : FieldType, IEntityFieldType
     {
@@ -162,6 +163,7 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new GroupTypePicker { ID = id };
+            editControl.EnhanceForLongLists = true;
             var qryGroupTypes = new GroupTypeService( new RockContext() ).Queryable();
             
             if ( configurationValues.ContainsKey( GROUP_TYPE_PURPOSE_VALUE_GUID ) )
@@ -198,6 +200,8 @@ namespace Rock.Field.Types
                         return groupType.Guid.ToString();
                     }
                 }
+
+                return string.Empty;
             }
 
             return null;

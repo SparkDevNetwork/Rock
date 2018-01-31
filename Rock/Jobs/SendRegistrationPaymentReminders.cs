@@ -74,7 +74,7 @@ namespace Rock.Jobs
                 int sendCount = 0;
                 int registrationInstanceCount = 0;
 
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "ExternalApplicationRoot" );
+                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" );
 
                 RegistrationService registrationService = new RegistrationService( rockContext );
 
@@ -103,20 +103,18 @@ namespace Rock.Jobs
 
                         if ( registration.LastPaymentReminderDateTime < reminderDate )
                         {
-                            var recipients = new List<string>();
-
                             Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
                             mergeObjects.Add( "Registration", registration );
                             mergeObjects.Add( "RegistrationInstance", registration.RegistrationInstance );
 
-                            recipients.Add( registration.ConfirmationEmail );
-
-                            string message = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate.ResolveMergeFields( mergeObjects );
-                            string fromEmail = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail.ResolveMergeFields( mergeObjects );
-                            string fromName = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderFromName.ResolveMergeFields( mergeObjects );
-                            string subject = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject.ResolveMergeFields( mergeObjects );
-
-                            Email.Send( fromEmail, fromName, subject, recipients, message, appRoot );
+                            var emailMessage = new RockEmailMessage();
+                            emailMessage.AdditionalMergeFields = mergeObjects;
+                            emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeObjects ) );
+                            emailMessage.FromEmail = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail;
+                            emailMessage.FromName = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject;
+                            emailMessage.Subject = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderFromName;
+                            emailMessage.Message = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate;
+                            emailMessage.Send();
 
                             registration.LastPaymentReminderDateTime = RockDateTime.Now;
                             rockContext.SaveChanges();

@@ -216,15 +216,18 @@ namespace Rock.CheckIn
 
             foreach ( var possibleSchedule in PossibleSchedules )
             {
-                foreach ( var groupType in GroupTypes.Where( t => t.PreSelected || !onlyPreSelected ) )
+                var scheduleId = possibleSchedule.Schedule.Id;
+
+                foreach ( var groupType in GroupTypes.Where( t => t.AvailableForSchedule.Contains( scheduleId ) && ( t.PreSelected || !onlyPreSelected ) ) )
                 {
-                    foreach ( var group in groupType.Groups.Where( t => t.PreSelected || !onlyPreSelected ) )
+                    foreach ( var group in groupType.Groups.Where( t => t.AvailableForSchedule.Contains( scheduleId ) && ( t.PreSelected || !onlyPreSelected ) ) )
                     {
-                        foreach ( var location in group.Locations.Where( t => t.PreSelected || !onlyPreSelected ) )
+                        foreach ( var location in group.Locations.Where( t => t.AvailableForSchedule.Contains( scheduleId ) && ( t.PreSelected || !onlyPreSelected ) ) )
                         {
-                            foreach ( var schedule in location.Schedules.Where( s => s.Schedule.Id == possibleSchedule.Schedule.Id && ( s.PreSelected || !onlyPreSelected ) ) )
+                            foreach ( var schedule in location.Schedules.Where( s => s.Schedule.Id == scheduleId && ( s.PreSelected || !onlyPreSelected ) ) )
                             {
-                                if ( !onlyOneOptionPerSchedule || !options.Any( o => o.Schedule.Schedule.Id == schedule.Schedule.Id ) )
+                                if ( location.AvailableForSchedule.Contains( schedule.Schedule.Id ) && 
+                                    ( !onlyOneOptionPerSchedule || !options.Any( o => o.Schedule.Schedule.Id == schedule.Schedule.Id ) ) )
                                 {
                                     options.Add( new CheckInPersonSummary( schedule, groupType, group, location ) );
                                 }
@@ -282,13 +285,8 @@ namespace Rock.CheckIn
         {
             if ( selectedOnly )
             {
-                if ( PossibleSchedules.Any() )
-                {
-                    var selectedScheduleIds = SelectedSchedules.Select( s => s.Schedule.Id ).ToList();
-                    return GroupTypes.Where( t => t.SelectedForSchedule.Any( s => selectedScheduleIds.Contains( s ) ) ).ToList();
-                }
-
-                return GroupTypes.Where( t => t.Selected ).ToList();
+                var selectedScheduleIds = SelectedSchedules.Select( s => s.Schedule.Id ).ToList();
+                return GroupTypes.Where( t => t.Selected || t.SelectedForSchedule.Any( s => selectedScheduleIds.Contains( s ) ) ).ToList();
             }
 
             return GroupTypes;
@@ -361,10 +359,10 @@ namespace Rock.CheckIn
         [Rock.Data.LavaIgnore]
         public object this[object key]
         {
-           get
+            get
             {
-               switch( key.ToStringSafe() )
-               {
+                switch ( key.ToStringSafe() )
+                {
                     case "FamilyMember": return FamilyMember;
                     case "LastCheckIn": return LastCheckIn;
                     case "FirstTime": return FirstTime;
@@ -372,7 +370,7 @@ namespace Rock.CheckIn
                     case "GroupTypes": return GetGroupTypes( true );
                     case "SelectedOptions": return SelectedOptions;
                     default: return Person[key];
-               }
+                }
             }
         }
 
@@ -514,9 +512,7 @@ namespace Rock.CheckIn
 
                 foreach ( var attribute in groupType.GroupType.Attributes.OrderBy( a => a.Value.Order ) )
                 {
-                    if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid() &&
-                        attribute.Value.QualifierValues.ContainsKey( "binaryFileType" ) &&
-                        attribute.Value.QualifierValues["binaryFileType"].Value.Equals( SystemGuid.BinaryFiletype.CHECKIN_LABEL, StringComparison.OrdinalIgnoreCase ) )
+                    if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.LABEL.AsGuid() )
                     {
                         Guid? binaryFileGuid = groupType.GroupType.GetAttributeValue( attribute.Key ).AsGuidOrNull();
                         if ( binaryFileGuid.HasValue && binaryFileGuid.Value == label.Guid )

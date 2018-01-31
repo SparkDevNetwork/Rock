@@ -40,7 +40,8 @@ namespace RockWeb.Blocks.Core
     [Description( "Block for displaying the history of changes to a particular entity." )]
 
     [ContextAware]
-    public partial class HistoryLog : RockBlock
+    [TextField( "Heading", "The Lava template to use for the heading. <span class='tip tip-lava'></span>", false, "{{ Entity.EntityStringValue }} (ID:{{ Entity.Id }})", "", 0 )]
+    public partial class HistoryLog : RockBlock, ISecondaryBlock
     {
 
         #region Fields
@@ -65,6 +66,10 @@ namespace RockWeb.Blocks.Core
 
             gHistory.DataKeyNames = new string[] { "Id" };
             gHistory.GridRebind += gHistory_GridRebind;
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -78,14 +83,16 @@ namespace RockWeb.Blocks.Core
             _entity = this.ContextEntity();
             if ( _entity != null )
             {
-                lHeading.Text = string.Format( "{0} (ID:{1})", _entity.ToString(), _entity.Id );
-
-                IModel model = _entity as IModel;
                 if ( !Page.IsPostBack )
                 {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                    mergeFields.Add( "Entity", _entity );
+                    lHeading.Text = GetAttributeValue( "Heading" ).ResolveMergeFields( mergeFields );
+
                     BindFilter();
                     BindGrid();
 
+                    IModel model = _entity as IModel;
                     if ( model != null && model.CreatedDateTime.HasValue )
                     {
                         hlDateAdded.Text = String.Format( "Date Created: {0}", model.CreatedDateTime.Value.ToShortDateString() );
@@ -101,6 +108,20 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "Entity", _entity );
+            lHeading.Text = GetAttributeValue( "Heading" ).ResolveMergeFields( mergeFields );
+
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the gfSettings control.
@@ -346,6 +367,15 @@ namespace RockWeb.Blocks.Core
             }
 
             return caption;
+        }
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlList.Visible = visible;
         }
 
         #endregion

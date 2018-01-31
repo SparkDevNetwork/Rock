@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class BackgroundChecksController : Rock.Rest.ApiController<Rock.Model.BackgroundCheck>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundChecksController"/> class.
+        /// </summary>
         public BackgroundChecksController() : base( new Rock.Model.BackgroundCheckService( new Rock.Data.RockContext() ) ) { } 
     }
 }

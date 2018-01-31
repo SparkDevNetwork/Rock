@@ -505,8 +505,7 @@
 
                     // move the delete button
                     $('#gmnoprint-delete-button_' + self.controlId).css({
-                        left: '105px',
-                        top: '40',
+                        left: '200px',
                     });
 
                 }
@@ -532,8 +531,7 @@
 
                     // move the delete button
                     $('#gmnoprint-delete-button_' + self.controlId).css({
-                        left: '160px',
-                        top: '40',
+                        left: '200px',
                     });
                 }
 

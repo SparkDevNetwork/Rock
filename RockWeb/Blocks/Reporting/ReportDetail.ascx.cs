@@ -113,7 +113,7 @@ namespace RockWeb.Blocks.Reporting
                     return;
                 }
 
-                BindGrid( report );
+                BindGrid( report, false );
             }
         }
 
@@ -143,6 +143,7 @@ namespace RockWeb.Blocks.Reporting
             if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
             {
                 sm.AsyncPostBackTimeout = databaseTimeout + 5;
+                Server.ScriptTimeout = databaseTimeout + 5;
             }
         }
 
@@ -207,54 +208,67 @@ namespace RockWeb.Blocks.Reporting
         {
             // rebuild the CustomKeys list based on the current field titles
             kvSortFields.CustomKeys = new Dictionary<string, string>();
+            vMergeFields.CustomValues = new Dictionary<string, string>();
+            vRecipientFields.CustomValues = new Dictionary<string, string>();
+
             foreach ( var panelWidget in phReportFields.ControlsOfTypeRecursive<PanelWidget>() )
             {
-                Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
-                if ( SelectedFieldTypeSupportsSorting( panelWidget ) )
-                {
-                    kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), panelWidget.Title );
-                }
-            }
-        }
+                bool supportsSorting = true;
+                bool supportsRecipients = false;
 
-        /// <summary>
-        /// Selecteds the field type supports sorting.
-        /// </summary>
-        /// <param name="panelWidget">The panel widget.</param>
-        /// <returns></returns>
-        private bool SelectedFieldTypeSupportsSorting( PanelWidget panelWidget )
-        {
-            try
-            {
-                string ddlFieldsId = panelWidget.ID + "_ddlFields";
-                RockDropDownList ddlFields = phReportFields.ControlsOfTypeRecursive<RockDropDownList>().First( a => a.ID == ddlFieldsId );
-                bool fieldSupportsSorting = true;
-                var fieldTypeSelection = GetSelectedFieldTypeSelection( ddlFields );
-                if ( fieldTypeSelection != null )
+                try
                 {
-                    if ( fieldTypeSelection.ReportFieldType == ReportFieldType.DataSelectComponent )
+                    string ddlFieldsId = panelWidget.ID + "_ddlFields";
+                    RockDropDownList ddlFields = phReportFields.ControlsOfTypeRecursive<RockDropDownList>().First( a => a.ID == ddlFieldsId );
+                    var fieldTypeSelection = GetSelectedFieldTypeSelection( ddlFields );
+                    if ( fieldTypeSelection != null )
                     {
-                        var entityTypeId = fieldTypeSelection.FieldSelection.AsIntegerOrNull();
-                        if ( entityTypeId.HasValue )
+                        Type fieldType = null;
+
+                        if ( fieldTypeSelection.ReportFieldType == ReportFieldType.DataSelectComponent )
                         {
-                            var dataSelectComponent = this.GetDataSelectComponent( new RockContext(), entityTypeId.Value );
-                            if ( dataSelectComponent != null )
+                            var entityTypeId = fieldTypeSelection.FieldSelection.AsIntegerOrNull();
+                            if ( entityTypeId.HasValue )
                             {
-                                if ( dataSelectComponent.SortProperties( string.Empty ) == string.Empty )
+                                var dataSelectComponent = this.GetDataSelectComponent( new RockContext(), entityTypeId.Value );
+                                if ( dataSelectComponent != null )
                                 {
-                                    fieldSupportsSorting = false;
+                                    if ( dataSelectComponent.SortProperties( string.Empty ) == string.Empty )
+                                    {
+                                        supportsSorting = false;
+                                    }
+
+                                    fieldType = dataSelectComponent.ColumnFieldType;
+                                    if ( dataSelectComponent is IRecipientDataSelect )
+                                    {
+                                        fieldType = ( (IRecipientDataSelect)dataSelectComponent ).RecipientColumnFieldType;
+                                    }
                                 }
                             }
                         }
+
+                        supportsRecipients = fieldType.Equals( typeof( int ) ) || fieldType.Equals( typeof( IEnumerable<int> ) );
                     }
                 }
+                catch
+                {
+                    // if an exception occurred, ignore and assume it supports sorting and doesn't support recipients
+                    supportsSorting = true;
+                    supportsRecipients = false;
+                }
 
-                return fieldSupportsSorting;
-            }
-            catch
-            {
-                // if an exception occurred, ignore and assume it supports sorting
-                return true;
+                Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
+                if ( supportsSorting )
+                {
+                    kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), panelWidget.Title );
+                }
+
+                vMergeFields.CustomValues.Add( reportFieldGuid.ToString(), panelWidget.Title );
+
+                if ( supportsRecipients )
+                {
+                    vRecipientFields.CustomValues.Add( reportFieldGuid.ToString(), panelWidget.Title );
+                }
             }
         }
 
@@ -277,16 +291,16 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gReport_GridRebind( object sender, EventArgs e )
+        protected void gReport_GridRebind( object sender, GridRebindEventArgs e )
         {
             var report = new ReportService( new RockContext() ).Get( hfReportId.ValueAsInt() );
-            BindGrid( report );
+            BindGrid( report, e.IsCommunication );
         }
 
         /// <summary>
         /// Binds the grid.
         /// </summary>
-        private void BindGrid( Report report )
+        private void BindGrid( Report report, bool isCommunication )
         {
             if ( !this.ShowResults )
             {
@@ -297,7 +311,7 @@ namespace RockWeb.Blocks.Reporting
 
             int? databaseTimeoutSeconds = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull();
             string errorMessage;
-            ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, databaseTimeoutSeconds, out errorMessage );
+            ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, databaseTimeoutSeconds, isCommunication, out errorMessage );
             if ( !string.IsNullOrWhiteSpace( errorMessage ) )
             {
                 nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
@@ -323,6 +337,8 @@ namespace RockWeb.Blocks.Reporting
             ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportFieldGuid, ReportFieldType = reportFieldType, FieldSelection = fieldSelection } );
             AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true, new RockContext(), true, new ReportField { ShowInGrid = true } );
             kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), "(untitled)" );
+            vMergeFields.CustomValues.Add( reportFieldGuid.ToString(), "(untitled)" );
+            vRecipientFields.CustomValues.Add( reportFieldGuid.ToString(), "(untitled)" );
         }
 
         /// <summary>
@@ -475,6 +491,7 @@ namespace RockWeb.Blocks.Reporting
             report.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             report.DataViewId = ddlDataView.SelectedValueAsInt();
             report.FetchTop = nbFetchTop.Text.AsIntegerOrNull();
+            report.QueryHint = tbQueryHint.Text;
 
             if ( !Page.IsValid )
             {
@@ -498,6 +515,10 @@ namespace RockWeb.Blocks.Reporting
 
             var allPanelWidgets = phReportFields.ControlsOfTypeRecursive<PanelWidget>();
             int columnOrder = 0;
+
+            var mergeFields = vMergeFields.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+            var recipientFields = vRecipientFields.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+
             foreach ( var panelWidget in allPanelWidgets )
             {
                 string ddlFieldsId = panelWidget.ID + "_ddlFields";
@@ -549,6 +570,9 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 reportField.Guid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
+
+                reportField.IsCommunicationMergeField = mergeFields.Contains( reportField.Guid );
+                reportField.IsCommunicationRecipientField = recipientFields.Contains( reportField.Guid );
 
                 report.ReportFields.Add( reportField );
             }
@@ -1046,6 +1070,7 @@ namespace RockWeb.Blocks.Reporting
             LoadDropdownsForEntityType( etpEntityType.SelectedEntityTypeId );
             ddlDataView.SetValue( report.DataViewId );
             nbFetchTop.Text = report.FetchTop.ToString();
+            tbQueryHint.Text = report.QueryHint;
 
             ReportFieldsDictionary = new List<ReportFieldInfo>();
             RockContext rockContext = new RockContext();
@@ -1055,11 +1080,19 @@ namespace RockWeb.Blocks.Reporting
             kvSortFields.CustomValues.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
             kvSortFields.CustomValues.Add( SortDirection.Descending.ConvertToInt().ToString(), "Descending" );
 
+            vMergeFields.CustomValues = new Dictionary<string, string>();
+            vRecipientFields.CustomValues = new Dictionary<string, string>();
+
             kvSortFields.Value = report.ReportFields.Where( a => a.SortOrder.HasValue ).OrderBy( a => a.SortOrder.Value ).Select( a => string.Format( "{0}^{1}", a.Guid, a.SortDirection.ConvertToInt() ) ).ToList().AsDelimited( "|" );
+            vMergeFields.Value = report.ReportFields.Where( a => a.IsCommunicationMergeField.HasValue && a.IsCommunicationMergeField.Value ).OrderBy( a => a.ColumnOrder ).Select( a => string.Format( "{0}", a.Guid ) ).ToList().AsDelimited( "|" );
+            vRecipientFields.Value = report.ReportFields.Where( a => a.IsCommunicationRecipientField.HasValue && a.IsCommunicationRecipientField.Value ).OrderBy( a => a.ColumnOrder ).Select( a => string.Format( "{0}", a.Guid ) ).ToList().AsDelimited( "|" );
 
             foreach ( var reportField in report.ReportFields.OrderBy( a => a.ColumnOrder ) )
             {
                 kvSortFields.CustomKeys.Add( reportField.Guid.ToString(), reportField.ColumnHeaderText );
+                vMergeFields.CustomValues.Add( reportField.Guid.ToString(), reportField.ColumnHeaderText );
+                vRecipientFields.CustomValues.Add( reportField.Guid.ToString(), reportField.ColumnHeaderText );
+
                 string fieldSelection;
                 if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )
                 {
@@ -1073,6 +1106,7 @@ namespace RockWeb.Blocks.Reporting
                 ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportField.Guid, ReportFieldType = reportField.ReportFieldType, FieldSelection = fieldSelection } );
                 AddFieldPanelWidget( reportField.Guid, reportField.ReportFieldType, fieldSelection, false, rockContext, true, reportField );
             }
+
         }
 
         /// <summary>
@@ -1096,7 +1130,7 @@ namespace RockWeb.Blocks.Reporting
                 lbDataView.Visible = false;
             }
 
-            BindGrid( report );
+            BindGrid( report, false );
         }
 
         /// <summary>

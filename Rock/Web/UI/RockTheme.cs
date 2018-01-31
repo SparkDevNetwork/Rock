@@ -108,7 +108,7 @@ namespace Rock.Web.UI
         public bool Compile(out string messages)
         {
             messages = string.Empty;
-            bool result = true;
+            bool compiledSuccessfully = true;
 
             try
             {
@@ -117,8 +117,11 @@ namespace Rock.Web.UI
                 {
                     FileInfo[] files = themeDirectory.GetFiles();
 
+                    // Good documentation on options
+                    // https://www.codeproject.com/Articles/710676/LESS-Web-config-DotlessConfiguration-Options
                     DotlessConfiguration dotLessConfiguration = new DotlessConfiguration();
                     dotLessConfiguration.MinifyOutput = true;
+                    dotLessConfiguration.DisableVariableRedefines = true;
                     //dotLessConfiguration.RootPath = themeDirectory.FullName;
 
                     Directory.SetCurrentDirectory( themeDirectory.FullName );
@@ -132,6 +135,13 @@ namespace Rock.Web.UI
                             {
                                 string cssSource = LessWeb.Parse( File.ReadAllText( file.FullName ), dotLessConfiguration );
                                 File.WriteAllText( file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" ), cssSource );
+
+                                // check for compile errors (an empty css source returned)
+                                if (cssSource == string.Empty )
+                                {
+                                    messages += "A compile error occurred on " + file.Name;
+                                    compiledSuccessfully = false;
+                                }
                             }
                         }
                     }
@@ -139,11 +149,11 @@ namespace Rock.Web.UI
             }
             catch ( Exception ex )
             {
-                result = false;
+                compiledSuccessfully = false;
                 messages = ex.Message;
             }
 
-            return result;
+            return compiledSuccessfully;
         }
 
         /// <summary>

@@ -104,7 +104,10 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
+            target.IsAnalytic = source.IsAnalytic;
+            target.IsAnalyticHistory = source.IsAnalyticHistory;
             target.IsGridColumn = source.IsGridColumn;
+            target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsMultiValue = source.IsMultiValue;
             target.IsRequired = source.IsRequired;
             target.IsSystem = source.IsSystem;

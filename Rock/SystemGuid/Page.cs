@@ -534,6 +534,11 @@ namespace Rock.SystemGuid
         public const string EDIT_SCHEDULED_TRANSACTION_SCHEDULED_TRANSACTION = "F1C3BBD3-EE91-4DDD-8880-1542EBCD8041";
 
         /// <summary>
+        /// Gets the Email Analytics page guid
+        /// </summary>
+        public const string EMAIL_ANALYTICS = "DF014200-72A3-48A0-A953-E594E5410E36";
+
+        /// <summary>
         /// Gets the Email Preference page guid
         /// ParentPage: Support Pages
         /// </summary>
@@ -1144,6 +1149,11 @@ namespace Rock.SystemGuid
         /// ParentPage: Functions
         /// </summary>
         public const string PLEDGE_LIST = "1570D2AF-4FE2-4FC7-BED9-F20EBCBE9867";
+
+        /// <summary>
+        /// The PowerBI Account Registration Page
+        /// </summary>
+        public const string POWERBI_ACCOUNT_REGISTRATION = "BB65848A-3EBD-D181-4150-956A39FFE57E";
 
         /// <summary>
         /// Gets the Power Tools page guid

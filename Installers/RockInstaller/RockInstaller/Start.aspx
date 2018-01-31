@@ -1,6 +1,7 @@
 ﻿<%@ Page Language="C#"%>
 <%@ Import Namespace="System.Net"  %>
 <%@ Import Namespace="System.IO"  %>
+<%@ Import Namespace="Microsoft.Win32"  %>
 
 <!--
                                INNNN                    
@@ -48,7 +49,7 @@
 
 <script language="CS" runat="server">
 
-    const string requiredDotnetVersion = "4.5.1";
+    const string requiredDotnetVersion = "4.5.2";
     public string redirectPage = string.Empty;
     public string serverUrl = "https://rockrms.blob.core.windows.net/install/";
 
@@ -383,7 +384,7 @@
         EnvironmentCheckResult result = new EnvironmentCheckResult();
         result.Message = "Could not write to the server's file system.";
         result.Message = String.Format( "The username {0} does not have write access to the server's file system.", System.Security.Principal.WindowsIdentity.GetCurrent().Name );
-        result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#WebServerPermissions";
+        result.HelpLink = "https://www.rockrms.com/Rock/LetsFixThis#WebServerPermissions";
         result.DidPass = false;
         
         string filename = Server.MapPath( "." ) + @"\write-permission.test";
@@ -412,7 +413,7 @@
     private EnvironmentCheckResult DotNetVersionTest()
     {
         EnvironmentCheckResult result = new EnvironmentCheckResult();
-        result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion";
+        result.HelpLink = "https://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion";
         result.DidPass = false;
 
         // check .net
@@ -426,9 +427,10 @@
         {
             result.DidPass = true;
         }
-        else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build == 30319 && System.Environment.Version.Revision >= 18408 )
+        else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build == 30319 )
         {
-            result.DidPass = true;
+            // Once we get to 4.5 Microsoft recommends we test via the Registry...
+            result.DidPass = Check45PlusFromRegistry();
         }
 
         string version = System.Environment.Version.Major.ToString() + "." + System.Environment.Version.ToString();
@@ -440,17 +442,38 @@
         else
         {
             result.Message = String.Format( "The server does not have the correct .Net runtime.  You have .Net version {0} Rock requires version {1}.", version, requiredDotnetVersion );
-            result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion";
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Suggested approach to check which version of the .Net framework is intalled when using version 4.5 or later
+    /// as per https://msdn.microsoft.com/en-us/library/hh925568(v=vs.110).aspx.
+    /// </summary>
+    /// <returns>a string containing the human readable version of the .Net framework</returns>
+    private static bool Check45PlusFromRegistry()
+    {
+        const string subkey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
+        using ( RegistryKey ndpKey = RegistryKey.OpenBaseKey( RegistryHive.LocalMachine, RegistryView.Registry32 ).OpenSubKey( subkey ) )
+        {
+            // Check if Release is >= 379893 (4.5.2)
+            if ( ndpKey != null && ndpKey.GetValue( "Release" ) != null && ( int ) ndpKey.GetValue( "Release" ) >= 379893 )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 
     // check dot net version
     private EnvironmentCheckResult DirectoryIsApplicationTest()
     {
         EnvironmentCheckResult result = new EnvironmentCheckResult();
-        result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#DirectoryNotApplication";
+        result.HelpLink = "https://www.rockrms.com/Rock/LetsFixThis#DirectoryNotApplication";
         result.DidPass = true;
 
         string applicationPath = Request.ServerVariables["APPL_PHYSICAL_PATH"].ToLower();
@@ -468,7 +491,7 @@
     private EnvironmentCheckResult RockInstalledTest()
     {
         EnvironmentCheckResult isInstalledResult = new EnvironmentCheckResult();
-        isInstalledResult.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#IsRockInstalledAlready";
+        isInstalledResult.HelpLink = "https://www.rockrms.com/Rock/LetsFixThis#IsRockInstalledAlready";
         isInstalledResult.Message = "Website is empty";
         isInstalledResult.DidPass = true;
         

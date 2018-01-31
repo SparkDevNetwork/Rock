@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -19,6 +35,10 @@ namespace Westwind.Web.WebApi
     /// </summary>
     public class NakedBodyParameterBinding : HttpParameterBinding
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NakedBodyParameterBinding"/> class.
+        /// </summary>
+        /// <param name="descriptor">An <see cref="T:System.Web.Http.Controllers.HttpParameterDescriptor" /> that describes the parameters.</param>
         public NakedBodyParameterBinding( HttpParameterDescriptor descriptor )
             : base( descriptor )
         {
@@ -36,17 +56,10 @@ namespace Westwind.Web.WebApi
                                                     HttpActionContext actionContext,
                                                     CancellationToken cancellationToken )
         {
-            var binding = actionContext
-                .ActionDescriptor
-                .ActionBinding;
-
-            if ( binding.ParameterBindings.Length > 1 ||
-                actionContext.Request.Method == HttpMethod.Get )
+            if (  actionContext.Request.Method == HttpMethod.Get )
                 return EmptyTask.Start();
 
-            var type = binding
-                        .ParameterBindings[0]
-                        .Descriptor.ParameterType;
+            var type = this.Descriptor.ParameterType;
 
             if ( type == typeof( string ) )
             {
@@ -72,6 +85,9 @@ namespace Westwind.Web.WebApi
             throw new InvalidOperationException( "Only string and byte[] are supported for [NakedBody] parameters" );
         }
 
+        /// <summary>
+        /// Returns a value indicating whether this <see cref="T:System.Web.Http.Controllers.HttpParameterBinding" /> instance will read the entity body of the HTTP message.
+        /// </summary>
         public override bool WillReadBody
         {
             get
@@ -91,6 +107,10 @@ namespace Westwind.Web.WebApi
     /// </summary>
     public class EmptyTask
     {
+        /// <summary>
+        /// Starts this instance.
+        /// </summary>
+        /// <returns></returns>
         public static Task Start()
         {
             var taskSource = new TaskCompletionSource<AsyncVoid>();

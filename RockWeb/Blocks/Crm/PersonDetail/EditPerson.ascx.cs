@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -47,6 +48,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [SecurityAction( "EditFinancials", "The roles and/or users that can edit financial information for the selected person." )]
     [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected person." )]
     [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
+    [BooleanField("Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0)]
+    [BooleanField("Hide Anniversary Date", "Should the Anniversary Date field be hidden?", false, "", 1)]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -63,6 +66,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+
+            pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( "EditFinancials" );
 
             bool canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
             ddlConnectionStatus.Visible = canEditConnectionStatus;
@@ -99,6 +104,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             grdPreviousNames.Actions.ShowAdd = true;
             grdPreviousNames.Actions.AddClick += grdPreviousNames_AddClick;
+
+            pnlGradeGraduation.Visible = !GetAttributeValue( "HideGrade" ).AsBoolean();
+            dpAnniversaryDate.Visible = !GetAttributeValue( "HideAnniversaryDate" ).AsBoolean();
         }
 
         /// <summary>
@@ -277,13 +285,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var birthday = bpBirthDay.SelectedDate;
                     if ( birthday.HasValue )
                     {
-                        // If setting a future birthdate, subtract a century until birthdate is not greater than today.
-                        var today = RockDateTime.Today;
-                        while ( birthday.Value.CompareTo( today ) > 0 )
-                        {
-                            birthday = birthday.Value.AddYears( -100 );
-                        }
-
                         person.BirthMonth = birthday.Value.Month;
                         person.BirthDay = birthday.Value.Day;
                         if ( birthday.Value.Year != DateTime.MinValue.Year )
@@ -413,6 +414,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var newEmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
                     History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
                     person.EmailPreference = newEmailPreference;
+
+                    var newCommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
+                    History.EvaluateChange( changes, "Communication Preference", person.CommunicationPreference, newCommunicationPreference );
+                    person.CommunicationPreference = newCommunicationPreference;
 
                     int? newGivingGroupId = ddlGivingGroup.SelectedValueAsId();
                     if ( person.GivingGroupId != newGivingGroupId )
@@ -645,7 +650,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lTitle.Text = string.Format( "Edit: {0}", Person.FullName ).FormatAsHtmlTitle();
 
             imgPhoto.BinaryFileId = Person.PhotoId;
-            imgPhoto.NoPictureUrl = Person.GetPersonPhotoUrl( Person, 400, 400 );
+            imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( this.Person, 400, 400 );
 
             ddlTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
             tbFirstName.Text = Person.FirstName;
@@ -691,6 +696,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbEmail.Text = Person.Email;
             cbIsEmailActive.Checked = Person.IsEmailActive;
             rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString( false );
+            rblCommunicationPreference.SetValue( Person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
 
             ddlRecordStatus.SetValue( Person.RecordStatusValueId );
             lRecordStatusReadOnly.Text = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValue.Value : string.Empty;

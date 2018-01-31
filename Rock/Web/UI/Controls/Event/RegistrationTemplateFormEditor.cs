@@ -244,7 +244,8 @@ $('.template-form > .panel-body').on('validation-error', function() {
                     a.IsSharedValue,
                     a.ShowCurrentValue,
                     a.IsRequired,
-                    a.IsGridField
+                    a.IsGridField,
+                    a.ShowOnWaitlist
                 } )
                 .ToList();
             _gFields.DataBind();
@@ -346,6 +347,11 @@ $('.template-form > .panel-body').on('validation-error', function() {
             isGridField.DataField = "IsGridField";
             isGridField.HeaderText = "Show on Grid";
             _gFields.Columns.Add( isGridField );
+
+            var showOnWaitListField = new BoolField();
+            showOnWaitListField.DataField = "ShowOnWaitlist";
+            showOnWaitListField.HeaderText = "Show on Wait List";
+            _gFields.Columns.Add( showOnWaitListField );
 
             var editField = new EditField();
             editField.Click += gFields_Edit;

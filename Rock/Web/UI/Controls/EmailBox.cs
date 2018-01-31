@@ -61,6 +61,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to allow multiple email addresses (comma-delimited)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multiple]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return this.ViewState["AllowMultiple"] as bool? ?? false;
+            }
+            
+            set
+            {
+                this.ViewState["AllowMultiple"] = value;
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -72,8 +91,21 @@ namespace Rock.Web.UI.Controls
             _regexValidator.ControlToValidate = this.ID;
             _regexValidator.Display = ValidatorDisplay.Dynamic;
             _regexValidator.CssClass = "validation-error help-inline";
-            _regexValidator.ValidationExpression = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
-            _regexValidator.ErrorMessage = "The email address provided is not valid";
+            if ( this.AllowMultiple )
+            {
+                // using approach from https://channel9.msdn.com/Forums/TechOff/250895-Regular-Expression-for-multiple-email-validation-using-the-RegularExpressionValidator-control
+                // "...the built-in RegEx for emails, plus a clause allowing for an optional comma "([,])*". I also wrapped the whole thing on "(...)*" to allow for multiple occurrences"
+                // then added a \s so that spaces are allowed between email addresses
+                _regexValidator.ValidationExpression = @"((\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*)*([\s,])*)*";
+            }
+            else
+            {
+                // from https://msdn.microsoft.com/en-us/library/aa711310(v=vs.71).aspx and https://stackoverflow.com/a/1710535/1755417
+                _regexValidator.ValidationExpression = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
+            }
+
+            _regexValidator.ErrorMessage = "Email address is not valid";
+
             Controls.Add( _regexValidator );
         }
 
@@ -103,9 +135,6 @@ namespace Rock.Web.UI.Controls
         protected override void RenderDataValidator( HtmlTextWriter writer )
         {
             base.RenderDataValidator( writer );
-
-            _regexValidator.ValidationExpression = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
-            _regexValidator.ErrorMessage = "Email address is not valid";
 
             _regexValidator.ValidationGroup = this.ValidationGroup;
             _regexValidator.RenderControl( writer );

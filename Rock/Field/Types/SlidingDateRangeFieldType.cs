@@ -209,7 +209,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( System.Web.UI.Control control, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues )
         {
             SlidingDateRangePicker editor = control as SlidingDateRangePicker;
-            if ( editor != null )
+            if ( editor != null && editor.SlidingDateRangeMode != SlidingDateRangePicker.SlidingDateRangeType.All )
             {
                 return editor.DelimitedValues;
             }

@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection request activity
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionRequestActivity" )]
     [DataContract]
     public partial class ConnectionRequestActivity : Model<ConnectionRequestActivity>

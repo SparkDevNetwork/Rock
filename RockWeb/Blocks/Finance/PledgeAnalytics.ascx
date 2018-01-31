@@ -7,7 +7,10 @@
 
             <div class="panel panel-block panel-analytics">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-list"></i>Pledge Analytics</h1>
+                    <h1 class="panel-title">
+                        <i class="fa fa-list"></i>
+                        Pledge Analytics
+                    </h1>
 
                     <div class="panel-labels">
                     </div>
@@ -57,9 +60,7 @@
                                     <Columns>
                                         <Rock:SelectField />
                                         <Rock:RockTemplateField HeaderText="Person" SortExpression="LastName,NickName">
-                                            <ItemTemplate>
-                                                <%# FormatName( Eval("LastName"), Eval("NickName") ) %>
-                                            </ItemTemplate>
+                                            <ItemTemplate><%# FormatName( Eval("LastName"), Eval("NickName") ) %></ItemTemplate>
                                         </Rock:RockTemplateField>
                                         <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:CurrencyField DataField="PledgeAmount" HeaderText="Pledge Total" SortExpression="PledgeAmount" />

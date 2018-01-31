@@ -5,10 +5,10 @@
         
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title margin-t-sm"><i class="fa fa-desktop"></i> <asp:Literal ID="lPersonName" runat="server" /></h1>
-                    <div class="form-horizontal pull-right clearfix">
-                        <Rock:DateRangePicker ID="drpDateFilter"  CssClass="pull-left" runat="server" Label="Date Filter"  /> 
-                        <asp:Button ID="btnFilter" runat="server" Text="Filter" CssClass="btn btn-action pull-left" OnClick="btnFilter_Click" />
+                    <h1 class="panel-title"><i class="fa fa-desktop"></i> <asp:Literal ID="lPersonName" runat="server" /></h1>
+                    <div class="form-inline pull-right clearfix hidden-xs">
+                        <Rock:DateRangePicker ID="drpDateFilter" runat="server" Label="Date Filter"  /> 
+                        <asp:Button ID="btnFilter" runat="server" Text="Filter" CssClass="btn btn-action btn-xs" OnClick="btnFilter_Click" />
                     </div>
                 </div>
                 <div class="panel-body">
@@ -32,7 +32,7 @@
                                     <ol>
                                         <asp:Repeater ID="rptPageViews" runat="server" DataSource='<%# Eval("PageViews") %>'>
                                             <ItemTemplate>
-                                                <li><a href='<%# Eval("Url") %>'><%# Eval("PageTitle") %></a> <asp:Literal ID="lPageViewDuration" runat="server" /></li>
+                                                <li><a href='<%# Eval("InteractionData") %>'><%# Eval("InteractionComponent.Name") %></a> <asp:Literal ID="lPageViewDuration" runat="server" /></li>
                                             </ItemTemplate>
                                         </asp:Repeater>
                                     </ol>

@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an attribute or configuration setting in Rock
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Attribute" )]
     [DataContract]
     public partial class Attribute : Model<Attribute>, IOrdered
@@ -51,7 +52,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the FieldTypeId of the <see cref="Rock.Model.FieldType"/> that is used to select/set the <see cref="Rock.Model.AttributeValue"/> for this Attribute setting.
         /// The FieldType can also be used to enforce formatting of the attribute setting. This property is required.
@@ -82,7 +83,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the entity type qualifier value that is used to narrow the scope of the Attribute to a subset or specific instance of an EntityType.
         /// </summary>
@@ -92,7 +93,7 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [DataMember]
         public string EntityTypeQualifierValue { get; set; }
-        
+
         /// <summary>
         /// Gets sets the Key value  that is used to reference and call the Attribute. This property is required.
         /// </summary>
@@ -103,7 +104,7 @@ namespace Rock.Model
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
         public string Key { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Name of the Attribute. This property is required.
         /// </summary>
@@ -114,7 +115,7 @@ namespace Rock.Model
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the description of the Attribute.
         /// </summary>
@@ -123,7 +124,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the display order of the attribute.
         /// </summary>
@@ -133,7 +134,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a flag indicating if this Attribute is a Grid Column?
         /// </summary>
@@ -143,7 +144,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsGridColumn { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Attribute's default value.
         /// </summary>
@@ -152,7 +153,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string DefaultValue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a flag indicating if the Attribute supports multiple values.
         /// </summary>
@@ -194,6 +195,38 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool AllowSearch { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is index enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is analytic.
+        /// NOTE: Only applies if this is an Attribute on an Entity that implements IAnalytic and has an [AnalyticAttributes] Attribute
+        /// If this is true, the Analytic table for this entity should include a field for this attribute
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsAnalytic { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is analytic history.
+        /// Only applies if this is an Attribute on an Entity that implements IAnalyticHistorical and IsAnalytic is True
+        /// If this is true and IsAnalytic is also true, a change in value of this Attribute on the Entity makes the CurrentRowIndicator=1 record
+        /// to become CurrentRowIndicator=0, sets teh ExpireDate, then a new row with CurrentRowIndicator=1 to be created
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic history; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsAnalyticHistory { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -220,7 +253,7 @@ namespace Rock.Model
             set { _attributeQualifiers = value; }
         }
         private ICollection<AttributeQualifier> _attributeQualifiers;
-       
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FieldType"/> that is used to get/capture the value of the Attribute
         /// </summary>
@@ -252,26 +285,29 @@ namespace Rock.Model
         /// </value>
         public override Security.ISecured ParentAuthority
         {
-	        get 
-	        {
+            get
+            {
                 int? entityTypeId = this.EntityTypeId;
-                if ( !entityTypeId.HasValue && this.EntityType != null)
+                if ( !entityTypeId.HasValue && this.EntityType != null )
                 {
                     entityTypeId = this.EntityType.Id;
                 }
 
-                if (entityTypeId.HasValue)
+                if ( entityTypeId.HasValue )
                 {
                     var entityType = EntityTypeCache.Read( entityTypeId.Value );
                     var type = entityType.GetEntityType();
-                    if ( type != null && ( typeof( ISecured ).IsAssignableFrom( type ) ) )
+                    if ( type != null && 
+                        ( typeof( ISecured ).IsAssignableFrom( type ) )  &&
+                        !( typeof( Rock.Extension.Component ).IsAssignableFrom( type ) )
+                    )
                     {
-                        return (ISecured)Activator.CreateInstance( type );
+                        return (ISecured)Activator.CreateInstance( type );  
                     }
                 }
 
                 return base.ParentAuthority;
-	        }
+            }
         }
 
         #endregion
@@ -303,6 +339,8 @@ namespace Rock.Model
                     }
                 }
             }
+
+            base.PreSaveChanges( dbContext, state );
         }
 
         /// <summary>
@@ -332,7 +370,7 @@ namespace Rock.Model
         /// </summary>
         public AttributeConfiguration()
         {
-            this.HasRequired( a => a.FieldType ).WithMany( ).HasForeignKey( a => a.FieldTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.FieldType ).WithMany().HasForeignKey( a => a.FieldTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
             this.HasMany( a => a.Categories ).WithMany().Map( a => { a.MapLeftKey( "AttributeId" ); a.MapRightKey( "CategoryId" ); a.ToTable( "AttributeCategory" ); } );
         }

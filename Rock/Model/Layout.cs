@@ -32,6 +32,7 @@ namespace Rock.Model
     /// are availble for one or more <see cref="Page">Pages</see> to use.  The logical layout is used to configure
     /// which blocks are present in each zone
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "Layout" )]
     [DataContract]
     public partial class Layout : Model<Layout>
@@ -112,6 +113,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site" /> that this Layout Block is associated with.
         /// </value>
+        [LavaInclude]
         public virtual Site Site { get; set; }
 
         /// <summary>
@@ -120,6 +122,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of <see cref="Rock.Model.Page">Pages</see> that use this Layout.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<Page> Pages
         {
             get { return _pages ?? ( _pages = new Collection<Page>() ); }

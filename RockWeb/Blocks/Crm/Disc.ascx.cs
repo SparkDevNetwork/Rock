@@ -94,29 +94,14 @@ namespace Rockweb.Blocks.Crm
         {
             base.OnInit( e );
 
-            string personKey = PageParameter( "rckipid" );
-            if ( !string.IsNullOrEmpty( personKey ) )
+            // otherwise use the currently logged in person
+            if ( CurrentPerson != null )
             {
-                try
-                {
-                    _targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
-                }
-                catch
-                {
-                    nbError.Visible = true;
-                }
+                _targetPerson = CurrentPerson;
             }
             else
             {
-                // otherwise use the currently logged in person
-                if ( CurrentPerson != null )
-                {
-                    _targetPerson = CurrentPerson;
-                }
-                else
-                {
-                    nbError.Visible = true;
-                }
+                nbError.Visible = true;
             }
 
             if ( _targetPerson != null )

@@ -32,6 +32,7 @@ namespace Rock.Model
     /// Represents a relationship between a person and a bank account in Rock. A person can be related to multiple bank accounts
     /// but a bank account can only be related to an individual person in Rock.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialPersonBankAccount" )]
     [DataContract]
     public partial class FinancialPersonBankAccount : Model<FinancialPersonBankAccount>
@@ -78,6 +79,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
 
         #endregion

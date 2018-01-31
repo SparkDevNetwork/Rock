@@ -29,6 +29,7 @@ namespace Rock.Model
     /// These exceptions can include several status codes, the one most often seen is 500, but can also include 404 (when configured in Global Attributes) 
     /// and other status codes. These entities are not tracked by the <see cref="Rock.Model.Audit"/> model.
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "ExceptionLog" )]
     [DataContract]
@@ -181,6 +182,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site"/> that the exception occurred on. If this did not occur on a site, this value will be null.
         /// </value>
+        [LavaInclude]
         public virtual Rock.Model.Site Site { get; set; }
 
         /// <summary>
@@ -190,6 +192,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Page"/> that the exception occurred on. If this exception was not thrown on a <see cref="Rock.Model.Page"/>
         /// this value will be null.
         /// </value>
+        [LavaInclude]
         public virtual Rock.Model.Page Page { get; set; }
 
         #endregion

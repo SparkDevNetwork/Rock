@@ -51,7 +51,7 @@ namespace Rock.Workflow.Action
                 a.CompletedDateTime = null;
             }
 
-            action.AddLogEntry( string.Format( "Activated all actions for '{0}' activity.", action.ActionType.Name ) );
+            action.AddLogEntry( string.Format( "Activated all actions for '{0}' activity.", action.ActionTypeCache.Name ) );
 
             return true;
         }

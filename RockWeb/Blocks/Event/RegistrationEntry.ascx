@@ -18,23 +18,29 @@
     <Rock:NotificationBox ID="nbPaymentValidation" runat="server" NotificationBoxType="Danger" Visible="false" />
 
     <Rock:NotificationBox ID="nbMain" runat="server" Visible="false"></Rock:NotificationBox>
+    <Rock:NotificationBox ID="nbWaitingList" runat="server" Visible="false" NotificationBoxType="Warning" />
 
     <asp:Panel ID="pnlHowMany" runat="server" Visible="false" CssClass="registrationentry-intro">
 
         <h1>How many <asp:Literal ID="lRegistrantTerm" runat="server" /> will you be registering?</h1>
-        <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" />
+        <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" OnNumberUpdated="numHowMany_NumberUpdated"  />
 
         <div class="actions">
-            <Rock:BootstrapButton ID="lbHowManyNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
+            <Rock:BootstrapButton ID="lbHowManyNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
         </div>
 
     </asp:Panel>
 
     <asp:Panel ID="pnlRegistrant" runat="server" Visible="false" CssClass="registrationentry-registrant">
 
-        <h1><asp:Literal ID="lRegistrantTitle" runat="server" /></h1>
         
-        <asp:Panel ID="pnlRegistrantProgressBar" runat="server">
+        <h1>
+            <asp:Literal ID="lRegistrantTitle" runat="server" />
+        </h1>        
+
+        <Rock:NotificationBox ID="nbType" runat="server" NotificationBoxType="Warning"  />
+
+        <asp:Panel ID="pnlRegistrantProgressBar" runat="server" CssClass="clearfix">
             <div class="progress">
                 <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
                     <span class="sr-only"><%=this.PercentComplete%>% Complete</span>
@@ -44,11 +50,9 @@
 
         <asp:Panel id="pnlRegistrantFields" runat="server" >
 
-            <div class="js-registration-same-family">
-                <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
-                    <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
-                </asp:Panel>
-            </div>
+            <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well js-registration-same-family">
+                <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same immediate family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
+            </asp:Panel>
         
             <asp:Panel ID="pnlFamilyMembers" runat="server" Visible="false" CssClass="row" >
                 <div class="col-md-6">
@@ -78,8 +82,8 @@
         </asp:Panel>
 
         <div class="actions">
-            <asp:LinkButton ID="lbRegistrantPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbRegistrantPrev_Click"  />
-            <Rock:BootstrapButton ID="lbRegistrantNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbRegistrantNext_Click" />
+            <asp:LinkButton ID="lbRegistrantPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbRegistrantPrev_Click"  />
+            <Rock:BootstrapButton ID="lbRegistrantNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbRegistrantNext_Click" />
         </div>
 
     </asp:Panel>
@@ -111,10 +115,11 @@
                 <div class="col-md-6">
                     <Rock:EmailBox ID="tbConfirmationEmail" runat="server" Label="Send Confirmation Emails To" Required="true" />
                     <Rock:RockCheckBox ID="cbUpdateEmail" runat="server" Text="Should Your Account Be Updated To Use This Email Address?" Visible="false" Checked="true" />
+                    <asp:Literal ID="lUpdateEmailWarning" runat="server" Text="Note: Your account will automatically be updated with this email address." Visible="false" />
                 </div>
                 <div class="col-md-6">
                     <asp:Panel ID="pnlRegistrarFamilyOptions" runat="server" CssClass="js-registration-same-family">
-                        <Rock:RockRadioButtonList ID="rblRegistrarFamilyOptions" runat="server" Label="You are in the same family as" RepeatDirection="Horizontal" Required="true" DataTextField="Value" DataValueField="Key" RequiredErrorMessage="Answer to which family is required." />
+                        <Rock:RockRadioButtonList ID="rblRegistrarFamilyOptions" runat="server" Label="You are in the same immediate family as" RepeatDirection="Horizontal" Required="true" DataTextField="Value" DataValueField="Key" RequiredErrorMessage="Answer to which family is required." />
                     </asp:Panel>
                 </div>
             </div>
@@ -124,7 +129,17 @@
         <asp:Panel ID="pnlRegistrantsReview" CssClass="margin-b-md" runat="server" Visible="false">
             <asp:Literal ID="lRegistrantsReview" runat="server" />
             <ul>
-                <asp:Repeater ID="rptrRegistrantReview" runat="server">
+                <asp:Repeater ID="rptrRegistrantsReview" runat="server">
+                    <ItemTemplate>
+                        <li><strong> <%# Eval("RegistrantName")  %></strong></li>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </ul>
+        </asp:Panel>
+        <asp:Panel ID="pnlWaitingListReview" CssClass="margin-b-md" runat="server" Visible="false">
+            <asp:Literal ID="lWaitingListReview" runat="server" />
+            <ul>
+                <asp:Repeater ID="rptrWaitingListReview" runat="server">
                     <ItemTemplate>
                         <li><strong> <%# Eval("RegistrantName")  %></strong></li>
                     </ItemTemplate>
@@ -223,7 +238,7 @@
                 <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false" ></Rock:RockTextBox>
                 <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false" ></Rock:RockTextBox>
                 <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false" ></Rock:RockTextBox>
-                <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="credit-card" />
+                <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Card Number" MaxLength="19" CssClass="credit-card" />
                 <ul class="card-logos list-unstyled">
                     <li class="card-visa"></li>
                     <li class="card-mastercard"></li>
@@ -244,9 +259,9 @@
         </asp:Panel>
 
         <div class="actions">
-            <asp:LinkButton ID="lbSummaryPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbSummaryPrev_Click" />
-            <Rock:BootstrapButton ID="lbSummaryNext" runat="server" AccessKey="n" Text="Finish" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
-            <asp:LinkButton ID="lbPaymentPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbPaymentPrev_Click" />
+            <asp:LinkButton ID="lbSummaryPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbSummaryPrev_Click" />
+            <Rock:BootstrapButton ID="lbSummaryNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Finish" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
+            <asp:LinkButton ID="lbPaymentPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbPaymentPrev_Click" />
             <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary pull-right" Text="Finish" />
         </div>
 

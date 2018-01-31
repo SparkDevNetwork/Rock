@@ -1,0 +1,39 @@
+exports[`test matches the expected UI structure 1`] = `
+<SampleReactBlock>
+  <div>
+    <h5>
+      Counter is 
+      1
+    </h5>
+    <button
+      data-spec="increment"
+      onClick={[Function]}
+      type="button">
+      Up
+    </button>
+    <button
+      data-spec="decrement"
+      onClick={[Function]}
+      type="button">
+      Down
+    </button>
+    <div
+      style={
+        Object {
+          "paddingTop": "10px",
+        }
+      }>
+      <p>
+        <em>
+          This is markup created by a react component. It is initialized with state from the server. Open the 
+          <a
+            href="https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=enj">
+            React Dev Tools
+          </a>
+           and check out the state (counter amount), initialProps (startingNumber), and layout.
+        </em>
+      </p>
+    </div>
+  </div>
+</SampleReactBlock>
+`;

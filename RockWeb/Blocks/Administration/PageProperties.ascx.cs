@@ -110,35 +110,47 @@ namespace RockWeb.Blocks.Administration
 
                 if ( pageCache != null && pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
-                    var blockContexts = new Dictionary<string, string>();
+                    var blockContexts = new List<Tuple<string, string, List<BlockCache>>>();
                     foreach ( var block in pageCache.Blocks )
                     {
-                        var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
-                        if ( blockControl != null )
+                        try
                         {
-                            blockControl.SetBlock( pageCache, block );
-                            foreach ( var context in blockControl.ContextTypesRequired )
+                            var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
+                            if ( blockControl != null )
                             {
-                                if ( !blockContexts.ContainsKey( context.Name ) )
+                                blockControl.SetBlock( pageCache, block );
+                                foreach ( var context in blockControl.ContextTypesRequired )
                                 {
-                                    blockContexts.Add( context.Name, context.FriendlyName );
+                                    var tuple = blockContexts.FirstOrDefault( t => t.Item1 == context.Name );
+                                    if ( tuple == null )
+                                    {
+                                        tuple = new Tuple<string, string, List<BlockCache>>( context.Name, context.FriendlyName, new List<BlockCache>() );
+                                        blockContexts.Add( tuple );
+                                    }
+
+                                    tuple.Item3.Add( block );
                                 }
                             }
+                        }
+                        catch
+                        {
+                            // if the blocktype can't compile, just ignore it since we are just trying to find out if it had a blockContext
                         }
                     }
 
                     phContextPanel.Visible = blockContexts.Count > 0;
 
-                    foreach ( var context in blockContexts )
+                    foreach ( var context in blockContexts.OrderBy( t => t.Item2 ) )
                     {
                         var tbContext = new RockTextBox();
-                        tbContext.ID = string.Format( "context_{0}", context.Key.Replace( '.', '_' ) );
+                        tbContext.ID = string.Format( "context_{0}", context.Item1.Replace( '.', '_' ) );
                         tbContext.Required = true;
-                        tbContext.Label = context.Value + " Parameter Name";
-                        tbContext.Help = "The page parameter name that contains the id of this context entity.";
-                        if ( pageCache.PageContexts.ContainsKey( context.Key ) )
+                        tbContext.Label = context.Item2 + " Parameter Name";
+                        tbContext.Help = string.Format( "The page parameter name that contains the id of this context entity. This parameter will be used by the following {0}: {1}",
+                            "block".PluralizeIf( context.Item3.Count > 1 ), string.Join( ", ", context.Item3 ) );
+                        if ( pageCache.PageContexts.ContainsKey( context.Item1 ) )
                         {
-                            tbContext.Text = pageCache.PageContexts[context.Key];
+                            tbContext.Text = pageCache.PageContexts[context.Item1];
                         }
 
                         phContext.Controls.Add( tbContext );
@@ -202,6 +214,7 @@ namespace RockWeb.Blocks.Administration
         {
             pnlEditDetails.Visible = editable;
             fieldsetViewDetails.Visible = !editable;
+            mdCopyPage.Visible = !editable;
             this.HideSecondaryBlocks( editable );
         }
 
@@ -311,6 +324,8 @@ namespace RockWeb.Blocks.Administration
             btnSecurity.Visible = page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = page.InternalName;
             btnSecurity.EntityId = page.Id;
+            
+            aChildPages.HRef = string.Format( "javascript: Rock.controls.modal.show($(this), '/pages/{0}?t=Child Pages&amp;pb=&amp;sb=Done')", page.Id );
 
             // this will be true when used in the Page Builder page, and false when used in the System Dialog
             var enableFullEditMode = this.GetAttributeValue( "EnableFullEditMode" ).AsBooleanOrNull() ?? false;
@@ -434,7 +449,7 @@ namespace RockWeb.Blocks.Administration
             cbPageIcon.Checked = page.PageDisplayIcon;
             cbPageDescription.Checked = page.PageDisplayDescription;
 
-            ddlMenuWhen.SelectedValue = ( ( int ) page.DisplayInNavWhen ).ToString();
+            ddlMenuWhen.SelectedValue = ( (int)page.DisplayInNavWhen ).ToString();
             cbMenuDescription.Checked = page.MenuDisplayDescription;
             cbMenuIcon.Checked = page.MenuDisplayIcon;
             cbMenuChildPages.Checked = page.MenuDisplayChildPages;
@@ -584,7 +599,7 @@ namespace RockWeb.Blocks.Administration
                         pageRoute.Route = route.TrimStart( new char[] { '/' } );
                         pageRoute.Guid = Guid.NewGuid();
                         page.PageRoutes.Add( pageRoute );
-                        addedRoutes.Add( route );
+                        addedRoutes.Add( pageRoute.Route );
                     }
                 }
 
@@ -699,6 +714,13 @@ namespace RockWeb.Blocks.Administration
                         }
                     }
 
+                    // Remove the '{shortlink}' route (will be added back after specific routes)
+                    var shortLinkRoute = RouteTable.Routes.OfType<Route>().Where( r => r.Url == "{shortlink}" ).FirstOrDefault();
+                    if ( shortLinkRoute != null )
+                    {
+                        RouteTable.Routes.Remove( shortLinkRoute );
+                    }
+
                     // Add any routes that were added
                     foreach ( var pageRoute in new PageRouteService( rockContext ).GetByPageId( page.Id ) )
                     {
@@ -721,6 +743,8 @@ namespace RockWeb.Blocks.Administration
                             }
                         }
                     }
+
+                    RouteTable.Routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
 
                     if ( orphanedIconFileId.HasValue )
                     {
@@ -1108,74 +1132,63 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Handles the GridReorder event of the gChildPageOrder control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
-        protected void gChildPageOrder_GridReorder( object sender, GridReorderEventArgs e )
-        {
-            var page = PageCache.Read( hfPageId.Value.AsInteger() );
-            if ( page == null )
-            {
-                return;
-            }
-
-            var rockContext = new RockContext();
-            var pageService = new PageService( rockContext );
-            var childPages = pageService.GetByParentPageId( page.Id ).ToList();
-            pageService.Reorder( childPages, e.OldIndex, e.NewIndex );
-            rockContext.SaveChanges();
-
-            Rock.Web.Cache.PageCache.Flush( page.Id );
-
-            foreach ( var childPage in childPages )
-            {
-                // make sure the PageCache for all the re-ordered pages get flushed so the new Order is updated
-                Rock.Web.Cache.PageCache.Flush( childPage.Id );
-            }
-
-            page.FlushChildPages();
-
-            BindChildPageOrderGrid();
-        }
-
-        /// <summary>
-        /// Handles the SaveClick event of the mdChildPageOrdering control.
+        /// Handles the Click event of the btnCopy control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void mdChildPageOrdering_SaveClick( object sender, EventArgs e )
+        protected void btnCopy_Click( object sender, EventArgs e )
         {
-            mdChildPageOrdering.Visible = false;
-            mdChildPageOrdering.Hide();
-
-            NavigateToCurrentPage( this.Request.QueryString.AllKeys.ToDictionary( k => k, k => this.Request.QueryString[k] ) );
+            mdCopyPage.Show();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnChildPageOrder control.
+        /// Handles the SaveClick event of the mdCopyPage control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnChildPageOrder_Click( object sender, EventArgs e )
+        protected void mdCopyPage_SaveClick( object sender, EventArgs e )
         {
-            BindChildPageOrderGrid();
+            RockContext rockContext = new RockContext();
+            PageService pageService = new PageService( rockContext );
+            int sourcePageId = hfPageId.ValueAsInt();
 
-            mdChildPageOrdering.Visible = true;
-
-            mdChildPageOrdering.Show();
-        }
-
-        /// <summary>
-        /// Binds the child page order grid.
-        /// </summary>
-        private void BindChildPageOrderGrid()
-        {
-            var page = PageCache.Read( hfPageId.Value.AsInteger() );
-            if ( page != null )
+            Guid? copiedPageGuid = pageService.CopyPage( sourcePageId, cbCopyPageIncludeChildPages.Checked, this.CurrentPersonAliasId );
+            if ( copiedPageGuid.HasValue )
             {
-                gChildPageOrder.DataSource = page.GetPages( new RockContext() );
-                gChildPageOrder.DataBind();
+                var copiedPage = PageCache.Read( copiedPageGuid.Value );
+
+                // reload page (Assuming we are using Page Builder UI) to the new copied page
+                var qryParams = new Dictionary<string, string>();
+                if ( copiedPage != null )
+                {
+                    qryParams["Page"] = copiedPage.Id.ToString();
+
+                    string expandedIds = this.Request.Params["ExpandedIds"];
+                    if ( expandedIds != null )
+                    {
+                        // remove the current pageId param to avoid extra treeview flash
+                        var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
+                        expandedIdList.Remove( copiedPage.Id );
+
+                        // add the parentPageId to the expanded ids
+                        var parentPageParam = this.Request.Params["ParentPageId"];
+                        if ( !string.IsNullOrEmpty( parentPageParam ) )
+                        {
+                            var parentPageId = parentPageParam.AsIntegerOrNull();
+                            if ( parentPageId.HasValue )
+                            {
+                                if ( !expandedIdList.Contains( parentPageId.Value ) )
+                                {
+                                    expandedIdList.Add( parentPageId.Value );
+                                }
+                            }
+                        }
+
+                        qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
+                    }
+                }
+
+                NavigateToPage( RockPage.Guid, qryParams );
             }
         }
     }

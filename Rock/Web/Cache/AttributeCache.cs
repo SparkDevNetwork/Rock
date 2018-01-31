@@ -224,6 +224,48 @@ namespace Rock.Web.Cache
         public bool IsRequired { get; set; }
 
         /// <summary>
+        /// Gets or sets whether this Attribute should be used in 'search by attribute value' UIs. 
+        /// For example, if you had a UI where you would allow the user to find people based on a list of attributes
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow search]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowSearch { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is index enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is analytic.
+        /// NOTE: Only applies if this is an Attribute on an Entity that implements IAnalytic 
+        /// If this is true, the Analytic table for this entity should include a field for this attribute
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsAnalytic { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is analytic history.
+        /// Only applies if this is an Attribute on an Entity that implements IAnalyticHistorical and IsAnalytic is True
+        /// If this is true and IsAnalytic is also true, a change in value of this Attribute on the Entity makes the CurrentRowIndicator=1 record
+        /// to become CurrentRowIndicator=0, sets teh ExpireDate, then a new row with CurrentRowIndicator=1 to be created
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic history; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsAnalyticHistory { get; set; }
+
+        /// <summary>
         /// Gets the type of the field.
         /// </summary>
         /// <value>
@@ -329,6 +371,10 @@ namespace Rock.Web.Cache
             this.DefaultValue = attribute.DefaultValue;
             this.IsMultiValue = attribute.IsMultiValue;
             this.IsRequired = attribute.IsRequired;
+            this.AllowSearch = attribute.AllowSearch;
+            this.IsIndexEnabled = attribute.IsIndexEnabled;
+            this.IsAnalytic = attribute.IsAnalytic;
+            this.IsAnalyticHistory = attribute.IsAnalyticHistory;
 
             this.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
@@ -392,7 +438,8 @@ namespace Rock.Web.Cache
 
                     if ( renderLabel || renderHelp || renderWarning )
                     {
-                        HtmlGenericControl div = new HtmlGenericControl( "div" );
+                        DynamicControlsHtmlGenericControl div = new DynamicControlsHtmlGenericControl( "div" );
+                        div.ID = $"_formgroup_div_{this.Id}";  
                         controls.Add( div );
 
                         div.Controls.Clear();
@@ -407,6 +454,7 @@ namespace Rock.Web.Cache
                         if ( renderLabel )
                         {
                             Label label = new Label();
+                            label.ID = $"_label_{this.Id}";
                             div.Controls.Add( label );
                             label.ClientIDMode = ClientIDMode.AutoID;
                             label.Text = labelText;
@@ -417,6 +465,7 @@ namespace Rock.Web.Cache
                         if ( renderHelp )
                         {
                             var helpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                            helpBlock.ID = $"_helpBlock_{this.Id}";
                             div.Controls.Add( helpBlock );
                             helpBlock.ClientIDMode = ClientIDMode.AutoID;
                             helpBlock.Text = helpText;
@@ -425,6 +474,7 @@ namespace Rock.Web.Cache
                         if ( renderWarning )
                         {
                             var warningBlock = new Rock.Web.UI.Controls.WarningBlock();
+                            warningBlock.ID = $"_warningBlock_{this.Id}";
                             div.Controls.Add( warningBlock );
                             warningBlock.ClientIDMode = ClientIDMode.AutoID;
                             warningBlock.Text = warningText;
@@ -548,6 +598,11 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Read( Guid guid, RockContext rockContext = null )
         {
+            if ( guid.IsEmpty() )
+            {
+                return null;
+            }
+
             int id = GetOrAddExisting( guid.ToString(),
                 () => LoadByGuid( guid, rockContext ) );
 
@@ -696,7 +751,7 @@ namespace Rock.Web.Cache
         /// All entity attributes.
         /// </value>
         private static List<EntityAttributes> AllEntityAttributes { get; set; }
-
+        
         /// <summary>
         /// Gets the by entity.
         /// </summary>

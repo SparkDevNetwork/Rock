@@ -29,6 +29,7 @@ namespace Rock.Model
     /// Represents an Audit Log entry that is created when an add/update/delete is performed against an <see cref="Rock.Data.IEntity"/> of an
     /// auditable <see cref="Rock.Model.EntityType"/>.
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "Audit" )]
     [DataContract]
@@ -47,7 +48,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the specific entity that was modified. This property is required.
         /// </summary>
@@ -68,7 +69,7 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
         public string Title { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the type of change that was made to the entity. This property is required.
         /// </summary>
@@ -82,7 +83,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public AuditType AuditType { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the date and time that the entity was modified and the audit entry was created.
         /// </summary>
@@ -120,6 +121,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [LavaInclude]
         public virtual Rock.Model.PersonAlias PersonAlias { get; set; }
 
         /// <summary>

@@ -26,8 +26,6 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -37,9 +35,9 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
     [Category( "Security > Background Check" )]
     [Description( "Lists all the background check requests." )]
 
-    [LinkedPage("Workflow Detail Page", "The page to view details about the background check workflow")]
-    public partial class RequestList : RockBlock, ISecondaryBlock
-    { 
+    [LinkedPage( "Workflow Detail Page", "The page to view details about the background check workflow" )]
+    public partial class RequestList : RockBlock, ISecondaryBlock, ICustomGridColumns
+    {
         #region Control Methods
 
         /// <summary>
@@ -52,7 +50,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
             fRequest.ApplyFilterClick += fRequest_ApplyFilterClick;
             fRequest.DisplayFilterValue += fRequest_DisplayFilterValue;
-            
+
             gRequest.DataKeyNames = new string[] { "Id" };
             gRequest.Actions.ShowAdd = false;
             gRequest.IsDeleteEnabled = false;
@@ -109,7 +107,6 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 case "Response Date Range":
                     e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
                     break;
-
             }
         }
 
@@ -128,11 +125,11 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        void gRequest_RowDataBound( object sender, GridViewRowEventArgs e )
+        protected void gRequest_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                dynamic request = e.Row.DataItem;
+                BackgroundCheckRow request = e.Row.DataItem as BackgroundCheckRow;
 
                 if ( !request.HasWorkflow )
                 {
@@ -142,18 +139,22 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     }
                 }
 
-                if ( !request.HasResponseXml )
+                if ( !request.HasResponseData )
                 {
-                    foreach( var lb in e.Row.Cells[5].ControlsOfTypeRecursive<LinkButton>() )
+                    foreach ( var lb in e.Row.Cells[5].ControlsOfTypeRecursive<LinkButton>() )
                     {
                         lb.Visible = false;
                     }
                 }
-
             }
         }
 
-        void gRequest_RowSelected( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the RowSelected event of the gRequest control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gRequest_RowSelected( object sender, RowEventArgs e )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -168,25 +169,29 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             }
         }
 
-
         /// <summary>
-        /// Handles the XML event of the gRequest control.
+        /// Handles the Data event of the gRequest control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gRequest_XML( object sender, RowEventArgs e )
+        protected void gRequest_Data( object sender, RowEventArgs e )
         {
             using ( var rockContext = new RockContext() )
             {
                 var bc = new BackgroundCheckService( rockContext ).Get( e.RowKeyId );
                 if ( bc != null )
                 {
-                    tbResponseXml.Text = bc.ResponseXml;
+                    tbResponseData.Text = bc.ResponseData;
                     dlgResponse.Show();
                 }
             }
         }
 
+        /// <summary>
+        /// Handles the ViewWorkflow event of the gRequest control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gRequest_ViewWorkflow( object sender, RowEventArgs e )
         {
             using ( var rockContext = new RockContext() )
@@ -224,9 +229,9 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
             using ( var rockContext = new RockContext() )
             {
                 var qry = new BackgroundCheckService( rockContext )
-                    .Queryable("PersonAlias.Person").AsNoTracking()
-                    .Where( g => 
-                        g.PersonAlias != null && 
+                    .Queryable( "PersonAlias.Person" ).AsNoTracking()
+                    .Where( g =>
+                        g.PersonAlias != null &&
                         g.PersonAlias.Person != null );
 
                 // FirstName
@@ -280,13 +285,13 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                 {
                     if ( recordFound == "Yes" )
                     {
-                        qry = qry.Where( t => 
+                        qry = qry.Where( t =>
                             t.RecordFound.HasValue &&
                             t.RecordFound.Value );
                     }
                     else if ( recordFound == "No" )
                     {
-                        qry = qry.Where( t => 
+                        qry = qry.Where( t =>
                             t.RecordFound.HasValue &&
                             !t.RecordFound.Value );
                     }
@@ -303,21 +308,21 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     items = qry.OrderByDescending( d => d.RequestDate ).ToList();
                 }
 
-                gRequest.DataSource = items.Select( b => new
+                gRequest.DataSource = items.Select( b => new BackgroundCheckRow
                     {
                         Name = b.PersonAlias.Person.LastName + ", " + b.PersonAlias.Person.NickName,
-                        b.Id,
+                        Id = b.Id,
                         PersonId = b.PersonAlias.PersonId,
                         HasWorkflow = b.WorkflowId.HasValue,
-                        b.RequestDate,
-                        b.ResponseDate,
-                        b.RecordFound,
+                        RequestDate = b.RequestDate,
+                        ResponseDate = b.ResponseDate,
+                        RecordFound = b.RecordFound,
                         RecordFoundLabel = b.RecordFound.HasValue ? (
-                            b.RecordFound.Value ? 
-                                "<span class='label label-warning'>Yes</span>" : 
-                                "<span class='label label-success'>No</span>" ) : 
+                            b.RecordFound.Value ?
+                                "<span class='label label-warning'>Yes</span>" :
+                                "<span class='label label-success'>No</span>" ) :
                             string.Empty,
-                        HasResponseXml = !string.IsNullOrWhiteSpace( b.ResponseXml ),
+                        HasResponseData = !string.IsNullOrWhiteSpace( b.ResponseData ),
                         ResponseDocumentText = b.ResponseDocumentId.HasValue ? "<i class='fa fa-file-pdf-o fa-lg'></i>" : "",
                         ResponseDocumentId = b.ResponseDocumentId ?? 0
                     } ).ToList();
@@ -337,5 +342,32 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
         #endregion
 
-}
+        /// <summary>
+        /// 
+        /// </summary>
+        public class BackgroundCheckRow
+        {
+            public string Name { get; set; }
+
+            public int Id { get; set; }
+
+            public int PersonId { get; set; }
+
+            public bool HasWorkflow { get; set; }
+
+            public DateTime RequestDate { get; set; }
+
+            public DateTime? ResponseDate { get; set; }
+
+            public bool? RecordFound { get; set; }
+
+            public string RecordFoundLabel { get; set; }
+
+            public bool HasResponseData { get; set; }
+
+            public string ResponseDocumentText { get; set; }
+
+            public int ResponseDocumentId { get; set; }
+        }
+    }
 }

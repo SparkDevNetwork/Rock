@@ -234,7 +234,7 @@ namespace Rock.Web.UI.Controls
 
                         if ( !string.IsNullOrWhiteSpace( args.Value ) )
                         {
-                            filterDisplay.AddOrIgnore( args.Name, args.Value );
+                            filterDisplay.AddOrReplace( args.Name, args.Value );
                         }
                     }
                 }
@@ -421,7 +421,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Deletes the user preferences.
+        /// Deletes all the grid user preferences for all grid filters on the block
         /// </summary>
         public void DeleteUserPreferences()
         {

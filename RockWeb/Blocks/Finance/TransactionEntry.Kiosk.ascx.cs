@@ -59,7 +59,6 @@ namespace RockWeb.Blocks.Finance
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10, "", 7 )]
     [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
     [CodeEditorField( "Receipt Lava", "Lava to display for the receipt panel.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, "{% include '~~/Assets/Lava/KioskGivingReceipt.lava' %}", "", 9 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 10 )]
     [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "", 11 )]
     [TextField( "Payment Comment", "The comment to include with the payment transaction when sending to Gateway", false, "Kiosk", "", 12 )]
     #endregion
@@ -145,7 +144,6 @@ namespace RockWeb.Blocks.Finance
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/Kiosk/kiosk-core.js" );
             RockPage.AddScriptLink( "~/Scripts/Kiosk/jquery.scannerdetection.js" );
         }
@@ -418,12 +416,7 @@ namespace RockWeb.Blocks.Finance
 
                         if ( transaction != null )
                         {
-
-                            var txnChanges = new List<string>();
-                            txnChanges.Add( "Created Transaction (from kiosk)" );
-
                             _transactionCode = transaction.TransactionCode;
-                            History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
 
                             var personName = new PersonAliasService( rockContext )
                                 .Queryable().AsNoTracking()
@@ -432,26 +425,19 @@ namespace RockWeb.Blocks.Finance
                                 .FirstOrDefault();
 
                             transaction.AuthorizedPersonAliasId = this.SelectedGivingUnit.PersonAliasId;
-                            History.EvaluateChange( txnChanges, "Person", string.Empty, personName );
-
                             transaction.TransactionDateTime = RockDateTime.Now;
-                            History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
-
                             transaction.FinancialGatewayId = financialGateway.Id;
-                            History.EvaluateChange( txnChanges, "Gateway", string.Empty, financialGateway.Name );
 
                             var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
                             transaction.TransactionTypeValueId = txnType.Id;
-                            History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
 
                             transaction.Summary = swipeInfo.Comment1;
-                            History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.Summary );
 
                             if ( transaction.FinancialPaymentDetail == null )
                             {
                                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
                             }
-                            transaction.FinancialPaymentDetail.SetFromPaymentInfo( swipeInfo, gateway, rockContext, txnChanges );
+                            transaction.FinancialPaymentDetail.SetFromPaymentInfo( swipeInfo, gateway, rockContext );
 
                             Guid sourceGuid = Guid.Empty;
                             if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
@@ -460,7 +446,6 @@ namespace RockWeb.Blocks.Finance
                                 if ( source != null )
                                 {
                                     transaction.SourceTypeValueId = source.Id;
-                                    History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
                                 }
                             }
 
@@ -471,10 +456,6 @@ namespace RockWeb.Blocks.Finance
                                 transactionDetail.AccountId = accountAmount.Key;
                                 transaction.TransactionDetails.Add( transactionDetail );
                                 var account = new FinancialAccountService( rockContext ).Get( accountAmount.Key );
-                                if ( account != null )
-                                {
-                                    History.EvaluateChange( txnChanges, account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
-                                }
                             }
 
                             var batchService = new FinancialBatchService( rockContext );
@@ -517,16 +498,6 @@ namespace RockWeb.Blocks.Finance
                                     batchChanges
                                 );
 
-                                HistoryService.SaveChanges(
-                                    rockContext,
-                                    typeof( FinancialBatch ),
-                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                                    batch.Id,
-                                    txnChanges,
-                                    personName,
-                                    typeof( FinancialTransaction ),
-                                    transaction.Id
-                                );
                             } );
 
                             // send receipt in one is configured and not giving anonymously
@@ -567,12 +538,12 @@ namespace RockWeb.Blocks.Finance
             if ( receiptEmail != null )
             {
                 var givingUnit = new PersonAliasService( rockContext ).Get( this.SelectedGivingUnit.PersonAliasId ).Person;
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
 
-                var recipients = new List<RecipientData>();
-                recipients.Add( new RecipientData( givingUnit.Email, GetMergeFields( givingUnit ) ) );
-
-                Email.Send( receiptEmail.Guid, recipients, appRoot );
+                var emailMessage = new RockEmailMessage( receiptEmail.Guid );
+                emailMessage.AddRecipient( new RecipientData( givingUnit.Email, GetMergeFields( givingUnit ) ) );
+                emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                emailMessage.Send();
             }
         }
 
@@ -767,14 +738,6 @@ namespace RockWeb.Blocks.Finance
             var mergeFields = GetMergeFields(null);
 
             string template = GetAttributeValue( "ReceiptLava" );
-
-            // show debug info
-            bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
 
             lReceiptContent.Text = template.ResolveMergeFields( mergeFields );
             pnlReceipt.Visible = true;

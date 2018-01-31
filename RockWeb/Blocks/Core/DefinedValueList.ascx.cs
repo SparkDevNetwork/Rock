@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for viewing values for a defined type." )]
     [DefinedTypeField( "Defined Type", "If a Defined Type is set, only its Defined Values will be displayed (regardless of the querystring parameters).", required: false, defaultValue: "" )]
-    public partial class DefinedValueList : RockBlock, ISecondaryBlock
+    public partial class DefinedValueList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Private Variables
 
@@ -82,6 +82,12 @@ namespace RockWeb.Blocks.Core
 
                 modalValue.SaveClick += btnSaveValue_Click;
                 modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfDefinedValueId.ClientID );
+
+                lTitle.Text = _definedType.Name;
+            }
+            else
+            {
+                lTitle.Text = "Values";
             }
         }
 

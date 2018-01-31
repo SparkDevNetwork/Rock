@@ -33,6 +33,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbCampusCode" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="ShortCode" />
+                            <Rock:RockDropDownList ID="ddlTimeZone" runat="server" CausesValidation="false" CssClass="input-width-xxl" Label="Time Zone" Help="The time zone you want certain time calculations of the Campus to operate in. Leave this blank to use the default Rock TimeZone." ></Rock:RockDropDownList>
                             <Rock:PersonPicker ID="ppCampusLeader" runat="server" Label="Campus Leader" />
                             <Rock:KeyValueList ID="kvlServiceTimes" runat="server" label="Service Times" KeyPrompt="Day" ValuePrompt="Time" Help="A list of days and times that this campus has services." />
                         </div>
@@ -46,7 +47,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="attributes">
-                                <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                                <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                             </div>
                         </div>
                     </div>
@@ -54,8 +55,8 @@
                 </fieldset>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
 
             </div>

@@ -43,7 +43,7 @@ namespace Rock
                 case ComparisonType.EndsWith: return value.EndsWith( compareValue, StringComparison.OrdinalIgnoreCase );
                 case ComparisonType.IsBlank: return string.IsNullOrWhiteSpace( value );
                 case ComparisonType.IsNotBlank: return !string.IsNullOrWhiteSpace( value );
-                case ComparisonType.RegularExpression: return Regex.IsMatch( value, compareValue );
+                case ComparisonType.RegularExpression: try { return  Regex.IsMatch( value, compareValue ); } catch { return false; }
             }
 
             // numeric compares

@@ -1,13 +1,13 @@
 ﻿/*
     Used to manage styles related to the person details page
-    
+
     1. Page Styles
     2. Header
     3. Badge Bar
     4. Family Bar
     5. Page Tabs
-    6. Styles to Tab Pages
-    7. Edit Family Page
+    6. Edit Group Page
+    7. Styles for Page Tabs
     8. Add Family Page
     9. Fluidbox
     10. Responsive Overrides
@@ -26,7 +26,6 @@
 
 .personprofile {
   // offset pageheader margin
-
   small {
     // lighten up small elements a bit
     opacity: .7;
@@ -91,6 +90,10 @@
     .full-name, .previous-names {
       display: none;
       font-size: 18px;
+    }
+
+    .firstname {
+      font-size: .6em;
     }
   }
 
@@ -161,12 +164,12 @@
 
     .fluidbox-ghost {
       cursor: -webkit-zoom-in;
-      cursor:    -moz-zoom-in;
+      cursor: -moz-zoom-in;
     }
 
     .fluidbox-opened .fluidbox-ghost {
       cursor: -webkit-zoom-out;
-      cursor:    -moz-zoom-out;
+      cursor: -moz-zoom-out;
     }
   }
 
@@ -255,10 +258,18 @@
   }
 }
 
+.originate-call {
+  &:before {
+    content: @fa-var-phone-square;
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
+    margin-right: 6px;
+  }
+}
+
 
 // 3. Badge Bar
 // -------------------------
-
 .personprofilebar-badge {
   min-height: 64px;
   padding-top: 0;
@@ -295,10 +306,11 @@
   position: relative;
 
   &:before {
-    font-family: FontAwesome;
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
     font-size: 45px;
     color: @brand-success;
-    content: "\f111";
+    content: @fa-var-circle;
   }
 
   &.era-loss:before {
@@ -356,9 +368,9 @@
   &.animate {
     ul.badge-attendance-chart li span {
       -webkit-animation: bar-grow 1s ease-in-out;
-         -moz-animation: bar-grow 1s ease-in-out;
-           -o-animation: bar-grow 1s ease-in-out;
-              animation: bar-grow 1s ease-in-out;
+      -moz-animation: bar-grow 1s ease-in-out;
+      -o-animation: bar-grow 1s ease-in-out;
+      animation: bar-grow 1s ease-in-out;
     }
   }
 }
@@ -423,9 +435,9 @@
   &.animate {
     ul.badge-disc-chart li span {
       -webkit-animation: bar-grow 1s ease-in-out;
-         -moz-animation: bar-grow 1s ease-in-out;
-           -o-animation: bar-grow 1s ease-in-out;
-              animation: bar-grow 1s ease-in-out;
+      -moz-animation: bar-grow 1s ease-in-out;
+      -o-animation: bar-grow 1s ease-in-out;
+      animation: bar-grow 1s ease-in-out;
     }
   }
 }
@@ -436,7 +448,8 @@
 
   .duration-metric {
     &:before {
-      font-family: FontAwesome;
+      font-family: @fa-font-face;
+      font-weight: @fa-theme-weight;
       font-size: 45px;
       color: #e5d24d;
       content: @fa-var-circle;
@@ -486,7 +499,8 @@
     color: #686576;
 
     &:before {
-      font-family: FontAwesome;
+      font-family: @fa-font-face;
+      font-weight: @fa-theme-weight;
       font-size: 45px;
       color: @brand-warning;
       content: @fa-var-square;
@@ -609,7 +623,6 @@
     margin: 0 -15px;
     background-color: @persondetails-bio-bg;
     border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
-
     .clearfix();
 
     h1 {
@@ -654,7 +667,6 @@
         display: block;
         padding: 8px;
         border-radius: @border-radius-base;
-
         .clearfix();
       }
 
@@ -668,9 +680,8 @@
         border-radius: @border-radius-base;
 
         .person-image {
-                  filter: grayscale(0%);
-                  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
-
+          filter: grayscale(0%);
+          filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
           -webkit-filter: grayscale(0%);
         }
       }
@@ -769,11 +780,160 @@ span.field-value {
   border-radius: 4px;
 }
 
-// 8. Add Groups
+// 8. Add Family Page
 // -------------------------
 
 .table-groupmembers .radio:first-child {
   margin-top: 0;
+}
+
+
+@media (max-width: @screen-sm) {
+  /* Force table to not be like tables anymore */
+  table.table-groupmembers,
+  .table-groupmembers thead,
+  .table-groupmembers tbody,
+  .table-groupmembers th,
+  .table-groupmembers td,
+  .table-groupmembers tr {
+    display: block;
+  }
+
+  .table-groupmembers {
+    /* Hide table headers (but not display: none;, for accessibility) */
+    thead tr {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+
+    > thead > tr > th,
+    > tbody > tr > th,
+    > tfoot > tr > th,
+    > thead > tr > td,
+    > tbody > tr > td,
+    > tfoot > tr > td {
+      border: 0;
+    }
+
+    > tbody > tr > td {
+      position: relative;
+      padding-left: 35%;
+      /* Behave  like a "row" */
+      border: 0;
+      border-bottom: 1px solid @gray-lighter;
+    }
+
+    td:before {
+      /* Now like a table header */
+      position: absolute;
+      /* Top/left values mimic padding */
+      top: 8px;
+      left: 6px;
+      width: 35%;
+      padding-right: 10px;
+      font-weight: @grid-column-header-font-weight;
+    }
+
+    > tbody > tr {
+      counter-increment: rowNumber;
+
+      &:before {
+        /* Now like a table header */
+        position: relative;
+        display: block;
+        width: 100%;
+        padding: 6px;
+        /* Top/left values mimic padding */
+        font-size: @grid-column-header-font-size;
+        font-weight: @grid-column-header-font-weight;
+        color: @grid-column-header-text-color;
+        content: "Person #" counter(rowNumber);
+        background-color: @grid-column-header-bg;
+        border-bottom: 2px solid @grid-column-header-border-color;
+      }
+    }
+    /* Label the data */
+    tbody {
+      td:nth-of-type(1):before {
+        content: "Role";
+      }
+
+      td:nth-of-type(2):before {
+        content: "Title";
+      }
+
+      td:nth-of-type(3):before {
+        content: "Name";
+      }
+
+      td:nth-of-type(4):before {
+        content: "Suffix";
+      }
+
+      td:nth-of-type(5):before {
+        content: "Connection Status";
+      }
+
+      td:nth-of-type(6):before {
+        content: "Gender";
+      }
+
+      td:nth-of-type(7):before {
+        content: "Birthdate";
+      }
+
+      td:nth-of-type(8):empty {
+        display: none;
+      }
+
+      td:nth-of-type(8):before {
+        content: "Grade";
+      }
+
+      td:nth-of-type(9):before {
+        content: "Cancel";
+      }
+    }
+
+    > tfoot, > tfoot > tr > td {
+      display: block;
+      width: 100%;
+      padding: 0;
+    }
+
+    > tfoot > tr > td > .btn-action {
+      display: block;
+      width: 100%;
+      margin: 8px 0 16px;
+      .button-size(@padding-base-vertical; @padding-base-horizontal; @font-size-base; @line-height-base; @btn-border-radius-base);
+    }
+
+    > tbody > tr > td > .form-group {
+      &:last-of-type {
+        margin-bottom: 0;
+      }
+
+      .radio:last-of-type {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+
+
+// 8. Add Groups
+// -------------------------
+
+.row-duplicate {
+  padding-top: 12px;
+  border-top: 1px solid @panel-border;
+}
+
+.row-duplicate:first-child {
+  padding-top: 0;
+  border-top: 0;
 }
 
 // 9. Fluidbox
@@ -1052,6 +1212,7 @@ tr.inactive {
 // -------------------------
 .phonegroup-label {
   margin-bottom: 5px;
+
   @media @sm {
     padding-top: 4px;
   }

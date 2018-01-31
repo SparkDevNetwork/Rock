@@ -49,7 +49,7 @@
                             <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" CssClass="js-authorizedperson" Required="true" OnSelectPerson="ppGroupMemberPerson_SelectPerson" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox runat="server" ID="cbIsNotified" Label="Notified" />
+                            <Rock:RockCheckBox runat="server" ID="cbIsNotified" Label="Notified" Help="If this box is unchecked and a <a href='http://www.rockrms.com/Rock/BookContent/7/#servicejobsrelatingtogroups'>group leader notification job</a> is enabled then a notification will be sent to the group's leaders when this group member is saved." />
                         </div>
                     </div>
 
@@ -76,8 +76,8 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                            <asp:PlaceHolder ID="phAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                            <Rock:DynamicPlaceHolder ID="phAttributesReadOnly" runat="server" />
                         </div>
                     </div>
 
@@ -100,10 +100,10 @@
                     <Rock:NotificationBox runat="server" ID="nbRecheckedNotification" NotificationBoxType="Success" Dismissable="true" Text="Successfully re-checked requirements at {0}" Visible="false" />
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnReCheckRequirements" runat="server" AccessKey="s" Text="Re-Check Requirements" CssClass="btn btn-default" OnClick="btnReCheckRequirements_Click" CausesValidation="false" />
-                        <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="d" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" ToolTip="Alt+S" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnReCheckRequirements" runat="server" AccessKey="r" ToolTip="Alt+R" Text="Re-Check Requirements" CssClass="btn btn-default" OnClick="btnReCheckRequirements_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="a" ToolTip="Alt+A" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+C" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
                         <asp:LinkButton ID="btnShowMoveDialog" runat="server" CssClass="btn btn-default btn-sm pull-right" OnClick="btnShowMoveDialog_Click" ToolTip="Move to another group" CausesValidation="false"><i class="fa fa-external-link"></i></asp:LinkButton>
                     </div>
 

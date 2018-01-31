@@ -24,7 +24,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and display a numeric value
+    /// Field used to save and display a 32bit integer value
     /// </summary>
     [Serializable]
     public class IntegerFieldType : FieldType
@@ -42,8 +42,15 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            int? intValue = (int?)value.AsDecimalOrNull();
-            return base.FormatValue( parentControl, intValue.ToString(), configurationValues, condensed );
+            try
+            {
+                int? intValue = ( int? ) value.AsDecimalOrNull();
+                return base.FormatValue( parentControl, intValue.ToString(), configurationValues, condensed );
+            }
+            catch( System.OverflowException)
+            {
+                return "Not a valid integer";
+            }
         }
 
         /// <summary>
@@ -96,7 +103,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new NumberBox { ID = id };
+            return new NumberBox { ID = id, MaximumValue = int.MaxValue.ToString(), MinimumValue = int.MinValue.ToString() };
         }
 
         /// <summary>
@@ -156,7 +163,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, or ValueAsNumeric)
+        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, ValueAsBoolean, or ValueAsNumeric)
         /// </summary>
         /// <value>
         /// The name of the attribute value field.

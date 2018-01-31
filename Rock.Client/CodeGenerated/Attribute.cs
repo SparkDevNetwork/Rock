@@ -65,7 +65,16 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
+        public bool IsAnalytic { get; set; }
+
+        /// <summary />
+        public bool IsAnalyticHistory { get; set; }
+
+        /// <summary />
         public bool IsGridColumn { get; set; }
+
+        /// <summary />
+        public bool IsIndexEnabled { get; set; }
 
         /// <summary />
         public bool IsMultiValue { get; set; }
@@ -133,7 +142,10 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
+            this.IsAnalytic = source.IsAnalytic;
+            this.IsAnalyticHistory = source.IsAnalyticHistory;
             this.IsGridColumn = source.IsGridColumn;
+            this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsMultiValue = source.IsMultiValue;
             this.IsRequired = source.IsRequired;
             this.IsSystem = source.IsSystem;

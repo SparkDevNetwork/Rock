@@ -76,7 +76,15 @@
                             <asp:PlaceHolder ID="phFields" runat="server" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost" />
+                            <Rock:Toggle ID="tglWaitList" runat="server" Checked="true" OnText="Registrant" OffText="Wait List" Label="Status" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" Help="Moving someone from a wait list here will not send any emails to them. To send a formatted email use the Wait List tab." />
+                            <div class="row">
+                                <div class="col-xs-6">
+                                    <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost" />
+                                </div>
+                                <div class="col-xs-6">
+                                    <Rock:RockCheckBox ID="cbDiscountApplies" runat="server" Label="Discount Applies" Text="Yes" Help="If there was a discount code used for the registration, should it apply to this registrant?" />
+                                </div>
+                            </div>
                             <div id="divFees" runat="server" class="well registration-additional-options">
                                 <asp:PlaceHolder ID="phFees" runat="server" />
                             </div>
@@ -86,8 +94,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>

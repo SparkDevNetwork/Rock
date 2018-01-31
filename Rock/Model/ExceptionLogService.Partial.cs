@@ -83,6 +83,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Logs the exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        public static void LogException( Exception ex )
+        {
+            // create a new exception model
+            var exceptionLog = new ExceptionLog();
+            exceptionLog.HasInnerException = ex.InnerException != null;
+            exceptionLog.ExceptionType = ex.GetType().ToString();
+            exceptionLog.Description = ex.Message;
+            exceptionLog.Source = ex.Source;
+            exceptionLog.StackTrace = ex.StackTrace;
+
+            // Spin off a new thread to handle the real logging work so the UI is not blocked whilst
+            // recursively writing to the database.
+            Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
+        }
+
+        /// <summary>
         /// Recursively logs exception and any children.
         /// </summary>
         /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
@@ -132,10 +151,14 @@ namespace Rock.Model
                 }
 
                 // Write ExceptionLog record to database.
-                var rockContext = new Rock.Data.RockContext();
-                var exceptionLogService = new ExceptionLogService( rockContext );
-                exceptionLogService.Add( exceptionLog );
-                rockContext.SaveChanges();
+                using ( var rockContext = new Rock.Data.RockContext() )
+                {
+                    var exceptionLogService = new ExceptionLogService( rockContext );
+                    exceptionLogService.Add( exceptionLog );
+
+                    // call SaveChanges with 'disablePrePostProcessing=true' just in case the pre/post processing would also cause exceptions
+                    rockContext.SaveChanges( true );
+                }
 
                 // Recurse if inner exception is found
                 if ( exceptionLog.HasInnerException.GetValueOrDefault( false ) )
@@ -143,7 +166,7 @@ namespace Rock.Model
                     LogExceptions( ex.InnerException, exceptionLog, false );
                 }
 
-                if (ex is AggregateException)
+                if ( ex is AggregateException )
                 {
                     // if an AggregateException occurs, log the exceptions individually
                     var aggregateException = ( ex as AggregateException );
@@ -152,6 +175,7 @@ namespace Rock.Model
                         LogExceptions( innerException, exceptionLog, false );
                     }
                 }
+
             }
             catch ( Exception )
             {
@@ -170,7 +194,7 @@ namespace Rock.Model
                     string when = RockDateTime.Now.ToString();
                     while ( ex != null )
                     {
-                        File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", when, ex.GetType(), ex.Message ) );
+                        File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\",\"{3}\"\r\n", when, ex.GetType(), ex.Message, ex.StackTrace ) );
                         ex = ex.InnerException;
                     }
                 }
@@ -287,7 +311,7 @@ namespace Rock.Model
                     formItems.Append( "<table class=\"form-items exception-table\">" );
                     foreach ( string formItem in formList )
                     {
-                        if ( !string.IsNullOrWhiteSpace( formItem ) )
+                        if ( formItem.IsNotNullOrWhitespace() )
                         {
                             string formValue = formList[formItem].EncodeHtml();
                             string lc = formItem.ToLower();

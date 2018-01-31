@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.Compilation;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -48,7 +49,8 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Process( Workflow workflow, object entity, out List<string> errorMessages )
         {
-            if ( workflow?.WorkflowType?.IsActive ?? true )
+            var workflowType = WorkflowTypeCache.Read( workflow.WorkflowTypeId );
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var rockContext = (RockContext)this.Context;
 
@@ -72,22 +74,20 @@ namespace Rock.Model
                 }
                 else
                 {
-                    if ( workflow.IsPersisted || workflow.WorkflowType.IsPersisted )
+                    if ( workflow.IsPersisted || workflowType.IsPersisted )
                     {
                         if ( workflow.Id == 0 )
                         {
                             Add( workflow );
                         }
 
-                        rockContext.WrapTransaction( () =>
+                        rockContext.SaveChanges();
+
+                        workflow.SaveAttributeValues( rockContext );
+                        foreach ( var activity in workflow.Activities )
                         {
-                            rockContext.SaveChanges();
-                            workflow.SaveAttributeValues( rockContext );
-                            foreach ( var activity in workflow.Activities )
-                            {
-                                activity.SaveAttributeValues( rockContext );
-                            }
-                        } );
+                            activity.SaveAttributeValues( rockContext );
+                        }
 
                         workflow.IsProcessing = false;
                         rockContext.SaveChanges();
@@ -96,9 +96,10 @@ namespace Rock.Model
 
                 return result;
             }
+
             else
             {
-                errorMessages = new List<string> { "Workflow Type is not active!" };
+                errorMessages = new List<string> { "Workflow Type is invalid or not active!" };
                 return false;
             }
 

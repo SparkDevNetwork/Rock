@@ -28,6 +28,7 @@ namespace Rock.Model
     /// Represents an Audit Log entry that is created when an add/update/delete is performed against an <see cref="Rock.Data.IEntity"/> of an
     /// auditable <see cref="Rock.Model.EntityType"/>.
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "AuditDetail" )]
     [DataContract]
@@ -86,6 +87,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Audit"/>
         /// </value>
+        [LavaInclude]
         public virtual Model.Audit Audit { get; set; }
 
         #endregion

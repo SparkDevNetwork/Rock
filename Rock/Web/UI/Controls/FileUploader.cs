@@ -311,6 +311,31 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Determines if the file should be stored with the 'Temporary' flag (defaults to true)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [upload as temporary]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "Determines if the file should be stored with the 'Temporary' flag." )
+        ]
+        public bool UploadAsTemporary
+        {
+            get
+            {
+                return ViewState["UploadAsTemporary"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["UploadAsTemporary"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the uploaded content file path.
         /// </summary>
         /// <value>
@@ -743,7 +768,8 @@ Rock.controls.fileUploader.initialize({{
         {11}
     }},
     postbackRemovedScript: '{12}',
-    maxUploadBytes: {13}
+    maxUploadBytes: {13},
+    isTemporary: '{14}',
 }});",
                 _fileUpload.ClientID, // 0
                 this.BinaryFileId, // 1
@@ -758,7 +784,8 @@ Rock.controls.fileUploader.initialize({{
                 this.SubmitFunctionClientScript, // 10
                 this.DoneFunctionClientScript, // 11
                 postBackRemovedScript, // 12
-                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" ); // 13
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null", // 13
+                this.UploadAsTemporary ? "T" : "F" ); // {14}
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "FileUploaderScript_" + this.ClientID, script, true );
         }
 
@@ -801,28 +828,28 @@ Rock.controls.fileUploader.initialize({{
             if ( eventArgument == "FileUploaded" && FileUploaded != null )
             {
                 EnsureChildControls();
-                
+
                 // grab the _hfBinaryFileId value of the Request.Params
                 _hfBinaryFileId.Value = System.Web.HttpContext.Current?.Request?.Params[_hfBinaryFileId.UniqueID];
 
-                if (IsBinaryFile)
+                if ( IsBinaryFile )
                 {
-                    FileUploaded( this, new FileUploaderEventArgs( this.UploadedContentFilePath ));
+                    FileUploaded( this, new FileUploaderEventArgs( this.BinaryFileId ) );
                 }
                 else
                 {
-                    FileUploaded( this, new FileUploaderEventArgs( this.BinaryFileId ));
+                    FileUploaded( this, new FileUploaderEventArgs( this.UploadedContentFilePath ) );
                 }
             }
 
             if ( eventArgument == "FileRemoved" )
             {
+                this.BinaryFileId = 0;
+
                 if ( FileRemoved != null )
                 {
                     FileRemoved( this, new FileUploaderEventArgs( this.BinaryFileId ) );
                 }
-
-                this.BinaryFileId = 0;
             }
         }
     }

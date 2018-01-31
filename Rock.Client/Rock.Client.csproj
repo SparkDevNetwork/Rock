@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Rock.Client.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,37 +29,37 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Rock.Client.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http">
-      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.2.0.20126.16343\lib\net40\System.Net.Http.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Extensions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Formatting.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.WebRequest">
-      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.2.0.20126.16343\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimCampus.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimFamilyHeadOfHousehold.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimFamilyHistorical.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimFinancialAccount.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimFinancialBatch.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimPersonCurrent.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimPersonHistorical.cs" />
+    <Compile Include="CodeGenerated\AnalyticsFactAttendance.cs" />
+    <Compile Include="CodeGenerated\AnalyticsFactFinancialTransaction.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceAttendance.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceCampus.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceDate.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="CodeGenerated\Attendance.cs" />
     <Compile Include="CodeGenerated\AttendanceCode.cs" />
     <Compile Include="CodeGenerated\Attribute.cs" />
+    <Compile Include="CodeGenerated\AttributeMatrix.cs" />
+    <Compile Include="CodeGenerated\AttributeMatrixItem.cs" />
+    <Compile Include="CodeGenerated\AttributeMatrixTemplate.cs" />
     <Compile Include="CodeGenerated\AttributeQualifier.cs" />
     <Compile Include="CodeGenerated\AttributeValue.cs" />
     <Compile Include="CodeGenerated\Audit.cs" />
@@ -76,14 +77,16 @@
     <Compile Include="CodeGenerated\Campus.cs" />
     <Compile Include="CodeGenerated\Category.cs" />
     <Compile Include="CodeGenerated\Communication.cs" />
+    <Compile Include="CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="CodeGenerated\CommunicationRecipient.cs" />
-    <Compile Include="CodeGenerated\CommunicationRecipientActivity.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplate.cs" />
+    <Compile Include="CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="CodeGenerated\ConnectionActivityType.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunity.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityCampus.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityConnectorGroup.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityGroup.cs" />
+    <Compile Include="CodeGenerated\ConnectionOpportunityGroupConfig.cs" />
     <Compile Include="CodeGenerated\ConnectionRequest.cs" />
     <Compile Include="CodeGenerated\ConnectionRequestActivity.cs" />
     <Compile Include="CodeGenerated\ConnectionRequestWorkflow.cs" />
@@ -146,16 +149,28 @@
     <Compile Include="CodeGenerated\GroupTypeRole.cs" />
     <Compile Include="CodeGenerated\History.cs" />
     <Compile Include="CodeGenerated\HtmlContent.cs" />
+    <Compile Include="CodeGenerated\Interaction.cs" />
+    <Compile Include="CodeGenerated\InteractionChannel.cs" />
+    <Compile Include="CodeGenerated\InteractionComponent.cs" />
+    <Compile Include="CodeGenerated\InteractionDeviceType.cs" />
+    <Compile Include="CodeGenerated\InteractionSession.cs" />
+    <Compile Include="CodeGenerated\LavaShortcode.cs" />
     <Compile Include="CodeGenerated\Layout.cs" />
     <Compile Include="CodeGenerated\Location.cs" />
     <Compile Include="CodeGenerated\LoginParameters.cs" />
     <Compile Include="CodeGenerated\MergeTemplate.cs" />
+    <Compile Include="CodeGenerated\MetaFirstNameGenderLookup.cs" />
+    <Compile Include="CodeGenerated\MetaLastNameLookup.cs" />
+    <Compile Include="CodeGenerated\MetaNickNameLookup.cs" />
+    <Compile Include="CodeGenerated\MetaPersonicxLifestageCluster.cs" />
+    <Compile Include="CodeGenerated\MetaPersonicxLifestageGroup.cs" />
     <Compile Include="CodeGenerated\Metaphone.cs" />
     <Compile Include="CodeGenerated\Metric.cs" />
     <Compile Include="CodeGenerated\MetricCategory.cs" />
     <Compile Include="CodeGenerated\MetricPartition.cs" />
     <Compile Include="CodeGenerated\MetricValue.cs" />
     <Compile Include="CodeGenerated\MetricValuePartition.cs" />
+    <Compile Include="CodeGenerated\NcoaHistory.cs" />
     <Compile Include="CodeGenerated\Note.cs" />
     <Compile Include="CodeGenerated\NoteType.cs" />
     <Compile Include="CodeGenerated\Notification.cs" />
@@ -163,14 +178,14 @@
     <Compile Include="CodeGenerated\Page.cs" />
     <Compile Include="CodeGenerated\PageContext.cs" />
     <Compile Include="CodeGenerated\PageRoute.cs" />
-    <Compile Include="CodeGenerated\PageView.cs" />
-    <Compile Include="CodeGenerated\PageViewSession.cs" />
-    <Compile Include="CodeGenerated\PageViewUserAgent.cs" />
+    <Compile Include="CodeGenerated\PageShortLink.cs" />
     <Compile Include="CodeGenerated\Person.cs" />
+    <Compile Include="CodeGenerated\PersonalDevice.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
     <Compile Include="CodeGenerated\PersonBadge.cs" />
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="CodeGenerated\PersonToken.cs" />
     <Compile Include="CodeGenerated\PersonViewed.cs" />
     <Compile Include="CodeGenerated\PhoneNumber.cs" />
     <Compile Include="CodeGenerated\PluginMigration.cs" />
@@ -189,11 +204,11 @@
     <Compile Include="CodeGenerated\RestAction.cs" />
     <Compile Include="CodeGenerated\RestController.cs" />
     <Compile Include="CodeGenerated\Schedule.cs" />
+    <Compile Include="CodeGenerated\ScheduleCategoryExclusion.cs" />
     <Compile Include="CodeGenerated\ServiceJob.cs" />
     <Compile Include="CodeGenerated\ServiceLog.cs" />
     <Compile Include="CodeGenerated\SignatureDocument.cs" />
     <Compile Include="CodeGenerated\SignatureDocumentTemplate.cs" />
-    <Compile Include="CodeGenerated\SignatureDocumentType.cs" />
     <Compile Include="CodeGenerated\Site.cs" />
     <Compile Include="CodeGenerated\SiteDomain.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
@@ -213,9 +228,6 @@
     <Compile Include="CodeGenerated\WorkflowTrigger.cs" />
     <Compile Include="CodeGenerated\WorkflowType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

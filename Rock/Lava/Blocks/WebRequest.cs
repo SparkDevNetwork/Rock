@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Dynamic;
@@ -59,7 +75,7 @@ namespace Rock.Lava.Blocks
             // first ensure that entity commands are allowed in the context
             if ( !this.IsAuthorized( context ) )
             {
-                result.Write( string.Format( "The Lava command '{0}' is not configured for this template.", this.Name ) );
+                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
                 base.Render( context, result );
                 return;
             }
@@ -149,9 +165,9 @@ namespace Rock.Lava.Blocks
                     }
 
                     context.Scopes.Last()[parms["return"]] = responseData;
-                } catch(Exception ex )
+                } catch
                 {
-                    result.Write( string.Format("An error occurred: {0}", ex.Message ) );
+                    throw;
                 }
 
                 context.Scopes.Last()[parms["return"]] = responseData;

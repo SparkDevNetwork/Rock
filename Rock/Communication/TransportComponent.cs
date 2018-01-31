@@ -16,8 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Data.Entity;
 using System.Net.Mail;
+using System.Linq;
+
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -44,10 +46,115 @@ namespace Rock.Communication
         }
 
         /// <summary>
+        /// Sends the specified rock message.
+        /// </summary>
+        /// <param name="rockMessage">The rock message.</param>
+        /// <param name="mediumEntityTypeId">The medium entity type identifier.</param>
+        /// <param name="mediumAttributes">The medium attributes.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public abstract bool Send( RockMessage rockMessage, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes, out List<string> errorMessages );
+
+        /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        public abstract void Send( Rock.Model.Communication communication );
+        /// <param name="mediumEntityTypeId">The medium entity type identifier.</param>
+        /// <param name="mediumAttributes">The medium attributes.</param>
+        public abstract void Send( Model.Communication communication, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes );
+
+        /// <summary>
+        /// Validates the recipient.
+        /// </summary>
+        /// <param name="recipient">The recipient.</param>
+        /// <param name="isBulkCommunication">if set to <c>true</c> [is bulk communication].</param>
+        /// <returns></returns>
+        public virtual bool ValidRecipient( CommunicationRecipient recipient, bool isBulkCommunication )
+        {
+            bool valid = true;
+
+            var person = recipient?.PersonAlias?.Person;
+            if ( person != null )
+            {
+                if ( person.IsDeceased )
+                {
+                    recipient.Status = CommunicationRecipientStatus.Failed;
+                    recipient.StatusNote = "Person is deceased";
+                    valid = false;
+                }
+
+                else if ( recipient.Communication.ListGroupId.HasValue  )
+                {
+                    // if this communication is being sent to a list, make sure the recipient is still an active member of the list
+                    GroupMemberStatus? groupMemberStatus = null;
+                    using ( var rockContext = new Rock.Data.RockContext() )
+                    {
+                        groupMemberStatus = new GroupMemberService( rockContext ).Queryable()
+                            .Where( a => a.PersonId == person.Id && a.GroupId == recipient.Communication.ListGroupId )
+                            .Select(a => a.GroupMemberStatus ).FirstOrDefault();
+                    }
+
+                    if ( groupMemberStatus != null )
+                    {
+                        if ( groupMemberStatus == GroupMemberStatus.Inactive )
+                        {
+                            recipient.Status = CommunicationRecipientStatus.Failed;
+                            recipient.StatusNote = "Person is not active member of communication list: " + recipient.Communication.ListGroup.Name;
+                            valid = false;
+                        }
+                    }
+                    else
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Person is not member of communication list: " + recipient.Communication.ListGroup.Name;
+                        valid = false;
+                    }
+                }
+            }
+
+            return valid;
+        }
+
+        /// <summary>
+        /// Resolves the text.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="enabledLavaCommands">The enabled lava commands.</param>
+        /// <param name="mergeFields">The merge fields.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <returns></returns>
+        public virtual string ResolveText( string content, Person person, string enabledLavaCommands, Dictionary<string, object> mergeFields, string appRoot = "", string themeRoot = "" )
+        {
+            string value = content.ResolveMergeFields( mergeFields, person, enabledLavaCommands );
+            value = value.ReplaceWordChars();
+
+            if ( themeRoot.IsNotNullOrWhitespace() )
+            {
+                value = value.Replace( "~~/", themeRoot );
+            }
+
+            if ( appRoot.IsNotNullOrWhitespace() )
+            {
+                value = value.Replace( "~/", appRoot );
+                value = value.Replace( @" src=""/", @" src=""" + appRoot );
+                value = value.Replace( @" src='/", @" src='" + appRoot );
+                value = value.Replace( @" href=""/", @" href=""" + appRoot );
+                value = value.Replace( @" href='/", @" href='" + appRoot );
+            }
+
+            return value;
+        }
+
+        #region Obsolete
+
+        /// <summary>
+        /// Sends the specified communication.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead" )]
+        public abstract void Send( Model.Communication communication );
 
         /// <summary>
         /// Sends the specified template.
@@ -56,6 +163,7 @@ namespace Rock.Communication
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public abstract void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot );
 
         /// <summary>
@@ -65,6 +173,7 @@ namespace Rock.Communication
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public abstract void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot);
 
         /// <summary>
@@ -76,6 +185,7 @@ namespace Rock.Communication
         /// <param name="body">The body.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public abstract void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null);
 
         /// <summary>
@@ -88,6 +198,7 @@ namespace Rock.Communication
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// /// <param name="attachments">Attachments.</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public abstract void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null);
 
 
@@ -102,7 +213,11 @@ namespace Rock.Communication
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public abstract void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null );
+
+        #endregion
+
     }
    
 }

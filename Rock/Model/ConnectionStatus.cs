@@ -29,9 +29,10 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection status
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionStatus" )]
     [DataContract]
-    public partial class ConnectionStatus : Model<ConnectionStatus>
+    public partial class ConnectionStatus : Model<ConnectionStatus>, IHasActiveFlag
     {
 
         #region Entity Properties
@@ -107,6 +108,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionType ConnectionType { get; set; }
 
         #endregion

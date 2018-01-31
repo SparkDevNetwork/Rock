@@ -9,7 +9,6 @@
                 <asp:HiddenField ID="hfGroupId" runat="server" />
                 <asp:HiddenField ID="hfGroupMemberId" runat="server" />
                 <asp:HiddenField ID="hfActiveTab" runat="server" />
-                <asp:HiddenField ID="hfShareUrl" runat="server" />
 
                 <div class="row">
                     <div class="col-md-4 margin-t-md">
@@ -57,7 +56,7 @@
                 <asp:Panel ID="pnlContributions" runat="server">
                     <Rock:Grid ID="gContributions" runat="server" DisplayType="Light" OnRowDataBound="gContributions_RowDataBound">
                         <Columns>
-                            <asp:BoundField DataField="AuthorizedPersonAlias.Person.FullName" HeaderText="Name" />
+                            <Rock:RockLiteralField ID="lPersonName" HeaderText="Name" />
                             <Rock:RockLiteralField ID="lAddress" HeaderText="Address" />
                             <Rock:DateTimeField DataField="TransactionDateTime" HeaderText="Date" ItemStyle-HorizontalAlign="Left" />
                             <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" HeaderStyle-HorizontalAlign="Right" />

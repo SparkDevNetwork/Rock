@@ -130,10 +130,11 @@ namespace Rock.Reporting.DataFilter
             if ( values.Count >= 1 )
             {
                 // First value in array is always the name of the entity field being filtered
-                string entityFieldName = values[0].Replace( " ", "" );   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
+                string fieldSelection = values[0];
 
                 var entityFields = EntityHelper.GetEntityFields( entityType );
-                var entityField = entityFields.FirstOrDefault( p => p.Name == entityFieldName );
+
+                var entityField = entityFields.FindFromFilterSelection( fieldSelection );
                 if ( entityField != null )
                 {
                     result = entityField.FormattedFilterDescription( FixDelimination( values.Skip( 1 ).ToList() ) );
@@ -141,6 +142,43 @@ namespace Rock.Reporting.DataFilter
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the selection label.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public string GetSelectionLabel( Type entityType, string selection )
+        {
+            List<string> values;
+
+            // First value is the field id (property of attribute), remaining values are the field type's filter values
+            try
+            {
+                values = JsonConvert.DeserializeObject<List<string>>( selection );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+                return "Error";
+            }
+
+            if ( values.Count >= 1 )
+            {
+                // First value in array is always the name of the entity field being filtered
+                string entityFieldName = values[0].Replace( " ", "" );   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
+
+                var entityFields = EntityHelper.GetEntityFields( entityType );
+                var entityField = entityFields.FirstOrDefault( p => p.Name == entityFieldName );
+                if ( entityField != null )
+                {
+                    return entityField.TitleWithoutQualifier;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -188,7 +226,7 @@ namespace Rock.Reporting.DataFilter
 
                 if ( isAuthorized && includeField )
                 {
-                    var listItem = new ListItem( entityField.Title, entityField.Name );
+                    var listItem = new ListItem( entityField.Title, entityField.UniqueName );
 
                     if ( entityField.IsPreviewable )
                     {
@@ -233,10 +271,10 @@ namespace Rock.Reporting.DataFilter
             var containerControl = ddlEntityField.FirstParentControlOfType<DynamicControlsPanel>();
             FilterField filterControl = ddlEntityField.FirstParentControlOfType<FilterField>();
             
-            var entityField = this.entityFields.FirstOrDefault( a => a.Name == ddlEntityField.SelectedValue );
+            var entityField = this.entityFields.FirstOrDefault( a => a.UniqueName == ddlEntityField.SelectedValue );
             if ( entityField != null )
             {
-                string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.Name );
+                string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
                 if ( !containerControl.Controls.OfType<Control>().Any( a => a.ID == controlId ) )
                 {
                     var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
@@ -290,10 +328,10 @@ namespace Rock.Reporting.DataFilter
                 ddlEntityField_SelectedIndexChanged( ddlProperty, new EventArgs() );
 
                 var entityFields = EntityHelper.GetEntityFields( entityType );
-                var entityField = entityFields.FirstOrDefault( f => f.Name == ddlProperty.SelectedValue );
+                var entityField = entityFields.FirstOrDefault( f => f.UniqueName == ddlProperty.SelectedValue );
                 if ( entityField != null )
                 {
-                    var control = containerControl.Controls.OfType<Control>().ToList().FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.Name ) );
+                    var control = containerControl.Controls.OfType<Control>().ToList().FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.UniqueName ) );
                     if ( control != null )
                     {
                         values.Add( ddlProperty.SelectedValue );
@@ -354,10 +392,9 @@ namespace Rock.Reporting.DataFilter
 
                 if ( values.Count >= 2 )
                 {
-                    string selectedProperty = values[0].Replace( " ", "" );   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
-
+                    string selectedProperty = values[0];
                     var entityFields = EntityHelper.GetEntityFields( entityType );
-                    var entityField = entityFields.FirstOrDefault( f => f.Name.Equals( selectedProperty, StringComparison.OrdinalIgnoreCase ) );
+                    var entityField = entityFields.FindFromFilterSelection( selectedProperty );
                     if ( entityField != null )
                     {
                         if ( entityField.FieldKind == FieldKind.Property )

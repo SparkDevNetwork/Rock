@@ -101,6 +101,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.CategoryId = source.CategoryId;
+            target.CompletedWorkflowRetentionPeriod = source.CompletedWorkflowRetentionPeriod;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -109,9 +110,12 @@ namespace Rock.Model
             target.IsPersisted = source.IsPersisted;
             target.IsSystem = source.IsSystem;
             target.LoggingLevel = source.LoggingLevel;
+            target.LogRetentionPeriod = source.LogRetentionPeriod;
             target.Name = source.Name;
+            target.NoActionMessage = source.NoActionMessage;
             target.Order = source.Order;
             target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
+            target.SummaryViewText = source.SummaryViewText;
             target.WorkflowIdPrefix = source.WorkflowIdPrefix;
             target.WorkTerm = source.WorkTerm;
             target.CreatedDateTime = source.CreatedDateTime;

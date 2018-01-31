@@ -31,16 +31,12 @@ using Humanizer;
 
 namespace Rock.PersonProfile.Badge
 {
-    // TODO: Update to return actual data
-
     /// <summary>
-    /// FamilyAttendance Badge
+    /// Attending Duration Badge
     /// </summary>
     [Description( "Badge that summarizes how long someone has been attending." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Attending Duration" )]
-    
-    
     
     public class AttendingDuration : BadgeComponent
     {

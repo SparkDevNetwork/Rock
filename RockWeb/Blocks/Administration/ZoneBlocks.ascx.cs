@@ -26,6 +26,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -94,7 +95,18 @@ namespace RockWeb.Blocks.Administration
 
             if ( _Page != null )
             {
-                lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", _Page.Layout.Name );
+                lAllPagesOnSite.Text = string.Format( "Site" );
+
+
+                gSiteBlocks.DataKeyNames = new string[] { "Id" };
+                gSiteBlocks.Actions.ShowAdd = true;
+                gSiteBlocks.Actions.ShowExcelExport = false;
+                gSiteBlocks.Actions.ShowMergeTemplate = false;
+                gSiteBlocks.Actions.AddClick += SiteBlocks_Add;
+                gSiteBlocks.GridReorder += gSiteBlocks_GridReorder;
+                gSiteBlocks.GridRebind += gSiteBlocks_GridRebind;
+
+                lAllPagesForLayout.Text = string.Format( "Layout ({0})", _Page.Layout.Name );
 
                 gLayoutBlocks.DataKeyNames = new string[] { "Id" };
                 gLayoutBlocks.Actions.ShowAdd = true;
@@ -117,12 +129,14 @@ namespace RockWeb.Blocks.Administration
                 string script = string.Format(
                     @"Sys.Application.add_load(function () {{
                     $('div.modal-header h3').html('{0} Zone');
-                    $('#{1} a').click(function() {{ $('#{3}').val('Page'); }});
-                    $('#{2} a').click(function() {{ $('#{3}').val('Layout'); }});
+                    $('#{1} a').click(function() {{ $('#{4}').val('Page'); }});
+                    $('#{2} a').click(function() {{ $('#{4}').val('Layout'); }});
+                    $('#{3} a').click(function() {{ $('#{4}').val('Site'); }});
                 }});",
                     _ZoneName,
                     liPage.ClientID,
                     liLayout.ClientID,
+                    liSite.ClientID,
                     hfOption.ClientID );
 
                 this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "zone-add-load-{0}", this.ClientID ), script, true );
@@ -141,6 +155,7 @@ namespace RockWeb.Blocks.Administration
             {
                 if ( !Page.IsPostBack )
                 {
+                    LoadDropDowns();
                     BindGrids();
                 }
             }
@@ -168,13 +183,26 @@ namespace RockWeb.Blocks.Administration
                 divPage.AddCssClass( "active" );
                 liLayout.RemoveCssClass( "active" );
                 divLayout.RemoveCssClass( "active" );
+                liSite.RemoveCssClass( "active" );
+                divSite.RemoveCssClass( "active" );
             }
-            else
+            else if( hfOption.Value == "Layout" )
             {
                 liPage.RemoveCssClass( "active" );
                 divPage.RemoveCssClass( "active" );
                 liLayout.AddCssClass( "active" );
                 divLayout.AddCssClass( "active" );
+                liSite.RemoveCssClass( "active" );
+                divSite.RemoveCssClass( "active" );
+            }
+            else if ( hfOption.Value == "Site" )
+            {
+                liPage.RemoveCssClass( "active" );
+                divPage.RemoveCssClass( "active" );
+                liLayout.RemoveCssClass( "active" );
+                divLayout.RemoveCssClass( "active" );
+                liSite.AddCssClass( "active" );
+                divSite.AddCssClass( "active" );
             }
         }
         #endregion
@@ -182,6 +210,87 @@ namespace RockWeb.Blocks.Administration
         #region Events
 
         #region Grid Events
+
+        /// <summary>
+        /// Handles the GridReorder event of the gSiteBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gSiteBlocks_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                BlockService blockService = new BlockService( rockContext );
+                var blocks = blockService.GetBySiteAndZone( _Page.SiteId, _ZoneName ).ToList();
+                blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
+                rockContext.SaveChanges();
+
+                foreach ( var zoneBlock in blocks )
+                {
+                    // make sure the BlockCache for all the re-ordered blocks get flushed so the new Order is updated
+                    Rock.Web.Cache.BlockCache.Flush( zoneBlock.Id );
+                }
+            }
+
+            Rock.Web.Cache.PageCache.FlushSiteBlocks( _Page.SiteId );
+            PageUpdated = true;
+
+            BindGrids();
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gSiteBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gSiteBlocks_Edit( object sender, RowEventArgs e )
+        {
+            ShowEdit( BlockLocation.Site, e.RowKeyId );
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gSiteBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gSiteBlocks_Delete( object sender, RowEventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                BlockService blockService = new BlockService( rockContext );
+                Rock.Model.Block block = blockService.Get( e.RowKeyId );
+                if ( block != null )
+                {
+                    blockService.Delete( block );
+                    rockContext.SaveChanges();
+
+                    Rock.Web.Cache.PageCache.FlushSiteBlocks( _Page.SiteId );
+                    PageUpdated = true;
+                }
+            }
+
+            BindGrids();
+        }
+
+        /// <summary>
+        /// Handles the Add event of the SiteBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void SiteBlocks_Add( object sender, EventArgs e )
+        {
+            ShowEdit( BlockLocation.Site, 0 );
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gSiteBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gSiteBlocks_GridRebind( object sender, EventArgs e )
+        {
+            BindGrids();
+        }
 
         /// <summary>
         /// Handles the GridReorder event of the gLayoutBlocks control.
@@ -196,6 +305,12 @@ namespace RockWeb.Blocks.Administration
                 var blocks = blockService.GetByLayoutAndZone( _Page.LayoutId, _ZoneName ).ToList();
                 blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
+
+                foreach ( var zoneBlock in blocks )
+                {
+                    // make sure the BlockCache for all the re-ordered blocks get flushed so the new Order is updated
+                    Rock.Web.Cache.BlockCache.Flush( zoneBlock.Id );
+                }
             }
 
             Rock.Web.Cache.PageCache.FlushLayoutBlocks( _Page.LayoutId );
@@ -271,6 +386,12 @@ namespace RockWeb.Blocks.Administration
                 var blocks = blockService.GetByPageAndZone( _Page.Id, _ZoneName ).ToList();
                 blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
                 rockContext.SaveChanges();
+
+                foreach ( var zoneBlock in blocks )
+                {
+                    // make sure the BlockCache for all the re-ordered blocks get flushed so the new Order is updated
+                    Rock.Web.Cache.BlockCache.Flush( zoneBlock.Id );
+                }
             }
 
             _Page.FlushBlocks();
@@ -376,20 +497,30 @@ namespace RockWeb.Blocks.Administration
                     blockService.Add( block );
 
                     BlockLocation location = hfBlockLocation.Value.ConvertToEnum<BlockLocation>();
-                    if ( location == BlockLocation.Layout )
+                    switch ( location )
                     {
-                        block.LayoutId = _Page.LayoutId;
-                        block.PageId = null;
+                        case BlockLocation.Site:
+                            block.LayoutId = null;
+                            block.PageId = null;
+                            block.SiteId = _Page.SiteId;
+                            break;
+                        case BlockLocation.Layout:
+                            block.LayoutId = _Page.LayoutId;
+                            block.PageId = null;
+                            block.SiteId = null;
+                            break;
+                        case BlockLocation.Page:
+                            block.LayoutId = null;
+                            block.PageId = _Page.Id;
+                            block.SiteId = null;
+                            break;
                     }
-                    else
-                    {
-                        block.LayoutId = null;
-                        block.PageId = _Page.Id;
-                    }
+                    
 
                     block.Zone = _ZoneName;
 
                     Rock.Model.Block lastBlock = blockService.GetByPageAndZone( _Page.Id, _ZoneName ).OrderByDescending( b => b.Order ).FirstOrDefault();
+                    var maxOrder = blockService.GetMaxOrder( block );
 
                     if ( lastBlock != null )
                     {
@@ -463,6 +594,17 @@ namespace RockWeb.Blocks.Administration
             using ( var rockContext = new RockContext() )
             {
                 BlockService blockService = new BlockService( rockContext );
+
+                gSiteBlocks.DataSource = blockService.GetBySiteAndZone( _Page.SiteId, _ZoneName )
+                    .Select( b => new
+                    {
+                        b.Id,
+                        b.Name,
+                        BlockTypeName = b.BlockType.Name,
+                        BlockTypePath = b.BlockType.Path
+                    } )
+                    .ToList();
+                gSiteBlocks.DataBind();
 
                 gLayoutBlocks.DataSource = blockService.GetByLayoutAndZone( _Page.LayoutId, _ZoneName )
                     .Select( b => new
@@ -588,6 +730,52 @@ namespace RockWeb.Blocks.Administration
 
             pnlLists.Visible = false;
             pnlDetails.Visible = true;
+        }
+
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {
+            var rockContext = new RockContext();
+            var commonBlockTypes = new BlockTypeService( rockContext ).Queryable().Where( a => a.IsCommon ).OrderBy( a => a.Name ).AsNoTracking().ToList();
+
+            rptCommonBlockTypes.DataSource = commonBlockTypes;
+            rptCommonBlockTypes.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptCommonBlockTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptCommonBlockTypes_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            LinkButton btnNewBlockQuickSetting = e.Item.FindControl( "btnNewBlockQuickSetting" ) as LinkButton;
+            var blockType = e.Item.DataItem as BlockType;
+            if ( blockType != null && btnNewBlockQuickSetting != null )
+            {
+                btnNewBlockQuickSetting.Text = blockType.Name;
+                btnNewBlockQuickSetting.CommandArgument = blockType.Id.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnNewBlockQuickSetting control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnNewBlockQuickSetting_Click( object sender, EventArgs e )
+        {
+            LinkButton btnNewBlockQuickSetting = sender as LinkButton;
+
+            BlockTypeCache quickSettingBlockType = BlockTypeCache.Read( btnNewBlockQuickSetting.CommandArgument.AsInteger() );
+
+            if ( quickSettingBlockType != null )
+            {
+                ddlBlockType.SetValue( quickSettingBlockType.Id );
+                ddlBlockType_SelectedIndexChanged( sender, e );
+            }
         }
 
         #endregion

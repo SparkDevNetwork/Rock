@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection opportunity campus
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionOpportunityCampus" )]
     [DataContract]
     public partial class ConnectionOpportunityCampus : Model<ConnectionOpportunityCampus>
@@ -75,6 +76,7 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
@@ -83,6 +85,7 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
+        [LavaInclude]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -91,6 +94,7 @@ namespace Rock.Model
         /// <value>
         /// The default connector person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias DefaultConnectorPersonAlias { get; set; }
 
         #endregion

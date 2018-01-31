@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Reporting" )]
     [NotAudited]
     [Table( "ReportField" )]
     [DataContract]
@@ -123,6 +124,24 @@ namespace Rock.Model
         [DataMember]
         public string ColumnHeaderText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the is recipient field.
+        /// </summary>
+        /// <value>
+        /// The is recipient field.
+        /// </value>
+        [DataMember]
+        public bool? IsCommunicationRecipientField { get; set; }
+
+        /// <summary>
+        /// Gets or sets the is communication merge field.
+        /// </summary>
+        /// <value>
+        /// The is communication merge field.
+        /// </value>
+        [DataMember]
+        public bool? IsCommunicationMergeField { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -133,6 +152,7 @@ namespace Rock.Model
         /// <value>
         /// The report.
         /// </value>
+        [LavaInclude]
         public virtual Report Report { get; set; }
 
         /// <summary>

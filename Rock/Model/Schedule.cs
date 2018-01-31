@@ -24,15 +24,17 @@ using System.Linq;
 using System.Runtime.Serialization;
 using DDay.iCal;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a Scheduled event in Rock.  Several places where this has been used includes Check-in scheduling and Kiosk scheduling.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Schedule" )]
     [DataContract]
-    public partial class Schedule : Model<Schedule>, ICategorized
+    public partial class Schedule : Model<Schedule>, ICategorized, IHasActiveFlag
     {
         #region Entity Properties
 
@@ -165,7 +167,7 @@ namespace Rock.Model
         {
             get
             {
-                return CheckInStartOffsetMinutes.HasValue;
+                return CheckInStartOffsetMinutes.HasValue && IsActive;
             }
         }
 
@@ -240,11 +242,38 @@ namespace Rock.Model
         /// </summary>
         /// <returns></returns>
         [NotMapped]
+        [LavaInclude]
         public virtual DateTime? NextStartDateTime 
         {
             get
             {
-                var occurrences = GetScheduledStartTimes( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
+                if ( this.IsActive )
+                {
+                    var occurrences = GetScheduledStartTimes( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
+                    return occurrences.Min( o => ( DateTime? ) o );
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the first start date time this week.
+        /// </summary>
+        /// <value>
+        /// The first start date time this week.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual DateTime? FirstStartDateTimeThisWeek
+        {
+            get
+            {
+                var endDate = RockDateTime.Today.SundayDate();
+                var startDate = endDate.AddDays( -7 );
+                var occurrences = GetScheduledStartTimes( startDate, endDate );
                 return occurrences.Min( o => (DateTime?)o );
             }
         }
@@ -255,6 +284,7 @@ namespace Rock.Model
         /// <value>
         /// The start time of day.
         /// </value>
+        [LavaInclude]
         public virtual TimeSpan StartTimeOfDay
         {
             get
@@ -296,6 +326,22 @@ namespace Rock.Model
             get { return ToFriendlyScheduleText(); }
         }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if this is an active schedule. This value is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this schedule is active, otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        [Previewable]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
+
         #endregion
 
         #region Public Methods
@@ -323,9 +369,60 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        public virtual DDay.iCal.Event GetCalenderEvent() 
+        public virtual DDay.iCal.Event GetCalenderEvent()  
         {
             return ScheduleICalHelper.GetCalenderEvent( iCalendarContent );
+        }
+
+        /// <summary>
+        /// Gets the occurrences.
+        /// </summary>
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <returns></returns>
+        public IList<Occurrence> GetOccurrences( DateTime beginDateTime, DateTime? endDateTime = null )
+        {
+            var occurrences = new List<Occurrence>();
+
+            DDay.iCal.Event calEvent = GetCalenderEvent();
+            if ( calEvent != null && calEvent.DTStart != null )
+            {
+                var exclusionDates = new List<DateRange>();
+                if ( this.CategoryId.HasValue && this.CategoryId.Value > 0 )
+                {
+                    var category = CategoryCache.Read( this.CategoryId.Value );
+                    if ( category != null )
+                    {
+                        exclusionDates = category.ScheduleExclusions
+                            .Where( e => e.Start.HasValue && e.End.HasValue )
+                            .ToList();
+                    }
+                }
+
+                foreach( var occurrence in endDateTime.HasValue ?
+                    ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime.Value ) :
+                    ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime ) )
+                {
+                    bool exclude = false;
+                    if ( exclusionDates.Any() && occurrence.Period.StartTime != null )
+                    {
+                        var occurrenceStart = occurrence.Period.StartTime.Value;
+                        if ( exclusionDates.Any( d =>
+                            d.Start.Value <= occurrenceStart &&
+                            d.End.Value >= occurrenceStart ) )
+                        {
+                            exclude = true;
+                        }
+                    }
+
+                    if ( !exclude )
+                    {
+                        occurrences.Add( occurrence );
+                    }
+                }
+            }
+
+            return occurrences;
         }
 
         /// <summary>
@@ -339,37 +436,31 @@ namespace Rock.Model
 
             if ( IsCheckInEnabled )
             {
-                var scheduledStartTimes = this.GetScheduledStartTimes( beginDateTime, beginDateTime.Date.AddDays( 1 ) );
-
-                DDay.iCal.Event calEvent = GetCalenderEvent();
-                if ( calEvent != null && calEvent.DTStart != null )
+                var occurrences = GetOccurrences( beginDateTime, beginDateTime.Date.AddDays( 1 ) );
+                foreach ( var occurrence in occurrences
+                    .Where( a =>
+                        a.Period != null &&
+                        a.Period.StartTime != null &&
+                        a.Period.EndTime != null )
+                    .Select( a => new {
+                        Start = a.Period.StartTime.Value,
+                        End = a.Period.EndTime.Value 
+                    }) )
                 {
-                    var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, beginDateTime.Date.AddDays( 1 ) );
-                    foreach ( var occurrence in occurrences
-                        .Where( a =>
-                            a.Period != null &&
-                            a.Period.StartTime != null &&
-                            a.Period.EndTime != null )
-                        .Select( a => new {
-                            Start = a.Period.StartTime.Value,
-                            End = a.Period.EndTime.Value 
-                        }) )
+                    var checkInTimes = new CheckInTimes();
+                    checkInTimes.Start = DateTime.SpecifyKind( occurrence.Start, DateTimeKind.Local );
+                    checkInTimes.End = DateTime.SpecifyKind( occurrence.End, DateTimeKind.Local );
+                    checkInTimes.CheckInStart = checkInTimes.Start.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
+                    if ( CheckInEndOffsetMinutes.HasValue )
                     {
-                        var checkInTimes = new CheckInTimes();
-                        checkInTimes.Start = DateTime.SpecifyKind( occurrence.Start, DateTimeKind.Local );
-                        checkInTimes.End = DateTime.SpecifyKind( occurrence.End, DateTimeKind.Local );
-                        checkInTimes.CheckInStart = checkInTimes.Start.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
-                        if ( CheckInEndOffsetMinutes.HasValue )
-                        {
-                            checkInTimes.CheckInEnd = checkInTimes.Start.AddMinutes( CheckInEndOffsetMinutes.Value );
-                        }
-                        else
-                        {
-                            checkInTimes.CheckInEnd = checkInTimes.End;
-                        }
-
-                        result.Add( checkInTimes );
+                        checkInTimes.CheckInEnd = checkInTimes.Start.AddMinutes( CheckInEndOffsetMinutes.Value );
                     }
+                    else
+                    {
+                        checkInTimes.CheckInEnd = checkInTimes.End;
+                    }
+
+                    result.Add( checkInTimes );
                 }
             }
 
@@ -402,19 +493,15 @@ namespace Rock.Model
         {
             var result = new List<DateTime>();
 
-            DDay.iCal.Event calEvent = GetCalenderEvent();
-            if ( calEvent != null && calEvent.DTStart != null )
+            var occurrences = GetOccurrences( beginDateTime, endDateTime );
+            foreach ( var startDateTime in occurrences
+                .Where( a =>
+                    a.Period != null &&
+                    a.Period.StartTime != null )
+                .Select( a => a.Period.StartTime.Value ) )
             {
-                var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime );
-                foreach ( var startDateTime in occurrences
-                    .Where( a =>
-                        a.Period != null &&
-                        a.Period.StartTime != null )
-                    .Select( a => a.Period.StartTime.Value ) )
-                {
-                    // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
-                    result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
-                }
+                // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
+                result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
             }
 
             return result;
@@ -505,6 +592,19 @@ namespace Rock.Model
         /// </summary>
         /// <returns>A <see cref="System.String"/> containing a friendly description of the Schedule.</returns>
         public string ToFriendlyScheduleText()
+        {
+            return ToFriendlyScheduleText( false );
+        }
+
+        /// <summary>
+        /// Gets the Friendly Text of the Calendar Event.
+        /// For example, "Every 3 days at 10:30am", "Monday, Wednesday, Friday at 5:00pm", "Saturday at 4:30pm"
+        /// </summary>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns>
+        /// A <see cref="System.String" /> containing a friendly description of the Schedule.
+        /// </returns>
+        public string ToFriendlyScheduleText( bool condensed )
         {
             // init the result to just the schedule name just in case we can't figure out the FriendlyText
             string result = this.Name;
@@ -607,17 +707,9 @@ namespace Rock.Model
 
                     if ( dates.Count() > 1 )
                     {
-                        if ( dates.Count() > 99 )
+                        if ( condensed || dates.Count() > 99 )
                         {
-                            // shouldn't happen, but just in case
-                            if ( calendarEvent.DTStart.HasDate && calendarEvent.DTEnd.HasDate )
-                            {
-                                result = string.Format( "Multiple dates between {0} and {1}", calendarEvent.DTStart.Value.ToShortDateString(), calendarEvent.DTEnd.Value.ToShortDateString() );
-                            }
-                            else
-                            {
-                                // something unexpected, just return the schedule name
-                            }
+                            result = string.Format( "Multiple dates between {0} and {1}", dates.First().ToShortDateString(), dates.Last().ToShortDateString() );
                         }
                         else
                         {
@@ -625,7 +717,7 @@ namespace Rock.Model
                             var listHtml = "<ul class='list-unstyled'>" + Environment.NewLine;
                             foreach ( var date in dates )
                             {
-                                listHtml += string.Format( "<li>{0}</li>", date.ToString() ) + Environment.NewLine;
+                                listHtml += string.Format( "<li>{0}</li>", date.ToShortDateTimeString() ) + Environment.NewLine;
                             }
 
                             listHtml += "</ul>";
@@ -635,7 +727,7 @@ namespace Rock.Model
                     }
                     else if ( dates.Count() == 1)
                     {
-                        result = "Once at " + calendarEvent.DTStart.Value.ToString();
+                        result = "Once at " + calendarEvent.DTStart.Value.ToShortDateTimeString();
                     }
                     else
                     {
@@ -683,7 +775,7 @@ namespace Rock.Model
                     return false;
                 }
 
-                var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, time.Date );
+                var occurrences = GetOccurrences( time.Date );
                 return occurrences.Count > 0;
             }
 
@@ -733,7 +825,7 @@ namespace Rock.Model
                     return false;
                 }
 
-                var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, time.Date );
+                var occurrences = GetOccurrences( time.Date );
                 return occurrences.Count > 0;
             }
 

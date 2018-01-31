@@ -36,6 +36,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [HttpGet]
         [System.Web.Http.Route( "api/userlogins/available/{username}" )]
+        [System.Web.Http.Route( "api/userlogins/available" )]
         public bool Available( string username )
         {
             return ( (UserLoginService)Service ).GetByUserName( username ) == null;

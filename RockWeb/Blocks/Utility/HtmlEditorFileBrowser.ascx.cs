@@ -224,6 +224,38 @@ namespace RockWeb.Blocks.Utility
         #region Methods
 
         /// <summary>
+        /// Get a list of folders the represent the entire tree at the physical root folder.
+        /// </summary>
+        /// <param name="directoryPath">The current directory being processed.</param>
+        /// <param name="physicalRootFolder">The root directory to process from.</param>
+        /// <returns>A collection of strings representing relative path names.</returns>
+        protected List<string> GetRecursiveFolders( string directoryPath, string physicalRootFolder )
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo( directoryPath );
+            string relativeFolderPath = directoryPath.Replace( physicalRootFolder, string.Empty );
+
+            var folders = new List<string>();
+            folders.Add( string.IsNullOrEmpty( relativeFolderPath ) ? "\\" : relativeFolderPath );
+
+            try
+            {
+                List<string> subDirectoryList = Directory.GetDirectories( directoryPath ).OrderBy( a => a ).ToList();
+
+                foreach ( var subDirectoryPath in subDirectoryList )
+                {
+                    folders.AddRange( GetRecursiveFolders( subDirectoryPath, physicalRootFolder ) );
+                }
+
+                return folders;
+            }
+            catch ( Exception ex )
+            {
+                ShowErrorMessage( ex, string.Format( "Unable to access folder {0}. Contact your administrator.", directoryPath ) );
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Builds a Directory treenode.
         /// </summary>
         /// <param name="directoryPath">The directory path.</param>
@@ -306,10 +338,14 @@ namespace RockWeb.Blocks.Utility
 <li class='js-rocklist-item rocklist-item' data-id='{0}'>
     <div class='rollover-container'>
         <div class='rollover-item actions'>
-        <a title='delete' class='btn btn-xs btn-danger js-delete-file'>
-            <i class='fa fa-times'></i>
-        </a>
+            <a title='delete' class='btn btn-xs btn-danger js-delete-file action'>
+                <i class='fa fa-times'></i>
+            </a> 
+            <a href='{3}' target='_blank' title='download' class='btn btn-xs btn-default js-download-file action'>
+                <i class='fa fa-download'></i>
+            </a>
         </div>
+
         <img src='{1}' class='file-browser-image' />
         <br />
         <span class='file-name'>{2}</span>
@@ -320,7 +356,7 @@ namespace RockWeb.Blocks.Utility
                     string fileName = Path.GetFileName( filePath );
                     string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
                     string imagePath = rootFolder.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
-                    string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) + "&width=100&height=100" );
+                    string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) );
 
                     // put the file timestamp as part of the url to that changed files are loaded from the server instead of the browser cache
                     var fileDateTime = File.GetLastWriteTimeUtc( filePath );
@@ -330,7 +366,8 @@ namespace RockWeb.Blocks.Utility
                         nameHtmlFormat,
                         HttpUtility.HtmlEncode( relativeFilePath ),
                         imageUrl,
-                        fileName );
+                        fileName,
+                        HttpUtility.HtmlEncode( this.ResolveUrl( imagePath ) ) );
 
                     sb.AppendLine( nameHtml );
                 }
@@ -441,7 +478,42 @@ namespace RockWeb.Blocks.Utility
             tbOrigFolderName.Text = hfSelectedFolder.Value;
             tbRenameFolderName.PrependText = Path.GetDirectoryName( hfSelectedFolder.Value ) + "\\";
             tbRenameFolderName.Text = string.Empty;
+
+            if ( tbRenameFolderName.PrependText == "\\\\" )
+            {
+                tbRenameFolderName.PrependText = "\\";
+            }
+
             mdRenameFolder.Show();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbMoveFolder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbMoveFolder_Click( object sender, EventArgs e )
+        {
+            string physicalRootFolder = this.Request.MapPath( GetRootFolderPath() );
+            var folders = GetRecursiveFolders( physicalRootFolder, physicalRootFolder );
+
+            if ( folders != null )
+            {
+                tbMoveOrigFolderName.Text = hfSelectedFolder.Value;
+                var currentFolder = Path.GetDirectoryName( hfSelectedFolder.Value );
+
+                ddlMoveFolderTarget.Items.Clear();
+                foreach ( var folder in folders )
+                {
+                    if ( !folder.StartsWith( hfSelectedFolder.Value ) )
+                    {
+                        ddlMoveFolderTarget.Items.Add( folder );
+                    }
+                }
+                ddlMoveFolderTarget.SelectedValue = currentFolder;
+
+                mdMoveFolder.Show();
+            }
         }
 
         /// <summary>
@@ -486,6 +558,43 @@ namespace RockWeb.Blocks.Utility
             {
                 tbRenameFolderName.ShowErrorMessage( "Invalid Folder Name" );
                 mdRenameFolder.Show();
+            }
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdMoveFolder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdMoveFolder_SaveClick( object sender, EventArgs e )
+        {
+            var targetFolder = ddlMoveFolderTarget.SelectedValue;
+            mdMoveFolder.Hide();
+
+            try
+            {
+                string selectedPhysicalFolder = GetSelectedPhysicalFolder();
+                string targetPhysicalFolder = Path.Combine( GetPhysicalFolder( targetFolder ), Path.GetFileName( selectedPhysicalFolder ) );
+
+                if ( !Directory.Exists( targetPhysicalFolder ) && !File.Exists( targetPhysicalFolder ) )
+                {
+                    Directory.Move( selectedPhysicalFolder, targetPhysicalFolder );
+
+                    // set selected folder to moved folder
+                    hfSelectedFolder.Value = Path.Combine( targetFolder, Path.GetFileName( selectedPhysicalFolder ) );
+
+                    BuildFolderTreeView();
+                }
+                else
+                {
+                    nbErrorMessage.Text = "A file or folder already exists at that path.";
+                    nbErrorMessage.Visible = true;
+                }
+            }
+            catch ( Exception ex )
+            {
+                string relativeFolderPath = hfSelectedFolder.Value;
+                this.ShowErrorMessage( ex, "An error occurred when attempting to rename folder " + relativeFolderPath );
             }
         }
 
@@ -548,17 +657,25 @@ namespace RockWeb.Blocks.Utility
         }
 
         /// <summary>
-        /// Gets the selected physical folder.
+        /// Gets the physical folder of the specified virtual folder.
         /// </summary>
         /// <returns></returns>
-        private string GetSelectedPhysicalFolder()
+        private string GetPhysicalFolder(string relativeFolderPath)
         {
-            string relativeFolderPath = hfSelectedFolder.Value;
             string rootFolder = GetRootFolderPath();
             string physicalRootFolder = this.MapPath( rootFolder );
             string selectedPhysicalFolder = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( '/', '\\' ) );
 
             return selectedPhysicalFolder;
+        }
+
+        /// <summary>
+        /// Gets the selected physical folder.
+        /// </summary>
+        /// <returns></returns>
+        private string GetSelectedPhysicalFolder()
+        {
+            return GetPhysicalFolder( hfSelectedFolder.Value );
         }
     }
 }

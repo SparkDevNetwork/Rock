@@ -54,7 +54,7 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
             
             // get the tag
-            string tagName = GetAttributeValue( action, "OrganizationTag" ).ResolveMergeFields( GetMergeFields( action ) ); ;
+            string tagName = GetAttributeValue( action, "OrganizationTag" ).ResolveMergeFields( GetMergeFields( action ) );
             if (!string.IsNullOrEmpty(tagName)) {
 
                 // get person entity type
@@ -103,11 +103,12 @@ namespace Rock.Workflow.Action
                                     if ( person != null )
                                     {
                                         // add person to tag if they are not already in it
-                                        if ( orgTag.TaggedItems.Where( i => i.EntityGuid == person.PrimaryAlias.AliasPersonGuid && i.TagId == orgTag.Id ).Count() == 0 )
+                                        if ( orgTag.TaggedItems.Where( i => i.EntityGuid == person.Guid && i.TagId == orgTag.Id ).Count() == 0 )
                                         {
                                             TaggedItem taggedPerson = new TaggedItem();
                                             taggedPerson.Tag = orgTag;
-                                            taggedPerson.EntityGuid = person.PrimaryAlias.AliasPersonGuid;
+                                            taggedPerson.EntityTypeId = personEntityType.Id;
+                                            taggedPerson.EntityGuid = person.Guid;
                                             orgTag.TaggedItems.Add( taggedPerson );
                                             rockContext.SaveChanges();
                                         }

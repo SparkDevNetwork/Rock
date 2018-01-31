@@ -1,0 +1,27 @@
+//
+// Rollover - Used to hide/show items in
+// the UI has the mouse rolls-over a container.
+// --------------------------------------------------
+
+.rollover-container {
+  position: relative;
+
+  & > .rollover-item {
+    opacity: 0;
+    -webkit-transition: opacity .5s ease-out;
+       -moz-transition: opacity .5s ease-out;
+         -o-transition: opacity .5s ease-out;
+            transition: opacity .5s ease-out;
+  }
+
+  &:hover {
+    & > .rollover-item {
+      opacity: 1;
+    }
+  }
+}
+
+// always show item if on touch device
+.touch .rollover-item {
+  opacity: 1;
+}

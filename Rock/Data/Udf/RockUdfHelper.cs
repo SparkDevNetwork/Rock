@@ -82,7 +82,17 @@ namespace Rock.Data
             /// <summary>
             /// Country
             /// </summary>
-            Country = 6
+            Country = 6,
+
+            /// <summary>
+            /// The GeoPoint Latitude
+            /// </summary>
+            Latitude = 7,
+
+            /// <summary>
+            /// The GeoPoint Longitude
+            /// </summary>
+            Longitude = 8
         }
 
         /// <summary>
@@ -118,6 +128,19 @@ namespace Rock.Data
         /// <returns></returns>
         [DbFunction( "CodeFirstDatabaseSchema", "ufnGroup_GetGeofencingGroupNames" )]
         public static string ufnGroup_GetGeofencingGroupNames( int? PersonId, int groupTypeId )
+        {
+            // this in-memory implementation will not be invoked when working on LINQ to Entities
+            return null;
+        }
+
+        /// <summary>
+        /// when used in a Linq Query, calls database function ufnCrm_GetSpousePersonIdFromPersonId 
+        /// Example: qry.Select( a =&gt; RockUdfHelper.ufnCrm_GetSpousePersonIdFromPersonId(a.PersonId))
+        /// </summary>
+        /// <param name="PersonId">The person identifier.</param>
+        /// <returns></returns>
+        [DbFunction( "CodeFirstDatabaseSchema", "ufnCrm_GetSpousePersonIdFromPersonId" )]
+        public static int? ufnCrm_GetSpousePersonIdFromPersonId( int? PersonId )
         {
             // this in-memory implementation will not be invoked when working on LINQ to Entities
             return null;

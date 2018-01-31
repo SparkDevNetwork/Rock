@@ -19,21 +19,26 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents an event item for one or more event calendars.
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "EventItem" )]
     [DataContract]
-    public partial class EventItem : Model<EventItem>
+    public partial class EventItem : Model<EventItem>, IHasActiveFlag
     {
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the Name of the EventItem. This property is required.
         /// </summary>
@@ -123,6 +128,8 @@ namespace Rock.Model
         [DataMember]
         public DateTime? ApprovedOnDateTime { get; set; }
 
+        #endregion
+
         #region Virtual Properties
 
         /// <summary>
@@ -170,6 +177,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.EventItemAudience">EventItemAudiences</see> that belong to this EventItem.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<EventItemAudience> EventItemAudiences
         {
             get { return _calendarItemAudiences ?? ( _calendarItemAudiences = new Collection<EventItemAudience>() ); }
@@ -177,10 +185,6 @@ namespace Rock.Model
         }
 
         private ICollection<EventItemAudience> _calendarItemAudiences;
-
-        #endregion
-
-        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the approved by person alias.
@@ -229,6 +233,72 @@ namespace Rock.Model
             }
 
             return result.Distinct().OrderBy( d => d ).ToList();
+        }
+
+        /// <summary>
+        /// Get a list of all inherited Attributes that should be applied to this entity.
+        /// </summary>
+        /// <returns>A list of all inherited AttributeCache objects.</returns>
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        {
+            var calendarIds = this.EventCalendarItems.Select( c => c.EventCalendarId ).ToList();
+            if ( !calendarIds.Any() )
+            {
+                return null;
+            }
+
+            var inheritedAttributes = new Dictionary<int, List<Rock.Web.Cache.AttributeCache>>();
+            calendarIds.ForEach( c => inheritedAttributes.Add( c, new List<Rock.Web.Cache.AttributeCache>() ) );
+
+            //
+            // Check for any calendar item attributes that the event item inherits.
+            //
+            var calendarItemEntityType = EntityTypeCache.Read( typeof( EventCalendarItem ) );
+            if ( calendarItemEntityType != null )
+            {
+                foreach ( var calendarItemEntityAttributes in AttributeCache
+                    .GetByEntity( calendarItemEntityType.Id )
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "EventCalendarId" &&
+                        calendarIds.Contains( a.EntityTypeQualifierValue.AsInteger() ) ) )
+                {
+                    foreach ( var attributeId in calendarItemEntityAttributes.AttributeIds )
+                    {
+                        inheritedAttributes[calendarItemEntityAttributes.EntityTypeQualifierValue.AsInteger()].Add(
+                            AttributeCache.Read( attributeId ) );
+                    }
+                }
+            }
+
+            //
+            // Walk the generated list of attribute groups and put them, ordered, into a list
+            // of inherited attributes.
+            //
+            var attributes = new List<Rock.Web.Cache.AttributeCache>();
+            foreach ( var attributeGroup in inheritedAttributes )
+            {
+                foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )
+                {
+                    attributes.Add( attribute );
+                }
+            }
+
+            return attributes;
+        }
+
+        /// <summary>
+        /// Get any alternate Ids that should be used when loading attribute value for this entity.
+        /// </summary>
+        /// <param name="rockContext"></param>
+        /// <returns>
+        /// A list of any alternate entity Ids that should be used when loading attribute values.
+        /// </returns>
+        public override List<int> GetAlternateEntityIds( RockContext rockContext )
+        {
+            //
+            // Find all the calendar Ids this event item is present on.
+            //
+            return this.EventCalendarItems.Select( c => c.Id ).ToList();
         }
 
         #endregion

@@ -119,7 +119,7 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
 
             _hfActionGuid.Value = action.Guid.ToString();
-            _lblActionTypeName.Text = action.ActionType.Name;
+            _lblActionTypeName.Text = action.ActionTypeCache.Name;
 
             if ( action.LastProcessedDateTime.HasValue )
             {

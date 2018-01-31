@@ -19,6 +19,15 @@ BEGIN
 	SET @StartDate = COALESCE( CONVERT( date, @StartDate ), '1900-01-01' )
 	SET @EndDate = COALESCE( @EndDate, '2100-01-01' )
 
+	DECLARE @AccountTbl TABLE ( [Id] int )
+	INSERT INTO @AccountTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@AccountIds,'') )
+
+	DECLARE @CurrencyTypeTbl TABLE ( [Id] int )
+	INSERT INTO @CurrencyTypeTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@CurrencyTypeIds,'') )
+
+	DECLARE @SourceTypeTbl TABLE ( [Id] int )
+	INSERT INTO @SourceTypeTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@SourceTypeIds,'') )
+
  	SELECT
 		[GivingId],
 		[Amount],
@@ -51,10 +60,13 @@ BEGIN
 			ON [p].[Id] = [pa].[PersonId]
 		LEFT OUTER JOIN [FinancialPaymentDetail] [fpd] WITH (NOLOCK) 
 			ON [fpd].[Id] = [ft].[FinancialPaymentDetailId]
+		LEFT OUTER JOIN @AccountTbl [tt1] ON [tt1].[id] = [ftd].[AccountId]
+		LEFT OUTER JOIN @CurrencyTypeTbl [tt2] ON [tt2].[id] = [fpd].[CurrencyTypeValueId]
+		LEFT OUTER JOIN @SourceTypeTbl [tt3] ON [tt3].[id] = [ft].[SourceTypeValueId]
 		WHERE [ft].[TransactionDateTime] BETWEEN @StartDate AND @EndDate
-		AND ( @AccountIds IS NULL OR [ftd].[AccountId] IN ( SELECT * FROM ufnUtility_CsvToTable( @AccountIds ) ) )
-		AND ( @CurrencyTypeIds IS NULL OR [fpd].[CurrencyTypeValueId] IN ( SELECT * FROM ufnUtility_CsvToTable( @CurrencyTypeIds ) ) )
-		AND ( @SourceTypeIds IS NULL OR [ft].[SourceTypeValueId] IN ( SELECT * FROM ufnUtility_CsvToTable( @SourceTypeIds ) ) )
+		AND ( @AccountIds IS NULL OR [tt1].[Id] IS NOT NULL )
+		AND ( @CurrencyTypeIds IS NULL OR [tt2].[Id] IS NOT NULL )
+		AND ( @SourceTypeIds IS NULL OR [tt3].[Id] IS NOT NULL )
 	) AS [details]
 
 END

@@ -1,5 +1,4 @@
-﻿@import "_global-variables.less";
-@import "_rock-variables";
+﻿@import "_rock-variables";
 
 /*
   Used to style the check-in screens
@@ -21,6 +20,12 @@
 
 // 2. Bootstrap Overrides
 // -------------------------
+@import "./FontAwesome/_rock-upgrade-map-variables.less";
+@import "./FontAwesome/_rock-fa-mixins.less";
+
+@fa-theme-weight: 900;
+@fa-theme-weight-name: 'solid';
+.fa-font-face( @fa-theme-weight-name );
 
 h1, h2, h3 {
   letter-spacing: -.03em;
@@ -189,7 +194,7 @@ body {
 
   &.active i:before {
     // checked icon
-    content: "\f046";
+    content: @fa-var-check-square;
   }
 }
 
@@ -249,6 +254,7 @@ body {
 .photo-round {
   background-repeat: no-repeat;
   background-size: cover;
+  background-position-x: center;
 
   &.photo-round-md {
     width: 70px;

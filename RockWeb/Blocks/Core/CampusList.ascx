@@ -11,14 +11,14 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gCampuses" runat="server" AllowSorting="true" OnRowSelected="gCampuses_Edit">
+                    <Rock:Grid ID="gCampuses" runat="server"  OnRowSelected="gCampuses_Edit">
                         <Columns>
-                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <Rock:RockBoundField DataField="ShortCode" HeaderText="Short Code" SortExpression="ShortCode" />
-                            <Rock:RockBoundField DataField="PhoneNumber" HeaderText="Phone Number" SortExpression="PhoneNumber" />
-                            <Rock:RockBoundField DataField="LeaderPersonAlias.Person.FullName" HeaderText="Campus Leader" SortExpression="LeaderPersonAlias.Person.FullName" />
+                            <Rock:ReorderField />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                            <Rock:RockBoundField DataField="ShortCode" HeaderText="Short Code"  />
+                            <Rock:RockBoundField DataField="PhoneNumber" HeaderText="Phone Number" />
+                            <Rock:RockBoundField DataField="LeaderPersonAlias.Person.FullName" HeaderText="Campus Leader" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
-                            <Rock:DeleteField OnClick="gCampuses_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>

@@ -10,7 +10,7 @@ namespace EnsureCopyrightHeader
         /// <summary>
         /// The ignore files
         /// </summary>
-        static string[] IgnoreFiles = new string[] { "DoubleMetaphone.cs" };
+        static string[] IgnoreFiles = new string[] { "\\DoubleMetaphone.cs", "\\Rock.Version\\AssemblySharedInfo.cs" };
 
         /// <summary>
         /// The ignore folders
@@ -30,10 +30,17 @@ namespace EnsureCopyrightHeader
             int updatedFileCount = 0;
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockWeb\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mailgun\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mandrill\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Migrations\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.NMI\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.PayFlowPro\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Rest\\" );
-            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.SignNow\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.StatementGenerator\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot.Model\\" );
+            //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
 
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockJobSchedulerService\\" );
@@ -124,7 +131,7 @@ namespace EnsureCopyrightHeader
 
                 foreach ( var f in IgnoreFiles )
                 {
-                    if ( Path.GetFileName( fileName ).Equals( f, StringComparison.OrdinalIgnoreCase ) )
+                    if ( Path.GetFullPath( fileName ).EndsWith( f, StringComparison.OrdinalIgnoreCase ) )
                     {
                         skipFile = true;
                     }

@@ -1,3 +1,19 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -939,7 +955,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 .GroupBy( a => a.PersonId )
                 .ToDictionary(
                     k => k.Key,
-                    v => v.Select( x => new AttributeValueCache { AttributeId = x.AttributeId, Value = x.Value } ).ToList() );
+                    v => v.Select( x => new AttributeValueCache { AttributeId = x.AttributeId, EntityId = x.PersonId, Value = x.Value } ).ToList() );
 
             int personUpdatesCount = 0;
             long personUpdatesMS = 0;
@@ -1536,7 +1552,9 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
 
                 if ( !useBulkInsertForPhotos )
                 {
-                    binaryFileToInsert.ContentStream = new MemoryStream( Convert.FromBase64String( photoImport.PhotoData ) );
+                    byte[] photoData = Convert.FromBase64String( photoImport.PhotoData );
+                    binaryFileToInsert.FileSize = photoData.Length;
+                    binaryFileToInsert.ContentStream = new MemoryStream( photoData );
                 }
 
                 binaryFileToInsert.SetStorageEntityTypeId( binaryFileType.StorageEntityTypeId );

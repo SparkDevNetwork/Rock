@@ -35,6 +35,8 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
+using Rock.Transactions;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -46,7 +48,8 @@ namespace RockWeb.Blocks.Crm
     [Description( "Used for updating information about several individuals at once." )]
 
     [AttributeCategoryField( "Attribute Categories", "The person attribute categories to display and allow bulk updating", true, "Rock.Model.Person", false, "", "", 0 )]
-    [IntegerField( "Display Count", "The initial number of individuals to display prior to expanding list", false, 0, "", 1  )]
+    [IntegerField( "Display Count", "The initial number of individuals to display prior to expanding list", false, 0, "", 1 )]
+    [WorkflowTypeField( "Workflow Types", "The workflows to make available for bulk updating.", true, false, "", "", 2 )]
     public partial class BulkUpdate : RockBlock
     {
         #region Fields
@@ -80,6 +83,26 @@ namespace RockWeb.Blocks.Crm
             ddlInactiveReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ) );
             ddlReviewReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ), true );
 
+            rlbWorkFlowType.Items.Clear();
+            var guidList = GetAttributeValue( "WorkflowTypes" ).SplitDelimitedValues().AsGuidList();
+            using ( var rockContext = new RockContext() )
+            {
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                foreach ( var workflowType in new WorkflowTypeService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( t => guidList.Contains( t.Guid ) )
+                    .ToList() )
+                {
+                    ListItem item = new ListItem( workflowType.Name, workflowType.Id.ToString() );
+                    rlbWorkFlowType.Items.Add( item );
+                }
+            }
+
+            if ( !guidList.Any() )
+            {
+                pwWorkFlows.Visible = false;
+            }
+
             ddlTagList.Items.Clear();
             ddlTagList.DataTextField = "Name";
             ddlTagList.DataValueField = "Id";
@@ -88,16 +111,17 @@ namespace RockWeb.Blocks.Crm
             var tagList = new TagService( new RockContext() ).Queryable()
                                             .Where( t =>
                                                         t.EntityTypeId == personEntityTypeId
-                                                        && (t.OwnerPersonAliasId == null || currentPersonAliasIds.Contains( t.OwnerPersonAliasId.Value )) )
-                                            .Select( t => new   {
-                                                                    Id = t.Id,
-                                                                    Type = t.OwnerPersonAliasId == null ? "Organization Tags" : "Personal Tags",
-                                                                    Name = t.Name
-                                                                } )
-                                            .OrderByDescending(t => t.Type)
-                                            .ThenBy( t => t.Name)
+                                                        && ( t.OwnerPersonAliasId == null || currentPersonAliasIds.Contains( t.OwnerPersonAliasId.Value ) ) )
+                                            .Select( t => new
+                                            {
+                                                Id = t.Id,
+                                                Type = t.OwnerPersonAliasId == null ? "Organization Tags" : "Personal Tags",
+                                                Name = t.Name
+                                            } )
+                                            .OrderByDescending( t => t.Type )
+                                            .ThenBy( t => t.Name )
                                             .ToList();
-            foreach (var tag in tagList )
+            foreach ( var tag in tagList )
             {
                 ListItem item = new ListItem( tag.Name, tag.Id.ToString() );
                 item.Attributes["OptionGroup"] = tag.Type;
@@ -130,6 +154,9 @@ namespace RockWeb.Blocks.Crm
 ";
             ScriptManager.RegisterStartupScript( lbRemoveAllIndividuals, lbRemoveAllIndividuals.GetType(), "confirm-remove-all-" + BlockId.ToString(), script, true );
 
+            // This will cause this script to be injected upon each partial-postback because the script is
+            // needed due to the fact that the controls are dynamically changing (added/removed) during each
+            // partial postback.  Don't try to 'fix' this unless you're going to re-engineer this section. :)
             script = string.Format( @"
 
     // Add the 'bulk-item-selected' class to form-group of any item selected after postback
@@ -150,6 +177,19 @@ namespace RockWeb.Blocks.Crm
         // Set the selection icon to show selected
         selectIcon.toggleClass('fa-check-circle-o', enabled);
         selectIcon.toggleClass('fa-circle-o', !enabled);
+
+        // Checkboxes needs special handling
+        var checkboxes = formGroup.find(':checkbox');
+        if ( checkboxes.length ) {{
+            $(checkboxes).each(function() {{
+                if (this.nodeName === 'INPUT' ) {{
+                    $(this).toggleClass('aspNetDisabled', !enabled);
+                    $(this).prop('disabled', !enabled);
+                    $(this).closest('label').toggleClass('text-muted', !enabled);
+                    $(this).closest('.form-group').toggleClass('bulk-item-selected', enabled);
+                }}
+            }});
+        }}
 
         // Enable/Disable the controls
         formGroup.find('.form-control').each( function() {{
@@ -226,7 +266,6 @@ namespace RockWeb.Blocks.Crm
             if ( !Page.IsPostBack )
             {
                 cpCampus.Campuses = CampusCache.All();
-
                 Individuals = new List<Individual>();
                 SelectedFields = new List<string>();
 
@@ -376,7 +415,8 @@ namespace RockWeb.Blocks.Crm
         {
             int? groupId = gpGroup.SelectedValue.AsIntegerOrNull();
             int? tagId = ddlTagList.SelectedValue.AsIntegerOrNull();
-            args.IsValid = SelectedFields.Any() || !string.IsNullOrWhiteSpace( tbNote.Text ) || ( groupId.HasValue && groupId > 0 ) || tagId.HasValue; 
+            int? workFlowTypeId = rlbWorkFlowType.SelectedValue.AsIntegerOrNull();
+            args.IsValid = SelectedFields.Any() || !string.IsNullOrWhiteSpace( tbNote.Text ) || ( groupId.HasValue && groupId > 0 ) || tagId.HasValue || workFlowTypeId.HasValue;
         }
 
         /// <summary>
@@ -462,6 +502,12 @@ namespace RockWeb.Blocks.Crm
                     EvaluateChange( changes, "Email Is Active", newEmailActive );
                 }
 
+                if ( SelectedFields.Contains( ddlCommunicationPreference.ClientID ) )
+                {
+                    var newCommunicationPreference = ddlCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
+                    EvaluateChange( changes, "Communication Preference", newCommunicationPreference );
+                }
+
                 if ( SelectedFields.Contains( ddlEmailPreference.ClientID ) )
                 {
                     EmailPreference? newEmailPreference = ddlEmailPreference.SelectedValue.ConvertToEnumOrNull<EmailPreference>();
@@ -497,7 +543,7 @@ namespace RockWeb.Blocks.Crm
                     int? newCampusId = cpCampus.SelectedCampusId;
                     if ( newCampusId.HasValue )
                     {
-                        var campus = CampusCache.Read(newCampusId.Value);
+                        var campus = CampusCache.Read( newCampusId.Value );
                         if ( campus != null )
                         {
                             EvaluateChange( changes, "Campus (for all family members)", campus.Name );
@@ -606,7 +652,7 @@ namespace RockWeb.Blocks.Crm
                         {
                             changes.Add( string.Format( "Remove from <span class='field-name'>{0}</span> group.", group.Name ) );
                         }
-                        else if ( action == "Add")
+                        else if ( action == "Add" )
                         {
                             changes.Add( string.Format( "Add to <span class='field-name'>{0}</span> group.", group.Name ) );
                         }
@@ -657,22 +703,41 @@ namespace RockWeb.Blocks.Crm
                 #region Tag
                 if ( !string.IsNullOrWhiteSpace( ddlTagList.SelectedValue ) )
                 {
-                    changes.Add( string.Format( "{0} {1} <span class='field-name'>{2}</span> tag.", 
+                    changes.Add( string.Format( "{0} {1} <span class='field-name'>{2}</span> tag.",
                         ddlTagAction.SelectedValue,
                         ddlTagAction.SelectedValue == "Add" ? "to" : "from",
                         ddlTagList.SelectedItem.Text ) );
                 }
                 #endregion
 
+                #region workflow
+
+                if ( !string.IsNullOrWhiteSpace( rlbWorkFlowType.SelectedValue ) )
+                {
+                    var workFlowTypes = new List<string>();
+                    foreach ( ListItem item in this.rlbWorkFlowType.Items )
+                    {
+                        if ( item.Selected )
+                        {
+                            workFlowTypes.Add( item.Text );
+                        }
+                    }
+                    changes.Add( string.Format( "Activate the <span class='field-name'>{0}</span> {1}.",
+                         workFlowTypes.AsDelimited( ", ", " and " ),
+                         "workflow".PluralizeIf( workFlowTypes.Count > 1 ) ) );
+                }
+                #endregion
+
+
                 StringBuilder sb = new StringBuilder();
                 sb.AppendFormat( "<p>You are about to make the following updates to {0} individuals:</p>", Individuals.Count().ToString( "N0" ) );
                 sb.AppendLine();
 
                 sb.AppendLine( "<ul>" );
-                changes.ForEach( c => sb.AppendFormat("<li>{0}</li>\n", c));
+                changes.ForEach( c => sb.AppendFormat( "<li>{0}</li>\n", c ) );
                 sb.AppendLine( "</ul>" );
 
-                sb.AppendLine( "<p>Please confirm that you want to make these updates.</p>");
+                sb.AppendLine( "<p>Please confirm that you want to make these updates.</p>" );
 
                 phConfirmation.Controls.Add( new LiteralControl( sb.ToString() ) );
 
@@ -734,6 +799,7 @@ namespace RockWeb.Blocks.Crm
                     newEmailActive = ddlIsEmailActive.SelectedValue == "Active";
                 }
 
+                var newCommunicationPreference = ddlCommunicationPreference.SelectedValueAsEnumOrNull<CommunicationType>();
                 EmailPreference? newEmailPreference = ddlEmailPreference.SelectedValue.ConvertToEnumOrNull<EmailPreference>();
 
                 string newEmailNote = tbEmailNote.Text;
@@ -811,6 +877,12 @@ namespace RockWeb.Blocks.Crm
                     {
                         History.EvaluateChange( changes, "Email Is Active", person.IsEmailActive, newEmailActive );
                         person.IsEmailActive = newEmailActive;
+                    }
+
+                    if ( SelectedFields.Contains( ddlCommunicationPreference.ClientID ) )
+                    {
+                        History.EvaluateChange( changes, "Communication Preference", person.CommunicationPreference, newCommunicationPreference );
+                        person.CommunicationPreference = newCommunicationPreference.Value;
                     }
 
                     if ( SelectedFields.Contains( ddlEmailPreference.ClientID ) )
@@ -1090,31 +1162,31 @@ namespace RockWeb.Blocks.Crm
                     {
                         var groupMemberService = new GroupMemberService( rockContext );
 
-                        var existingMembersQuery = groupMemberService.Queryable("Group")
-                                                                     .Where(m => m.GroupId == group.Id
-                                                                                 && ids.Contains(m.PersonId));
+                        var existingMembersQuery = groupMemberService.Queryable( "Group" )
+                                                                     .Where( m => m.GroupId == group.Id
+                                                                                  && ids.Contains( m.PersonId ) );
 
                         string action = ddlGroupAction.SelectedValue;
                         if ( action == "Remove" )
                         {
                             var existingIds = existingMembersQuery.Select( gm => gm.Id ).Distinct().ToList();
 
-                            Action<RockContext, List<int>> deleteAction = (context, items) =>
+                            Action<RockContext, List<int>> deleteAction = ( context, items ) =>
                                                                                   {
                                                                                       // Load the batch of GroupMember items into the context and delete them.
-                                                                                      groupMemberService = new GroupMemberService(context);
+                                                                                      groupMemberService = new GroupMemberService( context );
 
-                                                                                      var batchGroupMembers = groupMemberService.Queryable().Where(x => items.Contains(x.Id)).ToList();
+                                                                                      var batchGroupMembers = groupMemberService.Queryable().Where( x => items.Contains( x.Id ) ).ToList();
 
                                                                                       // also unregister them from any registration groups
                                                                                       RegistrationRegistrantService registrantService = new RegistrationRegistrantService( context );
                                                                                       foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId.HasValue && items.Contains( r.GroupMemberId.Value ) ) )
                                                                                       {
-                                                                                         registrant.GroupMemberId = null;
+                                                                                          registrant.GroupMemberId = null;
                                                                                       }
-                                                                                      
+
                                                                                       groupMemberService.DeleteRange( batchGroupMembers );
-                                                                                      
+
                                                                                       context.SaveChanges();
                                                                                   };
 
@@ -1150,13 +1222,13 @@ namespace RockWeb.Blocks.Crm
                                     var newGroupMembers = new List<GroupMember>();
 
                                     var existingIds = existingMembersQuery.Select( m => m.PersonId ).Distinct().ToList();
-                                    
-                                    var personKeys = ids.Where(id => !existingIds.Contains(id)).ToList();
+
+                                    var personKeys = ids.Where( id => !existingIds.Contains( id ) ).ToList();
 
                                     Action<RockContext, List<int>> addAction = ( context, items ) =>
                                     {
                                         groupMemberService = new GroupMemberService( context );
-                                        
+
                                         foreach ( int id in items )
                                         {
                                             var groupMember = new GroupMember();
@@ -1164,9 +1236,9 @@ namespace RockWeb.Blocks.Crm
                                             groupMember.GroupRoleId = roleId.Value;
                                             groupMember.GroupMemberStatus = status;
                                             groupMember.PersonId = id;
-                                            groupMemberService.Add(groupMember);
-                                            
-                                            newGroupMembers.Add(groupMember);
+                                            groupMemberService.Add( groupMember );
+
+                                            newGroupMembers.Add( groupMember );
                                         }
 
                                         context.SaveChanges();
@@ -1215,7 +1287,7 @@ namespace RockWeb.Blocks.Crm
                                     {
                                         foreach ( var groupMember in items )
                                         {
-                                            foreach (var attribute in selectedGroupAttributes)
+                                            foreach ( var attribute in selectedGroupAttributes )
                                             {
                                                 Rock.Attribute.Helper.SaveAttributeValue( groupMember, attribute, selectedGroupAttributeValues[attribute.Key], context );
                                             }
@@ -1242,50 +1314,75 @@ namespace RockWeb.Blocks.Crm
                 if ( !string.IsNullOrWhiteSpace( ddlTagList.SelectedValue ) )
                 {
                     int tagId = ddlTagList.SelectedValue.AsInteger();
-                    var taggedItemService = new TaggedItemService( rockContext );
 
-                    // get guids of selected individuals
-                    var personGuids = new PersonService( rockContext ).Queryable( true )
-                                        .Where( p =>
-                                            ids.Contains( p.Id ) )
-                                        .Select( p => p.Guid )
-                                        .ToList();
-                        
-                    if ( ddlTagAction.SelectedValue == "Add" )
+                    var tag = new TagService( rockContext ).Get( tagId );
+                    if ( tag != null && tag.IsAuthorized( "TAG", CurrentPerson ) )
                     {
-                        foreach ( var personGuid in personGuids )
-                        {
-                            if ( !taggedItemService.Queryable().Where( t => t.TagId == tagId && t.EntityGuid == personGuid ).Any() )
-                            {
-                                TaggedItem taggedItem = new TaggedItem();
-                                taggedItem.TagId = tagId;
-                                taggedItem.EntityGuid = personGuid;
+                        var taggedItemService = new TaggedItemService( rockContext );
 
-                                taggedItemService.Add( taggedItem );
-                                rockContext.SaveChanges();
+                        // get guids of selected individuals
+                        var personGuids = new PersonService( rockContext ).Queryable( true )
+                                            .Where( p =>
+                                                ids.Contains( p.Id ) )
+                                            .Select( p => p.Guid )
+                                            .ToList();
+
+                        if ( ddlTagAction.SelectedValue == "Add" )
+                        {
+                            foreach ( var personGuid in personGuids )
+                            {
+                                if ( !taggedItemService.Queryable().Where( t => t.TagId == tagId && t.EntityGuid == personGuid ).Any() )
+                                {
+                                    TaggedItem taggedItem = new TaggedItem();
+                                    taggedItem.TagId = tagId;
+                                    taggedItem.EntityTypeId = personEntityTypeId;
+                                    taggedItem.EntityGuid = personGuid;
+
+                                    taggedItemService.Add( taggedItem );
+                                    rockContext.SaveChanges();
+                                }
                             }
                         }
-                    }
-                    else // remove
-                    {
-                        foreach(var personGuid in personGuids )
+                        else // remove
                         {
-                            var taggedPerson = taggedItemService.Queryable().Where( t => t.TagId == tagId && t.EntityGuid == personGuid ).FirstOrDefault();
-                            if (taggedPerson != null )
+                            foreach ( var personGuid in personGuids )
                             {
-                                taggedItemService.Delete( taggedPerson );
+                                var taggedPerson = taggedItemService.Queryable().Where( t => t.TagId == tagId && t.EntityGuid == personGuid ).FirstOrDefault();
+                                if ( taggedPerson != null )
+                                {
+                                    taggedItemService.Delete( taggedPerson );
+                                }
                             }
+                            rockContext.SaveChanges();
                         }
-                        rockContext.SaveChanges();
                     }
                 }
                 #endregion
 
-                    pnlEntry.Visible = false;
+                #region workflow
+
+                IEnumerable<string> selectedWorkflows = from ListItem li in rlbWorkFlowType.Items
+                                                        where li.Selected == true
+                                                        select li.Value;
+                foreach ( string value in selectedWorkflows )
+                {
+                    int? intValue = value.AsIntegerOrNull();
+                    if ( intValue.HasValue )
+                    {
+
+                        var workflowDetails = people.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
+                        var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( intValue.Value, workflowDetails );
+                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
+                    }
+                }
+                #endregion
+
+                pnlEntry.Visible = false;
                 pnlConfirm.Visible = false;
 
                 nbResult.Text = string.Format( "{0} {1} successfully updated.",
-                    ids.Count().ToString( "N0" ), ( ids.Count() > 1 ? "people were" : "person was" ) ); ;
+                    ids.Count().ToString( "N0" ), ( ids.Count() > 1 ? "people were" : "person was" ) );
+                ;
                 pnlResult.Visible = true;
             }
         }
@@ -1302,13 +1399,13 @@ namespace RockWeb.Blocks.Crm
 
             int batchesProcessed = 0;
 
-            while (remainingCount > 0)
+            while ( remainingCount > 0 )
             {
-                var batchItems = itemsToProcess.Skip(batchesProcessed * batchSize).Take( batchSize ).ToList();
-                                
-                using (var batchContext = new RockContext())
+                var batchItems = itemsToProcess.Skip( batchesProcessed * batchSize ).Take( batchSize ).ToList();
+
+                using ( var batchContext = new RockContext() )
                 {
-                    processingAction.Invoke(batchContext, batchItems);
+                    processingAction.Invoke( batchContext, batchItems );
                 }
 
                 batchesProcessed++;
@@ -1359,7 +1456,7 @@ namespace RockWeb.Blocks.Crm
         {
             int individualCount = Individuals.Count();
             lNumIndividuals.Text = individualCount.ToString( "N0" ) +
-                (individualCount == 1 ? " Person" : " People");
+                ( individualCount == 1 ? " Person" : " People" );
 
             ppAddPerson.PersonId = Rock.Constants.None.Id;
             ppAddPerson.PersonName = "Add Person";
@@ -1395,6 +1492,7 @@ namespace RockWeb.Blocks.Crm
             ypGraduation.Enabled = ddlGradePicker.Enabled;
 
             SetControlSelection( cpCampus, "Campus" );
+            SetControlSelection( ddlCommunicationPreference, "Communication Preference" );
             SetControlSelection( ddlSuffix, "Suffix" );
             SetControlSelection( ddlRecordStatus, "Record Status" );
             SetControlSelection( ddlIsEmailActive, "Email Status" );
@@ -1412,7 +1510,7 @@ namespace RockWeb.Blocks.Crm
             string iconCss = controlEnabled ? "fa-check-circle-o" : "fa-circle-o";
             control.Label = string.Format( "<span class='js-select-item'><i class='fa {0}'></i></span> {1}", iconCss, label );
             var webControl = control as WebControl;
-            if (webControl != null)
+            if ( webControl != null )
             {
                 webControl.Enabled = controlEnabled;
             }
@@ -1431,10 +1529,10 @@ namespace RockWeb.Blocks.Crm
             }
 
             int categoryIndex = 0;
-            foreach( var category in selectedCategories.OrderBy( c => c.Name ) )
+            foreach ( var category in selectedCategories.OrderBy( c => c.Name ) )
             {
                 var pw = new PanelWidget();
-                if ( categoryIndex % 2 == 0)
+                if ( categoryIndex % 2 == 0 )
                 {
                     phAttributesCol1.Controls.Add( pw );
                 }
@@ -1508,8 +1606,8 @@ namespace RockWeb.Blocks.Crm
 
                     if ( action == "Add" )
                     {
-                        pnlGroupMemberStatus.RemoveCssClass("fade-inactive");
-                        pnlGroupMemberAttributes.RemoveCssClass("fade-inactive");
+                        pnlGroupMemberStatus.RemoveCssClass( "fade-inactive" );
+                        pnlGroupMemberAttributes.RemoveCssClass( "fade-inactive" );
 
                         ddlGroupRole.Label = "Role";
                         ddlGroupRole.Enabled = true;
@@ -1519,12 +1617,12 @@ namespace RockWeb.Blocks.Crm
                     }
                     else
                     {
-                        pnlGroupMemberStatus.AddCssClass("fade-inactive");
-                        pnlGroupMemberAttributes.AddCssClass("fade-inactive");
+                        pnlGroupMemberStatus.AddCssClass( "fade-inactive" );
+                        pnlGroupMemberAttributes.AddCssClass( "fade-inactive" );
                         SetControlSelection( ddlGroupRole, "Role" );
                         SetControlSelection( ddlGroupMemberStatus, "Member Status" );
                     }
-                    
+
                     var groupType = GroupTypeCache.Read( group.GroupTypeId );
                     ddlGroupRole.Items.Clear();
                     ddlGroupRole.DataSource = groupType.Roles.OrderBy( r => r.Order ).ToList();
@@ -1547,7 +1645,7 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
-        private void BuildGroupAttributes(RockContext rockContext)
+        private void BuildGroupAttributes( RockContext rockContext )
         {
             if ( GroupId.HasValue )
             {
@@ -1558,7 +1656,7 @@ namespace RockWeb.Blocks.Crm
 
         private void BuildGroupAttributes( Group group, RockContext rockContext, bool setValues )
         {
-            if (group != null)
+            if ( group != null )
             {
                 string action = ddlGroupAction.SelectedValue;
 
@@ -1582,6 +1680,7 @@ namespace RockWeb.Blocks.Crm
 
                     Control control = attributeCache.AddControl( phAttributes.Controls, attributeCache.DefaultValue, string.Empty, setValues, true, attributeCache.IsRequired, labelText );
 
+                    // Q: Why don't we enable if the control is a RockCheckBox?
                     if ( action == "Update" && !( control is RockCheckBox ) )
                     {
                         var webControl = control as WebControl;
@@ -1718,7 +1817,7 @@ namespace RockWeb.Blocks.Crm
             /// </summary>
             /// <param name="id">The identifier.</param>
             /// <param name="name">The name.</param>
-            public Individual( int id, string name)
+            public Individual( int id, string name )
             {
                 PersonId = id;
                 PersonName = name;
@@ -1729,5 +1828,5 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
 
-}
+    }
 }

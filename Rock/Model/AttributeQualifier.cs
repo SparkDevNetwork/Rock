@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <remarks>
     /// Examples this can be a <see cref="Rock.Model.DefinedValue"/>, SQL query, or a list of options.
     /// </remarks>
+    [RockDomain( "Core" )]
     [Table( "AttributeQualifier" )]
     [DataContract]
     public partial class AttributeQualifier : Entity<AttributeQualifier>
@@ -87,6 +88,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Attribute"/> that uses this AttributeQualifier.
         /// </value>
+        [LavaInclude]
         public virtual Attribute Attribute { get; set; }
 
         #endregion

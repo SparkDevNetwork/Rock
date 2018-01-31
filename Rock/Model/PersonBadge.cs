@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a type or category of binary files in Rock, and configures how binary files of this type are stored and accessed.
     /// </summary>
+    [RockDomain( "CRM" )]
     [Table( "PersonBadge" )]
     [DataContract]
     public partial class PersonBadge : Model<PersonBadge>, IOrdered

@@ -17,7 +17,7 @@
     {% endcapture %}
 
     <li class="list-group-item">
-      <a href="{{ LinkedPages.DetailPage }}?GroupId={{group.Group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
+      <a href="{{ LinkedPages.DetailPage }}?GroupId={{ group.Group.Id }}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
         {{ group.Group.Name }} <small>({{ group.Role }}{{ isLeaderIcon }})</small>
         {% if group.IsLeader %}
           {% assign pending = 0 %}
@@ -27,7 +27,7 @@
             {% endif %}
           {% endfor %}
           {% if pending != 0 %}
-            <span title="number of pending members" class="badge badge-danger">{{pending}}</span>
+            <span title="number of pending members" class="badge badge-danger">{{ pending }}</span>
           {% endif %}
         {% endif %}
       </a>

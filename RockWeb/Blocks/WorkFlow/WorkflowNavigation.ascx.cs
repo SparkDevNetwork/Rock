@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
             {
-                headingTitle.Controls.Add( new LiteralControl( string.Format( "<i class='{0} icon-fw'></i> ", category.IconCssClass ) ) );
+                headingTitle.Controls.Add( new LiteralControl( string.Format( "<i class='{0} fa-fw'></i> ", category.IconCssClass ) ) );
             }
             headingTitle.Controls.Add( new LiteralControl( category.Name ) );
 
@@ -210,7 +210,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( !string.IsNullOrWhiteSpace( workflowType.IconCssClass ) )
                     {
-                        aNew.Controls.Add( new LiteralControl( string.Format( "<i class='{0} icon-fw'></i> ", workflowType.IconCssClass ) ) );
+                        aNew.Controls.Add( new LiteralControl( string.Format( "<i class='{0} fa-fw'></i> ", workflowType.IconCssClass ) ) );
                     }
 
                     aNew.Controls.Add( new LiteralControl( workflowType.Name ) );

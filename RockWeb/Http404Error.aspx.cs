@@ -38,7 +38,7 @@ public partial class Http404Error : System.Web.UI.Page
         // Check to see if exception should be logged
         if ( GlobalAttributesCache.Read().GetValue( "Log404AsException" ).AsBoolean(true) )
         {
-            ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0}", Request.Url.AbsoluteUri ) ), Context );
+            ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0} - Referred from: {1}", Request.Url.AbsoluteUri, Request.UrlReferrer != null ? Request.UrlReferrer.ToString() : "Direct Link" ) ), Context );
         }
         
         // If this is an API call, set status code and exit

@@ -55,10 +55,11 @@ namespace RockWeb.Blocks.Security
     [BooleanField( "Show Address", "Allows hiding the address field.", false, order: 13 )]
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
         "The type of location that address should use.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 14 )]
-    [BooleanField("Address Required", "Whether the address is required.", false, order:15)]
-    [BooleanField("Show Phone Numbers", "Allows hiding the phone numbers.", false, order:16)]
-    [DefinedValueField(Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types", "The phone numbers to display for editing.", false, true, order:17 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types Required", "The phone numbers that are required.", false, true, order: 18 )]
+    [BooleanField( "Address Required", "Whether the address is required.", false, order: 15 )]
+    [BooleanField( "Show Phone Numbers", "Allows hiding the phone numbers.", false, order: 16 )]
+    [IntegerField( "Minimum Age", "The minimum age allowed to create an account. Warning: The Children's Online Privacy Protection Act disallows children under the age of 13 from giving out personal information without their parents' permission.", false, 13, order: 17 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types", "The phone numbers to display for editing.", false, true, order: 18 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Types Required", "The phone numbers that are required.", false, true, order: 19 )]
     public partial class AccountEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -122,6 +123,12 @@ namespace RockWeb.Blocks.Security
                 pnlPhoneNumbers.Visible = GetAttributeValue( "ShowPhoneNumbers" ).AsBoolean();
                 acAddress.Required = GetAttributeValue( "AddressRequired" ).AsBoolean();
 
+                // set birthday picker required if minimum age > 0
+                if ( GetAttributeValue( "MinimumAge" ).AsInteger() > 0 )
+                {
+                    bdaypBirthDay.Required = true;
+                }
+
                 var phoneNumbers = new List<PhoneNumber>();
 
                 // add phone number types
@@ -129,7 +136,7 @@ namespace RockWeb.Blocks.Security
                 {
                     var phoneNumberTypeDefinedType = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
 
-                    if (!string.IsNullOrWhiteSpace( GetAttributeValue( "PhoneTypes" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PhoneTypes" ) ) )
                     {
                         var selectedPhoneTypeGuids = GetAttributeValue( "PhoneTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
                         var selectedPhoneTypes = phoneNumberTypeDefinedType.DefinedValues
@@ -197,6 +204,15 @@ namespace RockWeb.Blocks.Security
 
             if ( Page.IsValid )
             {
+                if ( !IsOldEnough() )
+                {
+                    ShowErrorMessage(
+                        string.Format( "We are sorry, you must be at least {0} years old to create an account.",
+                        GetAttributeValue( "MinimumAge" ) )
+                    );
+                    return;
+                }
+
                 if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
                 {
                     var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
@@ -434,7 +450,7 @@ namespace RockWeb.Blocks.Security
                     url = ResolveRockUrl( "~/ConfirmAccount" );
                 }
 
-                var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields(this.RockPage, this.CurrentPerson );
+                var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
                 var results = new List<IDictionary<string, object>>();
 
@@ -459,10 +475,12 @@ namespace RockWeb.Blocks.Security
 
                 mergeObjects.Add( "Results", results.ToArray() );
 
-                var recipients = new List<RecipientData>();
-                recipients.Add( new RecipientData( person.Email, mergeObjects ) );
-
-                Email.Send( GetAttributeValue( "ForgotUsernameTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
+                var emailMessage = new RockEmailMessage( GetAttributeValue( "ForgotUsernameTemplate" ).AsGuid() );
+                emailMessage.AddRecipient( new RecipientData( person.Email, mergeObjects ) );
+                emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                emailMessage.CreateCommunicationRecord = false;
+                emailMessage.Send();
             }
             else
             {
@@ -496,10 +514,12 @@ namespace RockWeb.Blocks.Security
                 mergeObjects.Add( "Person", person );
                 mergeObjects.Add( "User", user );
 
-                var recipients = new List<RecipientData>();
-                recipients.Add( new RecipientData( person.Email, mergeObjects ) );
-
-                Email.Send( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
+                var emailMessage = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
+                emailMessage.AddRecipient( new RecipientData( person.Email, mergeObjects ) );
+                emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                emailMessage.CreateCommunicationRecord = false;
+                emailMessage.Send();
 
                 ShowPanel( 4 );
             }
@@ -515,8 +535,8 @@ namespace RockWeb.Blocks.Security
         /// <param name="user">The user.</param>
         private void DisplaySuccess( Rock.Model.UserLogin user )
         {
-            FormsAuthentication.SignOut();
-            Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, false, false );
+            Authorization.SignOut();
+            Authorization.SetAuthCookie( tbUserName.Text, false, false );
 
             if ( user != null && user.PersonId.HasValue )
             {
@@ -538,10 +558,12 @@ namespace RockWeb.Blocks.Security
                         mergeObjects.Add( "Person", person );
                         mergeObjects.Add( "User", user );
 
-                        var recipients = new List<RecipientData>();
-                        recipients.Add( new RecipientData( person.Email, mergeObjects ) );
-
-                        Email.Send( GetAttributeValue( "AccountCreatedTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), false );
+                        var emailMessage = new RockEmailMessage( GetAttributeValue( "AccountCreatedTemplate" ).AsGuid() );
+                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeObjects ) );
+                        emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                        emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                        emailMessage.CreateCommunicationRecord = false;
+                        emailMessage.Send();
                     }
                     catch ( SystemException ex )
                     {
@@ -674,7 +696,7 @@ namespace RockWeb.Blocks.Security
             // save address
             if ( pnlAddress.Visible )
             {
-                if ( acAddress.IsValid && !string.IsNullOrWhiteSpace(acAddress.Street1) && !string.IsNullOrWhiteSpace( acAddress.City ) && !string.IsNullOrWhiteSpace( acAddress.PostalCode ) )
+                if ( acAddress.IsValid && !string.IsNullOrWhiteSpace( acAddress.Street1 ) && !string.IsNullOrWhiteSpace( acAddress.City ) && !string.IsNullOrWhiteSpace( acAddress.PostalCode ) )
                 {
                     Guid locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuid();
                     if ( locationTypeGuid != Guid.Empty )
@@ -691,12 +713,12 @@ namespace RockWeb.Blocks.Security
                         var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                         groupLocation.Location = location;
 
-                        groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( locationTypeGuid).Id;
+                        groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( locationTypeGuid ).Id;
                         groupLocation.IsMailingLocation = true;
                         groupLocation.IsMappedLocation = true;
-                       
+
                         rockContext.SaveChanges();
-                    }                    
+                    }
                 }
             }
 
@@ -713,18 +735,33 @@ namespace RockWeb.Blocks.Security
         {
             var rockContext = new RockContext();
             var userLoginService = new Rock.Model.UserLoginService( rockContext );
-            return UserLoginService.Create( 
-                rockContext, 
-                person, 
+            return UserLoginService.Create(
+                rockContext,
+                person,
                 Rock.Model.AuthenticationServiceType.Internal,
                 EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
-                tbUserName.Text, 
+                tbUserName.Text,
                 Password,
                 confirmed );
         }
 
+        /// <summary>
+        /// Checks to see if user meets the minimum age.
+        /// </summary>
+        /// <returns></returns>
+        private bool IsOldEnough()
+        {
+            var birthday = bdaypBirthDay.SelectedDate ?? Rock.RockDateTime.Today;
+            var minimumAge = GetAttributeValue( "MinimumAge" ).AsInteger();
+            if ( minimumAge == 0 )
+            {
+                return true;
+            }
+            return Rock.RockDateTime.Today.AddYears( minimumAge * -1 ) >= birthday;
+        }
+
         #endregion
-        
+
         #region Enumerations
 
         private enum Direction

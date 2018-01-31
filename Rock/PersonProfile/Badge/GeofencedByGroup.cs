@@ -28,7 +28,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.PersonProfile.Badge
 {
     /// <summary>
-    /// Campus Badge
+    /// Geofenced By Group Badge
     /// </summary>
     [Description( "Displays the group(s) of a particular type that have a geo-fence location around one or more of the the person's map locations." )]
     [Export( typeof( BadgeComponent ) )]

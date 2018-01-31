@@ -36,6 +36,7 @@ namespace Rock.Model
     /// Pages are hierarchical, and are used to create the structure of the site.  Each page can have one parent Page and zero or more children pages, and the 
     /// page hierarchy is used to create the SiteMap.
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "Page" )]
     [DataContract]
     public partial class Page : Model<Page>, IOrdered
@@ -355,6 +356,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Page"/> entity for the parent Page
         /// </value>
+        [LavaInclude]
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
@@ -380,6 +382,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Layout"/> entity that the Page is using
         /// </value>
+        [LavaInclude]
         public virtual Layout Layout { get; set; }
 
         /// <summary>
@@ -496,7 +499,6 @@ namespace Rock.Model
             {
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add( "PageId", this.Id );
-                Rock.Data.DbService.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
 
                 // since routes have a cascade delete relationship (their presave won't get called), delete routes from route table
                 var routes = RouteTable.Routes;
@@ -517,6 +519,8 @@ namespace Rock.Model
                     }
                 }
             }
+
+            base.PreSaveChanges( dbContext, state );
         }
 
         /// <summary>

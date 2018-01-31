@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an <see cref="Rock.Model.WorkflowActionForm"/> (action or task) that is performed as part of a <see cref="Rock.Model.WorkflowActionForm"/>.
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "WorkflowActionForm" )]
     [DataContract]
     public partial class WorkflowActionForm : Model<WorkflowActionForm>
@@ -127,6 +128,7 @@ namespace Rock.Model
         /// <value>
         /// The notification system email.
         /// </value>
+        [LavaInclude]
         public virtual SystemEmail NotificationSystemEmail {get;set;}
 
         /// <summary>
@@ -141,31 +143,7 @@ namespace Rock.Model
         {
             get
             {
-                var buttonList = new List<LiquidButton>();
-
-                foreach ( var actionButton in Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
-                {
-                    var button = new LiquidButton();
-                    var details = actionButton.Split( new char[] { '^' } );
-                    if ( details.Length > 0 )
-                    {
-                        button.Name = details[0];
-
-                        if ( details.Length > 1 )
-                        {
-                            var definedValue = DefinedValueCache.Read( details[1].AsGuid() );
-                            if ( definedValue != null )
-                            {
-                                button.Html = definedValue.GetAttributeValue( "ButtonHTML" );
-                                button.EmailHtml = definedValue.GetAttributeValue( "ButtonEmailHTML" );
-                            }
-                        }
-                    }
-
-                    buttonList.Add( button );
-                }
-
-                return buttonList;
+                return GetActionButtons( Actions );
             }
         }
 
@@ -214,6 +192,39 @@ namespace Rock.Model
             public string EmailHtml { get; set; }
         }
 
+        /// <summary>
+        /// Gets the action buttons.
+        /// </summary>
+        /// <param name="actions">The actions.</param>
+        /// <returns></returns>
+        public static List<LiquidButton> GetActionButtons( string actions )
+        {
+            var buttonList = new List<LiquidButton>();
+
+            foreach ( var actionButton in actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                var button = new LiquidButton();
+                var details = actionButton.Split( new char[] { '^' } );
+                if ( details.Length > 0 )
+                {
+                    button.Name = details[0];
+
+                    if ( details.Length > 1 )
+                    {
+                        var definedValue = DefinedValueCache.Read( details[1].AsGuid() );
+                        if ( definedValue != null )
+                        {
+                            button.Html = definedValue.GetAttributeValue( "ButtonHTML" );
+                            button.EmailHtml = definedValue.GetAttributeValue( "ButtonEmailHTML" );
+                        }
+                    }
+                }
+
+                buttonList.Add( button );
+            }
+
+            return buttonList;
+        }
     }
 
     #region Entity Configuration

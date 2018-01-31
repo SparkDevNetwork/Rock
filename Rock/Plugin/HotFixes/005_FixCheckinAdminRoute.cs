@@ -27,14 +27,15 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( @"
-    DECLARE @PageId INT = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '7B7207D0-B905-4836-800E-A24DDC6FE445' )
-    IF @PageId IS NOT NULL 
-    BEGIN
-        UPDATE [PageRoute] SET [PageId] = @PageId
-        WHERE [Route] = 'checkin/{KioskId}/{CheckinConfigId}/{GroupTypeIds}'
-    END
-" );
+//  Moved to core migration: 201605232234462_FamilyCheckinType
+//            Sql( @"
+//    DECLARE @PageId INT = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '7B7207D0-B905-4836-800E-A24DDC6FE445' )
+//    IF @PageId IS NOT NULL 
+//    BEGIN
+//        UPDATE [PageRoute] SET [PageId] = @PageId
+//        WHERE [Route] = 'checkin/{KioskId}/{CheckinConfigId}/{GroupTypeIds}'
+//    END
+//" );
         }
 
         /// <summary>

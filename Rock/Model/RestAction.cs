@@ -25,6 +25,7 @@ namespace Rock.Model
 {
     /// <summary>
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "RestAction" )]
     [DataContract]
     public partial class RestAction : Model<RestAction>
@@ -83,6 +84,7 @@ namespace Rock.Model
         /// <value>
         /// The controller.
         /// </value>
+        [LavaInclude]
         public virtual RestController Controller { get; set; }
 
         #endregion

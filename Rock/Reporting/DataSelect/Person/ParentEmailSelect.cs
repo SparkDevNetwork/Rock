@@ -103,6 +103,21 @@ namespace Rock.Reporting.DataSelect.Person
             }
         }
 
+        /// <summary>
+        /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
+        /// To disable sorting for this field, return string.Empty;
+        /// </summary>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public override string SortProperties( string selection )
+        {
+            // disable sorting on this column since it is an IEnumerable
+            return string.Empty;
+        }
+
         #endregion
 
         #region Methods
@@ -155,6 +170,7 @@ namespace Rock.Reporting.DataSelect.Person
                         .SelectMany(gm => gm.Group.Members)
                         .Where(m => m.GroupRole.Guid == adultGuid)
                         .Where(m => !string.IsNullOrEmpty(m.Person.Email) && m.Person.IsEmailActive)
+                        .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
                     .Select(q => q.Person.Email).AsEnumerable());
             }
             else
@@ -166,6 +182,7 @@ namespace Rock.Reporting.DataSelect.Person
                         .Where(m => m.GroupRole.Guid == adultGuid )
                         .Where(m => selectedPreferences.Contains((int)m.Person.EmailPreference))
                         .Where(m => !string.IsNullOrEmpty(m.Person.Email) && m.Person.IsEmailActive)
+                        .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
                     .Select(q => q.Person.Email).AsEnumerable());
             }
 

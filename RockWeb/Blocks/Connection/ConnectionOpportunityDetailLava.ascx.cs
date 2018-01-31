@@ -37,10 +37,15 @@ namespace RockWeb.Blocks.Connection
     [Description( "Displays the details of the given opportunity for the external website." )]
     [LinkedPage( "Signup Page", "The page used to sign up for an opportunity" )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunityDetail.lava' %}", "", 2 )]
-    [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the package name.", false )]
     public partial class ConnectionOpportunityDetailLava : RockBlock
     {
+
+        #region Fields
+
+        ConnectionOpportunity _connectionOpportunity = null;
+
+        #endregion 
 
         #region Control Methods
 
@@ -84,15 +89,18 @@ namespace RockWeb.Blocks.Connection
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? opportunityId = PageParameter( pageReference, "OpportunityId" ).AsIntegerOrNull();
+            int? opportunityId  = PageParameter( pageReference, "OpportunityId" ).AsIntegerOrNull();
             if ( opportunityId != null )
             {
-                ConnectionOpportunity connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( opportunityId.Value );
-                breadCrumbs.Add( new BreadCrumb( connectionOpportunity.Name, pageReference ) );
-            }
-            else
-            {
-                // don't show a breadcrumb if we don't have a pageparam to work with
+                _connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( opportunityId.Value );
+                if ( _connectionOpportunity != null && _connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    breadCrumbs.Add( new BreadCrumb( _connectionOpportunity.Name, pageReference ) );
+                }
+                else
+                {
+                    _connectionOpportunity = null;
+                }
             }
 
             return breadCrumbs;
@@ -118,64 +126,37 @@ namespace RockWeb.Blocks.Connection
 
         public void LoadContent()
         {
-            // get opportunity id
-            int opportunityId = -1;
-
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "OpportunityId" ) ) )
+            if ( _connectionOpportunity != null )
             {
-                opportunityId = Convert.ToInt32( PageParameter( "OpportunityId" ) );
-            }
-
-            if ( opportunityId > 0 )
-            {
-                RockContext rockContext = new RockContext();
-                ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-
-                bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-
-                var qry = connectionOpportunityService
-                    .Queryable()
-                    .Where( g => g.Id == opportunityId );
-
-                if ( !enableDebug )
-                {
-                    qry = qry.AsNoTracking();
-                }
-                var opportunity = qry.FirstOrDefault();
-
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+
+                // Add a merge field for the Signup Page Route
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
                 linkedPages.Add( "SignupPage", LinkedPageRoute( "SignupPage" ) );
                 mergeFields.Add( "LinkedPages", linkedPages );
 
+                // Add Campus Context
                 mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );
 
-                // run opportunity summary and details through lava
-                opportunity.Summary = opportunity.Summary.ResolveMergeFields(mergeFields);
-                opportunity.Description = opportunity.Description.ResolveMergeFields( mergeFields );
+                // Resolve any lava in the summary/description fields before adding the opportunity
+                _connectionOpportunity.Summary = _connectionOpportunity.Summary.ResolveMergeFields( mergeFields );
+                _connectionOpportunity.Description = _connectionOpportunity.Description.ResolveMergeFields( mergeFields );
+                mergeFields.Add( "Opportunity", _connectionOpportunity );
 
-                mergeFields.Add( "Opportunity", opportunity );
-
-                // add linked pages
-
+                // Format the opportunity using lava template
                 lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
+                // Set the page title from opportunity (if configured)
                 if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
                 {
-                    string pageTitle = opportunity.PublicName;
+                    string pageTitle = _connectionOpportunity.PublicName;
                     RockPage.PageTitle = pageTitle;
                     RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                     RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                 }
-
-                // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
-                }
             }
         }
+
         #endregion
 
     }

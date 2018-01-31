@@ -29,6 +29,7 @@ namespace Rock.Model
     /// Represents an instance of when a <see cref="Rock.Model.Person">Person's</see> person detail data was viewed in Rock.  Includes data on who was viewed, the person who viewed their record, and when/where their record
     /// was viewed.
     /// </summary>
+    [RockDomain( "CRM" )]
     [Table( "PersonViewed" )]
     [NotAudited]
     [DataContract]
@@ -94,14 +95,16 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Person"/> entity representing the viewer.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias ViewerPersonAlias { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> entity of the individual who was viewed.
         /// </summary>
         /// <value>
         /// A <see cref="Rock.Model.Person"/> entity representing the person who was viewed.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias TargetPersonAlias { get; set; }
 
         #endregion

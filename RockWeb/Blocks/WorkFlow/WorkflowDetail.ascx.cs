@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.WorkFlow
         #region Fields
 
         private bool _canEdit = false;
+        private bool _canView = false;
         private PersonAliasService _personAliasService = null;
         private GroupService _groupService = null;
 
@@ -108,6 +109,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( "ViewList", CurrentPerson ) );
         }
 
         /// <summary>
@@ -187,6 +189,9 @@ namespace RockWeb.Blocks.WorkFlow
 
             bool editMode = hfMode.Value == "Edit";
 
+            liSummary.Visible = _canEdit && !editMode;
+            divSummary.Visible = !editMode;
+
             liDetails.Visible = _canEdit;
             liActivities.Visible = _canEdit;
             liLog.Visible = _canEdit && !editMode;
@@ -198,8 +203,10 @@ namespace RockWeb.Blocks.WorkFlow
             pnlActivitesEdit.Visible = editMode;
 
             string activeTab = hfActiveTab.Value;
-            ShowHideTab( activeTab == "Details" || activeTab == string.Empty, liDetails );
-            ShowHideTab( activeTab == "Details" || activeTab == string.Empty, divDetails );
+            ShowHideTab( activeTab == "Summary" || activeTab == string.Empty, liSummary );
+            ShowHideTab( activeTab == "Summary" || activeTab == string.Empty, divSummary);
+            ShowHideTab( activeTab == "Details", liDetails );
+            ShowHideTab( activeTab == "Details", divDetails );
             ShowHideTab( activeTab == "Activities", liActivities );
             ShowHideTab( activeTab == "Activities", divActivities );
             ShowHideTab( activeTab == "Log", liLog );
@@ -217,7 +224,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            if ( new List<string> { "Notes", "Log" }.Contains( hfActiveTab.Value ) )
+            if ( new List<string> { "Summary", "Notes", "Log" }.Contains( hfActiveTab.Value ) )
             {
                 hfActiveTab.Value = "Details";
             }
@@ -524,7 +531,7 @@ namespace RockWeb.Blocks.WorkFlow
                         string value = activity.GetAttributeValue( attribute.Key );
 
                         var field = attribute.FieldType.Field;
-                        string formattedValue = field.FormatValueAsHtml( phActivityAttributes, value, attribute.QualifierValues );
+                        string formattedValue = field.FormatValueAsHtml( phActivityAttributes, attribute.EntityTypeId, activity.Id, value, attribute.QualifierValues );
 
                         if ( field is Rock.Field.ILinkableFieldType )
                         {
@@ -543,10 +550,10 @@ namespace RockWeb.Blocks.WorkFlow
                 var gridActions = e.Item.FindControl("gridActions") as Grid;
                 if ( gridActions != null )
                 {
-                    gridActions.DataSource = activity.Actions.OrderBy( a => a.ActionType.Order )
+                    gridActions.DataSource = activity.Actions.OrderBy( a => a.ActionTypeCache.Order )
                         .Select( a => new
                         {
-                            Name = a.ActionType.Name,
+                            Name = a.ActionTypeCache.Name,
                             LastProcessed = a.LastProcessedDateTime.HasValue ?
                                 string.Format( "{0} {1} ({2})",
                                     a.LastProcessedDateTime.Value.ToShortDateString(),
@@ -603,16 +610,14 @@ namespace RockWeb.Blocks.WorkFlow
             int? activityTypeId = ddlActivateNewActivity.SelectedValueAsId();
             if (activityTypeId.HasValue)
             {
-                var activityType = new WorkflowActivityTypeService(new RockContext()).Get(activityTypeId.Value);
+                var activityType = WorkflowActivityTypeCache.Read(activityTypeId.Value);
                 if (activityType != null)
                 {
                     var activity = WorkflowActivity.Activate( activityType, Workflow );
-                    activity.ActivityTypeId = activity.ActivityType.Id;
                     activity.Guid = Guid.NewGuid();
 
                     foreach( var action in activity.Actions)
                     {
-                        action.ActionTypeId = action.ActionType.Id;
                         action.Guid = Guid.NewGuid();
                     }
 
@@ -668,6 +673,7 @@ namespace RockWeb.Blocks.WorkFlow
             pdAuditDetails.SetEntity( Workflow, ResolveRockUrl( "~" ) );
 
             _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( "ViewList", CurrentPerson ) );
 
             Workflow.LoadAttributes( rockContext );
             foreach ( var activity in Workflow.Activities )
@@ -697,10 +703,19 @@ namespace RockWeb.Blocks.WorkFlow
         {
             hfMode.Value = "View";
 
+            HideSecondaryBlocks( false );
+
             if ( Workflow != null )
             {
-                if ( _canEdit || Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( _canView )
                 {
+                    if ( Workflow.WorkflowType != null )
+                    {
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                        mergeFields.Add( "Workflow", Workflow );
+                        lSummary.Text = Workflow.WorkflowType.SummaryViewText.ResolveMergeFields( mergeFields, CurrentPerson );
+                    }
+
                     tdName.Description = Workflow.Name;
                     tdStatus.Description = Workflow.Status;
 
@@ -753,10 +768,9 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     nbNotAuthorized.Visible = true;
                     pnlContent.Visible = false;
+                    HideSecondaryBlocks( true );
                 }
             }
-
-            HideSecondaryBlocks( false );
         }
 
         private void ShowEditDetails()
@@ -823,7 +837,7 @@ namespace RockWeb.Blocks.WorkFlow
                 string value = Workflow.GetAttributeValue( attribute.Key );
 
                 var field = attribute.FieldType.Field;
-                string formattedValue = field.FormatValueAsHtml( phViewAttributes, value, attribute.QualifierValues );
+                string formattedValue = field.FormatValueAsHtml( phViewAttributes, attribute.EntityTypeId, Workflow.Id, value, attribute.QualifierValues );
 
                 if ( field is Rock.Field.ILinkableFieldType )
                 {
@@ -897,7 +911,7 @@ namespace RockWeb.Blocks.WorkFlow
                 activityEditor.DeleteActivityTypeClick += workflowActivityEditor_DeleteActivityClick;
                 activityEditor.SetWorkflowActivity( activity, rockContext, setValues);
 
-                foreach ( WorkflowAction action in activity.Actions.OrderBy( a => a.ActionType.Order ) )
+                foreach ( WorkflowAction action in activity.Actions.ToList().OrderBy( a => a.ActionTypeCache.Order ) )
                 {
                     var actionEditor = new WorkflowActionEditor();
                     actionEditor.ID = "WorkflowActionEditor_" + action.Guid.ToString( "N" );

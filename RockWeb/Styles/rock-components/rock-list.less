@@ -1,0 +1,53 @@
+//
+// Rock List - styles for the Rock list component
+// --------------------------------------------------
+
+ul.rocklist {
+  padding: 0;
+  list-style-type: none;
+  list-style-type: none;
+
+  .rocklist-item {
+    position: relative;
+    float: left;
+    width: 140px;
+    padding: 6px;
+    margin: 0 12px 12px 0;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: @border-radius-base;
+
+    .actions {
+      position: absolute;
+      top: 0;
+      right: 4px;
+    }
+
+    .action {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    i {
+      padding: 4px;
+      cursor: pointer;
+    }
+
+    .file-name {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &:hover {
+      color: @tree-rollover-color;
+      background: @tree-rollover-bg;
+    }
+
+    &.selected {
+      color: @tree-rollover-color;
+      background: @tree-rollover-bg;
+    }
+  }
+}

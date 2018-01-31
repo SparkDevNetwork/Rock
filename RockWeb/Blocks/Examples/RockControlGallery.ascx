@@ -74,7 +74,7 @@
   <div class="form-group">
     <label for="inputEmail3" class="control-label">Email</label>
     <div class="control-wrapper">
-      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+      <input type="email" class="form-control" id="inputEmail7" placeholder="Email">
     </div>
   </div>
 </div>
@@ -96,7 +96,7 @@
   <div class="form-group">
     <label for="inputEmail3" class="control-label">Email</label>
     <div class="control-wrapper">
-      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+      <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
     </div>
   </div>
 </div>
@@ -105,7 +105,7 @@
   <div class="form-group">
     <label for="inputEmail3" class="control-label">Email</label>
     <div class="control-wrapper">
-      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+      <input type="email" class="form-control" id="inputEmail5" placeholder="Email">
     </div>
   </div>
 </div>
@@ -114,7 +114,7 @@
   <div class="form-group">
     <label for="inputEmail3" class="control-label">Email</label>
     <div class="control-wrapper">
-      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+      <input type="email" class="form-control" id="inputEmail6" placeholder="Email">
     </div>
   </div>
 </div>
@@ -290,9 +290,16 @@
                     <a id="Pickers"></a>
                     <h1 runat="server">Pickers</h1>
 
+                    <h2>Date/Time</h2>
+
                     <a id="DatePicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:DatePicker ID="dpExample" runat="server" Label="Rock:DatePicker" />
+                    </div>
+
+                    <a id="DatePartsPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:DatePartsPicker ID="dppExample" runat="server" Label="Rock:DatePartsPicker" OnSelectedDatePartsChanged="dppExample_SelectedDatePartsChanged" />
                     </div>
 
                     <a id="DateTimePicker"></a>
@@ -309,7 +316,6 @@
                     <div runat="server" class="r-example">
                         <Rock:DayOfWeekPicker ID="dayOfWeekPicker" runat="server" Label="Rock:DayOfWeekPicker" />
                     </div>
-
 
                     <a id="TimePicker"></a>
                     <div runat="server" class="r-example">
@@ -341,25 +347,12 @@
                         <Rock:BirthdayPicker ID="bdaypExample" runat="server" Label="Rock:BirthdayPicker" OnSelectedBirthdayChanged="birthdayPicker_SelectedBirthdayChanged" />
                     </div>
 
-                    <a id="GroupPicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:GroupPicker ID="gpExample" runat="server" Label="Rock:GroupPicker" />
+                    <a id="YearPicker"></a>
+                    <div id="Div1" runat="server" class="r-example">
+                        <Rock:YearPicker ID="ypYearPicker" runat="server" Label="Rock:YearPicker"  />
                     </div>
 
-                    <a id="GroupPicker2"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:GroupPicker ID="grExampleMultip" runat="server" Label="Rock:GroupPicker (Multiselect)" AllowMultiSelect="true" />
-                    </div>
-
-                    <a id="GroupTypePicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:GroupTypePicker ID="gpGroupType" runat="server" Label="Rock:GroupTypePicker" />
-                    </div>
-                    
-                    <a id="GroupTypesPicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:GroupTypesPicker ID="gpGroupTypes" runat="server" Label="Rock:GroupTypesPicker" />
-                    </div>
+                    <h2>Campus</h2>
 
                     <a id="CampusPicker"></a>
                     <div runat="server" class="r-example">
@@ -371,90 +364,64 @@
                         <Rock:CampusesPicker ID="campsExample" runat="server" Label="Rock:CampusesPicker" />
                     </div>
 
-                    <a id="PagePicker"></a>
+                    <a id="Connections"></a>
+                    <h2 runat="server">Connections</h2>
+
+                    <a id="ConnectionRequestPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:PagePicker ID="pagepExample" runat="server" Label="Rock:PagePicker" />
+                        <Rock:ConnectionRequestPicker ID="crpConnectionRequestPicker" runat="server" Label="Rock:ConnectionRequestPicker" />
                     </div>
 
-                    <a id="PersonPicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:PersonPicker ID="ppExample" runat="server" Label="Rock:PersonPicker" />
-                    </div>                    
+                   
+
+                    <a id="DefinedValues"></a>
+                    <h2 runat="server">DefinedValues</h2>
                     
-                    <a id="PersonAndBusinessPicker"></a>
+                    <a id="DefinedValuePicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:PersonPicker ID="ppBusinessExample" runat="server" Label="Rock:PersonPicker including businesses" IncludeBusinesses="true" />
+                        <Rock:DefinedValuePicker ID="dvpDefinedValuePicker" runat="server" Label="Rock:DefinedValuePicker for ConnectionStatus defined type" DefinedTypeId="4" />
                     </div>
 
-                    <a id="PersonPickerEnableSelfSelection"></a>
+                    <a id="DefinedValuesPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:PersonPicker ID="ppSelfSelect" runat="server" Label="Rock:PersonPicker with Self Selection" EnableSelfSelection="true" />
+                        <Rock:DefinedValuesPicker ID="dvpDefinedValuesPicker" runat="server" Label="Rock:DefinedValuesPicker for ConnectionStatus defined type" DefinedTypeId="4" />
                     </div>
 
-                    <a id="AccountPicker"></a>
+                    <a id="DefinedValuesPickerEnhanced"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:DefinedValuesPickerEnhanced ID="dvpDefinedValuesPickerEnhanced" runat="server" Label="Rock:DefinedValuesPickerEnhanced for ConnectionStatus defined type" DefinedTypeId="4" />
+                    </div>
+
+                    <h2>Events</h2>
+                    
+                    <a id="EventCalendarPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:EventCalendarPicker ID="ecpEventCalendarPicker" runat="server" Label="Rock:EventCalendarPicker" />
+                    </div>
+
+                    <a id="EventItemPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:EventItemPicker ID="eipEventItemPicker" runat="server" Label="Rock:EventItemPicker" />
+                    </div>
+
+                    <a id="RegistrationTemplatePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RegistrationTemplatePicker ID="pRegistrationTemplatePicker" runat="server" Label="Rock:RegistrationTemplatePicker" />
+                    </div>
+
+                    <h2>Financial</h2>
+
+                     <a id="AccountPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:AccountPicker ID="acctpExample" runat="server" Label="Rock:AccountPicker" />
                     </div>
 
-                    <a id="CategoryPicker"></a>
+                    <a id="FinancialGatewayPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:CategoryPicker ID="catpExample" runat="server" Label="Rock:CategoryPicker" />
+                        <Rock:FinancialGatewayPicker ID="fgpFinancialGatewayPicker" runat="server" Label="Rock:FinancialGatewayPicker"/>
                     </div>
 
-                    <a id="ComponentPicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:ComponentPicker ID="compExample" runat="server" Label="Rock:ComponentPicker" />
-                    </div>
-
-                    <a id="LocationPicker"></a>
-                    <div id="Div2" runat="server" class="r-example">
-                        <Rock:LocationPicker ID="locpExample" runat="server" Label="Rock:LocationPicker" />
-                    </div>
-
-                    <a id="LocationPicker2"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:LocationPicker ID="locpExampleAddressMode" runat="server" Label="Rock:LocationPicker (Address Mode, Mode Selection disabled)" CurrentPickerMode="Address" AllowedPickerModes="Address" />
-                    </div>
-
-                    <a id="GroupRolePicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:GroupRolePicker ID="grpExample" runat="server" Label="Rock:GroupRolePicker" />
-                    </div>
-                    
-                    <a id="WorkflowActionPicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:WorkflowActionTypePicker ID="wfatpExample" runat="server" Label="Rock:WorkflowActionTypePicker" />
-                    </div>
-
-                    <a id="WorkflowTypePicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:WorkflowTypePicker ID="wftpExample" runat="server" Label="Rock:WorkflowTypePicker" />
-                    </div>
-
-                    <a id="Other"></a>
-                    <h1 runat="server">Other</h1>
-
-                    <a id="ScheduleBuilder"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:ScheduleBuilder ID="schedbExample" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
-                    </div>
-
-                    <a id="GeoPicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:GeoPicker ID="geopExamplePoint" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" MapStyleValueGuid="BFC46259-FB66-4427-BF05-2B030A582BEA" />
-                    </div>
-
-                    <a id="GeoPickerPolygon"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:GeoPicker ID="geopExamplePolygon" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" Help="You can set the style of this through the 'Map Style' block attribute." Warning="If you need to stipulate restrictions, use the warning property." />
-                    </div>
-
-                    <a id="MergeFieldPicker"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:MergeFieldPicker ID="mfpExample" runat="server" Label="Rock:MergeFieldPicker" />
-                    </div>
-
-                    <h2 runat="server">BinaryFilePicker, BinaryFileTypePicker</h2>
+                    <h2>Files and Images</h2>
 
                     <a id="BinaryFileTypePicker"></a>
                     <div runat="server" class="r-example">
@@ -464,14 +431,6 @@
                     <a id="BinaryFilePicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:BinaryFilePicker ID="bfpExample" runat="server" Label="Rock:BinaryFilePicker" />
-                    </div>
-
-                    <a id="Misc"></a>
-                    <h1 runat="server">Misc</h1>
-
-                    <a id="FieldTypeList"></a>
-                    <div runat="server" class="r-example">
-                        <Rock:FieldTypeList ID="ftlExample" runat="server" Label="Rock:FieldTypeList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
                     </div>
 
                     <a id="FileUploader"></a>
@@ -498,6 +457,185 @@
                     <div runat="server" class="r-example">
                         <Rock:ImageEditor ID="imageEditor" runat="server" Label="Rock:ImageEditor" MaxImageWidth="1600" MaxImageHeight="1200" />
                     </div>
+
+                    <h2>Groups and Group Types</h2>
+
+                    <a id="GroupPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GroupPicker ID="gpExample" runat="server" Label="Rock:GroupPicker" />
+                    </div>
+
+                    <a id="GroupPicker2"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GroupPicker ID="grExampleMultip" runat="server" Label="Rock:GroupPicker (Multiselect)" AllowMultiSelect="true" />
+                    </div>
+
+                    <a id="GroupTypePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GroupTypePicker ID="gpGroupType" runat="server" Label="Rock:GroupTypePicker" />
+                    </div>
+                    
+                    <a id="GroupTypesPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GroupTypesPicker ID="gpGroupTypes" runat="server" Label="Rock:GroupTypesPicker" />
+                    </div>
+
+                    <a id="GroupRolePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GroupRolePicker ID="grpExample" runat="server" Label="Rock:GroupRolePicker" />
+                    </div>
+
+                    <h2 runat="server">Locations</h2>
+
+                    <a id="LocationPicker"></a>
+                    <div id="Div2" runat="server" class="r-example">
+                        <Rock:LocationPicker ID="locpExample" runat="server" Label="Rock:LocationPicker" />
+                    </div>
+
+                    <a id="LocationPicker2"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:LocationPicker ID="locpExampleAddressMode" runat="server" Label="Rock:LocationPicker (Address Mode, Mode Selection disabled)" CurrentPickerMode="Address" AllowedPickerModes="Address" />
+                    </div>
+
+                    <a id="GeoPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GeoPicker ID="geopExamplePoint" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" MapStyleValueGuid="BFC46259-FB66-4427-BF05-2B030A582BEA" />
+                    </div>
+
+                    <a id="GeoPickerPolygon"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GeoPicker ID="geopExamplePolygon" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" Help="You can set the style of this through the 'Map Style' block attribute." Warning="If you need to stipulate restrictions, use the warning property." />
+                    </div>
+
+                    <h2>Pages</h2>
+
+                    <a id="PagePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:PagePicker ID="pagepExample" runat="server" Label="Rock:PagePicker" />
+                    </div>
+
+                    <h2>Person Pickers</h2>
+
+                    <a id="PersonPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:PersonPicker ID="ppExample" runat="server" Label="Rock:PersonPicker" />
+                    </div>                    
+                    
+                    <a id="PersonAndBusinessPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:PersonPicker ID="ppBusinessExample" runat="server" Label="Rock:PersonPicker including businesses" IncludeBusinesses="true" />
+                    </div>
+
+                    <a id="PersonPickerEnableSelfSelection"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:PersonPicker ID="ppSelfSelect" runat="server" Label="Rock:PersonPicker with Self Selection" EnableSelfSelection="true" />
+                    </div>
+
+                    <a id="GradePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GradePicker ID="pGradePicker" runat="server" Label="Rock:GradePicker" />
+                    </div>
+
+                    <h2>Lava</h2>
+
+                    <a id="LavaCommandsPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:LavaCommandsPicker ID="pLavaCommandsPicker" runat="server" Label="LavaCommandsPicker" />
+                    </div>
+
+                    <a id="MergeFieldPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:MergeFieldPicker ID="mfpExample" runat="server" Label="Rock:MergeFieldPicker" />
+                    </div>
+                    
+                    <a id="MergeTemplatePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:MergeTemplatePicker ID="pMergeTemplatePicker" runat="server" Label="MergeTemplatePicker" />
+                    </div>
+
+                    <h2>Reporting</h2>
+
+                    <a id="DataViewPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:DataViewPicker ID="dvpDataViewPicker" runat="server" Label="DataViewPicker for Person Dataviews" EntityTypeId="15" />
+                    </div>
+
+                    <a id="DataViewsPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:DataViewsPicker ID="dvpDataViewsPicker" runat="server" Label="Rock:DataViewsPicker for Person Dataviews" EntityTypeId="15"/>
+                    </div>
+
+                    <a id="MetricCategoryPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:MetricCategoryPicker ID="pMetricCategoryPicker" runat="server" Label="Rock:MetricCategoryPicker (Pick Metric from Category Tree)" EntityTypeId="15"/>
+                    </div>
+ 
+                    <h2>Workflows</h2>
+
+                    <a id="WorkflowTypePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:WorkflowTypePicker ID="wftpExample" runat="server" Label="Rock:WorkflowTypePicker" />
+                    </div>
+                    
+                    
+                    <a id="WorkflowActionTypePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:WorkflowActionTypePicker ID="wfatpExample" runat="server" Label="Rock:WorkflowActionTypePicker" />
+                    </div>
+
+                    <a id="WorkflowPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RockControlWrapper ID="rcwWorkflowPicker" runat="server" Label="Workflow Picker">
+                            <Rock:WorkflowPicker ID="pWorkflowPicker" runat="server" FormGroupCssClass="margin-l-md margin-t-sm" Label="Workflow Type" />
+                        </Rock:RockControlWrapper>
+                    </div>
+
+                    <h2>Other Pickers</h2>
+
+                    <a id="CategoryPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:CategoryPicker ID="catpExample" runat="server" Label="Rock:CategoryPicker" />
+                    </div>
+
+                    <a id="ComponentPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:ComponentPicker ID="compExample" runat="server" Label="Rock:ComponentPicker" />
+                    </div>
+
+                    <a id="EntityPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:EntityPicker ID="epEntityPicker" runat="server" Label="Rock:EntityPicker" />
+                    </div>
+
+                    <a id="FieldTypePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:FieldTypePicker ID="ftlExample" runat="server" Label="Rock:FieldTypePicker" />
+                    </div>
+
+                    
+                    
+                    <a id="RemoteAuthsPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:RemoteAuthsPicker ID="pRemoteAuthsPicker" runat="server" Label="Rock:RemoteAuthsPicker" />
+                    </div>
+
+                    <a id="Schedules"></a>
+                    <h1 runat="server">Schedules</h1>
+
+                    <a id="SchedulePicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:SchedulePicker ID="spSchedulePicker" runat="server" Label="Rock:SchedulePicker" />
+                    </div>
+
+                    <a id="ScheduleBuilder"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:ScheduleBuilder ID="schedbExample" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
+                    </div>
+
+                    <a id="Misc"></a>
+                    <h1 runat="server">Misc</h1>
+
+                    
 
                     <a id="Notificationbox"></a>
                     <h2 runat="server">Rock:Notificationbox</h2>
@@ -598,7 +736,8 @@
                     <h2 runat="server">Rock:BootstrapButton</h2>
                     <div runat="server" class="r-example">
                         <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me" CssClass="btn btn-primary"
-                            DataLoadingText="&lt;i class='fa fa-refresh fa-spin fa-2x'&gt;&lt;/i&gt; Saving" />
+                            DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
+                            CompletedText ="Done" CompletedDuration="3" CompletedMessage="&nbsp;Your Changes have been Saved!"/>
                     </div>
 
                     <a id="NoteControl"></a>
@@ -652,6 +791,50 @@
                     <p>
                         Alternately, you can provide the contents of the code to edit in the <code>Text</code> property of the control.
                     </p>
+
+
+                    <a id="MarkdownEditor"></a>
+                    <div runat="server" class="r-example-nocodepreview">
+                    <h2 runat="server">Rock:MarkdownEditor</h2>
+                        <asp:LinkButton ID="btnMarkdownPreview" runat="server" CssClass="pull-right btn btn-xs btn-action" Text="Convert to HTML" OnClick="btnMarkdownPreview_Click" />
+                        <Rock:MarkdownEditor ID="mdMarkdownEditor" runat="server" CssClass="margin-t-sm" Label="Rock:MarkdownEditor" EditorHeight="400">
+*Italic*
+**Bold**
+# Heading 1
+## Heading 2
+
+[Link](http://www.rockrms.com)
+
+![Image](/Assets/Images/rock-logo-black.svg)
+
+> Blockquote
+
+* Apples 
+  * Red
+  * Green
+  * Blue                              
+* Bananas
+* Oranges
+
+1. One
+2. Two
+3. Three
+
+`Inline code` with backticks
+```
+# code block
+print '3 backticks or'
+print 'indent 4 spaces'
+```
+
+Horizontal Rule
+
+---
+
+                        </Rock:MarkdownEditor>
+                        
+                        <asp:Literal ID="lMarkdownHtml" runat="server" />
+                    </div>
 
 
                     <a id="CssRollovers"></a>

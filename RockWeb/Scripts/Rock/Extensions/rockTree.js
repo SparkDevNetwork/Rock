@@ -234,6 +234,7 @@
                 
                 // Get initial node's data
                 getNodes(id, startingNode);
+
             } else if (this.options.local) {
                 // Assuming there is local data defined, attempt to databind it
                 try {
@@ -250,7 +251,83 @@
 
             return dfd.promise();
         },
-        
+
+        fetchAllChildNodes: function (startingNode) {
+            var self = this,
+
+                // Use a deferr to manage all of the fetch call backs
+                dfd = $.Deferred(),
+
+                // Create a "queue" of all the fetches that are currently in progress
+                inProgress = {},
+
+                // Handler function to determine whether or not all the fetch operations
+                // have completed
+                onProgressNotification = function () {
+                    var numberInQueue = Object.keys(inProgress).length;
+                    if (numberInQueue === 0 && dfd.state() !== 'resolved') {
+                        dfd.resolve();
+                    }
+                },
+
+                // Function to get child nodes
+                getChildren = function (parentNode) {
+
+                    // Expand the node
+                    parentNode.isOpen = true;
+
+                    // Recursively load all the child nodes
+                    startingNode.children.forEach(function (node) {
+                        inProgress[node.id] = node.id;
+                        self.fetchAllChildNodes(node).done(function () {
+                            delete inProgress[node.id];
+                            dfd.notify();
+                        });
+                    });
+                };
+
+            // Pass progress of deferred to handler
+            dfd.progress(onProgressNotification);
+
+            // If the selected node is valid and has children
+            if (startingNode && startingNode.hasChildren) {
+
+                // If child nodes have been loaded, fetch each of their child nodes
+                if (startingNode.children) {
+                    getChildren(startingNode);
+
+                // Otherwise fetch the child nodes first and then fetch their child nodes
+                } else {
+                    inProgress[startingNode.id] = startingNode.id;
+                    self.fetch(startingNode.id).done(function () {
+                        delete inProgress[startingNode.id];
+                        getChildren(startingNode);
+                    });
+                }
+            }
+
+            // Notify the deferred
+            dfd.notify();
+
+            // Return the deferred promise
+            return dfd.promise();
+        },
+
+        getChildNodes: function (parentNode) {
+            var self = this,
+                nodes = [];
+            if (parentNode && parentNode.hasChildren && parentNode.children) {
+                parentNode.children.forEach(function (node) {
+                    nodes.push(node);
+                    self.getChildNodes(node).forEach(function (childNode) {
+                        nodes.push(childNode);
+                    });
+                });
+            }
+
+            return nodes;
+        },
+
         // Attempt to load data returned by `fetch` into the current rockTree's
         // node data structure
         dataBind: function (data, parentNode) {
@@ -289,14 +366,27 @@
             var self = this,
 				$ul = $('<ul/>'),
 				renderNode = function ($list, node) {
+				    var hasChildren = false;
+				    if (node.hasChildren) {
+				        hasChildren = true;
+				        // we know it has children, but they might not be loaded yet (children === undefined)
+				        // but if they are loaded there may actually be NO active children, so in that case,
+				        // we'll consider them as NOT having children
+				        if ( node.children === undefined ) {
+				          hasChildren = true;
+				        } else if (node.children !== undefined && node.children.length == 0  ) {
+				          hasChildren = false;
+				        }
+				    }
+
 				    var $li = $('<li/>'),
 						$childUl,
 						includeAttrs = self.options.mapping.include,
-				        folderCssClass = node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed,
+				        folderCssClass = hasChildren ? ( node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed ) : "",
 				        leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
 
 				    $li.addClass('rocktree-item')
-						.addClass(node.hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
+						.addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
                         .addClass( ( !node.hasOwnProperty('isActive') || node.isActive )? '' : 'is-inactive')
 						.attr('data-id', node.id)
 						.attr('data-parent-id', node.parentId);
@@ -326,7 +416,7 @@
 				        }
 				    }
 
-				    if (node.hasChildren) {
+				    if (hasChildren) {
 				        $li.prepend('<i class="rocktree-icon icon-fw ' + folderCssClass + '"></i>');
 
 				        if (node.iconCssClass) {
@@ -516,35 +606,66 @@
                 e.preventDefault();
                 e.stopPropagation();
 
-                var $itemNode = $(this).parent('li');
+                var $itemNode = $(this).parent('li'),
+                    id = $itemNode.attr('data-id'),
+                    node = _findNodeById(id, self.nodes);
 
-                var $childNameNodes = $itemNode.find('.rocktree-children').find('.rocktree-name');
+                // Show the loading icon, because likely some child nodes will need to be fetched
+                self.showLoading($itemNode);
 
-                var allChildNodesAlreadySelected = true;
-                $childNameNodes.each(function (a) {
-                    if (!$(this).hasClass('selected')) {
-                      allChildNodesAlreadySelected = false;
+                // Before selecting or unselecting all the children, make sure they've all been fetched.
+                self.fetchAllChildNodes(node).done(function () {
+
+                    // Assume all child nodes are selected
+                    var allChildNodesAlreadySelected = true;
+
+                    // Then check to see if any of the child nodes are not selected
+                    var childNodes = self.getChildNodes(node);
+                    for (var i = 0; i < childNodes.length; i++) {
+                        var selected = false;
+                        for (var j = 0; j < self.selectedNodes.length; j++) {
+                            if (self.selectedNodes[j].id == childNodes[i].id) {
+                                selected = true;
+                                break;
+                            }
+                        }
+                        if (!selected)
+                        {
+                            allChildNodesAlreadySelected = false;
+                            break;
+                        }
                     }
+
+                    // Get a list of selected nodes that are not any of the child nodes
+                    var newSelectedNodes = [];
+                    for (var i = 0; i < self.selectedNodes.length; i++) {
+                        var isAChildNode = false;
+                        for (var j = 0; j < childNodes.length; j++) {
+                            if (childNodes[j].id == self.selectedNodes[i].id) {
+                                isAChildNode = true;
+                                break;
+                            }
+                        }
+                        if (!isAChildNode) {
+                            newSelectedNodes.push(self.selectedNodes[i]);
+                        }
+                    }
+
+                    // If all the child nodes were not already selected, select all them
+                    if (!allChildNodesAlreadySelected)
+                    {
+                        for (var i = 0; i < childNodes.length; i++) {
+                            newSelectedNodes.push(childNodes[i]);
+                        }
+                    }
+
+                    // Reset the list of selected nodes
+                    self.selectedNodes = newSelectedNodes;
+
+                    // Rerender the tree
+                    self.render();
                 });
 
-                if (!allChildNodesAlreadySelected) {
-                    // select children
-                    // mark them all as unselected (just in case some are selected already), then click them to select them 
-                    $childNameNodes.removeClass('selected');
-                    $childNameNodes.click();
-                } else {
-                    // unselect children
-                    // mark them all as selected (just in case some are unselected already), then click them to unselect them 
-                    $childNameNodes.addClass('selected');
-                    $childNameNodes.click();
-                }
-
-                // make sure the child items are showing
-                var $closedFolders = $itemNode.find('.rocktree-icon').filter('.' + self.options.iconClasses.branchClosed.replace(/ /g, '.'))
-
-                if ($closedFolders.length) {
-                  $closedFolders.click();
-                }
             });
         }
     };

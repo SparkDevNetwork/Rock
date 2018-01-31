@@ -13,11 +13,11 @@
     <div class="panel-heading">
         <h1 class="panel-title"><i class="fa fa-list"></i> Store Categories</h1>
     </div>
-    <div class="panel-body">
+    <div class="panel-body" style="margin-bottom: -6px;">
         <ul class="nav nav-pills">
           {% for category in Categories %}
           <li class="active">
-            <a href="{{ LinkedPages.DetailPage }}?CategoryId={{ category.Id }}&CategoryName={{ category.Name | Replace:' ','%20'}}">{{ category.Name }}</a>
+            <a href="{{ LinkedPages.DetailPage }}?CategoryId={{ category.Id }}&CategoryName={{ category.Name | Replace:' ','%20'}}" style="margin-bottom: 6px;">{{ category.Name }}</a>
           </li>
           {% endfor %}
         </ul>

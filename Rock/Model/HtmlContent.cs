@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Html Content POCO Entity.
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "HtmlContent" )]
     [DataContract]
     public partial class HtmlContent : Model<HtmlContent>
@@ -133,6 +134,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Block"/> that this HTML content appears on.
         /// </value>
+        [LavaInclude]
         public virtual Block Block { get; set; }
 
         /// <summary>
@@ -141,6 +143,7 @@ namespace Rock.Model
         /// <value>
         /// The approved by person alias.
         /// </value>
+        [LavaInclude]
         public virtual Model.PersonAlias ApprovedByPersonAlias { get; set; }
 
         #endregion

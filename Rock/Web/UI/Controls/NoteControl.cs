@@ -355,6 +355,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the Note Type should be displayed a heading to the note.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if display note type heading; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayNoteTypeHeading
+        {
+            get { return ViewState["DisplayNoteTypeHeading"] as bool? ?? false; }
+            set { ViewState["DisplayNoteTypeHeading"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the display type.
         /// </summary>
         /// <value>
@@ -750,6 +762,18 @@ namespace Rock.Web.UI.Controls
                 {
                     // Heading
                     writer.RenderBeginTag( HtmlTextWriterTag.H5 );
+
+                    if ( DisplayNoteTypeHeading & this.NoteTypeId.HasValue )
+                    {
+                        var noteType = NoteTypeCache.Read( this.NoteTypeId.Value );
+                        if ( noteType != null )
+                        {
+                            writer.RenderBeginTag( HtmlTextWriterTag.Strong );
+                            writer.Write( noteType.Name + " &nbsp; " );
+                            writer.RenderEndTag();
+                        }
+                    }
+
                     string heading = Caption;
                     if ( string.IsNullOrWhiteSpace( Caption ) )
                     {

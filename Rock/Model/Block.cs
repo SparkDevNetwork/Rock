@@ -38,6 +38,7 @@ namespace Rock.Model
     /// 
     /// An example of a Block being implemented on a page would be the New Account <see cref="Rock.Model.BlockType"/> being implemented on the New Account page.
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "Block" )]
     [DataContract]
     public partial class Block : Model<Block>, IOrdered
@@ -61,30 +62,38 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Page"/> that this Block is implemented on. This property will only be populated
         /// if the Block is implemented on a <see cref="Rock.Model.Page"/>.
+        /// Blocks that have a specific PageId will only be shown in the specified Page
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Page"/> that this Block is implemented on.  This value will be null if this Block is implemented 
-        /// as part of a <see cref="Rock.Model.Layout"/>.
+        /// as part of a <see cref="Rock.Model.Layout"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
-        /// <example>
-        /// 1
-        /// </example>
         [DataMember]
         public int? PageId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Layout"/> that this Block is implemented on. This property will only be populated
         /// if the Block is implemented on a <see cref="Rock.Model.Layout"/>.
+        /// Blocks that have a specific LayoutId will be shown on all pages on a site that have the specified LayoutId
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Layout"/> that this Block is implemented on.  This value will be null if this Block is implemented 
-        /// as part of a <see cref="Rock.Model.Page"/>.
+        /// as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
-        /// <example>
-        /// 1
-        /// </example>
         [DataMember]
         public int? LayoutId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this Block is implemented on. This property will only be populated
+        /// if the Block is implemented on a <see cref="Rock.Model.Site"/>.
+        /// Blocks that have a specific SiteId will be shown on all pages on a site
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this Block is implemented on.  This value will be null if this Block is implemented 
+        /// as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Layout"/> .
+        /// </value>
+        [DataMember]
+        public int? SiteId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.BlockType"/> that this Block is implementing. This property is required.
@@ -98,7 +107,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int BlockTypeId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the layout zone/section that this Block is being implemented on. This property is required.
         /// </summary>
@@ -112,7 +121,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Zone { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the order that this Block appears in the <see cref="Page"/>/Layout zone that the Block is implemented in.  Blocks are 
         /// displayed/rendered in Ascending (1,2,3,...) order. The lower the number the higher in the Zone the Block will appear.  <see cref="Rock.Model.Page"/> Blocks have
@@ -124,7 +133,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a user defined name of the block implementation. This property is required.
         /// </summary>
@@ -189,29 +198,42 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Page"/> entity that this Block is implemented on. This 
-        /// property will be null if this Block is being implemented on as part of a <see cref="Rock.Model.Layout"/>.
+        /// property will be null if this Block is being implemented on as part of a <see cref="Rock.Model.Layout"/> or <see cref="Rock.Model.Site"/>.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Page"/> entity that this Block is being implemented on. This value will 
-        /// be null if the Block is implemented as part of a <see cref="Rock.Model.Layout"/>.
+        /// be null if the Block is implemented as part of a <see cref="Rock.Model.Layout"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
+        [LavaInclude]
         public virtual Page Page { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Layout"/> entity that this Block is implemented on. This 
-        /// property will be null if this Block is being implemented on as part of a <see cref="Rock.Model.Page"/>.
+        /// property will be null if this Block is being implemented on as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Site"/>.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Layout"/> entity that this Block is being implemented on. This value will 
-        /// be null if the Block is implemented as part of a <see cref="Rock.Model.Page"/>.
+        /// be null if the Block is implemented as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
+        [LavaInclude]
         public virtual Layout Layout { get; set; }
-        
+
         /// <summary>
-        /// Gets the location where this Block is being implemented on.  
+        /// Gets or sets the <see cref="Rock.Model.Site"/> entity that this Block is implemented on. This 
+        /// property will be null if this Block is being implemented on as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Layout"/>.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.BlockLocation"/> where this Block is being implemented on. <c>BlockLocation.Page</c> if the PageId is not null, otherwise <c>BlockLocation.Layout</c>
+        /// The <see cref="Rock.Model.Site"/> entity that this Block is being implemented on. This value will 
+        /// be null if the Block is implemented as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Layout"/>.
+        /// </value>
+        [LavaInclude]
+        public virtual Site Site { get; set; }
+
+        /// <summary>
+        /// Gets the location where this Block is being implemented on (Page, Layout, or Site) 
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.BlockLocation"/> where this Block is being implemented on.
         /// </value>
         /// <example>
         /// <c>BlockLocation.Page</c>
@@ -220,8 +242,25 @@ namespace Rock.Model
         [NotMapped]
         public virtual BlockLocation BlockLocation
         {
-            get { return this.PageId.HasValue ? BlockLocation.Page : BlockLocation.Layout; }
-            private set { }
+            get
+            {
+                if ( this.PageId.HasValue )
+                {
+                    return BlockLocation.Page;
+                }
+                else if ( this.LayoutId.HasValue )
+                {
+                    return BlockLocation.Layout;
+                }
+                else if ( this.SiteId.HasValue )
+                {
+                    return BlockLocation.Site;
+                }
+                else
+                {
+                    return BlockLocation.None;
+                }
+            }
         }
 
         #endregion
@@ -229,24 +268,24 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
-        /// security will be inherited from the page, otherwise it will be inherited from the site.
+        /// Gets the securable object that security permissions should be inherited from based on BlockLocation (Page, Layout, or Site)
         /// </summary>
         /// <value>
-        /// The parent authority. If the block is located on the page, security will be
-        /// inherited from the page, otherwise it will be inherited from the site.
         /// </value>
         public override Security.ISecured ParentAuthority
         {
             get
             {
-                if ( this.BlockLocation == Model.BlockLocation.Page )
+                switch ( this.BlockLocation )
                 {
-                    return this.Page != null ? this.Page : base.ParentAuthority;
-                }
-                else
-                {
-                    return this.Layout != null ? this.Layout : base.ParentAuthority;
+                    case BlockLocation.Page:
+                        return this.Page != null ? this.Page : base.ParentAuthority;
+                    case BlockLocation.Layout:
+                        return this.Layout != null ? this.Layout : base.ParentAuthority;
+                    case BlockLocation.Site:
+                        return this.Site != null ? this.Site : base.ParentAuthority;
+                    default:
+                        return base.ParentAuthority;
                 }
             }
         }
@@ -276,7 +315,7 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
-        
+
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
@@ -307,6 +346,9 @@ namespace Rock.Model
             this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.Layout ).WithMany( p => p.Blocks ).HasForeignKey( p => p.LayoutId ).WillCascadeOnDelete( true );
+
+            // NOTE: Can't delete cascade due to 'may cause cycles or multiple cascade paths' warning
+            this.HasOptional( p => p.Site ).WithMany( p => p.Blocks ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -323,12 +365,22 @@ namespace Rock.Model
         /// <summary>
         /// Block is located in the layout (will be rendered for every page using the layout)
         /// </summary>
-        Layout,
+        Layout = 0,
 
         /// <summary>
         /// Block is located on the page
         /// </summary>
-        Page,
+        Page = 1,
+
+        /// <summary>
+        /// Block is located in the site (will be rendered for every page of the site)
+        /// </summary>
+        Site = 2,
+
+        /// <summary>
+        /// Block is doesn't have a PageId, LayoutId, or a SiteId specific (shouldn't happen, but just in case)
+        /// </summary>
+        None = 3
     }
 
     #endregion

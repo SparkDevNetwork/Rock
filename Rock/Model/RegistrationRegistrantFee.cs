@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "RegistrationRegistrantFee" )]
     [DataContract]
     public partial class RegistrationRegistrantFee : Model<RegistrationRegistrantFee>
@@ -94,6 +95,7 @@ namespace Rock.Model
         /// <value>
         /// The registration registrant.
         /// </value>
+        [LavaInclude]
         public virtual RegistrationRegistrant RegistrationRegistrant { get; set; }
 
         /// <summary>
@@ -131,7 +133,7 @@ namespace Rock.Model
         {
             var discountedCost = TotalCost;
             
-            if ( RegistrationTemplateFee != null && RegistrationTemplateFee.DiscountApplies )
+            if ( RegistrationTemplateFee != null && RegistrationTemplateFee.DiscountApplies && ( RegistrationRegistrant == null || RegistrationRegistrant.DiscountApplies ) )
             {
                 discountedCost = discountedCost - ( discountedCost * discountPercent );
             }

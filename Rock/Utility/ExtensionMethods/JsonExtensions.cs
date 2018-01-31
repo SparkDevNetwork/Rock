@@ -46,6 +46,21 @@ namespace Rock
         }
 
         /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
+        public static string ToJson( this object obj, Formatting format )
+        {
+            return JsonConvert.SerializeObject( obj, format,
+                new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                } );
+        }
+
+        /// <summary>
         /// Attempts to deserialize a json string into T.  If it can't be deserialized, returns null
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -93,10 +108,36 @@ namespace Rock
                 .Select( r => r.Key )
                 .ToList();
 
-            arrayKeys.ForEach( k => result[k] = ( (JArray)result[k] ).Values().Select( v => ( (JValue)v ).Value ).ToArray() );
+            arrayKeys.ForEach( k => result[k] = ( (JArray)result[k] ).ToObjectArray() );
             valueKeys.ForEach( k => result[k] = ToDictionary( result[k] as JObject ) );
 
             return result;
+        }
+
+        /// <summary>
+        /// Converts a JArray to a Object array
+        /// </summary>
+        /// <param name="jarray">The jarray.</param>
+        /// <returns></returns>
+        public static object[] ToObjectArray( this JArray jarray )
+        {
+            var valueList = new List<object>();
+
+            for( var i = 0; i < jarray.Count; i++ )
+            {
+                var obj = jarray[i];
+                if ( obj.GetType() == typeof( JObject ) )
+                {
+                    valueList.Add( ( (JObject)obj ).ToDictionary() );
+                }
+
+                if ( obj.GetType() == typeof( JValue ))
+                {
+                    valueList.Add( ( (JValue)obj ).Value );
+                }
+            }
+
+            return valueList.ToArray();
         }
 
         #endregion

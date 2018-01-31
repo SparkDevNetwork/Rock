@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DotLiquid;
 using Quartz;
+
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 
@@ -70,7 +72,7 @@ namespace Rock.Jobs
             var jobService = new ServiceJobService( rockContext );
             var job = jobService.Get( jobId );
 
-            if (job != null && job.Guid != Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid())
+            if ( job != null && job.Guid != Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid() )
             {
                 job.LastStatus = "Running";
                 job.LastStatusMessage = "Started at " + RockDateTime.Now.ToString();
@@ -99,21 +101,23 @@ namespace Rock.Jobs
         /// <param name="jobException"></param>
         public void JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException )
         {
-            StringBuilder message = new StringBuilder();
             bool sendMessage = false;
 
-            // get job type id
-            int jobId = Convert.ToInt16( context.JobDetail.Description );
+            // get job id
+            int jobId = context.GetJobId();
 
             // load job
             var rockContext = new RockContext();
             var jobService = new ServiceJobService( rockContext );
             var job = jobService.Get( jobId );
 
-            // format the message
-            message.Append( string.Format( "The job {0} ran for {1} seconds on {2}.  Below is the results:<p>", job.Name, context.JobRunTime.TotalSeconds, context.FireTimeUtc.Value.DateTime.ToLocalTime() ) );
+            if ( job == null )
+            {
+                // if job was deleted or wasn't found, just exit
+                return;
+            }
 
-            // if noticiation staus is all set flag to send message
+            // if notification status is all set flag to send message
             if ( job.NotificationStatus == JobNotificationStatus.All )
             {
                 sendMessage = true;
@@ -137,8 +141,6 @@ namespace Rock.Jobs
                 {
                     job.LastStatusMessage = context.Result as string;
                 }
-
-                message.Append( "Result: Success" );
 
                 // determine if message should be sent
                 if ( job.NotificationStatus == JobNotificationStatus.Success )
@@ -183,14 +185,6 @@ namespace Rock.Jobs
                     job.LastStatusMessage = summaryException.Message;
                 }
 
-                message.Append( "Result: Exception<p>Message:<br>" + job.LastStatusMessage );
-
-                if ( summaryException.InnerException != null )
-                {
-                    job.LastStatusMessage += " (" + summaryException.InnerException.Message + ")";
-                    message.Append( "<p>Inner Exception:<br>" + summaryException.InnerException.Message );
-                }
-
                 if ( job.NotificationStatus == JobNotificationStatus.Error )
                 {
                     sendMessage = true;
@@ -202,7 +196,32 @@ namespace Rock.Jobs
             // send notification
             if ( sendMessage )
             {
-                // TODO: implement email send once it's available 
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                mergeFields.Add( "Job", job );
+                try
+                {
+                    if ( jobException != null )
+                    {
+                        mergeFields.Add( "Exception", Hash.FromAnonymousObject( jobException ) );
+                    }
+
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                var notificationEmailAddresses = job.NotificationEmails.ResolveMergeFields( mergeFields ).SplitDelimitedValues().ToList();
+                var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemEmail.CONFIG_JOB_NOTIFICATION.AsGuid() );
+                emailMessage.AdditionalMergeFields = mergeFields;
+
+                // NOTE: the EmailTemplate may also have TO: defined, so even if there are no notificationEmailAddress defined for this specific job, we still should send the mail
+                foreach ( var notificationEmailAddress in notificationEmailAddresses )
+                {
+                    emailMessage.AddRecipient( new RecipientData( notificationEmailAddress ) );
+                }
+
+                emailMessage.Send();
             }
         }
     }

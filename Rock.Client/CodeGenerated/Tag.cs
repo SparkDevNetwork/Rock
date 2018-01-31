@@ -35,10 +35,13 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? CategoryId { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
-        public int EntityTypeId { get; set; }
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public string EntityTypeQualifierColumn { get; set; }
@@ -51,6 +54,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public bool IsActive { get; set; }
 
         /// <summary />
         public bool IsSystem { get; set; }
@@ -102,12 +108,14 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Tag source )
         {
             this.Id = source.Id;
+            this.CategoryId = source.CategoryId;
             this.Description = source.Description;
             this.EntityTypeId = source.EntityTypeId;
             this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
@@ -128,6 +136,9 @@ namespace Rock.Client
     /// </summary>
     public partial class Tag : TagEntity
     {
+        /// <summary />
+        public Category Category { get; set; }
+
         /// <summary />
         public EntityType EntityType { get; set; }
 

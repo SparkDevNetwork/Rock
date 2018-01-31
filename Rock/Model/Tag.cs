@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -28,8 +29,10 @@ namespace Rock.Model
     /// Represents a collection or group of entity objects that share one or more common characteristics . A tag can either be private (owned by an individual <see cref="Rock.Model.Person"/>)
     /// or public.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Tag" )]
     [DataContract]
+
     public partial class Tag : Model<Tag>, IOrdered
     {
 
@@ -51,9 +54,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that contains the entities that can use this Tag.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int EntityTypeId { get; set; }
+        [DataMember]
+        public int? EntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the column/property that contains the value that can narrow the scope of entities that can receive this Tag. Entities where this 
@@ -66,7 +68,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the value in the <see cref="EntityTypeQualifierColumn"/> that narrows the scope of entities that can receive this Tag. Entities that contain this value 
         /// in the <see cref="EntityTypeQualifierColumn"/> are eligible to use this Tag. This property must be used in conjunction with the <see cref="EntityTypeQualifierColumn"/> property.
@@ -77,7 +79,7 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [DataMember]
         public string EntityTypeQualifierValue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Name of the Tag. This property is required.
         /// </summary>
@@ -118,6 +120,29 @@ namespace Rock.Model
         [DataMember]
         public int? OwnerPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
+
+        /// <summary>
+        /// Gets or sets the category identifier.
+        /// </summary>
+        /// <value>
+        /// The category identifier.
+        /// </value>
+        [DataMember]
+        public int? CategoryId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -128,6 +153,7 @@ namespace Rock.Model
         /// <value>
         /// The owner person alias.
         /// </value>
+        [LavaInclude]
         public virtual Model.PersonAlias OwnerPersonAlias { get; set; }
 
         /// <summary>
@@ -145,8 +171,52 @@ namespace Rock.Model
         /// <value>
         /// A collection containing of <see cref="Rock.Model.TaggedItem">TaggedItems</see> representing the entities that use this tag.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<TaggedItem> TaggedItems { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        [DataMember]
+        public virtual Category Category { get; set; }
+
+        /// <summary>
+        /// Gets the parent security authority of this Tag. Where security is inherited from.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Category != null ? this.Category : base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( "Tag", "The roles and/or users that have access to tag items." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                }
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
         #endregion
 
         #region Methods
@@ -159,9 +229,9 @@ namespace Rock.Model
         /// <returns></returns>
         public override bool IsAuthorized( string action, Person person )
         {
-            if ( this.OwnerPersonAlias != null && this.OwnerPersonAlias.Person != null && person != null && this.OwnerPersonAlias.PersonId == person.Id )
+            if ( this.OwnerPersonAlias != null && person != null && this.OwnerPersonAlias.PersonId == person.Id )
             {
-                // always allow people to delete their own tags
+                // always allow people to do anything with their own tags
                 return true;
             }
             else
@@ -186,7 +256,7 @@ namespace Rock.Model
     }
 
     #region Entity Configuration
-    
+
     /// <summary>
     /// Tag Configuration class.
     /// </summary>
@@ -198,7 +268,8 @@ namespace Rock.Model
         public TagConfiguration()
         {
             this.HasOptional( p => p.OwnerPersonAlias ).WithMany().HasForeignKey( p => p.OwnerPersonAliasId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.Category ).WithMany().HasForeignKey( t => t.CategoryId ).WillCascadeOnDelete( false );
         }
     }
 

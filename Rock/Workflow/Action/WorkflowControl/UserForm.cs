@@ -49,10 +49,11 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
+            var actionType = action.ActionTypeCache;
             if ( !action.LastProcessedDateTime.HasValue &&
-                action.ActionType != null &&
-                action.ActionType.WorkflowForm != null &&
-                action.ActionType.WorkflowForm.NotificationSystemEmailId.HasValue )
+                actionType != null &&
+                actionType.WorkflowForm != null &&
+                actionType.WorkflowForm.NotificationSystemEmailId.HasValue )
             {
                 if ( action.Activity != null && ( action.Activity.AssignedPersonAliasId.HasValue || action.Activity.AssignedGroupId.HasValue ) )
                 {
@@ -91,11 +92,13 @@ namespace Rock.Workflow.Action
 
                     if ( recipients.Count > 0 )
                     {
-                        var systemEmail = new SystemEmailService( rockContext ).Get( action.ActionType.WorkflowForm.NotificationSystemEmailId.Value );
+                        var systemEmail = new SystemEmailService( rockContext ).Get( action.ActionTypeCache.WorkflowForm.NotificationSystemEmailId.Value );
                         if ( systemEmail != null )
                         {
-                            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-                            Email.Send( systemEmail.Guid, recipients, appRoot, string.Empty, false );
+                            var emailMessage = new RockEmailMessage( systemEmail );
+                            emailMessage.SetRecipients( recipients );
+                            emailMessage.CreateCommunicationRecord = false;
+                            emailMessage.Send();
                         }
                         else
                         {

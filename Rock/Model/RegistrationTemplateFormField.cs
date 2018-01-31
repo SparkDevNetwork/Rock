@@ -31,6 +31,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "RegistrationTemplateFormField" )]
     [DataContract]
     public partial class RegistrationTemplateFormField : Model<RegistrationTemplateFormField>, IOrdered
@@ -146,6 +147,15 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the field should be shown on a waitlist.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the field should be shown on a waitlist; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowOnWaitlist { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -156,6 +166,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template form.
         /// </value>
+        [LavaInclude]
         public virtual RegistrationTemplateForm RegistrationTemplateForm { get; set; }
 
         /// <summary>

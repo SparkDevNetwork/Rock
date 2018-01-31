@@ -28,6 +28,7 @@ namespace Rock.Model
     /// Represents a financial pledge that an individual has made to be given to the specified <see cref="Rock.Model.FinancialAccount"/>/account.  This includes
     /// the account that the pledge is directed to, the amount, the pledge frequency and the time period for the pledge.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialPledge" )]
     [DataContract]
     public partial class FinancialPledge : Model<FinancialPledge>

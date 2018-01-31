@@ -127,6 +127,22 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
         /// <summary>
+        /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
+        /// To disable sorting for this field, return string.Empty;
+        /// </summary>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public override string SortProperties( string selection )
+        {
+            // since this returns an Enumerable, it doesn't really make sense to sort it
+            // return string.Empty to disable sorting
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -263,7 +279,7 @@ namespace Rock.Reporting.DataSelect.Person
             // Define Control: Role Type DropDown List
             var ddlRoleType = new RockDropDownList();
             ddlRoleType.ID = parentControl.GetChildControlInstanceName( _CtlRoleType );
-            ddlRoleType.Label = "with Group Role Type";
+            ddlRoleType.Label = "with Group Member Type";
             ddlRoleType.Help = "Specifies the type of Group Role the Member must have to be included in the result. If no value is selected, Members in any Role will be included.";
             ddlRoleType.Items.Add( new ListItem( string.Empty, RoleTypeSpecifier.Any.ToString() ) );
             ddlRoleType.Items.Add( new ListItem( "Leader", RoleTypeSpecifier.Leader.ToString() ) );

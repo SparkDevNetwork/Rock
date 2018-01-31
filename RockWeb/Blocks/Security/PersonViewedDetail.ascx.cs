@@ -106,14 +106,14 @@ namespace RockWeb.Blocks.Security
 
             if ( viewedBy )
             {
-                gridTitle.InnerText = string.Format( 
+                gridTitle.Text = string.Format( 
                     "{0} Viewed By {1}",
                     personViewedList.Select( p => p.TargetPerson.FullName ).FirstOrDefault(),
                     personViewedList.Select( p => p.ViewerPerson.FullName ).FirstOrDefault() );
             }
             else
             {
-                gridTitle.InnerText = string.Format( 
+                gridTitle.Text = string.Format( 
                     "{0} Viewed {1}",
                     personViewedList.Select( p => p.ViewerPerson.FullName ).FirstOrDefault(),
                     personViewedList.Select( p => p.TargetPerson.FullName ).FirstOrDefault() );

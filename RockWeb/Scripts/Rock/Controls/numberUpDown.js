@@ -6,7 +6,7 @@
     Rock.controls.numberUpDown = (function () {
 
         var exports = {
-            adjust: function (btn, adjustment) {
+            adjust: function (btn, adjustment, postbackScript) {
 
                 var $parent = $(btn).closest('div.numberincrement');
                 var $min = $parent.find('.js-number-up-down-min').first();
@@ -40,6 +40,11 @@
                 } else {
                     $downBtn.removeClass('disabled');
                 }
+
+                if (postbackScript && postbackScript != "" ) {
+                    window.location = "javascript:" + postbackScript;
+                }
+
             }
         };
 

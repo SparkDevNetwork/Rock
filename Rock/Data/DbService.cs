@@ -69,16 +69,29 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
+        /// <param name="timeOut">The time out.</param>
         /// <returns></returns>
-        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters )
+        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut )
         {
-            DataSet dataSet = DbService.GetDataSet( query, commandType, parameters );
+            DataSet dataSet = DbService.GetDataSet( query, commandType, parameters, timeOut, false );
             if ( dataSet.Tables.Count > 0 )
             {
                 return dataSet.Tables[0];
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets a data table.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public static DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            return GetDataTable( query, commandType, parameters, null );
         }
 
         /// <summary>
@@ -90,6 +103,33 @@ namespace Rock.Data
         /// <param name="timeOut">The time out in seconds.</param>
         /// <returns></returns>
         public static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
+        {
+            return GetDataSet( query, commandType, parameters, timeOut, false );
+        }
+
+        /// <summary>
+        /// Gets only the schema information (columns, etc) that would result from query. Handy if you need to know which columns the query would return.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="timeOut">The time out in seconds.</param>
+        /// <returns></returns>
+        public static DataSet GetDataSetSchema( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
+        {
+            return GetDataSet( query, commandType, parameters, timeOut, true );
+        }
+
+        /// <summary>
+        /// Gets a data set.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="timeOut">The time out in seconds.</param>
+        /// <param name="schemaOnly">if set to <c>true</c> [schema only].</param>
+        /// <returns></returns>
+        private static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null, bool schemaOnly = false )
         {
             string connectionString = GetConnectionString();
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
@@ -119,7 +159,14 @@ namespace Rock.Data
 
                         SqlDataAdapter adapter = new SqlDataAdapter( sqlCommand );
                         DataSet dataSet = new DataSet( "rockDs" );
-                        adapter.Fill( dataSet );
+                        if ( schemaOnly )
+                        {
+                            adapter.FillSchema( dataSet, SchemaType.Source );
+                        }
+                        else
+                        {
+                            adapter.Fill( dataSet );
+                        }
                         return dataSet;
                     }
                 }

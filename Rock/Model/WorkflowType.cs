@@ -36,6 +36,7 @@ namespace Rock.Model
     /// for long running workflows, or non persisted (see <see cref="Rock.Model.Workflow"/>for real-time processes (i.e. a wizard or triggered job).  A workflow can be triggered by a user/process
     /// performing an action or an entity being updated (through <see cref="Rock.Model.WorkflowTrigger">WorkflowTriggers</see>).
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "WorkflowType" )]
     [DataContract]
     public partial class WorkflowType : Model<WorkflowType>, IOrdered, ICategorized
@@ -145,6 +146,42 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsPersisted { get; set; }
+
+        /// <summary>
+        /// Gets or sets the summary view text to be displayed when a workflow of this type has no form or has been completed. This field supports Lava.
+        /// </summary>
+        /// <value>
+        /// The summary view text.
+        /// </value>
+        [DataMember]
+        public string SummaryViewText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text to be displayed when a workflow of this type workflow is active, but does not have an active form. This field supports Lava.
+        /// </summary>
+        /// <value>
+        /// The summary view text.
+        /// </value>
+        [DataMember]
+        public string NoActionMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the log retention period in days.
+        /// </summary>
+        /// <value>
+        /// The log retention period in days.
+        /// </value>
+        [DataMember]
+        public int? LogRetentionPeriod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the completed workflow rention period in days.
+        /// </summary>
+        /// <value>
+        /// The completed workflow rention period in days.
+        /// </value>
+        [DataMember]
+        public int? CompletedWorkflowRetentionPeriod { get; set; }
 
         /// <summary>
         /// Gets or sets the logging level.
@@ -263,6 +300,8 @@ namespace Rock.Model
                     instance.RegistrationWorkflowTypeId = null;
                 }
             }
+
+            base.PreSaveChanges( dbContext, state );
         }
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this WorkflowType.

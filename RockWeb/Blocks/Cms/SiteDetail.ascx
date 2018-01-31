@@ -17,6 +17,9 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-desktop"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                <div class="panel-labels">
+                    <asp:Literal ID="lVisitSite" runat="server" />
+                </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
@@ -57,6 +60,8 @@
                             <Rock:DataTextBox ID="tbErrorPage" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="ErrorPage" Help="The url that user will be redirected to if an error occurs on site" />
                             <Rock:DataTextBox ID="tbGoogleAnalytics" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="GoogleAnalyticsCode" Help="Optional Google Analytics Code.  If specified, the Google Analytics script with this code will be added to every page rendered for this site." />
                             <Rock:RockCheckBox ID="cbRequireEncryption" runat="server" Label="Require Encryption" Help="Ensures that the site is loaded over SSL by redirecting to https." />
+                            <Rock:RockCheckBox ID="cbEnableForShortening" runat="server" Label="Enabled for Shortening" Help="Should this site (and its first domain) be an available option when creating shortlinks?" />
+                            <Rock:ImageUploader ID="imgSiteIcon" runat="server" Help="Commonly called a 'favicon', this image is used as a browser and app icon for your site. Recommended image size is 192x192. Rock will automatically create all the sizes required by various devices." Label="Site Icon" />
                         </div>
                     </div>
 
@@ -90,6 +95,8 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Label="Allow Indexing" Help="This setting will enable or disable the pages of the site from being indexed." />
+                                <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Is Indexed" Help="Enables the Rock indexer for this site." AutoPostBack="true" OnCheckedChanged="cbEnableIndexing_CheckedChanged" />
+                                <Rock:RockTextBox ID="tbIndexStartingLocation" runat="server" Label="Index Starting Location" Help="The URL for the Rock indexer to use to start crawling the site." />
                             </div>
                         </div>
                         <div class="row">
@@ -100,8 +107,8 @@
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
@@ -120,7 +127,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="btnDelete_Click" />
 

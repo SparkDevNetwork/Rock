@@ -19,10 +19,25 @@ using System;
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// System file types.
+    /// System Categories
     /// </summary>
     public class Category
     {
+        #region Dataview Categories
+
+        /// <summary>
+        /// Communication Segments Dataview Category Guid
+        /// </summary>
+        public const string DATAVIEW_COMMUNICATION_SEGMENTS = "FF7081F8-7223-43D4-BE28-CB030DC4E13B";
+
+        #endregion DataView Categories
+
+        #region Defined Type Categories
+        /// <summary>
+        /// History changes for an event registration
+        /// </summary>
+        public const string DEFINEDTYPE_CMS = "6B1B3106-B7F5-BBA2-4F81-8300F21F6661";
+        #endregion    
 
         #region History Categories
 
@@ -113,6 +128,24 @@ namespace Rock.SystemGuid
         /// The person attribute for Finance Internal
         /// </summary>
         public const string PERSON_ATTRIBUTES_FINANCE_INTERNAL = "3030B3E2-91EE-4833-BACE-47F775FA98A0";
+
+        #endregion
+
+        #region PowerBI 
+
+        /// <summary>
+        /// The category for defined types for PowerBI
+        /// </summary>
+        public const string POWERBI_DEFINED_TYPE = "FF0B8B72-C1A3-BB99-4D51-78BC670ADB9C";
+
+        #endregion 
+
+        #region Group Categories (for a specific group type)
+
+        /// <summary>
+        /// The 'Public' category for Communication List groups
+        /// </summary>
+        public const string GROUPTYPE_COMMUNICATIONLIST_PUBLIC = "A0889E77-67D9-418C-B301-1B3924692058";
 
         #endregion
 

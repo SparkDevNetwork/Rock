@@ -5,9 +5,9 @@
 
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
-        <div class="panel panel-block">
+        <div id="divDetails" runat="server" class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-building-o"></i> Account List</h1>
+                <h1 class="panel-title"><i class="fa fa-building-o"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
 
@@ -44,7 +44,6 @@
                             <Rock:BoolField DataField="IsTaxDeductible" HeaderText="Tax Deductible" SortExpression="IsTaxDeductible" />
                             <Rock:RockBoundField DataField="StartDate" HeaderText="Starts On" SortExpression="StartDate" DataFormatString="{0:d}" />
                             <Rock:RockBoundField DataField="EndDate" HeaderText="Ends On" SortExpression="EndDate" DataFormatString="{0:d}" />
-                            <Rock:DeleteField OnClick="rGridAccount_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>

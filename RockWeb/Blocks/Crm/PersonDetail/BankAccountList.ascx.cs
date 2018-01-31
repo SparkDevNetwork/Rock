@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "CRM > Person Detail" )]
     [Description( "Lists bank accounts for a person" )]
 
-    public partial class BankAccountList : PersonBlock
+    public partial class BankAccountList : PersonBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Base Control Methods
 
@@ -53,6 +53,10 @@ namespace RockWeb.Blocks.Finance
             gList.Actions.ShowAdd = false;
             gList.IsDeleteEnabled = canEdit;
             gList.GridRebind += gList_GridRebind;
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upFinancialGivingProfile );
         }
 
         /// <summary>
@@ -70,6 +74,16 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the Delete event of the gList control.
@@ -138,6 +152,15 @@ namespace RockWeb.Blocks.Finance
 
                 gList.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
         }
 
         #endregion

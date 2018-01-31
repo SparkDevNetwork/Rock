@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Data.Services;
 using System.Runtime.Serialization;
@@ -36,7 +35,7 @@ namespace Rock.Data
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
     [IgnoreModelErrors( new[] { "ParentAuthority" } )]
     [DataContract]
-    public abstract class Model<T> : Entity<T>, IModel, ISecured, IHasAttributes
+    public abstract class Model<T> : Entity<T>, IModel, ISecured, IHasAttributes, IHasInheritedAttributes
         where T : Model<T>, ISecured, new()
     {
         #region Entity Properties
@@ -223,6 +222,25 @@ namespace Rock.Data
         public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             PreSaveChanges( dbContext, entry.State );
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state )
+        {
+            PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public virtual void PostSaveChanges( Rock.Data.DbContext dbContext )
+        {
         }
 
         /// <summary>
@@ -493,7 +511,7 @@ namespace Rock.Data
                                     return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
                                 }
 
-                                return field.FormatValue( null, value, attribute.QualifierValues, false );
+                                return field.FormatValue( null, attribute.EntityTypeId, this.Id, value, attribute.QualifierValues, false );
                             }
                         }
                     }
@@ -668,6 +686,28 @@ namespace Rock.Data
             {
                 this.AttributeValues[key].Value = value;
             }
+        }
+
+        #endregion
+
+        #region IHasInheritedAttributes implementation
+
+        /// <summary>
+        /// Get a list of all inherited Attributes that should be applied to this entity.
+        /// </summary>
+        /// <returns>A list of all inherited AttributeCache objects.</returns>
+        public virtual List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Get any alternate Ids that should be used when loading attribute value for this entity.
+        /// </summary>
+        /// <returns>A list of any alternate entity Ids that should be used when loading attribute values.</returns>
+        public virtual List<int> GetAlternateEntityIds( Rock.Data.RockContext rockContext )
+        {
+            return null;
         }
 
         #endregion

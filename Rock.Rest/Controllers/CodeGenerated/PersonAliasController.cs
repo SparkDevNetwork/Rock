@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PersonAliasController : Rock.Rest.ApiController<Rock.Model.PersonAlias>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonAliasController"/> class.
+        /// </summary>
         public PersonAliasController() : base( new Rock.Model.PersonAliasService( new Rock.Data.RockContext() ) ) { } 
     }
 }

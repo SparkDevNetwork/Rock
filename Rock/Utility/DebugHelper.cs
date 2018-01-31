@@ -14,9 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Data.Common;
 using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Rock.Data;
 
 namespace Rock
@@ -48,7 +50,51 @@ namespace Rock
             /// <value>
             /// The rock context.
             /// </value>
-            public RockContext RockContext { get; set; }
+            internal RockContext RockContext { get; set; }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
+            public override void NonQueryExecuting( DbCommand command, DbCommandInterceptionContext<int> interceptionContext )
+            {
+                object userState;
+                this.CommandExecuting( command, interceptionContext, out userState );
+                interceptionContext.UserState = userState;
+            }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
+            public override void NonQueryExecuted( DbCommand command, DbCommandInterceptionContext<int> interceptionContext )
+            {
+                this.CommandExecuted( command, interceptionContext, interceptionContext.UserState );
+            }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
+            public override void ScalarExecuting( DbCommand command, DbCommandInterceptionContext<object> interceptionContext )
+            {
+                object userState;
+                this.CommandExecuting( command, interceptionContext, out userState );
+                interceptionContext.UserState = userState;
+            }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
+            public override void ScalarExecuted( DbCommand command, DbCommandInterceptionContext<object> interceptionContext )
+            {
+                this.CommandExecuted( command, interceptionContext, interceptionContext.UserState );
+            }
 
             /// <summary>
             /// </summary>
@@ -57,6 +103,31 @@ namespace Rock
             /// <inheritdoc />
             public override void ReaderExecuting( System.Data.Common.DbCommand command, DbCommandInterceptionContext<System.Data.Common.DbDataReader> interceptionContext )
             {
+                object userState;
+                this.CommandExecuting( command, interceptionContext, out userState );
+                interceptionContext.UserState = userState;
+            }
+
+            /// <summary>
+            /// </summary>
+            /// <param name="command"></param>
+            /// <param name="interceptionContext"></param>
+            /// <inheritdoc />
+            public override void ReaderExecuted( DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext )
+            {
+                this.CommandExecuted( command, interceptionContext, interceptionContext.UserState );
+            }
+
+            /// <summary>
+            /// Commands the executing.
+            /// </summary>
+            /// <param name="command">The command.</param>
+            /// <param name="interceptionContext">The interception context.</param>
+            /// <param name="userState">State of the user.</param>
+            /// <inheritdoc />
+            private void CommandExecuting( DbCommand command, DbCommandInterceptionContext interceptionContext, out object userState )
+            {
+                userState = null;
                 if ( RockContext != null && !interceptionContext.DbContexts.Any( a => a == RockContext ) )
                 {
                     return;
@@ -64,16 +135,18 @@ namespace Rock
 
                 DebugHelper._callCounts++;
 
-                System.Diagnostics.Debug.WriteLine( "\n" );
+                StringBuilder sbDebug = new StringBuilder();
+
+                sbDebug.AppendLine( "\n" );
 
                 StackTrace st = new StackTrace( 1, true );
                 var frames = st.GetFrames().Where( a => a.GetFileName() != null );
-                
 
-                System.Diagnostics.Debug.WriteLine( string.Format( "/* Call# {0}*/", DebugHelper._callCounts ) );
-                System.Diagnostics.Debug.WriteLine( string.Format( "/*\n{0}*/", frames.ToList().AsDelimited( "" ) ) );
+                sbDebug.AppendLine( string.Format( "/* Call# {0}*/", DebugHelper._callCounts ) );
 
-                System.Diagnostics.Debug.WriteLine( "BEGIN\n" );
+                sbDebug.AppendLine( string.Format( "/*\n{0}*/", frames.ToList().AsDelimited( "" ) ) );
+
+                sbDebug.AppendLine( "BEGIN\n" );
 
                 var declares = command.Parameters.OfType<System.Data.SqlClient.SqlParameter>()
                     .Select( p =>
@@ -98,17 +171,19 @@ namespace Rock
 
                 if ( !string.IsNullOrEmpty( declares ) )
                 {
-                    System.Diagnostics.Debug.WriteLine( "DECLARE\n" + declares + "\n\n" );
+                    sbDebug.AppendLine( "DECLARE\n" + declares + "\n\n" );
                 }
 
-                System.Diagnostics.Debug.WriteLine( command.CommandText );
+                sbDebug.AppendLine( command.CommandText );
 
-                System.Diagnostics.Debug.WriteLine( "\nEND\nGO\n\n" );
+                sbDebug.AppendLine( "\nEND\nGO\n\n" );
 
-                if ( interceptionContext.UserState == null )
+                if ( userState == null )
                 {
-                    interceptionContext.UserState = new DebugHelperUserState { CallNumber = DebugHelper._callCounts, Stopwatch = Stopwatch.StartNew() };
+                    userState = new DebugHelperUserState { CallNumber = DebugHelper._callCounts, Stopwatch = Stopwatch.StartNew() };
                 }
+
+                System.Diagnostics.Debug.Write( sbDebug.ToString() );
             }
 
             /// <summary>
@@ -116,13 +191,14 @@ namespace Rock
             /// </summary>
             /// <param name="command">The command.</param>
             /// <param name="interceptionContext">The interception context.</param>
-            public override void ReaderExecuted( System.Data.Common.DbCommand command, DbCommandInterceptionContext<System.Data.Common.DbDataReader> interceptionContext )
+            /// <param name="userState">State of the user.</param>
+            public void CommandExecuted( System.Data.Common.DbCommand command, DbCommandInterceptionContext interceptionContext, object userState )
             {
-                var debugHelperUserState = interceptionContext.UserState as DebugHelperUserState;
+                var debugHelperUserState = userState as DebugHelperUserState;
                 if ( debugHelperUserState != null )
                 {
                     debugHelperUserState.Stopwatch.Stop();
-                    System.Diagnostics.Debug.WriteLine( string.Format( "\n/* Call# {0}: ElapsedTime [{1}ms]*/\n", debugHelperUserState.CallNumber, debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds ) );
+                    System.Diagnostics.Debug.Write( string.Format( "\n/* Call# {0}: ElapsedTime [{1}ms]*/\n", debugHelperUserState.CallNumber, debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds ) );
                 }
             }
         }

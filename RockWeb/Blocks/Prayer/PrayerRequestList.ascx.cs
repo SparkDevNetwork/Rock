@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Show Grid Filter", "If enabled, the grid filter will be visible.", true, "", 4 )]
 
     [ContextAware( typeof( Rock.Model.Person ) )]
-    public partial class PrayerRequestList : RockBlock
+    public partial class PrayerRequestList : RockBlock, ICustomGridColumns
     {
         #region Fields
 
@@ -83,6 +83,7 @@ namespace RockWeb.Blocks.Prayer
         public static class FilterSetting
         {
             public static readonly string PrayerCategory = "Prayer Category";
+            public static readonly string PrayerCampus = "Prayer Campus";
             public static readonly string DateRange = "Date Range";
             public static readonly string ApprovalStatus = "Approval Status";
             public static readonly string UrgentStatus = "Urgent Status";
@@ -197,6 +198,10 @@ namespace RockWeb.Blocks.Prayer
             Category prayerCategory = new CategoryService( new RockContext() ).Get( selectedPrayerCategoryId );
             catpPrayerCategoryFilter.SetValue( prayerCategory );
 
+            int selectedPrayerCampusId = gfFilter.GetUserPreference( FilterSetting.PrayerCampus ).AsInteger();
+            cpPrayerCampusFilter.Campuses = CampusCache.All( false );
+            cpPrayerCampusFilter.SetValue( new CampusService( new RockContext() ).Get( selectedPrayerCampusId ) );
+
             // Set the Show Expired filter
             cbShowExpired.Checked = gfFilter.GetUserPreference( FilterSetting.ShowExpired ).AsBooleanOrNull() ?? false;
 
@@ -260,6 +265,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : catpPrayerCategoryFilter.SelectedValue );
+            gfFilter.SaveUserPreference( FilterSetting.PrayerCampus, cpPrayerCampusFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : cpPrayerCampusFilter.SelectedValue );
 
             gfFilter.SaveUserPreference( FilterSetting.ShowExpired, cbShowExpired.Checked ? "True" : string.Empty );
 
@@ -342,6 +348,13 @@ namespace RockWeb.Blocks.Prayer
                             e.Value = category.Name;
                         }
                     }
+
+                    break;
+
+                case "Prayer Campus":
+
+                    var campus = Rock.Web.Cache.CampusCache.Read( e.Value.AsInteger() );
+                    e.Value = campus != null ? campus.Name : string.Empty;
 
                     break;
             }
@@ -465,6 +478,13 @@ namespace RockWeb.Blocks.Prayer
             {
                 prayerRequests = prayerRequests.Where( c => c.CategoryId == selectedPrayerCategoryID
                     || ( c.CategoryId.HasValue && c.Category.ParentCategoryId == selectedPrayerCategoryID ) );
+            }
+
+            // Filter by Campus if one is selected...
+            int? selectedPrayerCampusID = cpPrayerCampusFilter.SelectedCampusId;
+            if ( selectedPrayerCampusID.HasValue && selectedPrayerCampusID.Value > 0)
+            {
+                prayerRequests = prayerRequests.Where( c => c.CampusId == selectedPrayerCampusID );
             }
 
             // Filter by approved/unapproved

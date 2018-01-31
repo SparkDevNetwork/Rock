@@ -160,6 +160,11 @@ namespace RockWeb.Blocks.Event
                     registrant = registrantService.Get( RegistrantState.Id );
                 }
 
+                var previousRegistrantPersonIds = registrantService.Queryable().Where(a => a.RegistrationId == RegistrantState.RegistrationId)
+                                .Where( r => r.PersonAlias != null )
+                                .Select( r => r.PersonAlias.PersonId )
+                                .ToList();
+
                 bool newRegistrant = false;
                 var registrantChanges = new List<string>();
 
@@ -177,6 +182,7 @@ namespace RockWeb.Blocks.Event
                     string prevPerson = ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null ) ?
                         registrant.PersonAlias.Person.FullName : string.Empty;
                     string newPerson = ppPerson.PersonName;
+                    newRegistrant = true;
                     History.EvaluateChange( registrantChanges, "Person", prevPerson, newPerson );
                 }
                 int? personId = ppPerson.PersonId.Value;
@@ -193,8 +199,14 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
+                // set their status (wait list / registrant)
+                registrant.OnWaitList = !tglWaitList.Checked;
+
                 History.EvaluateChange( registrantChanges, "Cost", registrant.Cost, cbCost.Text.AsDecimal() );
                 registrant.Cost = cbCost.Text.AsDecimal();
+
+                History.EvaluateChange( registrantChanges, "Discount Applies", registrant.DiscountApplies, cbDiscountApplies.Checked );
+                registrant.DiscountApplies = cbDiscountApplies.Checked;
 
                 if ( !Page.IsValid )
                 {
@@ -417,6 +429,9 @@ namespace RockWeb.Blocks.Event
                                     registrantChanges.Add( string.Format( "Registrant group member reference updated to existing person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
                                 }
 
+                                // Record this to the Person's and Registrants Notes and History...
+                                reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.PersonAlias.Person, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+
                                 reloadedRegistrant.GroupMemberId = groupMember.Id;
                                 newRockContext.SaveChanges();
                             }
@@ -531,6 +546,8 @@ namespace RockWeb.Blocks.Event
                         lWizardInstanceName.Text = registrant.Registration.RegistrationInstance.Name;
                         lWizardRegistrationName.Text = registrant.Registration.ToString();
                         lWizardRegistrantName.Text = registrant.ToString();
+
+                        tglWaitList.Checked = !registrant.OnWaitList;
                     }
                 }
 
@@ -554,6 +571,11 @@ namespace RockWeb.Blocks.Event
                         lWizardRegistrationName.Text = registration.ToString();
                         lWizardRegistrantName.Text = "New Registrant";
                     }
+                }
+
+                if ( TemplateState != null )
+                {
+                    tglWaitList.Visible = TemplateState.WaitListEnabled;
                 }
 
                 if ( TemplateState != null && RegistrantState == null )
@@ -618,6 +640,7 @@ namespace RockWeb.Blocks.Event
                 if ( RegistrantState != null )
                 {
                     cbCost.Text = RegistrantState.Cost.ToString( "N2" );
+                    cbDiscountApplies.Checked = RegistrantState.DiscountApplies;
                 }
             }
         }

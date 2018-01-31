@@ -31,6 +31,7 @@ namespace Rock.Model
     /// Represents a batch or collection of <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> for a specified date-time range, campus (if applicable) and transaction type.  A batch 
     /// has a known total value of all transactions that are included in the batch.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialBatch" )]
     [DataContract]
     public partial class FinancialBatch : Model<FinancialBatch>
@@ -82,6 +83,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public BatchStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is automated.
+        /// If IsAutomated is True, the UI should not allow the status of Pending to be changed to Open or Closed ( an external process will be in change of changing the status )
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is automated; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsAutomated { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the CampusId of the <see cref="Rock.Model.Campus"/> that this batch is associated with. If the batch is not linked

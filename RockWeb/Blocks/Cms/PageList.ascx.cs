@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Cms
     [Description( "Lists pages for a site." )]
 
     [BooleanField("Show Page Id", "Enables the hiding of the page id column.", true)]
-    public partial class PageList : RockBlock, ISecondaryBlock
+    public partial class PageList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Base Control Methods
 
@@ -72,7 +72,11 @@ namespace RockWeb.Blocks.Cms
                 BindFilter();
                 BindPagesGrid();
 
-                gPages.Columns[0].Visible = GetAttributeValue( "ShowPageId" ).AsBoolean();
+                var pageIdBoundField = gPages.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "Id" );
+                if ( pageIdBoundField != null )
+                {
+                    pageIdBoundField.Visible = GetAttributeValue( "ShowPageId" ).AsBoolean();
+                }
             }
         }
 
@@ -119,7 +123,6 @@ namespace RockWeb.Blocks.Cms
         {
             var rockContext = new RockContext();
             PageService pageService = new PageService( rockContext );
-            var pageViewService = new PageViewService(rockContext);
             var siteService = new SiteService(rockContext);
 
             Rock.Model.Page page = pageService.Get( new Guid( e.RowKeyValue.ToString() ) );
@@ -149,12 +152,6 @@ namespace RockWeb.Blocks.Cms
                         site.RegistrationPageId = null;
                         site.RegistrationPageRouteId = null;
                     }
-                }
-
-                foreach (var pageView in pageViewService.GetByPageId(page.Id))
-                {
-                    pageView.Page = null;
-                    pageView.PageId = null;
                 }
 
                 pageService.Delete( page );
@@ -239,7 +236,7 @@ namespace RockWeb.Blocks.Cms
                 string layoutFilter = gPagesFilter.GetUserPreference( "Layout" );
                 if ( !string.IsNullOrWhiteSpace( layoutFilter ) && layoutFilter != Rock.Constants.All.Text )
                 {
-                    qry = qry.Where( a => a.Layout.ToString() == layoutFilter );
+                    qry = qry.ToList().Where( a => a.Layout.ToString() == layoutFilter ).AsQueryable();
                 }
 
                 SortProperty sortProperty = gPages.SortProperty;

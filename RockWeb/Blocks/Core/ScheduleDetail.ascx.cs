@@ -29,6 +29,7 @@ using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Security;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Core
 {
@@ -50,7 +51,7 @@ namespace RockWeb.Blocks.Core
             if ( !Page.IsPostBack )
             {
                 string scheduleIdParam = PageParameter( "scheduleId" );
-                if (!string.IsNullOrWhiteSpace(scheduleIdParam))
+                if ( !string.IsNullOrWhiteSpace( scheduleIdParam ) )
                 {
                     ShowDetail( scheduleIdParam.AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
                 }
@@ -58,6 +59,24 @@ namespace RockWeb.Blocks.Core
                 {
                     pnlDetails.Visible = false;
                 }
+            }
+            else if ( pnlDetails.Visible )
+            {
+                var rockContext = new RockContext();
+                Schedule schedule;
+                int? itemId = PageParameter( "scheduleId" ).AsIntegerOrNull();
+                if ( itemId.HasValue && itemId > 0 )
+                {
+                    schedule = new ScheduleService( rockContext ).Get( itemId.Value );
+                }
+                else
+                {
+                    schedule = new Schedule { Id = 0 };
+                }
+
+                schedule.LoadAttributes();
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( schedule, phAttributes, true, BlockValidationGroup );
             }
         }
 
@@ -101,6 +120,7 @@ namespace RockWeb.Blocks.Core
             }
 
             schedule.Name = tbScheduleName.Text;
+            schedule.IsActive = cbIsActive.Checked;
             schedule.Description = tbScheduleDescription.Text;
             schedule.iCalendarContent = sbSchedule.iCalendarContent;
 
@@ -126,6 +146,9 @@ namespace RockWeb.Blocks.Core
                 schedule.CheckInEndOffsetMinutes = null;
             }
 
+            schedule.LoadAttributes();
+            Rock.Attribute.Helper.GetEditValues( phAttributes, schedule );
+
             if ( !schedule.IsValid )
             {
                 // Controls will render the error messages
@@ -133,6 +156,7 @@ namespace RockWeb.Blocks.Core
             }
 
             rockContext.SaveChanges();
+            schedule.SaveAttributeValues( rockContext );
 
             Rock.CheckIn.KioskDevice.FlushAll();
 
@@ -236,7 +260,7 @@ namespace RockWeb.Blocks.Core
         {
             var fakeSchedule = new Rock.Model.Schedule();
             fakeSchedule.iCalendarContent = sbSchedule.iCalendarContent;
-            sbSchedule.ToolTip = fakeSchedule.ToFriendlyScheduleText();
+            sbSchedule.ToolTip = fakeSchedule.ToFriendlyScheduleText( true );
 
             hbSchedulePreview.Text = @"<strong>iCalendar Content</strong>
 <div style='white-space: pre' Font-Names='Consolas' Font-Size='9'><br />" + sbSchedule.iCalendarContent + "</div>";
@@ -323,7 +347,7 @@ namespace RockWeb.Blocks.Core
 
             pnlDetails.Visible = true;
             hfScheduleId.Value = schedule.Id.ToString();
-
+            
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
@@ -345,6 +369,10 @@ namespace RockWeb.Blocks.Core
                 btnEdit.Visible = true;
                 string errorMessage = string.Empty;
                 btnDelete.Visible = scheduleService.CanDelete( schedule, out errorMessage );
+
+                var hasAttendances = schedule.Id > 0 && new AttendanceService( new RockContext() ).Queryable().Where( a => a.ScheduleId.HasValue && a.ScheduleId == schedule.Id ).Any();
+                hfHasAttendanceHistory.Value = hasAttendances.Bit().ToString();
+
                 if ( schedule.Id > 0 )
                 {
                     ShowReadonlyDetails( schedule );
@@ -375,6 +403,7 @@ namespace RockWeb.Blocks.Core
             SetEditMode( true );
 
             tbScheduleName.Text = schedule.Name;
+            cbIsActive.Checked = schedule.IsActive;
             tbScheduleDescription.Text = schedule.Description;
 
             sbSchedule.iCalendarContent = schedule.iCalendarContent;
@@ -395,18 +424,38 @@ namespace RockWeb.Blocks.Core
             SetEditMode( false );
             hfScheduleId.SetValue( schedule.Id );
             lReadOnlyTitle.Text = schedule.Name.FormatAsHtmlTitle();
+            hlInactive.Visible = schedule.IsActive == false;
 
-            var calendarEvent = schedule.GetCalenderEvent();
             string occurrenceText = string.Empty;
-            if ( calendarEvent != null )
+            var occurrences = schedule.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
+            if ( occurrences.Any() )
             {
-                if ( calendarEvent.DTStart != null )
+                occurrenceText = GetOccurrenceText( occurrences[0] );
+            }
+
+            if ( schedule.CategoryId.HasValue )
+            {
+                var today = RockDateTime.Today;
+                var nextYear = today.AddYears( 1 );
+                var exclusions = new List<string>();
+
+                foreach ( var exclusion in new ScheduleCategoryExclusionService( new RockContext() )
+                    .Queryable().AsNoTracking()
+                    .Where( e =>
+                        e.CategoryId == schedule.CategoryId.Value &&
+                        e.EndDate >= today &&
+                        e.StartDate < nextYear )
+                    .OrderBy( e => e.StartDate ) )
                 {
-                    var occurrences = calendarEvent.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
-                    if ( occurrences.Any() )
-                    {
-                        occurrenceText = GetOccurrenceText( occurrences[0] );
-                    }
+                    exclusions.Add( string.Format( "<strong>{0}</strong>: {1} - {2}",
+                        exclusion.Title, exclusion.StartDate.ToShortDateString(), exclusion.EndDate.ToShortDateString() ) );
+                }
+
+                if ( exclusions.Any() )
+                {
+                    nbExclusions.Text = string.Format( "<p>This schedule will not be active during the following dates due to being excluded by the schedule's category:</p><p>{0}</p>",
+                        exclusions.AsDelimited( "<br/>" ) );
+                    nbExclusions.Visible = true;
                 }
             }
 
@@ -419,7 +468,7 @@ namespace RockWeb.Blocks.Core
             DescriptionList descriptionList = new DescriptionList()
                 .Add( "Description", schedule.Description ?? string.Empty )
                 .Add( "Schedule", friendlyText )
-                .Add( "Next Occurrence", occurrenceText )
+                .Add( "Next Occurrence", schedule.NextStartDateTime )
                 .Add( "Category", schedule.Category != null ? schedule.Category.Name : string.Empty );
 
             if ( schedule.CheckInStartOffsetMinutes.HasValue )
@@ -433,6 +482,9 @@ namespace RockWeb.Blocks.Core
             }
 
             lblMainDetails.Text = descriptionList.Html;
+            
+            schedule.LoadAttributes();
+            Rock.Attribute.Helper.AddDisplayControls( schedule, phDisplayAttributes, null, false, false );
         }
 
         /// <summary>

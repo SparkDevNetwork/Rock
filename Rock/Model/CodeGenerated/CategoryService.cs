@@ -58,6 +58,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<CommunicationTemplate>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, CommunicationTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<ContentChannel>( Context ).Queryable().Any( a => a.ItemTagCategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, ContentChannel.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<DataView>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, DataView.FriendlyTypeName );
@@ -109,6 +121,12 @@ namespace Rock.Model
             if ( new Service<SystemEmail>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, SystemEmail.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Tag>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Tag.FriendlyTypeName );
                 return false;
             }  
  

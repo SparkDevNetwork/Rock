@@ -25,6 +25,24 @@ using System.Collections.Generic;
 
 namespace Rock.Client.Enums
 {
+    #pragma warning disable CS1591
+    /// <summary>
+    /// </summary>
+    public enum AddressInvalidReason
+    {
+        None = 0x0,
+        NotFound = 0x1,
+        Vacant = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum AddressStatus
+    {
+        Invalid = 0x0,
+        Valid = 0x1,
+    }
+
     /// <summary>
     /// </summary>
     public enum AttendanceGraphBy
@@ -77,6 +95,8 @@ namespace Rock.Client.Enums
     {
         Layout = 0x0,
         Page = 0x1,
+        Site = 0x2,
+        None = 0x3,
     }
 
     /// <summary>
@@ -116,6 +136,16 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum CommunicationType
+    {
+        RecipientPreference = 0x0,
+        Email = 0x1,
+        SMS = 0x2,
+        PushNotification = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     [Flags]
     public enum ComparisonType
     {
@@ -141,6 +171,7 @@ namespace Rock.Client.Enums
     {
         SingleDate = 0x1,
         DateRange = 0x2,
+        NoDates = 0x3,
     }
 
     /// <summary>
@@ -268,12 +299,33 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum IconCssWeight
+    {
+        Regular = 0x0,
+        Solid = 0x1,
+        Light = 0x2,
+        Thin = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum JobNotificationStatus
     {
         All = 0x1,
         Success = 0x2,
         Error = 0x3,
         None = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MatchFlag
+    {
+        None = 0x0,
+        Moved = 0x1,
+        POBoxClosed = 0x2,
+        MovedNoForwarding = 0x3,
+        MovedToForeignCountry = 0x4,
     }
 
     /// <summary>
@@ -323,6 +375,26 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum MoveType
+    {
+        None = 0x0,
+        Family = 0x1,
+        Individual = 0x2,
+        Business = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum NcoaType
+    {
+        None = 0x0,
+        NoMove = 0x1,
+        Month48Move = 0x2,
+        Move = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum NotificationClassification
     {
         Success = 0x0,
@@ -346,6 +418,15 @@ namespace Rock.Client.Enums
         Default = 0x0,
         Kiosk = 0x1,
         Location = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum Processed
+    {
+        NotProcessed = 0x0,
+        Complete = 0x1,
+        ManualUpdateRequired = 0x2,
     }
 
     /// <summary>
@@ -466,6 +547,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum SegmentCriteria
+    {
+        All = 0x0,
+        Any = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum SignatureDocumentAction
     {
         Email = 0x0,
@@ -495,11 +584,28 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum TagType
+    {
+        Inline = 0x1,
+        Block = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum TransactionGraphBy
     {
         Total = 0x0,
         FinancialAccount = 0x1,
         Campus = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum UpdatedAddressType
+    {
+        None = 0x0,
+        Residential = 0x1,
+        Business = 0x2,
     }
 
     /// <summary>
@@ -523,4 +629,5 @@ namespace Rock.Client.Enums
         ImmediatePostSave = 0x4,
     }
 
+    #pragma warning restore CS1591
 }
