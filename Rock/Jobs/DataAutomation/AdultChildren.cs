@@ -369,7 +369,7 @@ ORDER BY [Text]", true, false, "", "", 1 )]
                 }
 
                 // Format the result message
-                context.Result = $"{peopleProcessed:N0} {"person".PluralizeIf( peopleProcessed != 1 )} were processed";
+                context.Result = peopleProcessed == 1 ? "1 person was processed" : $"{peopleProcessed:N0} people were processed";
 
             }
             catch ( System.Exception ex )
