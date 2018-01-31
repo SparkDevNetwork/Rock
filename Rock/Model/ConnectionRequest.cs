@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection request
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionRequest" )]
     [DataContract]
     public partial class ConnectionRequest : Model<ConnectionRequest>
@@ -111,6 +112,33 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? AssignedGroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned group member role identifier.
+        /// </summary>
+        /// <value>
+        /// The assigned group member role identifier.
+        /// </value>
+        [DataMember]
+        public int? AssignedGroupMemberRoleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned group member status.
+        /// </summary>
+        /// <value>
+        /// The assigned group member status.
+        /// </value>
+        [DataMember]
+        public GroupMemberStatus? AssignedGroupMemberStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned group member attribute values.
+        /// </summary>
+        /// <value>
+        /// The assigned group member attribute values.
+        /// </value>
+        [DataMember]
+        public string AssignedGroupMemberAttributeValues { get; set; }
 
         /// <summary>
         /// Gets or sets the connector person alias identifier.

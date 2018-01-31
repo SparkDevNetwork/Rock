@@ -52,6 +52,17 @@ namespace Rock.Web.UI.Controls
             set { ViewState["CssClass"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the label CSS class.
+        /// </summary>
+        /// <value>
+        /// The label CSS class.
+        /// </value>
+        public string LabelCssClass
+        {
+            get { return ViewState["LabelCssClass"] as string ?? string.Empty; }
+            set { ViewState["LabelCssClass"] = value; }
+        }
         #endregion
 
         /// <summary>
@@ -65,7 +76,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group static-control " + CssClass );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, ("control-label " + this.LabelCssClass).Trim() );
                 writer.AddAttribute( HtmlTextWriterAttribute.For, this.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( Label );
@@ -76,7 +87,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.AddAttribute("class", "form-control-static");
                 writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
-                writer.RenderBeginTag( HtmlTextWriterTag.P );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div ); // changed this from a <p> to a <div> as controls that have a <div> can not be rendered into a <p>.
                 base.RenderControl( writer );
                 writer.RenderEndTag();
 

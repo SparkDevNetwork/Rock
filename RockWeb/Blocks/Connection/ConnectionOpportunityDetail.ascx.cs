@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Connection
 
         #region Properties
 
+        public List<GroupConfigStateObj> GroupConfigsState { get; set; }
         public List<GroupStateObj> GroupsState { get; set; }
         public List<GroupStateObj> ConnectorGroupsState { get; set; }
         public Dictionary<int, int> DefaultConnectors { get; set; }
@@ -69,7 +70,17 @@ namespace RockWeb.Blocks.Connection
         {
             base.LoadViewState( savedState );
 
-            string json = ViewState["GroupsState"] as string;
+            string json = ViewState["GroupConfigsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupConfigsState = new List<GroupConfigStateObj>();
+            }
+            else
+            {
+                GroupConfigsState = JsonConvert.DeserializeObject<List<GroupConfigStateObj>>( json );
+            }
+
+            json = ViewState["GroupsState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
                 GroupsState = new List<GroupStateObj>();
@@ -107,26 +118,16 @@ namespace RockWeb.Blocks.Connection
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            string script = @"
-    $('a.js-toggle-on').click(function( e ){
-        e.preventDefault();
-        Rock.dialogs.confirm('Setting the opportunity to use all groups of this type will remove all currently attached groups. Are you sure you want to  change this?', function (result) {
-            if (result) {
-                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
-            }
-            else{
-                $('a.js-toggle-on').removeClass('active');
-                $('a.js-toggle-off').addClass('active');
-            }
-        });
-    });
-";
-            ScriptManager.RegisterStartupScript( tglUseAllGroupsOfGroupType, tglUseAllGroupsOfGroupType.GetType(), "ConfirmRemoveAll", script, true );
 
             gConnectionOpportunityGroups.DataKeyNames = new string[] { "Guid" };
             gConnectionOpportunityGroups.Actions.ShowAdd = true;
             gConnectionOpportunityGroups.Actions.AddClick += gConnectionOpportunityGroups_Add;
             gConnectionOpportunityGroups.GridRebind += gConnectionOpportunityGroups_GridRebind;
+
+            gConnectionOpportunityGroupConfigs.DataKeyNames = new string[] { "Guid" };
+            gConnectionOpportunityGroupConfigs.Actions.ShowAdd = true;
+            gConnectionOpportunityGroupConfigs.Actions.AddClick += gConnectionOpportunityGroupConfigs_Add;
+            gConnectionOpportunityGroupConfigs.GridRebind += gConnectionOpportunityGroupConfigs_GridRebind;
 
             gConnectionOpportunityWorkflows.DataKeyNames = new string[] { "Guid" };
             gConnectionOpportunityWorkflows.Actions.ShowAdd = true;
@@ -145,6 +146,17 @@ namespace RockWeb.Blocks.Connection
             this.AddConfigurationUpdateTrigger( upnlConnectionOpportunityDetail );
 
             _connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
+
+            string script = string.Format( @"
+    $('a.js-toggle-on').click(function( e ){{
+        $('#{0}').show();
+    }});
+    $('a.js-toggle-off').click(function( e ){{
+        $('#{0}').hide();
+    }});
+", divUseGroupsOfTypeNote.ClientID );
+            ScriptManager.RegisterStartupScript( tglUseAllGroupsOfGroupType, tglUseAllGroupsOfGroupType.GetType(), "ConfirmRemoveAll", script, true );
+
         }
 
         /// <summary>
@@ -210,6 +222,7 @@ namespace RockWeb.Blocks.Connection
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
+            ViewState["GroupConfigsState"] = JsonConvert.SerializeObject( GroupConfigsState, Formatting.None, jsonSetting );
             ViewState["GroupsState"] = JsonConvert.SerializeObject( GroupsState, Formatting.None, jsonSetting );
             ViewState["ConnectorGroupsState"] = JsonConvert.SerializeObject( ConnectorGroupsState, Formatting.None, jsonSetting );
             ViewState["WorkflowsState"] = JsonConvert.SerializeObject( WorkflowsState, Formatting.None, jsonSetting );
@@ -291,12 +304,8 @@ namespace RockWeb.Blocks.Connection
 
             using ( RockContext rockContext = new RockContext() )
             {
-                int? groupTypeId = ddlGroupType.SelectedValueAsInt();
-                if ( groupTypeId.HasValue && GroupsState.Any( g => g.GroupTypeId != groupTypeId.Value ) )
+                if ( !ValidPlacementGroups() )
                 {
-                    string groupTypeName = ddlGroupType.SelectedItem.Text;
-                    nbInvalidGroupTypes.Text = string.Format( "<p>One or more of the selected groups is not a <strong>{0}</strong> type. Please select groups that have a group type of <strong>{0}</strong>.", groupTypeName );
-                    nbInvalidGroupTypes.Visible = true;
                     return;
                 }
 
@@ -306,6 +315,7 @@ namespace RockWeb.Blocks.Connection
                 ConnectionRequestWorkflowService connectionRequestWorkflowService = new ConnectionRequestWorkflowService( rockContext );
                 ConnectionOpportunityConnectorGroupService connectionOpportunityConnectorGroupsService = new ConnectionOpportunityConnectorGroupService( rockContext );
                 ConnectionOpportunityCampusService connectionOpportunityCampusService = new ConnectionOpportunityCampusService( rockContext );
+                ConnectionOpportunityGroupConfigService connectionOpportunityGroupConfigService = new ConnectionOpportunityGroupConfigService( rockContext );
                 ConnectionOpportunityGroupService connectionOpportunityGroupService = new ConnectionOpportunityGroupService( rockContext );
 
                 int connectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
@@ -323,7 +333,6 @@ namespace RockWeb.Blocks.Connection
                     connectionOpportunity.Name = string.Empty;
                     connectionOpportunity.ConnectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
                     connectionOpportunityService.Add( connectionOpportunity );
-
                 }
 
                 connectionOpportunity.Name = tbName.Text;
@@ -332,10 +341,6 @@ namespace RockWeb.Blocks.Connection
                 connectionOpportunity.IsActive = cbIsActive.Checked;
                 connectionOpportunity.PublicName = tbPublicName.Text;
                 connectionOpportunity.IconCssClass = tbIconCssClass.Text;
-                connectionOpportunity.GroupTypeId = ddlGroupType.SelectedValue.AsInteger();
-                connectionOpportunity.GroupMemberRoleId = ddlGroupRole.SelectedValue.AsInteger();
-                connectionOpportunity.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
-                connectionOpportunity.UseAllGroupsOfType = tglUseAllGroupsOfGroupType.Checked;
 
                 int? orphanedPhotoId = null;
                 if ( imgupPhoto.BinaryFileId != null )
@@ -424,6 +429,32 @@ namespace RockWeb.Blocks.Connection
                     connectionOpportunityCampus.DefaultConnectorPersonAliasId = DefaultConnectors.ContainsKey( campusId ) ? DefaultConnectors[campusId] : (int?)null;
                 }
 
+                // remove any group configs that were removed in the UI
+                var uiGroupConfigs = GroupConfigsState.Select( r => r.Guid );
+                foreach ( var connectionOpportunityGroupConfig in connectionOpportunity.ConnectionOpportunityGroupConfigs.Where( r => !uiGroupConfigs.Contains( r.Guid ) ).ToList() )
+                {
+                    connectionOpportunity.ConnectionOpportunityGroupConfigs.Remove( connectionOpportunityGroupConfig );
+                    connectionOpportunityGroupConfigService.Delete( connectionOpportunityGroupConfig );
+                }
+
+                // Add or Update group configs from the UI
+                foreach ( var groupConfigStateObj in GroupConfigsState )
+                {
+                    ConnectionOpportunityGroupConfig connectionOpportunityGroupConfig = connectionOpportunity.ConnectionOpportunityGroupConfigs.Where( a => a.Guid == groupConfigStateObj.Guid ).FirstOrDefault();
+                    if ( connectionOpportunityGroupConfig == null )
+                    {
+                        connectionOpportunityGroupConfig = new ConnectionOpportunityGroupConfig();
+                        connectionOpportunity.ConnectionOpportunityGroupConfigs.Add( connectionOpportunityGroupConfig );
+                    }
+
+                    connectionOpportunityGroupConfig.GroupTypeId = groupConfigStateObj.GroupTypeId;
+                    connectionOpportunityGroupConfig.GroupMemberRoleId = groupConfigStateObj.GroupMemberRoleId;
+                    connectionOpportunityGroupConfig.GroupMemberStatus = groupConfigStateObj.GroupMemberStatus;
+                    connectionOpportunityGroupConfig.UseAllGroupsOfType = groupConfigStateObj.UseAllGroupsOfType;
+
+                    connectionOpportunityGroupConfig.ConnectionOpportunityId = connectionOpportunity.Id;
+                }
+
                 // Remove any groups that were removed in the UI
                 var uiGroups = GroupsState.Select( r => r.Guid );
                 foreach ( var connectionOpportunityGroup in connectionOpportunity.ConnectionOpportunityGroups.Where( r => !uiGroups.Contains( r.Guid ) ).ToList() )
@@ -467,19 +498,32 @@ namespace RockWeb.Blocks.Connection
 
                     connectionOpportunity.SaveAttributeValues( rockContext );
 
-                    if ( orphanedPhotoId.HasValue )
+                    if ( orphanedPhotoId.HasValue || connectionOpportunity.PhotoId.HasValue)
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-                        var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
-                        if ( binaryFile != null )
+
+                        if ( orphanedPhotoId.HasValue )
                         {
-                            string errorMessage;
-                            if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
+                            var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
+                            if ( binaryFile != null )
                             {
-                                binaryFileService.Delete( binaryFile );
-                                rockContext.SaveChanges();
+                                string errorMessage;
+                                if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
+                                {
+                                    binaryFileService.Delete( binaryFile );
+                                }
                             }
                         }
+
+                        if ( connectionOpportunity.PhotoId.HasValue )
+                        {
+                            var binaryFile = binaryFileService.Get( connectionOpportunity.PhotoId.Value );
+                            if ( binaryFile != null )
+                            {
+                                binaryFile.IsTemporary = false;
+                            }
+                        }
+                        rockContext.SaveChanges();
                     }
                 } );
 
@@ -663,6 +707,158 @@ namespace RockWeb.Blocks.Connection
 
         #endregion
 
+        #region ConnectionOpportunityGroupConfigs Grid/Dialog Events
+
+        /// <summary>
+        /// Handles the Delete event of the gConnectionOpportunityGroupConfigs control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gConnectionOpportunityGroupConfigs_Delete( object sender, RowEventArgs e )
+        {
+            Guid rowGuid = (Guid)e.RowKeyValue;
+            var groupConfigStateObj = GroupConfigsState.Where( g => g.Guid.Equals( rowGuid ) ).FirstOrDefault();
+            if ( groupConfigStateObj != null )
+            {
+                GroupConfigsState.Remove( groupConfigStateObj );
+            }
+            BindGroupConfigsGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgGroupConfigDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgGroupConfigDetails_SaveClick( object sender, EventArgs e )
+        {
+            Guid guid = hfGroupConfigGuid.Value.AsGuid();
+            var groupConfig = GroupConfigsState.Where( g => g.Guid.Equals( guid ) ).FirstOrDefault();
+            if ( groupConfig == null )
+            {
+                groupConfig = new GroupConfigStateObj();
+                groupConfig.Guid = Guid.NewGuid();
+                GroupConfigsState.Add( groupConfig );
+            }
+
+            var groupType = GroupTypeCache.Read( ddlGroupType.SelectedValueAsInt() ?? 0 );
+            if ( groupType != null )
+            {
+                groupConfig.GroupTypeId = groupType.Id;
+                groupConfig.GroupTypeName = groupType.Name;
+                var groupRole = groupType.Roles.FirstOrDefault( r => r.Id == ddlGroupRole.SelectedValue.AsInteger() );
+                if ( groupRole != null )
+                {
+                    groupConfig.GroupMemberRoleId = groupRole.Id;
+                    groupConfig.GroupMemberRoleName = groupRole.Name;
+                }
+            }
+
+            groupConfig.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
+            groupConfig.UseAllGroupsOfType = tglUseAllGroupsOfGroupType.Checked;
+
+            BindGroupConfigsGrid();
+
+            var validGroupTypeIds = GroupConfigsState.Where( c => !c.UseAllGroupsOfType ).Select( c => c.GroupTypeId ).ToList();
+            GroupsState = GroupsState.Where( g => validGroupTypeIds.Contains( g.GroupTypeId ) ).ToList();
+
+            BindGroupGrid();
+
+            HideDialog();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gConnectionOpportunityGroupConfigs control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gConnectionOpportunityGroupConfigs_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupConfigsGrid();
+        }
+
+        /// <summary>
+        /// Handles the Add event of the gConnectionOpportunityGroupConfigs control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gConnectionOpportunityGroupConfigs_Add( object sender, EventArgs e )
+        {
+            dlgGroupConfigDetails.SaveButtonText = "Add";
+            gConnectionOpportunityGroupConfigs_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gConnectionOpportunityGroupConfigs control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gConnectionOpportunityGroupConfigs_Edit( object sender, RowEventArgs e )
+        {
+            dlgGroupConfigDetails.SaveButtonText = "Save";
+            Guid connectionOpportunityGroupConfigsGuid = (Guid)e.RowKeyValue;
+            gConnectionOpportunityGroupConfigs_ShowEdit( connectionOpportunityGroupConfigsGuid );
+        }
+
+        /// <summary>
+        /// handles the connection opportunity group campuses_ show edit.
+        /// </summary>
+        /// <param name="connectionOpportunityGroupConfigsGuid">The connection opportunity group campus unique identifier.</param>
+        protected void gConnectionOpportunityGroupConfigs_ShowEdit( Guid connectionOpportunityGroupConfigsGuid )
+        {
+            // bind group types
+            ddlGroupType.Items.Clear();
+            ddlGroupType.Items.Add( new ListItem() );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupTypeService = new Rock.Model.GroupTypeService( rockContext );
+
+                // get all group types that have at least one role
+                var groupTypes = groupTypeService.Queryable().Where( a => a.Roles.Any() ).OrderBy( a => a.Name ).ToList();
+
+                foreach ( var g in groupTypes )
+                {
+                    ddlGroupType.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) );
+                }
+            }
+
+            ddlGroupMemberStatus.BindToEnum<GroupMemberStatus>();
+
+            var groupConfigStateObj = GroupConfigsState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityGroupConfigsGuid ) );
+            if ( groupConfigStateObj != null )
+            {
+                hfGroupConfigGuid.Value = connectionOpportunityGroupConfigsGuid.ToString();
+
+                ddlGroupType.SetValue( groupConfigStateObj.GroupTypeId );
+                LoadGroupRoles( ddlGroupType.SelectedValue.AsInteger() );
+                ddlGroupRole.SetValue( groupConfigStateObj.GroupMemberRoleId );
+
+                ddlGroupMemberStatus.SetValue( groupConfigStateObj.GroupMemberStatus.ConvertToInt() );
+                tglUseAllGroupsOfGroupType.Checked = groupConfigStateObj.UseAllGroupsOfType;
+            }
+            else
+            {
+                hfGroupConfigGuid.Value = string.Empty;
+                LoadGroupRoles( null );
+                ddlGroupMemberStatus.SetValue( GroupMemberStatus.Active.ConvertToInt() );
+                tglUseAllGroupsOfGroupType.Checked = false;
+            }
+
+            ShowDialog( "GroupConfigDetails", true );
+        }
+
+        /// <summary>
+        /// Binds the campus grid.
+        /// </summary>
+        private void BindGroupConfigsGrid()
+        {
+            gConnectionOpportunityGroupConfigs.DataSource = GroupConfigsState;
+            gConnectionOpportunityGroupConfigs.DataBind();
+        }
+
+        #endregion
+
         #region ConnectionOpportunityConnectorGroups Grid/Dialog Events
 
         /// <summary>
@@ -721,6 +917,7 @@ namespace RockWeb.Blocks.Connection
             if ( group != null )
             {
                 connectorGroup.GroupName = group.Name;
+                connectorGroup.GroupTypeName = group.GroupType != null ? group.GroupType.Name : string.Empty;
                 connectorGroup.GroupTypeId = group.GroupTypeId;
             }
 
@@ -973,20 +1170,20 @@ namespace RockWeb.Blocks.Connection
         /// <param name="connectionOpportunityWorkflowGuid">The connection opportunity workflow unique identifier.</param>
         protected void gConnectionOpportunityWorkflows_ShowEdit( Guid connectionOpportunityWorkflowGuid )
         {
+            ddlWorkflowType.Items.Clear();
+            ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
+
+            foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
+            {
+                if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
+                }
+            }
+
             var workflowTypeStateObj = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityWorkflowGuid ) );
             if ( workflowTypeStateObj != null )
             {
-                ddlWorkflowType.Items.Clear();
-                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-                {
-                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                    }
-                }
-
                 if ( workflowTypeStateObj.WorkflowTypeId == null )
                 {
                     ddlWorkflowType.SelectedValue = "0";
@@ -997,20 +1194,6 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 ddlTriggerType.SelectedValue = workflowTypeStateObj.TriggerType.ConvertToInt().ToString();
-
-            }
-            else
-            {
-                ddlWorkflowType.Items.Clear();
-                ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-                foreach ( var workflowType in new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name ) )
-                {
-                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
-                    }
-                }
             }
 
             hfWorkflowGuid.Value = connectionOpportunityWorkflowGuid.ToString();
@@ -1176,23 +1359,6 @@ namespace RockWeb.Blocks.Connection
         {
             int groupTypeId = ddlGroupType.SelectedValue.AsInteger();
             LoadGroupRoles( groupTypeId );
-            GroupsState.Clear();
-            BindGroupGrid();
-        }
-
-        /// <summary>
-        /// Handles the CheckedChanged event of the tglUseAllGroupsOfGroupType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void tglUseAllGroupsOfGroupType_CheckedChanged( object sender, EventArgs e )
-        {
-            if ( tglUseAllGroupsOfGroupType.Checked )
-            {
-                GroupsState.Clear();
-                BindGroupGrid();
-            }
-            wpConnectionOpportunityGroups.Visible = !tglUseAllGroupsOfGroupType.Checked;
         }
 
         /// <summary>
@@ -1216,11 +1382,9 @@ namespace RockWeb.Blocks.Connection
         /// <param name="parentConnectionOpportunityId">The parent connectionOpportunity identifier.</param>
         public void ShowDetail( int connectionOpportunityId )
         {
-            ConnectionOpportunity connectionOpportunity = null;
-
-            bool editAllowed = UserCanEdit;
-
             RockContext rockContext = new RockContext();
+
+            ConnectionOpportunity connectionOpportunity = null;
 
             if ( !connectionOpportunityId.Equals( 0 ) )
             {
@@ -1230,22 +1394,17 @@ namespace RockWeb.Blocks.Connection
 
             if ( connectionOpportunity == null )
             {
+                int connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
+
                 connectionOpportunity = new ConnectionOpportunity { Id = 0, IsActive = true, Name = "" };
-                connectionOpportunity.ConnectionType = new ConnectionTypeService( rockContext ).Get( PageParameter( "ConnectionTypeId" ).AsInteger() );
+                connectionOpportunity.ConnectionTypeId = _connectionTypeId;
+                connectionOpportunity.ConnectionType = new ConnectionTypeService( rockContext ).Get( _connectionTypeId );
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
 
-            // Only users that have Edit rights to block, or edit rights to the calendar (from query string) should be able to edit
-            if ( !editAllowed )
-            {
-                var connectionType = new ConnectionTypeService( rockContext ).Get( _connectionTypeId );
-                if ( connectionType != null )
-                {
-                    editAllowed = connectionType.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                }
-            }
-
+            bool editAllowed = UserCanEdit || connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson );
             bool readOnly = true;
 
             if ( !editAllowed )
@@ -1257,9 +1416,9 @@ namespace RockWeb.Blocks.Connection
             {
                 nbEditModeMessage.Text = string.Empty;
 
-                if ( connectionOpportunity.Id != 0 && !( connectionOpportunity.ConnectionTypeId == _connectionTypeId ) )
+                if ( connectionOpportunity.Id != 0 && connectionOpportunity.ConnectionTypeId != _connectionTypeId )
                 {
-                    // Item does not belong to calendar
+                    // Selected Opportunity does not belong to the selected Connection Type
                     nbIncorrectOpportunity.Visible = true;
                 }
                 else
@@ -1312,7 +1471,6 @@ namespace RockWeb.Blocks.Connection
             htmlSummary.Text = connectionOpportunity.Summary;
             htmlDescription.Text = connectionOpportunity.Description;
             cbIsActive.Checked = connectionOpportunity.IsActive;
-            tglUseAllGroupsOfGroupType.Checked = connectionOpportunity.UseAllGroupsOfType;
 
             WorkflowsState = new List<WorkflowTypeStateObj>();
             foreach ( var connectionWorkflow in connectionOpportunity.ConnectionWorkflows )
@@ -1328,6 +1486,12 @@ namespace RockWeb.Blocks.Connection
             foreach( var opportunityGroup in connectionOpportunity.ConnectionOpportunityGroups )
             {
                 GroupsState.Add( new GroupStateObj( opportunityGroup ) );
+            }
+
+            GroupConfigsState = new List<GroupConfigStateObj>();
+            foreach ( var groupConfig in connectionOpportunity.ConnectionOpportunityGroupConfigs )
+            {
+                GroupConfigsState.Add( new GroupConfigStateObj( groupConfig ) );
             }
 
             ConnectorGroupsState = new List<GroupStateObj>();
@@ -1356,6 +1520,7 @@ namespace RockWeb.Blocks.Connection
             ShowOpportunityAttributes();
 
             BindGroupGrid();
+            BindGroupConfigsGrid();
             BindWorkflowGrid();
             BindConnectorGroupsGrid();
         }
@@ -1415,6 +1580,29 @@ namespace RockWeb.Blocks.Connection
             return connectionOpportunity;
         }
 
+        private bool ValidPlacementGroups()
+        {
+            var validGroupTypeIds = GroupConfigsState.Where( c => !c.UseAllGroupsOfType ).Select( c => c.GroupTypeId ).ToList();
+            var validGroupTypeNames = GroupConfigsState.Where( c => !c.UseAllGroupsOfType ).Select( c => c.GroupTypeName ).ToList().AsDelimited( ", " );
+
+            if ( GroupsState.Any( g => !validGroupTypeIds.Contains( g.GroupTypeId ) ) )
+            {
+                if ( validGroupTypeNames.Any() )
+                {
+                    nbInvalidGroupTypes.Text = string.Format( "<p>One or more of the selected groups is not one of the configured group types that allow specifying a group ({0}). Please select groups that have one of these group types.", validGroupTypeNames );
+                }
+                else
+                {
+                    nbInvalidGroupTypes.Text = "<p>Placement Groups are not allowed because there are not any group types configured, or they all are configured to 'Use All Groups of This Type'. Please remove the placement group(s) or reconfigure the group types.";
+                }
+
+                nbInvalidGroupTypes.Visible = true;
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
@@ -1424,36 +1612,6 @@ namespace RockWeb.Blocks.Connection
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
             cblCampus.SetValues( connectionOpportunity.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList() );
-            // bind group types
-            ddlGroupType.Items.Clear();
-
-            using ( var rockContext = new RockContext() )
-            {
-                var groupTypeService = new Rock.Model.GroupTypeService( rockContext );
-
-                // get all group types that have at least one role
-                var groupTypes = groupTypeService.Queryable().Where( a => a.Roles.Any() ).OrderBy( a => a.Name ).ToList();
-
-                foreach ( var g in groupTypes )
-                {
-                    ddlGroupType.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) );
-                }
-            }
-
-            ddlGroupType.SetValue( connectionOpportunity.GroupTypeId.ToString() );
-            LoadGroupRoles( ddlGroupType.SelectedValue.AsInteger() );
-            ddlGroupRole.SetValue( connectionOpportunity.GroupMemberRoleId.ToString() );
-
-            // bind group member status
-            ddlGroupMemberStatus.BindToEnum<GroupMemberStatus>();
-            if ( !String.IsNullOrWhiteSpace( connectionOpportunity.GroupMemberStatus.ToString() ) )
-            {
-                ddlGroupMemberStatus.SetValue( connectionOpportunity.GroupMemberStatus.ConvertToInt().ToString() );
-            }
-            else
-            {
-                ddlGroupMemberStatus.SetValue( GroupMemberStatus.Pending.ConvertToInt().ToString() );
-            }
         }
 
         /// <summary>
@@ -1507,6 +1665,10 @@ namespace RockWeb.Blocks.Connection
                     dlgGroupDetails.Show();
                     break;
 
+                case "GROUPCONFIGDETAILS":
+                    dlgGroupConfigDetails.Show();
+                    break;
+
                 case "CONNECTORGROUPDETAILS":
                     dlgConnectorGroupDetails.Show();
                     break;
@@ -1528,6 +1690,10 @@ namespace RockWeb.Blocks.Connection
                     dlgGroupDetails.Hide();
                     break;
 
+                case "GROUPCONFIGDETAILS":
+                    dlgGroupConfigDetails.Hide();
+                    break;
+
                 case "CONNECTORGROUPDETAILS":
                     dlgConnectorGroupDetails.Hide();
                     break;
@@ -1545,6 +1711,37 @@ namespace RockWeb.Blocks.Connection
         #region Helper Classes
 
         [Serializable]
+        public class GroupConfigStateObj
+        {
+            public int Id { get; set; }
+            public Guid Guid { get; set; }
+            public int GroupTypeId { get; set; }
+            public string GroupTypeName { get; set; }
+            public int? GroupMemberRoleId { get; set; }
+            public string GroupMemberRoleName { get; set; }
+            public GroupMemberStatus GroupMemberStatus { get; set; }
+            public bool UseAllGroupsOfType { get; set; }
+
+
+            public GroupConfigStateObj()
+            {
+
+            }
+
+            public GroupConfigStateObj( ConnectionOpportunityGroupConfig groupConfig )
+            {
+                Id = groupConfig.Id;
+                Guid = groupConfig.Guid;
+                GroupTypeId = groupConfig.GroupTypeId;
+                GroupTypeName = groupConfig.GroupType != null ? groupConfig.GroupType.Name : string.Empty;
+                GroupMemberRoleId = groupConfig.GroupMemberRoleId;
+                GroupMemberRoleName = groupConfig.GroupMemberRole != null ? groupConfig.GroupMemberRole.Name : string.Empty;
+                GroupMemberStatus = groupConfig.GroupMemberStatus;
+                UseAllGroupsOfType = groupConfig.UseAllGroupsOfType;
+            }
+        }
+
+        [Serializable]
         public class GroupStateObj
         {
             public int Id { get; set; }
@@ -1552,6 +1749,7 @@ namespace RockWeb.Blocks.Connection
             public int? CampusId { get; set; }
             public int GroupId { get; set; }
             public string GroupName { get; set; }
+            public string GroupTypeName { get; set; }
             public string CampusName { get; set; }
             public int GroupTypeId { get; set; }
 
@@ -1568,6 +1766,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     GroupId = opportunityGroup.Group.Id;
                     GroupName = opportunityGroup.Group.Name;
+                    GroupTypeName = opportunityGroup.Group.GroupType != null ? opportunityGroup.Group.GroupType.Name : string.Empty;
                     GroupTypeId = opportunityGroup.Group.GroupTypeId;
                     CampusId = opportunityGroup.Group.CampusId;
                     CampusName = opportunityGroup.Group.Campus != null ? opportunityGroup.Group.Campus.Name : string.Empty;
@@ -1582,6 +1781,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     GroupId = connectorGroup.ConnectorGroup.Id;
                     GroupName = connectorGroup.ConnectorGroup.Name;
+                    GroupTypeName = connectorGroup.ConnectorGroup.GroupType != null ? connectorGroup.ConnectorGroup.GroupType.Name : string.Empty;
                     GroupTypeId = connectorGroup.ConnectorGroup.GroupTypeId;
                 }
                 if ( connectorGroup.Campus != null )
@@ -1591,7 +1791,7 @@ namespace RockWeb.Blocks.Connection
                 }
                 else
                 {
-                    CampusName = "all";
+                    CampusName = "All";
                 }
             }
         }
@@ -1637,5 +1837,5 @@ namespace RockWeb.Blocks.Connection
 
         #endregion
 
-}
+    }
 }

@@ -52,7 +52,7 @@ namespace Rock.Web
         /// <value>
         /// The route parameters.
         /// </value>
-        public Dictionary<string, string> Parameters { get; set; }
+        public Dictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Gets the query string.
@@ -60,15 +60,15 @@ namespace Rock.Web
         /// <value>
         /// The query string.
         /// </value>
-        public NameValueCollection QueryString { get; set; }
-        
+        public NameValueCollection QueryString { get; set; } = new NameValueCollection();
+
         /// <summary>
         /// Gets or sets the bread crumbs.
         /// </summary>
         /// <value>
         /// The bread crumbs.
         /// </value>
-        public List<BreadCrumb> BreadCrumbs { get; set; }
+        public List<BreadCrumb> BreadCrumbs { get; set; } = new List<BreadCrumb>();
 
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
@@ -268,6 +268,16 @@ namespace Rock.Web
         /// <returns></returns>
         public string BuildUrl()
         {
+            return BuildUrl( false );
+        }
+
+        /// <summary>
+        /// Builds the URL.
+        /// </summary>
+        /// <param name="removeMagicToken">if set to <c>true</c> [remove magic token].</param>
+        /// <returns></returns>
+        public string BuildUrl( bool removeMagicToken )
+        {
             string url = string.Empty;
 
             var parms = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
@@ -277,7 +287,7 @@ namespace Rock.Web
             {
                 foreach(var route in Parameters)
                 {
-                    if ( !parms.ContainsKey( route.Key ) )
+                    if ( ( !removeMagicToken || route.Key.ToLower() != "rckipid" ) && !parms.ContainsKey( route.Key ) )
                     {
                         parms.Add( route.Key, route.Value );
                     }
@@ -290,9 +300,14 @@ namespace Rock.Web
             {
                 foreach ( string key in QueryString.AllKeys )
                 {
-                    // check that the dictionary doesn't already have this key
-                    if ( key != null && !parms.ContainsKey( key ) && QueryString[key] != null )
-                        parms.Add( key, QueryString[key].ToString() );
+                    if ( !removeMagicToken || key.ToLower() != "rckipid" )
+                    {
+                        // check that the dictionary doesn't already have this key
+                        if ( key != null && !parms.ContainsKey( key ) && QueryString[key] != null )
+                        {
+                            parms.Add( key, QueryString[key].ToString() );
+                        }
+                    }
                 }
             }
 

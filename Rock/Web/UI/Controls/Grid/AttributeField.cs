@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI.WebControls;
 using Rock.Attribute;
-using Rock.Model;
+using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -136,15 +136,26 @@ namespace Rock.Web.UI.Controls
                 }
 
                 if ( exists )
-                { 
+                {
+                    if ( attrib?.FieldType?.Field is BooleanFieldType )
+                    {
+                        if ( this.ItemStyle.HorizontalAlign != HorizontalAlign.Center )
+                        {
+                            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+                        }
+
+                        var boolValue = rawValue.AsBoolean();
+                        return boolValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
+                    }
+
                     if ( formatAsHtml )
                     {
-                        string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( null, rawValue, attrib.QualifierValues, condensed );
+                        string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( null, attrib.EntityTypeId, dataItem.Id, rawValue, attrib.QualifierValues, condensed );
                         return new HtmlString( resultHtml ?? string.Empty );
                     }
                     else
                     {
-                        string result = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, condensed );
+                        string result = attrib.FieldType.Field.FormatValue( null, attrib.EntityTypeId, dataItem.Id, rawValue, attrib.QualifierValues, condensed );
                         return result ?? string.Empty;
                     }
                 }
@@ -198,12 +209,10 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class AttributeFieldObject : IHasAttributes
     {
-        int Id { get; set; }
-
-        int IHasAttributes.Id
-        {
-            get { throw new NotImplementedException(); }
-        }
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
+        public int Id { get; set; }
 
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.

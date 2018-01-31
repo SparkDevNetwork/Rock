@@ -62,6 +62,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnabledForShortening { get; set; }
+
+        /// <summary />
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
@@ -79,6 +82,9 @@ namespace Rock.Client
         public string ExternalUrl { get; set; }
 
         /// <summary />
+        public int? FavIconBinaryFileId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -86,6 +92,12 @@ namespace Rock.Client
 
         /// <summary />
         public string GoogleAnalyticsCode { get; set; }
+
+        /// <summary />
+        public string IndexStartingLocation { get; set; }
+
+        /// <summary />
+        public bool IsIndexEnabled { get; set; }
 
         /// <summary />
         public bool IsSystem { get; set; }
@@ -115,9 +127,6 @@ namespace Rock.Client
 
         /// <summary />
         public int? PageNotFoundPageRouteId { get; set; }
-
-        /// <summary />
-        public int? PageViewRetentionPeriodDays { get; set; }
 
         /// <summary />
         public bool RedirectTablets { get; set; }
@@ -176,13 +185,17 @@ namespace Rock.Client
             this.DefaultPageId = source.DefaultPageId;
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
+            this.EnabledForShortening = source.EnabledForShortening;
             this.EnableMobileRedirect = source.EnableMobileRedirect;
             this.EnablePageViews = source.EnablePageViews;
             this.ErrorPage = source.ErrorPage;
             this.ExternalUrl = source.ExternalUrl;
+            this.FavIconBinaryFileId = source.FavIconBinaryFileId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            this.IndexStartingLocation = source.IndexStartingLocation;
+            this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsSystem = source.IsSystem;
             this.LoginPageId = source.LoginPageId;
             this.LoginPageRouteId = source.LoginPageRouteId;
@@ -192,7 +205,6 @@ namespace Rock.Client
             this.PageHeaderContent = source.PageHeaderContent;
             this.PageNotFoundPageId = source.PageNotFoundPageId;
             this.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
-            this.PageViewRetentionPeriodDays = source.PageViewRetentionPeriodDays;
             this.RedirectTablets = source.RedirectTablets;
             this.RegistrationPageId = source.RegistrationPageId;
             this.RegistrationPageRouteId = source.RegistrationPageRouteId;
@@ -213,6 +225,9 @@ namespace Rock.Client
     /// </summary>
     public partial class Site : SiteEntity
     {
+        /// <summary />
+        public ICollection<Block> Blocks { get; set; }
+
         /// <summary />
         public PageRoute ChangePasswordPageRoute { get; set; }
 

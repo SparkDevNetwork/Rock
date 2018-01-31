@@ -524,8 +524,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            RegisterJavaScript();
-
             if ( this.Visible )
             {
                 RockControlHelper.RenderControl( this, writer );
@@ -595,8 +593,22 @@ namespace Rock.Web.UI.Controls
 
              <h4>Results</h4>
              
-             <ul class='picker-select' id='{0}_personPickerItems'>
-             </ul>
+             <div id='personpicker-scroll-container_{0}' class='scroll-container scroll-container-vertical scroll-container-picker'>
+                <div class='scrollbar'>
+                    <div class='track'>
+                        <div class='thumb'>
+                            <div class='end'></div>
+                        </div>
+                    </div>
+                </div>
+                <div class='viewport'>
+                    <div class='overview'>
+                        <ul class='picker-select' id='{0}_personPickerItems'>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
              <div class='picker-actions'>
 ";
 
@@ -616,6 +628,8 @@ namespace Rock.Web.UI.Controls
 
                 // picker picker-select picker-person
                 writer.RenderEndTag();
+
+                RegisterJavaScript();
             }
             else
             {

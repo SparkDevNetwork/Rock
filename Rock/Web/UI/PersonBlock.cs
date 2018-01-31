@@ -159,6 +159,8 @@ namespace Rock.Web.UI
                     .Where( m =>
                         m.PersonId == Person.Id &&
                         m.Group.GroupTypeId == groupTypeId )
+                    .OrderBy( m => m.GroupOrder ?? int.MaxValue )   
+                    .ThenByDescending( m => m.Group.Name)
                     .Select( m => m.Group )
                     .OrderByDescending( g => g.Name )
                     .ToList();

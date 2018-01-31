@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -83,6 +84,7 @@ namespace Rock.Transactions
         /// <value>
         /// The text message.
         /// </value>
+        [Obsolete("Text Message property is no longer supported for emails")]
         public string TextMessage { get; set; }
 
         /// <summary>
@@ -100,6 +102,14 @@ namespace Rock.Transactions
         /// The recipient status.
         /// </value>
         public CommunicationRecipientStatus RecipientStatus { get; set; }
+
+        /// <summary>
+        /// On optional guid to use if one and only one recipient will be created. Used for tracking opens/clicks.
+        /// </summary>
+        /// <value>
+        /// The recipient unique identifier.
+        /// </value>
+        public Guid? RecipientGuid { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
@@ -162,15 +172,25 @@ namespace Rock.Transactions
         {
             using ( var rockContext = new RockContext() )
             {
-                var sender = new PersonService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( p => p.Email == FromAddress )
-                    .FirstOrDefault();
-                int? senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
+                int? senderPersonAliasId = null;
+                if ( FromAddress.IsNotNullOrWhitespace() )
+                {
+                    var sender = new PersonService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( p => p.Email == FromAddress )
+                        .FirstOrDefault();
+                    senderPersonAliasId = sender != null ? sender.PrimaryAliasId : (int?)null;
+                }
 
-                new CommunicationService( rockContext ).CreateEmailCommunication(
-                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, TextMessage, BulkCommunication,
+                var communication = new CommunicationService( rockContext ).CreateEmailCommunication(
+                    RecipientEmails, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication,
                     RecipientStatus, senderPersonAliasId );
+
+                if ( communication != null && communication.Recipients.Count() == 1 && RecipientGuid.HasValue )
+                {
+                    communication.Recipients.First().Guid = RecipientGuid.Value;
+                }
+
                 rockContext.SaveChanges();
             }
         }

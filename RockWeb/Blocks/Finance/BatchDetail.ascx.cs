@@ -71,10 +71,23 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
+            var batchId = PageParameter( "batchId" ).AsInteger();
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "batchId" ).AsInteger() );
+                ShowDetail( batchId );
             }
+
+            // Add any attribute controls. 
+            // This must be done here regardless of whether it is a postback so that the attribute values will get saved.
+            var financialBatch = new FinancialBatchService( new RockContext() ).Get( batchId );
+            if ( financialBatch == null )
+            {
+                financialBatch = new FinancialBatch();
+            }
+
+            financialBatch.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Helper.AddEditControls( financialBatch, phAttributes, true, BlockValidationGroup );
         }
 
         /// <summary>
@@ -253,6 +266,9 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
+                batch.LoadAttributes( rockContext );
+                Rock.Attribute.Helper.GetEditValues( phAttributes, batch );
+
                 rockContext.WrapTransaction( () =>
                 {
                     if ( rockContext.SaveChanges() > 0 )
@@ -269,6 +285,8 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
                 } );
+
+                batch.SaveAttributeValues( rockContext );
 
                 if ( batchId == 0 )
                 {
@@ -377,7 +395,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( batch == null )
             {
-                batch = new FinancialBatch { Id = 0 };
+                batch = new FinancialBatch { Id = 0, Status = BatchStatus.Open };
 
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
@@ -468,6 +486,13 @@ namespace RockWeb.Blocks.Finance
                     .Add( "Accounting Code", batch.AccountingSystemCode )
                     .Add( "Notes", batch.Note )
                     .Html;
+
+                batch.LoadAttributes();
+                var attributes = batch.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+
+                var attributeCategories = Helper.GetAttributeCategories( attributes );
+
+                Rock.Attribute.Helper.AddDisplayControls( batch, attributeCategories, phReadonlyAttributes, null, false );
 
                 // Account Summary
                 gAccounts.DataSource = qryTransactionDetails
@@ -562,6 +587,11 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
+                if ( batch.IsAutomated == true && batch.Status == BatchStatus.Pending )
+                {
+                    ddlStatus.Enabled = false;
+                }
+
                 campCampus.Campuses = CampusCache.All();
                 if ( batch.CampusId.HasValue )
                 {
@@ -631,6 +661,8 @@ namespace RockWeb.Blocks.Finance
 
             hlBatchId.Text = string.Format( "Batch #{0}", batch.Id.ToString() );
             hlBatchId.Visible = batch.Id != 0;
+
+            hlIsAutomated.Visible = batch.IsAutomated;
         }
 
         /// <summary>

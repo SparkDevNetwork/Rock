@@ -29,8 +29,10 @@ namespace Rock.Model
     /// Represents an instance where a <see cref="Rock.Model.Person"/> who attended or was scheduled to attend a group or event.
     /// This can be used for attendee/volunteer check-in, group attendance, etc.
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "Attendance" )]
     [DataContract]
+    [Analytics( false, false )]
     public partial class Attendance : Model<Attendance>
     {
 
@@ -377,7 +379,7 @@ namespace Rock.Model
                         // validate cases where the group type requires that a location/schedule is required
                         if ( this.GroupId != null )
                         {
-                            var group = this.Group ?? new GroupService( rockContext ).Queryable("GroupType").Where( g => g.Id == this.GroupId ).FirstOrDefault();
+                            var group = this.Group ?? new GroupService( rockContext ).Queryable( "GroupType" ).Where( g => g.Id == this.GroupId ).FirstOrDefault();
 
                             if ( group != null )
                             {

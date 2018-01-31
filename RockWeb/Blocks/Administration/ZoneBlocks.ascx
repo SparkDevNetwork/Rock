@@ -6,8 +6,9 @@
 
     <asp:HiddenField ID="hfOption" runat="server" Value="Page" />
     <ul id="zone-block-options" class="nav nav-pills margin-b-md">
-        <li id="liPage" runat="server" ><a href='#<%=divPage.ClientID%>'  data-toggle="pill">Current Page</a></li>
-        <li id="liLayout" runat="server" ><a href='#<%=divLayout.ClientID%>' data-toggle="pill"><asp:Literal ID="lAllPages" runat="server"></asp:Literal></a></li>
+        <li id="liPage" runat="server" ><a href='#<%=divPage.ClientID%>'  data-toggle="pill">Page</a></li>
+        <li id="liLayout" runat="server" ><a href='#<%=divLayout.ClientID%>' data-toggle="pill"><asp:Literal ID="lAllPagesForLayout" runat="server"></asp:Literal></a></li>
+        <li id="liSite" runat="server" ><a href='#<%=divSite.ClientID%>' data-toggle="pill"><asp:Literal ID="lAllPagesOnSite" runat="server"></asp:Literal></a></li>
     </ul>
 
     <asp:Panel ID="pnlLists" runat="server" CssClass="tab-content">
@@ -52,6 +53,26 @@
 
         </div>
 
+         <div id="divSite" runat="server" class="tab-pane" >
+            
+            <div class="grid">
+                <Rock:Grid ID="gSiteBlocks" runat="server" AllowPaging="false" EmptyDataText="No Site Blocks Found" OnRowSelected="gSiteBlocks_Edit">
+                    <Columns>
+                        <Rock:ReorderField />
+                        <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                        <Rock:RockTemplateField HeaderText="Type" >
+                            <ItemTemplate>
+                                <%# Eval("BlockTypeName") %><br />
+                                <small><%# Eval("BlockTypePath") %></small>
+                            </ItemTemplate>
+                        </Rock:RockTemplateField>
+                        <Rock:DeleteField OnClick="gSiteBlocks_Delete" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
+
+        </div>
+
     </asp:Panel>
 
     <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
@@ -62,14 +83,29 @@
         <asp:ValidationSummary ID="vsZoneBlocks" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="ZoneBlockValidationGroup"/>
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
-            <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" Required="true" ValidationGroup="ZoneBlockValidationGroup" CssClass="input-large"/>
-            <Rock:DataDropDownList ID="ddlBlockType" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="BlockTypeId" Label="Type" 
-                AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" CssClass="input-large" ValidationGroup="ZoneBlockValidationGroup" />
+            <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" Required="true" 
+                ValidationGroup="ZoneBlockValidationGroup" CssClass="input-large"/>
+            <div class="row">
+                <div class="col-sm-6">
+                    <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" EnhanceForLongLists="true" />
+                </div>
+                <div class="col-sm-6">
+                    <Rock:RockControlWrapper ID="rcwCommonBlockTypes" runat="server" Label="Common Block Types">
+                        <asp:Panel ID="pnlCommonBlockTypes" runat="server">
+                            <asp:Repeater ID="rptCommonBlockTypes" runat="server" OnItemDataBound="rptCommonBlockTypes_ItemDataBound">
+                                <ItemTemplate>
+                                    <asp:LinkButton ID="btnNewBlockQuickSetting" runat="server" Text="Todo" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </asp:Panel>
+                    </Rock:RockControlWrapper>
+                </div>
+            </div>
         </fieldset>
 
         <div class="actions">
-            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" onclick="btnSave_Click" ValidationGroup="ZoneBlockValidationGroup" />
-            <asp:LinkButton id="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" onclick="btnSave_Click" ValidationGroup="ZoneBlockValidationGroup" />
+            <asp:LinkButton id="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
     </asp:Panel>

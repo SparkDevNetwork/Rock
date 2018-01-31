@@ -67,16 +67,15 @@ namespace RockWeb.Blocks.Fundraising
             if ( this.GetAttributeValue( "ShowClipboardIcon" ).AsBoolean() )
             {
                 // Setup for being able to copy text to clipboard
-                RockPage.AddScriptLink( this.Page, "~/Scripts/ZeroClipboard/ZeroClipboard.js" );
+                RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
                 string script = string.Format( @"
-    var client = new ZeroClipboard( $('#{0}'));
+    new Clipboard('#{0}');
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
                 ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
-                btnCopyToClipboard.Attributes["data-clipboard-target"] = hfShareUrl.ClientID;
 
                 Uri uri = new Uri( Request.Url.ToString() );
-                hfShareUrl.Value = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + CurrentPageReference.BuildUrl();
+                btnCopyToClipboard.Attributes["data-clipboard-text"] = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + CurrentPageReference.BuildUrl();
                 btnCopyToClipboard.Visible = true;
             }
             else
@@ -190,7 +189,7 @@ namespace RockWeb.Blocks.Fundraising
             {
                 var person = groupMember.Person;
                 imgProfilePhoto.BinaryFileId = person.PhotoId;
-                imgProfilePhoto.NoPictureUrl = Person.GetPersonPhotoUrl( person, 200, 200 );
+                imgProfilePhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
 
                 groupMember.LoadAttributes( rockContext );
                 groupMember.Group.LoadAttributes( rockContext );
@@ -455,8 +454,6 @@ namespace RockWeb.Blocks.Fundraising
             var photoGuid = group.GetAttributeValue( "OpportunityPhoto" );
             imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
 
-            SetActiveTab( "Updates" );
-
             // Top Main
             string profileLavaTemplate = this.GetAttributeValue( "ProfileLavaTemplate" );
             if ( groupMember.PersonId == this.CurrentPersonId )
@@ -467,7 +464,7 @@ namespace RockWeb.Blocks.Fundraising
                 {
                     warningItems.Add( "photo" );
                 }
-                if ( string.IsNullOrWhiteSpace(groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" ) ) )
+                if ( groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" ).IsNullOrWhiteSpace())
                 {
                     warningItems.Add( "personal opportunity introduction" );
                 }
@@ -487,8 +484,9 @@ namespace RockWeb.Blocks.Fundraising
             bool disablePublicContributionRequests = groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean();
 
             // only show Contribution stuff if the current person is the participant and contribution requests haven't been disabled
-            btnContributionsTab.Visible = !disablePublicContributionRequests && ( groupMember.PersonId == this.CurrentPersonId );
-            
+            bool showContributions = !disablePublicContributionRequests && ( groupMember.PersonId == this.CurrentPersonId );
+            btnContributionsTab.Visible = showContributions;
+
             // Progress
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
@@ -536,12 +534,15 @@ namespace RockWeb.Blocks.Fundraising
 
             // Tab:Updates
             btnUpdatesTab.Visible = false;
+            bool showContentChannelUpdates = false;
             var updatesContentChannelGuid = group.GetAttributeValue( "UpdateContentChannel" ).AsGuidOrNull();
             if ( updatesContentChannelGuid.HasValue )
             {
                 var contentChannel = new ContentChannelService( rockContext ).Get( updatesContentChannelGuid.Value );
                 if ( contentChannel != null )
                 {
+                    showContentChannelUpdates = true;
+
                     // only show the UpdatesTab if there is another Tab option
                     btnUpdatesTab.Visible = btnContributionsTab.Visible;
 
@@ -552,6 +553,19 @@ namespace RockWeb.Blocks.Fundraising
                     lUpdatesContentItemsHtml.Text = updatesLavaTemplate.ResolveMergeFields( mergeFields );
                     btnUpdatesTab.Text = string.Format( "{0} Updates ({1})", opportunityType, contentChannelItems.Count() );
                 }
+            }
+
+            if ( showContentChannelUpdates )
+            {
+                SetActiveTab( "Updates" );
+            }
+            else if (showContributions)
+            {
+                SetActiveTab( "Contributions" );
+            }
+            else
+            {
+                SetActiveTab( "" );
             }
 
             // Tab: Contributions
@@ -624,15 +638,23 @@ namespace RockWeb.Blocks.Fundraising
         protected void gContributions_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             FinancialTransaction financialTransaction = e.Row.DataItem as FinancialTransaction;
-            Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
-            if ( lAddress != null && 
-                financialTransaction != null && 
+            if ( financialTransaction != null && 
                 financialTransaction.AuthorizedPersonAlias != null && 
                 financialTransaction.AuthorizedPersonAlias.Person != null )
             {
-                var location = financialTransaction.AuthorizedPersonAlias.Person.GetMailingLocation();
-                lAddress.Text = location != null ? location.GetFullStreetAddress() : string.Empty;
-            }
+	            Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
+	            if ( lAddress != null )
+	            {
+	                var location = financialTransaction.AuthorizedPersonAlias.Person.GetMailingLocation();
+	                lAddress.Text = location != null ? location.GetFullStreetAddress() : string.Empty;
+	            }
+
+	            Literal lPersonName = e.Row.FindControl( "lPersonName" ) as Literal;
+	            if ( lPersonName != null )
+	            {
+	                lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
+	            }
+	        }
         }
 
         /// <summary>

@@ -47,6 +47,15 @@ namespace Rock.CheckIn
         public int? CampusId { get; set; }
 
         /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int? Order { get; set; }
+
+        /// <summary>
         /// The schedules that are currently active
         /// </summary>
         /// <value>

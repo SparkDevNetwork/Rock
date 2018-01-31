@@ -16,11 +16,13 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,6 +33,79 @@ namespace Rock.Field.Types
     /// </summary>
     public class SiteFieldType : FieldType, IEntityFieldType
     {
+        #region Configuration
+
+        private const string SHORTENING_SITES_ONLY = "shorteningSitesOnly";
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( SHORTENING_SITES_ONLY );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            // Shortening Sites Only
+            var cb = new RockCheckBox();
+            controls.Add( cb );
+            cb.AutoPostBack = true;
+            cb.CheckedChanged += OnQualifierUpdated;
+            cb.Label = "Shortening Enabled Sites Only";
+            cb.Text = "Yes";
+            cb.Help = "Should only sites that are enabled for shortening be displayed.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( SHORTENING_SITES_ONLY, new ConfigurationValue( "Shortening Enabled Sites Only", "Should only sites that are enabled for shortening be displayed.", "" ) );
+
+            if ( controls != null )
+            {
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockCheckBox )
+                {
+                    configurationValues[SHORTENING_SITES_ONLY].Value = ( (RockCheckBox)controls[0] ).Checked.ToString();
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && configurationValues != null )
+            {
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockCheckBox && configurationValues.ContainsKey( SHORTENING_SITES_ONLY ) )
+                {
+                    ( (RockCheckBox)controls[0] ).Checked = configurationValues[SHORTENING_SITES_ONLY].Value.AsBoolean();
+                }
+            }
+        }
+
+        #endregion
 
         #region Edit Control 
 
@@ -48,7 +123,23 @@ namespace Rock.Field.Types
             editControl.Items.Add( new ListItem() );
 
             SiteService siteService = new SiteService( new RockContext() );
-            var siteList = siteService.Queryable().OrderBy( a => a.Name ).ToList();
+            var siteQry = siteService.Queryable();
+
+            bool shorteningSitesOnly = false;
+            if ( configurationValues != null )
+            {
+                if ( configurationValues.ContainsKey( SHORTENING_SITES_ONLY ) )
+                {
+                    shorteningSitesOnly = configurationValues[SHORTENING_SITES_ONLY].Value.AsBoolean();
+                }
+            }
+
+            if ( shorteningSitesOnly )
+            {
+                siteQry = siteQry.Where( s => s.EnabledForShortening );
+            }
+
+            var siteList = siteQry.OrderBy( a => a.Name ).ToList();
 
             if ( siteList.Any() )
             {

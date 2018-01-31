@@ -17,18 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Financial;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -42,6 +35,8 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 0 )]
     [LinkedPage( "Batch Detail Page", "The page used to display details of a batch.", false, "", "", 1)]
     [SystemEmailField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 2 )]
+    [SystemEmailField( "Failed Payment Email", "The system email to use to send a notice about a scheduled payment that failed.", false, "", "", 3 )]
+    [WorkflowTypeField( "Failed Payment Workflow", "An optional workflow to start whenever a scheduled payment has failed.", false, false, "", "", 4 )]
     public partial class ScheduledPaymentDownload : Rock.Web.UI.RockBlock
     {
 
@@ -110,6 +105,8 @@ namespace RockWeb.Blocks.Finance
         {
             string batchNamePrefix = GetAttributeValue( "BatchNamePrefix" );
             Guid? receiptEmail = GetAttributeValue( "ReceiptEmail" ).AsGuidOrNull();
+            Guid? failedPaymentEmail = GetAttributeValue( "FailedPaymentEmail" ).AsGuidOrNull();
+            Guid? failedPaymentWorkflowType = GetAttributeValue( "FailedPaymentWorkflow" ).AsGuidOrNull();
 
             DateTime? startDateTime = drpDates.LowerValue;
             DateTime? endDateTime = drpDates.UpperValue;
@@ -134,7 +131,7 @@ namespace RockWeb.Blocks.Finance
                             qryParam.Add( "batchId", "9999" );
                             string batchUrlFormat = LinkedPageUrl( "BatchDetailPage", qryParam ).Replace( "9999", "{0}" );
 
-                            string resultSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, batchUrlFormat, receiptEmail );
+                            string resultSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, batchUrlFormat, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
 
                             if ( !string.IsNullOrWhiteSpace( resultSummary ) )
                             {

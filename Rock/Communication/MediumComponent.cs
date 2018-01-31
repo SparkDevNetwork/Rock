@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using Rock.Attribute;
 using Rock.Extension;
@@ -66,19 +68,12 @@ namespace Rock.Communication
         }
 
         /// <summary>
-        /// Gets the HTML preview.
+        /// Gets the type of the communication.
         /// </summary>
-        /// <param name="communication">The communication.</param>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public abstract string GetHtmlPreview( Model.Communication communication, Person person );
-            
-        /// <summary>
-        /// Gets the read-only message details.
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        /// <returns></returns>
-        public abstract string GetMessageDetails( Model.Communication communication );
+        /// <value>
+        /// The type of the communication.
+        /// </value>
+        public abstract CommunicationType CommunicationType { get; }
 
         /// <summary>
         /// Gets the control.
@@ -88,28 +83,109 @@ namespace Rock.Communication
         public abstract MediumControl GetControl( bool useSimpleMode );
 
         /// <summary>
+        /// Sends the specified rock message.
+        /// </summary>
+        /// <param name="rockMessage">The rock message.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        public virtual void Send( RockMessage rockMessage, out List<string> errorMessages )
+        {
+            if ( this.IsActive )
+            {
+                // Get the Medium's Entity Type Id
+                int mediumEntityTypeId = EntityTypeCache.Read( this.GetType() ).Id;
+
+                // Add the Medium's settings as attributes for the Transport to use.
+                var mediumAttributes = new Dictionary<string, string>();
+                foreach ( var attr in this.Attributes.Select( a => a.Value ) )
+                {
+                    string value = this.GetAttributeValue( attr.Key );
+                    if ( value.IsNotNullOrWhitespace() )
+                    {
+                        mediumAttributes.Add( attr.Key, GetAttributeValue( attr.Key ) );
+                    }
+                }
+
+                // Use the transport to send communication
+                var transport = Transport;
+                if ( transport != null && transport.IsActive )
+                {
+                    transport.Send( rockMessage, mediumEntityTypeId, mediumAttributes, out errorMessages );
+                }
+                else
+                {
+                    errorMessages = new List<string> { "Invalid or Inactive Transport." };
+                }
+            }
+            else
+            {
+                errorMessages = new List<string> { "Inactive Medium." };
+            }
+        }
+        
+        /// <summary>
+        /// Sends the specified communication.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        public virtual void Send( Model.Communication communication )
+        {
+            if ( this.IsActive )
+            {
+                // Get the Medium's Entity Type Id
+                int mediumEntityTypeId = EntityTypeCache.Read( this.GetType() ).Id;
+
+                // Add the Medium's settings as attributes for the Transport to use.
+                var mediumAttributes = new Dictionary<string, string>();
+                foreach ( var attr in this.Attributes.Select( a => a.Value ) )
+                {
+                    string value = this.GetAttributeValue( attr.Key );
+                    if ( value.IsNotNullOrWhitespace() )
+                    {
+                        mediumAttributes.Add( attr.Key, GetAttributeValue( attr.Key ) );
+                    }
+                }
+
+                // Use the transport to send communication
+                var transport = Transport;
+                if ( transport != null && transport.IsActive )
+                {
+                    transport.Send( communication, mediumEntityTypeId, mediumAttributes );
+                }
+            }
+        }
+
+        #region Obsolete 
+
+        /// <summary>
+        /// Gets the HTML preview.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        [Obsolete("The GetCommunication now creates the HTML Preview directly")]
+        public abstract string GetHtmlPreview( Model.Communication communication, Person person );
+
+        /// <summary>
+        /// Gets the read-only message details.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <returns></returns>
+        [Obsolete( "The CommunicationDetail block now creates the details" )]
+        public abstract string GetMessageDetails( Model.Communication communication );
+
+        /// <summary>
         /// Gets a value indicating whether [supports bulk communication].
         /// </summary>
         /// <value>
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "All mediums now support bulk communications")]
         public abstract bool SupportsBulkCommunication
         {
             get;
         }
 
-        /// <summary>
-        /// Sends the specified communication.
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        public virtual void Send( Rock.Model.Communication communication )
-        {
-            var transport = Transport;
-            if ( transport != null && transport.IsActive )
-            {
-                transport.Send( communication );
-            }
-        }
+        #endregion
+
     }
 
 }

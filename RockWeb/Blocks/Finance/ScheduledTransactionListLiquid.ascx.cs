@@ -34,33 +34,35 @@ using Rock.Security;
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Generates a list of scheduled transactions for the current person with edit/transfer and delete buttons.
     /// </summary>
     [DisplayName( "Scheduled Transaction List Liquid" )]
     [Category( "Finance" )]
     [Description( "Block that shows a list of scheduled transactions for the currently logged in user with the ability to modify the formatting using liquid." )]
     [CodeEditorField( "Template", "Liquid template for the display of the scheduled transactions.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/ScheduledTransactionListLiquid.lava'  %}", "", 1 )]
-    [BooleanField("Enable Debug", "Displays a list of available merge fields using the current person's scheduled transactions.", false, "", 2)]
     [LinkedPage("Scheduled Transaction Edit Page", "Link to be used for managing an individual's scheduled transactions.", false, "", "", 3)]
     [LinkedPage( "Scheduled Transaction Entry Page", "Link to use when adding new transactions.", false, "", "", 4 )]
     [TextField( "Transaction Label", "The label to use to describe the transaction (e.g. 'Gift', 'Donation', etc.)", true, "Gift", "", 5 )]
+    [FinancialGatewayField("Gateway Filter", "When set, causes only scheduled transaction's of a particular gateway to be shown.", false, "", "", 6 )]
+    [FinancialGatewayField("Transfer-To Gateway", "Set this if you want people to transfer their existing scheduled transactions to this new gateway. When set, the Edit button becomes 'Transfer' (default or whatever is set in the 'Transfer Button Text' setting) if the scheduled transaction's gateway does not match the transfer-to gateway.", false, "", "", 7, "TransferToGateway" )]
+    [TextField( "Transfer Button Text", "The text to use on the transfer (edit) button which is used when a Transfer-To gateway is set.", true, "Transfer", "", 7 )]
     public partial class ScheduledTransactionListLiquid : Rock.Web.UI.RockBlock
     {
         #region Fields
 
-        // used for private variables
+        /// <summary>
+        /// The _transfer to gateway unique identifier is set to non-null if the block setting is set.
+        /// </summary>
+        private Guid? _transferToGatewayGuid = null;
 
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
+        /// <summary>
+        /// This constant-like value is used to avoid hard-coding the string "transfer" in multiple places.
+        /// </summary>
+        private readonly string TRANSFER = "transfer";
 
         #endregion
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -84,18 +86,13 @@ namespace RockWeb.Blocks.Finance
             base.OnLoad( e );
 
             lbAddScheduledTransaction.Text = string.Format( "Create New {0}", GetAttributeValue("TransactionLabel") );
+            _transferToGatewayGuid = GetAttributeValue( "TransferToGateway" ).AsGuidOrNull();
 
-            // set initial debug info
+            // set initial info
             if ( !IsPostBack )
             {
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Text = "<pre>At least one scheduled transaction needs to exist for the current user in order to display debug information.</pre>";
-                }
-
                 ShowContent();
             }
-
         }
 
         #endregion
@@ -131,6 +128,16 @@ namespace RockWeb.Blocks.Finance
                 scheduleSummary.Add( "EndDate", transactionSchedule.EndDate );
                 scheduleSummary.Add( "NextPaymentDate", transactionSchedule.NextPaymentDate );
 
+                // If a Transfer-To gateway was set and this transaction is not using that gateway, change the Edit button to a Transfer button
+                if ( _transferToGatewayGuid != null && transactionSchedule.FinancialGateway.Guid != _transferToGatewayGuid )
+                {
+                    Button btnEdit = ( Button ) e.Item.FindControl( "btnEdit" );
+                    btnEdit.Text = GetAttributeValue( "TransferButtonText" );
+
+                    HiddenField hfTransfer = ( HiddenField ) e.Item.FindControl( "hfTransfer" );
+                    hfTransfer.Value = TRANSFER;
+                }
+
                 if ( transactionSchedule.NextPaymentDate.HasValue )
                 {
                     scheduleSummary.Add( "DaysTillNextPayment", (transactionSchedule.NextPaymentDate.Value - DateTime.Now).Days );
@@ -151,7 +158,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     scheduleSummary.Add( "DaysSinceLastPayment", null );
                 }
-
+                scheduleSummary.Add( "PersonName", transactionSchedule.AuthorizedPersonAlias != null && transactionSchedule.AuthorizedPersonAlias.Person != null ? transactionSchedule.AuthorizedPersonAlias.Person.FullName : "" );
                 scheduleSummary.Add( "CurrencyType", ( transactionSchedule.FinancialPaymentDetail != null && transactionSchedule.FinancialPaymentDetail.CurrencyTypeValue != null ) ? transactionSchedule.FinancialPaymentDetail.CurrencyTypeValue.Value : ""  );
                 scheduleSummary.Add( "CreditCardType", ( transactionSchedule.FinancialPaymentDetail != null && transactionSchedule.FinancialPaymentDetail.CreditCardTypeValue != null) ? transactionSchedule.FinancialPaymentDetail.CreditCardTypeValue.Value : "" );
                 scheduleSummary.Add( "UrlEncryptedKey", transactionSchedule.UrlEncodedKey );
@@ -184,11 +191,6 @@ namespace RockWeb.Blocks.Finance
                 Literal lLiquidContent = (Literal)e.Item.FindControl( "lLiquidContent" );
                 lLiquidContent.Text = GetAttributeValue( "Template" ).ResolveMergeFields( schedule );
 
-                // set debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Text = schedule.lavaDebugInfo();
-                }
             }
         }
 
@@ -236,13 +238,24 @@ namespace RockWeb.Blocks.Finance
             Button btnEdit = (Button)sender;
             RepeaterItem riItem = (RepeaterItem)btnEdit.NamingContainer;
 
-            HiddenField hfScheduledTransactionId = (HiddenField)riItem.FindControl( "hfScheduledTransactionId" );
+            HiddenField hfScheduledTransactionId = ( HiddenField ) riItem.FindControl( "hfScheduledTransactionId" );
+            HiddenField hfTransfer = ( HiddenField ) riItem.FindControl( "hfTransfer" );
 
             var transactionSchedule = riItem.DataItem as FinancialScheduledTransaction;
-
+            
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
             qryParams.Add( "ScheduledTransactionId", hfScheduledTransactionId.Value );
-            this.NavigateToLinkedPage( "ScheduledTransactionEditPage", qryParams );
+
+            // If this is a transfer, go to the TransactionEntry page/block
+            if ( _transferToGatewayGuid != null && hfTransfer.Value == TRANSFER && !string.IsNullOrWhiteSpace( GetAttributeValue( "ScheduledTransactionEntryPage" ) ) )
+            {
+                qryParams.Add( TRANSFER, "true" );
+                this.NavigateToLinkedPage( "ScheduledTransactionEntryPage", qryParams );
+            }
+            else
+            {
+                this.NavigateToLinkedPage( "ScheduledTransactionEditPage", qryParams );
+            }
         }
 
         protected void lbAddScheduledTransaction_Click( object sender, EventArgs e )
@@ -259,30 +272,41 @@ namespace RockWeb.Blocks.Finance
         // helper functional methods (like BindGrid(), etc.)
         private void ShowContent()
         {
-
             // get scheduled contributions for current user
             if ( CurrentPerson != null )
             {
                 var rockContext = new RockContext();
-                FinancialScheduledTransactionService transactionService = new FinancialScheduledTransactionService( rockContext );
+                var transactionService = new FinancialScheduledTransactionService( rockContext );
+                var personService = new PersonService( rockContext );
+
+                // get business giving id
+                var givingIds = personService.GetBusinesses( CurrentPerson.Id ).Select( g => g.GivingId ).ToList();
+
+                // add the person's regular giving id
+                givingIds.Add( CurrentPerson.GivingId );
 
                 var schedules = transactionService.Queryable( "ScheduledTransactionDetails.Account" )
-                                .Where( s => s.AuthorizedPersonAlias.Person.GivingId == CurrentPerson.GivingId && s.IsActive == true );
+                    .Where( s => givingIds.Contains( s.AuthorizedPersonAlias.Person.GivingId ) && s.IsActive == true );
+
+                // filter the list if necesssary
+                var gatewayFilterGuid = GetAttributeValue( "GatewayFilter" ).AsGuidOrNull();
+                if ( gatewayFilterGuid != null )
+                {
+                    schedules = schedules.Where( s => s.FinancialGateway.Guid == gatewayFilterGuid );
+                }
 
                 rptScheduledTransactions.DataSource = schedules.ToList();
                 rptScheduledTransactions.DataBind();
-
+                 
                 if ( schedules.Count() == 0 )
                 {
                     pnlNoScheduledTransactions.Visible = true;
                     lNoScheduledTransactionsMessage.Text = string.Format("No {0} currently exist.", GetAttributeValue("TransactionLabel").Pluralize().ToLower());
                 }
             }
-            
         }
 
-
         #endregion
-}
+    }
     
 }

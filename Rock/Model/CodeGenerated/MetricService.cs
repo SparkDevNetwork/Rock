@@ -91,6 +91,7 @@ namespace Rock.Model
             target.AdminPersonAliasId = source.AdminPersonAliasId;
             target.DataViewId = source.DataViewId;
             target.Description = source.Description;
+            target.EnableAnalytics = source.EnableAnalytics;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
@@ -100,6 +101,7 @@ namespace Rock.Model
             target.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
             target.NumericDataType = source.NumericDataType;
             target.ScheduleId = source.ScheduleId;
+            target.SourceLava = source.SourceLava;
             target.SourceSql = source.SourceSql;
             target.SourceValueTypeId = source.SourceValueTypeId;
             target.Subtitle = source.Subtitle;

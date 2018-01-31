@@ -189,6 +189,7 @@ namespace RockWeb.Blocks.Examples
                 rblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
                 rblExampleHorizontal.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
+                campExample.Campuses = Rock.Web.Cache.CampusCache.All();
                 campsExample.Campuses = Rock.Web.Cache.CampusCache.All();
                 
                 var rockContext = new RockContext();
@@ -400,11 +401,36 @@ namespace RockWeb.Blocks.Examples
             string physicalFileName = this.Request.MapPath( fuprExampleContentFile.UploadedContentFilePath );
             lblPhysicalFileName.Text = "Uploaded File: " + physicalFileName;
         }
-        
+
+        /// <summary>
+        /// Handles the Click event of the lbTestSlider control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbTestSlider_Click( object sender, EventArgs e )
         {
             var val1 = rsSlider.SelectedValue;
             var val2 = rsSlider2.SelectedValue;
         }
-}
+
+        /// <summary>
+        /// Handles the SelectedDatePartsChanged event of the dppExample control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dppExample_SelectedDatePartsChanged( object sender, EventArgs e )
+        {
+            //  if you wanted to do something of any of the date parts changed
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnMarkdownPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnMarkdownPreview_Click( object sender, EventArgs e )
+        {
+            lMarkdownHtml.Text = mdMarkdownEditor.Text.ConvertMarkdownToHtml(true);
+        }
+    }
 }

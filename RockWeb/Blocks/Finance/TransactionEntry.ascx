@@ -9,6 +9,7 @@
         <asp:HiddenField ID="hfTransactionGuid" runat="server" Value="" />
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
+        <Rock:NotificationBox ID="nbInvalidPersonWarning" runat="server" Visible="false"></Rock:NotificationBox>
 
         <asp:Panel ID="pnlSelection" CssClass="panel panel-block" runat="server">
 
@@ -32,9 +33,11 @@
                                         
                                         <asp:Repeater ID="rptAccountList" runat="server" OnItemDataBound="rptAccountList_ItemDataBound">
                                             <ItemTemplate>
+                                                <Rock:RockLiteral ID="txtAccountAmountLiteral" runat="server" Visible="false" />
                                                 <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Placeholder="0.00" CssClass="account-amount" />
                                             </ItemTemplate>
                                         </asp:Repeater>
+
                                         <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label=" "
                                             DataTextField="PublicName" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
 
@@ -44,9 +47,10 @@
                                         </div>
 
                                         <div id="divRepeatingPayments" runat="server" visible="false">
+                                            <Rock:RockLiteral ID="txtFrequency" runat="server" Label="Frequency" Visible="false" />
                                             <Rock:ButtonDropDownList ID="btnFrequency" runat="server" Label="Frequency"
                                                 DataTextField="Value" DataValueField="Id" AutoPostBack="true" OnSelectionChanged="btnFrequency_SelectionChanged" />
-                                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" AutoPostBack="true" OnTextChanged="btnFrequency_SelectionChanged" />
+                                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" AutoPostBack="true" AllowPastDateSelection="false" OnTextChanged="btnFrequency_SelectionChanged" />
                                         </div>
 
                                         <Rock:RockTextBox ID="txtCommentEntry" runat="server" Required="true" Label="Comment" />
@@ -88,6 +92,7 @@
                                         <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="Address" />
                                         <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
                                         <Rock:EmailBox ID="txtEmail" runat="server" Label="Email"></Rock:EmailBox>
+                                        <Rock:RockCheckBox ID="cbGiveAnonymously" runat="server" Text="Give Anonymously" />
                                         <asp:PlaceHolder ID="phBusinessContact" runat="server" Visible="false">
                                             <hr />
                                             <h4>Business Contact</h4>
@@ -134,7 +139,7 @@
                                 <asp:HiddenField ID="hfPaymentTab" runat="server" />
                                 <asp:PlaceHolder ID="phPills" runat="server" Visible="false">
                                     <ul class="nav nav-pills">
-                                        <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">Credit Card</a></li>
+                                        <li id="liCreditCard" runat="server"><a href='#<%=divCCPaymentInfo.ClientID%>' data-toggle="pill">Card</a></li>
                                         <li id="liACH" runat="server"><a href='#<%=divACHPaymentInfo.ClientID%>' data-toggle="pill">Bank Account</a></li>
                                     </ul>
                                 </asp:PlaceHolder>
@@ -145,7 +150,7 @@
                                         <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false"></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false"></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false"></Rock:RockTextBox>
-                                        <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="credit-card" />
+                                        <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Card Number" MaxLength="19" CssClass="credit-card" />
                                         <ul class="card-logos list-unstyled">
                                             <li class="card-visa"></li>
                                             <li class="card-mastercard"></li>
@@ -193,15 +198,19 @@
 
             </div>
 
-            <Rock:NotificationBox ID="nbSelectionMessage" runat="server" Visible="false"></Rock:NotificationBox>
+            <div class="panel panel-default no-border">
+                <div class="panel-body">
+                    <Rock:NotificationBox ID="nbSelectionMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
-            <div class="actions clearfix margin-b-lg">
-                <a id="lHistoryBackButton" runat="server" class="btn btn-link" href="javascript: window.history.back();" >Previous</a>
-                <asp:LinkButton ID="btnPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnPaymentInfoNext_Click" />
-                <asp:LinkButton ID="btnStep2PaymentPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnStep2PaymentPrev_Click" />
-                <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary pull-right" Text="Next" />
+                    <div class="actions clearfix">
+                        <a id="lHistoryBackButton" runat="server" class="btn btn-link" href="javascript: window.history.back();" >Previous</a>
+                        <asp:LinkButton ID="btnPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnPaymentInfoNext_Click" />
+                        <asp:LinkButton ID="btnStep2PaymentPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnStep2PaymentPrev_Click" />
+                        <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary pull-right" Text="Next" />
+                    </div>
+                </div>
             </div>
-
+            
             <iframe id="iframeStep2" src="<%=this.Step2IFrameUrl%>" style="display:none"></iframe>
 
             <asp:HiddenField ID="hfStep2AutoSubmit" runat="server" Value="false" />
@@ -254,16 +263,18 @@
                             </p>
                             <asp:LinkButton ID="btnConfirm" runat="server" Text="Yes, submit another transaction" CssClass="btn btn-danger margin-t-sm" OnClick="btnConfirm_Click" />
                         </asp:Panel>
+
+                        <Rock:NotificationBox ID="nbConfirmationMessage" runat="server" Visible="false"></Rock:NotificationBox>
+
+                        <div class="actions clearfix">
+                            <asp:LinkButton ID="btnConfirmationPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnConfirmationPrev_Click" Visible="false" />
+                            <Rock:BootstrapButton ID="btnConfirmationNext" runat="server" Text="Finish" CssClass="btn btn-primary pull-right" OnClick="btnConfirmationNext_Click" />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <Rock:NotificationBox ID="nbConfirmationMessage" runat="server" Visible="false"></Rock:NotificationBox>
-
-            <div class="actions clearfix margin-b-lg">
-                <asp:LinkButton ID="btnConfirmationPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnConfirmationPrev_Click" Visible="false" />
-                <Rock:BootstrapButton ID="btnConfirmationNext" runat="server" Text="Finish" CssClass="btn btn-primary pull-right" OnClick="btnConfirmationNext_Click" />
-            </div>
+            
 
         </asp:Panel>
 

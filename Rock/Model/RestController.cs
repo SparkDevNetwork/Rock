@@ -27,6 +27,7 @@ namespace Rock.Model
 {
     /// <summary>
     /// </summary>
+    [RockDomain( "CMS" )]
     [NotAudited]
     [Table( "RestController" )]
     [DataContract]

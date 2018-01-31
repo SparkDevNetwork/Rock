@@ -57,24 +57,48 @@ namespace Rock.Model
         public IQueryable<GroupLocation> GetActiveByLocations( List<int> locationIds )
         {
             return Queryable().Where( g =>
-                    locationIds.Contains(g.LocationId) &&
+                    locationIds.Contains( g.LocationId ) &&
                     g.Group.IsActive );
         }
 
         /// <summary>
-        /// Gets the 'IsMappedLocation' locations that are within and of the selected geofences
+        /// Gets the 'IsMappedLocation' locations that are within any of the selected geofences
         /// </summary>
         /// <param name="geofences">The geofences.</param>
         /// <returns></returns>
         public IQueryable<GroupLocation> GetMappedLocationsByGeofences( List<DbGeography> geofences )
         {
-            return Queryable()
-                .Where( l =>
-                    l.IsMappedLocation &&
-                    l.Location != null &&
-                    l.Location.GeoPoint != null &&
-                    geofences.Any( f => l.Location.GeoPoint.Intersects( f ) )
-                );
+            List<int> LocationIds = new List<int>();
+
+            foreach ( var geofence in geofences )
+            {
+                LocationIds.AddRange( Queryable()
+               .Where( l =>
+                   l.IsMappedLocation &&
+                   l.Location != null &&
+                   l.Location.GeoPoint != null
+                   && l.Location.GeoPoint.Intersects( geofence )
+               )
+               .Select( l => l.Id ) );
+            }
+            if ( LocationIds.Count() < 10000 )
+            {
+                return Queryable().Where( l => LocationIds.Contains( l.Id ) );
+            }
+            else
+            {
+                return Queryable()
+                    .Where( l =>
+                        l.IsMappedLocation &&
+                        l.Location != null &&
+                        l.Location.GeoPoint != null
+                        && geofences.Any( f =>
+                            l.Location.GeoPoint.Intersects( f )
+                        )
+                    );
+            }
+
+
         }
     }
 }

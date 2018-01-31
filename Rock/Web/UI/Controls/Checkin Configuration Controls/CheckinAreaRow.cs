@@ -38,7 +38,6 @@ namespace Rock.Web.UI.Controls
 
         private LinkButton _lbAddArea;
         private LinkButton _lbAddGroup;
-        private LinkButton _lblDeleteArea;
 
         /// <summary>
         /// Gets the group type unique identifier.
@@ -199,6 +198,7 @@ $('.checkin-area a.checkin-area-add-group').click(function (event) {
             _lbAddArea.CssClass = "btn btn-xs btn-default checkin-area-add-area";
             _lbAddArea.Click += lbAddArea_Click;
             _lbAddArea.CausesValidation = false;
+            _lbAddArea.ToolTip = "Add New Area";
             _lbAddArea.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-folder-open'></i>" } );
 
             _lbAddGroup = new LinkButton();
@@ -206,22 +206,14 @@ $('.checkin-area a.checkin-area-add-group').click(function (event) {
             _lbAddGroup.CssClass = "btn btn-xs btn-default checkin-area-add-group";
             _lbAddGroup.Click += lbAddGroup_Click;
             _lbAddGroup.CausesValidation = false;
+            _lbAddGroup.ToolTip = "Add New Group";
             _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-check-circle'></i>" } );
-
-            _lblDeleteArea = new LinkButton();
-            _lblDeleteArea.CausesValidation = false;
-            _lblDeleteArea.ID = this.ID + "_lblDeleteArea";
-            _lblDeleteArea.CssClass = "btn btn-xs btn-danger";
-            _lblDeleteArea.Click += lblDeleteArea_Click;
-            _lblDeleteArea.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
-            _lblDeleteArea.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "check-in area", "Once saved, you will lose all attendance data." );
 
             Controls.Add( _hfGroupTypeGuid );
             Controls.Add( _lblAreaRowName );
 
             Controls.Add( _lbAddArea );
             Controls.Add( _lbAddGroup );
-            Controls.Add( _lblDeleteArea );
         }
 
         /// <summary>
@@ -251,8 +243,6 @@ $('.checkin-area a.checkin-area-add-group').click(function (event) {
             _lbAddArea.RenderControl( writer );
             writer.Write( " " );
             _lbAddGroup.RenderControl( writer );
-            writer.Write( " " );
-            _lblDeleteArea.RenderControl( writer );
 
             writer.RenderEndTag();  // Div
             writer.RenderEndTag();  // Section

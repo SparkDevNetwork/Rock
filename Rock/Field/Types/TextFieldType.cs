@@ -75,15 +75,27 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( IS_PASSWORD_KEY, new ConfigurationValue( "Password Field", "When set, edit field will be masked.", "" ) );
 
-            if ( controls != null && controls.Count == 1 )
-            {
-                if ( controls[0] != null && controls[0] is CheckBox )
-                {
-                    configurationValues[IS_PASSWORD_KEY].Value = ( (CheckBox)controls[0] ).Checked.ToString();
-                }
+            if ( controls != null && controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
+            { 
+                configurationValues[IS_PASSWORD_KEY].Value = ( (CheckBox)controls[0] ).Checked.ToString();
             }
 
             return configurationValues;
+        }
+
+        /// <summary>
+        /// Determines whether the Attribute Configuration for this field has IsPassword = True
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public bool IsPassword( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if (configurationValues != null && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
+            {
+                return configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -93,7 +105,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 1 && configurationValues != null )
+            if ( controls != null && controls.Count > 0 && configurationValues != null )
             {
                 if ( controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
                 {
@@ -154,7 +166,26 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
+            // NOTE: this really should not be encoding the value. FormatValueAsHtml method is really designed to wrap a value with appropriate html (i.e. convert an email into a mailto anchor tag)
+            // but keeping it here for backward compatability.
             return System.Web.HttpUtility.HtmlEncode( FormatValue( parentControl, value, configurationValues, condensed ) );
+        }
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            // NOTE: this really should not be encoding the value. FormatValueAsHtml method is really designed to wrap a value with appropriate html (i.e. convert an email into a mailto anchor tag)
+            // but keeping it here for backward compatability.
+            return System.Web.HttpUtility.HtmlEncode( FormatValue( parentControl, entityTypeId, entityId, value, configurationValues, condensed ) );
         }
 
         #endregion

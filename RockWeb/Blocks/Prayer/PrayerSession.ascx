@@ -31,6 +31,7 @@
                         <asp:Literal ID="lPersonLavaOutput" runat="server" />
                     </h3>
                     <div class="panel-labels">
+                        <Rock:HighlightLabel ID="hlblCampus" runat="server"  LabelType="Campus" />
                         <Rock:HighlightLabel ID="hlblPrayerCountTotal" runat="server" IconCssClass="fa fa-users" LabelType="Info" Text="team: 0" ToolTip="The number of prayers offered by the team for this request." />
                         <Rock:HighlightLabel ID="hlblUrgent" runat="server" LabelType="Warning" Text="Urgent" Visible="false" />
                         <Rock:HighlightLabel ID="hlblCategory" runat="server" LabelType="Type" />
@@ -43,7 +44,7 @@
                          <div class="row margin-b-md">
                             <div class="col-md-12">
                                 <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-default" OnClick="lbBack_Click" ><i class="fa fa-chevron-left"></i> Back</asp:LinkButton>
-                                <asp:LinkButton ID="lbNext" TabIndex="1" AccessKey="n" runat="server" CssClass="btn btn-default pull-right" OnClick="lbNext_Click" >Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                                <asp:LinkButton ID="lbNext" TabIndex="1" AccessKey="n" ToolTip="Alt+n" runat="server" CssClass="btn btn-default pull-right" OnClick="lbNext_Click" >Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
                                 
                             </div>
                         </div>

@@ -16,12 +16,18 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.UniversalSearch;
+using Rock.UniversalSearch.Crawler;
+using Rock.UniversalSearch.IndexModels;
 
 namespace Rock.Model
 {
@@ -29,9 +35,10 @@ namespace Rock.Model
     /// Site Model Entity. A Site in Rock is a collection of <see cref="Page">pages</see> and usually 
     /// associated with one or more <see cref="SiteDomain">SiteDomains </see>.
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "Site" )]
     [DataContract]
-    public partial class Site : Model<Site>
+    public partial class Site : Model<Site>, IRockIndexable
     {
         #region Entity Properties
 
@@ -273,7 +280,7 @@ namespace Rock.Model
         public bool RedirectTablets { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to log Page Views for pages in this site
+        /// Gets or sets a value indicating whether to log Page Views into the Interaction tables for pages in this site
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable page views]; otherwise, <c>false</c>.
@@ -286,15 +293,6 @@ namespace Rock.Model
             set { _enablePageViews = value; }
         }
         private bool _enablePageViews = true;
-
-        /// <summary>
-        /// Gets or sets the number of days to keep Page Views for pages in this site
-        /// </summary>
-        /// <value>
-        /// The page view retention period days.
-        /// </value>
-        [DataMember]
-        public int? PageViewRetentionPeriodDays { get; set; }
 
         /// <summary>
         /// Gets or sets the content of the page header.
@@ -312,11 +310,31 @@ namespace Rock.Model
         ///   <c>true</c> if [allow indexing]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowIndexing {
+        public bool AllowIndexing
+        {
             get { return _allowIndexing; }
             set { _allowIndexing = value; }
         }
         private bool _allowIndexing = true;
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is index enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index starting location.
+        /// </summary>
+        /// <value>
+        /// The index starting location.
+        /// </value>
+        [DataMember]
+        public string IndexStartingLocation { get; set; }
 
 
         /// <summary>
@@ -327,6 +345,35 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool RequiresEncryption { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this site should be available to be used for shortlinks (the shortlink can still reference url of other sites).
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enabled for shortening]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnabledForShortening { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the favicon binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The favicon binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? FavIconBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FontAwesome icon CSS weight that will be used for the Site
+        /// </summary>
+        /// <value>
+        /// The icon CSS weight.
+        /// </value>
+        [DataMember]
+        [Obsolete("Moved to Theme")]
+        public IconCssWeight IconCssWeight { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -341,6 +388,15 @@ namespace Rock.Model
         public virtual ICollection<Layout> Layouts { get; set; }
 
         /// <summary>
+        /// Gets or sets the collection of <see cref="Rock.Model.Block">Blocks</see> that are used on the site.
+        /// </summary>
+        /// <value>
+        /// Collection of <see cref="Rock.Model.Block"/> entities that are used on the site.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Block> Blocks { get; set; }
+
+        /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.SiteDomain"/> entities that reference the Site.
         /// </summary>
         /// <value>
@@ -348,6 +404,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<SiteDomain> SiteDomains { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon extensions.
+        /// </summary>
+        /// <value>
+        /// The icon extensions.
+        /// </value>
+        [Obsolete( "Moved to Theme" )]
+        public virtual ICollection<DefinedValue> IconExtensions { get; set; } = new Collection<DefinedValue>();
 
         /// <summary>
         /// Gets or sets the default <see cref="Rock.Model.Page"/> page for the site.
@@ -391,6 +456,7 @@ namespace Rock.Model
         /// <value>
         /// The change password page.
         /// </value>
+        [LavaInclude]
         public virtual Page ChangePasswordPage { get; set; }
 
         /// <summary>
@@ -465,6 +531,44 @@ namespace Rock.Model
         [DataMember]
         public virtual Page MobilePage { get; set; }
 
+        /// <summary>
+        /// Gets or sets the favicon binary file.
+        /// </summary>
+        /// <value>
+        /// The fav icon binary file.
+        /// </value>
+        [LavaInclude]
+        public virtual BinaryFile FavIconBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets the default domain URI.
+        /// </summary>
+        /// <value>
+        /// The default domain URI.
+        /// </value>
+        [LavaInclude]
+        public virtual Uri DefaultDomainUri 
+        {
+            get 
+            {
+                try
+                {
+                    string protocol = this.RequiresEncryption ? "https://" : "http://";
+                    string host = this.SiteDomains.OrderBy( d => d.Order ).Select( d => d.Domain ).FirstOrDefault();
+                    if ( host != null )
+                    {
+                        host = host.ToLower().StartsWith( "http://" ) ? host.Substring( 7 ) : host;
+                        host = host.ToLower().StartsWith( "https://" ) ? host.Substring( 8 ) : host;
+
+                        return new Uri( protocol + host );
+                    }
+                }
+                catch { }
+
+                return new Uri( Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ) );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -478,6 +582,82 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
+        }
+
+        /// <summary>
+        /// Bulks the index documents.
+        /// </summary>
+        public void BulkIndexDocuments()
+        {
+            // get list of sites that with indexing enabled
+            var sites = new SiteService( new RockContext() ).Queryable().Where( s => s.IsIndexEnabled );
+
+            foreach ( var site in sites )
+            {
+                // delete current items index
+                IndexContainer.DeleteDocumentByProperty( typeof( SitePageIndex ), "SiteId", site.Id );
+
+                // clear current documents out
+                var pageCount = new Crawler().CrawlSite( site );
+            }
+        }
+
+        /// <summary>
+        /// Deletes the indexed documents.
+        /// </summary>
+        public void DeleteIndexedDocuments()
+        {
+            IndexContainer.DeleteDocumentsByType<SitePageIndex>();
+        }
+
+        /// <summary>
+        /// Indexes the name of the model.
+        /// </summary>
+        /// <returns></returns>
+        public Type IndexModelType()
+        {
+            return typeof( SitePageIndex );
+        }
+
+        /// <summary>
+        /// Indexes the document.
+        /// </summary>
+        /// <param name="id"></param>
+        public void IndexDocument( int id )
+        {
+            return;
+        }
+
+        /// <summary>
+        /// Deletes the indexed document.
+        /// </summary>
+        /// <param name="id"></param>
+        public void DeleteIndexedDocument( int id )
+        {
+            return;
+        }
+
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        public ModelFieldFilterConfig GetIndexFilterConfig()
+        {
+            ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
+            filterConfig.FilterValues = new SiteService( new RockContext() ).Queryable().AsNoTracking().Where( s => s.IsIndexEnabled ).Select( s => s.Name ).ToList();
+            filterConfig.FilterLabel = "Sites";
+            filterConfig.FilterField = "siteName";
+
+            return filterConfig;
+        }
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        public bool SupportsIndexFieldFiltering()
+        {
+            return true;
         }
 
         /// <summary>
@@ -496,8 +676,55 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [allows interactive bulk indexing].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public bool AllowsInteractiveBulkIndexing
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         #endregion
     }
+
+    #region enums
+
+    /// <summary>
+    /// Font Awesome Icon CSS Weight
+    /// </summary>
+    [Obsolete("Moved to Theme")]
+    public enum IconCssWeight
+    {
+
+        /// <summary>
+        /// regular
+        /// </summary>
+        Regular,
+
+        /// <summary>
+        /// solid
+        /// </summary>
+        Solid,
+
+        /// <summary>
+        /// light
+        /// </summary>
+        Light,
+
+        /// <summary>
+        /// thin
+        /// </summary>
+        Thin
+    }
+
+    #endregion
 
     #region Entity Configuration
 
@@ -524,6 +751,17 @@ namespace Rock.Model
             this.HasOptional( p => p.CommunicationPage ).WithMany().HasForeignKey( p => p.CommunicationPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.CommunicationPageRoute ).WithMany().HasForeignKey( p => p.CommunicationPageRouteId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.MobilePage ).WithMany().HasForeignKey( p => p.MobilePageId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.FavIconBinaryFile ).WithMany().HasForeignKey( p => p.FavIconBinaryFileId ).WillCascadeOnDelete( false );
+
+#pragma warning disable 0618
+            // Need Associative table for IconExtensions (which are Defined Values)
+            this.HasMany( p => p.IconExtensions ).WithMany().Map( p =>
+            {
+                p.MapLeftKey( "SiteId" );
+                p.MapRightKey( "DefinedValueId" );
+                p.ToTable( "SiteIconExtensions" );
+            } );
+#pragma warning restore 0618
         }
     }
 

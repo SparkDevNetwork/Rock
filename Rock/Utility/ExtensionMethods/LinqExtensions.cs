@@ -461,6 +461,34 @@ namespace Rock
         }
 
         /// <summary>
+        /// Filters a Query to rows that have matching attribute values that meet the condition
+        /// NOTE: Make sure your predicate references 'Attribute.Key' and not 'AttributeKey'
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="predicate">The predicate.</param>
+        /// <returns></returns>
+        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, Expression<Func<AttributeValue, bool>> predicate ) where T : Rock.Data.Model<T>, new()
+        {
+            /*
+              Example: 
+              var qryPerson = new PersonService( rockContext ).Queryable().Where( a => a.FirstName == "Bob" )
+                .WhereAttributeValue( rockContext, a => a.Attribute.Key == "IsAwesome" && a.ValueAsBoolean == true );
+            */
+
+            int entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( typeof( T ) ) ?? 0;
+
+            var avs = new AttributeValueService( rockContext ).Queryable()
+                .Where( a => a.Attribute.EntityTypeId == entityTypeId )
+                .Where( predicate )
+                .Select( a => a.EntityId );
+
+            var result = source.Where( a => avs.Contains( ( a as T ).Id ) );
+            return result;
+        }
+
+        /// <summary>
         /// Forces an Inner Join to the Person table using the specified key selector expression.
         /// Handy for optimizing a query that would have normally done an outer join 
         /// </summary>
@@ -490,6 +518,19 @@ namespace Rock
         /// <param name="value">The value.</param>
         public static void AddOrReplace<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
         {
+            AddOrReplace( (IDictionary<TKey, TValue>)dictionary, key, value );
+        }
+
+        /// <summary>
+        /// Adds the or replace.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void AddOrReplace<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        {
             if ( !dictionary.ContainsKey( key ) )
             {
                 dictionary.Add( key, value );
@@ -513,6 +554,31 @@ namespace Rock
             if ( !dictionary.ContainsKey( key ) )
             {
                 dictionary.Add( key, value );
+            }
+        }
+
+        /// <summary>
+        /// Adds if not empty.
+        /// </summary>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="replace">if set to <c>true</c> [replace].</param>
+        public static void AddIfNotBlank( this IDictionary<string, string> dictionary, string key, string value, bool replace = true ) 
+        {
+            if ( value.IsNotNullOrWhitespace() )
+            {
+                if ( !dictionary.ContainsKey( key ) )
+                {
+                    dictionary.Add( key, value );
+                }
+                else
+                {
+                    if ( replace )
+                    {
+                        dictionary[key] = value;
+                    }
+                }
             }
         }
 

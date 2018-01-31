@@ -23,12 +23,14 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a connection workflow
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionWorkflow" )]
     [DataContract]
     public partial class ConnectionWorkflow : Model<ConnectionWorkflow>
@@ -91,6 +93,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionType ConnectionType { get; set; }
 
         /// <summary>
@@ -99,6 +102,7 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
@@ -110,7 +114,28 @@ namespace Rock.Model
         [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
+        /// <summary>
+        /// Gets the workflow type cache.
+        /// </summary>
+        /// <value>
+        /// The workflow type cache.
+        /// </value>
+        [LavaInclude]
+        public virtual WorkflowTypeCache WorkflowTypeCache
+        {
+            get
+            {
+                if ( WorkflowTypeId.HasValue && WorkflowTypeId.Value > 0 )
+                {
+                    return WorkflowTypeCache.Read( WorkflowTypeId.Value );
+                }
+                return null;
+            }
+        }
+
         #endregion
+
+
     }
 
     #region Entity Configuration

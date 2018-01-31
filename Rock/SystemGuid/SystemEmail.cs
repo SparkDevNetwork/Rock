@@ -32,6 +32,11 @@ namespace Rock.SystemGuid
         public const string CONFIG_EXCEPTION_NOTIFICATION = "75CB0A4A-B1C5-4958-ADEB-8621BD231520";
 
         /// <summary>
+        /// Gets the template guid for the Job Notification email
+        /// </summary>
+        public const string CONFIG_JOB_NOTIFICATION = "691FEA1B-E5C4-4BF8-A7CD-C588F5C63CA8";
+
+        /// <summary>
         /// Gets the template guid for finance pledge confirmation email
         /// </summary>
         public const string FINANCE_PLEDGE_CONFIRMATION = "73E8D035-61BB-495A-A87F-39007B98834C";

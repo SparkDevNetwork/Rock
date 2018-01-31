@@ -32,7 +32,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the names of the Person's Children" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Children's Names" )]
-    public class ChildNamesSelect : DataSelectComponent
+    public class ChildNamesSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Properties
 
@@ -209,7 +209,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             return "Children's Names";
         }
-
+        
         /// <summary>
         /// Gets the expression.
         /// </summary>
@@ -231,7 +231,8 @@ namespace Rock.Reporting.DataSelect.Person
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == adultGuid )
                     .SelectMany( m => m.Group.Members )
                     .Where( m => m.GroupRole.Guid == childGuid )
-                    .OrderBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay )
+                    .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
+                    .ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay )
                     .Select( m => new KidInfo 
                     {
                         NickName = m.Person.NickName,
@@ -318,6 +319,58 @@ namespace Rock.Reporting.DataSelect.Person
                     }
                 }
             }
+        }
+
+        #endregion
+        #region IRecipientDataSelect implementation
+
+        /// <summary>
+        /// Gets the type of the recipient column field.
+        /// </summary>
+        /// <value>
+        /// The type of the recipient column field.
+        /// </value>
+        public Type RecipientColumnFieldType
+        {
+            get { return typeof( IEnumerable<int> ); }
+        }
+
+        /// <summary>
+        /// Gets the recipient person identifier expression.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public Expression GetRecipientPersonIdExpression( System.Data.Entity.DbContext dbContext, MemberExpression entityIdProperty, string selection )
+        {
+            var rockContext = dbContext as RockContext;
+            if ( rockContext != null )
+            {
+                Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+                Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+                Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+
+                var familyGroupMembers = new GroupMemberService( rockContext ).Queryable()
+                    .Where( m => m.Group.GroupType.Guid == familyGuid );
+
+                // this returns Enumerable of KidInfo per row. See this.GetGridField to see how it is processed 
+                var personChildrenQuery = new PersonService( rockContext ).Queryable()
+                    .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == adultGuid )
+                        .SelectMany( m => m.Group.Members )
+                        .Where( m => m.GroupRole.Guid == childGuid )
+                        .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
+                        .ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay )
+                        .Select( m => m.Person.Id ).AsEnumerable() );
+
+                var selectChildrenExpression = SelectExpressionExtractor.Extract( personChildrenQuery, entityIdProperty, "p" );
+
+                return selectChildrenExpression;
+
+            }
+
+            return null;
+
         }
 
         #endregion

@@ -36,7 +36,6 @@ namespace Rock.Jobs
     [GroupTypesField( "Group Types", "Group types use to check the group requirements on.", order: 1 )]
     [EnumField( "Notify Parent Leaders", "", typeof( NotificationOption ), true, "None", order: 2 )]
     [GroupField( "Accountability Group", "Optional group that will receive a list of all group members that do not meet requirements.", false, order: 3 )]
-    [TextField( "Excluded Group Type Role Id's", "Optional comma delimited list of group type role Id's that should be excluded from the notification.", false, order: 4, key: "ExcludedGroupRoleIds" )]
     [DisallowConcurrentExecution]
     public class SendGroupRequirementsNotification : IJob
     {
@@ -67,34 +66,30 @@ namespace Rock.Jobs
 
             if ( systemEmailGuid.HasValue )
             {
-
                 var selectedGroupTypes = new List<Guid>();
                 if ( !string.IsNullOrWhiteSpace( dataMap.GetString( "GroupTypes" ) ) )
                 {
                     selectedGroupTypes = dataMap.GetString( "GroupTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
                 }
 
-                var excludedGroupRoleIds = new List<int>();
-                if ( !string.IsNullOrWhiteSpace( dataMap.GetString( "ExcludedGroupRoleIds" ) ) )
-                {
-                    excludedGroupRoleIds = dataMap.GetString( "ExcludedGroupRoleIds" ).Split( ',' ).Select( int.Parse ).ToList();
-                }
-
                 var notificationOption = dataMap.GetString( "NotifyParentLeaders" ).ConvertToEnum<NotificationOption>( NotificationOption.None );
 
                 var accountAbilityGroupGuid = dataMap.GetString( "AccountabilityGroup" ).AsGuid();
+
+                var groupRequirementsQry = new GroupRequirementService( rockContext ).Queryable();
+
 
                 // get groups matching of the types provided
                 GroupService groupService = new GroupService( rockContext );
                 var groups = groupService.Queryable().AsNoTracking()
                                 .Where( g => selectedGroupTypes.Contains( g.GroupType.Guid )
                                     && g.IsActive == true
-                                    && g.GroupRequirements.Any() );
+                                    && groupRequirementsQry.Any( a => ( a.GroupId.HasValue && a.GroupId == g.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == g.GroupTypeId ) ) );
 
                 foreach ( var group in groups )
                 {
                     // check for members that don't meet requirements
-                    var groupMembersWithIssues = groupService.GroupMembersNotMeetingRequirements( group.Id, true );
+                    var groupMembersWithIssues = groupService.GroupMembersNotMeetingRequirements( group, true );
 
                     if ( groupMembersWithIssues.Count > 0 )
                     {
@@ -111,7 +106,7 @@ namespace Rock.Jobs
 
                         // get list of the group leaders
                         groupMissingRequirements.Leaders = group.Members
-                                                            .Where( m => m.GroupRole.IsLeader == true && !excludedGroupRoleIds.Contains( m.GroupRoleId ) )
+                                                            .Where( m => m.GroupRole.ReceiveRequirementsNotifications )
                                                             .Select( m => new GroupMemberResult
                                                             {
                                                                 Id = m.Id,
@@ -165,7 +160,7 @@ namespace Rock.Jobs
                         _groupsMissingRequriements.Add( groupMissingRequirements );
 
                         // add leaders as people to notify
-                        foreach ( var leader in group.Members.Where( m => m.GroupRole.IsLeader == true && !excludedGroupRoleIds.Contains( m.GroupRoleId ) ) )
+                        foreach ( var leader in group.Members.Where( m => m.GroupRole.ReceiveRequirementsNotifications ) )
                         {
                             NotificationItem notification = new NotificationItem();
                             notification.GroupId = group.Id;
@@ -177,7 +172,7 @@ namespace Rock.Jobs
                         if ( notificationOption != NotificationOption.None )
                         {
                             var parentLeaders = new GroupMemberService( rockContext ).Queryable( "Person" ).AsNoTracking()
-                                                    .Where( m => m.GroupRole.IsLeader && !excludedGroupRoleIds.Contains( m.GroupRoleId ) );
+                                                    .Where( m => m.GroupRole.ReceiveRequirementsNotifications );
 
                             if ( notificationOption == NotificationOption.DirectParent )
                             {
@@ -203,9 +198,7 @@ namespace Rock.Jobs
                 }
 
                 // send out notificatons
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
-                var recipients = new List<RecipientData>();
-
+                int recipients = 0;
                 var notificationRecipients = _notificationList.GroupBy( p => p.Person.Id ).ToList();
                 foreach ( var recipientId in notificationRecipients )
                 {
@@ -213,20 +206,18 @@ namespace Rock.Jobs
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                     mergeFields.Add( "Person", recipient );
-
                     var notificationGroupIds = _notificationList
                                                     .Where( n => n.Person.Id == recipient.Id )
                                                     .Select( n => n.GroupId )
                                                     .ToList();
-
                     var missingRequirements = _groupsMissingRequriements.Where( g => notificationGroupIds.Contains( g.Id ) ).ToList();
-
                     mergeFields.Add( "GroupsMissingRequirements", missingRequirements );
 
-                    recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
-                    Email.Send( systemEmailGuid.Value, recipients, appRoot );
+                    var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
+                    emailMessage.AddRecipient( new RecipientData( recipient.Email, mergeFields ) );
+                    emailMessage.Send();
 
-                    recipients.Clear();
+                    recipients++;
                 }
 
                 // add accountability group members
@@ -236,19 +227,19 @@ namespace Rock.Jobs
                                                         .Where( m => m.Group.Guid == accountAbilityGroupGuid )
                                                         .Select( m => m.Person );
 
+                    var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
                     foreach ( var person in accountabilityGroupMembers )
                     {
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Person", person );
                         mergeFields.Add( "GroupsMissingRequirements", _groupsMissingRequriements );
-
-                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
+                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                        recipients++;
                     }
+                    emailMessage.Send();
                 }
 
-                Email.Send( systemEmailGuid.Value, recipients, appRoot );
-
-                context.Result = string.Format( "{0} requirement notification {1} sent", recipients.Count, "email".PluralizeIf( recipients.Count() != 1 ) );
+                context.Result = string.Format( "{0} requirement notification {1} sent", recipients, "email".PluralizeIf( recipients != 1 ) );
 
             }
             else

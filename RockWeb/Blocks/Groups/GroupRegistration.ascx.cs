@@ -48,7 +48,6 @@ namespace RockWeb.Blocks.Groups
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 3 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 4 )]
     [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 5 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 6 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
 ", "", 7 )]
     [LinkedPage("Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 8)]
@@ -388,12 +387,11 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // Check to see if a workflow should be launched for each person
-                WorkflowType workflowType = null;
+                WorkflowTypeCache workflowType = null;
                 Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
                 if ( workflowTypeGuid.HasValue )
                 {
-                    var workflowTypeService = new WorkflowTypeService( rockContext );
-                    workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                    workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
                 }
 
                 // Save the registrations ( and launch workflows )
@@ -409,13 +407,6 @@ namespace RockWeb.Blocks.Groups
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", _group );
                 mergeFields.Add( "GroupMembers", newGroupMembers );
-
-                bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();
-                lResultDebug.Visible = showDebug;
-                if ( showDebug )
-                {
-                    lResultDebug.Text = mergeFields.lavaDebugInfo( _rockContext );
-                }
 
                 string template = GetAttributeValue( "ResultLavaTemplate" );
                 lResult.Text = template.ResolveMergeFields( mergeFields );
@@ -441,13 +432,6 @@ namespace RockWeb.Blocks.Groups
                 // Show lava content
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", _group );
-
-                bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();
-                lLavaOutputDebug.Visible = showDebug;
-                if ( showDebug )
-                {
-                    lLavaOutputDebug.Text = mergeFields.lavaDebugInfo( _rockContext );
-                }
 
                 string template = GetAttributeValue( "LavaTemplate" );
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
@@ -580,36 +564,54 @@ namespace RockWeb.Blocks.Groups
         /// <param name="person">The person.</param>
         /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="groupMembers">The group members.</param>
-        private void AddPersonToGroup( RockContext rockContext, Person person, WorkflowType workflowType, List<GroupMember> groupMembers )
+        private void AddPersonToGroup( RockContext rockContext, Person person, WorkflowTypeCache workflowType, List<GroupMember> groupMembers )
         {
             if (person != null )
             {
+                GroupMember groupMember = null;
                 if ( !_group.Members
                     .Any( m => 
                         m.PersonId == person.Id &&
                         m.GroupRoleId == _defaultGroupRole.Id))
                 {
                     var groupMemberService = new GroupMemberService(rockContext);
-                    var groupMember = new GroupMember();
+                    groupMember = new GroupMember();
                     groupMember.PersonId = person.Id;
                     groupMember.GroupRoleId = _defaultGroupRole.Id;
                     groupMember.GroupMemberStatus = (GroupMemberStatus)GetAttributeValue("GroupMemberStatus").AsInteger();
                     groupMember.GroupId = _group.Id;
                     groupMemberService.Add( groupMember );
                     rockContext.SaveChanges();
-
-                    if ( workflowType != null )
+                }
+                else
+                {
+                    GroupMemberStatus status = ( GroupMemberStatus ) GetAttributeValue( "GroupMemberStatus" ).AsInteger();
+                    groupMember = _group.Members.Where( m =>
+                       m.PersonId == person.Id &&
+                       m.GroupRoleId == _defaultGroupRole.Id ).FirstOrDefault();
+                    if (groupMember.GroupMemberStatus != status)
                     {
-                        try
-                        {
-                            List<string> workflowErrors;
-                            var workflow = Workflow.Activate( workflowType, person.FullName );
-                            new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
-                        }
-                        catch (Exception ex)
-                        {
-                            ExceptionLogService.LogException( ex, this.Context );
-                        }
+                        var groupMemberService = new GroupMemberService( rockContext );
+
+                        // reload this group member in the current context
+                        groupMember = groupMemberService.Get( groupMember.Id );
+                        groupMember.GroupMemberStatus = status;
+                        rockContext.SaveChanges();
+                    }
+
+                }
+
+                if ( groupMember != null && workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    try
+                    {
+                        List<string> workflowErrors;
+                        var workflow = Workflow.Activate( workflowType, person.FullName );
+                        new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, this.Context );
                     }
                 }
             }

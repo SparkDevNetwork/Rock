@@ -64,10 +64,10 @@ namespace Rock.Workflow
         public abstract Boolean Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages );
 
         /// <summary>
-        /// Loads the attributes for the action.  The attributes are loaded by the framework prior to executing the action, 
-        /// so typically workflow actions do not need to load the attributes
+        /// Loads the attributes.
         /// </summary>
         /// <param name="action">The action.</param>
+        [Obsolete("Don't Use this. The ActionTypeCache will already have the attributes loaded automatically")]
         public void LoadAttributes( WorkflowAction action )
         {
             action.ActionType.LoadAttributes();
@@ -129,14 +129,14 @@ namespace Rock.Workflow
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="key">The key.</param>
-        /// <param name="checkWorflowAttributeValue">if set to <c>true</c> and the returned value is a guid, check to see if the workflow 
+        /// <param name="checkWorkflowAttributeValue">if set to <c>true</c> and the returned value is a guid, check to see if the workflow 
         /// or activity contains an attribute with that guid. This is useful when using the WorkflowTextOrAttribute field types to get the 
         /// actual value or workflow value.</param>
         /// <returns></returns>
-        protected string GetAttributeValue( WorkflowAction action, string key, bool checkWorflowAttributeValue )
+        protected string GetAttributeValue( WorkflowAction action, string key, bool checkWorkflowAttributeValue )
         {
             string value = GetActionAttributeValue( action, key );
-            if ( checkWorflowAttributeValue )
+            if ( checkWorkflowAttributeValue )
             {
                 Guid? attributeGuid = value.AsGuidOrNull();
                 if ( attributeGuid.HasValue )
@@ -145,9 +145,16 @@ namespace Rock.Workflow
                     if ( attribute != null )
                     {
                         value = action.GetWorklowAttributeValue( attributeGuid.Value );
-                        if ( !string.IsNullOrWhiteSpace( value ) && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid() ).Id )
+                        if ( !string.IsNullOrWhiteSpace( value ) )
                         {
-                            value = Security.Encryption.DecryptString( value );
+                            if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid() ).Id )
+                            {
+                                value = Security.Encryption.DecryptString( value );
+                            }
+                            else if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.SSN.AsGuid() ).Id )
+                            {
+                                value = Rock.Field.Types.SSNFieldType.UnencryptAndClean( value );
+                            }
                         }
                     }
                 }
@@ -164,7 +171,7 @@ namespace Rock.Workflow
         /// <returns></returns>
         public static string GetActionAttributeValue( WorkflowAction action, string key )
         {
-            var actionType = action.ActionType;
+            var actionType = action.ActionTypeCache;
 
             if ( actionType != null )
             {

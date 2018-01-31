@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection type
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionType" )]
     [DataContract]
     public partial class ConnectionType : Model<ConnectionType>
@@ -103,7 +104,7 @@ namespace Rock.Model
         /// The owner person alias identifier.
         /// </value>
         [DataMember]
-        public int? OwnerPersonAliasId {get;set;}
+        public int? OwnerPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the number of days until the request is considered idle.
@@ -124,6 +125,7 @@ namespace Rock.Model
         /// <value>
         /// The owner person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias OwnerPersonAlias { get; set; }
 
         /// <summary>
@@ -132,6 +134,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionStatus">ConnectionStatuses</see> who are associated with the ConnectionType.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<ConnectionStatus> ConnectionStatuses
         {
             get { return _connectionStatuses ?? ( _connectionStatuses = new Collection<ConnectionStatus>() ); }
@@ -146,6 +149,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionType.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<ConnectionWorkflow> ConnectionWorkflows
         {
             get { return _connectionWorkflows ?? ( _connectionWorkflows = new Collection<ConnectionWorkflow>() ); }
@@ -160,6 +164,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionActivityType">ConnectionActivityTypes</see> who are associated with the ConnectionType.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<ConnectionActivityType> ConnectionActivityTypes
         {
             get { return _connectionActivityTypes ?? ( _connectionActivityTypes = new Collection<ConnectionActivityType>() ); }
@@ -174,6 +179,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionOpportunity">ConnectionOpportunities</see> who are associated with the ConnectionType.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<ConnectionOpportunity> ConnectionOpportunities
         {
             get { return _connectionOpportunities ?? ( _connectionOpportunities = new Collection<ConnectionOpportunity>() ); }

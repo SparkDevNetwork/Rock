@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -129,59 +130,21 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            // groupmembers
-            var groupMembers = context.Set<Rock.Model.GroupMember>();
+            int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
-            // m
-            ParameterExpression groupMemberParameter = Expression.Parameter( typeof( Rock.Model.GroupMember ), "m" );
+            var familyGroups = new GroupService( context ).Queryable()
+                .Where( m => m.GroupTypeId == familyGroupTypeId );
 
-            // m.PersonId
-            MemberExpression memberPersonIdProperty = Expression.Property( groupMemberParameter, "PersonId" );
+            var personCampusQuery = new PersonService( context ).Queryable()
+                .Select( p =>
+                    familyGroups.Where( g => g.Members.Any( a => a.PersonId == p.Id ) ).Select( a => new
+                    {
+                        a.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder,
+                        CampusName = a.Campus.Name
+                    } ).OrderBy( a => a.GroupOrder ).Select( a => a.CampusName ).FirstOrDefault()
+                    );
 
-            // m.Group
-            MemberExpression groupProperty = Expression.Property( groupMemberParameter, "Group" );
-            MemberExpression groupCampusProperty = Expression.Property( groupProperty, "Campus" );
-
-            // m.Group.GroupType
-            MemberExpression groupTypeProperty = Expression.Property( groupProperty, "GroupType" );
-
-            // m.Group.GroupType.Guid
-            MemberExpression groupTypeGuidProperty = Expression.Property( groupTypeProperty, "Guid" );
-
-            // family group type guid
-            Expression groupTypeConstant = Expression.Constant( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-
-            // m.PersonId == p.Id
-            Expression personCompare = Expression.Equal( memberPersonIdProperty, entityIdProperty );
-
-            // m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid
-            Expression groupTypeCompare = Expression.Equal( groupTypeGuidProperty, groupTypeConstant );
-
-            // m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid
-            Expression andExpression = Expression.And( personCompare, groupTypeCompare );
-
-            // m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid
-            var compare = new Expression[] {
-                Expression.Constant(groupMembers),
-                Expression.Lambda<Func<Rock.Model.GroupMember, bool>>(andExpression, new ParameterExpression[] { groupMemberParameter } )
-            };
-
-            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid)
-            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( Rock.Model.GroupMember ) }, compare );
-
-            // m.Group.Campus.Name
-            MemberExpression groupCampusName = Expression.Property( groupCampusProperty, "Name" );
-
-            // m => m.Group.Campus.Name
-            Expression groupCampusNameLambda = Expression.Lambda( groupCampusName, new ParameterExpression[] { groupMemberParameter } );
-
-            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name);
-            Expression selectName = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( Rock.Model.GroupMember ), typeof( string ) }, whereExpression, groupCampusNameLambda );
-
-            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name).FirstOrDefault();
-            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { typeof( string ) }, selectName );
-
-            return firstOrDefault;
+            return SelectExpressionExtractor.Extract( personCampusQuery, entityIdProperty, "p" );
         }
 
         /// <summary>

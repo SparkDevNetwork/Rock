@@ -18,12 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -37,12 +37,12 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the available communication templates that can used when creating new communications." )]
 
-    [LinkedPage("Detail Page")]
-    public partial class TemplateList : Rock.Web.UI.RockBlock
+    [LinkedPage( "Detail Page" )]
+    public partial class TemplateList : RockBlock, ICustomGridColumns
     {
+        #region fields
 
-        #region Fields
-
+        private HashSet<int> _templatesWithCommunications = null;
         private bool _canEdit = false;
 
         #endregion
@@ -57,22 +57,51 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            BindFilter();
+            if ( !this.IsPostBack )
+            {
+                BindFilter();
+            }
+
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
 
-            gCommunication.DataKeyNames = new string[] { "Id" };
-            gCommunication.Actions.ShowAdd = true;
-            gCommunication.Actions.AddClick += Actions_AddClick;
-            gCommunication.GridRebind += gCommunication_GridRebind;
+            gCommunicationTemplates.DataKeyNames = new string[] { "Id" };
+            gCommunicationTemplates.Actions.ShowAdd = true;
+            gCommunicationTemplates.Actions.AddClick += Actions_AddClick;
+            gCommunicationTemplates.GridRebind += gCommunicationTemplates_GridRebind;
 
             // The created by column/filter should only be displayed if user is allowed to approve
             _canEdit = IsUserAuthorized( Authorization.EDIT );
             ppCreatedBy.Visible = _canEdit;
-            gCommunication.Columns[4].Visible = _canEdit;
+            RockBoundField createdByField = gCommunicationTemplates.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "CreatedByPersonAlias.Person.FullName" );
+            createdByField.Visible = _canEdit;
 
-            SecurityField securityField = gCommunication.Columns[4] as SecurityField;
+            SecurityField securityField = gCommunicationTemplates.ColumnsOfType<SecurityField>().FirstOrDefault();
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.CommunicationTemplate ) ).Id;
+
+            // make a custom delete confirmation dialog
+            gCommunicationTemplates.ShowConfirmDeleteDialog = false;
+
+            string deleteScript = @"
+    $('table.js-grid-communicationtemplate-list a.grid-delete-button').click(function( e ){
+        var $btn = $(this);
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this template?', function (result) {
+            if (result) {
+                if ( $btn.closest('tr').hasClass('js-has-communications') ) {
+                    Rock.dialogs.confirm('Deleting this template will unlink it from communications that have used it. If you would like to keep the link consider inactivating the template instead. Are you sure you wish to delete this template?', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gCommunicationTemplates, gCommunicationTemplates.GetType(), "deleteCommunicationTemplateScript", deleteScript, true );
         }
 
         /// <summary>
@@ -100,13 +129,27 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Medium", cpMedium.SelectedValue );
             if ( _canEdit )
             {
                 rFilter.SaveUserPreference( "Created By", ppCreatedBy.PersonId.ToString() );
             }
 
+            rFilter.SaveUserPreference( "Category", cpCategory.SelectedValue );
+            rFilter.SaveUserPreference( "Supports", ddlSupports.SelectedValue );
+            rFilter.SaveUserPreference( "Active", ddlActiveFilter.SelectedValue );
+
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            rFilter.DeleteUserPreferences();
+            BindFilter();
         }
 
         /// <summary>
@@ -119,23 +162,51 @@ namespace RockWeb.Blocks.Communication
         {
             switch ( e.Key )
             {
-                case "Medium":
+                case "Category":
                     {
-                        var entity = EntityTypeCache.Read( e.Value.AsGuid() );
-                        if ( entity != null )
+                        int? categoryId = e.Value.AsIntegerOrNull();
+                        if ( categoryId.HasValue && categoryId > 0 )
                         {
-                            e.Value = entity.FriendlyName;
+                            var category = Rock.Web.Cache.CategoryCache.Read( categoryId.Value );
+                            if ( category != null )
+                            {
+                                e.Value = category.Name;
+                            }
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+                        break;
+                    }
+
+                case "Communication Type":
+                    {
+                        if ( !string.IsNullOrWhiteSpace( e.Value ) )
+                        {
+                            e.Value = ( ( CommunicationType ) System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
                         }
 
                         break;
                     }
+
+                case "Active":
+                    {
+                        break;
+                    }
+
+                case "Supports":
+                    {
+                        break;
+                    }
+
                 case "Created By":
                     {
-                        int personId = 0;
-                        if ( int.TryParse( e.Value, out personId ) && personId != 0 )
+                        int? personId = e.Value.AsIntegerOrNull();
+                        if ( personId.HasValue && personId != 0 )
                         {
                             var personService = new PersonService( new RockContext() );
-                            var person = personService.Get( personId );
+                            var person = personService.Get( personId.Value );
                             if ( person != null )
                             {
                                 e.Value = person.FullName;
@@ -147,27 +218,69 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
-        void Actions_AddClick( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the AddClick event of the Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Actions_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "TemplateId", 0 );
         }
 
         /// <summary>
-        /// Handles the RowSelected event of the gCommunication control.
+        /// Handles the RowSelected event of the gCommunicationTemplates control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
-        protected void gCommunication_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        protected void gCommunicationTemplates_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "TemplateId", e.RowKeyId );
         }
 
         /// <summary>
-        /// Handles the Delete event of the gCommunication control.
+        /// Handles the Copy event of the gCommunicationTemplates control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gCommunicationTemplates_Copy( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+            var service = new CommunicationTemplateService( rockContext );
+            var template = service.Get( e.RowKeyId );
+            if ( template != null )
+            {
+                if ( !template.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    maGridWarning.Show( "You are not authorized to copy this template", ModalAlertType.Information );
+                    return;
+                }
+
+                var templateCopy = template.Clone( false );
+                templateCopy.Id = 0;
+                int copyNumber = 0;
+                var copyName = "Copy of " + template.Name;
+                while ( service.Queryable().Where(a => a.Name == copyName ).Any())
+                {
+                    copyNumber++;
+                    copyName = string.Format( "Copy({0}) of {1}", copyNumber, template.Name );
+                }
+
+                template.Name = copyName.Truncate( 100 );
+                templateCopy.Guid = Guid.NewGuid();
+                service.Add( templateCopy );
+                rockContext.SaveChanges();
+            }
+
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gCommunicationTemplates control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gCommunication_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        protected void gCommunicationTemplates_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var rockContext = new RockContext();
             var service = new CommunicationTemplateService( rockContext );
@@ -196,11 +309,11 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gCommunication control.
+        /// Handles the GridRebind event of the gCommunicationTemplates control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void gCommunication_GridRebind( object sender, EventArgs e )
+        public void gCommunicationTemplates_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -209,80 +322,102 @@ namespace RockWeb.Blocks.Communication
 
         #region Internal Methods
 
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
         private void BindFilter()
         {
-            if ( cpMedium.Items[0].Value != string.Empty )
+            if ( !_canEdit )
             {
-                cpMedium.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                rFilter.SaveUserPreference( "Created By", string.Empty );
             }
 
-            if ( !Page.IsPostBack )
+            int? personId = rFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();
+            if ( personId.HasValue && personId != 0 )
             {
-                if ( !_canEdit )
+                var personService = new PersonService( new RockContext() );
+                var person = personService.Get( personId.Value );
+                if ( person != null )
                 {
-                    rFilter.SaveUserPreference( "Created By", string.Empty );
+                    ppCreatedBy.SetValue( person );
                 }
-
-                cpMedium.SelectedValue = rFilter.GetUserPreference( "Medium" );
-
-                int personId = 0;
-                if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) )
-                {
-                    var personService = new PersonService( new RockContext() );
-                    var person = personService.Get( personId );
-                    if ( person != null )
-                    {
-                        ppCreatedBy.SetValue( person );
-                    }
-                }
-            }
-        }
-
-        private void BindGrid()
-        {
-            var communications = new CommunicationTemplateService( new RockContext() )
-                .Queryable( "MediumEntityType,CreatedByPersonAlias.Person" );
-
-            Guid entityTypeGuid = Guid.Empty;
-            if ( Guid.TryParse( rFilter.GetUserPreference( "Medium" ), out entityTypeGuid ) )
-            {
-                communications = communications
-                    .Where( c =>
-                        c.MediumEntityType != null &&
-                        c.MediumEntityType.Guid.Equals( entityTypeGuid ) );
-            }
-
-            if ( _canEdit )
-            {
-                int personId = 0;
-                if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) && personId != 0 )
-                {
-                    communications = communications
-                        .Where( c =>
-                            c.CreatedByPersonAlias != null &&
-                            c.CreatedByPersonAlias.PersonId == personId );
-                }
-            }
-
-            var sortProperty = gCommunication.SortProperty;
-
-            if ( sortProperty != null )
-            {
-                communications = communications.Sort( sortProperty );
             }
             else
             {
-                communications = communications.OrderBy( c => c.Name );
+                ppCreatedBy.SetValue( null );
             }
+
+            int? categoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+            if ( categoryId > 0 )
+            {
+                cpCategory.SetValue( categoryId );
+            }
+            else
+            {
+                cpCategory.SetValue( null );
+            }
+
+            ddlActiveFilter.SetValue( rFilter.GetUserPreference( "Active" ) );
+            ddlSupports.SetValue( rFilter.GetUserPreference( "Supports" ) );
+        }
+
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
+        private void BindGrid()
+        {
+            var rockContext = new RockContext();
+            var communicationTemplateQry = new CommunicationTemplateService( rockContext ).Queryable( "CreatedByPersonAlias.Person" );
+
+            if ( _canEdit )
+            {
+                int? personId = rFilter.GetUserPreference( "Created By" ).AsIntegerOrNull();
+                if ( personId.HasValue && personId != 0 )
+                {
+                    communicationTemplateQry = communicationTemplateQry
+                        .Where( c =>
+                            c.CreatedByPersonAlias != null &&
+                            c.CreatedByPersonAlias.PersonId == personId.Value );
+                }
+            }
+
+            int? categoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+            if ( categoryId.HasValue && categoryId > 0 )
+            {
+                communicationTemplateQry = communicationTemplateQry.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == categoryId.Value );
+            }
+
+            var activeFilter = rFilter.GetUserPreference( "Active" );
+            if ( activeFilter == "Active" )
+            {
+                communicationTemplateQry = communicationTemplateQry.Where( a => a.IsActive == true );
+            }
+            else if ( activeFilter == "Inactive" )
+            {
+                communicationTemplateQry = communicationTemplateQry.Where( a => a.IsActive == false );
+            }
+
+            var sortProperty = gCommunicationTemplates.SortProperty;
+
+            if ( sortProperty != null )
+            {
+                communicationTemplateQry = communicationTemplateQry.Sort( sortProperty );
+            }
+            else
+            {
+                communicationTemplateQry = communicationTemplateQry.OrderBy( c => c.Name );
+            }
+
+            _templatesWithCommunications = new HashSet<int>( new CommunicationService( rockContext ).Queryable().Where( a => a.CommunicationTemplateId.HasValue ).Select( a => a.CommunicationTemplateId.Value ).Distinct().ToList() );
 
             var viewableCommunications = new List<CommunicationTemplate>();
             if ( _canEdit )
             {
-                viewableCommunications = communications.ToList();
+                viewableCommunications = communicationTemplateQry.ToList();
             }
             else
             {
-                foreach ( var comm in communications )
+                foreach ( var comm in communicationTemplateQry.ToList() )
                 {
                     if ( comm.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
@@ -291,12 +426,57 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            gCommunication.DataSource = viewableCommunications;
-            gCommunication.DataBind();
+            var supports = rFilter.GetUserPreference( "Supports" );
+            if ( supports == "Email Wizard" )
+            {
+                viewableCommunications = viewableCommunications.Where( a => a.SupportsEmailWizard() ).ToList();
+            }
+            else if ( supports == "Simple Email Template" )
+            {
+                viewableCommunications = viewableCommunications.Where( a => !a.SupportsEmailWizard() ).ToList();
+            }
 
+            gCommunicationTemplates.DataSource = viewableCommunications;
+            gCommunicationTemplates.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gCommunicationTemplates control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gCommunicationTemplates_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            Literal lSupports = e.Row.FindControl( "lSupports" ) as Literal;
+            CommunicationTemplate communicationTemplate = e.Row.DataItem as CommunicationTemplate;
+            if ( lSupports != null && communicationTemplate != null )
+            {
+                StringBuilder html = new StringBuilder();
+                if ( communicationTemplate.SupportsEmailWizard() )
+                {
+                    html.AppendLine( "<span class='label label-success' title='This template contains an email template that supports the new communication wizard'>Email Wizard</span>" );
+                }
+                else if ( !string.IsNullOrEmpty( communicationTemplate.Message ) )
+                {
+                    html.AppendLine( "<span class='label label-default' title='This template does not contain an email template that supports the new communication wizard'>Simple Email Template</span>" );
+                }
+
+                if ( communicationTemplate.Guid == Rock.SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid() || communicationTemplate.HasSMSTemplate() )
+                {
+                    html.AppendLine( "<span class='label label-success'>SMS</span>" );
+                }
+
+                lSupports.Text = html.ToString();
+
+                if ( _templatesWithCommunications.Contains( communicationTemplate.Id ) )
+                {
+                    e.Row.AddCssClass( "js-has-communications" );
+                }
+            }
         }
 
         #endregion
 
+        
     }
 }

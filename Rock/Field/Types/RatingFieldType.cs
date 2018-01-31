@@ -131,10 +131,25 @@ namespace Rock.Field.Types
             var sb = new StringBuilder();
             for ( int i = 1; i <= GetMaxRating( configurationValues ); i++ )
             {
-                sb.AppendFormat( "<i class='fa fa-star{0}'></i>", i > rating ? "-o" : "" );
+                sb.AppendFormat( "<i class='fa fa-star{0}'></i>", i > rating ? "-unselected" : "-selected" );
             }
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return FormatValueAsHtml( parentControl, value, configurationValues, condensed );
         }
 
         /// <summary>

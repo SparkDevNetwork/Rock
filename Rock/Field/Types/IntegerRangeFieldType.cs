@@ -92,7 +92,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( System.Web.UI.Control control, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues )
         {
             NumberRangeEditor editor = control as NumberRangeEditor;
-            if ( editor != null )
+            if ( editor != null && ( editor.LowerValue.HasValue || editor.UpperValue.HasValue ) )
             {
                 return string.Format( "{0},{1}", editor.LowerValue, editor.UpperValue );
             }

@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class EventCalendarItemsController : Rock.Rest.ApiController<Rock.Model.EventCalendarItem>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventCalendarItemsController"/> class.
+        /// </summary>
         public EventCalendarItemsController() : base( new Rock.Model.EventCalendarItemService( new Rock.Data.RockContext() ) ) { } 
     }
 }

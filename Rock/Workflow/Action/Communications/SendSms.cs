@@ -36,11 +36,13 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "SMS Send" )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "From", "The phone number to send message from", true, false, "", "", 0 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "From", "The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values).", true, false, "", "", 0 )]
     [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "The phone number or an attribute that contains the person or phone number that message should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
     [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", true, "", "", 2, "Message",
-        new string[] { "Rock.Field.Types.TextFieldType" } )]
+        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
+    [WorkflowAttribute( "Attachment", "Workflow attribute that contains the attachment to be added. Note that when sending attachments with MMS; jpg, gif, and png images are supported for all carriers. Support for other file types is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.", false, "", "", 3, null,
+        new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
     public class SendSms : ActionComponent
     {
         /// <summary>
@@ -57,6 +59,7 @@ namespace Rock.Workflow.Action
 
             var mergeFields = GetMergeFields( action );
 
+            // Get the From value
             int? fromId = null;
             Guid? fromGuid = GetAttributeValue( action, "From" ).AsGuidOrNull();
             if ( fromGuid.HasValue )
@@ -68,8 +71,8 @@ namespace Rock.Workflow.Action
                 }
             }
 
+            // Get the recipients
             var recipients = new List<RecipientData>();
-
             string toValue = GetAttributeValue( action, "To" );
             Guid guid = toValue.AsGuid();
             if ( !guid.IsEmpty() )
@@ -84,7 +87,7 @@ namespace Rock.Workflow.Action
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    recipients.Add( new RecipientData( toAttributeValue ) );
+                                    recipients.Add( new RecipientData( toAttributeValue, mergeFields ) );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
@@ -110,7 +113,7 @@ namespace Rock.Workflow.Action
                                                 smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                             }
 
-                                            var recipient = new RecipientData( smsNumber );
+                                            var recipient = new RecipientData( smsNumber, mergeFields );
                                             recipients.Add( recipient );
 
                                             var person = new PersonAliasService( rockContext ).GetPerson( personAliasGuid );
@@ -163,7 +166,7 @@ namespace Rock.Workflow.Action
                                                     smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                                 }
 
-                                                var recipient = new RecipientData( smsNumber );
+                                                var recipient = new RecipientData( smsNumber, mergeFields );
                                                 recipients.Add( recipient );
                                                 recipient.MergeFields.Add( "Person", person );
                                             }
@@ -179,21 +182,23 @@ namespace Rock.Workflow.Action
             {
                 if ( !string.IsNullOrWhiteSpace( toValue ) )
                 {
-                    recipients.Add( new RecipientData( toValue.ResolveMergeFields( mergeFields ) ) );
+                    recipients.Add( new RecipientData( toValue.ResolveMergeFields( mergeFields ), mergeFields ) );
                 }
             }
 
+            // Get the message
             string message = GetAttributeValue( action, "Message" );
-            Guid messageGuid = message.AsGuid();
-            if ( !messageGuid.IsEmpty() )
+            Guid? messageGuid = message.AsGuidOrNull();
+            if ( messageGuid.HasValue )
             {
-                var attribute = AttributeCache.Read( messageGuid, rockContext );
+                var attribute = AttributeCache.Read( messageGuid.Value, rockContext );
                 if ( attribute != null )
                 {
-                    string messageAttributeValue = action.GetWorklowAttributeValue( messageGuid );
+                    string messageAttributeValue = action.GetWorklowAttributeValue( messageGuid.Value );
                     if ( !string.IsNullOrWhiteSpace( messageAttributeValue ) )
                     {
-                        if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" ||
+                            attribute.FieldType.Class == "Rock.Field.Types.MemoFieldType" )
                         {
                             message = messageAttributeValue;
                         }
@@ -201,37 +206,22 @@ namespace Rock.Workflow.Action
                 }
             }
 
+            // Add the attachment (if one was specified)
+            var binaryFile = new BinaryFileService( rockContext ).Get( GetAttributeValue( action, "Attachment", true ).AsGuid() );
+
+            // Send the message
             if ( recipients.Any() && !string.IsNullOrWhiteSpace( message ) )
             {
-                var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid(), rockContext );
-                if ( mediumEntity != null )
+                var smsMessage = new RockSMSMessage();
+                smsMessage.SetRecipients( recipients );
+                smsMessage.FromNumber = DefinedValueCache.Read( fromId.Value );
+                smsMessage.Message = message;
+                if ( binaryFile != null )
                 {
-                    var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                    if ( medium != null && medium.IsActive )
-                    {
-                        var transport = medium.Transport;
-                        if ( transport != null && transport.IsActive )
-                        {
-                            var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
-
-                            foreach ( var recipient in recipients )
-                            {
-                                var recipientMergeFields = new Dictionary<string, object>( mergeFields );
-                                foreach ( var mergeField in recipient.MergeFields )
-                                {
-                                    recipientMergeFields.Add( mergeField.Key, mergeField.Value );
-                                }
-                                var mediumData = new Dictionary<string, string>();
-                                mediumData.Add( "FromValue", fromId.Value.ToString() );
-                                mediumData.Add( "Message", message.ResolveMergeFields( recipientMergeFields ) );
-
-                                var number = new List<string> { recipient.To };
-
-                                transport.Send( mediumData, number, appRoot, string.Empty );
-                            }
-                        }
-                    }
+                    smsMessage.Attachments.Add( binaryFile );
                 }
+
+                smsMessage.Send();
             }
 
             return true;

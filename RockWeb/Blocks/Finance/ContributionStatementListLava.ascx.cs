@@ -56,11 +56,10 @@ namespace RockWeb.Blocks.Finance
     {% endif %}
 {% endfor %}
 </div>", Order = 3)]
-    [BooleanField("Enable Debug", "Shows the merge fields available for the Lava", order:4)]
     [BooleanField("Use Person Context", "Determines if the person context should be used instead of the CurrentPerson.", false, order: 5)]
 
     [ContextAware]
-    public partial class ContributionStatementListLava : RockBlock
+    public partial class ContributionStatementListLava : RockBlock, ISecondaryBlock
     {
         #region Properties
 
@@ -142,8 +141,21 @@ namespace RockWeb.Blocks.Finance
 
             FinancialTransactionDetailService financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
 
+            List<int> personAliasIds;
+
+            // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
+            if ( TargetPerson != null )
+            {
+                personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == TargetPerson.GivingId ).Select( a => a.Id ).ToList();
+            }
+            else
+            {
+                personAliasIds = new List<int>();
+            }
+
+            // get the transactions for the person or all the members in the person's giving group (Family)
             var qry = financialTransactionDetailService.Queryable().AsNoTracking()
-                        .Where( t=> t.Transaction.AuthorizedPersonAlias.Person.GivingId == TargetPerson.GivingId);
+                        .Where( t=> t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value ) );
 
             if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
             {
@@ -158,21 +170,33 @@ namespace RockWeb.Blocks.Finance
                                 .Select( g => new { Year = g.Key } )
                                 .OrderByDescending(y => y.Year);
 
+            var statementYears = yearQry.Take( numberOfYears ).ToList();
+
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
-            mergeFields.Add( "StatementYears", yearQry.Take( numberOfYears ) );
-            mergeFields.Add( "PersonGuid", TargetPerson.Guid );
+            mergeFields.Add( "StatementYears", statementYears );
+
+            if ( TargetPerson != null )
+            {
+                mergeFields.Add( "PersonGuid", TargetPerson.Guid );
+            }
             
             var template = GetAttributeValue( "LavaTemplate" );
 
             lResults.Text = template.ResolveMergeFields( mergeFields );
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
+            // don't show anything if the person doesn't have any transactions
+            lResults.Visible = statementYears.Any();
+
+        }
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
         }
 
         #endregion

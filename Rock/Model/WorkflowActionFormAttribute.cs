@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an <see cref="Rock.Model.WorkflowActionFormAttribute"/> used by a <see cref="Rock.Model.WorkflowActionForm"/>.
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "WorkflowActionFormAttribute" )]
     [DataContract]
     public partial class WorkflowActionFormAttribute : Model<WorkflowActionFormAttribute>, IOrdered
@@ -128,6 +129,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow action form.
         /// </value>
+        [LavaInclude]
         public virtual WorkflowActionForm WorkflowActionForm { get; set; }
 
         /// <summary>

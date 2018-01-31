@@ -30,15 +30,12 @@ using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
-    // TODO: Update to return actual data
-
     /// <summary>
-    /// FamilyAttendance Badge
+    /// Last Visit on Site Badge
     /// </summary>
     [Description( "Badge showing the number of days since the person last visited a specified site." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Last Visit on Site" )]
-    
     
     [SiteField("Site", "Site to filter for.", true, "3", "", 1)]
     [LinkedPage("Page View Details", "Page to show the details of the page views. If blank no link is created.", false, "", "", 2)]
@@ -65,29 +62,31 @@ namespace Rock.PersonProfile.Badge
                     if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "PageViewDetails" ) ) )
                     {
                         int pageId = Rock.Web.Cache.PageCache.Read( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
-                        detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}&SiteId={2}", pageId, Person.UrlEncodedKey, siteId ) );
+
+                        // NOTE: Since this block shows a history of sites a person visited in Rock, use Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
+                        detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={Person.Guid}&SiteId={siteId}" );
                     }
 
-                    writer.Write( String.Format( "<div class='badge badge-lastvisitonsite badge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
+                    writer.Write( $"<div class='badge badge-lastvisitonsite badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
 
                     writer.Write( "</div>" );
 
-                    writer.Write( String.Format( @"
+                    writer.Write( $@"
                 <script>
                     Sys.Application.add_load(function () {{
                                                 
                         $.ajax({{
                                 type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/LastVisitOnSite/{0}/{1}' ,
+                                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/LastVisitOnSite/{Person.Id}/{siteId}' ,
                                 statusCode: {{
                                     200: function (data, status, xhr) {{
                                         var badgeHtml = '';
                                         var daysSinceVisit = data;
                                         var cssClass = '';
-                                        var linkUrl = '{3}';
+                                        var linkUrl = '{detailPageUrl}';
                                         var badgeContent = '';
                                         var labelContent = '';
-                                        var siteName = '{4}';
+                                        var siteName = '{siteName}';
 
                                         if (daysSinceVisit >= 0 && daysSinceVisit < 1000) {{
         
@@ -114,11 +113,9 @@ namespace Rock.PersonProfile.Badge
                                             }} else {{
                                                 badgeContent = '<div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'duration\'>' + daysSinceVisit + '</span></div>';
                                             }}
-                                            
-                                            
 
-                                            $('.badge-lastvisitonsite.badge-id-{2}').html(badgeContent);
-                                            $('.badge-lastvisitonsite.badge-id-{2}').attr('data-original-title', labelContent);
+                                            $('.badge-lastvisitonsite.badge-id-{badge.Id}').html(badgeContent);
+                                            $('.badge-lastvisitonsite.badge-id-{badge.Id}').attr('data-original-title', labelContent);
                                         }}
                                         
                                     }}
@@ -126,8 +123,7 @@ namespace Rock.PersonProfile.Badge
                         }});
                     }});
                 </script>
-                
-            ", Person.Id, siteId, badge.Id, detailPageUrl, siteName ) );
+            ");
                 }
             }
         }

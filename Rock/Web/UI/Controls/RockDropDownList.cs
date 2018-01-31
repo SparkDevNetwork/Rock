@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -238,6 +239,30 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         /// <summary>
+        /// Gets or sets a value indicating whether the dropdownlist should allow a searc when used for single select
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enhance for long list]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnhanceForLongLists
+        {
+            get { return ViewState["EnhanceForLongLists"] as bool? ?? false; }
+            set { ViewState["EnhanceForLongLists"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [display drop as absolute].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [display drop as absolute]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayEnhancedAsAbsolute
+        {
+            get { return ViewState["DisplayEnhancedAsAbsolute"] as bool? ?? false; }
+            set { ViewState["DisplayEnhancedAsAbsolute"] = value; }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RockDropDownList" /> class.
         /// </summary>
         public RockDropDownList()
@@ -277,6 +302,17 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             ( (WebControl)this ).AddCssClass( "form-control" );
+
+            if ( EnhanceForLongLists )
+            {
+                ( (WebControl)this ).AddCssClass( "chosen-select" );
+
+                if ( DisplayEnhancedAsAbsolute )
+                {
+                    ( ( WebControl ) this ).AddCssClass( "chosen-select-absolute" );
+                }
+            }
+
             base.RenderControl( writer );
 
             RenderDataValidator( writer );
@@ -312,7 +348,7 @@ namespace Rock.Web.UI.Controls
             base.LoadViewState( savedState );
             var savedAttributes = ViewState["ItemAttributes"] as List<Dictionary<string, string>>;
             int itemPosition = 0;
-            
+
             // make sure the list has the same number of items as it did when ViewState was saved
             if ( savedAttributes.Count == this.Items.Count )
             {

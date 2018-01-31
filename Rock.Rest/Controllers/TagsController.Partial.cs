@@ -15,105 +15,99 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// TaggedItems REST API
     /// </summary>
-    public partial class TagsController : IHasCustomRoutes
+    public partial class TagsController 
     {
         /// <summary>
-        /// Add Custom route for flushing cached attributes
+        /// GET a specific Tag
         /// </summary>
-        /// <param name="routes"></param>
-        public void AddRoutes( System.Web.Routing.RouteCollection routes )
-        {
-            routes.MapHttpRoute(
-                name: "TagNamesAvail",
-                routeTemplate: "api/tags/availablenames/{entityTypeId}/{ownerid}/{name}/{entityguid}/{entityqualifier}/{entityqualifiervalue}",
-                defaults: new
-                {
-                    controller = "tags",
-                    action = "availablenames",
-                    entityqualifier = RouteParameter.Optional,
-                    entityqualifiervalue = RouteParameter.Optional
-                } );
-
-            routes.MapHttpRoute(
-                name: "TagsByEntityName",
-                routeTemplate: "api/tags/{entityTypeId}/{ownerid}/{entityqualifier}/{entityqualifiervalue}",
-                defaults: new
-                {
-                    controller = "tags",
-                    entityqualifier = RouteParameter.Optional,
-                    entityqualifiervalue = RouteParameter.Optional
-                } );
-        }
-
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="entityQualifier">The entity qualifier.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="includeInactive">The include inactive.</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
-        public Tag Get( int entityTypeId, int ownerId, string name )
-        {
-            return Get( entityTypeId, ownerId, name, string.Empty, string.Empty );
-        }
-
-        [Authenticate, Secured]
-        [HttpGet]
-        public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier )
-        {
-            return Get( entityTypeId, ownerId, name, entityQualifier, string.Empty );
-        }
-
-        [Authenticate, Secured]
-        [HttpGet]
-        public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
+        public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier = null, string entityQualifierValue = null, string categoryGuid = null, bool? includeInactive = false )
         {
             string tagName = WebUtility.UrlDecode( name );
-            var tag = ( (TagService)Service )
-                .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId ).FirstOrDefault( t => t.Name == tagName );
+            var tag = ( ( TagService ) Service ).Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid.AsGuidOrNull(), includeInactive );
 
-            if ( tag != null )
-            {
-                return tag;
-            }
-            else
+            if ( tag == null || !tag.IsAuthorized( "Tag", GetPerson() ) )
             {
                 // NOTE: This exception is expected when adding a new Tag.  The Javascript responds to the NotFound error by prompting them to create a new tag
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
+
+            return tag;
+
         }
 
+        /// <summary>
+        /// Queryable GET of Tags
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="entityQualifier">The entity qualifier.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="includeInactive">The include inactive.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
-        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name )
+        [System.Web.Http.Route( "api/Tags/AvailableNames" )]
+        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name = null, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
-            return AvailableNames( entityTypeId, ownerId, entityGuid, name, string.Empty, string.Empty );
-        }
-
-        [Authenticate, Secured]
-        [HttpGet]
-        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier )
-        {
-            return AvailableNames( entityTypeId, ownerId, entityGuid, name, entityQualifier, string.Empty );
-        }
-
-        [Authenticate, Secured]
-        [HttpGet]
-        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
-        {
-            return ( (TagService)Service )
-                .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId )
+            var tags = ( ( TagService ) Service )
+                .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, categoryGuid, includeInactive )
                 .Where( t =>
                     t.Name.StartsWith( name ) &&
-                    !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ) )
-                .OrderBy( t => t.Name );
+                    !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ) && 
+                    t.IsActive );
+
+            if ( categoryGuid.HasValue )
+            {
+                var category = CategoryCache.Read( categoryGuid.Value );
+                if ( category != null )
+                {
+                    tags = tags
+                        .Where( a => 
+                            a.CategoryId.HasValue && 
+                            a.CategoryId.Value == category.Id );
+                }
+            }
+
+            var person = GetPerson();
+            var tagItems = new List<Tag>();
+
+            foreach ( var tag in tags.OrderBy( t => t.Name ) )
+            {
+                if ( tag.IsAuthorized( "Tag", person ) )
+                {
+                    tagItems.Add( tag );
+                }
+            }
+
+            return tagItems.AsQueryable<Tag>();
         }
     }
 }

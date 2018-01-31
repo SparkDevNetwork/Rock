@@ -25,7 +25,7 @@
 */
 
 ALTER PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeDates]
-	  @GroupIds varchar(max)
+	    @GroupIds varchar(max)
 	, @StartDate datetime = NULL
 	, @EndDate datetime = NULL
 	, @CampusIds varchar(max) = NULL
@@ -41,6 +41,16 @@ BEGIN
 	SET @StartDate = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000101', 112 ), @StartDate ) % 7 ), CONVERT( date, @StartDate ) ), '1900-01-01' )
 	SET @EndDate = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000107', 112 ), @EndDate ) % 7 ), @EndDate ), '2100-01-01' )
     IF @EndDate < @StartDate SET @EndDate = DATEADD( day, 6 + DATEDIFF( day, @EndDate, @StartDate ), @EndDate )
+	SET @EndDate = DATEADD( second, -1, DATEADD( day, 1, @EndDate ) )
+
+	DECLARE @CampusTbl TABLE ( [Id] int )
+	INSERT INTO @CampusTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@CampusIds,'') )
+
+	DECLARE @ScheduleTbl TABLE ( [Id] int )
+	INSERT INTO @ScheduleTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@ScheduleIds,'') )
+
+	DECLARE @GroupTbl TABLE ( [Id] int )
+	INSERT INTO @GroupTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@GroupIds,'') )
 
 	-- Get all the attendance
 	SELECT 
@@ -55,14 +65,16 @@ BEGIN
 			[CampusId],
 			DATEADD( day, ( 6 - ( DATEDIFF( day, CONVERT( datetime, '19000101', 112 ), [StartDateTime] ) % 7 ) ), CONVERT( date, [StartDateTime] ) ) AS [SundayDate]
 		FROM [Attendance] A
-        WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
-        AND [StartDateTime] BETWEEN @StartDate AND @EndDate
+		INNER JOIN @GroupTbl [G] ON [G].[Id] = A.[GroupId]
+		LEFT OUTER JOIN @CampusTbl [C] ON [C].[id] = [A].[CampusId]
+		LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [A].[ScheduleId]
+        WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
 		AND [DidAttend] = 1
 		AND ( 
-			( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
+			( @CampusIds IS NULL OR [C].[Id] IS NOT NULL ) OR  
 			( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
 		)
-		AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
+		AND ( @ScheduleIds IS NULL OR [S].[Id] IS NOT NULL  )
 	) A 
 	INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
 

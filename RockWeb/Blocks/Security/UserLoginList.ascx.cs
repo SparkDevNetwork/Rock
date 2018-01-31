@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Block for displaying logins.  By default displays all logins, but can be configured to use person context to display logins for a specific person." )]
     [ContextAware]
-    public partial class UserLoginList : Rock.Web.UI.RockBlock
+    public partial class UserLoginList : RockBlock, ICustomGridColumns
     {
         #region Fields
 
@@ -65,8 +65,12 @@ namespace RockWeb.Blocks.Security
             {
                 _personId = person.Id;
 
-                // Hide the person name column
-                gUserLogins.Columns[1].Visible = false;
+                var personNameField = gUserLogins.ColumnsOfType<HyperLinkField>().FirstOrDefault( a => a.HeaderText == "Person" );
+                if ( personNameField != null )
+                {
+                    // Hide the person name column
+                    personNameField.Visible = false;
+                }
                 ppPerson.Visible = false;
             }
 
@@ -269,12 +273,12 @@ namespace RockWeb.Blocks.Security
                         // keep looking until we find the next available one 
                         int numericSuffix = 1;
                         string nextAvailableUserName = newUserName + numericSuffix.ToString();
-                        while (service.GetByUserName(nextAvailableUserName) != null)
+                        while ( service.GetByUserName( nextAvailableUserName ) != null )
                         {
                             numericSuffix++;
                             nextAvailableUserName = newUserName + numericSuffix.ToString();
                         }
-                        
+
                         nbErrorMessage.NotificationBoxType = NotificationBoxType.Warning;
                         nbErrorMessage.Title = "Invalid User Name";
                         nbErrorMessage.Text = "The User Name you selected already exists. Next available username: " + nextAvailableUserName;
@@ -559,6 +563,7 @@ namespace RockWeb.Blocks.Security
                     {
                         tbPassword.Enabled = true;
                         tbPasswordConfirm.Enabled = true;
+                        tbPassword.Focus();
 
                         if ( hfIdValue.Value == "0" )
                         {

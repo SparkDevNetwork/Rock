@@ -464,7 +464,7 @@ namespace Rock.Web.Cache
                                 return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
                             }
 
-                            return field.FormatValue( null, value, attribute.QualifierValues, false );
+                            return field.FormatValue( null, attribute.EntityTypeId, this.Id, value, attribute.QualifierValues, false );
                         }
                     }
                 }

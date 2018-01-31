@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -41,6 +42,37 @@ namespace RockWeb.Blocks.Administration
 
         private bool canConfigure = false;
         private Rock.Web.Cache.PageCache _page = null;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [page updated].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [page updated]; otherwise, <c>false</c>.
+        /// </value>
+        protected bool PageUpdated
+        {
+            get
+            {
+                DialogPage dialogPage = this.Page as DialogPage;
+                if ( dialogPage != null )
+                {
+                    return dialogPage.CloseMessage == "PAGE_UPDATED";
+                }
+                return false;
+            }
+            set
+            {
+                DialogPage dialogPage = this.Page as DialogPage;
+                if ( dialogPage != null )
+                {
+                    dialogPage.CloseMessage = value ? "PAGE_UPDATED" : "";
+                }
+            }
+        }
 
         #endregion
 
@@ -124,11 +156,20 @@ namespace RockWeb.Blocks.Administration
 
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
-            pageService.Reorder( pageService.GetByParentPageId( _page.Id ).ToList(), e.OldIndex, e.NewIndex );
+            var childPages = pageService.GetByParentPageId( _page.Id ).ToList();
+            pageService.Reorder( childPages, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
             Rock.Web.Cache.PageCache.Flush( _page.Id );
+
+            foreach ( var page in childPages )
+            {
+                // make sure the PageCache for all the re-ordered pages get flushed so the new Order is updated
+                Rock.Web.Cache.PageCache.Flush( page.Id );
+            }
+
             _page.FlushChildPages();
+            PageUpdated = true;
 
             BindGrid();
         }
@@ -152,7 +193,6 @@ namespace RockWeb.Blocks.Administration
         {
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
-            var pageViewService = new PageViewService( rockContext );
             var siteService = new SiteService( rockContext );
 
             var page = pageService.Get( e.RowKeyId );
@@ -186,17 +226,12 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                foreach ( var pageView in pageViewService.GetByPageId( page.Id ) )
-                {
-                    pageView.Page = null;
-                    pageView.PageId = null;
-                }
-
                 pageService.Delete( page );
 
                 rockContext.SaveChanges();
 
                 Rock.Web.Cache.PageCache.Flush( page.Id );
+                PageUpdated = true;
 
                 if ( _page != null )
                 {
@@ -224,8 +259,25 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rGrid_Copy( object sender, RowEventArgs e )
         {
+            hfPageIdToCopy.Value = e.RowKeyId.ToStringSafe();
+            mdConfirmCopy.Show();
+            mdConfirmCopy.Header.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the Copy event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdConfirmCopy_Click( object sender, EventArgs e )
+        {
+            mdConfirmCopy.Hide();
             var pageService = new PageService( new RockContext() );
-            pageService.CopyPage( e.RowKeyId, CurrentPersonAliasId );
+
+            // todo, prompt if childpages should be copied
+            pageService.CopyPage( hfPageIdToCopy.Value.AsInteger(), true, CurrentPersonAliasId );
+
+            PageUpdated = true;
 
             BindGrid();
         }
@@ -325,6 +377,8 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     BindGrid();
+
+                    PageUpdated = true;
                 }
 
                 rGrid.Visible = true;
@@ -427,5 +481,6 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
+
     }
 }

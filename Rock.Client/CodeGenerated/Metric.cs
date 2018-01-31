@@ -44,6 +44,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnableAnalytics { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -74,6 +77,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? ScheduleId { get; set; }
+
+        /// <summary />
+        public string SourceLava { get; set; }
 
         /// <summary />
         public string SourceSql { get; set; }
@@ -129,6 +135,7 @@ namespace Rock.Client
             this.AdminPersonAliasId = source.AdminPersonAliasId;
             this.DataViewId = source.DataViewId;
             this.Description = source.Description;
+            this.EnableAnalytics = source.EnableAnalytics;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
@@ -139,6 +146,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NumericDataType = source.NumericDataType;
             this.ScheduleId = source.ScheduleId;
+            this.SourceLava = source.SourceLava;
             this.SourceSql = source.SourceSql;
             this.SourceValueTypeId = source.SourceValueTypeId;
             this.Subtitle = source.Subtitle;

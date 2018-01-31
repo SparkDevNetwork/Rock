@@ -53,14 +53,15 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Default To Public", "If enabled, all prayers will be set to public by default", false, "Features", 9 )]
     [IntegerField( "Character Limit", "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.", false, 250, "Features", 10 )]
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "Features", 11 )]
-    
-    // On Save Behavior
-    [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 12 )]
-    [BooleanField( "Refresh Page On Save", "If enabled, on successful save control will reload the current page. NOTE: This is ignored if 'Navigate to Parent On Save' is enabled.", false, "On Save Behavior", 13 )]
+    [BooleanField( "Show Campus", "Show a campus picker", true, "Features", 12 )]
+    [BooleanField( "Require Campus", "Require that a campus be selected", false, "Features", 13 )]
 
-    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 14 )]
-    [WorkflowTypeField( "Workflow", "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "On Save Behavior", 15 )]
-    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, "On Save Behavior", 16 )]
+    // On Save Behavior
+    [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 14 )]
+    [BooleanField( "Refresh Page On Save", "If enabled, on successful save control will reload the current page. NOTE: This is ignored if 'Navigate to Parent On Save' is enabled.", false, "On Save Behavior", 15 )]
+
+    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 16 )]
+    [WorkflowTypeField( "Workflow", "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "On Save Behavior", 17 )]
 
     [ContextAware(typeof(Rock.Model.Person))]
     public partial class PrayerRequestEntry : RockBlock
@@ -98,8 +99,14 @@ namespace RockWeb.Blocks.Prayer
             this.EnablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
             this.DefaultToPublic = GetAttributeValue( "DefaultToPublic" ).AsBoolean();
             tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
+            cpCampus.Visible = GetAttributeValue( "ShowCampus" ).AsBoolean();
+            cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean();
 
-            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/bootstrap-limit.js" ) );
+            if ( cpCampus.Visible )
+            {
+                cpCampus.Campuses = CampusCache.All( false );
+            }
+
             var categoryGuid = GetAttributeValue( "GroupCategoryId" );
             if ( ! string.IsNullOrEmpty( categoryGuid ) )
             {
@@ -173,6 +180,7 @@ namespace RockWeb.Blocks.Prayer
                     tbFirstName.Text = CurrentPerson.FirstName;
                     tbLastName.Text = CurrentPerson.LastName;
                     tbEmail.Text = CurrentPerson.Email;
+                    cpCampus.SetValue( CurrentPerson.GetCampus() );
                 }
                 
                 dtbRequest.Text = PageParameter( "Request" );
@@ -257,6 +265,8 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequest.Email = personContext.Email;
             }
 
+            prayerRequest.CampusId = cpCampus.SelectedCampusId;
+
             prayerRequest.Text = dtbRequest.Text;
             
             if ( this.EnableUrgentFlag )
@@ -326,11 +336,6 @@ namespace RockWeb.Blocks.Prayer
                 string themeRoot = ResolveRockUrl( "~~/" );
                 nbMessage.Text = nbMessage.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
-                // show liquid help for debug
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    nbMessage.Text += mergeFields.lavaDebugInfo();
-                }
             }
         }
 
@@ -401,13 +406,11 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="rockContext">The rock context.</param>
         private void StartWorkflow( PrayerRequest prayerRequest, RockContext rockContext )
         {
-            WorkflowType workflowType = null;
             Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
             if ( workflowTypeGuid.HasValue )
             {
-                var workflowTypeService = new WorkflowTypeService( rockContext );
-                workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
-                if ( workflowType != null )
+                var workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     try
                     {

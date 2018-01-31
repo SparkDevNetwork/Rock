@@ -148,15 +148,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+                EnsureChildControls();
+                return CustomValidator.ErrorMessage;
             }
 
             set
             {
-                if ( RequiredFieldValidator != null )
-                {
-                    RequiredFieldValidator.ErrorMessage = value;
-                }
+                EnsureChildControls();
+                CustomValidator.ErrorMessage = value;
             }
         }
 
@@ -170,7 +169,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+                return !Required || ( !string.IsNullOrWhiteSpace( _tbLowerValue.Text ) && !string.IsNullOrWhiteSpace( _tbUpperValue.Text ) );
             }
         }
 
@@ -206,7 +205,7 @@ namespace Rock.Web.UI.Controls
         public DateRangePicker()
             : base()
         {
-            RequiredFieldValidator = new HiddenFieldValidator();
+            CustomValidator = new CustomValidator();
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
         }
@@ -222,6 +221,14 @@ namespace Rock.Web.UI.Controls
         /// The upper value
         /// </summary>
         private DatePicker _tbUpperValue;
+
+        /// <summary>
+        /// Gets or sets the custom validator.
+        /// </summary>
+        /// <value>
+        /// The custom validator.
+        /// </value>
+        public CustomValidator CustomValidator { get; set; }
 
         /// <summary>
         /// Gets or sets the class that should be applied to the div that wraps the two date pickers
@@ -258,19 +265,11 @@ namespace Rock.Web.UI.Controls
             // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
             var scriptFormat = @"
 $('#{0}').datepicker({{ format: '{2}', todayHighlight: true }}).on('changeDate', function (ev) {{
-    if (ev.date.valueOf() > $('#{1}').data('datepicker').dates[0]) {{
-        var newDate = new Date(ev.date)
-        newDate.setDate(newDate.getDate() + 1);
-        $('#{1}').datepicker('update', newDate);
-
-        // disable date selection in the EndDatePicker that are earlier than the startDate
-        $('#{1}').datepicker('setStartDate', ev.date);
-    }}
-
-    if (event && event.type == 'click') {{
-        // close the start date picker and set focus to the end date
-        $('#{0}').data('datepicker').hide();
-        $('#{1}')[0].focus();
+    // close the start date picker and set focus to the end date
+    $('#{0}').data('datepicker').hide();
+    $('#{1}')[0].focus();
+    if ($('#{1}').data('datepicker').dates.length == 0) {{
+        $('#{1}').data('datepicker').show();
     }}
 }});
 
@@ -289,11 +288,16 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
     $(this).siblings('.form-control').select();
 }});
 
+// if value changes then re-validate the custom validator.
+$('#{4},#{5}').on('change', function (ev) {{
+    ValidatorValidate({6});
+}});
+
 ";
             string lowerSelector = string.Format( "{0} .input-group-lower.date", this.ClientID );
             string upperSelector = string.Format( "{0} .input-group-upper.date", this.ClientID );
 
-            var script = string.Format( scriptFormat, lowerSelector, upperSelector, dateFormat, this.ClientID );
+            var script = string.Format( scriptFormat, lowerSelector, upperSelector, dateFormat, this.ClientID, _tbLowerValue.ClientID, _tbUpperValue.ClientID, CustomValidator.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "daterange_picker-" + this.ClientID, script, true );
         }
 
@@ -309,13 +313,23 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
 
             _tbLowerValue = new DatePicker();
             _tbLowerValue.ID = this.ID + "_lower";
-            _tbLowerValue.CssClass = "input-width-md date input-group-lower";
+            _tbLowerValue.CssClass = "input-width-md date input-group-lower js-lower";
             Controls.Add( _tbLowerValue );
 
             _tbUpperValue = new DatePicker();
             _tbUpperValue.ID = this.ID + "_upper";
-            _tbUpperValue.CssClass = "input-width-md date input-group-upper";
+            _tbUpperValue.CssClass = "input-width-md date input-group-upper js-upper";
             Controls.Add( _tbUpperValue );
+
+            // add custom validator
+            CustomValidator.ID = this.ID + "_cfv";
+            CustomValidator.ClientValidationFunction = "Rock.controls.dateRangePicker.clientValidate";
+            CustomValidator.ErrorMessage = ( this.Label != string.Empty ? this.Label : string.Empty ) + " is required.";
+            CustomValidator.CssClass = "validation-error help-inline";
+            CustomValidator.Enabled = true;
+            CustomValidator.Display = ValidatorDisplay.Dynamic;
+            CustomValidator.ValidationGroup = ValidationGroup;
+            Controls.Add( CustomValidator );
         }
 
         /// <summary>
@@ -340,6 +354,8 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
             RegisterJavaScript();
 
             writer.AddAttribute( "id", this.ClientID );
+            writer.AddAttribute( "data-required", this.Required.ToTrueFalse().ToLower() );
+            writer.AddAttribute( "data-itemlabel", this.Label );
             foreach ( var styleKey in this.Style.Keys )
             {
                 string styleName = ( string ) styleKey;
@@ -348,7 +364,11 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
 
             if ( !string.IsNullOrEmpty( this.CssClass ) )
             {
-                writer.AddAttribute( "class", this.CssClass );
+                writer.AddAttribute( "class", "js-daterangepicker picker-daterange " + this.CssClass );
+            }
+            else
+            {
+                writer.AddAttribute( "class", "js-daterangepicker picker-daterange" );
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -361,6 +381,9 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
             _tbUpperValue.RenderControl( writer );
 
             writer.RenderEndTag(); // form-control-group
+
+            CustomValidator.RenderControl( writer );
+
             writer.RenderEndTag(); // id
         }
 
@@ -407,6 +430,26 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
         }
 
         /// <summary>
+        /// Gets or sets the date range.
+        /// </summary>
+        /// <value>
+        /// The date range.
+        /// </value>
+        public DateRange DateRange
+        {
+            get
+            {
+                return new DateRange( this.LowerValue, this.UpperValue );
+            }
+
+            set
+            {
+                this.LowerValue = value.Start;
+                this.UpperValue = value.End;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [read only].
         /// </summary>
         /// <value>
@@ -436,17 +479,15 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
         /// </value>
         public string ValidationGroup
         {
-            get
-            {
-                EnsureChildControls();
-                return _tbLowerValue.ValidationGroup;
-            }
-
+            get { return ViewState["ValidationGroup"] as string; }
             set
             {
-                EnsureChildControls();
-                _tbLowerValue.ValidationGroup = value;
-                _tbUpperValue.ValidationGroup = value;
+                ViewState["ValidationGroup"] = value;
+
+                if ( CustomValidator != null )
+                {
+                    CustomValidator.ValidationGroup = value;
+                }
             }
         }
 
@@ -547,16 +588,7 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
         /// <returns></returns>
         public static DateRange CalculateDateRangeFromDelimitedValues( string delimitedValues )
         {
-            if ( !string.IsNullOrWhiteSpace( delimitedValues ) && delimitedValues.Contains( "," ) )
-            {
-                var dates = delimitedValues.Split( ',' );
-                if ( dates.Length == 2 )
-                {
-                    return new DateRange( dates[0].AsDateTime(), dates[1].AsDateTime() );
-                }
-            }
-
-            return new DateRange( null, null );
+            return DateRange.FromDelimitedValues( delimitedValues );
         }
     }
 }

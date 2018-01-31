@@ -138,7 +138,6 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnLoad( e );
 
-            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;

@@ -17,10 +17,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -34,6 +36,7 @@ using DotLiquid;
 using DotLiquid.Util;
 using Humanizer;
 using Humanizer.Localisation;
+using ImageResizer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Rock;
@@ -43,6 +46,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using UAParser;
 
 namespace Rock.Lava
 {
@@ -53,6 +57,28 @@ namespace Rock.Lava
     {
         #region String Filters
 
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public static string ToString( object input )
+        {
+            return input.ToString();
+        }
+
+        /// <summary>
+        /// Uniques the identifier.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string UniqueIdentifier( object input )
+        {
+            return Guid.NewGuid().ToString();
+        }
 
         /// <summary>
         /// Withes the fallback.
@@ -82,6 +108,22 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Returns the right most part of a string of the given length.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        public static string Right( object input, int length )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            var inputString = input.ToString();
+            return inputString.Right( length );
+        }
 
         /// <summary>
         /// obfuscate a given email
@@ -565,18 +607,23 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="string">The string.</param>
         /// <returns></returns>
-        public static string Append( object input, string @string )
+        public static string Append( object input, object @string )
         {
             if ( input == null )
             {
                 return string.Empty;
             }
 
+            if (@string == null )
+            {
+                return input.ToString();
+            }
+
             string inputAsString = input.ToString();
 
             return inputAsString == null
                 ? inputAsString
-                : inputAsString + @string;
+                : inputAsString + @string.ToString();
         }
 
         /// <summary>
@@ -695,6 +742,68 @@ namespace Rock.Lava
             return input.Substring(start, length);
         }
 
+        /// <summary>
+        /// Parse the input string as a URL and then return a specific part of the URL.
+        /// </summary>
+        /// <param name="input">The string to be parsed as a URL.</param>
+        /// <param name="part">The part of the Uri object to retrieve.</param>
+        /// <param name="key">Extra parameter used by the QueryParameter key for which query parameter to retrieve.</param>
+        /// <returns>A string that identifies the part of the URL that was requested.</returns>
+        public static object Url( string input, string part, string key = null )
+        {
+            if ( string.IsNullOrEmpty( input ) || string.IsNullOrEmpty( part ) )
+            {
+                return input;
+            }
+
+            Uri uri;
+            if ( !Uri.TryCreate( input, UriKind.Absolute, out uri ) )
+            {
+                return string.Empty;
+            }
+
+            switch ( part.ToUpper() )
+            {
+                case "HOST":
+                    return uri.Host;
+
+                case "PORT":
+                    return uri.Port;
+
+                case "SEGMENTS":
+                    return uri.Segments;
+
+                case "SCHEME":
+                case "PROTOCOL":
+                    return uri.Scheme;
+
+                case "LOCALPATH":
+                    return uri.LocalPath;
+
+                case "PATHANDQUERY":
+                    return uri.PathAndQuery;
+
+                case "QUERYPARAMETER":
+                    if ( key != null )
+                    {
+                        var parameters = HttpUtility.ParseQueryString( uri.Query );
+
+                        if ( parameters.AllKeys.Contains( key ) )
+                        {
+                            return parameters[key];
+                        }
+                    }
+
+                    return string.Empty;
+
+                case "URL":
+                    return uri.ToString();
+
+                default:
+                    return string.Empty;
+            }
+        }
+
         #endregion
 
         #region DateTime Filters
@@ -714,10 +823,10 @@ namespace Rock.Lava
 
             if ( input.ToString() == "Now" )
             {
-                input = RockDateTime.Now.ToString();
+                input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
             }
 
-            if ( string.IsNullOrWhiteSpace( format ) )
+            if ( string.IsNullOrWhiteSpace( format ) ) 
             {
                 return input.ToString();
             }
@@ -771,12 +880,24 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Dateses from i cal.
+        /// Returns the occurrence Dates from an iCal string or list.
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="option">The option.</param>
-        /// <returns></returns>
+        /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
+        /// <param name="option">The quantity option (either an integer or "all").</param>
+        /// <returns>a list of datetimes</returns>
         public static List<DateTime> DatesFromICal( object input, object option = null )
+        {
+            return DatesFromICal( input, option, endDateTimeOption: null );
+        }
+
+        /// <summary>
+        /// Returns the occurrence Dates from an iCal string or list.
+        /// </summary>
+        /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
+        /// <param name="option">The quantity option (either an integer or "all").</param>
+        /// <param name="endDateTimeOption">The 'enddatetime' option if supplied will return the ending datetime of the occurrence; otherwise the start datetime is returned.</param>
+        /// <returns>a list of datetimes</returns>
+        public static List<DateTime> DatesFromICal( object input, object option = null, object endDateTimeOption = null )
         {
             // if no option was specified, default to returning just 1 (to preserve previous behavior)
             option = option ?? 1;
@@ -784,22 +905,24 @@ namespace Rock.Lava
             int returnCount = 1;
             if ( option.GetType() == typeof( int ) )
             {
-                returnCount = (int)option;
+                returnCount = ( int )option;
             }
             else if ( option.GetType() == typeof( string ) )
             {
                 // if a string of "all" is specified for the option, return all of the dates
-                if ( string.Equals( (string)option, "all", StringComparison.OrdinalIgnoreCase ) )
+                if ( string.Equals( ( string )option, "all", StringComparison.OrdinalIgnoreCase ) )
                 {
                     returnCount = int.MaxValue;
                 }
             }
 
+            bool useEndDateTime = ( endDateTimeOption is string && ( string ) endDateTimeOption == "enddatetime" );
+
             List<DateTime> nextOccurrences = new List<DateTime>();
 
             if ( input is string )
             {
-                nextOccurrences = GetOccurrenceDates( (string)input, returnCount );
+                nextOccurrences = GetOccurrenceDates( ( string )input, returnCount, useEndDateTime );
             }
             else if ( input is IList )
             {
@@ -807,7 +930,7 @@ namespace Rock.Lava
                 {
                     if ( item is string )
                     {
-                        nextOccurrences.AddRange( GetOccurrenceDates( (string)item, returnCount ) );
+                        nextOccurrences.AddRange( GetOccurrenceDates( ( string )item, returnCount, useEndDateTime ) );
                     }
                 }
             }
@@ -822,16 +945,22 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="iCalString">The i cal string.</param>
         /// <param name="returnCount">The return count.</param>
-        /// <returns></returns>
-        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount )
+        /// <param name="useEndDateTime">if set to <c>true</c> uses the EndTime in the returned dates; otherwise it uses the StartTime.</param>
+        /// <returns>a list of datetimes</returns>
+        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
         {
             iCalendar calendar = iCalendar.LoadFromStream( new StringReader( iCalString ) ).First() as iCalendar;
             DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
 
-            if ( calendarEvent.DTStart != null )
+            if ( ! useEndDateTime && calendarEvent.DTStart != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
                 return dates.Select( d => d.Period.StartTime.Value ).ToList();
+            }
+            else if ( useEndDateTime && calendarEvent.DTEnd != null )
+            {
+                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
+                return dates.Select( d => d.Period.EndTime.Value ).ToList();
             }
             else
             {
@@ -980,6 +1109,63 @@ namespace Rock.Lava
             }
 
             return response;
+        }
+
+        /// <summary>
+        /// Days in month
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="oMonth">The o month.</param>
+        /// <param name="oYear">The o year.</param>
+        /// <returns></returns>
+        public static int? DaysInMonth( object input, object oMonth = null, object oYear = null )
+        {
+            int? month;
+            int? year;
+
+            if (input.ToString().IsNotNullOrWhitespace() )
+            {
+                DateTime? date;
+
+                if (input.ToString().ToLower() == "now" )
+                {
+                    date = RockDateTime.Now;
+                }
+                else
+                {
+                    date = input.ToString().AsDateTime();
+                }
+
+                if (date.HasValue )
+                {
+                    month = date.Value.Month;
+                    year = date.Value.Year;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                if ( oYear == null )
+                {
+                    year = RockDateTime.Now.Year;
+                }
+                else
+                {
+                    year = oYear.ToString().AsIntegerOrNull();
+                }
+
+                month = oMonth.ToString().AsIntegerOrNull();
+            }
+
+            if ( month.HasValue && year.HasValue )
+            {
+                return System.DateTime.DaysInMonth( year.Value, month.Value );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -1229,15 +1415,22 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Plus( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null )
             {
                 return input;
             }
 
+            int intInput = -1;
+            int intOperand = -1;
             decimal iInput = -1;
             decimal iOperand = -1;
 
-            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput + intOperand;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput + iOperand;
             }
@@ -1255,15 +1448,22 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Minus( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null  )
             {
                 return input;
             }
 
+            int intInput = -1;
+            int intOperand = -1;
             decimal iInput = -1;
             decimal iOperand = -1;
 
-            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput - intOperand;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput - iOperand;
             }
@@ -1274,22 +1474,29 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Times - Overriding this to change the logic. This one does the math if the input can be parsed as a int
+        /// Times - Overriding this to change the logic. This one does the math if the input can be parsed as a int or decimal.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="operand"></param>
         /// <returns></returns>
         public static object Times( object input, object operand )
         {
-            if ( input == null )
+            if ( input == null || operand == null )
             {
                 return input;
             }
 
+            int intInput = -1;
+            int intOperand = -1;
             decimal iInput = -1;
             decimal iOperand = -1;
 
-            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput * intOperand;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput * iOperand;
             }
@@ -1401,16 +1608,14 @@ namespace Rock.Lava
                 return string.Empty;
             }
 
-            // Try to get RockContext from the dotLiquid context
-            var rockContext = GetRockContext( context );
-
             AttributeCache attribute = null;
             string rawValue = string.Empty;
+            int? entityId = null;
 
             // If Input is "Global" then look for a global attribute with key
             if ( input.ToString().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
             {
-                var globalAttributeCache = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext );
+                var globalAttributeCache = Rock.Web.Cache.GlobalAttributesCache.Read();
                 attribute = globalAttributeCache.Attributes
                     .FirstOrDefault( a => a.Key.Equals( attributeKey, StringComparison.OrdinalIgnoreCase ) );
                 if ( attribute != null )
@@ -1453,13 +1658,14 @@ namespace Rock.Lava
                 {
                     if ( item.Attributes == null )
                     {
-                        item.LoadAttributes( rockContext );
+                        item.LoadAttributes();
                     }
 
                     if ( item.Attributes.ContainsKey( attributeKey ) )
                     {
                         attribute = item.Attributes[attributeKey];
                         rawValue = item.AttributeValues[attributeKey].Value;
+                        entityId = item.Id;
                     }
                 }
             }
@@ -1510,7 +1716,7 @@ namespace Rock.Lava
                     }
 
                     // Otherwise return the formatted value
-                    return field.FormatValue( null, rawValue, attribute.QualifierValues, false );
+                    return field.FormatValue( null, attribute.EntityTypeId, entityId, rawValue, attribute.QualifierValues, false );
                 }
             }
 
@@ -1529,6 +1735,15 @@ namespace Rock.Lava
         {
             if ( input != null )
             {
+                if ( input is IDictionary<string, object> )
+                {
+                    var dictionaryObject = input as IDictionary<string, object>;
+                    if ( dictionaryObject.ContainsKey( propertyKey ) )
+                    {
+                        return dictionaryObject[ propertyKey];
+                    }
+                }
+
                 return input.GetPropertyValue( propertyKey );
             }
 
@@ -1538,6 +1753,85 @@ namespace Rock.Lava
         #endregion
 
         #region Person Filters
+
+        /// <summary>
+        /// Sets the person preference.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="settingKey">The setting key.</param>
+        /// <param name="settingValue">The setting value.</param>
+        public static void SetUserPreference( DotLiquid.Context context, object input, string settingKey, string settingValue )
+        {
+            Person person = null;
+
+            if (input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input ); 
+            }
+            else if (input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if (person != null )
+            {
+                PersonService.SaveUserPreference( person, settingKey, settingValue );
+            }
+        }
+
+        /// <summary>
+        /// Gets the person preference.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="settingKey">The setting key.</param>
+        /// <returns></returns>
+        public static string GetUserPreference( DotLiquid.Context context, object input, string settingKey )
+        {
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if ( person != null )
+            {
+                return PersonService.GetUserPreference( person, settingKey );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Deletes the user preference.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="settingKey">The setting key.</param>
+        public static void DeleteUserPreference( DotLiquid.Context context, object input, string settingKey )
+        {
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if ( person != null )
+            {
+                PersonService.DeleteUserPreference( person, settingKey );
+            }
+        }
 
         /// <summary>
         /// Persons the by identifier.
@@ -1624,7 +1918,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Parents( DotLiquid.Context context, object input )
         {
-            var person = GetPerson( input );
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
 
             if ( person != null )
             {
@@ -1644,7 +1947,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Children( DotLiquid.Context context, object input )
         {
-            var person = GetPerson( input );
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
 
             if ( person != null )
             {
@@ -1666,11 +1978,20 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Address( DotLiquid.Context context, object input, string addressType, string qualifier = "" )
         {
-            var person = GetPerson( input );
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
 
             if ( person != null )
             {
-                Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
                 Location location = null;
 
@@ -1682,7 +2003,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.IsMailingLocation == true )
@@ -1695,7 +2017,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.IsMappedLocation == true )
@@ -1708,7 +2031,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.GroupLocationTypeValue.Value == addressType )
@@ -1810,6 +2134,90 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Gets the Spouse of the selected person 
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person Spouse( DotLiquid.Context context, object input )
+        {
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if ( person == null )
+            {
+                return null;
+            }
+            return person.GetSpouse();
+        }
+
+        /// <summary>
+        /// Gets the Head of Household of the selected person 
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person HeadOfHousehold( DotLiquid.Context context, object input )
+        {
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if ( person == null )
+            {
+                return null;
+            }
+            return person.GetHeadOfHousehold();
+        }
+
+        /// <summary>
+        /// Families the salutation.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <param name="useFormalNames">if set to <c>true</c> [use formal names].</param>
+        /// <param name="finalfinalSeparator">The finalfinal separator.</param>
+        /// <param name="separator">The separator.</param>
+        /// <returns></returns>
+        public static string FamilySalutation( DotLiquid.Context context, object input, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalfinalSeparator = "&", string separator = "," )
+        {
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if ( person == null )
+            {
+                return null;
+            }
+
+            return Person.GetFamilySalutation(person, includeChildren, includeInactive, useFormalNames, finalfinalSeparator, separator);
+        }
+
+        /// <summary>
         /// Gets an number for a person object
         /// </summary>
         /// <param name="context">The context.</param>
@@ -1819,7 +2227,18 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string PhoneNumber( DotLiquid.Context context, object input, string phoneType = "Home", bool countryCode = false )
         {
-            var person = GetPerson( input );
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+
             string phoneNumber = null;
 
             if ( person != null )
@@ -2062,7 +2481,7 @@ namespace Rock.Lava
                     convertedStream.Dispose();
                     initialPhotoStream.Dispose();
 
-                    return string.Format( "^FS ~DYE:{0},P,P,{1},,{2} ^FD", fileName, content.Length, zplImageData.ToString() );
+                    return string.Format( "^FS ~DYR:{0},P,P,{1},,{2} ^FD", fileName, content.Length, zplImageData.ToString() );
                 }
             }
             catch
@@ -2374,9 +2793,236 @@ namespace Rock.Lava
             return null;
         }
 
+        /// <summary>
+        /// Gets the Notes of the entity
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="documentTemplateId">The Id number of the signed document type to query for.</param>
+        /// <param name="trueValue">The value to be returned if the person has signed the document.</param>
+        /// <param name="falseValue">The value to be returned if the person has not signed the document.</param>
+        /// <returns></returns>
+        public static object HasSignedDocument( DotLiquid.Context context, object input, object documentTemplateId, object trueValue = null, object falseValue = null )
+        {
+            int personId;
+            int templateId;
+
+            trueValue = trueValue ?? true;
+            falseValue = falseValue ?? false;
+
+            if ( input == null || documentTemplateId == null )
+            {
+                return falseValue;
+            }
+
+            templateId = documentTemplateId.ToString().AsInteger();
+
+            if ( input is Person )
+            {
+                personId = ( input as Person ).Id;
+            }
+            else
+            {
+                personId = input.ToString().AsInteger();
+            }
+
+            bool found = new SignatureDocumentService( new RockContext() )
+                .Queryable().AsNoTracking()
+                .Where( d =>
+                    d.SignatureDocumentTemplateId == templateId &&
+                    d.Status == SignatureDocumentStatus.Signed &&
+                    d.BinaryFileId.HasValue &&
+                    d.AppliesToPersonAlias.PersonId == personId )
+                .Any();
+
+            return found ? trueValue : falseValue;
+        }
+
+        /// <summary>
+        /// Creates a Person Token (rckipid) for the specified Person (person can be specified by Person, Guid, or Id). Specify ExpireMinutes, UsageLimit and PageId to 
+        /// limit the usage of the token for the specified number of minutes, usage count, and specific pageid
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="expireMinutes">The expire minutes.</param>
+        /// <param name="usageLimit">The usage limit.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        public static string PersonTokenCreate( DotLiquid.Context context, object input, int? expireMinutes = null, int? usageLimit = null, int? pageId = null )
+        {
+            Person person = GetPerson( input ) ?? PersonById( context, input ) ?? PersonByGuid( context, input );
+
+            if ( person != null )
+            {
+                DateTime? expireDateTime = null;
+                if ( expireMinutes.HasValue )
+                {
+                    expireDateTime = RockDateTime.Now.AddMinutes( expireMinutes.Value );
+                }
+
+                if ( pageId.HasValue )
+                {
+                    var page = new PageService( new RockContext() ).Get( pageId.Value );
+                    if ( page == null )
+                    {
+                        // invalid page specified, so don't return a token
+                        return null;
+                    }
+                }
+
+                return person.GetImpersonationToken( expireDateTime, usageLimit, pageId );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Looks up a Person using an encrypted person token (rckipid) with an option to incrementUsage and to validate against a specific page
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="incrementUsage">if set to <c>true</c> [increment usage].</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        public static Person PersonTokenRead( DotLiquid.Context context, object input, bool incrementUsage = false, int? pageId = null )
+        {
+            string encryptedPersonToken = input as string;
+
+            if ( !string.IsNullOrEmpty( encryptedPersonToken ) )
+            {
+                var rockContext = new RockContext();
+                
+
+                return new PersonService( rockContext ).GetByImpersonationToken( encryptedPersonToken, incrementUsage, pageId );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        #endregion Person
+
+        #region Group Filters
+
+        /// <summary>
+        /// Loads a Group record from the database from it's GUID.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Rock.Model.Group GroupByGuid( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Guid? groupGuid = input.ToString().AsGuidOrNull();
+
+            if ( groupGuid.HasValue )
+            {
+                var rockContext = new RockContext();
+
+                return new GroupService( rockContext ).Get( groupGuid.Value );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Loads a Group record from the database from it's Identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Rock.Model.Group GroupById( DotLiquid.Context context, object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            int groupId = -1;
+
+            if ( !Int32.TryParse( input.ToString(), out groupId ) )
+            {
+                return null;
+            }
+
+            var rockContext = new RockContext();
+
+            return new GroupService( rockContext ).Get( groupId );
+        }
+
         #endregion
 
         #region Misc Filters
+
+        /// <summary>
+        /// Shows details about which Merge Fields are available
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">If a merge field is specified, only Debug info on that MergeField will be shown</param>
+        /// <param name="option1">either userName or outputFormat</param>
+        /// <param name="option2">either userName or outputFormat</param>
+        /// <returns></returns>
+        public static string Debug( DotLiquid.Context context, object input, string option1 = null, string option2 = null )
+        {
+            string[] outputFormats = new string[] { "Ascii", "Html" };
+            string userName = null;
+            string outputFormat = null;
+
+            // detect if option1 or option2 is the outputFormat or userName parameter
+            if ( outputFormats.Any( f => f.Equals( option1, StringComparison.OrdinalIgnoreCase ) ) )
+            {
+                outputFormat = option1;
+                userName = option2;
+            }
+            else if ( outputFormats.Any( f => f.Equals( option2, StringComparison.OrdinalIgnoreCase ) ) )
+            {
+                outputFormat = option2;
+                userName = option1;
+            }
+            else
+            {
+                userName = option1 ?? option2;
+            }
+
+            if ( userName.IsNotNullOrWhitespace() )
+            {
+                // if userName was specified, don't return anything if the currentPerson doesn't have a matching userName
+                var currentPerson = GetCurrentPerson( context );
+                if ( currentPerson != null )
+                {
+                    if ( !currentPerson.Users.Any( a => a.UserName.Equals( userName, StringComparison.OrdinalIgnoreCase ) ) )
+                    {
+                        // currentUser doesn't have the specified userName, so return nothing
+                        return null;
+                    }
+                }
+                else
+                {
+                    // CurrentPerson is null so return nothing
+                    return null;
+                }
+            }
+
+            var mergeFields = context.Environments.SelectMany( a => a ).ToDictionary( k => k.Key, v => v.Value );
+
+            // if a specific MergeField was specified as the Input, limit the help to just that MergeField
+            if ( input != null && mergeFields.Any( a => a.Value == input ) )
+            {
+                mergeFields = mergeFields.Where( a => a.Value == input ).ToDictionary( k => k.Key, v => v.Value );
+            }
+
+            // TODO: implement the outputFormat option to support ASCII
+            return mergeFields.lavaDebugInfo();
+        }
 
         /// <summary>
         /// Redirects the specified input.
@@ -2399,6 +3045,204 @@ namespace Rock.Lava
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Resolves the rock address.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string ResolveRockUrl( string input )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( input.StartsWith( "~~" ) )
+            {
+                string theme = "Rock";
+                if ( page.Theme.IsNotNullOrWhitespace() )
+                {
+                    theme = page.Theme;
+                }
+                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhitespace() )
+                {
+                    theme = page.Site.Theme;
+                }
+
+                input = "~/Themes/" + theme + (input.Length > 2 ? input.Substring( 2 ) : string.Empty);
+            }
+
+            return page.ResolveUrl( input );
+        }
+
+        /// <summary>
+        /// Froms the cache.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="cacheType">Type of the cache.</param>
+        /// <returns></returns>
+        public static object FromCache( object input, string cacheType )
+        {
+            int? inputAsInt = null;
+            Guid? inputAsGuid = null;
+
+            // ensure they provided a cache type
+            if ( input == null || cacheType.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            // figure out the input type
+            inputAsInt = input.ToString().AsIntegerOrNull();
+
+            if ( !inputAsInt.HasValue ) // not an int try guid
+            {
+                inputAsGuid = input.ToString().AsGuidOrNull();
+            }
+
+            if ( inputAsGuid.HasValue || inputAsInt.HasValue )
+            {
+                switch ( cacheType )
+                {
+                    case "DefinedValue":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return DefinedValueCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return DefinedValueCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "DefinedType":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return DefinedTypeCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return DefinedTypeCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "Campus":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return CampusCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return CampusCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "Category":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return CategoryCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return CategoryCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "GroupType":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return GroupTypeCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return GroupTypeCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "Page":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return PageCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return PageCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "Block":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return BlockCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return BlockCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "BlockType":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return BlockTypeCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return BlockTypeCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "EventCalendar":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return EventCalendarCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return EventCalendarCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "Attribute":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return AttributeCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return AttributeCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "NoteType":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return NoteTypeCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return NoteTypeCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    case "ContentChannel":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return ContentChannelCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return ContentChannelCache.Read( inputAsGuid.Value );
+                            }
+                        }
+                    default:
+                        {
+                            return $"Cache type {cacheType} not supported.";
+                        }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -2543,6 +3387,125 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Adds the script link.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
+        /// <returns></returns>
+        public static string AddScriptLink( string input, bool fingerprintLink = false )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage.AddScriptLink( page, ResolveRockUrl( input ), fingerprintLink );
+
+            return String.Empty;
+        }
+
+        /// <summary>
+        /// Adds the CSS link.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
+        /// <returns></returns>
+        public static string AddCssLink( string input, bool fingerprintLink = false )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage.AddCSSLink( page, ResolveRockUrl( input ), fingerprintLink );
+
+            return String.Empty;
+        }
+
+        /// <summary>
+        /// Clients the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The parm.</param>
+        /// <returns></returns>
+        public static object Client( string input, string parm )
+        {
+            parm = parm.ToUpper();
+
+            switch ( parm )
+            {
+                case "IP":
+                    {
+                        string address = string.Empty;
+                        
+                        // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
+                        string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+                        if ( !string.IsNullOrEmpty( ipAddress ) )
+                        {
+                            string[] addresses = ipAddress.Split( ',' );
+                            if ( addresses.Length != 0 )
+                            {
+                                address = addresses[0];
+                            }
+                        }
+
+                        address =  HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+
+                        // nicely format localhost
+                        if (address == "::1" )
+                        {
+                            address = "localhost";
+                        }
+
+                        return address;
+                    }
+                case "LOGIN": {
+                        return HttpContext.Current.Request.ServerVariables["AUTH_USER"];
+                    }
+                case "BROWSER":
+                    {
+                        Parser uaParser = Parser.GetDefault();
+                        ClientInfo client = uaParser.Parse( HttpContext.Current.Request.UserAgent );
+
+                        return client;
+                    }
+                case "PARMLIST":
+                    {
+                        return string.Join( ", ", HttpContext.Current.Request.ServerVariables.AllKeys );
+                    }
+                default:
+                    {
+                        return HttpContext.Current.Request.ServerVariables[parm];
+                    }
+            }
+
+        }
+
+        /// <summary>
+        /// Ratings the markup.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string RatingMarkup(object input )
+        {
+            var rating = 0;
+
+            if (input!= null )
+            {
+                rating = input.ToString().AsInteger();
+            }
+
+            var starCounter = 0;
+            StringBuilder starMarkup = new StringBuilder();
+
+            for ( int i = 0; i < rating; i++ )
+            {
+                starMarkup.Append( "<i class='fa fa-rating-on'></i>" );
+                starCounter++;
+            }
+
+            for ( int i = starCounter; i < 5; i++ )
+            {
+                starMarkup.Append( "<i class='fa fa-rating-off'></i>" );
+            }
+
+            return starMarkup.ToString();
+        }
+
+        /// <summary>
         /// Pages the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -2602,7 +3565,10 @@ namespace Rock.Lava
                                 return page.Site.Theme;
                             }
                         }
-
+                    case "Description":
+                        {
+                            return page.MetaDescription;
+                        }
                     case "Layout":
                         {
                             return page.Layout.Name;
@@ -2615,13 +3581,37 @@ namespace Rock.Lava
 
                     case "QueryString":
                         {
-                            var test = page.PageParameters();
                             return page.PageParameters();
                         }
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns the specified page parm.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The parm.</param>
+        /// <returns></returns>
+        public static object PageParameter( string input, string parm )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            var parmReturn = page.PageParameter( parm );
+
+            if ( parmReturn == null )
+            {
+                return null;
+            }
+
+            if (parmReturn.AsIntegerOrNull().HasValue )
+            {
+                return parmReturn.AsIntegerOrNull();
+            }
+
+            return parmReturn;
         }
 
         /// <summary>
@@ -2644,6 +3634,96 @@ namespace Rock.Lava
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Casts the input as a boolean value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into boolean form.</param>
+        /// <returns>A boolean value or null if the cast could not be performed.</returns>
+        public static bool? AsBoolean( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsBooleanOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as an integer value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into integer form.</param>
+        /// <returns>An integer value or null if the cast could not be performed.</returns>
+        public static int? AsInteger( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsIntegerOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as a decimal value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into decimal form.</param>
+        /// <returns>A decimal value or null if the cast could not be performed.</returns>
+        public static decimal? AsDecimal( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsDecimalOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as a double value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into double form.</param>
+        /// <returns>A double value or null if the cast could not be performed.</returns>
+        public static double? AsDouble( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsDoubleOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as a string value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into string form.</param>
+        /// <returns>A string value or null if the cast could not be performed.</returns>
+        public static string AsString( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString();
+        }
+
+        /// <summary>
+        /// Casts the input as a DateTime value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into DateTime form.</param>
+        /// <returns>A DateTime value or null if the cast could not be performed.</returns>
+        public static DateTime? AsDateTime( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsDateTime();
         }
 
         #endregion
@@ -2755,12 +3835,12 @@ namespace Rock.Lava
                             result.Add( liquidObject[selectKey] );
                         }
                     }
-                    else if ( value is IDictionary<string, object> )
+                    else if ( value is IDictionary<string, object> ) 
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( selectKey ) && dictionaryObject[selectKey].Equals( selectKey ) )
+                        if ( dictionaryObject.ContainsKey( selectKey ) )
                         {
-                            result.Add( dictionaryObject );
+                            result.Add( dictionaryObject[selectKey] );
                         }
                     }
                 }
@@ -2779,6 +3859,19 @@ namespace Rock.Lava
         /// <param name="attributeKey">The attribute key.</param>
         /// <returns></returns>
         public static object SortByAttribute( DotLiquid.Context context, object input, string attributeKey )
+        {
+            return SortByAttribute( context, input, attributeKey, "asc" );
+        }
+        
+        /// <summary>
+        /// Sorts the list of items by the specified attribute's value
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="sortOrder">asc or desc for sort order.</param>
+        /// <returns></returns>
+        public static object SortByAttribute( DotLiquid.Context context, object input, string attributeKey, string sortOrder )
         {
             if ( input is IEnumerable )
             {
@@ -2802,7 +3895,14 @@ namespace Rock.Lava
                         var item2AttributeValue = item2.AttributeValues.Where( a => a.Key == attributeKey ).FirstOrDefault().Value.SortValue;
                         if ( item1AttributeValue is IComparable && item2AttributeValue is IComparable )
                         {
-                            return ( item1AttributeValue as IComparable ).CompareTo( item2AttributeValue as IComparable );
+                            if (sortOrder.ToLower() == "desc")
+                            {
+                                return ( item2AttributeValue as IComparable ).CompareTo( item1AttributeValue as IComparable );
+                            }
+                            else
+                            {
+                                return ( item1AttributeValue as IComparable ).CompareTo( item2AttributeValue as IComparable );
+                            }
                         }
                         else
                         {
@@ -2819,9 +3919,116 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Extracts a single item from an array.
+        /// </summary>
+        /// <param name="input">The input object to extract one element from.</param>
+        /// <param name="index">The index number of the object to extract.</param>
+        /// <returns>The single object from the array or null if not found.</returns>
+        public static object Index( object input, object index )
+        {
+            if ( input == null || index == null )
+            {
+                return input;
+            }
+
+            if ( !( input is IList ) )
+            {
+                return input;
+            }
+
+            var inputList = input as IList;
+            var indexInt = index.ToString().AsIntegerOrNull();
+            if ( !indexInt.HasValue || indexInt.Value < 0 || indexInt.Value >= inputList.Count )
+            {
+                return null;
+            }
+
+            return inputList[indexInt.Value];
+        }
+
         #endregion
 
         #region Object Filters
+
+        /// <summary>
+        /// Gets the Notes of the entity
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="noteType">The noteType.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="count">The count.</param>
+        /// <returns></returns>
+        public static List<Note> Notes( DotLiquid.Context context, object input, object noteType, string sortOrder = "desc", int? count = null )
+        {
+            int? entityId = null;
+
+            if ( input is int )
+            {
+                entityId = Convert.ToInt32( input );
+            }
+            if ( input is IEntity )
+            {
+                IEntity entity = input as IEntity;
+                entityId = entity.Id;
+            }
+            if ( !entityId.HasValue )
+            {
+                return null;
+            }
+
+            List<int> noteTypeIds = new List<int>();
+
+            if ( noteType is int )
+            {
+                noteTypeIds.Add( (int)noteType );
+            }
+
+            if ( noteType is string )
+            {
+                noteTypeIds = ((string)noteType).Split( ',' ).Select( Int32.Parse ).ToList();
+            }
+
+            var notes = new NoteService( new RockContext() ).Queryable().Where( n => n.EntityId == entityId );
+
+            if ( noteTypeIds.Count > 0 )
+            {
+                notes = notes.Where( n => noteTypeIds.Contains( n.NoteTypeId ) );
+            }
+            else
+            {
+                return null;
+            }
+
+            // add sort order
+            if(sortOrder == "desc" )
+            {
+                notes = notes.OrderByDescending( n => n.CreatedDateTime );
+            }
+            else
+            {
+                notes = notes.OrderBy( n => n.CreatedDateTime );
+            }
+
+            var filterNotes = new List<Note>();
+            foreach ( var note in notes )
+            {
+                if ( note.IsAuthorized( Authorization.VIEW, GetCurrentPerson( context ) ) )
+                {
+                    filterNotes.Add( note );
+                }
+            }
+
+            if ( !count.HasValue )
+            {
+                return filterNotes;
+            }
+            else
+            {
+                return filterNotes.OrderBy(n => n.CreatedDateTime).Take( count.Value ).ToList();
+            }
+        }
 
         /// <summary>
         /// Determines whether [has rights to] [the specified context].
@@ -2964,6 +4171,60 @@ namespace Rock.Lava
             }
 
             return currentPerson;
+        }
+
+        /// <summary>
+        /// Base64 encodes a binary file
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="resizeSettings">The resize settings.</param>
+        /// <returns></returns>
+        public static string Base64Encode( DotLiquid.Context context, object input, string resizeSettings )
+        {
+            BinaryFile binaryFile = null;
+
+            if ( input is int )
+            {
+                binaryFile = new BinaryFileService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is BinaryFile )
+            {
+                binaryFile = (BinaryFile)input;
+            }
+
+            if ( binaryFile != null )
+            {
+                using ( var stream = GetResized( resizeSettings, binaryFile.ContentStream ) )
+                {
+                    byte[] imageBytes = stream.ReadBytesToEnd();
+                    return Convert.ToBase64String( imageBytes );
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private static Stream GetResized( string resizeSettings, Stream fileContent )
+        {
+            try
+            {
+                if ( resizeSettings.IsNullOrWhiteSpace() )
+                {
+                    return fileContent;
+                }
+
+                ResizeSettings settings = new ResizeSettings( HttpUtility.ParseQueryString( resizeSettings ) );
+                MemoryStream resizedStream = new MemoryStream();
+
+                ImageBuilder.Current.Build( fileContent, resizedStream, settings );
+                return resizedStream;
+            }
+            catch
+            {
+                // if resize failed, just return original content
+                return fileContent;
+            }
         }
 
         #endregion

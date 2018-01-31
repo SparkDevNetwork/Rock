@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -136,7 +137,6 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnLoad( e );
 
-            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
@@ -170,6 +170,14 @@ namespace RockWeb.Blocks.CheckIn
 
                     if ( _autoCheckin )
                     {
+                        // Because auto-checkin bypasses any other workflow processing, the check for previous check-ins needs to be done manually
+                        bool preventDuplicate = CurrentCheckInState.CheckInType.PreventDuplicateCheckin;
+                        using ( var rockContext = new Rock.Data.RockContext() )
+                        {
+                            Rock.Workflow.Action.CheckIn.SetAvailableSchedules.ProcessForFamily( rockContext, family );
+                            Rock.Workflow.Action.CheckIn.FilterByPreviousCheckin.ProcessForFamily( rockContext, family, preventDuplicate );
+                        }
+
                         // Check to see if person has option pre-selected and if not, select first item.
                         foreach ( var person in family.People )
                         {
@@ -610,15 +618,15 @@ namespace RockWeb.Blocks.CheckIn
             var firstSchedule = person.PossibleSchedules.FirstOrDefault();
             if ( firstSchedule != null )
             {
-                foreach ( var groupType in person.GroupTypes )
+                foreach ( var groupType in person.GroupTypes.Where( t => t.AvailableForSchedule.Contains( firstSchedule.Schedule.Id ) ) )
                 {
-                    foreach ( var group in groupType.Groups )
+                    foreach ( var group in groupType.Groups.Where( t => t.AvailableForSchedule.Contains( firstSchedule.Schedule.Id ) ) )
                     {
-                        foreach ( var location in group.Locations )
+                        foreach ( var location in group.Locations.Where( t => t.AvailableForSchedule.Contains( firstSchedule.Schedule.Id ) ) )
                         {
-                            foreach ( var schedule in location.Schedules )
+                            foreach ( var schedule in location.Schedules.Where( s => s.Schedule.Id == firstSchedule.Schedule.Id ) )
                             {
-                                if ( schedule.Schedule.Id == firstSchedule.Schedule.Id )
+                                if ( location.AvailableForSchedule.Contains( schedule.Schedule.Id ) )
                                 {
                                     schedule.PreSelected = true;
                                     location.PreSelected = true;
@@ -633,7 +641,7 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
-            // Couldn't find a match for first schedule, jus select first option
+            // Couldn't find a match for first schedule, just select first option
             foreach ( var groupType in person.GroupTypes )
             {
                 foreach ( var group in groupType.Groups )
@@ -642,12 +650,19 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         foreach ( var schedule in location.Schedules )
                         {
-                            schedule.PreSelected = true;
-                            location.PreSelected = true;
-                            group.PreSelected = true;
-                            groupType.PreSelected = true;
+                            int scheduleId = schedule.Schedule.Id;
 
-                            return;
+                            if (location.AvailableForSchedule.Contains( scheduleId ) &&
+                                group.AvailableForSchedule.Contains( scheduleId ) &&
+                                groupType.AvailableForSchedule.Contains( scheduleId ) )
+                            {
+                                schedule.PreSelected = true;
+                                location.PreSelected = true;
+                                group.PreSelected = true;
+                                groupType.PreSelected = true;
+
+                                return;
+                            }
                         }
                     }
                 }

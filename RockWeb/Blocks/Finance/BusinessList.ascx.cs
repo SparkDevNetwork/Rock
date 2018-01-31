@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
@@ -34,7 +35,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Lists all businesses and provides filtering by business name and owner" )]
     [LinkedPage( "Detail Page" )]
-    public partial class BusinessList : Rock.Web.UI.RockBlock
+    public partial class BusinessList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 
@@ -235,6 +236,8 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            var workLocationTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
+
             var groupMemberQuery = new GroupMemberService( rockContext ).Queryable();
 
             var businessList = queryable.Select( b => new
@@ -246,7 +249,7 @@ namespace RockWeb.Blocks.Finance
                 Email = b.Email,
                 Address = b.Members
                                 .Where( m => m.Group.GroupType.Guid.ToString() == Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY )
-                                .SelectMany( m => m.Group.GroupLocations )
+                                .SelectMany( m => m.Group.GroupLocations.Where( l => l.GroupLocationTypeValue != null && l.GroupLocationTypeValue.Guid == workLocationTypeGuid ) )
                                 .FirstOrDefault()
                                 .Location,
                 Contacts = b.Members
@@ -275,6 +278,12 @@ namespace RockWeb.Blocks.Finance
         protected void ShowDetailForm( int id )
         {
             NavigateToLinkedPage( "DetailPage", "businessId", id );
+        }
+
+        protected string FormatContactInfo( string phone, string address )
+        {
+            var values = new List<string> { phone, address, "&nbsp;", "&nbsp" };
+            return values.Where( v => v.IsNotNullOrWhitespace() ).Take( 2 ).ToList().AsDelimited( "<br/>" );
         }
 
         #endregion Internal Methods

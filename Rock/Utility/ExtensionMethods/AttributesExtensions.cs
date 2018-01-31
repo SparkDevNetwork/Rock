@@ -15,7 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -53,6 +56,37 @@ namespace Rock
         public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
         {
             Rock.Attribute.Helper.SaveAttributeValues( entity, rockContext );
+        }
+
+        /// <summary>
+        /// Saves the specified attribute values to the database.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="keys">The attribute keys.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, IEnumerable<string> keys, RockContext rockContext = null )
+        {
+            foreach ( var key in keys )
+            {
+                if ( entity.AttributeValues.ContainsKey( key ) )
+                {
+                    Rock.Attribute.Helper.SaveAttributeValue( entity, entity.Attributes[key], entity.AttributeValues[key].Value, rockContext );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves an attribute value to the database.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="key">The attribute key.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void SaveAttributeValue( this Rock.Attribute.IHasAttributes entity, string key, RockContext rockContext = null)
+        {
+            if ( entity.AttributeValues.ContainsKey( key ) )
+            {
+                Rock.Attribute.Helper.SaveAttributeValue( entity, entity.Attributes[key], entity.AttributeValues[key].Value, rockContext );
+            }
         }
 
         /// <summary>
@@ -116,6 +150,32 @@ namespace Rock
             }
         }
 
+        /// <summary>
+        /// Gets the authorized attributes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public static Dictionary<string, AttributeCache> GetAuthorizedAttributes ( this Rock.Attribute.IHasAttributes entity, string action, Person person)
+        {
+            var authorizedAttributes = new Dictionary<string, AttributeCache>();
+
+            if ( entity != null )
+            {
+                foreach( var item in entity.Attributes )
+                {
+                    if ( item.Value.IsAuthorized( action, person ) )
+                    {
+                        authorizedAttributes.Add( item.Key, item.Value );
+                    }
+                }
+            }
+
+            return authorizedAttributes;
+        }
+
         #endregion IHasAttributes extensions
+
     }
 }

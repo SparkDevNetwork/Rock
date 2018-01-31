@@ -83,18 +83,12 @@ namespace Rock.Reporting.DataFilter
 
             if ( entityFieldPickerIsHidden && ddlEntityField.SelectedItem != null )
             {
+                var filterLabel = filterControl.Label ?? ddlEntityField.SelectedItem.Text;
                 if ( filterControl.ShowCheckbox )
                 {
                     // special case when a filter is a entity field filter: render the checkbox here instead of in FilterField.cs
-                    filterControl.cbIncludeFilter.Text = ddlEntityField.SelectedItem.Text;
+                    filterControl.cbIncludeFilter.Text = filterLabel;
                     filterControl.cbIncludeFilter.RenderControl( writer );
-                }
-                else
-                {
-                    writer.AddAttribute( "class", "filterfield-label" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                    writer.Write( ddlEntityField.SelectedItem.Text );
-                    writer.RenderEndTag();
                 }
             }
 
@@ -132,7 +126,7 @@ namespace Rock.Reporting.DataFilter
 
                 if ( clientFormatSelection != string.Empty )
                 {
-                    sb.AppendFormat( lineFormat, entityField.Name, clientFormatSelection );
+                    sb.AppendFormat( lineFormat, entityField.UniqueName, clientFormatSelection );
                 }
 
                 fieldIndex++;
@@ -145,6 +139,9 @@ namespace Rock.Reporting.DataFilter
             string scriptFormat = @"
     function {0}PropertySelection($content){{
         var selectedFieldName = $('select.entity-property-selection', $content).find(':selected').val();
+        if (!selectedFieldName || selectedFieldName == '') {{
+            selectedFieldName = '0'
+        }}
         var $selectedContent = $('[data-entity-field-name=' + selectedFieldName + ']', $content)
         var result = '';
         switch(selectedFieldName) {{
@@ -172,11 +169,12 @@ namespace Rock.Reporting.DataFilter
         {
             if ( values.Count > 0 && ddlProperty != null )
             {
-                // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
-                var entityField = entityFields.FirstOrDefault( f => f.Name == values[0].Replace( " ", "" ) );
+                var fieldSelection = values[0];
+                var entityField = entityFields.FindFromFilterSelection( fieldSelection );
+                
                 if ( entityField != null )
                 {
-                    string selectedProperty = entityField.Name;
+                    string selectedProperty = entityField.UniqueName;
                     if ( ddlProperty.Items.OfType<ListItem>().Any( a => a.Value == selectedProperty ) )
                     {
                         ddlProperty.SelectedValue = selectedProperty;
@@ -184,11 +182,11 @@ namespace Rock.Reporting.DataFilter
                     else
                     {
                         // if this EntityField is not available for the current person, but this dataview filter already has it configured, let them keep it
-                        ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                        ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.UniqueName ) );
                         ddlProperty.SelectedValue = selectedProperty;
                     }
 
-                    var control = controls.ToList().FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.Name ) );
+                    var control = controls.ToList().FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.UniqueName ) );
                     if ( control != null )
                     {
                         if ( values.Count > 1 && setFilterValues )

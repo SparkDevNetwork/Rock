@@ -30,6 +30,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Lava;
+using System.Runtime.Caching;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -38,13 +39,14 @@ namespace RockWeb.Blocks.Groups
     [Description( "Lists all group that the person is a member of using a Lava template." )]
 
     [LinkedPage( "Detail Page", "", false, "", "", 0 )]
+    [GroupField( "Parent Group", "If a group is chosen, only the groups under this group will be displayed.", false, order: 2 )]
+    [IntegerField( "Cache Duration", "Length of time in seconds to cache which groups are descendants of the parent group.", false, 3600, "", 3 )]
     [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 4 )]
     [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 5 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupListSidebar.lava' %}", "", 6 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 7 )]
     public partial class GroupListPersonalizedLava : RockBlock
     {
-       
+
         #region Control Methods
 
         /// <summary>
@@ -90,11 +92,34 @@ namespace RockWeb.Blocks.Groups
         {
             RockContext rockContext = new RockContext();
 
-            var qry = new GroupMemberService(rockContext)
-                        .Queryable("Group")
-                        .Where( m => m.PersonId == CurrentPersonId 
-                                && m.GroupMemberStatus == GroupMemberStatus.Active 
-                                && m.Group.IsActive == true);
+            var qry = new GroupMemberService( rockContext )
+                        .Queryable( "Group" );
+
+            var parentGroupGuid = GetAttributeValue( "ParentGroup" ).AsGuidOrNull();
+            if ( parentGroupGuid!=null )
+            {
+                var availableGroupIds = ( List<int> ) GetCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString() );
+
+                if ( availableGroupIds == null )
+                {
+                    var parentGroup = new GroupService( rockContext ).Get( parentGroupGuid ?? new Guid() );
+                    if ( parentGroup != null )
+                    {
+                        availableGroupIds = GetChildGroups( parentGroup ).Select( g => g.Id ).ToList();
+                    }
+                    else
+                    {
+                        availableGroupIds = new List<int>();
+                    }
+                    var cacheLength = GetAttributeValue( "CacheDuration" ).AsInteger();
+                    AddCacheItem( "GroupListPersonalizedLava:" + parentGroupGuid.ToString(), availableGroupIds, cacheLength );
+                }
+                qry = qry.Where( m => availableGroupIds.Contains( m.GroupId ) );
+            }
+
+            qry = qry.Where( m => m.PersonId == CurrentPersonId
+                        && m.GroupMemberStatus == GroupMemberStatus.Active
+                        && m.Group.IsActive == true );
 
             List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
             if ( includeGroupTypeGuids.Count > 0 )
@@ -133,15 +158,24 @@ namespace RockWeb.Blocks.Groups
 
             string template = GetAttributeValue( "LavaTemplate" );
 
-            // show debug info
-            bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
-
             lContent.Text = template.ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
+        /// Recursively loads all descendants of the group
+        /// </summary>
+        /// <param name="group">Group to load from</param>
+        /// <returns></returns>
+        private List<Group> GetChildGroups( Group group )
+        {
+            List<Group> childGroups = group.Groups.ToList();
+            List<Group> grandChildGroups = new List<Group>();
+            foreach ( var childGroup in childGroups )
+            {
+                grandChildGroups.AddRange( GetChildGroups( childGroup ) );
+            }
+            childGroups.AddRange( grandChildGroups );
+            return childGroups;
         }
 
         [DotLiquid.LiquidType( "Group", "Role", "IsLeader", "GroupType" )]

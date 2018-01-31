@@ -27,6 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.UniversalSearch;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -55,6 +56,8 @@ namespace RockWeb.Blocks.Groups
         private List<InheritedAttribute> GroupMemberAttributesInheritedState { get; set; }
 
         private List<Attribute> GroupTypeAttributesState { get; set; }
+
+        private List<GroupRequirement> GroupTypeGroupRequirementsState { get; set; }
 
         private List<Attribute> GroupAttributesState { get; set; }
 
@@ -99,6 +102,30 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 GroupTypeAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+
+            json = ViewState["GroupTypeGroupRequirementsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupTypeGroupRequirementsState = new List<GroupRequirement>();
+            }
+            else
+            {
+                GroupTypeGroupRequirementsState = JsonConvert.DeserializeObject<List<GroupRequirement>>( json ) ?? new List<GroupRequirement>();
+            }
+
+            // get the GroupRole for each GroupRequirement from the database it case it isn't serialized, and we'll need it
+            var groupRoleIds = GroupTypeGroupRequirementsState.Where( a => a.GroupRoleId.HasValue && a.GroupRole == null ).Select( a => a.GroupRoleId.Value ).Distinct().ToList();
+            if ( groupRoleIds.Any() )
+            {
+                var groupRoles = new GroupTypeRoleService( new RockContext() ).GetByIds( groupRoleIds );
+                GroupTypeGroupRequirementsState.ForEach( a =>
+                {
+                    if ( a.GroupRoleId.HasValue )
+                    {
+                        a.GroupRole = groupRoles.FirstOrDefault( b => b.Id == a.GroupRoleId );
+                    }
+                } );
             }
 
             json = ViewState["GroupAttributesState"] as string;
@@ -188,6 +215,9 @@ namespace RockWeb.Blocks.Groups
             gGroupTypeAttributes.GridRebind += gGroupTypeAttributes_GridRebind;
             gGroupTypeAttributes.GridReorder += gGroupTypeAttributes_GridReorder;
 
+            SecurityField groupTypeAttributeSecurityField = gGroupTypeAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            groupTypeAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
+
             gGroupAttributesInherited.Actions.ShowAdd = false;
             gGroupAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
             gGroupAttributesInherited.GridRebind += gGroupAttributesInherited_GridRebind;
@@ -198,6 +228,9 @@ namespace RockWeb.Blocks.Groups
             gGroupAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gGroupAttributes.GridRebind += gGroupAttributes_GridRebind;
             gGroupAttributes.GridReorder += gGroupAttributes_GridReorder;
+
+            SecurityField groupAttributeSecurityField = gGroupAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            groupAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
 
             gGroupMemberAttributesInherited.Actions.ShowAdd = false;
             gGroupMemberAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
@@ -210,12 +243,21 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
 
+            SecurityField groupMemberAttributeSecurityField = gGroupMemberAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            groupMemberAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
+
             gMemberWorkflowTriggers.DataKeyNames = new string[] { "Guid" };
             gMemberWorkflowTriggers.Actions.ShowAdd = true;
             gMemberWorkflowTriggers.Actions.AddClick += gMemberWorkflowTriggers_Add;
             gMemberWorkflowTriggers.EmptyDataText = Server.HtmlEncode( None.Text );
             gMemberWorkflowTriggers.GridRebind += gMemberWorkflowTriggers_GridRebind;
             gMemberWorkflowTriggers.GridReorder += gMemberWorkflowTriggers_GridReorder;
+
+            gGroupTypeGroupRequirements.DataKeyNames = new string[] { "Guid" };
+            gGroupTypeGroupRequirements.Actions.ShowAdd = true;
+            gGroupTypeGroupRequirements.Actions.AddClick += gGroupTypeGroupRequirements_Add;
+            gGroupTypeGroupRequirements.EmptyDataText = Server.HtmlEncode( None.Text );
+            gGroupTypeGroupRequirements.GridRebind += gGroupTypeGroupRequirements_GridRebind;
         }
 
         /// <summary>
@@ -272,6 +314,8 @@ namespace RockWeb.Blocks.Groups
             ViewState["DefaultRoleGuid"] = GroupMemberAttributesInheritedState;
 
             ViewState["MemberWorkflowTriggersState"] = JsonConvert.SerializeObject( MemberWorkflowTriggersState, Formatting.None, jsonSetting );
+
+            ViewState["GroupTypeGroupRequirementsState"] = JsonConvert.SerializeObject( GroupTypeGroupRequirementsState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -335,7 +379,11 @@ namespace RockWeb.Blocks.Groups
             CategoryService categoryService = new CategoryService( rockContext );
             GroupScheduleExclusionService scheduleExclusionService = new GroupScheduleExclusionService( rockContext );
 
+            GroupRequirementService groupRequirementService = new GroupRequirementService( rockContext );
+
             int groupTypeId = hfGroupTypeId.Value.AsInteger();
+
+            var groupTypeGroupRequirementsListInDatabase = groupRequirementService.Queryable().Where( a => a.GroupTypeId == groupTypeId ).ToList(); 
 
             if ( groupTypeId == 0 )
             {
@@ -362,6 +410,28 @@ namespace RockWeb.Blocks.Groups
                     groupMemberWorkflowTriggerService.Delete( trigger );
                     triggersUpdated = true;
                 }
+
+                // remove any grouptype group requirements that removed in the UI
+                var selectedGroupTypeGroupRequirements = GroupTypeGroupRequirementsState.Select( a => a.Guid );
+
+                foreach ( var groupTypeGroupRequirement in groupTypeGroupRequirementsListInDatabase.Where( a => !selectedGroupTypeGroupRequirements.Contains( a.Guid ) ).ToList() )
+                {
+                    groupRequirementService.Delete( groupTypeGroupRequirement );
+                }
+            }
+
+            // add/update any groupType group requirements that were added or changed in the UI (we already removed the ones that were removed above)
+            var groupRequirementsToInsert = new List<GroupRequirement>();
+            foreach ( var groupGroupTypeRequirementState in GroupTypeGroupRequirementsState )
+            {
+                GroupRequirement groupTypeGroupRequirement = groupTypeGroupRequirementsListInDatabase.Where( a => a.Guid == groupGroupTypeRequirementState.Guid ).FirstOrDefault();
+                if ( groupTypeGroupRequirement == null )
+                {
+                    groupTypeGroupRequirement = new GroupRequirement();
+                    groupRequirementsToInsert.Add( groupTypeGroupRequirement );
+                }
+
+                groupTypeGroupRequirement.CopyPropertiesFrom( groupGroupTypeRequirementState );
             }
 
             foreach ( var roleState in GroupTypeRolesState )
@@ -425,6 +495,7 @@ namespace RockWeb.Blocks.Groups
             groupType.ShowInGroupList = cbShowInGroupList.Checked;
             groupType.ShowInNavigation = cbShowInNavigation.Checked;
             groupType.ShowConnectionStatus = cbShowConnectionStatus.Checked;
+            groupType.ShowMaritalStatus = cbShowMaritalStatus.Checked;
             groupType.IconCssClass = tbIconCssClass.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
             groupType.GroupsRequireCampus = cbGroupsRequireCampus.Checked;
@@ -441,6 +512,7 @@ namespace RockWeb.Blocks.Groups
             groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
             groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
             groupType.IgnorePersonInactivated = cbDontInactivateMembers.Checked;
+            groupType.IsIndexEnabled = cbEnableIndexing.Checked;
             groupType.EnableLocationSchedules = cbEnableLocationSchedules.Checked;
 
             groupType.ChildGroupTypes = new List<GroupType>();
@@ -500,6 +572,12 @@ namespace RockWeb.Blocks.Groups
             rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
+
+                if ( groupRequirementsToInsert.Any() )
+                {
+                    groupRequirementsToInsert.ForEach( a => a.GroupTypeId = groupType.Id );
+                    groupRequirementService.AddRange( groupRequirementsToInsert );
+                }
 
                 /* Save Attributes */
                 string qualifierValue = groupType.Id.ToString();
@@ -585,6 +663,10 @@ namespace RockWeb.Blocks.Groups
         public void ShowDetail( int groupTypeId )
         {
             pnlDetails.Visible = false;
+
+            // determine if indexing is enabled
+            var groupEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
+            cbEnableIndexing.Visible = (IndexContainer.IndexingEnabled && groupEntityType.IsIndexingEnabled);
 
             GroupType groupType = null;
 
@@ -700,6 +782,7 @@ namespace RockWeb.Blocks.Groups
             cbShowInGroupList.Checked = groupType.ShowInGroupList;
             cbShowInNavigation.Checked = groupType.ShowInNavigation;
             cbShowConnectionStatus.Checked = groupType.ShowConnectionStatus;
+            cbShowMaritalStatus.Checked = groupType.ShowMaritalStatus;
             tbIconCssClass.Text = groupType.IconCssClass;
 
             // Locations
@@ -746,6 +829,7 @@ namespace RockWeb.Blocks.Groups
             gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
 
             cbDontInactivateMembers.Checked = groupType.IgnorePersonInactivated;
+            cbEnableIndexing.Checked = groupType.IsIndexEnabled;
 
             GroupTypeRolesState = new List<GroupTypeRole>();
             foreach ( var role in groupType.Roles )
@@ -775,6 +859,9 @@ namespace RockWeb.Blocks.Groups
                 .ThenBy( a => a.Name )
                 .ToList();
             BindGroupAttributesGrid();
+
+            GroupTypeGroupRequirementsState = new GroupRequirementService(rockContext).Queryable().Where(a => a.GroupTypeId.HasValue && a.GroupTypeId == groupType.Id ).ToList();
+            BindGroupTypeGroupRequirementsGrid();
 
             GroupMemberAttributesState = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
                 .Where( a =>
@@ -919,6 +1006,14 @@ namespace RockWeb.Blocks.Groups
                     dlgGroupTypeAttribute.Show();
                     break;
                 case "GROUPATTRIBUTES":
+                    if (cbEnableIndexing.Visible && cbEnableIndexing.Checked )
+                    {
+                        edtGroupAttributes.IsIndexingEnabledVisible = true;
+                    }
+                    else
+                    {
+                        edtGroupAttributes.IsIndexingEnabledVisible = false;
+                    }
                     dlgGroupAttribute.Show();
                     break;
                 case "GROUPMEMBERATTRIBUTES":
@@ -926,6 +1021,9 @@ namespace RockWeb.Blocks.Groups
                     break;
                 case "MEMBERWORKFLOWTRIGGERS":
                     dlgMemberWorkflowTriggers.Show();
+                    break;
+                case "GROUPTYPEGROUPREQUIREMENTS":
+                    mdGroupTypeGroupRequirement.Show();
                     break;
             }
         }
@@ -960,6 +1058,9 @@ namespace RockWeb.Blocks.Groups
                     break;
                 case "MEMBERWORKFLOWTRIGGERS":
                     dlgMemberWorkflowTriggers.Hide();
+                    break;
+                case "GROUPTYPEGROUPREQUIREMENTS":
+                    mdGroupTypeGroupRequirement.Hide();
                     break;
             }
 
@@ -1827,6 +1928,12 @@ namespace RockWeb.Blocks.Groups
             {
                 attribute = new Attribute();
                 attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+                if (hfGroupTypeId.Value.AsInteger() > 0)
+                {
+                    attribute.EntityTypeQualifierColumn = "GroupTypeId";
+                    attribute.EntityTypeQualifierValue = hfGroupTypeId.Value;
+                }
+
                 edtGroupAttributes.ActionTitle = ActionTitle.Add( "attribute for groups of group type " + tbName.Text );
             }
             else
@@ -2095,6 +2202,158 @@ namespace RockWeb.Blocks.Groups
             SetAttributeListOrder( GroupMemberAttributesState );
             gGroupMemberAttributes.DataSource = GroupMemberAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gGroupMemberAttributes.DataBind();
+        }
+
+        #endregion
+
+        #region GroupTypeGroupRequirements Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gGroupTypeGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gGroupTypeGroupRequirements_Add( object sender, EventArgs e )
+        {
+            gGroupTypeGroupRequirements_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gGroupTypeGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gGroupTypeGroupRequirements_Edit( object sender, RowEventArgs e )
+        {
+            Guid groupTypeGroupRequirementGuid = ( Guid ) e.RowKeyValue;
+            gGroupTypeGroupRequirements_ShowEdit( groupTypeGroupRequirementGuid );
+        }
+
+        /// <summary>
+        /// gs the group type group requirements show edit.
+        /// </summary>
+        /// <param name="groupTypeGroupRequirementGuid">The group type group requirement unique identifier.</param>
+        protected void gGroupTypeGroupRequirements_ShowEdit( Guid groupTypeGroupRequirementGuid )
+        {
+            var rockContext = new RockContext();
+
+            var groupRequirementTypeService = new GroupRequirementTypeService( rockContext );
+            var list = groupRequirementTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+            ddlGroupRequirementType.Items.Clear();
+            ddlGroupRequirementType.Items.Add( new ListItem() );
+            foreach ( var item in list )
+            {
+                ddlGroupRequirementType.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+            }
+
+            var selectedGroupTypeGroupRequirement = this.GroupTypeGroupRequirementsState.FirstOrDefault( a => a.Guid == groupTypeGroupRequirementGuid );
+            grpGroupRequirementGroupRole.GroupTypeId = hfGroupTypeId.Value.AsIntegerOrNull();
+            if ( selectedGroupTypeGroupRequirement != null )
+            {
+                ddlGroupRequirementType.SelectedValue = selectedGroupTypeGroupRequirement.GroupRequirementTypeId.ToString();
+                grpGroupRequirementGroupRole.GroupRoleId = selectedGroupTypeGroupRequirement.GroupRoleId;
+                cbMembersMustMeetRequirementOnAdd.Checked = selectedGroupTypeGroupRequirement.MustMeetRequirementToAddMember;
+            }
+            else
+            {
+                ddlGroupRequirementType.SelectedIndex = 0;
+                grpGroupRequirementGroupRole.GroupRoleId = null;
+                cbMembersMustMeetRequirementOnAdd.Checked = false;
+            }
+
+            nbDuplicateGroupRequirement.Visible = false;
+
+            hfGroupTypeGroupRequirementGuid.Value = groupTypeGroupRequirementGuid.ToString();
+
+            ShowDialog( "GroupTypeGroupRequirements", true );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdGroupTypeGroupRequirement control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdGroupTypeGroupRequirement_SaveClick( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            Guid groupTypeGroupRequirementGuid = hfGroupTypeGroupRequirementGuid.Value.AsGuid();
+
+            var groupTypeGroupRequirement = this.GroupTypeGroupRequirementsState.FirstOrDefault( a => a.Guid == groupTypeGroupRequirementGuid );
+            if ( groupTypeGroupRequirement == null )
+            {
+                groupTypeGroupRequirement = new GroupRequirement();
+                groupTypeGroupRequirement.Guid = Guid.NewGuid();
+                this.GroupTypeGroupRequirementsState.Add( groupTypeGroupRequirement );
+            }
+
+            groupTypeGroupRequirement.GroupRequirementTypeId = ddlGroupRequirementType.SelectedValue.AsInteger();
+            groupTypeGroupRequirement.GroupRequirementType = new GroupRequirementTypeService( rockContext ).Get( groupTypeGroupRequirement.GroupRequirementTypeId );
+            groupTypeGroupRequirement.GroupRoleId = grpGroupRequirementGroupRole.GroupRoleId;
+            groupTypeGroupRequirement.MustMeetRequirementToAddMember = cbMembersMustMeetRequirementOnAdd.Checked;
+            if ( groupTypeGroupRequirement.GroupRoleId.HasValue )
+            {
+                groupTypeGroupRequirement.GroupRole = new GroupTypeRoleService( rockContext ).Get( groupTypeGroupRequirement.GroupRoleId.Value );
+            }
+            else
+            {
+                groupTypeGroupRequirement.GroupRole = null;
+            }
+
+            // make sure we aren't adding a duplicate group requirement (same group requirement type and role)
+            var duplicateGroupRequirement = this.GroupTypeGroupRequirementsState.Any( a =>
+                a.GroupRequirementTypeId == groupTypeGroupRequirement.GroupRequirementTypeId
+                && a.GroupRoleId == groupTypeGroupRequirement.GroupRoleId
+                && a.Guid != groupTypeGroupRequirement.Guid );
+
+            if ( duplicateGroupRequirement )
+            {
+                nbDuplicateGroupRequirement.Text = string.Format(
+                    "This group type already has a group requirement of {0} {1}",
+                    groupTypeGroupRequirement.GroupRequirementType.Name,
+                    groupTypeGroupRequirement.GroupRoleId.HasValue ? "for group role " + groupTypeGroupRequirement.GroupRole.Name : string.Empty );
+                nbDuplicateGroupRequirement.Visible = true;
+                this.GroupTypeGroupRequirementsState.Remove( groupTypeGroupRequirement );
+                return;
+            }
+            else
+            {
+                nbDuplicateGroupRequirement.Visible = false;
+                BindGroupTypeGroupRequirementsGrid();
+                HideDialog();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gGroupTypeGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gGroupTypeGroupRequirements_Delete( object sender, RowEventArgs e )
+        {
+            Guid rowGuid = ( Guid ) e.RowKeyValue;
+            GroupTypeGroupRequirementsState.RemoveEntity( rowGuid );
+
+            BindGroupTypeGroupRequirementsGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupTypeGroupRequirements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gGroupTypeGroupRequirements_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupTypeGroupRequirementsGrid();
+        }
+
+        /// <summary>
+        /// Binds the group type group requirements grid.
+        /// </summary>
+        private void BindGroupTypeGroupRequirementsGrid()
+        {
+            gGroupTypeGroupRequirements.AddCssClass( "group-requirements-grid" );
+            gGroupTypeGroupRequirements.DataSource = GroupTypeGroupRequirementsState.OrderBy( a => a.GroupRequirementType.Name ).ToList();
+            gGroupTypeGroupRequirements.DataBind();
         }
 
         #endregion

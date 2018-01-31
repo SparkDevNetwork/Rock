@@ -119,7 +119,8 @@ namespace RockWeb.Blocks.Cms
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var qryPageViews = new PageViewService( rockContext ).Queryable();
+                    var qryPageViews = new InteractionService( rockContext ).Queryable();
+
                     var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
                     var pageViewQry = qryPageViews.Join(
                         qryPersonAlias,
@@ -129,10 +130,10 @@ namespace RockWeb.Blocks.Cms
                         new
                         {
                             PersonAliasPersonId = pa.PersonId,
-                            pv.DateTimeViewed,
-                            pv.SiteId,
-                            pv.PageViewSessionId,
-                            PagePageTitle = pv.PageTitle
+                            pv.InteractionDateTime,
+                            pv.InteractionComponent.Channel.ChannelEntityId,
+                            pv.InteractionSessionId,
+                            PagePageTitle = pv.InteractionComponent.Name
                         } );
 
                     var last24Hours = RockDateTime.Now.AddDays( -1 );
@@ -165,8 +166,8 @@ namespace RockWeb.Blocks.Cms
                             },
                             pageViews = pageViewQry
                                 .Where( v => v.PersonAliasPersonId == l.PersonId )
-                                .Where( v => v.DateTimeViewed > last24Hours )
-                                .OrderByDescending( v => v.DateTimeViewed )
+                                .Where( v => v.InteractionDateTime > last24Hours )
+                                .OrderByDescending( v => v.InteractionDateTime )
                                 .Take( pageViewTakeCount )
                         } )
                         .Select( a => new
@@ -184,13 +185,13 @@ namespace RockWeb.Blocks.Cms
                     {
                         var login = activeLogin.login;
 
-                        if ( !activeLogin.pageViews.Any() || activeLogin.pageViews.FirstOrDefault().SiteId != site.Id )
+                        if ( !activeLogin.pageViews.Any() || activeLogin.pageViews.FirstOrDefault().ChannelEntityId != site.Id )
                         {
                             // only show active logins with PageViews and the most recent pageview is for the specified site
                             continue;
                         }
 
-                        var latestPageViewSessionId = activeLogin.pageViews.FirstOrDefault().PageViewSessionId;
+                        var latestPageViewSessionId = activeLogin.pageViews.FirstOrDefault().InteractionSessionId;
 
                         TimeSpan tsLastActivity = login.LastActivityDateTime.HasValue ? RockDateTime.Now.Subtract( login.LastActivityDateTime.Value ) : TimeSpan.MaxValue;
                         string className = tsLastActivity.Minutes <= 5 ? "recent" : "not-recent";
@@ -219,7 +220,7 @@ namespace RockWeb.Blocks.Cms
                             if ( activeLogin.pageViews != null )
                             {
                                 string pageViewsHtml = activeLogin.pageViews
-                                                    .Where( v => v.PageViewSessionId == latestPageViewSessionId )
+                                                    .Where( v => v.InteractionSessionId == latestPageViewSessionId )
                                                     .Select( v => HttpUtility.HtmlEncode( v.PagePageTitle ) ).ToList().AsDelimited( "<br> " );
 
                                 sbUsers.Append( string.Format( activeLoginFormat, className, personLink, pageViewsHtml ) );
@@ -245,20 +246,20 @@ namespace RockWeb.Blocks.Cms
                         var last5Minutes = RockDateTime.Now.AddMinutes( -5 );
                         var last15Minutes = RockDateTime.Now.AddMinutes( -15 );
 
-                        var qryGuests = new PageViewService( rockContext ).Queryable().AsNoTracking()
-                                          .Where( 
-                                                p => p.SiteId == site.Id 
-                                                && p.DateTimeViewed > last15Minutes 
-                                                && p.PersonAliasId == null 
-                                                && p.PageViewSession.PageViewUserAgent.Browser != "Other" 
-                                                && p.PageViewSession.PageViewUserAgent.ClientType != "Crawler" )
-                                          .GroupBy( p => p.PageViewSessionId )
-                                          .Select( g => new
-                                          {
-                                              SessionId = g.Key,
-                                              LastVisit = g.Max( p => p.DateTimeViewed )
-                                          } )
-                                          .ToList();
+                        var qryGuests = new InteractionService( rockContext ).Queryable().AsNoTracking()
+                                        .Where(
+                                            i => i.InteractionComponent.Channel.ChannelEntityId == site.Id
+                                            && i.InteractionDateTime > last15Minutes
+                                            && i.PersonAliasId == null
+                                            && i.InteractionSession.DeviceType.ClientType != "Other"
+                                            && i.InteractionSession.DeviceType.ClientType != "Crawler" )
+                                        .GroupBy( i => i.InteractionSessionId )
+                                        .Select( g => new
+                                        {
+                                            SessionId = g.Key,
+                                            LastVisit = g.Max( i => i.InteractionDateTime )
+                                        } )
+                                        .ToList();
 
                         var numRecentGuests = qryGuests.Where( g => g.LastVisit >= last5Minutes ).Count();
                         var numInactiveGuests = qryGuests.Where( g => g.LastVisit < last5Minutes ).Count();

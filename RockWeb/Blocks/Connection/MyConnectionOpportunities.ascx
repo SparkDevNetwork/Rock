@@ -40,16 +40,16 @@
             </div>
 
             <div class="panel-body">
-                <Rock:NotificationBox ID="nbNoOpportunities" runat="server" NotificationBoxType="Info" Text="There are no current connection requests." Visible="" />
+                <Rock:NotificationBox ID="nbNoOpportunities" runat="server" NotificationBoxType="Info" Text="There are no current connection requests." />
 
                 <asp:Repeater ID="rptConnnectionTypes" runat="server" OnItemDataBound="rptConnnectionTypes_ItemDataBound">
                     <ItemTemplate>
                         <asp:Literal ID="lConnectionTypeName" runat="server" />
-                        <div class="list-as-blocks clearfix">    
-                            <ul class="has-count">
+                        <div class="list-as-blocks has-count clearfix">    
+                            <ul>
                                 <asp:Repeater ID="rptConnectionOpportunities" runat="server" OnItemCommand="rptConnectionOpportunities_ItemCommand">
                                     <ItemTemplate>
-                                        <li class='<%# SelectedOpportunityId.HasValue && (int)Eval("Id") == SelectedOpportunityId.Value ? "active" : "" %> block-status'>
+                                        <li class='<%# SelectedOpportunityId.HasValue && (int)Eval("Id") == SelectedOpportunityId.Value ? "selected" : "" %> block-status <%# (bool)Eval("IsActive") ? "" : "inactive-item"  %>' title='<%# (bool)Eval("IsActive") ? "" : "This opportunity is inactive."  %>' >
                                             <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
                                                 <%# this.GetOpportunitySummaryHtml( Container.DataItem as OpportunitySummary ) %>
                                             </asp:LinkButton>
@@ -90,7 +90,11 @@
                             <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" ItemStyle-HorizontalAlign="Left" />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
-                            <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="AssignedGroup.Name" />
+                            <Rock:RockTemplateField HeaderText="Group" SortExpression="AssignedGroup.Name">
+                                <ItemTemplate>
+                                    <%# FormatGroupName( Eval("Group"), Eval("GroupRole"), Eval("GroupStatus") )  %>
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="Connector.PersonAlias.Person.LastName,Connector.PersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false" />
                             <Rock:RockBoundField DataField="LastActivityNote" HeaderText="Last Activity Note" HtmlEncode="false" />

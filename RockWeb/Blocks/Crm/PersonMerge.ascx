@@ -17,7 +17,7 @@
 
                     <Rock:RockTextBox runat="server" ID="tbEntitySetNote" Label="Optional Note" Rows="4" TextMode="MultiLine" Visible="false" />
                     <div class="actions">
-                        <asp:LinkButton ID="btnSaveRequestNote" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveRequestNote_Click" Visible="false" />
+                        <asp:LinkButton ID="btnSaveRequestNote" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveRequestNote_Click" Visible="false" />
                     </div>
 
                     <Rock:NotificationBox runat="server" ID="nbNoteSavedSuccess" NotificationBoxType="Success" Title="Success" Text="Your note has been saved." Visible="false" />

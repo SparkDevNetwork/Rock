@@ -116,6 +116,8 @@
                                 
                                 <Rock:RockCheckBox ID="cbDontInactivateMembers" runat="server" Label="Don't Inactivate Members" 
                                     Help="By default, whenever a person record is inactivated, all of that person's group memberships are also inactivated. Check this option if members in groups of this type should not be inactivated when their person record is inactivated." />
+                                <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Enable Indexing" 
+                                    Help="Determines if groups of this type should be indexed." />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -224,6 +226,7 @@
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:SecurityField TitleField="Name" />
                                     <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />
                                 </Columns>
@@ -254,6 +257,7 @@
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:SecurityField TitleField="Name" />
                                     <Rock:EditField OnClick="gGroupAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupAttributes_Delete" />
                                 </Columns>
@@ -284,12 +288,29 @@
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:SecurityField TitleField="Name" />
                                     <Rock:EditField OnClick="gGroupTypeAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gGroupTypeAttributes_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
                     </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="wpGroupTypeGroupRequirements" runat="server" Title="Group Requirements">
+                            <div class="grid">
+                                <Rock:Grid ID="gGroupTypeGroupRequirements" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Requirement" ShowConfirmDeleteDialog="false">
+                                    <Columns>
+                                        <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
+                                        <Rock:RockBoundField DataField="GroupRole" HeaderText="Group Role" />
+                                        <Rock:BoolField DataField="MustMeetRequirementToAddMember" HeaderText="Required For New Members" />
+                                        <Rock:BoolField DataField="GroupRequirementType.CanExpire" HeaderText="Can Expire" />
+                                        <Rock:EnumField DataField="GroupRequirementType.RequirementCheckType" HeaderText="Type" />
+                                        <Rock:EditField OnClick="gGroupTypeGroupRequirements_Edit" />
+                                        <Rock:DeleteField OnClick="gGroupTypeGroupRequirements_Delete" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
+                        </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpMemberWorkflowTriggers" runat="server" Title="Group Member Workflows" >
                         <Rock:NotificationBox ID="NotificationBox3" runat="server" NotificationBoxType="Info" 
@@ -330,13 +351,15 @@
                                     Help="Check this option to include groups of this type in the GroupTreeView block's navigation control." />
                                 <Rock:RockCheckBox ID="cbShowConnectionStatus" runat="server" Label="Show Connection Status" Text="Yes" 
                                     Help="Check this option to show the person's connection status as a column in the group member list." />
+                                <Rock:RockCheckBox ID="cbShowMaritalStatus" runat="server" Label="Show Marital Status" Text="Yes" 
+                                    Help="Check this option to show the person's martial status as a column in the group member list." />
                             </div>
                         </div>
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
@@ -419,6 +442,23 @@
         <Rock:ModalDialog ID="dlgGroupMemberAttribute" runat="server" Title="Group Member Attributes" OnSaveClick="dlgGroupMemberAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="GroupMemberttributes">
             <Content>
                 <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" ShowActions="false" ValidationGroup="GroupMemberttributes" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <!-- GroupType Group Requirements Modal Dialog -->
+        <Rock:ModalDialog ID="mdGroupTypeGroupRequirement" runat="server" Title="Group Requirement" OnSaveClick="mdGroupTypeGroupRequirement_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="vg_GroupTypeGroupRequirement">
+            <Content>
+                <asp:HiddenField ID="hfGroupTypeGroupRequirementGuid" runat="server" />
+
+                <Rock:NotificationBox id="nbDuplicateGroupRequirement" runat="server" NotificationBoxType="Warning" />
+
+                <asp:ValidationSummary ID="vsGroupTypeGroupRequirement" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vg_GroupTypeGroupRequirement" />
+
+                <Rock:RockDropDownList ID="ddlGroupRequirementType" runat="server" Label="Group Requirement Type" Required="true" ValidationGroup="vg_GroupTypeGroupRequirement"/>
+
+                <Rock:GroupRolePicker ID="grpGroupRequirementGroupRole" runat="server" Label="Group Role" Help="Select the group role that this requirement applies to. Leave blank if it applies to all group roles." ValidationGroup="vg_GroupTypeGroupRequirement" />
+
+                <Rock:RockCheckBox ID="cbMembersMustMeetRequirementOnAdd" runat="server" Text="Members must meet this requirement before adding" Help="If this is enabled, a person can only become a group member if this requirement is met. Note: only applies to Data View and SQL type requirements since manual ones can't be checked until after the person is added." />
             </Content>
         </Rock:ModalDialog>
 

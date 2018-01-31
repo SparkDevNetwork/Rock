@@ -70,6 +70,11 @@ namespace Rock.SystemGuid
         public const string DISC_RESULTS_TYPE = "F06DDAD8-6058-4182-AD0A-B523BB7A2D78";
 
         /// <summary>
+        /// Guid for the Domains Sharing Logins
+        /// </summary>
+        public const string DOMAINS_SHARING_LOGINS = "6CE00E1B-FE09-45FE-BD9D-56C57A11BE1A";
+
+        /// <summary>
         /// Guid for Entity Set Purpose
         /// </summary>
         public const string ENTITY_SET_PURPOSE = "618BBF3F-794F-4FF9-9615-9211CDBAF723";
@@ -130,6 +135,16 @@ namespace Rock.SystemGuid
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
 
         /// <summary>
+        /// Guid for the types of interaction service.
+        /// </summary>
+        public const string INTERACTION_CHANNEL_MEDIUM = "9bf5777a-961f-49a8-a834-45e5c2077967";
+
+        /// <summary>
+        /// Guid for Default link list
+        /// </summary>
+        public const string LAVA_SHORTCODES = "3B1AF656-7AEF-52A8-4E2C-5EFF75A1A23A";
+
+        /// <summary>
         /// Guid for Default link list
         /// </summary>
         public const string LINKLIST_DEFAULT_LIST = "7E7969BD-945C-4472-8A80-889EF5833776";
@@ -150,7 +165,7 @@ namespace Rock.SystemGuid
         public const string LOCATION_TYPE = "3285DCEF-FAA4-43B9-9338-983F4A384ABA";
 
         /// <summary>
-        /// Guid for Marketing Campaign Audience Type
+        /// Guid for Content Channel Audience Type (formally called Marketing Campaign)
         /// </summary>
         public const string MARKETING_CAMPAIGN_AUDIENCE_TYPE =  "799301A3-2026-4977-994E-45DC68502559";
 
@@ -210,6 +225,21 @@ namespace Rock.SystemGuid
         public const string PERSON_ABILITY_LEVEL_TYPE = "7BEEF4D4-0860-4913-9A3D-857634D1BF7C";
 
         /// <summary>
+        /// Guid for the types of possible personal devices used for notifications
+        /// </summary>
+        public const string PERSONAL_DEVICE_TYPE = "C1848F4C-D6F8-4514-8DB6-CD3C19621025";
+
+        /// <summary>
+        /// The personal device platform type (ios, android, etc).
+        /// </summary>
+        public const string PERSONAL_DEVICE_PLATFORM = "A55849D7-5C7B-4B36-9024-A672169E4C9C";
+
+        /// <summary>
+        /// The PowerBI Accounts Defined Type guid
+        /// </summary>
+        public const string POWERBI_ACCOUNTS = "497DE3E6-66BD-D4A1-4A41-78A2FED2D0DF";
+
+        /// <summary>
         /// Protect My Ministry MVR jurisdiction codes
         /// </summary>
         public const string PROTECT_MY_MINISTRY_MVR_JURISDICTION_CODES = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D";
@@ -240,7 +270,7 @@ namespace Rock.SystemGuid
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
 
         /// <summary>
-        /// The school grades defined type which has values that determine which grade gext to display
+        /// The school grades defined type, which has values that determine which grade the person is based. The Value of the DefinedValue is the GradeOffset.
         /// </summary>
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
 
@@ -248,5 +278,20 @@ namespace Rock.SystemGuid
         /// Used to manage the topic options for small groups.
         /// </summary>
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
+
+        /// <summary>
+        /// Used to manage the workflows that can be launched via webhook.
+        /// </summary>
+        public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
+
+        /// <summary>
+        /// Used to manage the workflows that can be launched via a text message.
+        /// </summary>
+        public const string TEXT_TO_WORKFLOW = "2CACB86F-D811-4483-98E1-272F1FF8FF5D";
+
+        /// <summary>
+        /// Used to manage the lava code that can be launched via webhook.
+        /// </summary>
+        public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
     }
 }

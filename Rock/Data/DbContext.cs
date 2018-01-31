@@ -23,6 +23,8 @@ using System.Reflection;
 using System.Web;
 
 using Rock.Model;
+using Rock.Transactions;
+using Rock.UniversalSearch;
 using Rock.Workflow;
 
 namespace Rock.Data
@@ -194,7 +196,7 @@ namespace Rock.Data
                 if ( entry.Entity is IModel )
                 {
                     var model = entry.Entity as IModel;
-                    model.PreSaveChanges( this, entry );
+                    model.PreSaveChanges( this, entry, entry.State ); 
 
                     if ( !preSavedEntities.Contains( model.Guid ) )
                     {
@@ -323,6 +325,7 @@ namespace Rock.Data
                 }
             }
 
+            List<ITransaction> indexTransactions = new List<ITransaction>();
             foreach ( var item in updatedItems )
             {
                 if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
@@ -334,6 +337,46 @@ namespace Rock.Data
                     TriggerWorkflows( item, WorkflowTriggerType.ImmediatePostSave, personAlias );
                     TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
                 }
+
+                if ( item.Entity is IModel )
+                {
+                    var model = item.Entity as IModel;
+                    model.PostSaveChanges( this );
+                }
+
+                // check if this entity should be passed on for indexing
+                if ( item.Entity is IRockIndexable )
+                {
+                    if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
+                    {
+                        DeleteIndexEntityTransaction transaction = new DeleteIndexEntityTransaction();
+                        transaction.EntityTypeId = item.Entity.TypeId;
+                        transaction.EntityId = item.Entity.Id;
+
+                        indexTransactions.Add( transaction );
+                    }
+                    else
+                    {
+                        IndexEntityTransaction transaction = new IndexEntityTransaction();
+                        transaction.EntityTypeId = item.Entity.TypeId;
+                        transaction.EntityId = item.Entity.Id;
+
+                        indexTransactions.Add( transaction );
+                    }
+                }
+            }
+
+            // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
+            if ( indexTransactions.Any() )
+            {
+                System.Threading.Tasks.Task.Run( () =>
+                {
+                    var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
+                    if ( indexingEnabled )
+                    {
+                        indexTransactions.ForEach( t => RockQueue.TransactionQueue.Enqueue( t ) );
+                    }
+                } );
             }
         }
 
@@ -349,49 +392,47 @@ namespace Rock.Data
             IEntity entity = item.Entity;
             Dictionary<string, PropertyInfo> properties = null;
 
-            using ( var rockContext = new RockContext() )
+            // Look at each trigger for this entity and for the given trigger type
+            // and see if it's a match.
+            foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
             {
-                var workflowTypeService = new WorkflowTypeService( rockContext );
-                var workflowService = new WorkflowService( rockContext );
+                bool match = true;
 
-                // Look at each trigger for this entity and for the given trigger type
-                // and see if it's a match.
-                foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
+                // If a qualifier column was given, then we need to check the previous or current qualifier value
+                // otherwise it's just an automatic match.
+                if ( !string.IsNullOrWhiteSpace( trigger.EntityTypeQualifierColumn ) )
                 {
-                    bool match = true;
-
-                    // If a qualifier column was given, then we need to check the previous or current qualifier value
-                    // otherwise it's just an automatic match.
-                    if ( !string.IsNullOrWhiteSpace( trigger.EntityTypeQualifierColumn ) )
+                    // Get and cache the properties https://lotsacode.wordpress.com/2010/04/13/reflection-type-getproperties-and-performance/
+                    // (Note: its possible that none of the triggers need them, so future TODO could be to
+                    // bypass all this in that case.
+                    if ( properties == null )
                     {
-                        // Get and cache the properties https://lotsacode.wordpress.com/2010/04/13/reflection-type-getproperties-and-performance/
-                        // (Note: its possible that none of the triggers need them, so future TODO could be to
-                        // bypass all this in that case.
-                        if ( properties == null )
+                        properties = new Dictionary<string, PropertyInfo>();
+                        foreach ( PropertyInfo propertyInfo in entity.GetType().GetProperties() )
                         {
-                            properties = new Dictionary<string, PropertyInfo>();
-                            foreach ( PropertyInfo propertyInfo in entity.GetType().GetProperties() )
-                            {
-                                properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
-                            }
+                            properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
                         }
-
-                        match = IsQualifierMatch( item, properties, trigger );
                     }
 
-                    // If we found a matching trigger, then fire it; otherwise do nothing.
-                    if ( match )
+                    match = IsQualifierMatch( item, properties, trigger );
+                }
+
+                // If we found a matching trigger, then fire it; otherwise do nothing.
+                if ( match )
+                {
+                    // If it's one of the pre or immediate triggers, fire it immediately; otherwise queue it.
+                    if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
                     {
-                        // If it's one of the pre or immediate triggers, fire it immediately; otherwise queue it.
-                        if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
+                        var workflowType = Web.Cache.WorkflowTypeCache.Read( trigger.WorkflowTypeId );
+                        if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                         {
-                            var workflowType = workflowTypeService.Get( trigger.WorkflowTypeId );
+                            var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 
-                            if ( workflowType != null )
+                            List<string> workflowErrors;
+
+                            using ( var rockContext = new RockContext() )
                             {
-                                var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
-
-                                List<string> workflowErrors;
+                                var workflowService = new WorkflowService( rockContext );
                                 if ( !workflowService.Process( workflow, entity, out workflowErrors ) )
                                 {
                                     SaveErrorMessages.AddRange( workflowErrors );
@@ -399,17 +440,18 @@ namespace Rock.Data
                                 }
                             }
                         }
-                        else
-                        {
-                            var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
-                            transaction.Trigger = trigger;
-                            transaction.Entity = entity.Clone();
-                            transaction.PersonAlias = personAlias;
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                        }
+                    }
+                    else
+                    {
+                        var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
+                        transaction.Trigger = trigger;
+                        transaction.Entity = entity.Clone();
+                        transaction.PersonAlias = personAlias;
+                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
                 }
             }
+
 
             return true;
         }
@@ -425,73 +467,74 @@ namespace Rock.Data
         private static bool IsQualifierMatch( ContextItem item, Dictionary<string, PropertyInfo> properties, WorkflowTrigger trigger )
         {
             bool match = false;
-            var dbEntity = item.DbEntityEntry;
 
-            // Now attempt to find a match taking into account the EntityTypeQualifierValue and/or EntityTypeQualifierValuePrevious
-            if ( properties.ContainsKey( trigger.EntityTypeQualifierColumn.ToLower() ) )
+            try
             {
-                var propertyInfo = properties[trigger.EntityTypeQualifierColumn.ToLower()];
+                var dbEntity = item.DbEntityEntry;
 
-                bool hasPrevious = !string.IsNullOrEmpty( trigger.EntityTypeQualifierValuePrevious );
-                bool hasCurrent = !string.IsNullOrEmpty( trigger.EntityTypeQualifierValue );
-
-                // it's apparently not possible to interrogate the dbEntity of virtual properties
-                // so it's illegal if they somehow selected one of these; and it's not a match.
-                if ( propertyInfo.GetGetMethod().IsVirtual )
+                // Now attempt to find a match taking into account the EntityTypeQualifierValue and/or EntityTypeQualifierValuePrevious
+                if ( properties.ContainsKey( trigger.EntityTypeQualifierColumn.ToLower() ) )
                 {
-                    // TODO: log a silent exception?
-                    return false;
-                }
+                    var propertyInfo = properties[trigger.EntityTypeQualifierColumn.ToLower()];
 
-                var currentProperty = propertyInfo.GetValue( item.Entity, null );
-                var currentValue = currentProperty != null ? currentProperty.ToString() : string.Empty;
-                var previousValue = string.Empty;
+                    bool hasPrevious = !string.IsNullOrEmpty( trigger.EntityTypeQualifierValuePrevious );
+                    bool hasCurrent = !string.IsNullOrEmpty( trigger.EntityTypeQualifierValue );
 
-                var dbPropertyEntry = dbEntity.Property( propertyInfo.Name );
-                if ( dbPropertyEntry != null )
-                {
-                    previousValue = dbEntity.State == EntityState.Added ? string.Empty : dbPropertyEntry.OriginalValue.ToStringSafe();
-                }
+                    var currentProperty = propertyInfo.GetValue( item.Entity, null );
+                    var currentValue = currentProperty != null ? currentProperty.ToString() : string.Empty;
+                    var previousValue = string.Empty;
 
-                if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreDelete ||
-                    trigger.WorkflowTriggerType == WorkflowTriggerType.PostDelete )
-                {
-                    match = ( previousValue == trigger.EntityTypeQualifierValue );
-                }
-
-                if ( trigger.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave ||
-                    trigger.WorkflowTriggerType == WorkflowTriggerType.PostSave )
-                {
-                    match = ( currentValue == trigger.EntityTypeQualifierValue );
-                }
-
-                if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreSave )
-                {
-                    if ( hasCurrent && !hasPrevious )
+                    var dbPropertyEntry = dbEntity.Property( propertyInfo.Name );
+                    if ( dbPropertyEntry != null )
                     {
-                        // ...and previous cannot be the same as the current (must be a change)
-                        match = ( currentValue == trigger.EntityTypeQualifierValue &&
-                            currentValue != previousValue );
+                        previousValue = dbEntity.State == EntityState.Added ? string.Empty : dbPropertyEntry.OriginalValue.ToStringSafe();
                     }
-                    else if ( !hasCurrent && hasPrevious )
-                    {
-                        // ...and previous cannot be the same as the current (must be a change)
-                        match = ( previousValue == trigger.EntityTypeQualifierValuePrevious &&
-                            previousValue != currentValue );
-                    }
-                    else if ( hasCurrent && hasPrevious )
-                    {
-                        match = ( currentValue == trigger.EntityTypeQualifierValue &&
-                            previousValue == trigger.EntityTypeQualifierValuePrevious );
-                    }
-                    else if ( !hasCurrent && !hasPrevious )
-                    {
-                        // If they used an entity type qualifier column, at least one qualifier value is required.
-                        // TODO: log as silent exception? 
-                    }
-                }
 
+                    if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreDelete ||
+                        trigger.WorkflowTriggerType == WorkflowTriggerType.PostDelete )
+                    {
+                        match = ( previousValue == trigger.EntityTypeQualifierValue );
+                    }
+
+                    if ( trigger.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave ||
+                        trigger.WorkflowTriggerType == WorkflowTriggerType.PostSave )
+                    {
+                        match = ( currentValue == trigger.EntityTypeQualifierValue );
+                    }
+
+                    if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreSave )
+                    {
+                        if ( hasCurrent && !hasPrevious )
+                        {
+                            // ...and previous cannot be the same as the current (must be a change)
+                            match = ( currentValue == trigger.EntityTypeQualifierValue &&
+                                currentValue != previousValue );
+                        }
+                        else if ( !hasCurrent && hasPrevious )
+                        {
+                            // ...and previous cannot be the same as the current (must be a change)
+                            match = ( previousValue == trigger.EntityTypeQualifierValuePrevious &&
+                                previousValue != currentValue );
+                        }
+                        else if ( hasCurrent && hasPrevious )
+                        {
+                            match = ( currentValue == trigger.EntityTypeQualifierValue &&
+                                previousValue == trigger.EntityTypeQualifierValuePrevious );
+                        }
+                        else if ( !hasCurrent && !hasPrevious )
+                        {
+                            // If they used an entity type qualifier column, at least one qualifier value is required.
+                            // TODO: log as silent exception? 
+                        }
+                    }
+
+                }
             }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+
             return match;
         }
 
@@ -578,7 +621,7 @@ namespace Rock.Data
         private static bool AuditProperty( PropertyInfo propertyInfo )
         {
             if ( propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
-                ( !propertyInfo.GetGetMethod().IsVirtual || propertyInfo.Name == "Id" || propertyInfo.Name == "Guid" || propertyInfo.Name == "Order" ) )
+                ( !propertyInfo.GetGetMethod().IsVirtual || propertyInfo.Name == "Id" || propertyInfo.Name == "Guid" || propertyInfo.Name == "Order" || propertyInfo.Name == "IsActive" ) )
             {
                 return true;
             }

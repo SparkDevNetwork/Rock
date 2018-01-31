@@ -571,6 +571,7 @@ namespace Rock.Web.UI.Controls
             _lbShowModal.CssClass = this.ButtonCssClass;
             _lbShowModal.Text = this.ButtonText;
             _lbShowModal.Click += _lbShowModal_Click;
+            _lbShowModal.CausesValidation = false;
             Controls.Add( _lbShowModal );
 
             // If we are not showing the delete button then
@@ -585,6 +586,7 @@ namespace Rock.Web.UI.Controls
             _lbUploadImage.ID = this.ID + "_lbUploadImage";
             _lbUploadImage.CssClass = this.ButtonCssClass;
             _lbUploadImage.Text = this.ButtonText;
+            _lbUploadImage.CausesValidation = false;
             Controls.Add( _lbUploadImage );
 
             _lSaveStatus = new Label();

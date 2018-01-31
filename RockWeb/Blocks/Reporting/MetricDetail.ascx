@@ -57,6 +57,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsCumulative" runat="server" Label="Cumulative" Help="Helps to calculate year to date metrics." />
+                            <Rock:RockCheckBox ID="cbEnableAnalytics" runat="server" Label="Enable Analytics" Help="If this is enabled, a SQL View named 'AnalyticsFactMetric{{Metric.Name}}' will be made available that can be used by Analytic tools, such as Power BI" />
                         </div>
                     </div>
 
@@ -66,12 +67,19 @@
                                 <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" AutoPostBack="true" OnSelectedIndexChanged="ddlSourceType_SelectedIndexChanged" />
 
                                     <asp:Panel ID="pnlSQLSourceType" runat="server">
-                                        <Rock:CodeEditor ID="ceSourceSql" runat="server" Label="Source SQL" EditorMode="Sql" />
-                                        <Rock:NotificationBox ID="nbSQLHelp" runat="server" Visible="false" />
+                                        <label>Source SQL</label><a class="help" href="javascript: $('.js-sourcesql-help').toggle;"><i class="fa fa-question-circle"></i></a>
+                                        <div class="alert alert-info js-sourcesql-help" id="nbSQLHelp" runat="server" style="display: none;"></div>
+                                        <Rock:CodeEditor ID="ceSourceSql" runat="server" EditorMode="Sql" />
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlLavaSourceType" runat="server">
+                                        <label>Source Lava</label><a class="help" href="javascript: $('.js-sourcelava-help').toggle;"><i class="fa fa-question-circle"></i></a>
+                                        <div class="alert alert-info js-sourcelava-help" id="nbLavaHelp" runat="server" style="display: none;"></div>
+                                        <Rock:CodeEditor ID="ceSourceLava" runat="server" EditorMode="Lava" />
                                     </asp:Panel>
                             
                                     <asp:Panel ID="pnlDataviewSourceType" runat="server">
-                                        <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" />
+                                        <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" EnhanceForLongLists="true" />
                                         <Rock:NotificationBox ID="nbDataViewHelp" runat="server" Visible="false" />
                                     </asp:Panel>
                             
@@ -105,8 +113,8 @@
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
@@ -122,7 +130,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />

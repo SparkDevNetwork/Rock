@@ -16,8 +16,6 @@
 //
 using System;
 using System.Configuration;
-using System.IO;
-using System.Text;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -49,11 +47,6 @@ namespace Rock.Apps.StatementGenerator
                 return defaultInstance;
             }
         }        
-        
-        /// <summary>
-        /// The default logo file
-        /// </summary>
-        public static string DefaultLogoFile = "logo.jpg";
 
         /// <summary>
         /// Gets or sets the rock base URL.
@@ -117,57 +110,82 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
-        /// Gets or sets the layout file.
+        /// Gets or sets the person selection option.
         /// </summary>
         /// <value>
-        /// The layout file.
+        /// The person selection option.
+        /// </value>
+        public PersonSelectionOption PersonSelectionOption { get; set; } = PersonSelectionOption.AllIndividuals;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show tax deductible accounts].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show tax deductible accounts]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowTaxDeductibleAccounts { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show non tax deductible accounts].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show non tax deductible accounts]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowNonTaxDeductibleAccounts { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show inactive accounts].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show inactive accounts]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowInactiveAccounts { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the layout defined value unique identifier.
+        /// </summary>
+        /// <value>
+        /// The layout defined value unique identifier.
         /// </value>
         [DefaultSettingValueAttribute( "" )]
         [UserScopedSetting]
-        public string LayoutFile
+        public Guid? LayoutDefinedValueGuid
         {
             get
             {
-                return this["LayoutFile"] as string;
+                return this["LayoutDefinedValueGuid"] as Guid?;
             }
 
             set
             {
-                this["LayoutFile"] = value;
+                this["LayoutDefinedValueGuid"] = value;
             }
         }
-
-        /// <summary>
-        /// Gets or sets the logo file.
-        /// </summary>
-        /// <value>
-        /// The logo file.
-        /// </value>
-        public string LogoFile
-        {
-            get
-            {
-                string result = ( _logoFile ?? string.Empty ).Trim();
-                if ( !string.IsNullOrWhiteSpace( result ) )
-                {
-                    if ( File.Exists( result ) )
-                    {
-                        return result;
-                    }
-                }
-
-                return DefaultLogoFile;
-            }
-            set
-            {
-                _logoFile = value;
-            }
-        }
-        private string _logoFile;
 
         public static RockConfig Load()
         {
             return RockConfig.Default;
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum PersonSelectionOption
+    {
+        /// <summary>
+        /// All individuals
+        /// </summary>
+        AllIndividuals,
+
+        /// <summary>
+        /// The data view
+        /// </summary>
+        DataView,
+
+        /// <summary>
+        /// The single individual
+        /// </summary>
+        SingleIndividual
     }
 }

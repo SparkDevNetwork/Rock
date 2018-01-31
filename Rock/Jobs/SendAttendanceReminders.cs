@@ -105,11 +105,10 @@ namespace Rock.Jobs
                     occurrences.Add( group.Id, new List<DateTime>() );
 
                     // Check for a iCal schedule
-                    DDay.iCal.Event calEvent = group.Schedule.GetCalenderEvent();
-                    if ( calEvent != null )
+                    if ( !string.IsNullOrWhiteSpace( group.Schedule.iCalendarContent ) )
                     {
                         // If schedule has an iCal schedule, get occurrences between first and last dates
-                        foreach ( var occurrence in calEvent.GetOccurrences( startDate, endDate ) )
+                        foreach ( var occurrence in group.Schedule.GetOccurrences( startDate, endDate ) )
                         {
                             var startTime = occurrence.Period.StartTime.Value;
                             if ( dates.Contains( startTime.Date ) )
@@ -204,9 +203,11 @@ namespace Rock.Jobs
                         var recipients = new List<RecipientData>();
                         recipients.Add( new RecipientData( leader.Person.Email, mergeObjects ) );
 
-                        Email.Send( dataMap.GetString( "SystemEmail" ).AsGuid(), recipients );
-                        attendanceRemindersSent++;
+                        var emailMessage = new RockEmailMessage( dataMap.GetString( "SystemEmail" ).AsGuid() );
+                        emailMessage.SetRecipients( recipients );
+                        emailMessage.Send();
 
+                        attendanceRemindersSent++;
                     }
                 }
             }

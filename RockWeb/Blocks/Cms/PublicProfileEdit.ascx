@@ -188,7 +188,7 @@
                             <h4 class="panel-title pull-left">Additional Information</h4>
                         </div>
                         <div class="panel-body">
-                            <asp:PlaceHolder ID="phPersonAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phPersonAttributes" runat="server" />
                         </div>
                         <hr />
                     </asp:Panel>
@@ -198,7 +198,7 @@
                             <h4 class="panel-title pull-left">Family Information</h4>
                         </div>
                         <div class="panel-body">
-                            <asp:PlaceHolder ID="phFamilyAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phFamilyAttributes" runat="server" />
                         </div>
                         <hr />
                     </asp:Panel>
@@ -245,6 +245,11 @@
                                     <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
                                     <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
                                 </Rock:RockRadioButtonList>
+                                
+                                <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference" >
+                                    <asp:ListItem Text="Email" Value="1" />
+                                    <asp:ListItem Text="SMS" Value="2" />
+                                </Rock:RockRadioButtonList>
                             </div>
                         </div>
                     </div>
@@ -279,12 +284,12 @@
                         </fieldset>
                     </asp:Panel>
 
-		            <div class="actions">
-		                <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-		                <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
-		            </div>
-		
-		        </asp:Panel>
+                    <div class="actions">
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    </div>
+
+                </asp:Panel>
             </div>
         </div>
     </ContentTemplate>

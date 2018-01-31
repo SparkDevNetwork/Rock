@@ -196,6 +196,41 @@ namespace Rock.Web.Cache
         private List<int> categoryIds = null;
 
         /// <summary>
+        /// Gets the schedule exclusions.
+        /// </summary>
+        /// <value>
+        /// The schedule exclusions.
+        /// </value>
+        [DataMember]
+        public List<DateRange> ScheduleExclusions
+        {
+            get
+            {
+                lock ( _obj )
+                {
+                    if ( scheduleExclusions == null )
+                    {
+                        scheduleExclusions = new List<DateRange>();
+
+                        using ( var rockContext = new RockContext() )
+                        {
+                            foreach( var exclusion in new Model.ScheduleCategoryExclusionService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( e => e.CategoryId == this.Id )
+                                .ToList() )
+                            {
+                                scheduleExclusions.Add( new DateRange( exclusion.StartDate, exclusion.EndDate ) );
+                            }
+                        }
+                    }
+                }
+
+                return scheduleExclusions;
+            }
+        }
+        private List<DateRange> scheduleExclusions = null;
+
+        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         /// <value>

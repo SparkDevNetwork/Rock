@@ -15,23 +15,18 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Data.Entity;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using System.Text;
-using Rock.Security;
-using System.Reflection;
 
 namespace RockWeb.Blocks.Core
 {
@@ -52,21 +47,26 @@ namespace RockWeb.Blocks.Core
         <ul>
         {% for item in FollowingItems %}
             {% if LinkUrl != '' %}
-                <li><a href=""{{ LinkUrl | Replace:'[Id]',item.Id }}"">{{ item.Name }}</a></li>
+                <li><a href=""{{ LinkUrl | Replace:'[Id]',item.Id }}"">{{ item.Name }}</a> 
+                <a class=""pull-right"" href = ""#"" onclick = ""{{ item.Id | Postback:'DeleteFollowing' }}"">
+                <i class=""fa fa-pencil""></i>
+			    </a></li>
             {% else %}
-                <li>{{ item.Name }}</li>
+                <li>{{ item.Name }}
+                <a class=""pull-right"" href = ""#"" onclick = ""{{ item.Id | Postback:'DeleteFollowing' }}"">
+                <i class=""fa fa-pencil""></i>
+			    </a></li>
             {% endif %}
         {% endfor %}
 
         {% if HasMore %}
-            <li><i class='fa icon-fw''></i> <small>(showing top {{ Quantity }})</small></li>
+            <li><i class='fa fa-fw''></i> <small>(showing top {{ Quantity }})</small></li>
         {% endif %}
 
         </ul>
         
     </div>
 </div>", "", 2, "LavaTemplate" )]
-    [BooleanField("Enable Debug", "Show merge data to help you see what's available to you.", order: 3)]
     [IntegerField("Max Results", "The maximum number of results to display.", true, 100, order: 4)]
     public partial class FollowingByEntityLava : Rock.Web.UI.RockBlock
     {
@@ -95,6 +95,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            RouteAction();
             if ( !Page.IsPostBack )
             {
                 LoadContent();
@@ -114,6 +115,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            RouteAction();
             LoadContent();
         }
 
@@ -138,7 +140,7 @@ namespace RockWeb.Blocks.Core
                 IQueryable<IEntity> qryFollowedItems = followingService.GetFollowedItems( entityType.Id, personId );
 
                 int quantity = GetAttributeValue( "MaxResults" ).AsInteger();
-                var items = qryFollowedItems.Take(quantity + 1).ToList();
+                var items = qryFollowedItems.Take(quantity + 1).Distinct().ToList();
 
                 bool hasMore = (quantity < items.Count);
 
@@ -151,18 +153,70 @@ namespace RockWeb.Blocks.Core
                 string template = GetAttributeValue( "LavaTemplate" );
                 lContent.Text = template.ResolveMergeFields( mergeFields );
 
-                // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
-                }
             }
             else
             {
                 lContent.Text = string.Format( "<div class='alert alert-warning'>Please configure an entity in the block settings." );
 
             }
+        }
+
+        /// <summary>
+        /// Route the request to the correct panel
+        /// </summary>
+        private void RouteAction()
+        {
+            int entityId = 0;
+            var sm = ScriptManager.GetCurrent( Page );
+
+            if ( Request.Form["__EVENTARGUMENT"] != null )
+            {
+                string[] eventArgs = Request.Form["__EVENTARGUMENT"].Split( '^' );
+
+                if ( eventArgs.Length == 2 )
+                {
+                    string action = eventArgs[0];
+                    string parameters = eventArgs[1];
+
+                    int argument = 0;
+                    int.TryParse( parameters, out argument );
+
+                    switch ( action )
+                    {
+                        case "DeleteFollowing":
+                            entityId = int.Parse( parameters );
+                            DeleteFollowing( entityId );
+                            break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes the entity.
+        /// </summary>
+        /// <param name="entityId">The group member identifier.</param>
+        private void DeleteFollowing( int entityId )
+        {
+            var entityType = EntityTypeCache.Read( GetAttributeValue( "EntityType" ).AsGuid() );
+            int personId = this.CurrentPersonId.Value;
+
+            RockContext rockContext = new RockContext();
+            var followingService = new FollowingService( rockContext );
+
+            var followings = followingService.Queryable()
+                        .Where( a => a.EntityId == entityId &&
+                        a.EntityId == entityId &&
+                        a.PersonAlias.PersonId == personId );
+
+            foreach ( var following in followings )
+            {
+                followingService.Delete( following );
+            }
+
+            rockContext.SaveChanges();
+
+            LoadContent();
         }
 
         #endregion

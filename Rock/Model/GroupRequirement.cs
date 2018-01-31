@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -27,8 +26,9 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
+    [RockDomain( "Group" )]
     [Table( "GroupRequirement" )]
     [DataContract]
     public partial class GroupRequirement : Model<GroupRequirement>
@@ -41,11 +41,21 @@ namespace Rock.Model
         /// <value>
         /// The group identifier.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 0 )]
         [IgnoreCanDelete]
-        public int GroupId { get; set; }
+        public int? GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group type identifier.
+        /// </summary>
+        /// <value>
+        /// The group type identifier.
+        /// </value>
+        [DataMember]
+        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 1 )]
+        [IgnoreCanDelete]
+        public int? GroupTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the group requirement type identifier.
@@ -55,7 +65,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 1 )]
+        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 2 )]
         public int GroupRequirementTypeId { get; set; }
 
         /// <summary>
@@ -65,8 +75,17 @@ namespace Rock.Model
         /// The group role identifier.
         /// </value>
         [DataMember]
-        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 2 )]
+        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 3 )]
         public int? GroupRoleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a member must meet this requirement before adding (only applies to DataView and SQL RequirementCheckType)
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [must meet requirement to add member]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool MustMeetRequirementToAddMember { get; set; }
 
         #endregion
 
@@ -78,7 +97,17 @@ namespace Rock.Model
         /// <value>
         /// The group.
         /// </value>
+        [LavaInclude]
         public virtual Group Group { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the group.
+        /// </summary>
+        /// <value>
+        /// The type of the group.
+        /// </value>
+        [LavaInclude]
+        public virtual GroupType GroupType { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the group requirement.
@@ -95,6 +124,7 @@ namespace Rock.Model
         /// <value>
         /// The group type role.
         /// </value>
+        [LavaInclude]
         public virtual GroupTypeRole GroupRole { get; set; }
 
         #endregion
@@ -109,14 +139,19 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if ( this.GroupRequirementType != null && this.Group != null )
+            if ( this.GroupRequirementType != null )
             {
-                return string.Format( "{0}|{1}", this.GroupRequirementType, this.Group );
+                if ( this.Group != null )
+                {
+                    return string.Format( "{0}|{1}", this.GroupRequirementType, this.Group );
+                }
+                else if ( this.GroupType != null )
+                {
+                    return string.Format( "{0}|{1}", this.GroupRequirementType, this.GroupType );
+                }
             }
-            else
-            {
-                return base.ToString();
-            }
+
+            return base.ToString();
         }
 
         /// <summary>
@@ -126,7 +161,30 @@ namespace Rock.Model
         /// <param name="personQry">A qry containing the people whose requirements should be checked</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
+        [Obsolete( "Use PersonQueryableMeetsGroupRequirement(rockContxt, personQry, groupId, groupRoleId) instead" )]
         public IEnumerable<PersonGroupRequirementStatus> PersonQueryableMeetsGroupRequirement( RockContext rockContext, IQueryable<Person> personQry, int? groupRoleId )
+        {
+            if ( this.GroupId.HasValue )
+            {
+                return PersonQueryableMeetsGroupRequirement( rockContext, personQry, this.GroupId.Value, groupRoleId );
+            }
+            else
+            {
+                // the new method needs to be used if this is a GroupTypeId GroupRequirement
+                throw new NotSupportedException();
+            }
+        }
+
+        /// <summary>
+        /// Returns a list of each person and their GroupRequiremnt status for this group requirement
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personQry">The person qry.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">No dataview assigned to Group Requirement Type: " + this.GroupRequirementType.Name</exception>
+        public IEnumerable<PersonGroupRequirementStatus> PersonQueryableMeetsGroupRequirement( RockContext rockContext, IQueryable<Person> personQry, int groupId, int? groupRoleId )
         {
             if ( ( this.GroupRoleId != null ) && ( groupRoleId != null ) && ( this.GroupRoleId != groupRoleId ) )
             {
@@ -197,8 +255,11 @@ namespace Rock.Model
             }
             else if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
             {
-                string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( this.Group ) );
-                string warningFormattedSql = this.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( this.Group ) );
+                // if requirement set on GroupType, this.Group is null
+                var targetGroup = this.Group ?? new GroupService( rockContext ).Get( groupId );
+
+                string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup ) );
+                string warningFormattedSql = this.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup ) );
                 try
                 {
                     var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
@@ -218,16 +279,16 @@ namespace Rock.Model
                         }
 
                         var result = personQry.Select( a => a.Id ).ToList().Select( a => new PersonGroupRequirementStatus
-                            {
-                                PersonId = a,
-                                GroupRequirement = this,
-                                MeetsGroupRequirement = personIds.Contains( a )
+                        {
+                            PersonId = a,
+                            GroupRequirement = this,
+                            MeetsGroupRequirement = personIds.Contains( a )
                                     ? ( ( warningPersonIds != null && warningPersonIds.Contains( a ) )
                                         ? MeetsGroupRequirement.MeetsWithWarning
                                         : MeetsGroupRequirement.Meets
                                         )
                                     : MeetsGroupRequirement.NotMet,
-                            } );
+                        } );
 
                         return result;
                     }
@@ -250,14 +311,14 @@ namespace Rock.Model
             else
             {
                 // manual
-                var groupMemberRequirementQry = new GroupMemberRequirementService( rockContext ).Queryable().Where( a => a.GroupRequirementId == this.Id && a.RequirementMetDateTime.HasValue );
+                var groupMemberRequirementQry = new GroupMemberRequirementService( rockContext ).Queryable().Where( a => a.GroupMember.GroupId == groupId && a.GroupRequirementId == this.Id && a.RequirementMetDateTime.HasValue );
 
                 var result = personQry.ToList().Select( a =>
                     new PersonGroupRequirementStatus
                     {
                         PersonId = a.Id,
                         GroupRequirement = this,
-                        MeetsGroupRequirement = groupMemberRequirementQry.Any( r => r.GroupMember.PersonId == a.Id) ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet
+                        MeetsGroupRequirement = groupMemberRequirementQry.Any( r => r.GroupMember.PersonId == a.Id ) ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet
                     } );
 
                 return result;
@@ -268,16 +329,38 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Check if the Person meets the group requirement for the role
+        /// Persons the meets group requirement.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
+        /// <exception cref="System.NotSupportedException"></exception>
+        [Obsolete( "Use PersonMeetsGroupRequirement(personId, groupId, groupRoleId) instead " )]
         public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int? groupRoleId )
+        {
+            if ( this.GroupId.HasValue )
+            {
+                return PersonMeetsGroupRequirement( personId, this.GroupId.Value, groupRoleId );
+            }
+            else
+            {
+                // the new method needs to be used if this is a GroupTypeId GroupRequirement
+                throw new NotSupportedException();
+            }
+        }
+
+        /// <summary>
+        /// Check if the Person meets the group requirement for the role
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns></returns>
+        public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int groupId, int? groupRoleId )
         {
             var rockContext = new RockContext();
             var personQuery = new PersonService( rockContext ).Queryable().Where( a => a.Id == personId );
-            var result = this.PersonQueryableMeetsGroupRequirement( rockContext, personQuery, groupRoleId ).FirstOrDefault();
+            var result = this.PersonQueryableMeetsGroupRequirement( rockContext, personQuery, groupId, groupRoleId ).FirstOrDefault();
             if ( result == null )
             {
                 // no result. probably because personId was zero
@@ -300,13 +383,40 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="meetsGroupRequirement">The meets group requirement.</param>
+        [Obsolete( "Use UpdateGroupMemberRequirementResult(rockContext, personId, groupId, meetsGroupRequirement) instead" )]
         public void UpdateGroupMemberRequirementResult( RockContext rockContext, int personId, MeetsGroupRequirement meetsGroupRequirement )
+        {
+            if ( this.GroupId.HasValue )
+            {
+                UpdateGroupMemberRequirementResult( rockContext, personId, this.GroupId.Value, meetsGroupRequirement );
+            }
+            else
+            {
+                // the new method needs to be used if this is a GroupTypeId GroupRequirement
+                throw new NotSupportedException();
+            }
+        }
+
+        /// <summary>
+        /// Updates the group member requirement result.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="meetsGroupRequirement">The meets group requirement.</param>
+        public void UpdateGroupMemberRequirementResult( RockContext rockContext, int personId, int groupId, MeetsGroupRequirement meetsGroupRequirement )
         {
             GroupRequirement groupRequirement = this;
             var currentDateTime = RockDateTime.Now;
             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
-            var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.PersonId == personId && a.GroupId == groupRequirement.GroupId );
+            var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.PersonId == personId && a.GroupId == groupId
+                && (
+                    ( groupRequirement.GroupId.HasValue && groupRequirement.GroupId == a.GroupId )
+                    ||
+                    ( groupRequirement.GroupTypeId.HasValue && groupRequirement.GroupTypeId == a.Group.GroupTypeId )
+                   ) );
+
             if ( this.GroupRoleId != null )
             {
                 groupMemberQry = groupMemberQry.Where( a => a.GroupRoleId == this.GroupRoleId );
@@ -360,7 +470,7 @@ namespace Rock.Model
     #region enum
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum MeetsGroupRequirement
     {
@@ -395,7 +505,7 @@ namespace Rock.Model
     #region GroupRequirement classes
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class PersonGroupRequirementStatus : GroupRequirementStatus
     {
@@ -409,7 +519,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class GroupRequirementStatus
     {
@@ -462,7 +572,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class GroupRequirementConfiguration : EntityTypeConfiguration<GroupRequirement>
     {
@@ -472,7 +582,8 @@ namespace Rock.Model
         public GroupRequirementConfiguration()
         {
             // NOTE: would be nice if this would cascade delete, but doing so results in a "may cause cycles or multiple cascade paths" error
-            this.HasRequired( a => a.Group ).WithMany( a => a.GroupRequirements ).HasForeignKey( a => a.GroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.Group ).WithMany( g => g.GroupRequirements ).HasForeignKey( a => a.GroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.GroupType ).WithMany( gt => gt.GroupRequirements ).HasForeignKey( a => a.GroupTypeId ).WillCascadeOnDelete( false );
 
             this.HasRequired( a => a.GroupRequirementType ).WithMany().HasForeignKey( a => a.GroupRequirementTypeId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.GroupRole ).WithMany().HasForeignKey( a => a.GroupRoleId ).WillCascadeOnDelete( true );

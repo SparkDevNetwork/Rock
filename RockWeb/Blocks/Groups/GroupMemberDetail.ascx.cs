@@ -518,7 +518,6 @@ namespace RockWeb.Blocks.Groups
             {
                 cbIsNotified.Checked = groupMember.IsNotified;
                 cbIsNotified.Visible = true;
-                cbIsNotified.Help = "If this box is unchecked and a <a href=\"http://www.rockrms.com/Rock/BookContent/7/#servicejobsrelatingtogroups\">group leader notification job</a> is enabled then a notification will be sent to the group's leaders when this group member is saved.";
             }
             else
             {
@@ -562,7 +561,7 @@ namespace RockWeb.Blocks.Groups
 
             // user has to have EDIT Auth to the Block OR the group
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) && !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) && !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) && !group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
@@ -678,7 +677,7 @@ namespace RockWeb.Blocks.Groups
                 phAttributes.Visible = true;
             }
 
-            var groupHasRequirements = group.GroupRequirements.Any();
+            var groupHasRequirements = group.GetGroupRequirements( rockContext ).Any();
             pnlRequirements.Visible = groupHasRequirements;
             btnReCheckRequirements.Visible = groupHasRequirements;
 
@@ -767,17 +766,23 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            var selectedGroupRoleId = ddlGroupRole.SelectedValue.AsInteger();
+            if ( groupMember != null && selectedGroupRoleId != groupMember.GroupRoleId )
+            {
+                groupMember.GroupRoleId = selectedGroupRoleId;
+            }
+
             rcwRequirements.Visible = true;
 
             IEnumerable<GroupRequirementStatus> requirementsResults;
 
             if ( groupMember.IsNewOrChangedGroupMember( rockContext ) )
             {
-                requirementsResults = groupMember.Group.PersonMeetsGroupRequirements( ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
+                requirementsResults = groupMember.Group.PersonMeetsGroupRequirements( rockContext, ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
             }
             else
             {
-                requirementsResults = groupMember.GetGroupRequirementsStatuses().ToList();
+                requirementsResults = groupMember.GetGroupRequirementsStatuses( rockContext ).ToList();
             }
 
             // only show the requirements that apply to the GroupRole (or all Roles)

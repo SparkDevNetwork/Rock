@@ -35,10 +35,9 @@ namespace Rock.Rest.Controllers
     public partial class WorkflowsController
     {
         /// <summary>
-        /// Gets the children.
+        /// Initiates a new workflow
         /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="hidePageIds">List of pages that should not be included in results</param>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]
@@ -46,10 +45,9 @@ namespace Rock.Rest.Controllers
         public Rock.Model.Workflow WorkflowEntry( int workflowTypeId )
         {
             var rockContext = new Rock.Data.RockContext();
-            var workflowTypeService = new WorkflowTypeService( rockContext );
-            var workflowType = workflowTypeService.Get( workflowTypeId );
+            var workflowType = Web.Cache.WorkflowTypeCache.Read( workflowTypeId );
 
-            if ( workflowType != null )
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var workflow = Rock.Model.Workflow.Activate( workflowType, "Workflow From REST" );
 

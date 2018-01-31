@@ -35,7 +35,7 @@ using Rock.Communication;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Sends payment reminders for paid registrations that have a remaining balance.
     /// </summary>
     [DisplayName( "Registration Instance Send Payment Reminder" )]
     [Category( "Event" )]
@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Event
             gRegistrations.SelectedKeys.ToList().ForEach( r => registrationsSelected.Add( r.ToString().AsInteger() ) );
             if ( registrationsSelected.Any() )
             {
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "ExternalApplicationRoot" );
+                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" );
                 
                 if ( _registrationInstance == null )
                 {
@@ -152,17 +152,21 @@ namespace RockWeb.Blocks.Event
                             var registration = registrationService.Get( registrationId );
                             if ( registration != null && !string.IsNullOrWhiteSpace(registration.ConfirmationEmail) )
                             {
-                                var recipients = new List<string>();
-
                                 Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
                                 mergeObjects.Add( "Registration", registration );
                                 mergeObjects.Add( "RegistrationInstance", _registrationInstance );
 
-                                recipients.Add( registration.ConfirmationEmail );
-
-                                string message = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
-
-                                Email.Send( txtFromEmail.Text, txtFromName.Text, txtFromSubject.Text, recipients, message, appRoot );
+                                var emailMessage = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
+                                emailMessage.AdditionalMergeFields = mergeObjects;
+                                emailMessage.FromEmail = txtFromEmail.Text;
+                                emailMessage.FromName = txtFromName.Text;
+                                emailMessage.Subject = txtFromSubject.Text;
+                                emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeObjects ) );
+                                emailMessage.Message = ceEmailMessage.Text;
+                                emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                                emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                                emailMessage.CreateCommunicationRecord = false;
+                                emailMessage.Send();
 
                                 registration.LastPaymentReminderDateTime = RockDateTime.Now;
                                 rockContext.SaveChanges();
@@ -231,7 +235,9 @@ namespace RockWeb.Blocks.Event
                     using ( RockContext rockContext = new RockContext() )
                     {
                         RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
-                        _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" ).AsNoTracking()
+
+                        // NOTE: Do not use AsNoTracking because lava might need to lazy load some stuff
+                        _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" )
                                                     .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
 
 
@@ -273,7 +279,9 @@ namespace RockWeb.Blocks.Event
                 using ( RockContext rockContext = new RockContext() )
                 {
                     RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
-                    _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" ).AsNoTracking()
+
+                    // NOTE: Do not use AsNoTracking because lava might need to lazy load some stuff
+                    _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" )
                                                 .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
 
 

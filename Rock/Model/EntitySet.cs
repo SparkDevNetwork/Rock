@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Entity Set POCO Entity.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "EntitySet" )]
     [DataContract]
     [NotAudited]
@@ -111,6 +112,7 @@ namespace Rock.Model
         /// <value>
         /// The parent entity set.
         /// </value>
+        [LavaInclude]
         public virtual EntitySet ParentEntitySet { get; set; }
 
         /// <summary>

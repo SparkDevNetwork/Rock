@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class DefinedValuesController : Rock.Rest.ApiController<Rock.Model.DefinedValue>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValuesController"/> class.
+        /// </summary>
         public DefinedValuesController() : base( new Rock.Model.DefinedValueService( new Rock.Data.RockContext() ) ) { } 
     }
 }

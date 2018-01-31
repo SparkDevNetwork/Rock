@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Groups
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 3 )]
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 4 )]
     [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc).", true, "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc", "", 5 )]
+    [BooleanField( "Show Campuses Filter", "", false, order: 6 )]
     [CodeEditorField( "Info Window Contents", "Liquid template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, @"
 <div style='width:250px'>
 
@@ -96,7 +97,7 @@ namespace RockWeb.Blocks.Groups
 	{% endif %}
 
 </div>
-", "", 6 )]
+", "", 7 )]
     public partial class GroupMap : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -167,8 +168,12 @@ namespace RockWeb.Blocks.Groups
                         Color = ( v.GetAttributeValue( "Color" ) ?? "" ).Replace( "#", "" )
                     } )
                     .ToList();
+
                 rptStatus.DataSource = statuses.Where( s => s.Color != "" ).ToList();
                 rptStatus.DataBind();
+                
+                cpCampuses.Campuses = CampusCache.All();
+                cpCampuses.Visible = this.GetAttributeValue( "ShowCampusesFilter" ).AsBoolean();
 
                 Map();
             }
@@ -276,6 +281,7 @@ namespace RockWeb.Blocks.Groups
         var childGroupItems = [];
         var groupMemberItems = [];
         var familyItems = {{}};
+        var fetchFamiliesPromise = {{}};
 
         var map;
         var bounds = new google.maps.LatLngBounds();
@@ -297,6 +303,9 @@ namespace RockWeb.Blocks.Groups
         var max = 1.000001;
 
         initializeMap();
+
+        // the campuses picker only applies to the connection status checkboxes        
+        $('.js-campuses-picker').hide();
 
         function initializeMap() {{
 
@@ -479,6 +488,9 @@ namespace RockWeb.Blocks.Groups
 
                 if ( mapItem.EntityId == {0} ) {{
                     $('.js-connection-status').show();
+                    
+                    // the campuses picker only applies to the connection status checkboxes
+                    $('.js-campuses-picker').show();
                 }}
         
             }}
@@ -514,16 +526,49 @@ namespace RockWeb.Blocks.Groups
             }}
         }});
 
+        $('.js-campuses-picker input').click( function() {{
+            // clear out all the family markers since we have a new set of Campuses
+            $('.js-connection-status-cb').each( function(i) {{
+                var statusId = $(this).attr('data-item');   
+                if (familyItems[statusId] !== undefined) {{
+                    setAllMap(familyItems[statusId], null);      
+                }}          
+            }});
+            familyItems = {{}};
+    
+            // re-select and fetch the familyitems for each selected connection status using the new set of campusids
+            $('.js-connection-status-cb:checked').each( function(i) {{
+                $(this).attr('checked', false);
+                $(this).click();                    
+            }});    
+        }});
+
         // Show/Hide families
         $('.js-connection-status-cb').click( function() {{
             var statusId = $(this).attr('data-item');
+
+            var campusIds = '';            
+            $('.js-campuses-picker input:checked').each(function(i) {{
+                campusIds += $(this).val() + ',';
+            }});
+
             if ($(this).prop('checked')) {{
                 if (typeof familyItems[statusId] !== 'undefined') {{
                     setAllMap(familyItems[statusId], map);
                 }} else {{
                     familyItems[statusId] = [];
                     var color = $(this).attr('data-color');
-                    $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Families/' + statusId, function( mapItems ) {{
+                    var getMapInfoUrl = Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Families/' + statusId;
+                    if (campusIds != '') {{
+                        getMapInfoUrl += '?campusIds=' + campusIds;
+                    }}
+
+                    // if we are already in the process of fetching families for this status, abort and start over again
+                    if (fetchFamiliesPromise[statusId] !== undefined) {{
+                        fetchFamiliesPromise[statusId].abort();
+                    }}
+
+                    fetchFamiliesPromise[statusId] = $.get( getMapInfoUrl, function( mapItems ) {{
                         $.each(mapItems, function (i, mapItem) {{
                             var items = addMapItem(i, mapItem, color);
                             for (var i = 0; i < items.length; i++) {{

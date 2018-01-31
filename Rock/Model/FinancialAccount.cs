@@ -30,9 +30,10 @@ namespace Rock.Model
     /// Represents an account that gifts/donations and other <see cref="Rock.Model.FinancialTransaction">Financial Transactions</see> are posted to.  
     /// FinancialAccounts are hierarchical and are orderable.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialAccount" )]
     [DataContract]
-    public partial class FinancialAccount : Model<FinancialAccount>, IOrdered
+    public partial class FinancialAccount : Model<FinancialAccount>, IOrdered, IHasActiveFlag
     {
         #region Entity Properties
 
@@ -234,6 +235,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the parent FinancialAccount.
         /// </value>
+        [LavaInclude]
         public virtual FinancialAccount ParentAccount { get; set; }
 
         /// <summary>
@@ -242,6 +244,7 @@ namespace Rock.Model
         /// <value>
         /// the <see cref="Rock.Model.Campus"/> that this FinancialAccount is associated with.
         /// </value>
+        [LavaInclude]
         public virtual Campus Campus { get; set; }
 
         /// <summary>

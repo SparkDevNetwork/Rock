@@ -21,6 +21,7 @@ using System.Linq;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Transactions
 {
@@ -101,15 +102,37 @@ namespace Rock.Transactions
                         mergeFields.Add( "LastName", person.LastName );
                         mergeFields.Add( "FirstNames", person.NickName );
                         mergeFields.Add( "TransactionCode", transaction.TransactionCode );
+                        mergeFields.Add( "ForeignKey", transaction.ForeignKey );
                         mergeFields.Add( "Transaction", transaction );
                         mergeFields.Add( "Amounts", accountAmounts );
 
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                        var transactionDetailEntityList = transaction.TransactionDetails.Where( a => a.EntityTypeId.HasValue && a.EntityId.HasValue ).ToList();
+                        var transactionEntityList = new List<IEntity>();
+                        foreach ( var transactionDetailEntity in transactionDetailEntityList)
+                        {
+                            var transactionEntityType = EntityTypeCache.Read( transactionDetailEntity.EntityTypeId.Value );
+                            if ( transactionEntityType != null )
+                            {
+                                var dbContext = Reflection.GetDbContextForEntityType( transactionEntityType.GetEntityType() );
+                                IService serviceInstance = Reflection.GetServiceForEntityType( transactionEntityType.GetEntityType(), dbContext );
+                                if ( serviceInstance != null )
+                                {
+                                    System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                                    var transactionEntity = getMethod.Invoke( serviceInstance, new object[] { transactionDetailEntity.EntityId.Value } ) as Rock.Data.IEntity;
+                                    transactionEntityList.Add( transactionEntity );
+                                }
+                            }
+                        }
 
-                        var recipients = new List<RecipientData>();
-                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
+                        if ( transactionEntityList.Any())
+                        {
+                            mergeFields.Add( "TransactionEntityList", transactionEntityList );
+                            mergeFields.Add( "TransactionEntity", transactionEntityList.First() );
+                        }
 
-                        Email.Send( SystemEmailGuid, recipients, appRoot );
+                        var emailMessage = new RockEmailMessage( SystemEmailGuid );
+                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                        emailMessage.Send();
                     }
                 }
             }

@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Groups
     [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false, order: 4 )]
     [BooleanField( "Limit to Security Role Groups", order: 5 )]
     [BooleanField( "Show Settings Panel", defaultValue: true, key: "ShowFilterOption", order: 6 )]
+    [BooleanField( "Display Inactive Campuses", "Include inactive campuses in the Campus Filter", true )]
     [CustomDropdownListField( "Initial Count Setting", "Select the counts that should be initially shown in the treeview.", "0^None,1^Child Groups,2^Group Members", false, "0", "", 7 )]
     [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active groups in the treeview", "0^All,1^Active", false, "1", "", 8 )]
     [LinkedPage( "Detail Page", order: 9 )]
@@ -144,6 +145,25 @@ namespace RockWeb.Blocks.Groups
             {
                 ddlCountsType.SetValue( "" );
             }
+
+            ddlCampuses.Campuses = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
+
+            var CampusFilter = this.GetUserPreference( "CampusFilter" );
+            if ( pnlConfigPanel.Visible )
+            {
+                ddlCampuses.SetValue( CampusFilter );
+            }
+            else
+            {
+                ddlCampuses.SetValue( "" );
+            }
+
+            var IncludeNoCampus = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
+            if ( pnlConfigPanel.Visible )
+            {
+                tglIncludeNoCampus.Checked = IncludeNoCampus;
+            }
+
         }
 
         /// <summary>
@@ -323,6 +343,8 @@ namespace RockWeb.Blocks.Groups
 
             hfIncludeInactiveGroups.Value = ( !tglHideInactiveGroups.Checked ).ToTrueFalse();
             hfCountsType.Value = ddlCountsType.SelectedValue;
+            hfCampusFilter.Value = ddlCampuses.SelectedValue;
+            hfIncludeNoCampus.Value = tglIncludeNoCampus.Checked.ToTrueFalse();
         }
 
         /// <summary>
@@ -459,6 +481,43 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCampuses control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCampuses_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            this.SetUserPreference( "CampusFilter", ddlCampuses.SelectedValue );
+
+            // reload the whole page
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
+        }
+
+        /// <summary>
+        /// Handles the CheckedChange event of the cbIncludeNoCampus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglIncludeNoCampus_CheckedChanged( object sender, EventArgs e )
+        {
+            this.SetUserPreference( "IncludeNoCampus", tglIncludeNoCampus.Checked.ToTrueFalse() );
+
+            // reload the whole page
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
+        }
+
+        /// <summary>
+        /// Handles the OnClick event of the btnSearch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSearch_OnClick( object sender, EventArgs e )
+        {
+            // redirect to search
+            NavigateToPage( Rock.SystemGuid.Page.GROUP_SEARCH_RESULTS.AsGuid(), new Dictionary<string, string>() { { "SearchType", "name" },{ "SearchTerm", tbSearch.Text.Trim() } } );
+        }
+
+        /// <summary>
         /// Finds the first group.
         /// </summary>
         /// <returns></returns>
@@ -471,7 +530,7 @@ namespace RockWeb.Blocks.Groups
             // if specific group types are specified, show the groups regardless of ShowInNavigation
             bool limitToShowInNavigation = !includedGroupTypeIds.Any();
 
-            var qry = groupService.GetChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds, !tglHideInactiveGroups.Checked, limitToShowInNavigation );
+            var qry = groupService.GetChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds, !tglHideInactiveGroups.Checked, limitToShowInNavigation, hfCampusFilter.ValueAsInt(), tglIncludeNoCampus.Checked );
 
             foreach ( var group in qry.OrderBy( g => g.Name ) )
             {

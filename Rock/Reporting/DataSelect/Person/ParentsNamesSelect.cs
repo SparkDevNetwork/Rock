@@ -32,7 +32,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the names of the Person's Parents" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Parents' Names" )]
-    public class ParentsNamesSelect : DataSelectComponent
+    public class ParentsNamesSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Properties
 
@@ -168,8 +168,9 @@ namespace Rock.Reporting.DataSelect.Person
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
                     .SelectMany( m => m.Group.Members )
                     .Where( m => m.GroupRole.Guid == adultGuid )
-                    .OrderBy( m => m.Person.Gender )
-                    .Select( m => m.Person.NickName + " " + m.Person.LastName).AsEnumerable() );
+                    .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
+                    .ThenBy( m => m.Person.Gender )
+                    .Select( m => m.Person.NickName + " " + m.Person.LastName ).AsEnumerable() );
 
             var selectParentsExpression = SelectExpressionExtractor.Extract( personParentsQuery, entityIdProperty, "p" );
 
@@ -215,6 +216,57 @@ namespace Rock.Reporting.DataSelect.Person
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
             // nothing to do
+        }
+
+        #endregion
+
+        #region IRecipientDataSelect implementation
+
+        /// <summary>
+        /// Gets the type of the recipient column field.
+        /// </summary>
+        /// <value>
+        /// The type of the recipient column field.
+        /// </value>
+        public Type RecipientColumnFieldType
+        {
+            get { return typeof( IEnumerable<int> ); }
+        }
+
+        /// <summary>
+        /// Gets the recipient person identifier expression.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public Expression GetRecipientPersonIdExpression( System.Data.Entity.DbContext dbContext, MemberExpression entityIdProperty, string selection )
+        {
+            var rockContext = dbContext as RockContext;
+            if ( rockContext != null )
+            {
+                Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+                Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+                Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+
+                var familyGroupMembers = new GroupMemberService( rockContext ).Queryable()
+                    .Where( m => m.Group.GroupType.Guid == familyGuid );
+
+                // this returns Enumerable of ids for Parents per row. The Grid then uses ListDelimiterField to convert the list into Parents Names
+                var personParentsQuery = new PersonService( rockContext ).Queryable()
+                    .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
+                        .SelectMany( m => m.Group.Members )
+                        .Where( m => m.GroupRole.Guid == adultGuid )
+                        .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
+                        .ThenBy( m => m.Person.Gender )
+                        .Select( m => m.Person.Id ).AsEnumerable() );
+
+                var selectParentsExpression = SelectExpressionExtractor.Extract( personParentsQuery, entityIdProperty, "p" );
+
+                return selectParentsExpression;
+            }
+
+            return null;
         }
 
         #endregion

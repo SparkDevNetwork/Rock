@@ -58,6 +58,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<Communication>( Context ).Queryable().Any( a => a.ListGroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Communication.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<ConnectionRequest>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, ConnectionRequest.FriendlyTypeName );
@@ -151,7 +157,6 @@ namespace Rock.Model
             target.IsPublic = source.IsPublic;
             target.IsSecurityRole = source.IsSecurityRole;
             target.IsSystem = source.IsSystem;
-            target.MustMeetRequirementsToAddMember = source.MustMeetRequirementsToAddMember;
             target.Name = source.Name;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;

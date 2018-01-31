@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -136,7 +137,7 @@ namespace RockWeb.Blocks.Crm
 
                     var lClientIcon = e.Item.FindControl( "lClientIcon" ) as Literal;
                     string icon = string.Empty;
-                    switch ( session.PageViewSession.PageViewUserAgent.ClientType )
+                    switch ( session.PageViewSession.DeviceType.ClientType )
                     {
                         case "Desktop":
                             icon = "fa-desktop";
@@ -153,16 +154,20 @@ namespace RockWeb.Blocks.Crm
 
                     lClientIcon.Text = string.Format(
                         "<div class='pageviewsession-client pull-right'><div class='pull-left'><small>{0}<br>{1}</small></div><i class='fa {2} fa-2x pull-right'></i></div>",
-                        session.PageViewSession.PageViewUserAgent.Browser,
-                        session.PageViewSession.PageViewUserAgent.OperatingSystem,
+                        session.PageViewSession.DeviceType.Application,
+                        session.PageViewSession.DeviceType.OperatingSystem,
                         icon );
 
                     var lSessionDuration = e.Item.FindControl( "lSessionDuration" ) as Literal;
-                    TimeSpan duration = (DateTime)session.EndDateTime - (DateTime)session.StartDateTime;
+                    TimeSpan duration = ( DateTime ) session.EndDateTime - ( DateTime ) session.StartDateTime;
 
                     if ( duration.Hours > 0 )
                     {
                         lSessionDuration.Text = string.Format( "{0}h {1}m", duration.Hours, duration.Minutes );
+                    }
+                    else if (duration.Minutes == 0 )
+                    {
+                        lSessionDuration.Text = " < 1m";
                     }
                     else
                     {
@@ -209,47 +214,74 @@ namespace RockWeb.Blocks.Crm
 
             int skipCount = pageNumber * sessionCount;
 
-            var person = new PersonService( rockContext ).GetByUrlEncodedKey( PageParameter( "Person" ) );
+            Person person = null;
+            Guid? personGuid = PageParameter( "PersonGuid" ).AsGuidOrNull();
+
+            // NOTE: Since this block shows a history of sites a person visited in Rock, require Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
+            if ( personGuid.HasValue )
+            {
+                person = new PersonService( rockContext ).Get( personGuid.Value );
+            }
+            else if ( !string.IsNullOrEmpty( PageParameter( "Person" ) ) )
+            {
+                // Just in case Person (Person Token) was used, look up by Impersonation Token
+                person = new PersonService( rockContext ).GetByImpersonationToken( PageParameter( "Person" ), false, this.PageCache.Id );
+            }
+
             if ( person != null )
             {
                 lPersonName.Text = person.FullName;
 
-                PageViewService pageviewService = new PageViewService( rockContext );
+                InteractionService interactionService = new InteractionService( rockContext );
 
-                var pageViews = pageviewService.Queryable();
+                var pageViews = interactionService.Queryable();
 
-                var sessionInfo = pageviewService.Queryable()
+                var sessionInfo = interactionService.Queryable()
                     .Where( s => s.PersonAlias.PersonId == person.Id );
 
                 if ( startDate != DateTime.MinValue )
                 {
-                    sessionInfo = sessionInfo.Where( s => s.DateTimeViewed > drpDateFilter.LowerValue );
+                    sessionInfo = sessionInfo.Where( s => s.InteractionDateTime > drpDateFilter.LowerValue );
                 }
 
                 if ( endDate != DateTime.MaxValue )
                 {
-                    sessionInfo = sessionInfo.Where( s => s.DateTimeViewed < drpDateFilter.UpperValue );
+                    sessionInfo = sessionInfo.Where( s => s.InteractionDateTime < drpDateFilter.UpperValue );
                 }
 
                 if ( siteId != -1 )
                 {
-                    sessionInfo = sessionInfo.Where( p => p.SiteId == siteId );
+                    var site = SiteCache.Read( siteId );
+
+                    string siteName = string.Empty;
+                    if (site != null )
+                    {
+                        siteName = site.Name;
+                    }
+                    // lookup the interactionDeviceType, and create it if it doesn't exist
+                    int channelMediumValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+
+                    var interactionChannelId = new InteractionChannelService( rockContext ).Queryable()
+                                                        .Where( a => a.ChannelTypeMediumValueId == channelMediumValueId && a.ChannelEntityId == siteId )
+                                                        .Select( a => a.Id)
+                                                        .FirstOrDefault();
+
+                    sessionInfo = sessionInfo.Where( p => p.InteractionComponent.ChannelId == interactionChannelId );
                 }
 
                 var pageviewInfo = sessionInfo.GroupBy( s => new
                                 {
-                                    s.PageViewSession,
-                                    s.SiteId,
-                                    SiteName = s.Site.Name
+                                    s.InteractionSession,
+                                    s.InteractionComponent.Channel,
                                 } )
                                 .Select( s => new WebSession
                                 {
-                                    PageViewSession = s.Key.PageViewSession,
-                                    StartDateTime = s.Min( x => x.DateTimeViewed ),
-                                    EndDateTime = s.Max( x => x.DateTimeViewed ),
-                                    SiteId = s.Key.SiteId,
-                                    Site = s.Key.SiteName,
-                                    PageViews = pageViews.Where( p => p.PageViewSessionId == s.Key.PageViewSession.Id && p.SiteId == s.Key.SiteId ).ToList()
+                                    PageViewSession = s.Key.InteractionSession,
+                                    StartDateTime = s.Min( x => x.InteractionDateTime ),
+                                    EndDateTime = s.Max( x => x.InteractionDateTime ),
+                                    SiteId = siteId,
+                                    Site = s.Key.Channel.Name,
+                                    PageViews = pageViews.Where( p => p.InteractionSessionId == s.Key.InteractionSession.Id && p.InteractionComponent.ChannelId == s.Key.Channel.Id ).OrderBy(p => p.InteractionDateTime).ToList()
                                 } );
 
                 pageviewInfo = pageviewInfo.OrderByDescending( p => p.StartDateTime )
@@ -338,7 +370,7 @@ namespace RockWeb.Blocks.Crm
             /// <value>
             /// The page view session.
             /// </value>
-            public PageViewSession PageViewSession { get; set; }
+            public InteractionSession PageViewSession { get; set; }
 
             /// <summary>
             /// Gets or sets the start date time.
@@ -378,7 +410,7 @@ namespace RockWeb.Blocks.Crm
             /// <value>
             /// The page views.
             /// </value>
-            public ICollection<PageView> PageViews { get; set; }
+            public ICollection<Interaction> PageViews { get; set; }
         }
     }
 }

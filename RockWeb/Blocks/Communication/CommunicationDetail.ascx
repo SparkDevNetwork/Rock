@@ -143,13 +143,13 @@
 
                     <Rock:PanelWidget ID="wpEvents" runat="server" Title="Activity" Expanded="false">
                         <div class="grid grid-panel">
-                            <Rock:Grid ID="gActivity" runat="server" AllowSorting="true" RowItemText="Activity">
+                            <Rock:Grid ID="gInteractions" runat="server" AllowSorting="true" RowItemText="Activity" OnRowDataBound="gInteractions_RowDataBound">
                                 <Columns>
-                                    <Rock:DateTimeField HeaderText="Date" DataField="ActivityDateTime" SortExpression="ActivityDateTime" />
-                                    <Rock:PersonField HeaderText="Person" DataField="CommunicationRecipient.PersonAlias.Person" 
-                                        SortExpression="CommunicationRecipient.PersonAlias.Person.LastName,CommunicationRecipient.PersonAlias.Person.NickName" />
-                                    <Rock:RockBoundField HeaderText="Activity" DataField="ActivityType" SortExpression="ActivityType" />
-                                    <Rock:EnumField HeaderText="Details" ItemStyle-CssClass="wrap-contents" DataField="ActivityDetail" SortExpression="ActivityDetail" />
+                                    <Rock:DateTimeField HeaderText="Date" DataField="InteractionDateTime" SortExpression="InteractionDateTime" />
+                                    <Rock:PersonField HeaderText="Person" DataField="PersonAlias.Person" 
+                                        SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
+                                    <Rock:RockBoundField HeaderText="Activity" DataField="Operation" SortExpression="Operation" />
+                                    <Rock:RockLiteralField HeaderText="Details" ItemStyle-CssClass="wrap-contents" ID="lActivityDetails" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

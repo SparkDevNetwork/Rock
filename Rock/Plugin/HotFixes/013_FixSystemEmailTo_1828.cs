@@ -27,13 +27,14 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( @"
-    -- Fix issue #1828
-    UPDATE [SystemEmail] SET
-        [To] = ''
-    WHERE [Guid] = 'BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881' 
-        AND [To] = 'alisha@rocksolidchurchdemo.com'
-" );
+//  Moved to core migration: 201612121647292_HotFixesFrom6_1
+//            Sql( @"
+//    -- Fix issue #1828
+//    UPDATE [SystemEmail] SET
+//        [To] = ''
+//    WHERE [Guid] = 'BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881' 
+//        AND [To] = 'alisha@rocksolidchurchdemo.com'
+//" );
         }
 
         /// <summary>

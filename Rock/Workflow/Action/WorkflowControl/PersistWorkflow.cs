@@ -54,6 +54,8 @@ namespace Rock.Workflow.Action
 
             if ( GetAttributeValue( action, "PersistImmediately" ).AsBoolean( false ) )
             {
+                workflow.IsProcessing = true;
+
                 var service = new WorkflowService( rockContext );
                 if ( workflow.Id == 0 )
                 {

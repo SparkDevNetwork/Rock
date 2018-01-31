@@ -1,5 +1,4 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CommunicationEntry.ascx.cs" Inherits="RockWeb.Blocks.Communication.CommunicationEntry" %>
-<%@ Register src="CommunicationDetail.ascx" TagName="communicationDetail" TagPrefix="cd" %>
 
 <script>
     //Sys.WebForms.PageRequestManager.getInstance().add_endRequest(scrollToGrid);
@@ -104,7 +103,7 @@
                         <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" />
                     </div>
 
-                    <Rock:NotificationBox ID="nbTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test communication has been sent." Visible="false" />
+                    <Rock:NotificationBox ID="nbTestResult" CssClass="margin-t-md" runat="server" Visible="false" />
 
                 </asp:Panel>
 

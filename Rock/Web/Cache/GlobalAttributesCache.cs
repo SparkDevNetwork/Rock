@@ -53,6 +53,11 @@ namespace Rock.Web.Cache
         /// </summary>
         private static readonly string ORG_LOC_COUNTRY = "com.rockrms.orgLocationCountry";
 
+        /// <summary>
+        /// This setting is the formatted organization's location (used by legacy lava support).
+        /// </summary>
+        private static readonly string ORG_LOC_FORMATTED = "com.rockrms.orgLoctionFormatted";
+
         #endregion
 
         #region Constructors
@@ -332,10 +337,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GlobalAttributesCache Read()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                return Read( rockContext );
-            }
+            return Read( null );
         }
 
         /// <summary>
@@ -376,7 +378,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static string Value( string key )
         {
-            return Read().GetValue( key );
+            // pass null to the Read(RockContext rockContext) overload so that it doesn't create the RockContext unless it needs to fetch it from the database. This speeds this up from 0.250ms/call to about .001ms/call
+            return Read( null ).GetValue( key );
         }
 
         /// <summary>
@@ -616,6 +619,63 @@ namespace Rock.Web.Cache
                             if ( location != null )
                             {
                                 return location.Country;
+                            }
+                        }
+                    }
+                }
+
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the organization location formatted.
+        /// </summary>
+        /// <value>
+        /// The organization location formatted.
+        /// </value>
+        public string OrganizationLocationFormatted
+        {
+            get
+            {
+                // Check to see if there is an global attribute for organization address
+                Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
+                if ( locGuid.HasValue )
+                {
+                    if ( HttpContext.Current != null )
+                    {
+                        var appSettings = HttpContext.Current.Application;
+
+                        // If the organization location is still same as last check, use saved values
+                        if ( appSettings[ORG_LOC_GUID] != null &&
+                            locGuid.Equals( (Guid)appSettings[ORG_LOC_GUID] ) &&
+                            appSettings[ORG_LOC_FORMATTED] != null )
+                        {
+                            return appSettings[ORG_LOC_FORMATTED].ToString();
+                        }
+                        else
+                        {
+                            // otherwise read the new location and save 
+                            appSettings[ORG_LOC_GUID] = locGuid.Value;
+                            using ( var rockContext = new RockContext() )
+                            {
+                                var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
+                                if ( location != null )
+                                {
+                                    appSettings[ORG_LOC_FORMATTED] = location.ToString();
+                                    return location.Country;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var location = new Rock.Model.LocationService( rockContext ).Get( locGuid.Value );
+                            if ( location != null )
+                            {
+                                return location.ToString();
                             }
                         }
                     }

@@ -39,8 +39,7 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Posts the scanned.
         /// </summary>
-        /// <param name="financialTransaction">The financial transaction.</param>
-        /// <param name="checkMicr">The check micr.</param>
+        /// <param name="financialTransactionScannedCheck">The financial transaction scanned check.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]
@@ -369,7 +368,11 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( response );
             }
 
-            return Get().Where( t => t.AuthorizedPersonAlias.Person.GivingId == givingId );
+            // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
+            var personAliasIds = new PersonAliasService( (RockContext)this.Service.Context ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id ).ToList();
+
+            // get the transactions for the person or all the members in the person's giving group (Family)
+            return Get().Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
         }
 
         /// <summary>

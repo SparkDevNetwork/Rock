@@ -24,6 +24,7 @@ using System.Text;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -60,7 +61,6 @@ namespace RockWeb.Blocks.Finance
 " )]
 
     [SystemEmailField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, "", Order = 10 )]
-    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 11 )]
     [GroupTypeField( "Select Group Type", "Optional Group Type that if selected will display a selection of groups that current user belongs to that can then be associated with the pledge", false, "", "", 12 )]
     public partial class PledgeEntry : RockBlock
     {
@@ -166,49 +166,46 @@ namespace RockWeb.Blocks.Finance
 
             if ( financialPledge.IsValid )
             {
-	            financialPledgeService.Add( financialPledge );
-	
-	            rockContext.SaveChanges();
-	
-	            // populate account so that Liquid can access it
-	            financialPledge.Account = financialAccount;
-	
-	            // populate PledgeFrequencyValue so that Liquid can access it
-	            financialPledge.PledgeFrequencyValue = definedValueService.Get( financialPledge.PledgeFrequencyValueId ?? 0 );
-	
-	            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-	            mergeFields.Add( "Person", person );
-	            mergeFields.Add( "FinancialPledge", financialPledge );
-	            mergeFields.Add( "PledgeFrequency", pledgeFrequencySelection );
-	            mergeFields.Add( "Account", financialAccount );
-	            lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeFields );
-	
-	            // Resolve any dynamic url references
-	            string appRoot = ResolveRockUrl( "~/" );
-	            string themeRoot = ResolveRockUrl( "~~/" );
-	            lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
-	
-	            // show liquid help for debug
-	            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-	            {
-	                lReceipt.Text += mergeFields.lavaDebugInfo();
-	            }
-	
-	            lReceipt.Visible = true;
-	            pnlAddPledge.Visible = false;
-	            pnlConfirm.Visible = false;
-	
-	            // if a ConfirmationEmailTemplate is configured, send an email
-	            var confirmationEmailTemplateGuid = GetAttributeValue( "ConfirmationEmailTemplate" ).AsGuidOrNull();
-	            if ( confirmationEmailTemplateGuid.HasValue )
-	            {
-	                var recipients = new List<Rock.Communication.RecipientData>();
-	
-	                // add person and the mergeObjects (same mergeobjects as receipt)
-	                recipients.Add( new Rock.Communication.RecipientData( person.Email, mergeFields ) );
-	
-	                Rock.Communication.Email.Send( confirmationEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
-	            }
+                financialPledgeService.Add( financialPledge );
+
+                rockContext.SaveChanges();
+
+                // populate account so that Liquid can access it
+                financialPledge.Account = financialAccount;
+
+                // populate PledgeFrequencyValue so that Liquid can access it
+                financialPledge.PledgeFrequencyValue = definedValueService.Get( financialPledge.PledgeFrequencyValueId ?? 0 );
+
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "Person", person );
+                mergeFields.Add( "FinancialPledge", financialPledge );
+                mergeFields.Add( "PledgeFrequency", pledgeFrequencySelection );
+                mergeFields.Add( "Account", financialAccount );
+                lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeFields );
+
+                // Resolve any dynamic url references
+                string appRoot = ResolveRockUrl( "~/" );
+                string themeRoot = ResolveRockUrl( "~~/" );
+                lReceipt.Text = lReceipt.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                lReceipt.Visible = true;
+                pnlAddPledge.Visible = false;
+                pnlConfirm.Visible = false;
+
+                // if a ConfirmationEmailTemplate is configured, send an email
+                var confirmationEmailTemplateGuid = GetAttributeValue( "ConfirmationEmailTemplate" ).AsGuidOrNull();
+                if ( confirmationEmailTemplateGuid.HasValue )
+                {
+                    var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid.Value );
+                    emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                    emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                    emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                    emailMessage.Send();
+                }
+            }
+            else
+            {
+                ShowInvalidResults( financialPledge.ValidationResults );
             }
         }
 

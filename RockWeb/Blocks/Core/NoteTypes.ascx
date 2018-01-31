@@ -14,7 +14,7 @@
 
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                            <Rock:EntityTypePicker ID="entityTypeFilter" runat="server" Required="false" Label="Entity Type" IncludeGlobalOption="false" />
+                            <Rock:EntityTypePicker ID="entityTypeFilter" runat="server" Required="false" Label="Entity Type" IncludeGlobalOption="false" EnhanceForLongLists="true" />
                         </Rock:GridFilter>
                         <Rock:Grid ID="rGrid" runat="server" RowItemText="Note Type" OnRowSelected="rGrid_Edit" >
                             <Columns>
@@ -46,7 +46,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" />
-                        <Rock:EntityTypePicker ID="entityTypePicker" runat="server" Required="true" Label="Entity Type" IncludeGlobalOption="true" />
+                        <Rock:EntityTypePicker ID="entityTypePicker" runat="server" Required="true" Label="Entity Type" IncludeGlobalOption="true" EnhanceForLongLists="true" />
                         <Rock:RockCheckBox ID="cbUserSelectable" runat="server" Label="User Selectable" Text="Yes" />
                     </div>
                     <div class="col-md-6">

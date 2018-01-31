@@ -49,8 +49,9 @@ namespace RockWeb.Blocks.Core
     [IntegerField( "Entity Id", "The entity id that values apply to", false, 0, "Advanced", 1 )]
     [BooleanField( "Enable Show In Grid", "Should the 'Show In Grid' option be displayed when editing attributes?", false, "Advanced", 2 )]
     [BooleanField( "Enable Ordering", "Should the attributes be allowed to be sorted?", false, "Advanced", 3 )]
+    [TextField( "Category Filter", "A comma separated list of category guids to limit the display of attributes to.", false, "", "Advanced", 4)]
 
-    public partial class Attributes : RockBlock
+    public partial class Attributes : RockBlock, ICustomGridColumns
     {
         #region Fields
 
@@ -75,8 +76,14 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
+            // if limiting by category list hide the filters
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "CategoryFilter" ) ) )
+            {
+                rFilter.Visible = false;
+            }
+
             _configuredType = GetAttributeValue( "ConfigureType" ).AsBooleanOrNull() ?? true;
-            edtAttribute.ShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
+            edtAttribute.IsShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
 
             Guid? entityTypeGuid = GetAttributeValue( "Entity" ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
@@ -110,15 +117,41 @@ namespace RockWeb.Blocks.Core
                 rGrid.GridRebind += rGrid_GridRebind;
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
-                rGrid.Columns[0].Visible = _enableOrdering;
-                rGrid.Columns[2].Visible = !_configuredType;   // qualifier
+                var reorderField = rGrid.ColumnsOfType<ReorderField>().FirstOrDefault();
+                if ( reorderField != null )
+                {
+                    reorderField.Visible = _enableOrdering;
+                }
 
-                rGrid.Columns[5].Visible = !_displayValueEdit; // default value / value
-                rGrid.Columns[6].Visible = _displayValueEdit; // default value / value
-                rGrid.Columns[7].Visible = _displayValueEdit;  // edit
+                var lEntityQualifierField = rGrid.ColumnsOfType<RockLiteralField>().FirstOrDefault(a=>a.ID== "lEntityQualifier" );
+                if ( lEntityQualifierField != null )
+                {
+                    lEntityQualifierField.Visible = !_configuredType;   // qualifier
+                }
 
-                SecurityField securityField = rGrid.Columns[8] as SecurityField;
-                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+                var rtDefaultValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtDefaultValue" );
+                if ( rtDefaultValueField != null )
+                {
+                    rtDefaultValueField.Visible = !_displayValueEdit; // default value / value
+                }
+
+                var rtValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtValue" );
+                if ( rtValueField != null )
+                {
+                    rtValueField.Visible = _displayValueEdit; // default value / value
+                }
+
+                var editField = rGrid.ColumnsOfType<EditField>().FirstOrDefault();
+                if ( editField != null )
+                {
+                    editField.Visible = _displayValueEdit; // edit
+                }
+
+                var securityField = rGrid.ColumnsOfType<SecurityField>().FirstOrDefault();
+                if ( securityField != null )
+                {
+                    securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+                }
 
                 mdAttribute.SaveClick += mdAttribute_SaveClick;
                 mdAttributeValue.SaveClick += mdAttributeValue_SaveClick;
@@ -182,7 +215,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            BindCategoryFilter();
+            BindFilterForSelectedEntityType();
         }
 
         /// <summary>
@@ -204,6 +237,7 @@ namespace RockWeb.Blocks.Core
                 .AsDelimited( "," );
 
             rFilter.SaveUserPreference( "Categories", categoryFilterValue );
+            rFilter.SaveUserPreference( "Analytics Enabled", cbAnalyticsEnabled.Checked.ToString() );
 
             BindGrid();
         }
@@ -256,6 +290,22 @@ namespace RockWeb.Blocks.Core
                         else
                         {
                             e.Value = EntityTypeCache.Read( e.Value.AsInteger() ).FriendlyName;
+                        }
+                    }
+
+                    break;
+
+                case "Analytics Enabled":
+
+                    if ( !cbAnalyticsEnabled.Visible )
+                    {
+                        e.Value = string.Empty;
+                    }
+                    else
+                    {
+                        if ( e.Value.AsBoolean() )
+                        {
+                            e.Value = "Yes";
                         }
                     }
 
@@ -367,7 +417,7 @@ namespace RockWeb.Blocks.Core
                         string entityTypeName = EntityTypeCache.Read( attribute.EntityTypeId.Value ).FriendlyName;
                         if ( !string.IsNullOrWhiteSpace( attribute.EntityTypeQualifierColumn ) )
                         {
-                            lEntityQualifier.Text = string.Format( "Where [{0}] = '{1}'", attribute.EntityTypeQualifierColumn, attribute.EntityTypeQualifierValue );
+                            lEntityQualifier.Text = string.Format( "{0} where [{1}] = '{2}'", entityTypeName, attribute.EntityTypeQualifierColumn, attribute.EntityTypeQualifierValue );
                         }
                         else
                         {
@@ -389,11 +439,11 @@ namespace RockWeb.Blocks.Core
                         var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId );
                         if ( attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) )
                         {
-                            lValue.Text = fieldType.Field.FormatValueAsHtml( lValue, attributeValue.Value, attribute.QualifierValues, true );
+                            lValue.Text = fieldType.Field.FormatValue( lValue, attribute.EntityTypeId, _entityId, attributeValue.Value, attribute.QualifierValues, true ).EncodeHtml();
                         }
                         else
                         {
-                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", fieldType.Field.FormatValueAsHtml( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
+                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.EntityTypeId, _entityId, attribute.DefaultValue, attribute.QualifierValues, true ).EncodeHtml() );
                         }
                     }
                 }
@@ -402,7 +452,7 @@ namespace RockWeb.Blocks.Core
                     Literal lDefaultValue = e.Row.FindControl( "lDefaultValue" ) as Literal;
                     if ( lDefaultValue != null )
                     {
-                        lDefaultValue.Text = fieldType.Field.FormatValueAsHtml( lDefaultValue, attribute.DefaultValue, attribute.QualifierValues, true );
+                        lDefaultValue.Text = fieldType.Field.FormatValueAsHtml( lDefaultValue, attribute.EntityTypeId, _entityId, attribute.DefaultValue, attribute.QualifierValues, true );
                     }
                 }
             }
@@ -530,6 +580,20 @@ namespace RockWeb.Blocks.Core
         {
             ddlEntityType.Visible = !_configuredType;
             ddlEntityType.SelectedValue = rFilter.GetUserPreference( "Entity Type" );
+            BindFilterForSelectedEntityType();
+        }
+
+        /// <summary>
+        /// Binds the type of the filter for selected entity.
+        /// </summary>
+        private void BindFilterForSelectedEntityType()
+        {
+            int? entityTypeId = _configuredType ? _entityTypeId : ddlEntityType.SelectedValueAsInt();
+
+            var entityTypeCache = entityTypeId.HasValue ? EntityTypeCache.Read( entityTypeId.Value ) : null;
+            cbAnalyticsEnabled.Visible = entityTypeCache != null && entityTypeCache.IsAnalyticsSupported( null, null );
+            cbAnalyticsEnabled.Checked = rFilter.GetUserPreference( "Analytics Enabled" ).AsBoolean();
+
             BindCategoryFilter();
         }
 
@@ -572,19 +636,45 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                int entityTypeId = int.MinValue;
-                if ( int.TryParse( rFilter.GetUserPreference( "Entity Type" ), out entityTypeId ) )
+                int? entityTypeId = rFilter.GetUserPreference( "Entity Type" ).AsIntegerOrNull();
+                if ( entityTypeId.HasValue )
                 {
-                    if ( entityTypeId > 0 )
+                    if ( entityTypeId.Value == 0 )
+                    {
+                        // Global Attributes
+                        query = attributeService.GetByEntityTypeId( null );
+                    }
+                    else
                     {
                         query = attributeService.GetByEntityTypeId( entityTypeId );
                     }
                 }
+                else
+                {
+                    // All entity attribute
+                    query = attributeService.Queryable()
+                        .Where( a =>
+                            ( a.EntityType != null && a.EntityType.IsEntity ) ||    // Entity Attributes
+                            ( a.EntityType == null && a.EntityTypeQualifierColumn == "" && a.EntityTypeQualifierValue == "" ) // Global Attributes
+                        );
+                }
             }
 
-            if ( query == null )
+            // if filtering by block setting of categories
+            if (!string.IsNullOrWhiteSpace( GetAttributeValue( "CategoryFilter" ) ) )
             {
-                query = attributeService.GetByEntityTypeId( null );
+                try
+                {
+                    var categoryGuids = GetAttributeValue( "CategoryFilter" ).Split( ',' ).Select( Guid.Parse ).ToList();
+
+                    query = query.Where( a => a.Categories.Any( c => categoryGuids.Contains( c.Guid ) ) );
+                }
+                catch { }
+            }
+
+            if ( cbAnalyticsEnabled.Visible && cbAnalyticsEnabled.Checked )
+            {
+                query = query.Where( a => a.IsAnalytic || a.IsAnalyticHistory );
             }
 
             var selectedCategoryIds = new List<int>();
@@ -603,7 +693,21 @@ namespace RockWeb.Blocks.Core
                 SortProperty sortProperty = rGrid.SortProperty;
                 if ( sortProperty != null )
                 {
-                    query = query.Sort( sortProperty );
+                    if ( sortProperty.Property == "Qualifier" )
+                    {
+                        if ( sortProperty.Direction == SortDirection.Ascending )
+                        {
+                            query = query.OrderBy( a => a.EntityType.Name ).ThenBy( a => a.EntityTypeQualifierColumn ).ThenBy( a => a.EntityTypeQualifierValue );
+                        }
+                        else
+                        {
+                            query = query.OrderByDescending( a => a.EntityType.Name ).ThenByDescending( a => a.EntityTypeQualifierColumn ).ThenByDescending( a => a.EntityTypeQualifierValue );
+                        }
+                    }
+                    else
+                    {
+                        query = query.Sort( sortProperty );
+                    }
                 }
                 else
                 {
@@ -663,21 +767,27 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                if ( attributeModel.EntityType != null && attributeModel.EntityType.IsIndexingSupported == true && attributeModel.EntityType.IsIndexingEnabled )
+                {
+                    edtAttribute.IsIndexingEnabledVisible = true;
+                }
+
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
                 mdAttribute.Title = ( "Edit " + attributeModel.Name ).FormatAsHtmlTitle();
+
+                edtAttribute.IsIndexingEnabled = attributeModel.IsIndexEnabled;
             }
 
             Type type = null;
             if ( attributeModel.EntityTypeId.HasValue )
             {
                 type = EntityTypeCache.Read( attributeModel.EntityTypeId.Value ).GetEntityType();
-                edtAttribute.ReservedKeyNames = attributeService.Get( attributeModel.EntityTypeId, attributeModel.EntityTypeQualifierColumn, attributeModel.EntityTypeQualifierValue )
-                    .Where( a => a.Id != attributeId )
-                    .Select( a => a.Key )
-                    .Distinct()
-                    .ToList();
             }
-
+            edtAttribute.ReservedKeyNames = attributeService.Get( attributeModel.EntityTypeId, attributeModel.EntityTypeQualifierColumn, attributeModel.EntityTypeQualifierValue )
+                 .Where( a => a.Id != attributeId )
+                 .Select( a => a.Key )
+                 .Distinct()
+                 .ToList();
             edtAttribute.SetAttributeProperties( attributeModel, type );
             edtAttribute.AttributeEntityTypeId = attributeModel.EntityTypeId;
 
@@ -775,5 +885,5 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-}
+    }
 }

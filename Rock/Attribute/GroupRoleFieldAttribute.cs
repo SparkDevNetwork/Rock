@@ -22,7 +22,8 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select 0 or 1 GroupType
+    /// Field Attribute to select 0 or 1 GroupTypeRole
+    /// Stored as GroupTypeRole.Guid
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class GroupRoleFieldAttribute : FieldAttribute

@@ -24,8 +24,21 @@ using System.Web.Http.Cors;
 
 namespace Rock.Rest
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Attribute" />
+    /// <seealso cref="System.Web.Http.Cors.ICorsPolicyProvider" />
     public class EnableCorsFromOriginAttribute : System.Attribute, ICorsPolicyProvider
     {
+        /// <summary>
+        /// Gets the <see cref="T:System.Web.Cors.CorsPolicy" />.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>
+        /// The <see cref="T:System.Web.Cors.CorsPolicy" />.
+        /// </returns>
         public async Task<CorsPolicy> GetCorsPolicyAsync( HttpRequestMessage request, CancellationToken cancellationToken )
         {
             var requestInfo = request.GetCorsRequestContext();

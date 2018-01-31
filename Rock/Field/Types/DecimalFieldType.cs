@@ -168,7 +168,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, or ValueAsNumeric)
+        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, ValueAsBoolean, or ValueAsNumeric)
         /// </summary>
         /// <value>
         /// The name of the attribute value field.

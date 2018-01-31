@@ -24,6 +24,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -53,10 +54,10 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
+            _canConfigure = IsUserAuthorized( Authorization.EDIT );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
-
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Tag ) ).Id;
         }
 
         /// <summary>
@@ -67,13 +68,11 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            nbEditError.Visible = false;
+
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "tagId" ).AsInteger(), PageParameter( "entityTypeId" ).AsIntegerOrNull() );
-            }
-            else
-            {
-                nbEditError.Visible = false;
+                ShowDetail( PageParameter( "TagId" ).AsInteger(), PageParameter( "EntityTypeId" ).AsIntegerOrNull() );
             }
         }
 
@@ -168,7 +167,7 @@ namespace RockWeb.Blocks.Core
 
             string name = tbName.Text;
             int? ownerId = ppOwner.PersonId;
-            int entityTypeId = ddlEntityType.SelectedValueAsId().Value;
+            int? entityTypeId = ddlEntityType.SelectedValueAsId();
             string qualifierCol = tbEntityTypeQualifierColumn.Text;
             string qualifierVal = tbEntityTypeQualifierValue.Text;
 
@@ -181,9 +180,11 @@ namespace RockWeb.Blocks.Core
                             ( t.OwnerPersonAlias == null && !ownerId.HasValue ) || 
                             ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value ) 
                         ) &&
-                        t.EntityTypeId == entityTypeId &&
-                        t.EntityTypeQualifierColumn == qualifierCol &&
-                        t.EntityTypeQualifierValue == qualifierVal )
+                        ( !t.EntityTypeId.HasValue || (
+                            t.EntityTypeId.Value == entityTypeId &&
+                            t.EntityTypeQualifierColumn == qualifierCol &&
+                            t.EntityTypeQualifierValue == qualifierVal )
+                        ) )
                     .Any())
             {
                 nbEditError.Heading = "Tag Already Exists";
@@ -199,10 +200,17 @@ namespace RockWeb.Blocks.Core
                 }
                 tag.Name = name;
                 tag.Description = tbDescription.Text;
-                tag.OwnerPersonAliasId = ownerPersonAliasId;
-                tag.EntityTypeId = entityTypeId;
-                tag.EntityTypeQualifierColumn = qualifierCol;
-                tag.EntityTypeQualifierValue = qualifierVal;
+                tag.IsActive = cbIsActive.Checked;
+
+                if ( _canConfigure )
+                {
+                    tag.CategoryId = cpCategory.SelectedValueAsInt();
+                    tag.OwnerPersonAliasId = ownerPersonAliasId;
+                    tag.EntityTypeId = entityTypeId;
+                    tag.EntityTypeQualifierColumn = qualifierCol;
+                    tag.EntityTypeQualifierValue = qualifierVal;
+                }
+
                 rockContext.SaveChanges();
 
                 var qryParams = new Dictionary<string, string>();
@@ -294,49 +302,60 @@ namespace RockWeb.Blocks.Core
             
             if ( tag == null )
             {
-                tag = new Tag { Id = 0, OwnerPersonAliasId = CurrentPersonAliasId, OwnerPersonAlias = CurrentPersonAlias };
-                if ( entityTypeId.HasValue )
-                {
-                    tag.EntityTypeId = entityTypeId.Value;
-                }
+                tag = new Tag {
+                    Id = 0,
+                    CategoryId = PageParameter( "CategoryId" ).AsIntegerOrNull(),
+                    OwnerPersonAliasId = CurrentPersonAliasId,
+                    OwnerPersonAlias = CurrentPersonAlias,
+                    EntityTypeId = entityTypeId
+                };
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
 
-            pnlDetails.Visible = true;
-            hfId.Value = tag.Id.ToString();
+            bool canView = _canConfigure || tag.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
-            bool readOnly = false;
+            if ( canView )
+            {
+                bool canEdit = _canConfigure || tag.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
-            if ( !_canConfigure && ( tag.OwnerPersonAlias == null || tag.OwnerPersonAlias.PersonId != CurrentPersonId ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Tag.FriendlyTypeName );
-            }
+                pnlDetails.Visible = true;
 
-            if ( tag.IsSystem )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Group.FriendlyTypeName );
-            }
+                hfId.Value = tag.Id.ToString();
 
-            if ( readOnly )
-            {
-                btnEdit.Visible = false;
-                btnDelete.Visible = false;
-                ShowReadonlyDetails( tag );
-            }
-            else
-            {
-                btnEdit.Visible = true;
-                btnDelete.Visible = true;
-                if ( tag.Id > 0 )
+                bool readOnly = false;
+
+                if ( !canEdit )
                 {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Tag.FriendlyTypeName );
+                }
+
+                if ( tag.IsSystem )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Group.FriendlyTypeName );
+                }
+
+                if ( readOnly )
+                {
+                    btnEdit.Visible = false;
+                    btnDelete.Visible = false;
                     ShowReadonlyDetails( tag );
                 }
                 else
                 {
-                    ShowEditDetails( tag );
+                    btnEdit.Visible = true;
+                    btnDelete.Visible = true;
+                    if ( tag.Id > 0 )
+                    {
+                        ShowReadonlyDetails( tag );
+                    }
+                    else
+                    {
+                        ShowEditDetails( tag );
+                    }
                 }
             }
         }
@@ -347,39 +366,49 @@ namespace RockWeb.Blocks.Core
         /// <param name="tag">The tag.</param>
         private void ShowEditDetails( Tag tag )
         {
-
             if ( tag.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( Tag.FriendlyTypeName ).FormatAsHtmlTitle();
+                hlStatus.Visible = false;
             }
             else
             {
                 lReadOnlyTitle.Text = tag.Name.FormatAsHtmlTitle();
+                SetLabel( tag );
             }
 
             SetEditMode( true );
 
             tbName.Text = tag.Name;
             tbDescription.Text = tag.Description;
+
+            pnlAdvanced.Visible = _canConfigure;
+
+            cpCategory.SetValue( tag.CategoryId );
+
             if ( tag.OwnerPersonAlias != null )
             {
                 rblScope.SelectedValue = "Personal";
                 ppOwner.SetValue( tag.OwnerPersonAlias.Person );
+                ppOwner.Visible = true;
             }
             else
             {
                 rblScope.SelectedValue = "Organization";
                 ppOwner.SetValue( null );
+                ppOwner.Visible = false;
             }
 
+            cbIsActive.Checked = tag.IsActive;
+
             ddlEntityType.Items.Clear();
+            ddlEntityType.Items.Add( new System.Web.UI.WebControls.ListItem() );
             new EntityTypeService( new RockContext() ).GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
             ddlEntityType.SelectedValue = tag.EntityTypeId.ToString();
+
             tbEntityTypeQualifierColumn.Text = tag.EntityTypeQualifierColumn;
             tbEntityTypeQualifierValue.Text = tag.EntityTypeQualifierValue;
 
-            rblScope.Visible = _canConfigure;
-            ppOwner.Visible = _canConfigure;
         }
 
         /// <summary>
@@ -390,8 +419,40 @@ namespace RockWeb.Blocks.Core
         {
             SetEditMode( false );
             lReadOnlyTitle.Text = tag.Name.FormatAsHtmlTitle();
+
+            SetLabel( tag );
+
             lDescription.Text = tag.Description;
-            hlEntityType.Text = tag.EntityType.FriendlyName;
+            hlEntityType.Text = tag.EntityType != null ? tag.EntityType.FriendlyName : "None";
+
+            lScope.Text = tag.OwnerPersonAliasId.HasValue ? "Personal" : "Organizational";
+            lOwner.Visible = tag.OwnerPersonAlias != null;
+            if ( tag.OwnerPersonAlias != null && tag.OwnerPersonAlias.Person != null )
+            {
+                lOwner.Text = tag.OwnerPersonAlias.Person.FullName;
+            }
+
+            btnSecurity.Visible = !tag.OwnerPersonAliasId.HasValue && ( _canConfigure || tag.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
+            
+            btnSecurity.EntityId = tag.Id;
+        }
+
+        /// <summary>
+        /// Sets the Active/Inactive label.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        private void SetLabel( Tag tag )
+        {
+            if ( tag.IsActive )
+            {
+                hlStatus.Text = "Active";
+                hlStatus.LabelType = LabelType.Success;
+            }
+            else
+            {
+                hlStatus.Text = "Inactive";
+                hlStatus.LabelType = LabelType.Danger;
+            }
         }
 
         #endregion

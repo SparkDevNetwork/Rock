@@ -48,7 +48,7 @@
                 <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" AccessKey="s" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" AccessKey="s" ToolTip="Alt+s" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                 </div>
 
             </asp:Panel>

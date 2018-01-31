@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Administration
     [Description( "Displays a list of all binary file types." )]
 
     [LinkedPage( "Detail Page" )]
-    public partial class BinaryFileTypeList : RockBlock
+    public partial class BinaryFileTypeList : RockBlock, ICustomGridColumns
     {
         #region Control Methods
 

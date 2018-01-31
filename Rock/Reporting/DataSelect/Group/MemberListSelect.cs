@@ -34,7 +34,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Select a comma-delimited list of members of the group" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group Member List" )]
-    public class MemberListSelect : DataSelectComponent
+    public class MemberListSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Properties
 
@@ -106,6 +106,11 @@ namespace Rock.Reporting.DataSelect.Group
             public int PersonId { get; set; }
 
             public int GroupMemberId { get; set; }
+
+            public override string ToString()
+            {
+                return NickName + " " + LastName;
+            }
         }
 
         /// <summary>
@@ -267,7 +272,7 @@ namespace Rock.Reporting.DataSelect.Group
             var memberListQuery = qryGroupService.Select( p => p.Members.AsQueryable()
                     .Where( memberWhereGroupType )
                     .Where( memberWhereGroupRoles )
-                    .Where( memberWhereStatus )
+                    .Where( memberWhereStatus ) 
                     .Select( m => new MemberInfo
                     {
                         NickName = m.Person.NickName,
@@ -451,6 +456,88 @@ namespace Rock.Reporting.DataSelect.Group
                     ddlGroupMemberStatus.SetValue( selectionValues[3] );
                 }
             }
+        }
+
+        #endregion
+
+        #region IRecipientDataSelect implementation
+
+        /// <summary>
+        /// Gets the type of the recipient column field.
+        /// </summary>
+        /// <value>
+        /// The type of the recipient column field.
+        /// </value>
+        public Type RecipientColumnFieldType
+        {
+            get { return typeof( IEnumerable<int> ); }
+        }
+
+        /// <summary>
+        /// Gets the recipient person identifier expression.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entityIdProperty">The entity identifier property.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public Expression GetRecipientPersonIdExpression( System.Data.Entity.DbContext dbContext, MemberExpression entityIdProperty, string selection )
+        {
+            var rockContext = dbContext as RockContext;
+            if ( rockContext != null )
+            {
+                var qryGroupService = new GroupService( rockContext ).Queryable();
+
+                Expression<Func<Rock.Model.GroupMember, bool>> memberWhereGroupType = a => 1 == 1;
+                Expression<Func<Rock.Model.GroupMember, bool>> memberWhereGroupRoles = a => 1 == 1;
+                Expression<Func<Rock.Model.GroupMember, bool>> memberWhereStatus = a => 1 == 1;
+
+                string[] selectionValues = selection.Split( '|' );
+                if ( selectionValues.Length >= 3 )
+                {
+                    GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+                    int? groupTypeId = null;
+
+                    Guid groupTypeGuid = selectionValues[1].AsGuid();
+
+                    var groupType = GroupTypeCache.Read( groupTypeGuid );
+                    if ( groupType != null )
+                    {
+                        groupTypeId = groupType.Id;
+                    }
+
+                    if ( groupTypeId.HasValue )
+                    {
+                        memberWhereGroupType = xx => xx.Group.GroupTypeId == groupTypeId;
+                    }
+
+                    var groupRoleGuids = selectionValues[2].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => n.AsGuid() ).ToList();
+                    List<int> groupRoleIds = null;
+                    if ( groupRoleGuids.Count() > 0 )
+                    {
+                        groupRoleIds = new GroupTypeRoleService( rockContext ).Queryable().Where( a => groupRoleGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
+                        memberWhereGroupRoles = xx => groupRoleIds.Contains( xx.GroupRoleId );
+                    }
+
+                    GroupMemberStatus? groupMemberStatus = selectionValues[3].ConvertToEnumOrNull<GroupMemberStatus>();
+
+                    if ( groupMemberStatus.HasValue )
+                    {
+                        memberWhereStatus = xx => xx.GroupMemberStatus == groupMemberStatus.Value;
+                    }
+                }
+
+                var memberListQuery = qryGroupService.Select( p => p.Members.AsQueryable()
+                        .Where( memberWhereGroupType )
+                        .Where( memberWhereGroupRoles )
+                        .Where( memberWhereStatus )
+                        .Select( m => m.PersonId ) );
+
+                var selectChildrenExpression = SelectExpressionExtractor.Extract( memberListQuery, entityIdProperty, "p" );
+
+                return selectChildrenExpression;
+            }
+
+            return null;
         }
 
         #endregion

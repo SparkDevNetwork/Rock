@@ -75,5 +75,21 @@ namespace Rock.Web.UI.Controls
             
             base.InitializeCell( cell, cellType, rowState, rowIndex );
         }
+
+        /// <summary>
+        /// Gets or sets the template field identifier.
+        /// </summary>
+        /// <value>
+        /// The template field identifier.
+        /// </value>
+        public string ID
+        {
+            get
+            {
+                object t = ViewState["ID"];
+                return ( t == null ) ? string.Empty : ( string ) t;
+            }
+            set { ViewState["ID"] = value; }
+        }
     }
 }

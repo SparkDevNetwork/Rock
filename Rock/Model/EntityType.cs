@@ -14,12 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.UniversalSearch;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -27,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "EntityType" )]
     [DataContract]
@@ -114,6 +118,152 @@ namespace Rock.Model
         [DataMember]
         public int? MultiValueFieldTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is indexing enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is indexing enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsIndexingEnabled { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this entity supports indexing.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this entity supports indexing <c>false</c>.
+        /// </value>
+        public bool IsIndexingSupported
+        {
+            get
+            {
+                Type type = null;
+                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
+                {
+                    type = Type.GetType( this.AssemblyName );
+                }
+
+                if (type != null )
+                {
+                    return typeof( IRockIndexable ).IsAssignableFrom( type ); 
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is analytic supported.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
+        /// </value>
+        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead") ]
+        public bool IsAnalyticSupported
+        {
+            get
+            {
+                Type type = null;
+                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
+                {
+                    type = Type.GetType( this.AssemblyName );
+                }
+
+                if ( type != null )
+                {
+                    return typeof( IAnalytic ).IsAssignableFrom( type );
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is analytic historical supported.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
+        /// </value>
+        [Obsolete( "Use EntityTypeCache.IsAnalyticHistoricalSupported(..) instead" )]
+        public bool IsAnalyticHistoricalSupported
+        {
+            get
+            {
+                Type type = null;
+                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
+                {
+                    type = Type.GetType( this.AssemblyName );
+                }
+
+                if ( type != null )
+                {
+                    return typeof( IAnalyticHistorical ).IsAssignableFrom( type );
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the get index model.
+        /// </summary>
+        /// <value>
+        /// The name of the get index model.
+        /// </value>
+        public Type IndexModelType
+        {
+            get
+            {
+                Type type = null;
+                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
+                {
+                    type = Type.GetType( this.AssemblyName );
+                }
+
+                if ( type != null )
+                {
+                    if ( typeof( IRockIndexable ).IsAssignableFrom( type ) )
+                    {
+                        var constructor = type.GetConstructor( Type.EmptyTypes );
+                        object instance = constructor.Invoke( new object[] { } );
+                        var method = type.GetMethod( "IndexModelType" );
+
+                        if ( method != null )
+                        {
+                            var indexModelType = (Type)method.Invoke( instance, null );
+                            return indexModelType;
+                        }
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the index result template.
+        /// </summary>
+        /// <value>
+        /// The index result template.
+        /// </value>
+        public string IndexResultTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index document URL.
+        /// </summary>
+        /// <value>
+        /// The index document URL.
+        /// </value>
+        public string IndexDocumentUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a lava template that can be used for generating a link to view details for this entity (i.e. "~/person/{{ Entity.Id }}").
+        /// </summary>
+        /// <value>
+        /// The link URL.
+        /// </value>
+        public string LinkUrlLavaTemplate { get; set; }
+
         #endregion
 
         #region virtual Properties
@@ -124,6 +274,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
+        [LavaInclude]
         public virtual bool IsSystem
         {
             get { return IsSecured || IsEntity; }
@@ -193,7 +344,6 @@ namespace Rock.Model
 
             return true;
         }
-
         #endregion
 
     }

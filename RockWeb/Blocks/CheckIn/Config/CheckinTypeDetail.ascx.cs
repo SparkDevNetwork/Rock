@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         if ( groupType != null )
                         {
                             groupType.LoadAttributes();
-                            BuildAttributeEdits( groupType, true );
+                            BuildAttributeEdits( groupType, false );
                         }
                     }
 

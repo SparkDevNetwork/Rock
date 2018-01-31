@@ -38,15 +38,15 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Member RemoveFrom URL" )]
     [Category( "Groups" )]
     [Description( "Removes a person from a group based on inputs from the URL query string (GroupId, PersonGuid)." )]
-    [GroupField("Default Group", "The default group to use if one is not passed through the query string (optional).", false)]
+    [GroupField("Default Group", "The default group to use if one is not passed through the query string (optional).", false, order:0)]
     [CodeEditorField("Success Message", "Lava template to display when person has been added to the group.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-success'>
     {{ Person.NickName }} has been removed from the group '{{ Group.Name }}'.
-</div>")]
+</div>", order: 1)]
     [CodeEditorField( "Not In Group Message", "Lava template to display when person is not in the group.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-warning'>
     {{ Person.NickName }} was not in the group '{{ Group.Name }}'.
-</div>" )]
-    [BooleanField("Warn When Not In Group", "Determines if the 'Not In Group Message'should be shown if the person is not in the group. Otherwise the success message will be shown", true)]
-    [BooleanField("Enable Debug", "Shows the Lava variables availabled for this block")]
+</div>", order: 2 )]
+    [BooleanField("Warn When Not In Group", "Determines if the 'Not In Group Message'should be shown if the person is not in the group. Otherwise the success message will be shown", true, order: 3)]
+    [BooleanField("Inactivate Instead of Remove", "Inactivates the person in the group instead of removing them.", false, key:"Inactivate", order: 4)]
     public partial class GroupMemberRemoveFromUrl : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -93,13 +93,21 @@ namespace RockWeb.Blocks.Groups
                 Group group = null;
                 Guid personGuid = Guid.Empty;
 
-                // get group id from url
-                if ( Request["GroupId"] != null )
+                // get group from url
+                if ( Request["GroupId"] != null || Request["GroupGuid"] != null )
                 {
-                    int groupId = 0;
-                    if ( Int32.TryParse( Request["GroupId"], out groupId ) )
+                    if ( Request["GroupId"] != null )
                     {
-                        group = new GroupService( rockContext ).Queryable().Where(g => g.Id == groupId ).FirstOrDefault();
+                        int groupId = 0;
+                        if ( Int32.TryParse( Request["GroupId"], out groupId ) )
+                        {
+                            group = new GroupService( rockContext ).Queryable().Where( g => g.Id == groupId ).FirstOrDefault();
+                        }
+                    }
+                    else
+                    {
+                        Guid groupGuid = Request["GroupGuid"].AsGuid();
+                        group = new GroupService( rockContext ).Queryable().Where( g => g.Guid == groupGuid ).FirstOrDefault();
                     }
                 }
                 else
@@ -142,14 +150,6 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "Person", person );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
 
-                // show debug info?
-                bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-                if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
-                }
-
                 var groupMemberService = new GroupMemberService(rockContext);
 
                 var groupMemberList = groupMemberService.Queryable()
@@ -160,7 +160,15 @@ namespace RockWeb.Blocks.Groups
                 {
                     foreach(var groupMember in groupMemberList )
                     {
-                        groupMemberService.Delete( groupMember );
+                        if ( GetAttributeValue( "Inactivate" ).AsBoolean() )
+                        {
+                            groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
+                        }
+                        else
+                        {
+                            groupMemberService.Delete( groupMember );
+                        }
+                        
                         rockContext.SaveChanges();
                     }
 

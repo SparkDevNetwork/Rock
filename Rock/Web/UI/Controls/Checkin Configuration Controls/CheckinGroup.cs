@@ -38,6 +38,7 @@ namespace Rock.Web.UI.Controls
         private Literal _lblGroupName;
 
         private DataTextBox _tbGroupName;
+        private RockCheckBox _cbIsActive;
         private PlaceHolder _phGroupAttributes;
         private Grid _gLocations;
 
@@ -216,7 +217,7 @@ namespace Rock.Web.UI.Controls
         public void GetGroupValues( Group group )
         {
             group.Name = _tbGroupName.Text;
-
+            group.IsActive = _cbIsActive.Checked;
             Rock.Attribute.Helper.GetEditValues( _phGroupAttributes, group );
         }
 
@@ -239,6 +240,7 @@ namespace Rock.Web.UI.Controls
                 _hfGroupId.Value = value.Id.ToString();
                 _hfGroupTypeId.Value = value.GroupTypeId.ToString();
                 _tbGroupName.Text = value.Name;
+                _cbIsActive.Checked = value.IsActive;
 
                 CreateGroupAttributeControls( value, rockContext );
             }
@@ -267,6 +269,10 @@ namespace Rock.Web.UI.Controls
             _tbGroupName.ID = this.ID + "_tbGroupName";
             _tbGroupName.Label = "Check-in Group Name";
 
+            _cbIsActive = new RockCheckBox();
+            _cbIsActive.ID = this.ID + "_cbIsActive";
+            _cbIsActive.Text = "Active";
+
             // set label when they exit the edit field
             _tbGroupName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblGroupName.ID );
             _tbGroupName.SourceTypeName = "Rock.Model.Group, Rock";
@@ -280,6 +286,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _hfGroupTypeId );
             Controls.Add( _lblGroupName );
             Controls.Add( _tbGroupName );
+            Controls.Add( _cbIsActive );
             Controls.Add( _phGroupAttributes );
 
             // Locations Grid
@@ -339,6 +346,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 _tbGroupName.RenderControl( writer );
+                _cbIsActive.RenderBaseControl( writer );
                 _phGroupAttributes.RenderControl( writer );
 
                 writer.WriteLine( "<h3>Locations</h3>" );

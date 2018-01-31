@@ -22,8 +22,8 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.SystemEmail" />
-                        <Rock:DataTextBox ID="tbCc" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Cc" />
-                        <Rock:DataTextBox ID="tbBcc" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Bcc" />
+                        <Rock:DataTextBox ID="tbCc" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Cc" Help="<small><span class='tip tip-lava'></span></small>" />
+                        <Rock:DataTextBox ID="tbBcc" runat="server" SourceTypeName="Rock.Model.SystemEmail, Rock" PropertyName="Bcc" Help="<small><span class='tip tip-lava'></span></small>" />
                     </div>
                 </div>
 
@@ -33,8 +33,8 @@
                 <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s"  Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
                 </div>
 
             </div>

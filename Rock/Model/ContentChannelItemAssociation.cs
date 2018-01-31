@@ -25,6 +25,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "ContentChannelItemAssociation" )]
     [DataContract]
     public partial class ContentChannelItemAssociation : Model<ContentChannelItemAssociation>, IOrdered
@@ -70,6 +71,7 @@ namespace Rock.Model
         /// <value>
         /// The content channel item.
         /// </value>
+        [LavaInclude]
         public virtual ContentChannelItem ContentChannelItem { get; set; }
 
         /// <summary>

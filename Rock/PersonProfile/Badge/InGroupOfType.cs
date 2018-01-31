@@ -30,15 +30,12 @@ using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
-    // TODO: Update to return actual data
-
     /// <summary>
-    /// FamilyAttendance Badge
+    /// In Group Of Type Badge
     /// </summary>
     [Description( "Shows badge if the individual is in a group of a specified type." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "In Group Of Type" )]
-    
     
     [GroupTypeField("Group Type", "The type of group to use.", true)]
     [TextField("Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd")]

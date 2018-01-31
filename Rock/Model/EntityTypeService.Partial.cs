@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
+using System.Reflection;
 using Rock;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -163,6 +163,66 @@ namespace Rock.Model
             }
 
             return items;
+        }
+
+        /// <summary>
+        /// Gets an Entity by type and entity Id.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( int entityTypeId, int entityId )
+        {
+            var entityQry = GetQueryable( entityTypeId );
+            if ( entityQry != null )
+            {
+                return entityQry.Where( i => i.Id == entityId ).FirstOrDefault();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets an Entity by type and entity Guid.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( int entityTypeId, Guid entityGuid )
+        {
+            var entityQry = GetQueryable( entityTypeId );
+            if ( entityQry != null )
+            {
+                return entityQry.Where( i => i.Guid == entityGuid ).FirstOrDefault();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a Service Queryable method for a particular entity type
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <returns></returns>
+        private IQueryable<IEntity> GetQueryable( int entityTypeId )
+        {
+            EntityTypeCache itemEntityType = EntityTypeCache.Read( entityTypeId );
+            if ( itemEntityType != null )
+            {
+                Type entityType = itemEntityType.GetEntityType();
+                if ( entityType != null )
+                {
+                    Type[] modelType = { entityType };
+                    Type genericServiceType = typeof( Rock.Data.Service<> );
+                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                    var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { (RockContext)this.Context } ) as IService;
+
+                    MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
+                    return qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

@@ -35,7 +35,8 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Calendar Types" )]
     [Category( "Event" )]
     [Description( "Displays the calendars that user is authorized to view." )]
-    [LinkedPage( "Detail Page", "Page used to view details of an event calendar." )]
+    [LinkedPage( "Detail Page", "Page used to view details of an event calendar.", order: 0 )]
+    [LinkedPage( "Calendar Attributes Page", "Page used to configure attributes for event calendars.", order: 1 )]
     public partial class CalendarTypes : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -92,6 +93,16 @@ namespace RockWeb.Blocks.Event
         protected void lbAddEventCalendar_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "EventCalendarId", 0 );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbEventCalenderAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbEventCalenderAttributes_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( "CalendarAttributesPage");
         }
 
         /// <summary>

@@ -40,7 +40,6 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block that shows a summary of the scheduled transactions for the currently logged in user." )]
     [CodeEditorField( "Template", "Liquid template for the content to be placed on the page.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/ScheduledTransactionSummary.lava'  %}", "", 1 )]
-    [BooleanField("Enable Debug", "Displays a list of available merge fields using the current person's scheduled transactions.", false, "", 2)]
     [LinkedPage("Manage Scheduled Transactions Page", "Link to be used for managing an individual's scheduled transactions.", false, "", "", 3)]
     [LinkedPage( "Transaction History Page", "Link to use for viewing an individual's transaction history.", false, "", "", 4 )]
     [LinkedPage("Transaction Entry Page", "Link to use when adding new transactions.", false, "", "", 5)]
@@ -201,14 +200,6 @@ namespace RockWeb.Blocks.Finance
             scheduleValues.Add( "CurrentPerson", CurrentPerson );
 
             string content = GetAttributeValue( "Template" ).ResolveMergeFields( scheduleValues );
-
-            // show merge fields if needed
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                scheduleValues.Remove( "Person" );
-                content += scheduleValues.lavaDebugInfo();
-            }
 
             lContent.Text = content;
             

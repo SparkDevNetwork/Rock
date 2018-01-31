@@ -31,6 +31,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -513,14 +514,24 @@ namespace RockWeb.Blocks.Cms
                 bool isFiltered = false;
                 var items = GetItems( rockContext, selectedChannel, out isFiltered );
 
+                var reorderFieldColumn = gContentChannelItems.ColumnsOfType<ReorderField>().FirstOrDefault();
+
                 if ( selectedChannel.ItemsManuallyOrdered && !isFiltered )
                 {
-                    gContentChannelItems.Columns[0].Visible = true;
+                    if ( reorderFieldColumn != null )
+                    {
+                        reorderFieldColumn.Visible = true;
+                    }
+
                     gContentChannelItems.AllowSorting = false;
                 }
                 else
                 {
-                    gContentChannelItems.Columns[0].Visible = false;
+                    if ( reorderFieldColumn != null )
+                    {
+                        reorderFieldColumn.Visible = false;
+                    }
+
                     gContentChannelItems.AllowSorting = true;
 
                     SortProperty sortProperty = gContentChannelItems.SortProperty;
@@ -534,10 +545,37 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
+                // Find any possible tags for the items
+                var itemTags = new Dictionary<Guid, string>();
+                if ( selectedChannel.IsTaggingEnabled )
+                {
+                    itemTags = items.ToDictionary( i => i.Guid, v => "" );
+                    var entityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid() ).Id;
+                    var testedTags = new Dictionary<int, string>();
+
+                    foreach ( var taggedItem in new TaggedItemService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( i =>
+                            i.EntityTypeId == entityTypeId &&
+                            itemTags.Keys.Contains( i.EntityGuid ) )
+                        .OrderBy( i => i.Tag.Name ) )
+                    {
+                        if ( !testedTags.ContainsKey( taggedItem.TagId ) )
+                        {
+                            testedTags.Add( taggedItem.TagId, taggedItem.Tag.IsAuthorized( Authorization.VIEW, CurrentPerson ) ? taggedItem.Tag.Name : string.Empty );
+                        }
+
+                        if ( testedTags[taggedItem.TagId].IsNotNullOrWhitespace() )
+                        {
+                            itemTags[taggedItem.EntityGuid] += string.Format( "<span class='tag'>{0}</span>", testedTags[taggedItem.TagId] );
+                        }
+                    }
+                }
+
                 gContentChannelItems.ObjectList = new Dictionary<string, object>();
                 items.ForEach( i => gContentChannelItems.ObjectList.Add( i.Id.ToString(), i ) );
 
-                gContentChannelItems.DataSource = items.Select( i => new
+                var gridList = items.Select( i => new
                 {
                     i.Id,
                     i.Guid,
@@ -546,9 +584,16 @@ namespace RockWeb.Blocks.Cms
                     i.ExpireDateTime,
                     i.Priority,
                     Status = DisplayStatus( i.Status ),
+                    Tags = itemTags.GetValueOrNull( i.Guid ),
                     Occurrences = i.EventItemOccurrences.Any(),
                     CreatedByPersonName = i.CreatedByPersonAlias != null ? String.Format( "<a href={0}>{1}</a>", ResolveRockUrl( string.Format( "~/Person/{0}", i.CreatedByPersonAlias.PersonId ) ), i.CreatedByPersonName ) : String.Empty
                 } ).ToList();
+
+                // only show the Event Occurrences item if any of the displayed content channel items have any occurrences (and the block setting is enabled)
+                var eventOccurrencesColumn = gContentChannelItems.ColumnsWithDataField( "Occurrences" ).FirstOrDefault();
+                eventOccurrencesColumn.Visible = gridList.Any( a => a.Occurrences == true );
+
+                gContentChannelItems.DataSource = gridList;
                 gContentChannelItems.DataBind();
 
                 lContentChannelItems.Text = selectedChannel.Name + " Items";
@@ -755,54 +800,46 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                if ( channel.ContentChannelType.IncludeTime )
+                if ( channel.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates )
                 {
-                    // Add Start column
-                    var startField = new DateTimeField();
-                    startField.DataField = "StartDateTime";
-                    startField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
-                    startField.SortExpression = "StartDateTime";
-                    gContentChannelItems.Columns.Add( startField );
-
-                    // Expire column
-                    if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                    RockBoundField startDateTimeField;
+                    RockBoundField expireDateTimeField;
+                    if ( channel.ContentChannelType.IncludeTime )
                     {
-                        var expireField = new DateTimeField();
-                        expireField.DataField = "ExpireDateTime";
-                        expireField.HeaderText = "Expire";
-                        expireField.SortExpression = "ExpireDateTime";
-                        gContentChannelItems.Columns.Add( expireField );
+                        startDateTimeField = new DateTimeField();
+                        expireDateTimeField = new DateTimeField();
                     }
-                }
-                else
-                {
-                    // Add Start column
-                    var startField = new DateField();
-                    startField.DataField = "StartDateTime";
-                    startField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
-                    startField.SortExpression = "StartDateTime";
-                    gContentChannelItems.Columns.Add( startField );
+                    else
+                    {
+                        startDateTimeField = new DateField();
+                        expireDateTimeField = new DateField();
+                    }
 
-                    // Expire column
+                    startDateTimeField.DataField = "StartDateTime";
+                    startDateTimeField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
+                    startDateTimeField.SortExpression = "StartDateTime";
+                    gContentChannelItems.Columns.Add( startDateTimeField );
+
+                    expireDateTimeField.DataField = "ExpireDateTime";
+                    expireDateTimeField.HeaderText = "Expire";
+                    expireDateTimeField.SortExpression = "ExpireDateTime";
                     if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
                     {
-                        var expireField = new DateField();
-                        expireField.DataField = "ExpireDateTime";
-                        expireField.HeaderText = "Expire";
-                        expireField.SortExpression = "ExpireDateTime";
-                        gContentChannelItems.Columns.Add( expireField );
+                        gContentChannelItems.Columns.Add( expireDateTimeField );
                     }
                 }
 
-                // Priority column
-                var priorityField = new BoundField();
-                priorityField.DataField = "Priority";
-                priorityField.HeaderText = "Priority";
-                priorityField.SortExpression = "Priority";
-                priorityField.DataFormatString = "{0:N0}";
-                priorityField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
-                gContentChannelItems.Columns.Add( priorityField );
-
+                if ( !channel.ContentChannelType.DisablePriority )
+                {
+                    // Priority column
+                    var priorityField = new BoundField();
+                    priorityField.DataField = "Priority";
+                    priorityField.HeaderText = "Priority";
+                    priorityField.SortExpression = "Priority";
+                    priorityField.DataFormatString = "{0:N0}";
+                    priorityField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+                    gContentChannelItems.Columns.Add( priorityField );
+                }
 
                 // Status column
                 if ( channel.RequiresApproval )
@@ -827,6 +864,17 @@ namespace RockWeb.Blocks.Cms
                 createdByPersonNameField.HeaderText = "Created By";
                 createdByPersonNameField.HtmlEncode = false;
                 gContentChannelItems.Columns.Add( createdByPersonNameField );
+
+                // Add Tag Field
+                if ( channel.IsTaggingEnabled )
+                {
+                    var tagField = new BoundField();
+                    gContentChannelItems.Columns.Add( tagField );
+                    tagField.DataField = "Tags";
+                    tagField.HeaderText = "Tags";
+                    tagField.ItemStyle.CssClass = "taglist";
+                    tagField.HtmlEncode = false;
+                }
 
                 bool canEditChannel = channel.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                 gContentChannelItems.Actions.ShowAdd = canEditChannel;

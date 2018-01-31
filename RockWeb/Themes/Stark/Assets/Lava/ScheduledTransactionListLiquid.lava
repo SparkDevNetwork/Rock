@@ -1,8 +1,9 @@
 <div class="scheduledtransaction-summary">
-    ${{ScheduledTransaction.ScheduledAmount}} on {{ScheduledTransaction.CurrencyType}}
-    {{ScheduledTransaction.FrequencyDescription | downcase}}. 
-     
-    {% if ScheduledTransaction.NextPaymentDate != null %}
-        Next gift will be on {{ScheduledTransaction.NextPaymentDate | Date:"MMMM d, yyyy"}}.
-    {% endif %}
+  <strong>{{ ScheduledTransaction.PersonName }}</strong><br/>
+  ${{ ScheduledTransaction.ScheduledAmount }} on {{ ScheduledTransaction.CurrencyType }}
+  {{ ScheduledTransaction.FrequencyDescription | downcase }}.
+
+  {% if ScheduledTransaction.NextPaymentDate != null %}
+  Next gift will be on {{ ScheduledTransaction.NextPaymentDate | Date:"MMMM d, yyyy" }}.
+  {% endif %}
 </div>

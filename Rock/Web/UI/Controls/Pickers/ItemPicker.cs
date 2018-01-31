@@ -594,8 +594,8 @@ $@"Rock.controls.itemPicker.initialize({{
             _btnSelect.InnerText = "Select";
             _btnSelect.CausesValidation = false;
 
-            // we only need the postback on Select if SelectItem is assigned or if this is PagePicker
-            if ( SelectItem != null || ( this is PagePicker ) )
+            // make sure PagePicker always does a postback, even if _selectItem is not assigned
+            if ( _selectItem == null && ( this is PagePicker ) )
             {
                 _btnSelect.ServerClick += btnSelect_Click;
             }
@@ -607,8 +607,8 @@ $@"Rock.controls.itemPicker.initialize({{
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
 
-            // we only need the postback on SelectNone if SelectItem is assigned or if this is PagePicker
-            if ( SelectItem != null || ( this is PagePicker ) )
+            // make sure PagePicker always does a postback, even if _selectItem is not assigned
+            if ( _selectItem == null && ( this is PagePicker ) )
             {
                 _btnSelectNone.ServerClick += btnSelect_Click;
             }
@@ -661,7 +661,7 @@ $@"Rock.controls.itemPicker.initialize({{
                 {
                     string pickerLabelHtmlFormat = @"
                     <a class='picker-label' href='#'>
-                        <i class='{2} icon-fw'></i>
+                        <i class='{2} fa-fw'></i>
                         <span id='selectedItemLabel_{0}' class='selected-names'>{1}</span>
                         <b class='fa fa-caret-down pull-right'></b>
                     </a>";
@@ -845,9 +845,9 @@ $@"Rock.controls.itemPicker.initialize({{
                 SetValueOnSelect();
             }
 
-            if ( SelectItem != null )
+            if ( _selectItem != null )
             {
-                SelectItem( sender, e );
+                _selectItem( sender, e );
             }
         }
 
@@ -881,10 +881,28 @@ $@"Rock.controls.itemPicker.initialize({{
         /// </summary>
         protected abstract void SetValuesOnSelect();
 
+        private event EventHandler _selectItem;
+
         /// <summary>
         /// Occurs when [select item].
         /// </summary>
-        public event EventHandler SelectItem;
+        public event EventHandler SelectItem
+        {
+            add
+            {
+                EnsureChildControls();
+                _selectItem += value;
+                _btnSelect.ServerClick += btnSelect_Click;
+                _btnSelectNone.ServerClick += btnSelect_Click;
+            }
+
+            remove
+            {
+                _selectItem -= value;
+                _btnSelect.ServerClick -= btnSelect_Click;
+                _btnSelectNone.ServerClick -= btnSelect_Click;
+            }
+        }
 
         /// <summary>
         /// Shows the error message.

@@ -93,6 +93,8 @@ namespace Rock.Model
             target.DataSelectComponentEntityTypeId = source.DataSelectComponentEntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsCommunicationMergeField = source.IsCommunicationMergeField;
+            target.IsCommunicationRecipientField = source.IsCommunicationRecipientField;
             target.ReportFieldType = source.ReportFieldType;
             target.ReportId = source.ReportId;
             target.Selection = source.Selection;

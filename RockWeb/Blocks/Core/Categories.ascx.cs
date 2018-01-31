@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Core
     [TextField("Entity Qualifier Column", "Column to evaluate to determine entities that this category applies to.", false, "", "", 1)]
     [TextField("Entity Qualifier Value", "The value of the column that this category applies to.", false, "", "", 2)]
     [BooleanField( "Enable Hierarchy", "When set allows you to drill down through the category hierarchy.", true, "", 3)]
-    public partial class Categories : RockBlock
+    public partial class Categories : RockBlock, ICustomGridColumns
     {
         #region Fields
 
@@ -428,8 +428,11 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void SetDisplay()
         {
-            SecurityField securityField = gCategories.Columns[8] as SecurityField;
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Category ) ).Id;
+            var securityField = gCategories.ColumnsOfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Category ) ).Id;
+            }
 
             _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
             if ( _canConfigure )
@@ -488,9 +491,24 @@ namespace RockWeb.Blocks.Core
             if ( _hasEntityTypeBlockSetting )
             {
                 pnlEntityInfo.Visible = false;
-                gCategories.Columns[4].Visible = false;
-                gCategories.Columns[5].Visible = false;
-                gCategories.Columns[6].Visible = false;
+
+                var entityTypeField = gCategories.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "EntityType" );
+                if ( entityTypeField != null )
+                {
+                    entityTypeField.Visible = false;
+                }
+
+                var entityQualifierField = gCategories.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "EntityQualifierField" );
+                if ( entityQualifierField != null )
+                {
+                    entityQualifierField.Visible = false;
+                }
+
+                var entityQualifierValue = gCategories.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "EntityQualifierValue" );
+                if ( entityQualifierValue != null )
+                {
+                    entityQualifierValue.Visible = false;
+                }
 
                 catpParentCategory.Visible = false;
 

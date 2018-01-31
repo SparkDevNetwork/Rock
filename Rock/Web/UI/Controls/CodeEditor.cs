@@ -239,7 +239,7 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// Gets or sets the height (minimum/default of 200)
+        /// Gets or sets the height (default of 200, minimum of 50)
         /// </summary>
         /// <value>
         /// The height of the control.
@@ -256,11 +256,16 @@ namespace Rock.Web.UI.Controls
             {
                 var height = ViewState["EditorHeight"] as string;
                 var heightPixels = ( height ?? string.Empty ).AsIntegerOrNull() ?? 0;
-
-                // ensure a minimum height of 200 pixels
-                if ( heightPixels < 200 )
+                
+                if ( heightPixels <= 0)
                 {
+                    // if height is not specified or is zero or less, default it to 200
                     height = "200";
+                }
+                else if ( heightPixels < 50 )
+                {
+                    // ensure a minimum height of 50 pixels
+                    height = "50";
                 }
 
                 return height;
@@ -398,6 +403,44 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the javascript that will get executed when the codeeditor 'on blur' event occurs
+        /// </summary>
+        /// <value>
+        /// The on change press script.
+        /// </value>
+        public string OnBlurScript
+        {
+            get
+            {
+                return ViewState["OnBlurScript"] as string;
+            }
+
+            set
+            {
+                ViewState["OnBlurScript"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the javasscript that will get executed after the ace editor is done initializing
+        /// </summary>
+        /// <value>
+        /// The on load complete script.
+        /// </value>
+        public string OnLoadCompleteScript
+        {
+            get
+            {
+                return ViewState["OnLoadCompleteScript"] as string;
+            }
+
+            set
+            {
+                ViewState["OnLoadCompleteScript"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the merge field help.
         /// </summary>
         /// <value>
@@ -430,12 +473,6 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             this.TextMode = TextBoxMode.MultiLine;
-
-            if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
-            {
-                // if the codeeditor is .Visible and this isn't an Async, add ace.js to the page (If the codeeditor is made visible during an Async Post, RenderBaseControl will take care of adding ace.js)
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
-            }
         }
 
         /// <summary>
@@ -451,6 +488,22 @@ namespace Rock.Web.UI.Controls
             _mfpMergeFields.ID = string.Format( "mfpMergeFields_{0}", this.ID );
             _mfpMergeFields.SelectItem += MergeFields_SelectItem;
             Controls.Add( _mfpMergeFields );
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework after event processing has finished but
+        /// just before rendering begins.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
+            {
+                // if the codeeditor is .Visible and this isn't an Async, add ace.js to the page (If the codeeditor is made visible during an Async Post, RenderBaseControl will take care of adding ace.js)
+                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
+            }
         }
 
         /// <summary>
@@ -484,13 +537,14 @@ namespace Rock.Web.UI.Controls
             }
 
             // add editor div
-            string customDiv = @"<div class='code-editor-container' style='position:relative; height: {0}px'><pre id='codeeditor-div-{1}'>{2}</pre></div>";
-            writer.Write( string.Format( customDiv, editorHeight, this.ClientID, HttpUtility.HtmlEncode( this.Text ) ) );
+            var encodedText = HttpUtility.HtmlEncode( this.Text );
+            string customDiv = $@"<div class='code-editor-container {this.CssClass}' style='position:relative; height: {editorHeight}px'><pre id='codeeditor-div-{this.ClientID}'>{encodedText}</pre></div>";
+            writer.Write( customDiv );
 
             // write custom css for the code editor
-            string customStyle = @"
+            string styleTag = $@"
                 <style type='text/css' media='screen'>
-                    #codeeditor-div-{0} {{ 
+                    #codeeditor-div-{this.ClientID} {{ 
                         position: absolute;
                         top: 0;
                         right: 0;
@@ -499,8 +553,7 @@ namespace Rock.Web.UI.Controls
                     }}      
                 </style>     
 ";
-            string cssCode = string.Format( customStyle, this.ClientID );
-            writer.Write( cssCode );
+            writer.Write( styleTag );
 
             // make textbox hidden
             ( (WebControl)this ).Style.Add( HtmlTextWriterStyle.Display, "none" );
@@ -516,15 +569,43 @@ namespace Rock.Web.UI.Controls
                 ce_{0}.setTheme('ace/theme/{1}');
                 ce_{0}.getSession().setMode('ace/mode/{2}');
                 ce_{0}.setShowPrintMargin(false);
+                $('#codeeditor-div-{0}').data('aceEditor', ce_{0});
 
                 document.getElementById('{0}').value = $('<div/>').text( ce_{0}.getValue() ).html().replace(/&#39/g,""&apos"");
                 ce_{0}.getSession().on('change', function(e) {{
-                    document.getElementById('{0}').value = $('<div/>').text( ce_{0}.getValue() ).html().replace(/&#39/g,""&apos"");
+
+                    // get the raw content from the codeEditor
+                    var contents = ce_{0}.getValue();
+
+                    // set the input element value to the escaped value of contents
+                    document.getElementById('{0}').value = $('<div/>').text( contents  ).html().replace(/&#39/g,""&apos"");
+                    
                     {3}
                 }});
+
+                // disable warning about block scrolling
+                ce_{0}.$blockScrolling = Infinity;
+
+                ce_{0}.setReadOnly({4});
+
+                ce_{0}.on('blur', function(e) {{
+                    {5}
+                }});
+
+                {6}
 ";
 
-            string script = string.Format( scriptFormat, this.ClientID, EditorThemeAsString( this.EditorTheme ), EditorModeAsString( this.EditorMode ), this.OnChangeScript );
+            string script = string.Format( 
+                scriptFormat, 
+                this.ClientID,  // {0}
+                EditorThemeAsString( this.EditorTheme ),  // {1}
+                EditorModeAsString( this.EditorMode ),  // {2} 
+                this.OnChangeScript,  // {3}
+                this.ReadOnly.ToTrueFalse().ToLower(),  // {4}
+                this.OnBlurScript, // {5}
+                this.OnLoadCompleteScript // {6}
+            );
+
             ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ClientID, script, true );
 
             base.RenderControl( writer );

@@ -52,9 +52,9 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<ConnectionOpportunity>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
+            if ( new Service<ConnectionOpportunityGroupConfig>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, ConnectionOpportunity.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, ConnectionOpportunityGroupConfig.FriendlyTypeName );
                 return false;
             }  
  
@@ -63,6 +63,8 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
             }  
+            
+            // ignoring GroupRequirement,GroupTypeId 
  
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.InheritedGroupTypeId == item.Id ) )
             {
@@ -136,6 +138,7 @@ namespace Rock.Model
             target.IconCssClass = source.IconCssClass;
             target.IgnorePersonInactivated = source.IgnorePersonInactivated;
             target.InheritedGroupTypeId = source.InheritedGroupTypeId;
+            target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsSystem = source.IsSystem;
             target.LocationSelectionMode = source.LocationSelectionMode;
             target.Name = source.Name;
@@ -144,6 +147,7 @@ namespace Rock.Model
             target.ShowConnectionStatus = source.ShowConnectionStatus;
             target.ShowInGroupList = source.ShowInGroupList;
             target.ShowInNavigation = source.ShowInNavigation;
+            target.ShowMaritalStatus = source.ShowMaritalStatus;
             target.TakesAttendance = source.TakesAttendance;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

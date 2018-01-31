@@ -35,14 +35,14 @@
                     </div>
                     <div class="col-md-6">
                         <div class="attributes">
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                         </div>
                     </div>
                 </div>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     <div class="pull-right">
                         <asp:LinkButton ID="btnEditLabelContents" runat="server" Text="Edit Label Contents" CssClass="btn btn-default" Visible="false" OnClick="btnEditLabelContents_Click" />
                         <asp:LinkButton ID="btnRerunWorkflow" runat="server" Text="Rerun Workflow" CssClass="btn btn-default" Visible="false" OnClick="btnRerunWorkflow_Click" />

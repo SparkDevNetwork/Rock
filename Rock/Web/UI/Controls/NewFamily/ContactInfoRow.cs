@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -74,6 +75,24 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["PersonName"] as string ?? string.Empty; }
             set { ViewState["PersonName"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show cell phone first].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show cell phone first]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCellPhoneFirst
+        {
+            get
+            {
+                return ViewState["ShowCellPhoneFirst"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["ShowCellPhoneFirst"] = value;
+            }
         }
 
         /// <summary>
@@ -174,6 +193,18 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _ebEmail.Text = value; 
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is messaging visible.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is messaging visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsMessagingVisible
+        {
+            get { return ViewState["IsMessagingVisible"] as bool? ?? true; }
+            set { ViewState["IsMessagingVisible"] = value; }
         }
 
         /// <summary>
@@ -278,11 +309,13 @@ namespace Rock.Web.UI.Controls
             var homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
             _pnbHomePhone.Placeholder = homePhone != null ? homePhone.Value.EndsWith("Phone") ? homePhone.Value : homePhone.Value + " Phone" : "Home Phone";
             _pnbHomePhone.Required = false;
+            _pnbHomePhone.Attributes.Add( "autocomplete", "off" );
 
             var cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
             _pnbCellPhone.Placeholder = cellPhone != null ? cellPhone.Value.EndsWith( "Phone" ) ? cellPhone.Value : cellPhone.Value + " Phone" : "Cell Phone";
             _pnbCellPhone.Required = false;
-           
+            _pnbCellPhone.Attributes.Add( "autocomplete", "off" );
+
             _ebEmail.Placeholder = "Email";
             _ebEmail.Required = false;
         }
@@ -302,26 +335,16 @@ namespace Rock.Web.UI.Controls
                 writer.Write( PersonName );
                 writer.RenderEndTag();
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( "class", "form-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _pnbHomePhone.RenderControl( writer );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( "class", "form-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _pnbCellPhone.RenderControl( writer );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-
-                writer.RenderBeginTag(HtmlTextWriterTag.Td);
-                writer.AddAttribute("class", "text-center");
-                writer.RenderBeginTag(HtmlTextWriterTag.Div);
-                _cbIsMessagingEnabled.RenderControl(writer);
-                writer.RenderEndTag();
-                writer.RenderEndTag();
+                if ( ShowCellPhoneFirst )
+                {
+                    RenderCellPhone( writer );
+                    RenderHomePhone( writer );
+                }
+                else
+                {
+                    RenderHomePhone( writer );
+                    RenderCellPhone( writer );
+                }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( "class", "form-group" );
@@ -331,6 +354,36 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderEndTag();  // Tr
+            }
+        }
+
+        private void RenderHomePhone( HtmlTextWriter writer )
+        {
+            writer.RenderBeginTag( HtmlTextWriterTag.Td );
+            writer.AddAttribute( "class", "form-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _pnbHomePhone.RenderControl( writer );
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+        }
+
+        private void RenderCellPhone( HtmlTextWriter writer )
+        {
+            writer.RenderBeginTag( HtmlTextWriterTag.Td );
+            writer.AddAttribute( "class", "form-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _pnbCellPhone.RenderControl( writer );
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+            if ( IsMessagingVisible )
+            {
+                writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                writer.AddAttribute( "class", "text-center" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cbIsMessagingEnabled.RenderControl( writer );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
             }
         }
     }

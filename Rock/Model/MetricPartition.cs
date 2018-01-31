@@ -26,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// MetricPartition POCO Entity.
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "MetricPartition" )]
     [DataContract]
     public partial class MetricPartition : Model<MetricPartition>, IOrdered
@@ -110,6 +111,7 @@ namespace Rock.Model
         /// <value>
         /// The metric.
         /// </value>
+        [LavaInclude]
         public virtual Metric Metric { get; set; }
 
         /// <summary>

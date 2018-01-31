@@ -30,9 +30,10 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "RegistrationTemplate" )]
     [DataContract]
-    public partial class RegistrationTemplate : Model<RegistrationTemplate>, ICategorized
+    public partial class RegistrationTemplate : Model<RegistrationTemplate>, IHasActiveFlag, ICategorized
     {
 
         #region Entity Properties
@@ -212,6 +213,45 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string ReminderEmailTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the wait list transition from.
+        /// </summary>
+        /// <value>
+        /// The name of the wait list transition from.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string WaitListTransitionFromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the wait list transition from email.
+        /// </summary>
+        /// <value>
+        /// The wait list transition from email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string WaitListTransitionFromEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the wait list transition subject.
+        /// </summary>
+        /// <value>
+        /// The wait list transition subject.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string WaitListTransitionSubject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the wait list transition email template.
+        /// </summary>
+        /// <value>
+        /// The wait list transition email template.
+        /// </value>
+        [DataMember]
+        public string WaitListTransitionEmailTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets the set cost on instance.
@@ -470,11 +510,12 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Page entity for the parent page.
+        /// Gets or sets the category.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Page" /> entity for the parent Page
+        /// The category.
         /// </value>
+        [LavaInclude]
         public virtual Category Category { get; set; }
 
         /// <summary>
@@ -483,6 +524,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group.
         /// </value>
+        [LavaInclude]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -539,13 +581,14 @@ namespace Rock.Model
             set { _fees = value; }
         }
         private ICollection<RegistrationTemplateFee> _fees;
-        
+
         /// <summary>
         /// Gets or sets the collection of the current page's child pages.
         /// </summary>
         /// <value>
         /// Collection of child pages
         /// </value>
+        [LavaInclude]
         public virtual ICollection<RegistrationInstance> Instances
         {
             get { return _registrationInstances ?? ( _registrationInstances = new Collection<RegistrationInstance>() ); }
@@ -566,6 +609,27 @@ namespace Rock.Model
             set { _registrationTemplateForms = value; }
         }
         private ICollection<RegistrationTemplateForm> _registrationTemplateForms;
+
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( "Register", "The roles and/or users that have access to add/edit/remove registrations and registrants." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                }
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
 
         #endregion
 

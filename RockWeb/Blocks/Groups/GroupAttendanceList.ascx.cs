@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Detail Page", "", true, "", "", 0 )]
     [BooleanField( "Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 1 )]
     [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering attendance counts and percentage by campus?", false, "", 2 )]
-    public partial class GroupAttendanceList : RockBlock
+    public partial class GroupAttendanceList : RockBlock, ICustomGridColumns
     {
         #region Private Variables
 
@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Groups
             if ( e.Row.RowType == System.Web.UI.WebControls.DataControlRowType.DataRow )
             {
                 var occurrence = e.Row.DataItem as ScheduleOccurrence;
-                if ( occurrence == null || occurrence.ScheduleId.HasValue )
+                if ( occurrence == null )
                 {
                     var deleteField = gOccurrences.Columns.OfType<DeleteField>().First();
                     var cell = e.Row.Cells[gOccurrences.Columns.IndexOf( deleteField )];
@@ -423,10 +423,14 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                var scheduleField = gOccurrences.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "ScheduleName" );
                 if ( locations.Any() )
                 {
                     ddlLocation.Visible = true;
-                    gOccurrences.Columns[2].Visible = true;
+                    if ( scheduleField != null )
+                    {
+                        scheduleField.Visible = true;
+                    }
                     ddlLocation.DataSource = locations.OrderBy( l => l.Value );
                     ddlLocation.DataBind();
                     ddlLocation.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Location" ) ) );
@@ -434,17 +438,23 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     ddlLocation.Visible = false;
-                    gOccurrences.Columns[2].Visible = false;
+                    if ( scheduleField != null )
+                    {
+                        scheduleField.Visible = false;
+                    }
                 }
 
                 var schedules = new Dictionary<int, string> { { 0, string.Empty } };
                 grouplocations.SelectMany( l => l.Schedules ).OrderBy( s => s.Name ).ToList()
                     .ForEach( s => schedules.AddOrIgnore( s.Id, s.Name ) );
-
+                var locationField = gOccurrences.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Location" );
                 if ( schedules.Any() )
                 {
                     ddlSchedule.Visible = true;
-                    gOccurrences.Columns[1].Visible = true;
+                    if ( locationField != null )
+                    {
+                        locationField.Visible = true;
+                    }
                     ddlSchedule.DataSource = schedules;
                     ddlSchedule.DataBind();
                     ddlSchedule.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Schedule" ) ) );
@@ -452,7 +462,10 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     ddlSchedule.Visible = false;
-                    gOccurrences.Columns[1].Visible = false;
+                    if ( locationField != null )
+                    {
+                        locationField.Visible = false;
+                    }
                 }
             }
         }

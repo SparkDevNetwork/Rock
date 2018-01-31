@@ -15,86 +15,33 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Xml.Linq;
-using System.Xml.Xsl;
-
+using Humanizer;
 using Rock;
-using Rock.Attribute;
-using Rock.Communication;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls.Communication;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// User control for creating a new communication
+    /// 
     /// </summary>
     [DisplayName( "Template Detail" )]
     [Category( "Communication" )]
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
     public partial class TemplateDetail : RockBlock
     {
-        #region Fields
-
-        private bool _canEdit = false;
-
-        #endregion
-
-        #region Properties
-
-        protected int? CommunicationTemplateId
-        {
-            get { return ViewState["CommunicationTemplateId"] as int?; }
-            set { ViewState["CommunicationTemplateId"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the medium entity type id.
-        /// </summary>
-        /// <value>
-        /// The medium entity type id.
-        /// </value>
-        protected int? MediumEntityTypeId
-        {
-            get { return ViewState["MediumEntityTypeId"] as int?; }
-            set { ViewState["MediumEntityTypeId"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the medium data.
-        /// </summary>
-        /// <value>
-        /// The medium data.
-        /// </value>
-        protected Dictionary<string, string> MediumData
-        {
-            get 
-            {
-                var mediumData = ViewState["MediumData"] as Dictionary<string, string>;
-                if ( mediumData == null )
-                {
-                    mediumData = new Dictionary<string, string>();
-                    ViewState["MediumData"] = mediumData;
-                }
-                return mediumData;
-            }
-
-            set { ViewState["MediumData"] = value; }
-        }
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -104,8 +51,6 @@ namespace RockWeb.Blocks.Communication
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            _canEdit = IsUserAuthorized( Authorization.EDIT );
         }
 
         /// <summary>
@@ -116,15 +61,14 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnLoad( e );
 
-            if ( Page.IsPostBack )
-            {
-                LoadMediumControl( false );
-            }
-            else
+            if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "TemplateId" ).AsInteger() );
             }
-
+            else
+            {
+                CreateDynamicLavaValueControls();
+            }
         }
 
         /// <summary>
@@ -163,28 +107,6 @@ namespace RockWeb.Blocks.Communication
         #region Events
 
         /// <summary>
-        /// Handles the Click event of the lbMedium control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbMedium_Click( object sender, EventArgs e )
-        {
-            GetMediumData();
-            var linkButton = sender as LinkButton;
-            if ( linkButton != null )
-            {
-                int mediumId = int.MinValue;
-                if ( int.TryParse( linkButton.CommandArgument, out mediumId ) )
-                {
-                    MediumEntityTypeId = mediumId;
-                    BindMediums();
-
-                    LoadMediumControl( true );
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -195,56 +117,71 @@ namespace RockWeb.Blocks.Communication
             {
                 var rockContext = new RockContext();
 
-                var service = new CommunicationTemplateService( rockContext );
+                var communicationTemplateService = new CommunicationTemplateService( rockContext );
+                var communicationTemplateAttachmentService = new CommunicationTemplateAttachmentService( rockContext );
 
-                Rock.Model.CommunicationTemplate template = null;
-                if ( CommunicationTemplateId.HasValue )
+                CommunicationTemplate communicationTemplate = null;
+                int? communicationTemplateId = hfCommunicationTemplateId.Value.AsIntegerOrNull();
+                if ( communicationTemplateId.HasValue )
                 {
-                    template = service.Get( CommunicationTemplateId.Value );
+                    communicationTemplate = communicationTemplateService.Get( communicationTemplateId.Value );
                 }
 
                 bool newTemplate = false;
-                if ( template == null )
+                if ( communicationTemplate == null )
                 {
                     newTemplate = true;
-                    template = new Rock.Model.CommunicationTemplate();
-                    service.Add( template );
+                    communicationTemplate = new Rock.Model.CommunicationTemplate();
+                    communicationTemplateService.Add( communicationTemplate );
                 }
 
-                template.Name = tbName.Text;
-                template.Description = tbDescription.Text;
-                template.MediumEntityTypeId = MediumEntityTypeId;
+                communicationTemplate.Name = tbName.Text;
+                communicationTemplate.IsActive = cbIsActive.Checked;
+                communicationTemplate.Description = tbDescription.Text;
+                communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
+                communicationTemplate.LogoBinaryFileId = imgTemplateLogo.BinaryFileId;
 
-                template.MediumData.Clear();
-                GetMediumData();
-                foreach(var keyVal in MediumData)
+                communicationTemplate.FromName = tbFromName.Text;
+                communicationTemplate.FromEmail = tbFromAddress.Text;
+                communicationTemplate.ReplyToEmail = tbReplyToAddress.Text;
+                communicationTemplate.CCEmails = tbCCList.Text;
+                communicationTemplate.BCCEmails = tbBCCList.Text;
+                communicationTemplate.LavaFields = kvlMergeFields.Value.AsDictionaryOrNull();
+                communicationTemplate.CssInliningEnabled = cbCssInliningEnabled.Checked;
+
+                var binaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+
+                // delete any attachments that are no longer included
+                foreach ( var attachment in communicationTemplate.Attachments.Where( a => !binaryFileIds.Contains( a.BinaryFileId ) ).ToList() )
                 {
-                    if (!string.IsNullOrEmpty(keyVal.Value))
-                    {
-                        template.MediumData.Add(keyVal.Key, keyVal.Value);
-                    }
+                    communicationTemplate.Attachments.Remove( attachment );
+                    communicationTemplateAttachmentService.Delete( attachment );
                 }
 
-                if ( template.MediumData.ContainsKey( "Subject" ) )
+                // add any new attachments that were added
+                foreach ( var attachmentBinaryFileId in binaryFileIds.Where( a => !communicationTemplate.Attachments.Any( x => x.BinaryFileId == a ) ) )
                 {
-                    template.Subject = template.MediumData["Subject"];
-                    template.MediumData.Remove( "Subject" );
-                }
-                else
-                {
-                    template.Subject = string.Empty;
+                    communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment { BinaryFileId = attachmentBinaryFileId } );
                 }
 
-                if ( template != null )
+                communicationTemplate.Subject = tbEmailSubject.Text;
+                communicationTemplate.Message = ceEmailTemplate.Text;
+
+                communicationTemplate.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
+                communicationTemplate.SMSMessage = tbSMSTextMessage.Text;
+
+                communicationTemplate.CategoryId = cpCategory.SelectedValueAsInt();
+
+                if ( communicationTemplate != null )
                 {
                     rockContext.SaveChanges();
                     NavigateToParentPage();
                 }
 
-                if ( newTemplate && !_canEdit )
+                if ( newTemplate && !IsUserAuthorized( Authorization.EDIT ) )
                 {
-                    template.MakePrivate( Authorization.VIEW, CurrentPerson );
-                    template.MakePrivate( Authorization.EDIT, CurrentPerson );
+                    communicationTemplate.MakePrivate( Authorization.VIEW, CurrentPerson );
+                    communicationTemplate.MakePrivate( Authorization.EDIT, CurrentPerson );
                 }
             }
 
@@ -260,6 +197,42 @@ namespace RockWeb.Blocks.Communication
             NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Handles the ImageUploaded event of the imgTemplateLogo control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ImageUploaderEventArgs"/> instance containing the event data.</param>
+        protected void imgTemplateLogo_ImageUploaded( object sender, ImageUploaderEventArgs e )
+        {
+            if ( e.EventArgument == ImageUploaderEventArgs.ArgumentType.ImageRemoved )
+            {
+                // ensure that BinaryFileId is set to null if this is an ImageRemoved event
+                imgTemplateLogo.BinaryFileId = null;
+            }
+
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( ceEmailTemplate.Text );
+            var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
+            imgTemplateLogo.Visible = templateLogoNode != null;
+            string previewHtml = ceEmailTemplate.Text;
+            if ( templateLogoNode != null && templateLogoNode.Attributes["src"] != null )
+            {
+                // if a template-logo exists in the template, update it's src attribute to whatever the uploaded logo is (or set it to the placeholder if it is not set)
+                if ( imgTemplateLogo.BinaryFileId != null && imgTemplateLogo.BinaryFileId > 0 )
+                {
+                    templateLogoNode.Attributes["src"].Value = this.ResolveRockUrl( string.Format( "~/GetImage.ashx?Id={0}", imgTemplateLogo.BinaryFileId ) );
+                }
+                else
+                {
+                    templateLogoNode.Attributes["src"].Value = "/Content/EmailTemplates/placeholder-logo.png";
+                }
+
+                ceEmailTemplate.Text = templateDoc.DocumentNode.OuterHtml;
+            }
+
+            UpdatePreview();
+        }
+
         #endregion
 
         #region Private Methods
@@ -270,150 +243,473 @@ namespace RockWeb.Blocks.Communication
         /// <param name="templateId">The template identifier.</param>
         private void ShowDetail( int templateId )
         {
-            Rock.Model.CommunicationTemplate template = null;
+            CommunicationTemplate communicationTemplate = null;
 
             if ( !templateId.Equals( 0 ) )
             {
-                template = new CommunicationTemplateService( new RockContext() )
-                    .Queryable()
-                    .Where( c => c.Id == templateId )
-                    .FirstOrDefault();
-                if ( template != null )
+                communicationTemplate = new CommunicationTemplateService( new RockContext() ).Get( templateId );
+                if ( communicationTemplate != null )
                 {
-                    lTitle.Text = template.Name.FormatAsHtmlTitle();
+                    lTitle.Text = communicationTemplate.Name.FormatAsHtmlTitle();
                 }
             }
 
-            if (template == null)
+            if ( communicationTemplate == null )
             {
-                template = new Rock.Model.CommunicationTemplate();
                 RockPage.PageTitle = "New Communication Template";
                 lTitle.Text = "New Communication Template".FormatAsHtmlTitle();
+                communicationTemplate = new CommunicationTemplate();
             }
 
-            CommunicationTemplateId = template.Id;
+            LoadDropDowns();
 
-            tbName.Text = template.Name;
-            tbDescription.Text = template.Description;
+            mfpSMSMessage.MergeFields.Clear();
+            mfpSMSMessage.MergeFields.Add( "GlobalAttribute" );
+            mfpSMSMessage.MergeFields.Add( "Rock.Model.Person" );
 
-            MediumEntityTypeId = template.MediumEntityTypeId;
-            BindMediums();
+            hfCommunicationTemplateId.Value = templateId.ToString();
 
-            MediumData = template.MediumData;
-            MediumData.Add( "Subject", template.Subject );
+            tbName.Text = communicationTemplate.Name;
+            cbIsActive.Checked = communicationTemplate.IsActive;
+            tbDescription.Text = communicationTemplate.Description;
+            cpCategory.SetValue( communicationTemplate.CategoryId );
 
-            MediumControl control = LoadMediumControl( true );
+            imgTemplatePreview.BinaryFileId = communicationTemplate.ImageFileId;
+            imgTemplateLogo.BinaryFileId = communicationTemplate.LogoBinaryFileId;
 
+            // Email Fields
+            tbFromName.Text = communicationTemplate.FromName;
+            tbFromAddress.Text = communicationTemplate.FromEmail;
+
+            tbReplyToAddress.Text = communicationTemplate.ReplyToEmail;
+            tbCCList.Text = communicationTemplate.CCEmails;
+            tbBCCList.Text = communicationTemplate.BCCEmails;
+            cbCssInliningEnabled.Checked = communicationTemplate.CssInliningEnabled;
+            kvlMergeFields.Value = communicationTemplate.LavaFields.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
+
+            hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( communicationTemplate.ReplyToEmail ) || !string.IsNullOrEmpty( communicationTemplate.CCEmails ) || !string.IsNullOrEmpty( communicationTemplate.BCCEmails ) ).ToTrueFalse().ToLower();
+
+            tbEmailSubject.Text = communicationTemplate.Subject;
+
+            nbTemplateHelp.InnerHtml = @"
+<p>An email template needs to be an html doc with some special divs to support the communication wizard.</p>
+<br/>
+<p>The template needs to have at least one div with a 'dropzone' class in the BODY</p> 
+<br/>
+<pre>
+&lt;div class=""dropzone""&gt;
+&lt;/div&gt;
+</pre>
+<br/>
+
+<p>A template also needs to have at least one div with a 'structure-dropzone' class in the BODY to support adding zones</p> 
+<br/>
+<pre>
+&lt;div class=""structure-dropzone""&gt;
+    &lt;div class=""dropzone""&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+</pre>
+<br/>
+
+<p>To have some starter text, include a 'component component-text' div within the 'dropzone' div</p> 
+<br/>
+<pre>
+&lt;div class=""structure-dropzone""&gt;
+    &lt;div class=""dropzone""&gt;
+        &lt;div class=""component component-text"" data-content=""&lt;h1&gt;Hello There!&lt;/h1&gt;"" data-state=""component""&gt;
+            &lt;h1&gt;Hello There!&lt;/h1&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+</pre>
+<br/>
+
+<p>To enable the PREHEADER text, a div with an id of 'preheader-text' needs to be the first div in the BODY</p>
+<br/>
+<pre>
+&lt;!-- HIDDEN PREHEADER TEXT --&gt;
+&lt;div id=""preheader-text"" style=""display: none; font-size: 1px; color: #fefefe; line-height: 1px; font-family: Helvetica, Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;""&gt;
+    Entice the open with some amazing preheader text. Use a little mystery and get those subscribers to read through...
+&lt;/div&gt;
+</pre>
+
+<p>To include a logo, an img div with an id of 'template-logo' can be placed anywhere in the template, which will then show the 'Logo' image uploader under the template editor which will be used to set the src of the template-logo</p>
+<br/>
+<pre>
+&lt;!-- LOGO --&gt;
+&lt;img id='template-logo' src='/Content/EmailTemplates/placeholder-logo.png' width='200' height='50' data-instructions='Provide a PNG with a transparent background or JPG with the background color of #ee7725.' /&gt;
+</pre>
+
+<br/>
+";
+
+            ceEmailTemplate.Text = communicationTemplate.Message;
+
+            hfAttachedBinaryFileIds.Value = communicationTemplate.Attachments.Select( a => a.BinaryFileId ).ToList().AsDelimited( "," );
+            UpdateAttachedFiles( false );
+
+            // SMS Fields
+            ddlSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId );
+            tbSMSTextMessage.Text = communicationTemplate.SMSMessage;
+
+            if ( communicationTemplate.IsSystem )
+            {
+                nbEditModeMessage.Text = EditModeMessage.System( Rock.Model.CommunicationTemplate.FriendlyTypeName );
+            }
+
+            tbName.ReadOnly = communicationTemplate.IsSystem;
+            cbIsActive.Enabled = !communicationTemplate.IsSystem;
+            //tbDescription.ReadOnly = communicationTemplate.IsSystem;
+            //imgTemplatePreview.Enabled = !communicationTemplate.IsSystem;
+            tbFromName.ReadOnly = communicationTemplate.IsSystem;
+            tbName.ReadOnly = communicationTemplate.IsSystem;
+            tbFromAddress.ReadOnly = communicationTemplate.IsSystem;
+            tbReplyToAddress.ReadOnly = communicationTemplate.IsSystem;
+            tbCCList.ReadOnly = communicationTemplate.IsSystem;
+            tbBCCList.ReadOnly = communicationTemplate.IsSystem;
+            tbEmailSubject.ReadOnly = communicationTemplate.IsSystem;
+            fupAttachments.Visible = !communicationTemplate.IsSystem;
+
+            //ceEmailTemplate.ReadOnly = communicationTemplate.IsSystem;
+
+            mfpSMSMessage.Visible = !communicationTemplate.IsSystem;
+            ddlSMSFrom.Enabled = !communicationTemplate.IsSystem;
+            tbSMSTextMessage.ReadOnly = communicationTemplate.IsSystem;
+
+            tglPreviewAdvanced.Checked = true;
+            tglPreviewAdvanced_CheckedChanged( null, null );
         }
 
         /// <summary>
-        /// Binds the mediums.
+        /// Loads the drop downs.
         /// </summary>
-        private void BindMediums()
+        private void LoadDropDowns()
         {
-            var mediums = new Dictionary<int, string>();
-            foreach ( var item in MediumContainer.Instance.Components.Values )
-            {
-                if ( item.Value.IsActive )
-                {
-                    var entityType = item.Value.EntityType;
-                    mediums.Add( entityType.Id, item.Metadata.ComponentName );
-                    if ( !MediumEntityTypeId.HasValue )
-                    {
-                        MediumEntityTypeId = entityType.Id;
-                    }
-                }
-            }
-
-            rptMediums.DataSource = mediums;
-            rptMediums.DataBind();
+            ddlSMSFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), true, true );
         }
 
         /// <summary>
-        /// Shows the medium.
+        /// Handles the FileUploaded event of the fupAttachments control.
         /// </summary>
-        private MediumControl LoadMediumControl(bool setData)
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
+        protected void fupAttachments_FileUploaded( object sender, FileUploaderEventArgs e )
         {
-            phContent.Controls.Clear();
-
-            // The component to load control for
-            MediumComponent component = null;
-
-            // Get the current medium type
-            EntityTypeCache entityType = null;
-            if ( MediumEntityTypeId.HasValue )
-            {
-                entityType = EntityTypeCache.Read( MediumEntityTypeId.Value );
-            }
-
-            foreach ( var serviceEntry in MediumContainer.Instance.Components )
-            {
-                var mediumComponent = serviceEntry.Value.Value;
-
-                // Default to first component
-                if ( component == null )
-                {
-                    component = mediumComponent;
-                }
-
-                // If invalid entity type, exit (and use first component found)
-                if ( entityType == null )
-                {
-                    break;
-                }
-                else if ( entityType.Id == mediumComponent.EntityType.Id )
-                {
-                    component = mediumComponent;
-                    break;
-                }
-            }
-
-            if (component != null)
-            {
-                phContent.Controls.Clear();
-                var mediumControl = component.GetControl( false );
-                mediumControl.ID = "commControl";
-                mediumControl.IsTemplate = true;
-                mediumControl.ValidationGroup = btnSave.ValidationGroup;
-                phContent.Controls.Add( mediumControl );
-
-                if ( setData  )
-                {
-                    mediumControl.MediumData = MediumData;
-                }
-                
-                // Set the medium in case it wasn't already set or the previous component type was not found
-                MediumEntityTypeId = component.EntityType.Id;
-
-                return mediumControl;
-            }
-
-            return null;
+            UpdateAttachedFiles( true );
         }
 
         /// <summary>
-        /// Gets the medium data.
+        /// Updates the HTML for the Attached Files and optionally adds the file that was just uploaded using the file uploader
         /// </summary>
-        private void GetMediumData()
+        private void UpdateAttachedFiles( bool addUploadedFile )
         {
-            if ( phContent.Controls.Count == 1 && phContent.Controls[0] is MediumControl )
+            List<int> attachmentList = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+            if ( addUploadedFile && fupAttachments.BinaryFileId.HasValue )
             {
-                var mediumData = ( (MediumControl)phContent.Controls[0] ).MediumData;
-                foreach ( var dataItem in mediumData )
+                if ( !attachmentList.Contains( fupAttachments.BinaryFileId.Value ) )
                 {
-                    if ( MediumData.ContainsKey( dataItem.Key ) )
+                    attachmentList.Add( fupAttachments.BinaryFileId.Value );
+                }
+            }
+
+            hfAttachedBinaryFileIds.Value = attachmentList.AsDelimited( "," );
+            fupAttachments.BinaryFileId = null;
+
+            // pre-populate dictionary so that the attachments are listed in the order they were added
+            Dictionary<int, string> binaryFileAttachments = attachmentList.ToDictionary( k => k, v => string.Empty );
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileInfoList = new BinaryFileService( rockContext ).Queryable()
+                        .Where( f => attachmentList.Contains( f.Id ) )
+                        .Select( f => new
+                        {
+                            f.Id,
+                            f.FileName
+                        } );
+
+                foreach ( var binaryFileInfo in binaryFileInfoList )
+                {
+                    binaryFileAttachments[binaryFileInfo.Id] = binaryFileInfo.FileName;
+                }
+            }
+
+            StringBuilder sbAttachmentsHtml = new StringBuilder();
+            sbAttachmentsHtml.AppendLine( "<div class='attachment'>" );
+            sbAttachmentsHtml.AppendLine( "  <ul class='attachment-content'>" );
+
+            foreach ( var binaryFileAttachment in binaryFileAttachments )
+            {
+                var attachmentUrl = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFileAttachment.Key );
+                var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
+                sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank'>{1}</a> <a><i class='fa fa-times' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
+            }
+
+            sbAttachmentsHtml.AppendLine( "  </ul>" );
+            sbAttachmentsHtml.AppendLine( "</div>" );
+
+            lAttachmentListHtml.Text = sbAttachmentsHtml.ToString();
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the mfpMessage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mfpMessage_SelectItem( object sender, EventArgs e )
+        {
+            tbSMSTextMessage.Text += mfpSMSMessage.SelectedMergeField;
+            mfpSMSMessage.SetValue( string.Empty );
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglPreviewAdvanced control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglPreviewAdvanced_CheckedChanged( object sender, EventArgs e )
+        {
+            if ( tglPreviewAdvanced.Checked )
+            {
+                pnlAdvanced.Visible = false;
+                pnlPreview.Visible = true;
+                UpdatePreview();
+            }
+            else
+            {
+                pnlAdvanced.Visible = true;
+                pnlPreview.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnUpdateTemplatePreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnUpdateTemplatePreview_Click( object sender, EventArgs e )
+        {
+            UpdatePreview();
+        }
+
+        /// <summary>
+        /// Updates the preview.
+        /// </summary>
+        protected void UpdatePreview()
+        {
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( ceEmailTemplate.Text );
+
+            // only show the template logo uploader if there is a div with id='template-logo'
+            // then update the help-message on the loader based on the template-logo's data-instuctions attribute and width and height
+            // this gets called when the codeeditor is done initializing and when the cursor blurs out of the template code editor
+            var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
+            if ( templateLogoNode != null )
+            {
+                string helpText = null;
+                if ( templateLogoNode.Attributes.Contains( "data-instructions" ) )
+                {
+                    helpText = templateLogoNode.Attributes["data-instructions"].Value;
+                }
+
+                if ( helpText.IsNullOrWhiteSpace() )
+                {
+                    helpText = "The Logo that can be included in the contents of the message";
+                }
+
+                string helpWidth = null;
+                string helpHeight = null;
+                if ( templateLogoNode.Attributes.Contains( "width" ) )
+                {
+                    helpWidth = templateLogoNode.Attributes["width"].Value;
+                }
+
+                if ( templateLogoNode.Attributes.Contains( "height" ) )
+                {
+                    helpHeight = templateLogoNode.Attributes["height"].Value;
+                }
+
+                if ( helpWidth.IsNotNullOrWhitespace() && helpHeight.IsNotNullOrWhitespace() )
+                {
+                    helpText += string.Format(" (Image size: {0}px x {1}px)", helpWidth, helpHeight);
+                }
+
+                imgTemplateLogo.Help = helpText;
+            }
+
+            pnlTemplateLogo.Visible = templateLogoNode != null;
+
+            // take care of the lava fields stuff
+            var lavaFieldsNode = templateDoc.GetElementbyId( "lava-fields" );
+
+            if ( lavaFieldsNode == null )
+            {
+                lavaFieldsNode = templateDoc.CreateElement( "div" );
+                lavaFieldsNode.Attributes.Add( "id", "lava-fields" );
+                lavaFieldsNode.Attributes.Add( "style", "display:none" );
+            }
+
+            var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhitespace() ).ToList();
+
+            // dictionary of keys and default values from Lava Fields KeyValueList control
+            var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();
+
+            // add any new lava fields that were added to the KeyValueList editor
+            foreach ( var keyValue in lavaFieldsDefaultDictionary )
+            {
+                string pattern = string.Format( @"{{%\s+assign\s+{0}.*\s+=\s", keyValue.Key );
+                if ( !templateDocLavaFieldLines.Any( a => Regex.IsMatch( a, pattern ) ) )
+                {
+                    templateDocLavaFieldLines.Add( "{% assign " + keyValue.Key + " = '" + keyValue.Value + "' %}" );
+                }
+            }
+
+            // remove any lava fields that are not in the KeyValueList editor
+            foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines.ToList() )
+            {
+                bool found = false;
+                foreach ( var keyValue in lavaFieldsDefaultDictionary )
+                {
+                    string pattern = string.Format( @"{{%\s+assign\s+{0}.*\s+=\s", keyValue.Key );
+                    if ( Regex.IsMatch( templateDocLavaFieldLine, pattern ) )
                     {
-                        MediumData[dataItem.Key] = dataItem.Value;
-                    }
-                    else
-                    {
-                        MediumData.Add( dataItem.Key, dataItem.Value );
+                        found = true;
+                        break;
                     }
                 }
+
+                // if not found, delete it
+                if ( !found )
+                {
+                    templateDocLavaFieldLines.Remove( templateDocLavaFieldLine );
+                }
+            }
+
+            // dictionary of keys and values from the lava fields in the 'lava-fields' div
+            var lavaFieldsTemplateDictionary = new Dictionary<string, string>();
+            foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines )
+            {
+                var match = Regex.Match( templateDocLavaFieldLine, @"{% assign (.*)\=(.*) %}" );
+                if ( match.Groups.Count == 3 )
+                {
+                    var key = match.Groups[1].Value.Trim().RemoveSpaces();
+                    var value = match.Groups[2].Value.Trim().Trim( '\'' );
+
+                    // If this is a postback, there will be a control that holds the value
+                    RockTextBox lavaValueControl = phLavaFieldsControls.FindControl( "lavaValue_" + key ) as RockTextBox;
+                    if ( lavaValueControl != null && lavaValueControl.Text != value )
+                    {
+                        value = lavaValueControl.Text;
+                    }
+
+                    lavaFieldsTemplateDictionary.Add( key, value );
+                }
+            }
+
+            if ( lavaFieldsDefaultDictionary.Any() )
+            {
+                StringBuilder lavaAssignsHtml = new StringBuilder();
+                lavaAssignsHtml.AppendLine();
+                lavaAssignsHtml.AppendLine( "    <!-- Lava Fields: Code-Generated from Template Editor -->" );
+                foreach ( var lavaFieldsTemplateItem in lavaFieldsTemplateDictionary )
+                {
+                    lavaAssignsHtml.AppendLine( string.Format( "    {{% assign {0} = '{1}' %}}", lavaFieldsTemplateItem.Key, lavaFieldsTemplateItem.Value ) );
+                }
+
+                lavaAssignsHtml.Append( "  " );
+
+                lavaFieldsNode.InnerHtml = lavaAssignsHtml.ToString();
+
+                if ( lavaFieldsNode.ParentNode == null )
+                {
+                    var bodyNode = templateDoc.DocumentNode.SelectSingleNode( "//body" );
+
+                    // prepend a linefeed so that it is after the lava node (to make it pretty printed)
+                    bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
+
+                    bodyNode.PrependChild( lavaFieldsNode );
+
+                    // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
+                    bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
+                }
+            }
+            else if ( lavaFieldsNode.ParentNode != null )
+            {
+                if ( lavaFieldsNode.NextSibling != null && lavaFieldsNode.NextSibling.Name == "#text" )
+                {
+                    // remove the extra line endings
+                    lavaFieldsNode.NextSibling.InnerHtml = lavaFieldsNode.NextSibling.InnerHtml.TrimStart( new char[] { ' ', '\r', '\n' } );
+                }
+
+                lavaFieldsNode.Remove();
+            }
+
+            hfLavaFieldsState.Value = lavaFieldsTemplateDictionary.ToJson( Newtonsoft.Json.Formatting.None );
+
+            ceEmailTemplate.Text = templateDoc.DocumentNode.OuterHtml;
+
+            CreateDynamicLavaValueControls();
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
+            var resolvedPreviewHtml = ceEmailTemplate.Text.ResolveMergeFields( mergeFields );
+
+            if ( cbCssInliningEnabled.Checked )
+            {
+                resolvedPreviewHtml = resolvedPreviewHtml.ConvertHtmlStylesToInlineAttributes();
+            }
+
+            ifEmailPreview.Attributes["srcdoc"] = resolvedPreviewHtml;
+            pnlEmailPreview.Visible = true;
+            upnlEmailPreview.Update();
+        }
+
+        /// <summary>
+        /// Creates the dynamic lava value controls.
+        /// </summary>
+        private void CreateDynamicLavaValueControls()
+        {
+            // Create Controls for LavaFields Values
+            Dictionary<string, string> lavaFieldsTemplateDictionary = hfLavaFieldsState.Value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+            
+            // dictionary of keys and default values from Lava Fields KeyValueList control
+            var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();
+
+            phLavaFieldsControls.Controls.Clear();
+
+            btnUpdateTemplatePreview.Visible = lavaFieldsTemplateDictionary.Any();
+
+            foreach ( var keyValue in lavaFieldsTemplateDictionary )
+            {
+                RockTextBox lavaValueControl;
+                if ( keyValue.Key.EndsWith( "Color" ) )
+                {
+                    lavaValueControl = new ColorPicker();
+                }
+                else
+                {
+                    lavaValueControl = new RockTextBox() { CssClass = "input-width-lg" };
+                }
+
+                var rcwLavaValue= new RockControlWrapper();
+                phLavaFieldsControls.Controls.Add( rcwLavaValue );
+
+                rcwLavaValue.Label = keyValue.Key.SplitCase().Transform( To.TitleCase );
+                rcwLavaValue.ID = "rcwLavaValue_" + keyValue.Key;
+
+                lavaValueControl.ID = "lavaValue_" + keyValue.Key;
+                lavaValueControl.AddCssClass( "pull-left" );
+                lavaValueControl.Text = keyValue.Value;
+                rcwLavaValue.Controls.Add( lavaValueControl );
+
+                Literal btnRevertLavaValue = new Literal();
+                btnRevertLavaValue.ID = "btnRevertLavaValue_" + keyValue.Key;
+                var defaultValue = lavaFieldsDefaultDictionary.GetValueOrNull( keyValue.Key );
+                var visibility = keyValue.Value != defaultValue ? "visible" : "hidden";
+                btnRevertLavaValue.Text = string.Format( "<i class='btn fa fa-times js-revertlavavalue' title='Revert to default' data-value-control='{0}' data-default='{1}' style='visibility:{2}'></i>", lavaValueControl.ClientID, defaultValue, visibility );
+                rcwLavaValue.Controls.Add( btnRevertLavaValue );
             }
         }
 
         #endregion
-
     }
 }

@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class MetricValuePartitionsController : Rock.Rest.ApiController<Rock.Model.MetricValuePartition>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MetricValuePartitionsController"/> class.
+        /// </summary>
         public MetricValuePartitionsController() : base( new Rock.Model.MetricValuePartitionService( new Rock.Data.RockContext() ) ) { } 
     }
 }

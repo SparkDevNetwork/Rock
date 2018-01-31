@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an instance where a <see cref="Rock.Model.Person"/> subscribes to a following event
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "FollowingEventSubscription" )]
     [DataContract]
     public partial class FollowingEventSubscription : Model<FollowingEventSubscription>

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Globalization;
 
 namespace Rock
 {
@@ -349,6 +350,50 @@ namespace Rock
             }
         }
 
+        /// <summary>
+        /// Gets the week of month.
+        /// from http://stackoverflow.com/a/2136549/1755417 but with an option to specify the FirstDayOfWeek
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="firstDayOfWeek">The first day of week. For example" RockDateTime.FirstDayOfWeek</param>
+        /// <returns></returns>
+        public static int GetWeekOfMonth( this DateTime dateTime, DayOfWeek firstDayOfWeek )
+        {
+            DateTime first = new DateTime( dateTime.Year, dateTime.Month, 1 );
+
+            // note: CalendarWeekRule doesn't matter since we are subtracting
+            return dateTime.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) - first.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) + 1;
+        }
+
+        /// <summary>
+        /// The _gregorian calendar
+        /// from http://stackoverflow.com/a/2136549/1755417
+        /// </summary>
+        private static GregorianCalendar _gregorianCalendar = new GregorianCalendar();
+
+        /// <summary>
+        /// Gets the week of year.
+        /// from http://stackoverflow.com/a/2136549/1755417, but with an option to specify the FirstDayOfWeek (for example RockDateTime.FirstDayOfWeek)
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="calendarWeekRule">The calendar week rule.</param>
+        /// <param name="firstDayOfWeek">The first day of week.</param>
+        /// <returns></returns>
+        public static int GetWeekOfYear( this DateTime dateTime, CalendarWeekRule calendarWeekRule, DayOfWeek firstDayOfWeek )
+        {
+            return _gregorianCalendar.GetWeekOfYear( dateTime, calendarWeekRule, firstDayOfWeek );
+        }
+
+        /// <summary>
+        /// Converts a datetime to the short date/time format.
+        /// </summary>
+        /// <param name="dt">The dt.</param>
+        /// <returns></returns>
+        public static string ToShortDateTimeString( this DateTime dt )
+        {
+            return dt.ToShortDateString() + " " + dt.ToShortTimeString();
+        }
+
         #endregion DateTime Extensions
 
         #region TimeSpan Extensions
@@ -366,5 +411,59 @@ namespace Rock
         }
 
         #endregion TimeSpan Extensions
+
+        #region Time/Date Rounding 
+
+        /// <summary>
+        /// Rounds the specified rounding interval.
+        /// from https://stackoverflow.com/a/4108889/1755417
+        /// </summary>
+        /// <param name="time">The time.</param>
+        /// <param name="roundingInterval">The rounding interval.</param>
+        /// <param name="roundingType">Type of the rounding.</param>
+        /// <returns></returns>
+        public static TimeSpan Round( this TimeSpan time, TimeSpan roundingInterval, MidpointRounding roundingType )
+        {
+            return new TimeSpan(
+                Convert.ToInt64( Math.Round(
+                    time.Ticks / ( decimal ) roundingInterval.Ticks,
+                    roundingType
+                ) ) * roundingInterval.Ticks
+            );
+        }
+
+        /// <summary>
+        /// Rounds the specified rounding interval.
+        /// from https://stackoverflow.com/a/4108889/1755417
+        /// </summary>
+        /// <example>
+        /// new TimeSpan(0, 2, 26).Round( TimeSpan.FromSeconds(5)); // rounds to 00:02:25
+        /// new TimeSpan(3, 34, 0).Round( TimeSpan.FromMinutes(30); // round to 03:30
+        /// </example>
+        /// <param name="time">The time.</param>
+        /// <param name="roundingInterval">The rounding interval.</param>
+        /// <returns></returns>
+        public static TimeSpan Round( this TimeSpan time, TimeSpan roundingInterval )
+        {
+            return Round( time, roundingInterval, MidpointRounding.ToEven );
+        }
+
+        /// <summary>
+        /// Rounds the specified rounding interval.
+        /// from https://stackoverflow.com/a/4108889/1755417
+        /// </summary>
+        /// <example>
+        /// new DateTime(2010, 11, 4, 10, 28, 27).Round( TimeSpan.FromMinutes(1) ); // rounds to 2010.11.04 10:28:00
+        /// new DateTime(2010, 11, 4, 13, 28, 27).Round( TimeSpan.FromDays(1) ); // rounds to 2010.11.05 00:00
+        /// </example>
+        /// <param name="datetime">The datetime.</param>
+        /// <param name="roundingInterval">The rounding interval.</param>
+        /// <returns></returns>
+        public static DateTime Round( this DateTime datetime, TimeSpan roundingInterval )
+        {
+            return new DateTime( ( datetime - DateTime.MinValue ).Round( roundingInterval ).Ticks );
+        }
+
+        #endregion Time/Date Rounding 
     }
 }

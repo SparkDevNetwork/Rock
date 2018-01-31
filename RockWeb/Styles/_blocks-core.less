@@ -331,21 +331,25 @@
       a.btn-link {
         color: @state-success-text;
       }
+
+      .label-default {
+        background-color: @label-success-bg;
+      }
     }
   }
 
   .panel-title:before {
     margin-right: 4px;
-    font-family: FontAwesome;
-    font-weight: normal;
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
     content: @fa-var-cubes;
   }
 }
 
 .workflow-action {
   .workflow-action-name:before {
-    font-family: FontAwesome;
-    font-weight: normal;
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
     content: @fa-var-cube;
   }
 
@@ -372,7 +376,6 @@
 .panel-group {
   .panel-workflowitem {
     margin-bottom: 30px;
-
     .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
     &:hover {
@@ -404,7 +407,8 @@
 
           &:before {
             margin-top: 6px;
-            font-family: FontAwesome;
+            font-family: @fa-font-face;
+            font-weight: @fa-theme-weight;
             font-size: 20px;
             content: @fa-var-chevron-up;
           }

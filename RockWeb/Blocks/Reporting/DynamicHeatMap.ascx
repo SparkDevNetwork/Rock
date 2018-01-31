@@ -37,7 +37,7 @@
                         <i class='fa fa-floppy-o' title="Save selected shape to a named location"></i>
                     </asp:Panel>
 
-                    <div class="btn btn-danger btn-xs js-deleteshape"><i class='fa fa-times' title="Delete selected shape"></i></div>
+                    <div class="btn btn-danger btn-xs js-deleteshape" style="display:none"><i class='fa fa-times' title="Delete selected shape"></i></div>
                 </div>
             </div>
             <div class="panel-body">
@@ -227,6 +227,10 @@
                         if (allShapesIndex > -1)
                         {
                             map.AllShapes.splice(allShapesIndex, 1);
+                            if (map.AllShapes.length == 0)
+                            {
+                                $('.js-deleteshape').hide();
+                            }
                         }
                                     
                         shape.setMap(null);
@@ -283,6 +287,7 @@
                             }
 
                             map.AllShapes.push(shape);
+                            $('.js-deleteshape').show();
                         }
                         
                         // NOTE: bounds is the rectangle bounds of the shape (not the actual shape)

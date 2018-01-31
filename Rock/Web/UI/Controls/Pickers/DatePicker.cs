@@ -100,6 +100,44 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Controls whether or not the DatePicker allows for future dates to be selected (default true). If set to false, all future dates will be disabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> (default); otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowFutureDateSelection
+        {
+            get
+            {
+                return ViewState["AllowFutureDateSelection"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["AllowFutureDateSelection"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Controls whether or not the DatePicker allows for past dates to be selected (default true). If set to false, all past dates will be disabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> (default); otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowPastDateSelection
+        {
+            get
+            {
+                return ViewState["AllowPastDateSelection"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["AllowPastDateSelection"] = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -149,8 +187,15 @@ namespace Rock.Web.UI.Controls
             dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
             dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
-            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}', todayHighlight: {3} }});", 
-                this.ClientID, this.StartView.ConvertToInt(), dateFormat, this.HighlightToday.ToString().ToLower() );
+            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}', todayHighlight: {3}, forceParse: {4}, {5} {6} }});", 
+                this.ClientID,                                  // {0}
+                this.StartView.ConvertToInt(),                  // {1}
+                dateFormat,                                     // {2}
+                this.HighlightToday.ToString().ToLower(),       // {3}
+                this.ForceParse.ToString().ToLower(),           // {4}
+                ( this.AllowFutureDateSelection ) ? "" : "endDate: '" + RockDateTime.Today.ToString("o") + "',",  // {5}
+                ( this.AllowPastDateSelection ) ? "" : "startDate: '" + RockDateTime.Today.ToString("o") + "',"  // {6}
+            );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "date_picker-" + this.ClientID, script, true );
         }
 
@@ -173,7 +218,6 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-
         /// <summary>
         /// Gets or sets a value indicating whether [highlight today].
         /// </summary>
@@ -190,6 +234,25 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["HighlightToday"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [force parse].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [force parse]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ForceParse
+        {
+            get
+            {
+                return ViewState["ForceParse"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["ForceParse"] = value;
             }
         }
 

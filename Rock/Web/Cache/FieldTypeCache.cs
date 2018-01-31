@@ -209,6 +209,16 @@ namespace Rock.Web.Cache
 
         }
 
+        /// <summary>
+        /// Reads this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static FieldTypeCache Read<T>() where T:Rock.Field.IFieldType
+        {
+            return FieldTypeCache.All().FirstOrDefault( a => a.Class == typeof( T ).FullName );
+        }
+
         private static int LoadByGuid( Guid guid, RockContext rockContext )
         {
             if ( rockContext != null )

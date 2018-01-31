@@ -30,6 +30,7 @@ using System.Web.UI;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Transactions;
 using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Administration
@@ -55,7 +56,7 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             // Get Version, database info and executing assembly location
-            lRockVersion.Text = VersionInfo.GetRockProductVersionFullName();
+            lRockVersion.Text = string.Format("{0} <small>({1})</small>", VersionInfo.GetRockProductVersionFullName(), VersionInfo.GetRockProductVersionNumber() );
             lClientCulture.Text = System.Globalization.CultureInfo.CurrentCulture.ToString();
             lDatabase.Text = GetDbInfo();
             lSystemDateTime.Text = DateTime.Now.ToString( "G" ) + " " + DateTime.Now.ToString( "zzz" );
@@ -72,6 +73,9 @@ namespace RockWeb.Blocks.Administration
 
             lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
             lLastMigrations.Text = GetLastMigrationData();
+
+            var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
+            lTransactionQueue.Text = transactionQueueStats.Select( a => string.Format( "{0}: {1}", a.Name, a.Count ) ).ToList().AsDelimited( "<br/>" );
 
             lCacheOverview.Text = GetCacheInfo();
             lRoutes.Text = GetRoutesInfo();
@@ -114,22 +118,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnClearCache_Click( object sender, EventArgs e )
         {
-            var msgs = new List<string>();
-
-            // Clear the static object that contains all auth rules (so that it will be refreshed)
-            Rock.Security.Authorization.Flush();
-            msgs.Add( "Authorizations have been cleared" );
-
-            // Flush the static entity attributes cache
-            Rock.Web.Cache.AttributeCache.FlushEntityAttributes();
-            msgs.Add( "EntityAttributes have been cleared" );
-
-            // Clear all cached items
-            Rock.Web.Cache.RockMemoryCache.Clear();
-            msgs.Add( "RockMemoryCache has been cleared" );
-
-            // Flush Site Domains
-            Rock.Web.Cache.SiteCache.Flush();
+            var msgs = Rock.Web.Cache.RockMemoryCache.ClearAllCachedItems();
 
             // Flush today's Check-in Codes
             Rock.Model.AttendanceCodeService.FlushTodaysCodes();
@@ -141,9 +130,6 @@ namespace RockWeb.Blocks.Administration
             FieldTypeService.RegisterFieldTypes( webAppPath );
             BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
             msgs.Add( "EntityTypes, FieldTypes, BlockTypes have been re-registered" );
-
-            // Clear workflow trigger cache
-            Rock.Workflow.TriggerCache.Refresh();
 
             // Delete all cached files
             try

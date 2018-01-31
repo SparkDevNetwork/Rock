@@ -31,6 +31,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents any file that has either been uploaded to or generated and saved to Rock.  
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "BinaryFile" )]
     [DataContract]
     public partial class BinaryFile : Model<BinaryFile>
@@ -76,6 +77,15 @@ namespace Rock.Model
         [MaxLength( 255 )]
         [DataMember( IsRequired = true )]
         public string FileName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size of the file (in bytes)
+        /// </summary>
+        /// <value>
+        /// The size of the file in bytes.
+        /// </value>
+        [DataMember]
+        public long? FileSize { get; set; }
 
         /// <summary>
         /// Gets or sets the Mime Type for the file. This property is required
@@ -191,6 +201,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.BinaryFileData"/> that contains the content of the file. 
         /// </value>
+        [LavaInclude]
         public virtual BinaryFileData DatabaseData { get; set; }
 
         /// <summary>
@@ -200,6 +211,7 @@ namespace Rock.Model
         /// The storage provider.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual Storage.ProviderComponent StorageProvider { get; private set; }
 
         /// <summary>
@@ -345,8 +357,14 @@ namespace Rock.Model
 
                         if ( StorageProvider != null )
                         {
-                            // save the file to the provider's new storage medium
-                            StorageProvider.SaveContent( this );
+                            // save the file to the provider's new storage medium, and if the medium returns a filesize, save that value.
+                            long? outFileSize = null;
+                            StorageProvider.SaveContent( this, out outFileSize );
+                            if ( outFileSize.HasValue )
+                            {
+                                FileSize = outFileSize;
+                            }
+
                             Path = StorageProvider.GetPath( this );
                         }
                     }
@@ -377,23 +395,32 @@ namespace Rock.Model
                                 StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value ||
                                 StorageEntitySettings != settingsJson ) )
                             {
+                                // Save the file contents before deleting
+                                var contentStream = ContentStream;
+
                                 // Delete the current provider's storage
                                 StorageProvider.DeleteContent( this );
 
                                 // Set the new storage provider with its settings
                                 StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
                                 StorageEntitySettings = settingsJson;
+                                ContentStream = contentStream;
                             }
                         }
                     }
 
                     if ( _contentIsDirty && StorageProvider != null )
                     {
-                        StorageProvider.SaveContent( this );
+                        long? fileSize = null;
+                        StorageProvider.SaveContent( this, out fileSize );
+
+                        FileSize = fileSize;
                         Path = StorageProvider.GetPath( this );
                     }
                 }
             }
+
+            base.PreSaveChanges( dbContext, entry );
         }
 
         /// <summary>

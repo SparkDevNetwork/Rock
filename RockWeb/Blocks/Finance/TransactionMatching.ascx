@@ -94,6 +94,12 @@
                                     </asp:Panel>
                                 </div>
                             </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:DynamicPlaceHolder ID="phPaymentAttributeEdits" runat="server" />
+                                </div>
+                            </div>
                             
                             <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Dismissable="true" Text="Warning. Unable to save..." />
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the transaction image">
@@ -127,7 +133,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
-                            <asp:LinkButton ID="btnNext" runat="server" AccessKey="" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                            <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
                         </div>
                     </div>
 

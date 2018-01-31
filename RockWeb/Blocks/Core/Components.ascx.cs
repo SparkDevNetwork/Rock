@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Core
 
     [TextField( "Component Container", "The Rock Extension Managed Component Container to manage. For example: 'Rock.Search.SearchContainer, Rock'", true, "", "", 1 )]
     [BooleanField( "Support Ordering", "Should user be allowed to re-order list of components?", true, "", 2 )]
-    public partial class Components : RockBlock
+    public partial class Components : RockBlock, ICustomGridColumns
     {
         #region Private Variables
 
@@ -83,7 +83,12 @@ namespace RockWeb.Blocks.Core
                         }
 
                         rGrid.DataKeyNames = new string[] { "Id" };
-                        rGrid.Columns[0].Visible = _supportOrdering && _isAuthorizedToConfigure;
+
+                        var reorderField = rGrid.ColumnsOfType<ReorderField>().FirstOrDefault();
+                        if ( reorderField != null )
+                        {
+                            reorderField.Visible = _supportOrdering && _isAuthorizedToConfigure;
+                        }
                         rGrid.GridReorder += rGrid_GridReorder;
                         rGrid.GridRebind += rGrid_GridRebind;
                         rGrid.RowDataBound += rGrid_RowDataBound;

@@ -26,9 +26,10 @@ namespace Rock.Model
     /// <summary>
     /// A Group Member Workflow Trigger defined a workflow that should be triggered to start when certain group member changes are made..
     /// </summary>
+    [RockDomain( "Group" )]
     [Table( "GroupMemberWorkflowTrigger" )]
     [DataContract]
-    public partial class GroupMemberWorkflowTrigger : Entity<GroupMemberWorkflowTrigger>, IOrdered
+    public partial class GroupMemberWorkflowTrigger : Entity<GroupMemberWorkflowTrigger>, IOrdered, IHasActiveFlag
     {
         #region Entity Properties
 
@@ -133,6 +134,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group.
         /// </value>
+        [LavaInclude]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -144,6 +146,7 @@ namespace Rock.Model
         /// <remarks>
         /// NOTE: [DataMember] attribute is intentionally ommited to prevent having to serialize all group members (times out on large groups)
         /// </remarks>
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>

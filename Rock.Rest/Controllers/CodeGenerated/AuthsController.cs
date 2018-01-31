@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AuthsController : Rock.Rest.ApiController<Rock.Model.Auth>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthsController"/> class.
+        /// </summary>
         public AuthsController() : base( new Rock.Model.AuthService( new Rock.Data.RockContext() ) ) { } 
     }
 }

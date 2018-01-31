@@ -54,7 +54,6 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             if ( CurrentCheckInState == null )
@@ -104,8 +103,8 @@ namespace RockWeb.Blocks.CheckIn
 
                     lNotActiveTitle.Text = GetAttributeValue( "NotActiveTitle" );
                     lNotActiveCaption.Text = GetAttributeValue( "NotActiveCaption" );
-                    lNotActiveYetTitle.Text = GetAttributeValue( "NotActiveTitle" );
-                    lNotActiveYetCaption.Text = string.Format( GetAttributeValue( "NotActiveCaption" ), "<span class='countdown-timer'></span>" );
+                    lNotActiveYetTitle.Text = GetAttributeValue( "NotActiveYetTitle" );
+                    lNotActiveYetCaption.Text = string.Format( GetAttributeValue( "NotActiveYetCaption" ), "<span class='countdown-timer'></span>" );
                     lClosedTitle.Text = GetAttributeValue( "ClosedTitle" );
                     lClosedCaption.Text = GetAttributeValue( "ClosedCaption" );
 

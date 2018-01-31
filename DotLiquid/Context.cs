@@ -11,7 +11,13 @@ namespace DotLiquid
 {
 	public class Context
 	{
-		private readonly bool _rethrowErrors;
+        private static readonly Regex SingleQuotedStringRegex = new Regex( @"(?-mix:^'(.*)'$)", RegexOptions.Compiled );
+        private static readonly Regex DoubleQuotedStringRegex = new Regex( @"(?-mix:^""(.*)""$)", RegexOptions.Compiled );
+        private static readonly Regex IntegerRegex = new Regex( @"(?-mix:^([+-]?\d+)$)", RegexOptions.Compiled );
+        private static readonly Regex RangesRegex = new Regex( @"(?-mix:^\((\S+)\.\.(\S+)\)$)", RegexOptions.Compiled );
+        private static readonly Regex FloatsRegex = new Regex( @"(?-mix:^([+-]?\d[\d\.|\,]+)$)", RegexOptions.Compiled );
+
+        private readonly bool _rethrowErrors;
 		private Strainer _strainer;
 
 		public List<Hash> Environments { get; private set; }
@@ -223,29 +229,29 @@ namespace DotLiquid
 					return new Symbol(o => o is IEnumerable && !((IEnumerable) o).Cast<object>().Any());
 			}
 
-			// Single quoted strings.
-			Match match = Regex.Match(key, R.Q(@"^'(.*)'$"));
+            // Single quoted strings.
+            Match match = SingleQuotedStringRegex.Match( key );
 			if (match.Success)
 				return match.Groups[1].Value;
 
-			// Double quoted strings.
-			match = Regex.Match(key, R.Q(@"^""(.*)""$"));
+            // Double quoted strings.
+            match = DoubleQuotedStringRegex.Match( key );
 			if (match.Success)
 				return match.Groups[1].Value;
 
-			// Integer.
-			match = Regex.Match(key, R.Q(@"^([+-]?\d+)$"));
+            // Integer.
+            match = IntegerRegex.Match( key );
 			if (match.Success)
 				return Convert.ToInt32(match.Groups[1].Value);
 
-			// Ranges.
-			match = Regex.Match(key, R.Q(@"^\((\S+)\.\.(\S+)\)$"));
+            // Ranges.
+            match = RangesRegex.Match( key );
 			if (match.Success)
 				return Range.Inclusive(Convert.ToInt32(Resolve(match.Groups[1].Value)),
 					Convert.ToInt32(Resolve(match.Groups[2].Value)));
 
-			// Floats.
-			match = Regex.Match(key, R.Q(@"^([+-]?\d[\d\.|\,]+)$"));
+            // Floats.
+            match = FloatsRegex.Match( key );
 			if (match.Success)
 			{
 				// For cultures with "," as the decimal separator, allow

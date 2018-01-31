@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Follow
     [Category( "Follow" )]
     [Description( "Block for displaying people that current person follows." )]
 
-    public partial class PersonFollowingList : Rock.Web.UI.RockBlock
+    public partial class PersonFollowingList : RockBlock, ICustomGridColumns
     {
 
         #region Base Control Methods

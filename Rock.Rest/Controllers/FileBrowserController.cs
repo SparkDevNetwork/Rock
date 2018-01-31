@@ -100,38 +100,70 @@ namespace Rock.Rest.Controllers
             }
             else
             {
-                using ( Image image = Image.FromFile( fullPath ) )
+                try {
+                    using ( Image image = Image.FromFile( fullPath ) )
+                    {
+                        string mimeType = string.Empty;
+
+                        // try to figure out the MimeType by using the ImageCodeInfo class
+                        var codecs = ImageCodecInfo.GetImageEncoders();
+                        ImageCodecInfo codecInfo = codecs.FirstOrDefault( a => a.FormatID == image.RawFormat.Guid );
+                        if ( codecInfo != null )
+                        {
+                            mimeType = codecInfo.MimeType;
+                        }
+
+                        // load the image into a stream, then use ImageResizer to resize it to the specified width and height (same technique as RockWeb GetImage.ashx.cs)
+                        var origImageStream = new MemoryStream();
+                        image.Save( origImageStream, image.RawFormat );
+                        origImageStream.Position = 0;
+                        var resizedStream = new MemoryStream();
+
+                        ImageBuilder.Current.Build( origImageStream, resizedStream, new ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
+
+                        HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
+                        resizedStream.Position = 0;
+                        result.Content = new StreamContent( resizedStream );
+                        result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( mimeType );
+
+                        if ( this.Request.GetQueryString( "timeStamp" ) != null )
+                        {
+                            // set the CacheControl to 365 days since the Request URL timestamp param will change if the file changes
+                            result.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue() { Public = true, MaxAge = new TimeSpan( 365, 0, 0, 0 ) };
+                        }
+
+                        return result;
+                    }
+                }
+                catch 
                 {
-                    string mimeType = string.Empty;
-
-                    // try to figure out the MimeType by using the ImageCodeInfo class
-                    var codecs = ImageCodecInfo.GetImageEncoders();
-                    ImageCodecInfo codecInfo = codecs.FirstOrDefault( a => a.FormatID == image.RawFormat.Guid );
-                    if ( codecInfo != null )
+                    
+                    // there was a problem with the image so send the default corrupt image warning back
+                    string imagePath = HttpContext.Current.Request.MapPath( "~/Assets/Images/corrupt-image.jpg" );
+                    
+                    // return a 404 if the file doesn't exist
+                    if ( !File.Exists( imagePath ) )
                     {
-                        mimeType = codecInfo.MimeType;
+                        throw new HttpResponseException( new System.Net.Http.HttpResponseMessage( HttpStatusCode.NotFound ) );
                     }
 
-                    // load the image into a stream, then use ImageResizer to resize it to the specified width and height (same technique as RockWeb GetImage.ashx.cs)
-                    var origImageStream = new MemoryStream();
-                    image.Save( origImageStream, image.RawFormat );
-                    origImageStream.Position = 0;
-                    var resizedStream = new MemoryStream();
-
-                    ImageBuilder.Current.Build( origImageStream, resizedStream, new ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
-
-                    HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
-                    resizedStream.Position = 0;
-                    result.Content = new StreamContent( resizedStream );
-                    result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( mimeType );
-
-                    if ( this.Request.GetQueryString( "timeStamp" ) != null )
+                    using ( Image image = Image.FromFile( imagePath ) )
                     {
-                        // set the CacheControl to 365 days since the Request URL timestamp param will change if the file changes
-                        result.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue() { Public = true, MaxAge = new TimeSpan( 365, 0, 0, 0 ) };
-                    }
+                        string mimeType = "image/jpg";
+                        var origImageStream = new MemoryStream();
+                        image.Save( origImageStream, image.RawFormat );
+                        origImageStream.Position = 0;
+                        var resizedStream = new MemoryStream();
 
-                    return result;
+                        ImageBuilder.Current.Build( origImageStream, resizedStream, new ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
+
+                        HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
+                        resizedStream.Position = 0;
+                        result.Content = new StreamContent( resizedStream );
+                        result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( mimeType );
+
+                        return result;
+                    }
                 }
             }
         }

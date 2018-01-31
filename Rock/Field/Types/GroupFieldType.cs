@@ -97,6 +97,8 @@ namespace Rock.Field.Types
                         return group.Guid.ToString();
                     }
                 }
+
+                return string.Empty;
             }
 
             return null;

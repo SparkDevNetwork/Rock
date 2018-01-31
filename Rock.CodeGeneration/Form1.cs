@@ -138,10 +138,15 @@ namespace Rock.CodeGeneration
                 var rootFolder = RootFolder();
                 if ( rootFolder != null )
                 {
+                    var dbSetEntityType = typeof( Rock.Data.RockContext ).GetProperties().Where( a => a.PropertyType.IsGenericType && a.PropertyType.Name == "DbSet`1" ).Select( a => a.PropertyType.GenericTypeArguments[0] ).ToList();
+                    var entityTypes = cblModels.Items.Cast<Type>().ToList();
+                    var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
+                    System.Diagnostics.Debug.WriteLine( missingDbSets.Select( a => a.Name ).ToList().AsDelimited( "\r\n" ) );
+
                     foreach ( object item in cblModels.CheckedItems )
                     {
                         progressBar1.Value++;
-                        Type type = (Type)item;
+                        Type type = ( Type ) item;
 
                         // only generate Service and REST for IEntity types
                         if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) )
@@ -166,7 +171,7 @@ namespace Rock.CodeGeneration
 
                     var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
 
-                    if (cbClient.Checked)
+                    if ( cbClient.Checked )
                     {
                         WriteRockClientIncludeClientFiles( rockClientFolder, cblModels.CheckedItems.OfType<Type>().ToList() );
                         WriteRockClientSystemGuidFiles( rockClientFolder );
@@ -199,7 +204,7 @@ namespace Rock.CodeGeneration
             qryProcs.CommandText = "select ROUTINE_SCHEMA, ROUTINE_NAME, ROUTINE_TYPE FROM INFORMATION_SCHEMA.ROUTINES";
             var readerProcs = qryProcs.ExecuteReader();
             string procPrefixFilter;
-            if (projectName == "Rock")
+            if ( projectName == "Rock" )
             {
                 procPrefixFilter = string.Empty;
             }
@@ -231,14 +236,43 @@ namespace Rock.CodeGeneration
                 {
                     folder = "Functions";
                 }
-                
+
                 string filePath = Path.Combine( databaseRootFolder, folder, routineName + ".sql" );
                 Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
 
-                script = Regex.Replace( script, "(^\\s*)CREATE\\s*PROCEDURE", "$1ALTER PROCEDURE", RegexOptions.IgnoreCase | RegexOptions.Multiline );
-                script = Regex.Replace( script, "(^\\s*)CREATE\\s*FUNCTION", "$1ALTER FUNCTION", RegexOptions.IgnoreCase | RegexOptions.Multiline );
-                
-                if (string.IsNullOrEmpty(procPrefixFilter) || routineName.StartsWith(procPrefixFilter, StringComparison.OrdinalIgnoreCase))
+                string existingScript = string.Empty;
+                if ( File.Exists( filePath ) )
+                {
+                    existingScript = File.ReadAllText( filePath );
+                }
+
+                if ( routineType == "PROCEDURE" )
+                {
+                    if ( !existingScript.StartsWith( "IF EXISTS (" ) )
+                    {
+                        script = Regex.Replace( script, "(^\\s*)CREATE\\s*PROCEDURE", "$1ALTER PROCEDURE", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                    }
+                    else
+                    {
+                        string dropIfExistsScript = $@"IF EXISTS (
+        SELECT *
+        FROM [sysobjects]
+        WHERE [id] = OBJECT_ID(N'[{routineSchema}].[{routineName}]')
+            AND OBJECTPROPERTY([id], N'IsProcedure') = 1
+        )
+    DROP PROCEDURE [{routineSchema}].{routineName}
+GO
+
+";
+                        script = dropIfExistsScript + script;
+                    }
+                }
+                else
+                {
+                    script = Regex.Replace( script, "(^\\s*)CREATE\\s*FUNCTION", "$1ALTER FUNCTION", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                }
+
+                if ( string.IsNullOrEmpty( procPrefixFilter ) || routineName.StartsWith( procPrefixFilter, StringComparison.OrdinalIgnoreCase ) )
                 {
                     File.WriteAllText( filePath, script.Trim() );
                 }
@@ -254,7 +288,26 @@ namespace Rock.CodeGeneration
 
                 string filePath = Path.Combine( databaseRootFolder, "Views", viewName + ".sql" );
                 Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
-                script = Regex.Replace( script, "(^\\s*)CREATE\\s*VIEW", "$1ALTER VIEW", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+
+                string existingScript = string.Empty;
+                if ( File.Exists( filePath ) )
+                {
+                    existingScript = File.ReadAllText( filePath );
+                }
+
+                if ( !existingScript.StartsWith( "IF OBJECT_ID(" ) )
+                {
+                    script = Regex.Replace( script, "(^\\s*)CREATE\\s*VIEW", "$1ALTER VIEW", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                }
+                else
+                {
+                    string dropIfExistsScript = $@"IF OBJECT_ID(N'[dbo].[{viewName}]', 'V') IS NOT NULL
+    DROP VIEW {viewName}
+GO
+
+";
+                    script = dropIfExistsScript + script;
+                }
 
                 if ( string.IsNullOrEmpty( procPrefixFilter ) || viewName.StartsWith( procPrefixFilter, StringComparison.OrdinalIgnoreCase ) )
                 {
@@ -403,9 +456,10 @@ namespace Rock.CodeGeneration
             public string Column { get; set; }
             public bool IsPartOfPrimaryKey { get; set; }
             public bool Ignore { get; set; }
+            public bool HasEntityModel { get; set; }
             public override string ToString()
             {
-                return string.Format( "{0} | {1} {2} {3}", Table, Column, IsPartOfPrimaryKey ? "| PrimaryKey" : null, Ignore ? "| Ignored" : null );
+                return string.Format( "{0} | {1} {2} {3} {4}", Table, Column, IsPartOfPrimaryKey ? "| PrimaryKey" : null, Ignore ? "| Ignored" : null, HasEntityModel ? null : " | No Entity Model" );
             }
         }
 
@@ -417,9 +471,9 @@ namespace Rock.CodeGeneration
         /// <returns></returns>
         private string GetCanDeleteCode( string serviceFolder, Type type )
         {
-            
-            SqlConnection sqlconn = GetSqlConnection( new DirectoryInfo(serviceFolder).Parent.FullName );
-            if (sqlconn == null)
+
+            SqlConnection sqlconn = GetSqlConnection( new DirectoryInfo( serviceFolder ).Parent.FullName );
+            if ( sqlconn == null )
             {
                 return string.Empty;
             }
@@ -467,8 +521,9 @@ order by [parentTable], [columnName]
             {
                 string parentTable = reader["parentTable"] as string;
                 string columnName = reader["columnName"] as string;
-                bool isPrimaryKey = (int)reader["IsPrimaryKey"] == 1;
+                bool isPrimaryKey = ( int ) reader["IsPrimaryKey"] == 1;
                 bool ignoreCanDelete = false;
+                bool hasEntityModel = true;
 
                 Type parentEntityType = Type.GetType( string.Format( "Rock.Model.{0}, {1}", parentTable, type.Assembly.FullName ) );
                 if ( parentEntityType != null )
@@ -482,8 +537,13 @@ order by [parentTable], [columnName]
                         }
                     }
                 }
+                else
+                {
+                    hasEntityModel = false;
+                }
 
-                parentTableColumnNameList.Add( new TableColumnInfo { Table = parentTable, Column = columnName, IsPartOfPrimaryKey = isPrimaryKey, Ignore = ignoreCanDelete } );
+
+                parentTableColumnNameList.Add( new TableColumnInfo { Table = parentTable, Column = columnName, IsPartOfPrimaryKey = isPrimaryKey, Ignore = ignoreCanDelete, HasEntityModel = hasEntityModel } );
             }
 
             parentTableColumnNameList = parentTableColumnNameList.OrderBy( a => a.Table ).ThenBy( a => a.Column ).ToList();
@@ -519,6 +579,13 @@ order by [parentTable], [columnName]
 @"            
             // ignoring {0},{1} 
 ", item.Table, item.Column );
+                    continue;
+                }
+
+                if ( !item.HasEntityModel )
+                {
+                    // if the table is in the database, but isn't a Rock Entity, skip it
+                    canDeleteMiddle += "";
                     continue;
                 }
 
@@ -618,17 +685,20 @@ order by [parentTable], [columnName]
             sb.AppendLine( "//" );
             sb.AppendLine( "" );
 
-            sb.AppendFormat( "using {0};" + Environment.NewLine, type.Namespace );
+            sb.AppendLine( $"using {type.Namespace};" );
             sb.AppendLine( "" );
 
-            sb.AppendFormat( "namespace {0}" + Environment.NewLine, restNamespace );
+            sb.AppendLine( $"namespace {restNamespace}" );
             sb.AppendLine( "{" );
             sb.AppendLine( "    /// <summary>" );
-            sb.AppendFormat( "    /// {0} REST API" + Environment.NewLine, pluralizedName );
+            sb.AppendLine( $"    /// {pluralizedName} REST API" );
             sb.AppendLine( "    /// </summary>" );
-            sb.AppendFormat( "    public partial class {0}Controller : Rock.Rest.ApiController<{1}.{2}>" + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
+            sb.AppendLine( $"    public partial class {pluralizedName}Controller : Rock.Rest.ApiController<{type.Namespace}.{type.Name}>" );
             sb.AppendLine( "    {" );
-            sb.AppendFormat( "        public {0}Controller() : base( new {1}.{2}Service( new {3}() ) ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name, dbContextFullName );
+            sb.AppendLine( "        /// <summary>" );
+            sb.AppendLine( $"        /// Initializes a new instance of the <see cref=\"{ pluralizedName}Controller\"/> class." );
+            sb.AppendLine( "        /// </summary>" );
+            sb.AppendLine( $"        public {pluralizedName}Controller() : base( new {type.Namespace}.{type.Name}Service( new {dbContextFullName}() ) ) {{ }} " );
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
 
@@ -698,7 +768,7 @@ order by [parentTable], [columnName]
                 else
                 {
                     var sb = new StringBuilder();
-                    sb.AppendFormat( "{0}<", propertyType.Name.Split( (char)96 )[0] );
+                    sb.AppendFormat( "{0}<", propertyType.Name.Split( ( char ) 96 )[0] );
 
                     foreach ( var argType in propertyType.GetGenericArguments() )
                     {
@@ -744,18 +814,30 @@ order by [parentTable], [columnName]
         {
             switch ( typeName )
             {
-                case "Boolean": return "bool";
-                case "Byte": return "byte";
-                case "Char": return "char";
-                case "Decimal": return "decimal";
-                case "Double": return "double";
-                case "Single": return "float";
-                case "Int32": return "int";
-                case "Int64": return "long";
-                case "SByte": return "sbyte";
-                case "Int16": return "short";
-                case "String": return "string";
-                case "DbGeography": return "object";
+                case "Boolean":
+                    return "bool";
+                case "Byte":
+                    return "byte";
+                case "Char":
+                    return "char";
+                case "Decimal":
+                    return "decimal";
+                case "Double":
+                    return "double";
+                case "Single":
+                    return "float";
+                case "Int32":
+                    return "int";
+                case "Int64":
+                    return "long";
+                case "SByte":
+                    return "sbyte";
+                case "Int16":
+                    return "short";
+                case "String":
+                    return "string";
+                case "DbGeography":
+                    return "object";
             }
 
             return typeName;
@@ -789,13 +871,13 @@ order by [parentTable], [columnName]
             foreach ( var property in type.GetProperties().SortByStandardOrder() )
             {
                 bool include = false;
-                if (includeRockClientIncludes && property.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null)
+                if ( includeRockClientIncludes && property.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
                 {
                     include = true;
                 }
-                
+
                 var getMethod = property.GetGetMethod();
-                if (getMethod == null)
+                if ( getMethod == null )
                 {
                     continue;
                 }
@@ -824,7 +906,7 @@ order by [parentTable], [columnName]
 
                 if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
                 {
-                    if ( (property.GetCustomAttribute<ObsoleteAttribute>() == null) )
+                    if ( ( property.GetCustomAttribute<ObsoleteAttribute>() == null ) )
                     {
                         if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
                         {
@@ -873,6 +955,7 @@ order by [parentTable], [columnName]
 
             sb.AppendLine( "namespace Rock.Client.Enums" );
             sb.AppendLine( "{" );
+            sb.AppendLine( "    #pragma warning disable CS1591" );
 
             foreach ( var enumType in rockAssembly.GetTypes().Where( a => a.IsEnum ).OrderBy( a => a.Name ) )
             {
@@ -880,16 +963,16 @@ order by [parentTable], [columnName]
                 {
                     sb.AppendLine( "    /// <summary>" );
                     sb.AppendLine( "    /// </summary>" );
-                    if (enumType.GetCustomAttribute<FlagsAttribute>() != null)
+                    if ( enumType.GetCustomAttribute<FlagsAttribute>() != null )
                     {
-                        sb.AppendLine( "    [Flags]");
+                        sb.AppendLine( "    [Flags]" );
                     }
                     sb.AppendFormat( "    public enum {0}" + Environment.NewLine, enumType.Name );
                     sb.AppendLine( "    {" );
-                    var enumValues = Enum.GetValues( enumType);
+                    var enumValues = Enum.GetValues( enumType );
                     foreach ( var enumValueName in Enum.GetNames( enumType ) )
                     {
-                        int enumValue = (int)Convert.ChangeType( Enum.Parse( enumType, enumValueName ), typeof( int ) );
+                        int enumValue = ( int ) Convert.ChangeType( Enum.Parse( enumType, enumValueName ), typeof( int ) );
                         string enumValueParam = enumValue >= 0 ? " = 0x" + enumValue.ToString( "x" ) : " = " + enumValue.ToString();
                         sb.AppendFormat( "        {0}{1},", enumValueName, enumValueParam );
                         sb.AppendLine( "" );
@@ -900,7 +983,7 @@ order by [parentTable], [columnName]
                 }
             }
 
-
+            sb.AppendLine( "    #pragma warning restore CS1591" );
             sb.AppendLine( "}" );
 
             var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\Enums", "RockEnums.cs" ) );
@@ -943,6 +1026,7 @@ order by [parentTable], [columnName]
 
             sb.AppendLine( "namespace Rock.Client.SystemGuid" );
             sb.AppendLine( "{" );
+            sb.AppendLine( "    #pragma warning disable CS1591" );
 
             foreach ( var systemGuidType in rockAssembly.GetTypes().Where( a => a.Namespace == "Rock.SystemGuid" ).OrderBy( a => a.Name ) )
             {
@@ -960,8 +1044,8 @@ order by [parentTable], [columnName]
                 sb.AppendLine( "" );
             }
 
-
-            sb.AppendLine( "}");
+            sb.AppendLine( "    #pragma warning restore CS1591" );
+            sb.AppendLine( "}" );
 
             var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\SystemGuid", "RockSystemGuids.cs" ) );
             WriteFile( file, sb );
@@ -972,7 +1056,7 @@ order by [parentTable], [columnName]
         /// </summary>
         /// <param name="rootFolder">The root folder.</param>
         /// <param name="alreadyIncludedTypes">The already included types.</param>
-        private void WriteRockClientIncludeClientFiles( string rootFolder, IEnumerable<Type> alreadyIncludedTypes)
+        private void WriteRockClientIncludeClientFiles( string rootFolder, IEnumerable<Type> alreadyIncludedTypes )
         {
             foreach ( var rockClientIncludeType in rockAssembly.GetTypes().Where( a => a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null ).OrderBy( a => a.Name ) )
             {
@@ -991,22 +1075,22 @@ order by [parentTable], [columnName]
         private void WriteRockClientFile( string rootFolder, Type type )
         {
             // make a copy of the EntityProperties since we are deleting some for this method
-            var entityProperties = GetEntityProperties( type, true ).ToDictionary( k => k.Key, v => v.Value);
+            var entityProperties = GetEntityProperties( type, true ).ToDictionary( k => k.Key, v => v.Value );
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
                 .Where( a => a.GetCustomAttribute<ObsoleteAttribute>() == null )
-                .Where( a => (a.GetCustomAttribute<NotMappedAttribute>() == null || a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null) )
+                .Where( a => ( a.GetCustomAttribute<NotMappedAttribute>() == null || a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null ) )
                 .Where( a => !entityProperties.Keys.Contains( a.Name ) );
 
             var rockClientIncludeAttribute = type.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
             string comments = null;
 
-            if ( rockClientIncludeAttribute != null)
+            if ( rockClientIncludeAttribute != null )
             {
                 comments = rockClientIncludeAttribute.DocumentationMessage;
             }
-            
+
             if ( !entityProperties.Any() && !dataMembers.Any() )
             {
                 return;
@@ -1049,8 +1133,8 @@ order by [parentTable], [columnName]
             sb.AppendLine( "{" );
 
             sb.AppendLine( "    /// <summary>" );
-            
-            
+
+
             if ( !string.IsNullOrWhiteSpace( comments ) )
             {
                 sb.AppendFormat( "    /// {0}" + Environment.NewLine, comments );
@@ -1100,7 +1184,7 @@ order by [parentTable], [columnName]
                     }
                     else if ( defaultValueAttribute.Value is bool )
                     {
-                        sb.AppendFormat( "        private {0} _{1} = {2};" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key, (bool)defaultValueAttribute.Value ? "true" : "false" );
+                        sb.AppendFormat( "        private {0} _{1} = {2};" + Environment.NewLine, this.PropertyTypeName( keyVal.Value.PropertyType ), keyVal.Key, ( bool ) defaultValueAttribute.Value ? "true" : "false" );
                     }
                     else
                     {
@@ -1123,7 +1207,7 @@ order by [parentTable], [columnName]
                 sb.AppendLine( "" );
             }
 
-            sb.AppendFormat( 
+            sb.AppendFormat(
 @"        /// <summary>
         /// Copies the base properties from a source {0} object
         /// </summary>
@@ -1144,7 +1228,7 @@ order by [parentTable], [columnName]
             sb.AppendLine( "    }" );
 
             sb.AppendLine( "" );
-            
+
             sb.AppendLine( "    /// <summary>" );
 
             if ( !string.IsNullOrWhiteSpace( comments ) )
@@ -1170,8 +1254,8 @@ order by [parentTable], [columnName]
                 {
                     dataMemberComments = dataMemberRockClientIncludeAttribute.DocumentationMessage;
                 }
-                
-                if (!string.IsNullOrWhiteSpace(dataMemberComments))
+
+                if ( !string.IsNullOrWhiteSpace( dataMemberComments ) )
                 {
                     sb.AppendLine( "        /// <summary>" );
                     sb.AppendFormat( "        /// {0}" + Environment.NewLine, dataMemberComments );
@@ -1179,9 +1263,9 @@ order by [parentTable], [columnName]
                 }
                 else
                 {
-                    sb.AppendLine( "        /// <summary />" );    
+                    sb.AppendLine( "        /// <summary />" );
                 }
-                
+
                 sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, PropertyTypeName( dataMember.PropertyType ), dataMember.Name );
                 sb.AppendLine( "" );
             }

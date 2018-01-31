@@ -27,7 +27,7 @@ namespace Rock.Web.UI.Controls
     /// NumberUpDown control
     /// </summary>
     [ToolboxData( "<{0}:NumberUpDown runat=server></{0}:NumberUpDown>" )]
-    public class NumberUpDown : CompositeControl, IRockControl, IDisplayRequiredIndicator
+    public class NumberUpDown : CompositeControl, IRockControl, IDisplayRequiredIndicator, IPostBackEventHandler
     {
         #region IRockControl implementation
 
@@ -383,8 +383,11 @@ namespace Rock.Web.UI.Controls
             _hfMax.RenderControl( writer );
             _hfNumber.RenderControl( writer );
 
+            var postBackScript = this.NumberUpdated != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "NumberUpdated" ), true ) : "";
+            postBackScript = postBackScript.Replace( '\'', '"' );
+
             string disabledMinCss = Value <= Minimum ? "disabled " : "";
-            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, "Rock.controls.numberUpDown.adjust( this, -1 );" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, string.Format("Rock.controls.numberUpDown.adjust( this, -1, '{0}' );", postBackScript ) );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-number-down numberincrement-down " + disabledMinCss );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-minus " );
@@ -396,7 +399,7 @@ namespace Rock.Web.UI.Controls
             _lblNumber.RenderControl( writer );
 
             string disabledMaxCss = Value >= Maximum ? "disabled " : "";
-            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, "Rock.controls.numberUpDown.adjust( this, 1 );" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Onclick, string.Format( "Rock.controls.numberUpDown.adjust( this, 1, '{0}' );", postBackScript ) );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-number-up numberincrement-up " + disabledMaxCss );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus " );
@@ -407,6 +410,27 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();  // Div.input-group
         }
 
-        #endregion 
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Occurs when [number updated].
+        /// </summary>
+        public event EventHandler<EventArgs> NumberUpdated;
+
+        /// <summary>
+        /// When implemented by a class, enables a server control to process an event raised when a form is posted to the server.
+        /// </summary>
+        /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
+        public void RaisePostBackEvent( string eventArgument )
+        {
+            if ( eventArgument == "NumberUpdated" && NumberUpdated != null )
+            {
+                NumberUpdated( this, new EventArgs() );
+            }
+        }
+
+        #endregion
     }
 }
