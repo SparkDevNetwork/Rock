@@ -2293,12 +2293,7 @@ namespace Rock.Model
         {
             if (gradeOffset.HasValue && gradeOffset.Value >= 0)
             {
-                var globalAttributes = GlobalAttributesCache.Read();
-                var transitionDate = globalAttributes.GetValue("GradeTransitionDate").AsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
-                transitionDate = new DateTime( RockDateTime.Today.Year, transitionDate.Month, transitionDate.Day );
-
-                int gradeOffsetAdjustment = (RockDateTime.Now.Date < transitionDate) ? gradeOffset.Value : gradeOffset.Value + 1;
-                return transitionDate.Year + gradeOffsetAdjustment;
+                return GlobalAttributesCache.Read().CurrentGraduationYear + gradeOffset.Value;
             }
 
             return null;

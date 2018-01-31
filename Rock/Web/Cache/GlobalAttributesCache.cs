@@ -465,6 +465,26 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Parses the grade transition date to return a culture independent representation
+        /// </summary>
+        /// <value>
+        /// Returns a date comprised of: the grade transition month, the grade transition day, and the current year
+        /// </value>
+        private DateTime ParseFormattedTransitionDate()
+        {
+            var formattedTransitionDate = GetValue( "GradeTransitionDate" ) + "/" + RockDateTime.Today.Year;
+            DateTime transitionDate;
+
+            // Check Date Validity
+            if ( !DateTime.TryParseExact( formattedTransitionDate, new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" }, CultureInfo.InvariantCulture,
+                DateTimeStyles.AllowWhiteSpaces, out transitionDate ) )
+            {
+                transitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
+            }
+            return transitionDate;
+        }
+
+        /// <summary>
         /// Gets the current graduation year based on grade transition date
         /// </summary>
         /// <value>
@@ -474,18 +494,26 @@ namespace Rock.Web.Cache
         {
             get
             {
-                var formattedTransitionDate = GetValue( "GradeTransitionDate" ) + "/" + RockDateTime.Today.Year;
-                DateTime transitionDate;
-
-                // Check Date Validity
-                if ( !DateTime.TryParseExact( formattedTransitionDate, new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" }, CultureInfo.InvariantCulture,
-                    DateTimeStyles.AllowWhiteSpaces, out transitionDate ) )
-                {
-                    transitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
-                }
+                DateTime transitionDate = ParseFormattedTransitionDate();
                 return RockDateTime.Now.Date < transitionDate ? transitionDate.Year : transitionDate.Year + 1;
             }
         }
+
+        /// <summary>
+        /// Gets the current graduation date based on grade transition date
+        /// </summary>
+        /// <value>
+        /// Returns a date with the grade transition day and month as well as the current year if transition month/day has not passed, else next year
+        /// </value>
+        public DateTime CurrentGraduationDate
+        {
+            get
+            {
+                DateTime transitionDate = ParseFormattedTransitionDate();
+                return new DateTime( RockDateTime.Now.Date < transitionDate ? transitionDate.Year : transitionDate.Year + 1, transitionDate.Month, transitionDate.Day );
+            }
+        }
+
         /// <summary>
         /// Gets the organization location (OrganizationAddress)
         /// </summary>

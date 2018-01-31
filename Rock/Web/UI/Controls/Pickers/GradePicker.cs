@@ -143,7 +143,8 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public string GetJavascriptForYearPicker( YearPicker ypGraduationYear)
         {
-            DateTime gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime() ?? new DateTime( RockDateTime.Now.Year, 6, 1 );
+            DateTime currentTransitionDate = GlobalAttributesCache.Read().CurrentGraduationDate;
+            DateTime gradeTransitionDate = new DateTime(RockDateTime.Now.Year, currentTransitionDate.Month, currentTransitionDate.Day);
 
             // add a year if the next graduation mm/dd won't happen until next year
             int gradeOffsetRefactor = ( RockDateTime.Now < gradeTransitionDate ) ? 0 : 1;

@@ -260,7 +260,9 @@ function() {{
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            // GradeTransitionDate is stored as just MM/DD so it'll resolve to the current year
+            /* GradeTransitionDate is stored as just MM/DD and as such .AsDateTime() will resolve differently depending on culture.
+             * To do this accurately we should use DateTime.TryParseExact but for this case we only care about if there is a date or not
+             */
             DateTime? gradeTransitionDate = GlobalAttributesCache.Read().GetValue( "GradeTransitionDate" ).AsDateTime();
 
             var values = selection.Split( '|' );
@@ -272,14 +274,7 @@ function() {{
 
             var personGradeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
 
-            // if the next MM/DD of a graduation isn't until next year, treat next year as the current school year
-            int currentYearAdjustor = 0;
-            if ( gradeTransitionDate.HasValue && !( RockDateTime.Now < gradeTransitionDate ) )
-            {
-                currentYearAdjustor = 1;
-            }
-
-            int currentSchoolYear = RockDateTime.Now.AddYears( currentYearAdjustor ).Year;
+            int currentSchoolYear = GlobalAttributesCache.Read().CurrentGraduationYear;
 
             if ( gradeTransitionDate.HasValue && gradeOffset.HasValue )
             {
