@@ -33,6 +33,11 @@ using Rock.Web.UI.Controls;
 using Rock.Communication;
 using System.Data.Entity;
 
+//----
+//CCV CORE
+// 2-1-2018 CFU Re-enabled javascript that scrolls window to top of page on postbacks to fix issue with window scrolling to bottom of page on confirmation panel.
+//                  Known Side effect of above chagne is when user toggles giving from Person to Business, it causes scroll to top window.
+//----
 namespace RockWeb.Blocks.Finance
 {
     #region Block Attributes
@@ -2759,7 +2764,7 @@ TransactionAcountDetails: [
 
     // sets the scroll position to the top of the page after partial postbacks
     // without this the scroll position is the bottom of the page.
-    // setTimeout('window.scrollTo(0,0)',0);
+    setTimeout('window.scrollTo(0,0)',0);
 
     // Posts the iframe (step 2)
     $('#aStep2Submit').on('click', function(e) {{
