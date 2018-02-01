@@ -19,16 +19,20 @@
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                         <Rock:RockTextBox ID="tbApplicantName" runat="server" Label="Applicant Name" />
                         <Rock:RockTextBox ID="tbMinistryLeader" runat="server" Label="Ministry Leader" />
+                        <Rock:RockCheckBoxList ID="cblApplicationCompleted" runat="server" Label="Application Completed" RepeatDirection="Horizontal">
+                            <asp:ListItem>Completed</asp:ListItem>
+                            <asp:ListItem>Not Completed</asp:ListItem>
+                        </Rock:RockCheckBoxList>
                     </Rock:GridFilter>
 
-                    <Rock:Grid ID="gGrid" runat="server" OnRowSelected="gGrid_Edit">
+                    <Rock:Grid ID="gGrid" runat="server" AllowSorting="true" OnRowSelected="gGrid_Edit">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="State" HeaderText="Status" SortExpression="State" />
-                            <Rock:RockBoundField DataField="SentDate" HeaderText="Application Sent" SortExpression="SentDate" />
-                            <Rock:RockBoundField DataField="CompletedDate" HeaderText="Application Completed" SortExpression="CompletedDate" />
+                            <Rock:RockBoundField DataField="SentDate" HeaderText="Application Sent" SortExpression="SentDate" DataFormatString="{0:M/dd/yy}" />
+                            <Rock:RockBoundField DataField="CompletedDate" HeaderText="Application Completed" SortExpression="CompletedDate" DataFormatString="{0:M/dd/yy}" NullDisplayText="Not Completed" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus" />
-                            <Rock:RockBoundField DataField="ApplicationType" HeaderText="Application Type" />
+                            <Rock:RockBoundField DataField="ApplicationType" HeaderText="Application Type" SortExpression="ApplicationType" />
                             <Rock:RockBoundField DataField="MinistryLeader" HeaderText="Ministry Leader" SortExpression="MinistryLeader" />
                         </Columns>
                     </Rock:Grid>

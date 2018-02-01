@@ -37,6 +37,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
     [Description( "Lists all volunteer screening instances newer than 2 months." )]
     
     [LinkedPage( "Detail Page" )]
+    [CampusesField( "Campuses", "List of which campuses to show volunteer screening instances for.", required: false, includeInactive: true )]
     public partial class VolunteerScreeningGlobalList : RockBlock
     {
         // the actual types of Volunteer Screening Applications aren't
@@ -56,6 +57,10 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             
             InitFilter( );
             InitGrid( );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
         
         protected override void OnLoad( EventArgs e )
@@ -63,14 +68,29 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             base.OnLoad( e );
             
             if ( !Page.IsPostBack )
-            {   
+            {
                 BindFilter( );
                 BindGrid( );
             }
         }
-        
+
         #endregion
-        
+
+        #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            BindFilter();
+            BindGrid();
+        }
+
+        #endregion
+
         #region Filter Methods
 
         void InitFilter( )
@@ -85,6 +105,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             rFilter.SaveUserPreference( "Application Type", ddlApplicationType.SelectedValue );
             rFilter.SaveUserPreference( "Applicant Name", tbApplicantName.Text );
             rFilter.SaveUserPreference( "Ministry Leader", tbMinistryLeader.Text );
+            rFilter.SaveUserPreference( "Application Completed", cblApplicationCompleted.SelectedValues.AsDelimited( ";" ) );
 
             BindFilter( );
             BindGrid( );
@@ -133,6 +154,21 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                     break;
                 }
 
+                case "Application Completed":
+                {
+                    var values = new List<string>();
+                    foreach ( string value in e.Value.Split( ';' ) )
+                    {
+                        var item = cblApplicationCompleted.Items.FindByValue( value );
+                        if ( item != null )
+                        {
+                            values.Add( item.Text );
+                        }
+                    }
+                    e.Value = values.AsDelimited( ", " );
+                    break;
+                }
+
                 default:
                 {
                     e.Value = string.Empty;
@@ -144,8 +180,26 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         private void BindFilter()
         {
             // setup the campus
-            cblCampus.DataSource = CampusCache.All( false );
-            cblCampus.DataBind();
+            // if Block Campus filter is applied, update User campus filter to only show respective campuses
+            // if not applied, show all campuses
+            if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Campuses" ) ) == false )
+            {
+                List<Guid> selectedCampusesAttribute = Array.ConvertAll( GetAttributeValue( "Campuses" ).Split( ',' ), s => new Guid( s ) ).ToList();
+
+                var selectedCampuses = CampusCache.All();
+
+                selectedCampuses = selectedCampuses.Where( vs => selectedCampusesAttribute.Contains( vs.Guid ) ).ToList();
+
+                cblCampus.DataSource = selectedCampuses;
+                cblCampus.DataBind();
+
+            }
+            else
+            {
+                cblCampus.DataSource = CampusCache.All( false );
+                cblCampus.DataBind();
+            }
+
 
             string campusValue = rFilter.GetUserPreference( "Campus" );
             if ( !string.IsNullOrWhiteSpace( campusValue ) )
@@ -185,6 +239,14 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
             // setup the Ministry Leader
             tbMinistryLeader.Text = rFilter.GetUserPreference( "Ministry Leader" );
+
+            // setup Application Completed
+            string applicationCompletedValue = rFilter.GetUserPreference( "Application Completed" );
+            if ( !string.IsNullOrWhiteSpace( applicationCompletedValue ) )
+            {
+                cblApplicationCompleted.SetValues( applicationCompletedValue.Split( ';' ).ToList() );
+            }
+
         }
         #endregion
 
@@ -284,6 +346,17 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 // ---- Apply Filters ----
                 var filteredQuery = instanceQuery;
 
+                // First apply Campus Block Setting Filter
+                if ( string.IsNullOrWhiteSpace(GetAttributeValue( "Campuses" )) == false )
+                {
+                    List<Guid> selectedCampuses = Array.ConvertAll( GetAttributeValue( "Campuses" ).Split( ',' ), s => new Guid( s ) ).ToList();
+                    if ( selectedCampuses.Count > 0 )
+                    {
+                        filteredQuery = filteredQuery.Where( vs => selectedCampuses.Contains( vs.CampusGuid.AsGuid() ) ).ToList();
+                    }
+                }
+
+                // Now apply user filters
                 // Campus
                 List<int> campusIds = cblCampus.SelectedValuesAsInt;
                 if( campusIds.Count > 0 )
@@ -315,28 +388,111 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                     filteredQuery = filteredQuery.Where( vs => vs.PersonName.ToLower( ).Contains( personName.ToLower( ).Trim( ) ) ).ToList( );
                 }
 
-                // Ministry Leader
-                // Build Query that has Ministry Leader populated so that we can filter by Ministry Leader
-                var filteredQueryWithMinistryLeader = filteredQuery.OrderByDescending( vs => vs.SentDate ).OrderByDescending( vs => vs.CompletedDate ).Select( vs =>
-                                                    new {
-                                                        Name = vs.PersonName,
-                                                        Id = vs.Id,
-                                                        SentDate = vs.SentDate.ToShortDateString(),
-                                                        CompletedDate = ParseCompletedDate( vs.SentDate, vs.CompletedDate ),
-                                                        State = VolunteerScreening.GetState( vs.SentDate, vs.CompletedDate, vs.Workflow.Status ),
-                                                        Campus = campusCache.Where( c => c.Guid == vs.CampusGuid.AsGuid() ).SingleOrDefault().Name,
-                                                        MinistryLeader = TryGetMinistryLead( vs.Workflow, ministryLeadResult, paService ),
-                                                        ApplicationType = ParseApplicationType( vs.Workflow, starsQueryResult )
-                                                    } ).ToList();
 
-                // Apple Filter
+                // Build Query so that Ministry Leader and Completed Date are populated for filtering / sorting
+                // If application is not completed, null emptyDate is used to display correct empty text
+                DateTime? emptyDate = null;
+
+                var filteredQueryWithMinistryLeader = filteredQuery.OrderByDescending( vs => vs.SentDate ).OrderByDescending( vs => vs.CompletedDate ).Select( vs =>
+                                            new {
+                                                Name = vs.PersonName,
+                                                Id = vs.Id,
+                                                SentDate = vs.SentDate,
+                                                CompletedDate = (vs.SentDate == vs.CompletedDate) ? emptyDate : vs.CompletedDate,
+                                                State = VolunteerScreening.GetState( vs.SentDate, vs.CompletedDate, vs.Workflow.Status ),
+                                                Campus = campusCache.Where( c => c.Guid == vs.CampusGuid.AsGuid() ).SingleOrDefault().Name,
+                                                MinistryLeader = TryGetMinistryLead( vs.Workflow, ministryLeadResult, paService ),
+                                                ApplicationType = ParseApplicationType( vs.Workflow, starsQueryResult )
+                                            } ).ToList();
+
+                // Ministry Leader
                 string ministryLeader = rFilter.GetUserPreference( "Ministry Leader" );
                 if( string.IsNullOrWhiteSpace( ministryLeader ) == false )
                 {
                     filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.Where( vs => vs.MinistryLeader.ToLower( ).Contains( ministryLeader.ToLower( ).Trim( ) ) ).ToList();
                 }
+
+                // Application Completed
+                string applicationCompleted = cblApplicationCompleted.SelectedValues.AsDelimited( ";" );
+                if ( string.IsNullOrWhiteSpace( applicationCompleted ) == false )
+                {
+                    if ( applicationCompleted == "Completed" )
+                    {
+                        filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.Where( vs => vs.CompletedDate != null ).ToList();
+                    }
+                    else if ( applicationCompleted == "Not Completed" )
+                    {
+                        filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.Where( vs => vs.CompletedDate == emptyDate ).ToList();
+                    }
+                }
+
                 // ---- End Filters ----
-                
+
+                // Sort grid
+                SortProperty sortProperty = gGrid.SortProperty;
+
+                if ( sortProperty != null )
+                {     
+                    if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
+                    {
+                        switch ( sortProperty.Property )
+                        {
+                            case "Name":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderBy( o => o.Name ).ToList();
+                                break;
+                            case "State":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderBy( o => o.State ).ToList();
+                                break;
+                            case "SentDate":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderBy( o => o.SentDate ).ToList();
+                                break;
+                            case "CompletedDate":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderBy( o => o.CompletedDate ).ToList();
+                                break;
+                            case "Campus":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderBy( o => o.Campus ).ToList();
+                                break;
+                            case "ApplicationType":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderBy( o => o.ApplicationType ).ToList();
+                                break;
+                            case "MinistryLeader":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderBy( o => o.MinistryLeader ).ToList();
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch ( sortProperty.Property )
+                        {
+                            case "Name":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderByDescending( o => o.Name ).ToList();
+                                break;
+                            case "State":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderByDescending( o => o.State ).ToList();
+                                break;
+                            case "SentDate":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderByDescending( o => o.SentDate ).ToList();
+                                break;
+                            case "CompletedDate":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderByDescending( o => o.CompletedDate ).ToList();
+                                break;
+                            case "Campus":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderByDescending( o => o.Campus ).ToList();
+                                break;
+                            case "ApplicationType":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderByDescending( o => o.ApplicationType ).ToList();
+                                break;
+                            case "MinistryLeader":
+                                filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderByDescending( o => o.MinistryLeader ).ToList();
+                                break;
+                        }
+                    }                  
+                }
+                else
+                {
+                    filteredQueryWithMinistryLeader = filteredQueryWithMinistryLeader.OrderByDescending( o => o.SentDate ).ToList();
+                }
+
                 // Bind filter to grid
                 if ( filteredQueryWithMinistryLeader.Count( ) > 0 )
                 {
@@ -346,6 +502,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 gGrid.DataBind( );
             }
         }
+
         #endregion
 
         #region Helper Methods
@@ -413,17 +570,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             return string.Empty;
         }
 
-        string ParseCompletedDate( DateTime sentDate, DateTime completedDate )
-        {
-            if( sentDate == completedDate )
-            {
-                return "Not Completed";
-            }
-            else
-            {
-                return completedDate.ToShortDateString( );
-            }
-        }
         #endregion
     }
 }
