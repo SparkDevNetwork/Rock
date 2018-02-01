@@ -60,7 +60,6 @@
   <ItemGroup>
     <Compile Include="Arena.cs" />
     <Compile Include="ChurchOnlinePlatform.cs" />
-    <Compile Include="Facebook.cs" />
     <Compile Include="Migrations\001_RenameDomain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

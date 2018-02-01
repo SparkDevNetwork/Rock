@@ -32,6 +32,11 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+//----
+//CCV CORE
+// 7-28-17 - JHM - Added a const string defining the Graph API version to use. Updated to v2.10, which won't be deprecated for years.
+// 1-31-18 - CFU - Response from facebook is now JSON format, not form values. Incorporated change implemented by Spark team.
+//----
 namespace Rock.Security.ExternalAuthentication
 {
     /// <summary>
@@ -126,7 +131,10 @@ namespace Rock.Security.ExternalAuthentication
 
                 if ( restResponse.StatusCode == HttpStatusCode.OK )
                 {
-                    string accessToken = HttpUtility.ParseQueryString( "?" + restResponse.Content )["access_token"];
+                    // As of March 28, 2017... the response is now in JSON format, not form values.  Facebook says 
+                    // they made this update to be compliant with section 5.1 of RFC 6749. https://developers.facebook.com/docs/apps/changelog
+                    dynamic facebookOauthResponse = JsonConvert.DeserializeObject<ExpandoObject>( restResponse.Content );
+                    string accessToken = facebookOauthResponse.access_token;
 
                     // Get information about the person who logged in using Facebook
                     restRequest = new RestRequest( Method.GET );
