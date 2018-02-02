@@ -77,5 +77,37 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_039_MigrationRollupsForV7_2_UpdateCheckInMergefieldDebugInfo", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @simpleCommunicationDetailBlockId INT = (
+        /// SELECT TOP 1 Id
+        /// FROM [Block]
+        /// WHERE [Guid] = &apos;A02F7695-4C6E-44E9-84CB-42E6F51F285F&apos;
+        /// )
+        ///
+        /// DECLARE @wizardCommunicationDetailBlockId INT = (
+        /// SELECT TOP 1 Id
+        /// FROM [Block]
+        /// WHERE [Guid] = &apos;25D890B9-9609-4B63-AD25-4AE427205563&apos;
+        /// )
+        ///
+        ///DECLARE @entityTypeIdBlock INT = (
+        /// SELECT TOP 1 Id
+        /// FROM EntityType
+        /// WHERE [Guid] = &apos;D89555CA-9AE4-4D62-8AF1-E5E463C1EF65&apos;
+        /// ) /* Rock.Model.Block */
+        ///
+        ///
+        ///INSERT INTO [Auth] (
+        /// EntityTypeid
+        /// ,EntityId
+        /// ,[Order]
+        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _041_MigrationRollupsForV7_3_UpdateWizardCommunicationDetailApprovers {
+            get {
+                return ResourceManager.GetString("_041_MigrationRollupsForV7_3_UpdateWizardCommunicationDetailApprovers", resourceCulture);
+            }
+        }
     }
 }
