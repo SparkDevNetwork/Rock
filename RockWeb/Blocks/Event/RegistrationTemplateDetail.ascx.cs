@@ -1119,6 +1119,7 @@ namespace RockWeb.Blocks.Event
                     fee.DiscountApplies = feeUI.DiscountApplies;
                     fee.AllowMultiple = feeUI.AllowMultiple;
                     fee.Order = feeUI.Order;
+                    fee.IsActive = feeUI.IsActive;
                 }
 
                 rockContext.SaveChanges();
@@ -1854,21 +1855,13 @@ namespace RockWeb.Blocks.Event
 
             fee.Name = tbFeeName.Text;
             fee.FeeType = rblFeeType.SelectedValueAsEnum<RegistrationFeeType>();
-            if ( fee.FeeType == RegistrationFeeType.Single )
-            {
-                fee.CostValue = cCost.Text;
-            }
-            else
-            {
-                fee.CostValue = kvlMultipleFees.Value;
-            }
             fee.AllowMultiple = cbAllowMultiple.Checked;
             fee.DiscountApplies = cbDiscountApplies.Checked;
-
-            HideDialog();
+            fee.IsActive = cbFeeIsActive.Checked;
+            fee.CostValue = fee.FeeType == RegistrationFeeType.Single ? cCost.Text : kvlMultipleFees.Value;
 
             hfFeeGuid.Value = string.Empty;
-
+            HideDialog();
             BuildControls();
         }
 
@@ -2768,7 +2761,8 @@ namespace RockWeb.Blocks.Event
                         f.FeeType,
                         Cost = FormatFeeCost( f.CostValue ),
                         f.AllowMultiple,
-                        f.DiscountApplies
+                        f.DiscountApplies,
+                        f.IsActive
                     } )
                     .ToList();
                 gFees.DataBind();
@@ -2800,6 +2794,7 @@ namespace RockWeb.Blocks.Event
 
             cbAllowMultiple.Checked = fee.AllowMultiple;
             cbDiscountApplies.Checked = fee.DiscountApplies;
+            cbFeeIsActive.Checked = fee.IsActive;
 
             ShowDialog( "Fees" );
         }
