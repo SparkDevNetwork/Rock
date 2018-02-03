@@ -169,12 +169,17 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();
             writer.WriteLine();
-            
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-action btn-xs key-value-add" );
+            var addButtonCssClass = "btn btn-action btn-xs key-value-add";
+            if ( !this.Enabled )
+            {
+                addButtonCssClass += " aspNetDisabled disabled";
+            }
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, addButtonCssClass );
             writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute(HtmlTextWriterAttribute.Class, "fa fa-plus-circle");
