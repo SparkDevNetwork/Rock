@@ -1211,6 +1211,10 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusActiveFilter.cs" />
+    <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusesActiveFilter.cs" />
+    <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusesFilter.cs" />
+    <Compile Include="Reporting\DataFilter\BenevolenceRequest\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\TotalBenevolenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\BenevolenceRequestDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialPledgeDataViewFilter.cs" />
