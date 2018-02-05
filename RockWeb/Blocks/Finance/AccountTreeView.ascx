@@ -31,6 +31,7 @@
 
             <div class="js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
                 <Rock:Toggle ID="tglHideInactiveAccounts" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveAccounts_CheckedChanged" Label="Show" />
+                <asp:LinkButton ID="lbOrderTopLevelAccounts" runat="server" CssClass="btn btn-xs" Text="Order Top-Level Accounts" OnClick="lbOrderTopLevelAccounts_Click" />
             </div>
 
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
