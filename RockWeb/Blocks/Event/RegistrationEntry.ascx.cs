@@ -3849,7 +3849,7 @@ namespace RockWeb.Blocks.Event
                 // If the current form, is the last one, add any fee controls
                 if ( FormCount - 1 == CurrentFormIndex && !registrant.OnWaitList )
                 {
-                    foreach ( var fee in RegistrationTemplate.Fees )
+                    foreach ( var fee in RegistrationTemplate.Fees.Where( f => f.IsActive == true ) )
                     {
                         var feeValues = new List<FeeInfo>();
                         if ( registrant != null && registrant.FeeValues.ContainsKey( fee.Id ) )
@@ -4166,11 +4166,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="feeValues">The fee values.</param>
         private void CreateFeeField( RegistrationTemplateFee fee, bool setValues, List<FeeInfo> feeValues )
         {
-            if ( !fee.IsActive )
-            {
-                return;
-            }
-
             if ( fee.FeeType == RegistrationFeeType.Single )
             {
                 string label = fee.Name;
