@@ -1858,7 +1858,16 @@ namespace RockWeb.Blocks.Event
             fee.AllowMultiple = cbAllowMultiple.Checked;
             fee.DiscountApplies = cbDiscountApplies.Checked;
             fee.IsActive = cbFeeIsActive.Checked;
-            fee.CostValue = fee.FeeType == RegistrationFeeType.Single ? cCost.Text : kvlMultipleFees.Value;
+
+            if ( fee.FeeType == RegistrationFeeType.Single )
+            {
+                fee.CostValue = cCost.Text;
+            }
+            else
+            {
+                fee.CostValue =  kvlMultipleFees.Value;
+            }
+            
 
             hfFeeGuid.Value = string.Empty;
             HideDialog();
