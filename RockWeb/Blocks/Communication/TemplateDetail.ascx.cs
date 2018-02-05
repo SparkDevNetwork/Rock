@@ -353,29 +353,49 @@ namespace RockWeb.Blocks.Communication
             ddlSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId );
             tbSMSTextMessage.Text = communicationTemplate.SMSMessage;
 
-            if ( communicationTemplate.IsSystem )
+            // render UI based on Authorized and IsSystem
+            bool readOnly = false;
+            bool restrictedEdit = false;
+
+            if ( !communicationTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
-                nbEditModeMessage.Text = EditModeMessage.System( Rock.Model.CommunicationTemplate.FriendlyTypeName );
+                restrictedEdit = true;
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( CommunicationTemplate.FriendlyTypeName );
+                nbEditModeMessage.Visible = true;
             }
 
-            tbName.ReadOnly = communicationTemplate.IsSystem;
-            cbIsActive.Enabled = !communicationTemplate.IsSystem;
-            //tbDescription.ReadOnly = communicationTemplate.IsSystem;
-            //imgTemplatePreview.Enabled = !communicationTemplate.IsSystem;
-            tbFromName.ReadOnly = communicationTemplate.IsSystem;
-            tbName.ReadOnly = communicationTemplate.IsSystem;
-            tbFromAddress.ReadOnly = communicationTemplate.IsSystem;
-            tbReplyToAddress.ReadOnly = communicationTemplate.IsSystem;
-            tbCCList.ReadOnly = communicationTemplate.IsSystem;
-            tbBCCList.ReadOnly = communicationTemplate.IsSystem;
-            tbEmailSubject.ReadOnly = communicationTemplate.IsSystem;
-            fupAttachments.Visible = !communicationTemplate.IsSystem;
+            if ( communicationTemplate.IsSystem )
+            {
+                restrictedEdit = true;
+                nbEditModeMessage.Text = EditModeMessage.System( Rock.Model.CommunicationTemplate.FriendlyTypeName );
+                nbEditModeMessage.Visible = true;
+            }
 
-            //ceEmailTemplate.ReadOnly = communicationTemplate.IsSystem;
 
-            mfpSMSMessage.Visible = !communicationTemplate.IsSystem;
-            ddlSMSFrom.Enabled = !communicationTemplate.IsSystem;
-            tbSMSTextMessage.ReadOnly = communicationTemplate.IsSystem;
+            tbName.ReadOnly = restrictedEdit;
+            cbIsActive.Enabled = !restrictedEdit;
+            
+            tbFromName.ReadOnly = restrictedEdit;
+            tbName.ReadOnly = restrictedEdit;
+            tbFromAddress.ReadOnly = restrictedEdit;
+            tbReplyToAddress.ReadOnly = restrictedEdit;
+            tbCCList.ReadOnly = restrictedEdit;
+            tbBCCList.ReadOnly = restrictedEdit;
+            tbEmailSubject.ReadOnly = restrictedEdit;
+            fupAttachments.Visible = !restrictedEdit;
+
+            // Allow these to be Editable if they are IsSystem, but not if they don't have EDIT Auth
+            tbDescription.ReadOnly = readOnly;
+            imgTemplatePreview.Enabled = !readOnly;
+            ceEmailTemplate.ReadOnly = readOnly;
+
+            mfpSMSMessage.Visible = !restrictedEdit;
+            ddlSMSFrom.Enabled = !restrictedEdit;
+            tbSMSTextMessage.ReadOnly = restrictedEdit;
+            ceEmailTemplate.ReadOnly = restrictedEdit;
+
+            btnSave.Enabled = !readOnly;
 
             tglPreviewAdvanced.Checked = true;
             tglPreviewAdvanced_CheckedChanged( null, null );

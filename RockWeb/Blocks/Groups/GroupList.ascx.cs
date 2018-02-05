@@ -187,6 +187,17 @@ namespace RockWeb.Blocks.Groups
                 {
                     e.Row.AddCssClass( "is-inactive" );
                 }
+
+                if ( groupInfo.IsSynced )
+                {
+                    var deleteField = gGroups.ColumnsOfType<DeleteField>().FirstOrDefault();
+                    if ( deleteField != null && deleteField.Visible )
+                    {
+                        TableCell cell = e.Row.Cells[gGroups.Columns.IndexOf( deleteField )];
+                        cell.Text = "<span class=\"btn btn-info btn-sm disabled\" ><i class=\"fa fa-exchange\"></i></span>";
+                        cell.ToolTip = "Managed by group sync";
+                    }
+                }
             }
         }
 
@@ -598,21 +609,22 @@ namespace RockWeb.Blocks.Groups
                         .AsEnumerable()
                         .Where( gm => gm.Group.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                         .Select( m => new GroupListRowInfo
-                        {
-                            Id = m.Group.Id,
-                            Path = string.Empty,
-                            Name = m.Group.Name,
-                            GroupTypeName = m.Group.GroupType.Name,
-                            GroupOrder = m.Group.Order,
-                            GroupTypeOrder = m.Group.GroupType.Order,
-                            Description = m.Group.Description,
-                            IsSystem = m.Group.IsSystem,
-                            GroupRole = m.GroupMember.GroupRole.Name,
-                            DateAdded = m.GroupMember.DateTimeAdded ?? m.GroupMember.CreatedDateTime,
-                            IsActive = m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ),
-                            IsActiveOrder = ( m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ) ? 1 : 2 ),
-                            MemberCount = 0
-                        } )
+                            {
+                                Id = m.Group.Id,
+                                Path = string.Empty,
+                                Name = m.Group.Name,
+                                GroupTypeName = m.Group.GroupType.Name,
+                                GroupOrder = m.Group.Order,
+                                GroupTypeOrder = m.Group.GroupType.Order,
+                                Description = m.Group.Description,
+                                IsSystem = m.Group.IsSystem,
+                                GroupRole = m.GroupMember.GroupRole.Name,
+                                DateAdded = m.GroupMember.DateTimeAdded ?? m.GroupMember.CreatedDateTime,
+                                IsActive = m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ),
+                                IsActiveOrder = ( m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ) ? 1 : 2 ),
+                                IsSynced = m.Group.SyncDataViewId.HasValue,
+                                MemberCount = 0
+                            } )
                         .AsQueryable()
                         .Sort( sortProperty )
                         .ToList();
@@ -655,6 +667,7 @@ namespace RockWeb.Blocks.Groups
                         IsActiveOrder = g.IsActive ? 1 : 2,
                         GroupRole = string.Empty,
                         DateAdded = DateTime.MinValue,
+                        IsSynced = g.SyncDataViewId.HasValue,
                         MemberCount = g.Members.Count()
                     } )
                     .AsQueryable()
@@ -800,8 +813,7 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
-        [DotLiquid.LiquidType( "Id", "Path", "Name", "GroupTypeName", "GroupOrder", "GroupTypeOrder", "Description", "IsSystem", "GroupRole", "DateAdded", "IsActive", "IsActiveOrder", "MemberCount"  )]
-        private class GroupListRowInfo
+        private class GroupListRowInfo: DotLiquid.Drop
         {
             public int Id { get; set; }
             public string Path { get; set; }
@@ -815,6 +827,7 @@ namespace RockWeb.Blocks.Groups
             public DateTime? DateAdded { get; set; }
             public bool IsActive { get; set; }
             public int IsActiveOrder { get; set; }
+            public bool IsSynced { get; set; }
             public int MemberCount { get; set; }
         }
     }
