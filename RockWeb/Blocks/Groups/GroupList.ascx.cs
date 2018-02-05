@@ -622,7 +622,7 @@ namespace RockWeb.Blocks.Groups
                                 DateAdded = m.GroupMember.DateTimeAdded ?? m.GroupMember.CreatedDateTime,
                                 IsActive = m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ),
                                 IsActiveOrder = ( m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ) ? 1 : 2 ),
-                                IsSynced = m.Group.SyncDataViewId.HasValue,
+                                IsSynced = m.Group.GroupSyncs.Any(),
                                 MemberCount = 0
                             } )
                         .AsQueryable()
@@ -667,7 +667,7 @@ namespace RockWeb.Blocks.Groups
                         IsActiveOrder = g.IsActive ? 1 : 2,
                         GroupRole = string.Empty,
                         DateAdded = DateTime.MinValue,
-                        IsSynced = g.SyncDataViewId.HasValue,
+                        IsSynced = g.GroupSyncs.Any(),
                         MemberCount = g.Members.Count()
                     } )
                     .AsQueryable()
