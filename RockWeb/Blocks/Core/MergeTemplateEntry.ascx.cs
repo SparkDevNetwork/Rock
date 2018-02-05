@@ -371,6 +371,10 @@ namespace RockWeb.Blocks.Core
                     foreach ( var groupMember in qryEntity.AsNoTracking().OfType<GroupMember>() )
                     {
                         var person = groupMember.Person;
+
+                        // Attach the person record to rockContext so that navigation properties can be still lazy-loaded if needed (if the lava template needs it)
+                        rockContext.People.Attach( person );
+
                         person.AdditionalLavaFields = new Dictionary<string, object>();
                         person.AdditionalLavaFields.Add( "GroupMember", groupMember );
                         mergeObjectsDictionary.AddOrIgnore( groupMember.PersonId, person );
