@@ -158,6 +158,17 @@ namespace RockWeb.Blocks.Store
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnRevokeKey control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRevokeKey_Click( object sender, EventArgs e )
+        {
+            StoreService.RevokeOrganizationKey();
+            DisplayPackages();
+        }
+
         #endregion
 
         #region Methods
@@ -204,5 +215,7 @@ namespace RockWeb.Blocks.Store
 
         #endregion
 
+
+        
     }
 }
