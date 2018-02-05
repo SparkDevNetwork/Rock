@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -2290,6 +2291,31 @@ namespace RockWeb.Blocks.Event
 
             rFees.DataSource = RegistrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
             rFees.DataBind();
+        }
+
+        /// <summary>
+        /// Adds the "is-inactive" css class if the item is not active.
+        /// </summary>
+        /// <param name="isActive">The is active.</param>
+        /// <returns></returns>
+        protected string FormatInactiveRow(string isActive)
+        {
+            try
+            {
+                if ( bool.Parse( isActive ) == false )
+                {
+                    return "class=\"row\"";
+                }
+                else
+                {
+                    return "class=\"row is-inactive\"";
+                }
+            }
+            catch ( Exception )
+            {
+                // If there is a problem with this then just show the row as active.
+                return "class=\"row\"";
+            }
         }
 
         /// <summary>

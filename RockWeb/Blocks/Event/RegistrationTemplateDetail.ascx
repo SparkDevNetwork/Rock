@@ -357,9 +357,9 @@
                             <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                             <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
                             <Rock:RockControlWrapper ID="rcwFees" runat="server" Label="Fees">
-                                <asp:Repeater ID="rFees" runat="server">
+                                <asp:Repeater ID="rFees" runat="server" >
                                     <ItemTemplate>
-                                        <div class="row">
+                                        <div <%# FormatInactiveRow(DataBinder.Eval(Container.DataItem, "IsActive").ToString() ) %> >
                                             <div class="col-xs-4"><%# Eval("Name") %></div>
                                             <div class="col-xs-8"><%# FormatFeeCost( Eval("CostValue").ToString() ) %></div>
                                         </div>
