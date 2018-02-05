@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Core
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             cpCategory.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.MERGE_TEMPLATE.AsGuid() ).Id;
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.MergeTemplate ) ).Id;
         }
 
         /// <summary>
@@ -332,7 +333,11 @@ namespace RockWeb.Blocks.Core
                 {
                     mergeTemplate.PersonAliasId = this.CurrentPersonAliasId;
                     mergeTemplate.PersonAlias = this.CurrentPersonAlias;
+
+                    // Don't show security on a personal merge template.
+                    btnSecurity.Visible = false;
                 }
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -354,6 +359,10 @@ namespace RockWeb.Blocks.Core
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( MergeTemplate.FriendlyTypeName );
             }
 
+            btnSecurity.Visible = mergeTemplate.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            btnSecurity.Title = mergeTemplate.Name;
+            btnSecurity.EntityId = mergeTemplate.Id;
+
             if ( readOnly )
             {
                 btnEdit.Visible = false;
@@ -365,6 +374,7 @@ namespace RockWeb.Blocks.Core
                 btnEdit.Visible = true;
                 string errorMessage = string.Empty;
                 btnDelete.Visible = mergeTemplateService.CanDelete( mergeTemplate, out errorMessage );
+            
                 if ( mergeTemplate.Id > 0 )
                 {
                     ShowReadonlyDetails( mergeTemplate );

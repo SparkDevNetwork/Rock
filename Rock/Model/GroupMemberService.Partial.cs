@@ -195,7 +195,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember"/> entities associated with the specified <see cref="Rock.Model.Person"/></returns>
         public IQueryable<GroupMember> GetByPersonId( int personId )
         {
-            return Queryable( "Person", true ).Where(  t => t.PersonId == personId );
+            return Queryable( "Person", true ).Where( t => t.PersonId == personId );
         }
 
         /// <summary>
@@ -220,12 +220,14 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="System.String"/> objects containing the first names of each person in the group.</returns>
         public IEnumerable<string> GetFirstNames( int groupId, bool includeDeceased = false )
         {
-            return GetByGroupId(groupId, includeDeceased).
-                OrderBy( m => m.GroupRole.Order ).
-                ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay ).
-                ThenBy( m => m.Person.Gender ).
-                Select( m => m.Person.NickName ).
-                ToList();
+            return GetByGroupId(groupId, includeDeceased)
+                .OrderBy( m => m.GroupRole.Order )
+                .ThenBy( m => m.Person.BirthYear )
+                .ThenBy( m => m.Person.BirthMonth )
+                .ThenBy( m => m.Person.BirthDay )
+                .ThenBy( m => m.Person.Gender )
+                .Select( m => m.Person.NickName )
+                .ToList();
         }
 
         /// <summary>
@@ -243,19 +245,20 @@ namespace Rock.Model
             var dvActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
             if ( dvActive != null )
             {
-                return GetByGroupId( groupId, includeDeceased ).
-                    Where( m => m.Person.RecordStatusReasonValueId == dvActive.Id ).
-                    OrderBy( m => m.GroupRole.Order ).
-                    ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay ).
-                    ThenBy( m => m.Person.Gender ).
-                    Select( m => m.Person.NickName ).
-                    ToList();
+                return GetByGroupId( groupId, includeDeceased )
+                    .Where( m => m.Person.RecordStatusReasonValueId == dvActive.Id )
+                    .OrderBy( m => m.GroupRole.Order )
+                    .ThenBy( m => m.Person.BirthYear )
+                    .ThenBy( m => m.Person.BirthMonth )
+                    .ThenBy( m => m.Person.BirthDay )
+                    .ThenBy( m => m.Person.Gender )
+                    .Select( m => m.Person.NickName )
+                    .ToList();
             }
             else
             {
                 return GetFirstNames( groupId, includeDeceased );
             }
-
         }
 
         /// <summary>
