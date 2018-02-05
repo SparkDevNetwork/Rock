@@ -1204,6 +1204,7 @@
     <Compile Include="PersonProfile\Badge\TopPersonSignal.cs" />
     <Compile Include="PersonProfile\Badge\PersonalDevice.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
+    <Compile Include="Plugin\HotFixes\041_MigrationRollupsForV7_3.cs" />
     <Compile Include="Plugin\HotFixes\040_BusinessTransactionDetailLinks.cs" />
     <Compile Include="Plugin\HotFixes\039_MigrationRollupsForV7_2.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
@@ -2069,12 +2070,16 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="LICENSE.txt" />
+    <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2 - Copy %282%29_UpdateCheckInMergefieldDebugInfo.sql">
+      <DependentUpon>041_MigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
     <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2 - Copy_UpdateCheckInMergefieldDebugInfo.sql">
       <DependentUpon>040_BusinessTransactionDetailLinks.cs</DependentUpon>
     </Content>
     <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2_UpdateCheckInMergefieldDebugInfo.sql">
       <DependentUpon>039_MigrationRollupsForV7_2.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\041_MigrationRollupsForV7_3_UpdateWizardCommunicationDetailApprovers.sql" />
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
     <Content Include="Scripts\jquery-1.12.4.min.js" />

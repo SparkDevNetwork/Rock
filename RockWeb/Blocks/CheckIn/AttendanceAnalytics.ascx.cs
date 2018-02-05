@@ -1719,16 +1719,22 @@ function(item) {
         /// <returns></returns>
         public List<DateTime> GetPossibleAttendancesForDateRange( DateRange dateRange, ChartGroupBy attendanceGroupBy )
         {
-            TimeSpan dateRangeSpan = dateRange.End.Value - dateRange.Start.Value;
-
             var result = new List<DateTime>();
+
+            // Attendance is grouped by Sunday dates between the start/end dates. 
+            // The possible dates (columns) should be calculated the same way.
+            var startSunday = dateRange.Start.Value.SundayDate();
+            var endDate = dateRange.End.Value;
+            var endSunday = endDate.SundayDate();
+            if ( endSunday > endDate )
+            {
+                endSunday = endSunday.AddDays( -7 );
+            }
 
             if ( attendanceGroupBy == ChartGroupBy.Week )
             {
-                var endOfFirstWeek = dateRange.Start.Value.EndOfWeek( RockDateTime.FirstDayOfWeek );
-                var endOfLastWeek = dateRange.End.Value.EndOfWeek( RockDateTime.FirstDayOfWeek );
-                var weekEndDate = endOfFirstWeek;
-                while ( weekEndDate <= endOfLastWeek )
+                var weekEndDate = startSunday;
+                while ( weekEndDate <= endSunday )
                 {
                     // Weeks are summarized as the last day of the "Rock" week (Sunday)
                     result.Add( weekEndDate );
@@ -1737,8 +1743,8 @@ function(item) {
             }
             else if ( attendanceGroupBy == ChartGroupBy.Month )
             {
-                var endOfFirstMonth = dateRange.Start.Value.AddDays( -( dateRange.Start.Value.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
-                var endOfLastMonth = dateRange.End.Value.AddDays( -( dateRange.End.Value.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
+                var endOfFirstMonth = startSunday.AddDays( -( startSunday.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
+                var endOfLastMonth = endSunday.AddDays( -( endSunday.Day - 1 ) ).AddMonths( 1 ).AddDays( -1 );
 
                 //// Months are summarized as the First Day of the month: For example, 5/1/2015 would include everything from 5/1/2015 - 5/31/2015 (inclusive)
                 var monthStartDate = new DateTime( endOfFirstMonth.Year, endOfFirstMonth.Month, 1 );
@@ -1750,8 +1756,8 @@ function(item) {
             }
             else if ( attendanceGroupBy == ChartGroupBy.Year )
             {
-                var endOfFirstYear = new DateTime( dateRange.Start.Value.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
-                var endOfLastYear = new DateTime( dateRange.End.Value.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
+                var endOfFirstYear = new DateTime( startSunday.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
+                var endOfLastYear = new DateTime( endSunday.Year, 1, 1 ).AddYears( 1 ).AddDays( -1 );
 
                 //// Years are summarized as the First Day of the year: For example, 1/1/2015 would include everything from 1/1/2015 - 12/31/2015 (inclusive)
                 var yearStartDate = new DateTime( endOfFirstYear.Year, 1, 1 );
