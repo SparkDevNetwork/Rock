@@ -21,6 +21,8 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -28,24 +30,24 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
-namespace Rock.Reporting.DataFilter.PrayerRequest
+namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///     A Data Filter to select Person by their Prayer Requests from a Prayer Request View.
     /// </summary>
-    [Description("Retrieve the prayer requests involving a set of people in a Data View.")]
+    [Description("Select Person by their Prayer Requests from a Prayer Request View.")]
     [Export(typeof(DataFilterComponent))]
-    [ExportMetadata("ComponentName", "Contains People")]
-    public class ContainsPeopleFilter : DataFilterComponent
+    [ExportMetadata("ComponentName", "Prayer Request View")]
+    public class PrayerRequestDataViewFilter : DataFilterComponent
     {
         #region Settings
 
         /// <summary>
-        ///     Settings for the Data Filter Component.
+        ///     Settings for the Data Select Component.
         /// </summary>
         private class FilterSettings : SettingsStringBase
         {
-            public Guid? PersonDataViewGuid;
+            public Guid? DataViewGuid;
 
             public FilterSettings()
             {
@@ -67,7 +69,7 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
             {
                 get
                 {
-                    return PersonDataViewGuid.HasValue;
+                    return DataViewGuid.HasValue;
                 }
             }
 
@@ -78,8 +80,9 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
             /// <param name="parameters">An ordered collection of strings representing the parameter values.</param>
             protected override void OnSetParameters(int version, IReadOnlyList<string> parameters)
             {
-                // Parameter 1: Person Data View
-                PersonDataViewGuid = DataComponentSettingsHelper.GetParameterOrEmpty(parameters, 0).AsGuidOrNull();
+                // Parameter 1: Data View
+                DataViewGuid = DataComponentSettingsHelper.GetParameterOrEmpty(parameters, 0).AsGuidOrNull();
+
             }
 
             /// <summary>
@@ -93,8 +96,7 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
             {
                 var settings = new List<string>();
 
-                settings.Add(PersonDataViewGuid.ToStringSafe());
-
+                settings.Add(DataViewGuid.ToStringSafe());
                 return settings;
             }
         }
@@ -111,7 +113,7 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
         /// </value>
         public override string AppliesToEntityType
         {
-            get { return typeof(Rock.Model.PrayerRequest).FullName; }
+            get { return typeof(Model.Person).FullName; }
         }
 
         /// <summary>
@@ -122,7 +124,7 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
         /// </value>
         public override string Section
         {
-            get { return "Additional Filters"; }
+            get { return "Related Data Views"; }
         }
 
         #endregion
@@ -138,29 +140,30 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
         /// </returns>
         public override string GetTitle(Type entityType)
         {
-            return "Contains People";
+            return "Prayer Request Data View";
         }
 
         /// <summary>
-        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
-        /// referencing this property.
+        ///     Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
+        ///     will set the description of the filter to whatever is returned by this property.  If including script, the
+        ///     controls parent container can be referenced through a '$content' variable that is set by the control before
+        ///     referencing this property.
         /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <returns>
-        /// The client format script.
-        /// </returns>
+        /// <value>
+        ///     The client format script.
+        /// </value>
         public override string GetClientFormatSelection(Type entityType)
         {
             return @"
-function ()
-{    
-    var dataViewName = $('.rock-drop-down-list,select:first', $content).find(':selected').text();
-
-    result = 'Members matching Person filter';
-    result += ' ""' + dataViewName + '""';
-    return result; 
+function() {
+  var dataViewName = $('.rock-drop-down-list,select:first', $content).find(':selected').text();
+  var PrayerRequest = $('.rock-drop-down-list,select:last', $content).find(':selected').text();
+  var result = 'PrayerRequest';
+  if (PrayerRequest) {
+     result = result + ' type ""' + PrayerRequest + "";
+  }  
+  result = result + ' is in filter: ' + dataViewName;
+  return result;
 }
 ";
         }
@@ -177,7 +180,7 @@ function ()
         {
             var settings = new FilterSettings(selection);
 
-            string result = GetTitle(null);
+            string result = "Connected to Prayer Request";
 
             if (!settings.IsValid)
             {
@@ -186,9 +189,9 @@ function ()
 
             using (var context = new RockContext())
             {
-                var dataView = new DataViewService(context).Get(settings.PersonDataViewGuid.GetValueOrDefault());
+                var dataView = new DataViewService(context).Get(settings.DataViewGuid.GetValueOrDefault());
 
-                result = string.Format("Members matching Person filter \"{0}\"", (dataView != null ? dataView.ToString() : string.Empty));
+                result = string.Format("Person in Data View \"{0}\"", (dataView != null ? dataView.ToString() : string.Empty));
             }
 
             return result;
@@ -197,30 +200,32 @@ function ()
         private const string _CtlDataView = "ddlDataView";
 
         /// <summary>
-        /// Creates the model representation of the child controls used to display and edit the filter settings.
+        /// Creates the child controls.
         /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="filterControl">The control that serves as the container for the filter controls.</param>
         /// <returns>
         /// The array of new controls created to implement the filter.
         /// </returns>
         public override Control[] CreateChildControls(Type entityType, FilterField filterControl)
         {
-            // Define Control: Person Data View Picker
             var ddlDataView = new DataViewPicker();
             ddlDataView.ID = filterControl.GetChildControlInstanceName(_CtlDataView);
-            ddlDataView.Label = "Represents People from this Data View";
-            ddlDataView.Help = "A Person Data View that represents the set of possible Prayer Requests.";
+            ddlDataView.Label = "Has a Person in this Data View";
+            ddlDataView.Help = "A Data View that provides the set of Person to match.";
+
             filterControl.Controls.Add(ddlDataView);
 
             // Populate the Data View Picker
-            ddlDataView.EntityTypeId = EntityTypeCache.Read(typeof(Rock.Model.Person)).Id;
+            int entityTypeId = EntityTypeCache.Read(typeof(Model.PrayerRequest)).Id;
+            ddlDataView.EntityTypeId = entityTypeId;
 
             return new Control[] { ddlDataView };
         }
 
         /// <summary>
-        /// Gets a formatted string representing the current filter control values.
+        /// Gets the selection.
+        /// Implement this version of GetSelection if your DataFilterComponent works the same in all FilterModes
         /// </summary>
         /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
         /// <param name="controls">The collection of controls used to set the filter values.</param>
@@ -233,17 +238,18 @@ function ()
 
             var settings = new FilterSettings();
 
-            settings.PersonDataViewGuid = DataComponentSettingsHelper.GetDataViewGuid(ddlDataView.SelectedValue);
+            settings.DataViewGuid = DataComponentSettingsHelper.GetDataViewGuid(ddlDataView.SelectedValue);
 
             return settings.ToSelectionString();
         }
 
         /// <summary>
-        /// Sets the filter control values from a formatted string.
+        /// Sets the selection.
+        /// Implement this version of SetSelection if your DataFilterComponent works the same in all FilterModes
         /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <param name="controls">The collection of controls used to set the filter values.</param>
-        /// <param name="selection">A formatted string representing the filter settings.</param>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
         public override void SetSelection(Type entityType, Control[] controls, string selection)
         {
             var ddlDataView = controls.GetByName<DataViewPicker>(_CtlDataView);
@@ -255,7 +261,7 @@ function ()
                 return;
             }
 
-            ddlDataView.SelectedValue = DataComponentSettingsHelper.GetDataViewId(settings.PersonDataViewGuid).ToStringSafe();
+            ddlDataView.SelectedValue = DataComponentSettingsHelper.GetDataViewId(settings.DataViewGuid).ToStringSafe();
         }
 
         /// <summary>
@@ -268,41 +274,38 @@ function ()
         /// <returns>
         /// A Linq Expression that can be used to filter an IQueryable.
         /// </returns>
+        /// <exception cref="System.Exception">Filter issue(s):  + errorMessages.AsDelimited( ;  )</exception>
         public override Expression GetExpression(Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection)
         {
             var settings = new FilterSettings(selection);
 
             var context = (RockContext)serviceInstance.Context;
 
-            //
-            // Define Candidate People.
-            //
+            // Get the Prayer Request Data View.
+            var dataView = DataComponentSettingsHelper.GetDataViewForFilterComponent(settings.DataViewGuid, context);
 
-            var dataView = DataComponentSettingsHelper.GetDataViewForFilterComponent(settings.PersonDataViewGuid, context);
+            // Evaluate the Data View that defines the Person's Prayer Request.
+            var prayerRequestService = new PrayerRequestService(context);
 
-            var personService = new PersonService(context);
-
-            var personQuery = personService.Queryable();
+            var prayerRequestQuery = prayerRequestService.Queryable();
 
             if (dataView != null)
             {
-                personQuery = DataComponentSettingsHelper.FilterByDataView(personQuery, dataView, personService);
+                prayerRequestQuery = DataComponentSettingsHelper.FilterByDataView(prayerRequestQuery, dataView, prayerRequestService);
             }
 
-            var personKeys = personQuery.Select(x => x.Id);
+            var prayerRequestPersonsKey = prayerRequestQuery.Select(a => a.RequestedByPersonAliasId);
+            // Get all of the Person corresponding to the qualifying Prayer Requests.
+            var qry = new PersonService(context).Queryable()
+                                                  .Where(g => g.Aliases.Any(k => prayerRequestPersonsKey.Contains(k.Id)));
 
-            //
-            // Construct the Query to return the list of Prayer Requests matching the filter conditions.
-            //            
-            var prayerRequestQuery = new PrayerRequestService(context).Queryable();
+            // Retrieve the Filter Expression.
+            var extractedFilterExpression = FilterExpressionExtractor.Extract<Model.Person>(qry, parameterExpression, "g");
 
-            prayerRequestQuery = prayerRequestQuery.Where(p => personKeys.Contains(p.RequestedByPersonAlias.PersonId));
-
-            var result = FilterExpressionExtractor.Extract<Rock.Model.PrayerRequest>(prayerRequestQuery, parameterExpression, "p");
-
-            return result;
+            return extractedFilterExpression;
         }
 
         #endregion
+
     }
 }
