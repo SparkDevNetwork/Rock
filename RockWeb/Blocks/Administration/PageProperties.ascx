@@ -224,8 +224,8 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                         <div class="pull-right">
-                            <a title="Child Pages" class="btn btn-default btn-sm page-child-pages fa fa-sitemap" runat="server" id="aChildPages"></a>
-                            <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Page" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
+                            <a title="Child Pages" class="btn btn-default btn-sm page-child-pages" runat="server" id="aChildPages"><i class="fa fa-sitemap"></i></a>
+                            <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Page" CssClass="btn btn-default btn-sm" OnClick="btnCopy_Click"><i class="fa fa-clone"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </div>
                     </asp:Panel>
