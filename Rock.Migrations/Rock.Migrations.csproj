@@ -85,6 +85,10 @@
     <Compile Include="Migrations\201801301528009_GroupSyncByRole2.Designer.cs">
       <DependentUpon>201801301528009_GroupSyncByRole2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201802021609074_AllowForInactiveFees.cs" />
+    <Compile Include="Migrations\201802021609074_AllowForInactiveFees.Designer.cs">
+      <DependentUpon>201802021609074_AllowForInactiveFees.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2677,6 +2681,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201801301528009_GroupSyncByRole2.resx">
       <DependentUpon>201801301528009_GroupSyncByRole2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802021609074_AllowForInactiveFees.resx">
+      <DependentUpon>201802021609074_AllowForInactiveFees.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
