@@ -79,10 +79,10 @@ namespace Rock.Workflow.Action
             {
                 int tokenLen = GetAttributeValue( action, "RandomTokenLength" ).AsIntegerOrNull() ?? 7;
                 token = service.GetUniqueToken( site.Id, tokenLen );
-            } 
+            }
 
             // Get the target url
-            string url = GetAttributeValue( action, "Url", true ).ResolveMergeFields( mergeFields );
+            string url = GetAttributeValue( action, "Url", true ).ResolveMergeFields( mergeFields ).RemoveCrLf().Trim();
             if ( url.IsNullOrWhiteSpace() )
             {
                 errorMessages.Add( "A valid Target Url was not specified." );

@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupMemberList.ascx.cs" Inherits="RockWeb.Blocks.Groups.GroupMemberList" %>
 
+<script type="text/javascript">
+    Sys.Application.add_load(function () {
+        $('.js-group-member-note').tooltip();
+    });
+</script>
+
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
 
@@ -16,7 +22,7 @@
                         </h1>
 
                         <div class="panel-labels">
-                            <asp:HyperLink ID="hlSyncSource" runat="server"><Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" /></asp:HyperLink> &nbsp;
+                            <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" /> &nbsp;
                         </div>
                     </div>
 
@@ -60,6 +66,8 @@
                                     <Rock:DateField DataField="DateTimeAdded" HeaderText="Date Added" SortExpression="DateTimeAdded" />
                                     <Rock:DateField DataField="FirstAttended" HeaderText="First Attended" SortExpression="FirstAttended" />
                                     <Rock:DateField DataField="LastAttended" HeaderText="Last Attended" SortExpression="LastAttended" />
+                                    <Rock:RockBoundField DataField="Note" HeaderText="Note" SortExpression="Note" ItemStyle-CssClass="small" />
+                                    <Rock:BoolField DataField="IsAddedBySync" HeaderText="Added By Sync"></Rock:BoolField>
                                 </Columns>
                             </Rock:Grid>
                         </div>

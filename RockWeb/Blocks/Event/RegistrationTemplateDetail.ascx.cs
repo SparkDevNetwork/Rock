@@ -843,7 +843,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.DiscountCodeTerm = string.IsNullOrWhiteSpace( tbDiscountCodeTerm.Text ) ? "Discount Code" : tbDiscountCodeTerm.Text;
             RegistrationTemplate.SuccessTitle = tbSuccessTitle.Text;
             RegistrationTemplate.SuccessText = ceSuccessText.Text;
-
+            RegistrationTemplate.RegistrationInstructions = heInstructions.Text;
             if ( !Page.IsValid || !RegistrationTemplate.IsValid )
             {
                 return;
@@ -2195,7 +2195,7 @@ namespace RockWeb.Blocks.Event
 
             tbSuccessTitle.Text = RegistrationTemplate.SuccessTitle;
             ceSuccessText.Text = RegistrationTemplate.SuccessText;
-
+            heInstructions.Text = RegistrationTemplate.RegistrationInstructions;
             BuildControls( true );
         }
 

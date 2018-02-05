@@ -1903,7 +1903,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Special classes so that we can have a Transactions and TransactionDetail mode with minimal special case logic
         /// </summary>
-        private class FinancialTransactionRow
+        private class FinancialTransactionRow : DotLiquid.Drop
         {
             public int Id { get; set; }
             public int? AuthorizedPersonAliasId { get; internal set; }
@@ -1938,7 +1938,7 @@ namespace RockWeb.Blocks.Finance
             public IEnumerable<DetailInfo> TransactionDetails { get; set; }
         }
 
-        private class DetailInfo
+        private class DetailInfo : DotLiquid.Drop
         {
             public int AccountId { get; internal set; }
             public decimal Amount { get; internal set; }
@@ -1946,7 +1946,7 @@ namespace RockWeb.Blocks.Finance
             public int? EntityTypeId { get; internal set; }
         }
 
-        private class PaymentDetailInfo
+        private class PaymentDetailInfo : DotLiquid.Drop
         {
             public int? CreditCardTypeValueId { get; internal set; }
             public int? CurrencyTypeValueId { get; internal set; }

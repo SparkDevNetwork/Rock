@@ -202,6 +202,15 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     break;
+                case "Account Name":
+                case "Active":
+                case "Public":
+                case "Tax Deductible":
+                    e.Value = e.Value;
+                    break;
+                default:
+                    e.Value = string.Empty;
+                    break;
             }
         }
 

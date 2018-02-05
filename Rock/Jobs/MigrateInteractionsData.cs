@@ -651,7 +651,7 @@ DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-
 			) x
 		) x
 	INNER JOIN CommunicationRecipientActivity cra ON cra.Id = x.Id
-	LEFT JOIN InteractionDeviceType dt ON dt.DeviceTypeData = rtrim(ltrim(x.DeviceTypeData))
+	CROSS APPLY (SELECT TOP 1 Id FROM InteractionDeviceType WHERE DeviceTypeData = rtrim(ltrim(x.DeviceTypeData))) dt
 	WHERE (@alreadyInsertedCount = 0 or cra.[Guid] NOT IN (
 			SELECT ForeignGuid
 			FROM InteractionSession where ForeignGuid is not null

@@ -133,15 +133,19 @@ IF object_id(N'[dbo].[FK_dbo.CommunicationTemplate_dbo.EntityType_ChannelEntityT
             AddColumn("dbo.CommunicationTemplate", "PushTitle", c => c.String(maxLength: 100));
             AddColumn("dbo.CommunicationTemplate", "PushMessage", c => c.String());
             AddColumn("dbo.CommunicationTemplate", "PushSound", c => c.String(maxLength: 100));
-            CreateIndex("dbo.CommunicationRecipient", "MediumEntityTypeId");
-            CreateIndex("dbo.Communication", "CommunicationTemplateId");
-            CreateIndex("dbo.Communication", "SMSFromDefinedValueId");
-            CreateIndex("dbo.CommunicationTemplate", "SMSFromDefinedValueId");
-            AddForeignKey("dbo.CommunicationTemplate", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
-            AddForeignKey("dbo.Communication", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
-            AddForeignKey("dbo.CommunicationRecipient", "MediumEntityTypeId", "dbo.EntityType", "Id");
 
-            // AddForeignKey("dbo.Communication", "CommunicationTemplateId", "dbo.CommunicationTemplate", "Id");
+            // Moved Index Creating to MigrateCommunicationMediumData job since it could take a while
+            //CreateIndex("dbo.CommunicationRecipient", "MediumEntityTypeId");
+            //CreateIndex("dbo.Communication", "CommunicationTemplateId");
+            //CreateIndex("dbo.Communication", "SMSFromDefinedValueId");
+            //CreateIndex("dbo.CommunicationTemplate", "SMSFromDefinedValueId");
+            AddForeignKey( "dbo.CommunicationTemplate", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
+            AddForeignKey("dbo.Communication", "SMSFromDefinedValueId", "dbo.DefinedValue", "Id");
+
+            // Moved to MigrateCommunicationMediumData job since it could take a while
+            //AddForeignKey("dbo.CommunicationRecipient", "MediumEntityTypeId", "dbo.EntityType", "Id");
+            //AddForeignKey("dbo.Communication", "CommunicationTemplateId", "dbo.CommunicationTemplate", "Id");
+            
             // Instead of AddForeignKey, do it manually so it can be a ON DELETE SET NULL
             Sql( @"ALTER TABLE dbo.Communication ADD CONSTRAINT [FK_dbo.Communication_dbo.CommunicationTemplate_CommunicationTemplateId] 
                     FOREIGN KEY (CommunicationTemplateId) REFERENCES dbo.CommunicationTemplate (Id) ON DELETE SET NULL" );
@@ -157,7 +161,52 @@ IF object_id(N'[dbo].[FK_dbo.CommunicationTemplate_dbo.EntityType_ChannelEntityT
     INNER JOIN [EntityType] E ON E.[Id] = C.[MediumEntityTypeId]
 " );
 
+            // Drop any custom indexes that might be referencing Communication.MediumEntityTypeId column
+            Sql( @"DECLARE @sql NVARCHAR(MAX) = ''
+
+BEGIN
+	SELECT @sql += CONCAT (
+			'DROP INDEX '
+			,object_name(ic.object_id)
+			,'.'
+			,I.name
+			,CHAR(10)
+			)
+	FROM sys.indexes i
+	INNER JOIN sys.index_columns ic ON ic.object_id = i.object_id
+		AND ic.index_id = i.index_id
+	INNER JOIN sys.columns c ON c.object_id = ic.object_id
+		AND c.column_id = ic.column_id
+	WHERE c.Name = 'MediumEntityTypeId'
+		AND object_name(ic.object_id) = 'Communication'
+
+	EXEC (@sql)
+END" );
+
+
             DropColumn( "dbo.Communication", "MediumEntityTypeId");
+
+            // Drop any custom indexes that might be referencing CommunicationTemplate.MediumEntityTypeId column
+            Sql( @"DECLARE @sql NVARCHAR(MAX) = ''
+
+BEGIN
+	SELECT @sql += CONCAT (
+			'DROP INDEX '
+			,object_name(ic.object_id)
+			,'.'
+			,I.name
+			,CHAR(10)
+			)
+	FROM sys.indexes i
+	INNER JOIN sys.index_columns ic ON ic.object_id = i.object_id
+		AND ic.index_id = i.index_id
+	INNER JOIN sys.columns c ON c.object_id = ic.object_id
+		AND c.column_id = ic.column_id
+	WHERE c.Name = 'MediumEntityTypeId'
+		AND object_name(ic.object_id) = 'CommunicationTemplate'
+
+	EXEC (@sql)
+END" );
             DropColumn("dbo.CommunicationTemplate", "MediumEntityTypeId");
 
             Sql( MigrationSQL._201709082257551_Communications2_AddCommunicationTemplates );
@@ -178,10 +227,18 @@ IF object_id(N'[dbo].[FK_dbo.CommunicationTemplate_dbo.EntityType_ChannelEntityT
             Sql( @"DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'D7941908-1F65-CC9B-416C-CCFABE4221B9' )
                   DECLARE @DefinedTypeId int = ( SELECT TOP 1 [Id] FROM [DefinedType] WHERE[Guid] = 'BCBE1494-23F5-3683-4EC5-C0B5CACE8A5A' )
 
-                  INSERT INTO[AttributeQualifier]
-                  ([IsSystem], [AttributeId], [Key], [Value], [Guid])
-                  VALUES
-                  ( 0, @AttributeId, 'definedtype', @DefinedTypeId, newid() )" );
+                  IF NOT EXISTS (
+		                SELECT *
+		                FROM AttributeQualifier
+		                WHERE [AttributeId] = @AttributeId
+                        AND [Key] = 'definedtype'
+		                )
+                  BEGIN                  
+                        INSERT INTO [AttributeQualifier]
+                            ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+                            VALUES
+                            ( 0, @AttributeId, 'definedtype', @DefinedTypeId, newid() )
+                  END");
 
             // group attribute of category
             RockMigrationHelper.AddGroupTypeGroupAttribute( "D1D95777-FFA3-CBB3-4A6D-658706DAED33", SystemGuid.FieldType.CATEGORY, "Category", "The category for the communication list.", 0, "", "E3810936-182E-2585-4F8E-030A0E18B27A" );

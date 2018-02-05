@@ -1027,67 +1027,72 @@ namespace Rock.Data
                 DECLARE @EntityTypeId int
                 SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block')
 
-                -- Find first and last attribute with this entitytype/key combination
-                DECLARE @FirstAttributeId int
-                DECLARE @LastAttributeId int
-
-                SELECT 
-                    @FirstAttributeId = MIN([Id]),  
-                    @LastAttributeId = MAX([Id])
-                FROM [Attribute]
-                WHERE [EntityTypeId] = @EntityTypeId
-                AND [EntityTypeQualifierColumn] = 'BlockTypeId'
-                AND [EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
-                AND [Key] = '{2}' 
-
-                IF @FirstAttributeId IS NOT NULL AND @FirstAttributeId <> @LastAttributeId
+                IF @BlockTypeId IS NOT NULL AND @FieldTypeId IS NOT NULL AND @EntityTypeId IS NOT NULL
                 BEGIN
-                    -- We have duplicate attributes, update values for the duplicates to point to first attribute
-                    UPDATE V SET [AttributeId] = @FirstAttributeId
-                    FROM [Attribute] A
-                    INNER JOIN [AttributeValue] V 
-                        ON V.[AttributeId] = A.[Id]
-                    WHERE A.[EntityTypeId] = @EntityTypeId
-                    AND A.[EntityTypeQualifierColumn] = 'BlockTypeId'
-                    AND A.[EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
-                    AND A.[Key] = '{2}' 
-                    AND A.[Id] <> @FirstAttributeId
 
-                    -- Delete the duplicate attributes
-                    DELETE [Attribute]
+                    -- Find first and last attribute with this entitytype/key combination
+                    DECLARE @FirstAttributeId int
+                    DECLARE @LastAttributeId int
+
+                    SELECT 
+                        @FirstAttributeId = MIN([Id]),  
+                        @LastAttributeId = MAX([Id])
+                    FROM [Attribute]
                     WHERE [EntityTypeId] = @EntityTypeId
                     AND [EntityTypeQualifierColumn] = 'BlockTypeId'
                     AND [EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
                     AND [Key] = '{2}' 
-                    AND [Id] <> @FirstAttributeId
-				END
 
-				IF @FirstAttributeId IS NOT NULL
-				BEGIN
-                    -- Update the primary attribute
-                    UPDATE [Attribute] SET
-                        [IsSystem] = 1,
-                        [Name] = '{3}',
-                        [Description] = '{4}',
-                        [Order] = {5},
-                        [DefaultValue] = '{6}',
-                        [Guid] = '{7}'
-                    WHERE [Id] = @FirstAttributeId
+                    IF @FirstAttributeId IS NOT NULL AND @FirstAttributeId <> @LastAttributeId
+                    BEGIN
+                        -- We have duplicate attributes, update values for the duplicates to point to first attribute
+                        UPDATE V SET [AttributeId] = @FirstAttributeId
+                        FROM [Attribute] A
+                        INNER JOIN [AttributeValue] V 
+                            ON V.[AttributeId] = A.[Id]
+                        WHERE A.[EntityTypeId] = @EntityTypeId
+                        AND A.[EntityTypeQualifierColumn] = 'BlockTypeId'
+                        AND A.[EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
+                        AND A.[Key] = '{2}' 
+                        AND A.[Id] <> @FirstAttributeId
 
-                END
-                ELSE
-                BEGIN
+                        -- Delete the duplicate attributes
+                        DELETE [Attribute]
+                        WHERE [EntityTypeId] = @EntityTypeId
+                        AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+                        AND [EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
+                        AND [Key] = '{2}' 
+                        AND [Id] <> @FirstAttributeId
+				    END
 
-                    INSERT INTO [Attribute] (
-                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                        [Key],[Name],[Description],
-                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-                        [Guid])
-                    VALUES(
-                        1,@FieldTypeId, @EntityTypeId,'BlockTypeId',CAST(@BlockTypeId as varchar),
-                        '{2}','{3}','{4}',
-                        {5},0,'{6}',0,0,
-                        '{7}')
+				    IF @FirstAttributeId IS NOT NULL
+				    BEGIN
+                        -- Update the primary attribute
+                        UPDATE [Attribute] SET
+                            [IsSystem] = 1,
+                            [Name] = '{3}',
+                            [Description] = '{4}',
+                            [Order] = {5},
+                            [DefaultValue] = '{6}',
+                            [Guid] = '{7}'
+                        WHERE [Id] = @FirstAttributeId
+
+                    END
+                    ELSE
+                    BEGIN
+
+                        INSERT INTO [Attribute] (
+                            [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                            [Key],[Name],[Description],
+                            [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                            [Guid])
+                        VALUES(
+                            1,@FieldTypeId, @EntityTypeId,'BlockTypeId',CAST(@BlockTypeId as varchar),
+                            '{2}','{3}','{4}',
+                            {5},0,'{6}',0,0,
+                            '{7}')
+                    END
+
                 END
 ",
                     blockTypeGuid,
@@ -1803,6 +1808,12 @@ namespace Rock.Data
         /// deleting any previously existing attribute value first.
         /// </summary>
         /// <param name="skipIfAlreadyExists">if set to <c>true</c>, the block attribute value will only be set if it doesn't already exist (based on Attribute.Guid and Block.Guid)</param>
+        /// <remarks>
+        ///   set skipIfAlreadyExists to TRUE (don't overwrite) in these cases
+        ///     - the AttributeGuid or BlockGuid was introduced in a Hotfix (Plugin Migration). We don't want to overwrite, because if they already ran the hotfix, they could have customized it
+        ///   set skipIfAlreadyExists to FALSE (do overwrite) in these cases
+        ///     - the AttributeGuid was introduced in an EF Migration. We DO want to overwrite, because a hotfix "intentionally" needed to overwrite it to
+        /// </remarks>
         /// <param name="blockGuid">The block GUID.</param>
         /// <param name="attributeGuid">The attribute GUID.</param>
         /// <param name="value">The value.</param>
@@ -2303,21 +2314,25 @@ BEGIN
                 DECLARE @AttributeId int
                 SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
 
-                IF (1={overwriteIfAlreadyExists.Bit()} OR NOT EXISTS( SELECT * FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @DefinedValueId) )
+                IF @DefinedValueId IS NOT NULL AND @AttributeId IS NOT NULL
                 BEGIN
-                    -- Delete existing attribute value first (might have been created by Rock system)
-                    DELETE [AttributeValue]
-                    WHERE [AttributeId] = @AttributeId
-                    AND [EntityId] = @DefinedValueId
 
-                    INSERT INTO [AttributeValue] (
-                        [IsSystem],[AttributeId],[EntityId],
-                        [Value],
-                        [Guid])
-                    VALUES(
-                        1,@AttributeId,@DefinedValueId,
-                        '{value.Replace( "'", "''")}',
-                        NEWID())
+                    IF (1={overwriteIfAlreadyExists.Bit()} OR NOT EXISTS( SELECT * FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @DefinedValueId) )
+                    BEGIN
+                        -- Delete existing attribute value first (might have been created by Rock system)
+                        DELETE [AttributeValue]
+                        WHERE [AttributeId] = @AttributeId
+                        AND [EntityId] = @DefinedValueId
+
+                        INSERT INTO [AttributeValue] (
+                            [IsSystem],[AttributeId],[EntityId],
+                            [Value],
+                            [Guid])
+                        VALUES(
+                            1,@AttributeId,@DefinedValueId,
+                            '{value.Replace( "'", "''")}',
+                            NEWID())
+                    END
                 END
 ";
 
@@ -4092,13 +4107,42 @@ END
         }
 
         /// <summary>
+        /// Ensures the attribute for the specified attributeGuid (if it already exists) has the correct AttributeKey, EntityType, FieldType, EntityTypeQualifierColumn, and EntityTypeQualifierValue
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        public void EnsureAttributeByGuid( string attributeGuid, string attributeKey, string entityTypeGuid, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            Migration.Sql( $@"
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
+
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{entityTypeGuid}')
+
+                UPDATE [Attribute] SET
+                        [Key] = '{attributeKey}'
+                        ,[EntityTypeId] = @EntityTypeId
+                        ,[FieldTypeId] = @FieldTypeId
+                        ,[EntityTypeQualifierColumn] = '{entityTypeQualifierColumn ?? string.Empty}'
+                        ,[EntityTypeQualifierValue] = '{entityTypeQualifierValue ?? string.Empty}'
+                    WHERE [Guid] = '{attributeGuid}'"
+            );
+        }
+
+        /// <summary>
         /// Updates the Person Attribute for the given key (if it exists);
         /// otherwise it inserts a new record.
         /// </summary>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="name">The name.</param>
-        /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core person attribute, specify the key with a 'core.' prefix</param>
+        /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core person attribute, specify the key with a 'core_' prefix</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="description">The description.</param>
         /// <param name="order">The order.</param>

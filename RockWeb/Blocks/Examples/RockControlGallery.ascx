@@ -736,7 +736,8 @@
                     <h2 runat="server">Rock:BootstrapButton</h2>
                     <div runat="server" class="r-example">
                         <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me" CssClass="btn btn-primary"
-                            DataLoadingText="&lt;i class='fa fa-refresh fa-spin fa-2x'&gt;&lt;/i&gt; Saving" />
+                            DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
+                            CompletedText ="Done" CompletedDuration="3" CompletedMessage="&nbsp;Your Changes have been Saved!"/>
                     </div>
 
                     <a id="NoteControl"></a>
