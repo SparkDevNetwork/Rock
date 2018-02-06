@@ -2029,6 +2029,39 @@ Sys.Application.add_load(function () {
             }
         }
 
+        /// <summary>
+        /// Clears the context cookie.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="pageSpecific">if set to <c>true</c> [page specific].</param>
+        /// <param name="refreshPage">if set to <c>true</c> [refresh page].</param>
+        public void ClearContextCookie( Type entityType, bool pageSpecific = false, bool refreshPage = true )
+        {
+            string cookieName = GetContextCookieName( pageSpecific );
+
+            var contextCookie = Request.Cookies[cookieName];
+            if ( contextCookie == null )
+            {
+                contextCookie = new HttpCookie( cookieName );
+            }
+
+            if ( entityType.IsDynamicProxyType() )
+            {
+                entityType = entityType.BaseType;
+            }
+
+            contextCookie.Values[entityType.FullName] = null;
+            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+
+            Response.Cookies.Add( contextCookie );
+
+            if ( refreshPage )
+            {
+                Response.Redirect( Request.RawUrl, false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+        }
+
         private void GetCookieContext( string cookieName )
         {
             HttpCookie cookie = null;
