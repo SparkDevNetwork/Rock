@@ -111,31 +111,35 @@ namespace RockWeb.Blocks.Store
             var lVersionNotes = e.Item.FindControl( "lVersionNotes" ) as Literal;
 
             InstalledPackage installedPackage = InstalledPackageService.InstalledPackageVersion( package.Id );
+            RockSemanticVersion rockVersion = RockSemanticVersion.Parse( Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber() );
             PackageVersion latestVersion = null;
 
-            // if package is installed
-            if ( installedPackage != null )
+            if ( rockVersion != null && package != null )
             {
-                // check that latest version is installed
-                if ( package.Versions != null && package.Versions.Count > 0 )
-                {
-                    RockSemanticVersion rockVersion = RockSemanticVersion.Parse( Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber() );
-                    latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending( v => v.Id ).FirstOrDefault();
-                }
+                latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending( v => v.Id ).FirstOrDefault();
+            }
 
-                if ( latestVersion != null && installedPackage.VersionId != latestVersion.Id )
-                {
-                    lbInstall.Text = "Update";
-                    lVersionNotes.Text = String.Format( "<p><strong>Installed Version</strong><br/>{0}</p><p><strong>Latest Version</strong><br/>{1}</p>", installedPackage.VersionLabel, latestVersion.VersionLabel );
-                }
-                else 
-                {
-                    lbInstall.Text = "Installed";
-                    lbInstall.Attributes.Add( "disabled", "disabled" );
-                    lbInstall.CssClass = "btn btn-default margin-b-md";
+            // determine if package is installed or has an available update
+            if ( latestVersion == null )
+            {
+                // No longer available
+                lbInstall.Text = "Not available";
+                lbInstall.Attributes.Add( "disabled", "disabled" );
+                lbInstall.CssClass = "btn btn-default margin-b-md";
+            }
+            else if ( installedPackage.VersionId != latestVersion.Id )
+            {
+                lbInstall.Text = "Update";
 
-                    lVersionNotes.Text = String.Format( "<p><strong>Installed Version</strong><br/>{0}</p>", installedPackage.VersionLabel );
-                }
+                lVersionNotes.Text = String.Format( "<p><strong>Installed Version</strong><br/>{0}</p><p><strong>Latest Version</strong><br/>{1}</p>", installedPackage.VersionLabel, latestVersion.VersionLabel );
+            }
+            else
+            {
+                lbInstall.Text = "Installed";
+                lbInstall.Attributes.Add( "disabled", "disabled" );
+                lbInstall.CssClass = "btn btn-default margin-b-md";
+
+                lVersionNotes.Text = String.Format( "<p><strong>Installed Version</strong><br/>{0}</p>", installedPackage.VersionLabel );
             }
         }
 
