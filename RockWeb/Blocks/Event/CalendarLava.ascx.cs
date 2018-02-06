@@ -47,25 +47,27 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Details Page", "Detail page for events", order: 2 )]
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 3 )]
 
-    [CustomRadioListField( "Campus Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 4 )]
-    [CustomRadioListField( "Audience Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", key: "CategoryFilterDisplayMode", order: 5 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Filter Audiences", "Determines which audiences should be displayed in the filter.", false, true, key: "FilterCategories", order: 6 )]
-    [BooleanField( "Show Date Range Filter", "Determines whether the date range filters are shown", false, order: 7 )]
+    [CampusesField(name:"Campuses", description:"Select campuses to display calendar events for. No selection will show all.", required:false, defaultCampusGuids:"",category:"", order:4, key: "Campuses")]
+    [CustomRadioListField( "Campus Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 5 )]
 
-    [BooleanField( "Show Small Calendar", "Determines whether the calendar widget is shown", true, order: 8 )]
-    [BooleanField( "Show Day View", "Determines whether the day view option is shown", false, order: 9 )]
-    [BooleanField( "Show Week View", "Determines whether the week view option is shown", true, order: 10 )]
-    [BooleanField( "Show Month View", "Determines whether the month view option is shown", true, order: 11 )]
+    [CustomRadioListField( "Audience Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", key: "CategoryFilterDisplayMode", order: 6 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Filter Audiences", "Determines which audiences should be displayed in the filter.", false, true, key: "FilterCategories", order: 7 )]
+    [BooleanField( "Show Date Range Filter", "Determines whether the date range filters are shown", false, order: 8 )]
 
-    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", order: 12 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/Calendar.lava' %}", "", 13 )]
+    [BooleanField( "Show Small Calendar", "Determines whether the calendar widget is shown", true, order: 9 )]
+    [BooleanField( "Show Day View", "Determines whether the day view option is shown", false, order: 10 )]
+    [BooleanField( "Show Week View", "Determines whether the week view option is shown", true, order: 11 )]
+    [BooleanField( "Show Month View", "Determines whether the month view option is shown", true, order: 12 )]
 
-    [DayOfWeekField( "Start of Week Day", "Determines what day is the start of a week.", true, DayOfWeek.Sunday, order: 14 )]
+    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", order: 13 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/Calendar.lava' %}", "", 14 )]
 
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 15 )]
+    [DayOfWeekField( "Start of Week Day", "Determines what day is the start of a week.", true, DayOfWeek.Sunday, order: 15 )]
 
-    [TextField("Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order:16)]
-    [TextField("Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 17)]
+    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 16 )]
+
+    [TextField("Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order:17)]
+    [TextField("Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 18)]
 
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
@@ -205,6 +207,7 @@ namespace RockWeb.Blocks.Event
             if ( SetFilterControls() )
             {
                 pnlDetails.Visible = true;
+                SetFilterControls();
                 BindData();
             }
             else
@@ -319,22 +322,28 @@ namespace RockWeb.Blocks.Event
                         m.EventItem.IsApproved );
 
             // Filter by campus
-            List<int> campusIds = cblCampus.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
-            if ( campusIds.Any() )
+            var campusGuidList = GetAttributeValue( "Campuses" ).Split( ',' ).AsGuidList();
+            var campusIdList = CampusCache.All().Where( c => campusGuidList.Contains( c.Guid ) ).Select( c => c.Id );
+            var selectedCampusIdList = cblCampus.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
+
+            if ( selectedCampusIdList.Any() )
             {
-                qry = qry
-                    .Where( c =>
-                        !c.CampusId.HasValue ||    // All
-                        campusIds.Contains( c.CampusId.Value ) );
+                // No value gets them all, otherwise get the ones selected
+                // Block level campus filtering has already been performed on cblCampus, so no need to do it again here
+                qry = qry.Where( c => !c.CampusId.HasValue || selectedCampusIdList.Contains( c.CampusId.Value ) );
+            }
+            else if ( campusIdList.Any())
+            {
+                // If no campus filter is selected then check the block filtering
+                qry = qry.Where( c => !c.CampusId.HasValue || campusIdList.Contains( c.CampusId.Value ) );
+
             }
 
             // Filter by Category
             List<int> categories = cblCategory.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
             if ( categories.Any() )
             {
-                qry = qry
-                    .Where( i => i.EventItem.EventItemAudiences
-                        .Any( c => categories.Contains( c.DefinedValueId ) ) );
+                qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => categories.Contains( c.DefinedValueId ) ) );
             }
 
             // Get the beginning and end dates
@@ -347,7 +356,7 @@ namespace RockWeb.Blocks.Event
             var endDate = FilterEndDate.HasValue ? FilterEndDate.Value : rangeEnd;
 
             endDate = endDate.AddDays( 1 ).AddMilliseconds( -1 );
-
+            
             // Get the occurrences 
             var occurrences = qry.ToList();
             var occurrencesWithDates = occurrences
@@ -468,9 +477,26 @@ namespace RockWeb.Blocks.Event
             calEventCalendar.SelectedDates.SelectRange( FilterStartDate.Value, FilterEndDate.Value );
 
             // Setup Campus Filter
+            var campusGuidList = GetAttributeValue( "Campuses" ).Split( ',' ).AsGuidList();
             rcwCampus.Visible = GetAttributeValue( "CampusFilterDisplayMode" ).AsInteger() > 1;
-            cblCampus.DataSource = CampusCache.All();
+
+            if ( campusGuidList.Any() )
+            {
+                cblCampus.DataSource = CampusCache.All().Where( c => campusGuidList.Contains( c.Guid ) );
+            }
+            else
+            {
+                cblCampus.DataSource = CampusCache.All();
+            }
+
             cblCampus.DataBind();
+
+            if ( cblCampus.Items.Count == 1)
+            {
+                CampusPanelClosed = false;
+                CampusPanelOpen = false;
+                rcwCampus.Visible = false;
+            }
 
             //Check for Campus Parameter
             var campusId = PageParameter( GetAttributeValue( "CampusParameterName" ) ).AsIntegerOrNull();
