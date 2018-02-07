@@ -2,6 +2,8 @@
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
+        <asp:HiddenField ID="hfSelectedCategoryGuid" runat="server" />
+        <asp:HiddenField ID="hfSelectedEntityId" runat="server" />
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-object-ungroup"></i> Model Map</h1>
@@ -49,6 +51,7 @@
             </div>
             <div class="col-md-8">
 
+                <Rock:NotificationBox ID="nbClassesWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
                 <asp:Literal ID="lClasses" runat="server" ViewStateMode="Disabled"></asp:Literal>
 
             </div>
