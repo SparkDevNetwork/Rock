@@ -168,10 +168,10 @@ namespace Rock.Reporting.DataFilter
             if ( values.Count >= 1 )
             {
                 // First value in array is always the name of the entity field being filtered
-                string entityFieldName = values[0].Replace( " ", "" );   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
+                string fieldSelection = values[0];
 
                 var entityFields = EntityHelper.GetEntityFields( entityType );
-                var entityField = entityFields.FirstOrDefault( p => p.Name == entityFieldName );
+                var entityField = entityFields.FindFromFilterSelection( fieldSelection );
                 if ( entityField != null )
                 {
                     return entityField.TitleWithoutQualifier;
