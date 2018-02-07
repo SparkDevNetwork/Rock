@@ -469,7 +469,7 @@ namespace RockWeb.Blocks.Event
 
             // Setup Campus Filter
             rcwCampus.Visible = GetAttributeValue( "CampusFilterDisplayMode" ).AsInteger() > 1;
-            cblCampus.DataSource = CampusCache.All();
+            cblCampus.DataSource = CampusCache.All( false );
             cblCampus.DataBind();
 
             //Check for Campus Parameter
