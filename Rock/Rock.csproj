@@ -1185,6 +1185,7 @@
     <Compile Include="Plugin\HotFixes\041_MigrationRollupsForV7_3.cs" />
     <Compile Include="Plugin\HotFixes\040_BusinessTransactionDetailLinks.cs" />
     <Compile Include="Plugin\HotFixes\039_MigrationRollupsForV7_2.cs" />
+    <Compile Include="Plugin\HotFixes\042_FixShortLinkUrlInteractionChannel.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
       <AutoGen>True</AutoGen>
