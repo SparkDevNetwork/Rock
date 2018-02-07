@@ -10,7 +10,7 @@ namespace Rock.Plugin.HotFixes
     /// 
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 41, "1.7.0" )]
+    [MigrationNumber( 42, "1.7.0" )]
     public class FixShortLinkUrlInteractionChannel : Migration
     {
         /// <summary>
