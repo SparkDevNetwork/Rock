@@ -52,5 +52,5 @@ cteLen(N1,L1) AS(--==== Return start and length (for use in substring)
 	FROM cteStart s
 )
 --===== Do the actual split. The ISNULL/NULLIF combo handles the length for the final element when no delimiter is found.
-SELECT Item = SUBSTRING(@pString, l.N1, l.L1)
+SELECT Item =  try_convert(int, SUBSTRING(@pString, l.N1, l.L1))
 FROM cteLen l

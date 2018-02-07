@@ -194,12 +194,20 @@ namespace RockWeb.Blocks.Reporting
         private IEntity GetComponentEntity( RockContext rockContext, InteractionComponent interactionComponent )
         {
             IEntity componentEntity = null;
-            var componentEntityType = EntityTypeCache.Read( interactionComponent.Channel.ComponentEntityTypeId.Value ).GetEntityType();
-            IService serviceInstance = Reflection.GetServiceForEntityType( componentEntityType, rockContext );
-            if ( serviceInstance != null )
+
+            try
             {
-                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                componentEntity = getMethod.Invoke( serviceInstance, new object[] { interactionComponent.EntityId.Value } ) as Rock.Data.IEntity;
+                var componentEntityType = EntityTypeCache.Read( interactionComponent.Channel.ComponentEntityTypeId.Value ).GetEntityType();
+                IService serviceInstance = Reflection.GetServiceForEntityType( componentEntityType, rockContext );
+                if ( serviceInstance != null )
+                {
+                    System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                    componentEntity = getMethod.Invoke( serviceInstance, new object[] { interactionComponent.EntityId.Value } ) as Rock.Data.IEntity;
+                }
+            }
+            catch
+            {
+                // If we can't get the entity type, just return null
             }
 
             return componentEntity;
