@@ -119,6 +119,7 @@ namespace RockWeb.Blocks.Communication
 
                 var communicationTemplateService = new CommunicationTemplateService( rockContext );
                 var communicationTemplateAttachmentService = new CommunicationTemplateAttachmentService( rockContext );
+                var binaryFileService = new BinaryFileService( rockContext );
 
                 CommunicationTemplate communicationTemplate = null;
                 int? communicationTemplateId = hfCommunicationTemplateId.Value.AsIntegerOrNull();
@@ -138,8 +139,36 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.Name = tbName.Text;
                 communicationTemplate.IsActive = cbIsActive.Checked;
                 communicationTemplate.Description = tbDescription.Text;
-                communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
-                communicationTemplate.LogoBinaryFileId = imgTemplateLogo.BinaryFileId;
+
+                if ( communicationTemplate.ImageFileId != imgTemplatePreview.BinaryFileId )
+                {
+                    var oldImageTemplatePreview = binaryFileService.Get( communicationTemplate.ImageFileId ?? 0 );
+                    if ( oldImageTemplatePreview != null )
+                    {
+                        binaryFileService.Delete( oldImageTemplatePreview );
+                    }
+                    var newImageTemplatePreview = binaryFileService.Get( imgTemplatePreview.BinaryFileId ?? 0 );
+                    if ( newImageTemplatePreview != null )
+                    {
+                        newImageTemplatePreview.IsTemporary = false;
+                    }
+                    communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
+                }
+
+                if ( communicationTemplate.LogoBinaryFileId != imgTemplateLogo.BinaryFileId )
+                {
+                    var oldImageTemplateLogo = binaryFileService.Get( communicationTemplate.LogoBinaryFileId ?? 0 );
+                    if ( oldImageTemplateLogo != null )
+                    {
+                        binaryFileService.Delete( oldImageTemplateLogo );
+                    }
+                    var newImageTemplateLogo = binaryFileService.Get( imgTemplateLogo.BinaryFileId ?? 0 );
+                    if ( newImageTemplateLogo != null )
+                    {
+                        newImageTemplateLogo.IsTemporary = false;
+                    }
+                    communicationTemplate.LogoBinaryFileId = imgTemplateLogo.BinaryFileId;
+                }
 
                 communicationTemplate.FromName = tbFromName.Text;
                 communicationTemplate.FromEmail = tbFromAddress.Text;
