@@ -18,20 +18,21 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( @"
-    DECLARE @OldEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.SiteUrlMap' )
-    DECLARE @NewEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.PageShortLink' )
+            // This migration is not needed in dev branch as future installs would not have the issue it is fixing
+//            Sql( @"
+//    DECLARE @OldEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.SiteUrlMap' )
+//    DECLARE @NewEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.PageShortLink' )
 
-    IF @OldEntityTypeId IS NOT NULL AND @NewEntityTypeId IS NOT NULL
-    BEGIN
-	    UPDATE [InteractionChannel]
-	    SET [ComponentEntityTypeId] = @NewEntityTypeId
-	    WHERE [ComponentEntityTypeId] = @OldEntityTypeId
+//    IF @OldEntityTypeId IS NOT NULL AND @NewEntityTypeId IS NOT NULL
+//    BEGIN
+//	    UPDATE [InteractionChannel]
+//	    SET [ComponentEntityTypeId] = @NewEntityTypeId
+//	    WHERE [ComponentEntityTypeId] = @OldEntityTypeId
 
-	    DELETE [EntityType]
-	    WHERE [Id] = @OldEntityTypeId
-    END
-" );
+//	    DELETE [EntityType]
+//	    WHERE [Id] = @OldEntityTypeId
+//    END
+//" );
         }
 
         /// <summary>
