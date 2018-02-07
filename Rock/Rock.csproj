@@ -568,6 +568,7 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\MonthDayFieldType.cs" />
     <Compile Include="Field\Types\LabelFieldType.cs" />
     <Compile Include="Field\Types\TimeZoneFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberFieldType.cs" />
