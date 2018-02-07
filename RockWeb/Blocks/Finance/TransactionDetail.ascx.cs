@@ -1344,6 +1344,10 @@ namespace RockWeb.Blocks.Finance
 
                     detailsLeft.Add( "Payment Method", paymentMethodDetails.GetFormattedList( "{0}: {1}" ).AsDelimited( "<br/>" ) );
                 }
+                else
+                {
+                    detailsLeft.Add( "Payment Method", "<div class='alert alert-warning'>No Payment Information found. This could be due to transaction that was imported from external system.</div>" );
+                }
 
                 var registrationEntityType = EntityTypeCache.Read( typeof( Rock.Model.Registration ) );
                 if ( registrationEntityType != null )
