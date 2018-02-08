@@ -145,29 +145,34 @@ namespace RockWeb.Blocks.Communication
                     var oldImageTemplatePreview = binaryFileService.Get( communicationTemplate.ImageFileId ?? 0 );
                     if ( oldImageTemplatePreview != null )
                     {
-                        binaryFileService.Delete( oldImageTemplatePreview );
+                        // the old image template preview won't be needed anymore, so make it IsTemporary and have it get cleaned up later
+                        oldImageTemplatePreview.IsTemporary = true;
                     }
-                    var newImageTemplatePreview = binaryFileService.Get( imgTemplatePreview.BinaryFileId ?? 0 );
-                    if ( newImageTemplatePreview != null )
-                    {
-                        newImageTemplatePreview.IsTemporary = false;
-                    }
-                    communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
                 }
 
-                if ( communicationTemplate.LogoBinaryFileId != imgTemplateLogo.BinaryFileId )
+                communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
+
+                // Ensure that the ImagePreview is not set as IsTemporary=True
+                if ( communicationTemplate.ImageFileId.HasValue )
                 {
-                    var oldImageTemplateLogo = binaryFileService.Get( communicationTemplate.LogoBinaryFileId ?? 0 );
-                    if ( oldImageTemplateLogo != null )
+                    var imageTemplatePreview = binaryFileService.Get( communicationTemplate.ImageFileId.Value );
+                    if ( imageTemplatePreview != null && imageTemplatePreview.IsTemporary )
                     {
-                        binaryFileService.Delete( oldImageTemplateLogo );
+                        imageTemplatePreview.IsTemporary = false;
                     }
-                    var newImageTemplateLogo = binaryFileService.Get( imgTemplateLogo.BinaryFileId ?? 0 );
-                    if ( newImageTemplateLogo != null )
+                }
+
+                // Note: If the Logo has changed, we can't get rid of it since existing communications might use it
+                communicationTemplate.LogoBinaryFileId = imgTemplateLogo.BinaryFileId;
+
+                // Ensure that the ImagePreview is not set as IsTemporary=True
+                if ( communicationTemplate.LogoBinaryFileId.HasValue )
+                {
+                    var newImageTemplateLogo = binaryFileService.Get( communicationTemplate.LogoBinaryFileId.Value );
+                    if ( newImageTemplateLogo != null && newImageTemplateLogo.IsTemporary )
                     {
                         newImageTemplateLogo.IsTemporary = false;
                     }
-                    communicationTemplate.LogoBinaryFileId = imgTemplateLogo.BinaryFileId;
                 }
 
                 communicationTemplate.FromName = tbFromName.Text;
@@ -672,14 +677,16 @@ namespace RockWeb.Blocks.Communication
                 if ( lavaFieldsNode.ParentNode == null )
                 {
                     var bodyNode = templateDoc.DocumentNode.SelectSingleNode( "//body" );
+                    if ( bodyNode != null )
+                    {
+                        // prepend a linefeed so that it is after the lava node (to make it pretty printed)
+                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
 
-                    // prepend a linefeed so that it is after the lava node (to make it pretty printed)
-                    bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
+                        bodyNode.PrependChild( lavaFieldsNode );
 
-                    bodyNode.PrependChild( lavaFieldsNode );
-
-                    // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
-                    bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
+                        // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
+                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
+                    }
                 }
             }
             else if ( lavaFieldsNode.ParentNode != null )
