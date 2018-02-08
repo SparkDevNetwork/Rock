@@ -486,11 +486,11 @@ namespace RockWeb.Blocks.Event
 
             if ( campusGuidList.Any() )
             {
-                cblCampus.DataSource = CampusCache.All().Where( c => campusGuidList.Contains( c.Guid ) );
+                cblCampus.DataSource = CampusCache.All( false ).Where( c => campusGuidList.Contains( c.Guid ) );
             }
             else
             {
-                cblCampus.DataSource = CampusCache.All();
+                cblCampus.DataSource = CampusCache.All( false );
             }
 
             cblCampus.DataBind();
