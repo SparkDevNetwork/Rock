@@ -895,6 +895,12 @@ namespace Rock.Model
         /// Push notification
         /// </summary>
         PushNotification = 3,
+
+        /// <summary>
+        /// Some other communication type
+        /// </summary>
+        [Obsolete("Not Supported")]
+        Other = 4
     }
 
     /// <summary>
