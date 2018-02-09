@@ -239,5 +239,26 @@
                 
             </asp:Panel>
         </asp:Panel>
+        <script>
+            Sys.Application.add_load(function () {
+                $('#<%=tbPageName.ClientID%>').on('blur', function () {
+                    var isNewPage = $('#<%=hfPageId.ClientID%>').val() == '0';
+                    if (isNewPage) {
+                        // Default the Page Title and Browser Title to the Internal Name if this is a new page and they aren't filled in with anything yet
+                        var $tbPageName = $('#<%=tbPageName.ClientID%>');
+                        var $tbPageTitle = $('#<%=tbPageTitle.ClientID%>');
+                        var $tbBrowserTitle = $('#<%=tbBrowserTitle.ClientID%>');
+                        if ($tbPageTitle.val() == '') {
+                            $tbPageTitle.val($tbPageName.val());
+                        }
+
+                        if ($tbBrowserTitle.val() == '') {
+                            $tbBrowserTitle.val($tbPageName.val());
+                        }
+                    }
+                });
+                
+            });
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
