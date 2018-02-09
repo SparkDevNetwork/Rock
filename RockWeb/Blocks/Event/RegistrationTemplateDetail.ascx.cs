@@ -2234,6 +2234,8 @@ namespace RockWeb.Blocks.Event
             DiscountState = null;
             FeeState = null;
 
+            pdAuditDetails.SetEntity( registrationTemplate, ResolveRockUrl( "~" ) );
+
             lReadOnlyTitle.Text = registrationTemplate.Name.FormatAsHtmlTitle();
             hlInactive.Visible = registrationTemplate.IsActive == false;
             hlType.Visible = registrationTemplate.Category != null;
