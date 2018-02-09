@@ -859,7 +859,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["DefaultValue"] as string;
+                return ViewState["DefaultValue"] as string ?? string.Empty;
             }
             set
             {
