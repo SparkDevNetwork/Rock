@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         if ( binaryFile != null )
                         {
                             lTitle.Text = binaryFile.FileName;
-                            ceLabel.Text = binaryFile.ContentsToString();
+                            ceLabel.Text = binaryFile.ContentsToString().Replace("^JUS", string.Empty);
                             SetLabelSize( ceLabel.Text );
                         }
                     }
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     var file = new BinaryFileService( rockContext ).Get( fileId.Value );
                     if ( file != null )
                     {
-                        ceLabel.Text = file.ContentsToString();
+                        ceLabel.Text = file.ContentsToString().Replace( "^JUS", string.Empty );
                         SetLabelSize( ceLabel.Text );
                         ceLabel.Label = string.Format( file.FileName );
                         btnSave.Text = "Save " + file.FileName;
