@@ -15,7 +15,7 @@
 	</code>
 </doc>
 */
-ALTER FUNCTION [dbo].[ufnUtility_CsvToTable]
+ALTER FUNCTION [dbo].[ufnUtility_CsvToTable] 
 (
 	@pString VARCHAR(8000)
 )
