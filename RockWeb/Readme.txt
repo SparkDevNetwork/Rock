@@ -1,3 +1,31 @@
+Rock McKinley 7.3
+
++ Added 'Order Top-Level Accounts' option to Accounts configuration.
++ Fixed an issue where a person could be removed from a synced group (or security role).
++ Fixed an issue where Communication Admins and Communication Approvers were not able to see pending communications.
++ Fixed an issue where Font Awesome font weights were not calculating correctly causing checkboxes to look solid.
++ Fixed an issue where the Workflow Entry block would get stuck in a loop if it was passed a command value in the query string.
++ Fixed Dynamic Report not showing Labels.
++ Fixed Giving Type Context Picker not setting the current person context correctly in some situations.  This fixes an issue where the contribution statement list lava would sometimes not show any available statements.
++ Fixed issue where a person could be removed from a synced group (or security role).
++ Fixed issue where Communication Admins and Communication Approvers were not able to see pending communications.
++ Fixed issue where Font Awesome font weights were not calculating correctly causing checkboxes to look solid.
++ Fixed issue where Scheduled Transactions couldn't be added using the Schedule Transaction List block.
++ Fixed issue where the 'Not in Existing Dataview' was returning incorrect results.
++ Fixed issue with Phone Number field on Reports showing the phone number for mobile regardless of the phone type selected.
++ Fixed matrix attributes being hidden in view mode when used as person attributes.
++ Fixed Merge Template Entry only working if Unsecured file type had a storage type of 'Database'.
++ Fixed Merge Templates not showing Lava Help correctly for GroupMember, etc, when exporting from a Group Member list.
++ Fixed Pages adding using new Pages editor not defaulting "Show Child Pages" to true. This fixes an issue where the Page Menu block would seem like it wasn't working.
++ Fixed Person Duplicate job taking a long time on some databases
++ Fixed 'Person Has Note' data filter so that leaving note type blank will return records that have any type of note.
++ Fixed public calendar showing inactive campuses when the Campus Filter option is enabled.
++ Fixed Send SMS workflow action throwing an exception when the recipient is a group with multiple people in it.
++ Fixed styling of the icons for External Applications to make it more friendly to raster images.
++ Fixed the Attendance Analytics block so that the columns displayed include the same dates that attendance is being calculated for. For example if using a date range of 01/01/18, through 01/31/18, a column will no longer be displayed for 02/04/18 and affect the calculated attendance rate.
++ Updated 'Copy Communication' so that it only requires VIEW security instead of EDIT. This fixes an issue where the Copy Communication button in communication history was not visible to some people.+ 
+
+
 Rock McKinley 7.2
 
 + Fixed communications so that a person's email preference does not affect sending of SMS messages.

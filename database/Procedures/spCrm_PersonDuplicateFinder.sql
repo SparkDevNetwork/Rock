@@ -98,7 +98,7 @@ BEGIN
     INSERT INTO #PersonDuplicateByEmailTable (
         Email
         ,PersonAliasId
-      )
+    )
     SELECT [e].[Email] [Email]
         ,[pa].[Id] [PersonAliasId]
     FROM (
