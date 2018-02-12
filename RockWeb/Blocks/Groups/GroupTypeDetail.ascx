@@ -120,15 +120,15 @@
                          <div class="row">
                            <div class="col-xs-6">
                                 <Rock:RockCheckBox ID="cbAllowSpecificGroupMemberAttributes" runat="server" Label="Allow Specific Group Member Attributes"
-                                    Help="Determine if specific groups are allowed to have their own group member attributes. If set to false then the 'Member Attributes' configuration would be hidden on the Group Details block." />
+                                    Help="Determine if groups of this type are allowed to have their own Group Member Attributes. This will show/hide the Member Attributes section on the Group Details block. If a group of this type already has specific group member attributes they will be kept." />
                                 <Rock:RockCheckBox ID="cbEnableSpecificGroupReq" runat="server" Label="Enable Specific Group Requirements"
-                                    Help="Determine if the Group Requirements section will be shown on the Group Details block." />
+                                    Help="Determine if groups of this type are allowed to have Group Requirements. This will show/hide the Group Requirements section on the Group Details block. If a group of this type already has specific group member attributes they will be kept." />
                            </div>
                            <div class="col-xs-6">
                                 <Rock:RockCheckBox ID="cbAllowGroupSync" runat="server" Label="Allow Group Sync"
-                                    Help="Determine if groups of this type are allowed to be sync'ed. This will show/hide the 'Group Sync Settings' section on the Group Details block." />
+                                    Help="Determine if groups of this type are allowed have Group Syncs. This will show/hide the 'Group Sync Settings' section on the Group Details block. If a group of this type already has group syncs the will be kept. Unchecking this box will NOT prevent them from running." />
                                 <Rock:RockCheckBox ID="cbAllowSpecificGrpMemWorkFlows" runat="server" Label="Allow Specific Group Member Workflows"
-                                    Help="Determine if groups of this type should be allowed to have Group Member Workflows. This would show/hide the 'Group Member Workflows' section on the Group Details block." />
+                                    Help="Determine if groups of this type should be allowed to have Group Member Workflows. This would show/hide the 'Group Member Workflows' section on the Group Details block. If a group of this type already has specific group member workflows they will be kept." />
                            </div>
                         </div>
                             </div>
@@ -193,6 +193,7 @@
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpRoles" runat="server" Title="Roles">
+                        <Rock:ModalAlert ID="mdGroupTypeRolesDeleteWarning" runat="server" />
                         <div class="grid">
                             <Rock:Grid ID="gGroupTypeRoles" runat="server" EnableResponsiveTable="false" AllowPaging="false" DisplayType="Light" RowItemText="Role" TooltipField="Description">
                                 <Columns>

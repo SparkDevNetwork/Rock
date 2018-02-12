@@ -87,11 +87,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddTransaction_Click( object sender, EventArgs e )
         {
-            var addTransactionPage = new PageService( new RockContext() ).Get( this.GetAttributeValue( "AddTransactionPage" ).AsGuid() );
+            var addTransactionPage = new Rock.Web.PageReference( this.GetAttributeValue( "AddTransactionPage" ) );
             if ( addTransactionPage != null )
             {
                 // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
-                var personKey = this.Person.GetImpersonationToken( DateTime.Now.AddMinutes( this.GetAttributeValue( "PersonTokenExpireMinutes" ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( "PersonTokenUsageLimit" ).AsIntegerOrNull(), addTransactionPage.Id );
+                var personKey = this.Person.GetImpersonationToken( DateTime.Now.AddMinutes( this.GetAttributeValue( "PersonTokenExpireMinutes" ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( "PersonTokenUsageLimit" ).AsIntegerOrNull(), addTransactionPage.PageId );
                 Response.Redirect( string.Format( "~/AddTransaction?Person={0}", personKey ) );
             }
         }

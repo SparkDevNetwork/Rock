@@ -121,4 +121,7 @@
   <data name="_039_MigrationRollupsForV7_2_UpdateCheckInMergefieldDebugInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>039_migrationrollupsforv7_2_updatecheckinmergefielddebuginfo.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_041_MigrationRollupsForV7_3_UpdateWizardCommunicationDetailApprovers" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>041_migrationrollupsforv7_3_updatewizardcommunicationdetailapprovers.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

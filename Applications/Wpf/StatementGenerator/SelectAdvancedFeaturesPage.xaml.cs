@@ -15,8 +15,11 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Rock;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -36,6 +39,9 @@ namespace Rock.Apps.StatementGenerator
 
             cbHideRefundedTransactions.IsChecked = ReportOptions.Current.HideRefundedTransactions;
             cbHideCorrectedTransactions.IsChecked = ReportOptions.Current.HideCorrectedTransactions;
+            var orderByItems = Enum.GetValues( typeof( Rock.StatementGenerator.OrderBy ) ).OfType<Rock.StatementGenerator.OrderBy>().Select( a => a.ConvertToString( true ) ).ToList();
+            ddlOrderBy.ItemsSource = orderByItems;
+            ddlOrderBy.SelectedValue = ReportOptions.Current.OrderBy.ConvertToString( true );
         }
 
         /// <summary>
@@ -61,6 +67,7 @@ namespace Rock.Apps.StatementGenerator
         {
             ReportOptions.Current.HideRefundedTransactions = cbHideRefundedTransactions.IsChecked == true;
             ReportOptions.Current.HideCorrectedTransactions = cbHideCorrectedTransactions.IsChecked == true;
+            ReportOptions.Current.OrderBy = ( ddlOrderBy.SelectedValue as string ).ConvertToEnumOrNull<Rock.StatementGenerator.OrderBy>() ?? Rock.StatementGenerator.OrderBy.PostalCode;
 
             return true;
         }

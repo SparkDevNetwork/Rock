@@ -326,10 +326,10 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlSyncDataView" runat="server" Label="Sync Data View" Help="Select the Data View for the sync" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
+                        <Rock:RockDropDownList ID="ddlSyncDataView" runat="server" Label="Sync Data View" Help="Select the Data View for the sync" required="true" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlGroupRoles" runat="server" Label="Group Role to Assign" Help="Select the role to assign the members added by the selected Data View" ValidationGroup="GroupSyncSettings" />
+                        <Rock:RockDropDownList ID="ddlGroupRoles" runat="server" Label="Group Role to Assign" Help="Select the role to assign the members added by the selected Data View" required="true" ValidationGroup="GroupSyncSettings" />
                     </div>
                 </div>
                 <div class="row">

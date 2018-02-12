@@ -1335,16 +1335,13 @@ namespace RockWeb.Blocks.Groups
             wpGroupRequirements.Visible = canAdministrate;
             wpGroupMemberAttributes.Visible = canAdministrate;
 
-            if ( canAdministrate )
+            GroupSyncState = new List<GroupSync>();
+            foreach ( var sync in group.GroupSyncs )
             {
-                GroupSyncState = new List<GroupSync>();
-                foreach ( var sync in group.GroupSyncs )
-                {
-                    GroupSyncState.Add( sync );
-                }
-
-                BindGroupSyncGrid();
+                GroupSyncState.Add( sync );
             }
+
+            BindGroupSyncGrid();
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
@@ -1447,8 +1444,8 @@ namespace RockWeb.Blocks.Groups
                         GroupType selectedGroupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
                         if ( selectedGroupType != null )
                         {
-                            wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) && selectedGroupType.AllowGroupSync;
-                            wpMemberWorkflowTriggers.Visible = selectedGroupType.AllowSpecificGroupMemberWorkflows;
+                            wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) && ( selectedGroupType.AllowGroupSync || GroupSyncState.Any() );
+                            wpMemberWorkflowTriggers.Visible = selectedGroupType.AllowSpecificGroupMemberWorkflows || group.GroupMemberWorkflowTriggers.Any();
                         }
                     }
                 }
@@ -1476,6 +1473,12 @@ namespace RockWeb.Blocks.Groups
                     wpGroupAttributes.Visible = true;
                     var excludeForEdit = group.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
                     Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, setValues, BlockValidationGroup, excludeForEdit );
+
+                    // Hide the panel if it won't show anything.
+                    if(excludeForEdit.Count() == group.Attributes.Count())
+                    {
+                        wpGroupAttributes.Visible = false;
+                    }
                 }
                 else
                 {
@@ -2452,10 +2455,12 @@ namespace RockWeb.Blocks.Groups
             GroupSync groupSync = GroupSyncState.Where( s => s.Guid == syncGuid ).FirstOrDefault();
             RockContext rockContext = new RockContext();
 
+            hfGroupSyncGuid.Value = syncGuid.ToString();
+
             CreateDataViewDropDownList( rockContext );
             ddlSyncDataView.SetValue( groupSync.SyncDataViewId );
 
-            CreateRoleDropDownList( rockContext );
+            CreateRoleDropDownList( rockContext, groupSync.GroupTypeRoleId );
             ddlGroupRoles.SetValue( groupSync.GroupTypeRoleId );
 
             CreateGroupSyncEmailDropDownLists( rockContext );
@@ -2523,6 +2528,8 @@ namespace RockWeb.Blocks.Groups
             groupSync.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
             groupSync.AddUserAccountsDuringSync = cbCreateLoginDuringSync.Checked;
 
+            hfGroupSyncGuid.Value = string.Empty;
+
             BindGroupSyncGrid();
             HideDialog();
         }
@@ -2564,24 +2571,35 @@ namespace RockWeb.Blocks.Groups
 
         /// <summary>
         /// Creates the role drop down list.
-        /// Includes rols for the group type that are not already being Sync'd.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        private void CreateRoleDropDownList( RockContext rockContext )
+        /// <param name="RoleId">The role identifier if editing, otherwise leave default</param>
+        private void CreateRoleDropDownList( RockContext rockContext, int roleId = -1 )
         {
-            // Cannot have duplicate Group/Roles for the sync but manual dups are okay
-            Group group = new GroupService( rockContext ).Get( hfGroupId.ValueAsInt() );
+            List<int> currentSyncdRoles = new List<int>();
+            int groupTypeId = ddlGroupType.SelectedValue.AsInteger();
+            int groupId = hfGroupId.ValueAsInt();
 
-            var currentSyncdRoles = new GroupSyncService( rockContext )
-                .Queryable()
-                .Where( s => s.GroupId == group.Id )
-                .Select( s => s.GroupTypeRoleId )
-                .ToList();
+            // If not 0 then get the existing roles to remove, if 0 then this is a new group that has not yet been saved.
+            if ( groupId > 0)
+            {
+                currentSyncdRoles = GroupSyncState
+                    .Where( s => s.GroupId == groupId )
+                    .Select( s => s.GroupTypeRoleId )
+                    .ToList();
+
+                currentSyncdRoles.Remove( roleId );
+
+                groupTypeId = new GroupService( rockContext ).Get( groupId ).GroupTypeId;
+            }
 
             var roles = new GroupTypeRoleService( rockContext )
                 .Queryable()
-                .Where( r => r.GroupTypeId == group.GroupTypeId && !currentSyncdRoles.Contains( r.Id ) )
+                .Where( r => r.GroupTypeId == groupTypeId && !currentSyncdRoles.Contains( r.Id ) )
                 .ToList();
+
+            // Give a blank for the first selection
+            ddlGroupRoles.Items.Add( new ListItem() );
 
             foreach ( var role in roles )
             {
@@ -2598,6 +2616,9 @@ namespace RockWeb.Blocks.Groups
             var dataViews = new DataViewService( rockContext )
                 .Queryable()
                 .ToList();
+
+            // Give a blank for the first selection
+            ddlSyncDataView.Items.Add( new ListItem() );
 
             foreach ( var dataView in dataViews )
             {
@@ -2755,8 +2776,8 @@ namespace RockWeb.Blocks.Groups
         {
             if ( CurrentGroupTypeCache != null )
             {
-                wpGroupMemberAttributes.Visible = GroupMemberAttributesInheritedState.Any() || CurrentGroupTypeCache.AllowSpecificGroupMemberAttributes;
-                rcwGroupMemberAttributes.Visible = CurrentGroupTypeCache.AllowSpecificGroupMemberAttributes;
+                wpGroupMemberAttributes.Visible = GroupMemberAttributesInheritedState.Any() || GroupMemberAttributesState.Any() || CurrentGroupTypeCache.AllowSpecificGroupMemberAttributes;
+                rcwGroupMemberAttributes.Visible = GroupMemberAttributesInheritedState.Any() || GroupMemberAttributesState.Any() || CurrentGroupTypeCache.AllowSpecificGroupMemberAttributes;
             }
 
             gGroupMemberAttributesInherited.AddCssClass( "inherited-attribute-grid" );
@@ -2786,13 +2807,15 @@ namespace RockWeb.Blocks.Groups
             var rockContext = new RockContext();
             var groupTypeGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => a.GroupTypeId.HasValue && a.GroupTypeId == CurrentGroupTypeId ).ToList();
             var groupGroupRequirements = GroupRequirementsState.ToList();
+
             rcwGroupTypeGroupRequirements.Visible = groupTypeGroupRequirements.Any();
-            rcwGroupRequirements.Label = groupTypeGroupRequirements.Any() ? "Specific Group Requirements" : string.Empty;
+            rcwGroupRequirements.Label = groupGroupRequirements.Any() ? "Specific Group Requirements" : string.Empty;
+
             if ( CurrentGroupTypeCache != null )
             {
                 lGroupTypeGroupRequirementsFrom.Text = string.Format( "(From <a href='{0}' target='_blank'>{1}</a>)", this.ResolveUrl( "~/GroupType/" + CurrentGroupTypeCache.Id ), CurrentGroupTypeCache.Name );
-                rcwGroupRequirements.Visible = CurrentGroupTypeCache.EnableSpecificGroupRequirements;
-                wpGroupRequirements.Visible = groupTypeGroupRequirements.Any() || CurrentGroupTypeCache.EnableSpecificGroupRequirements;
+                rcwGroupRequirements.Visible = CurrentGroupTypeCache.EnableSpecificGroupRequirements || groupGroupRequirements.Any() || groupTypeGroupRequirements.Any();
+                wpGroupRequirements.Visible = groupTypeGroupRequirements.Any() || groupGroupRequirements.Any() || CurrentGroupTypeCache.EnableSpecificGroupRequirements;
             }
 
             gGroupTypeGroupRequirements.AddCssClass( "grouptype-group-requirements-grid" );
