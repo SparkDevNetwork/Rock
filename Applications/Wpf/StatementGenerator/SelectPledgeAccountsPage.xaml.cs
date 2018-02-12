@@ -41,6 +41,11 @@ namespace Rock.Apps.StatementGenerator
         private List<Rock.Client.FinancialAccount> _financialAccountList = null;
 
         /// <summary>
+        /// The selected account ids
+        /// </summary>
+        private List<int> _selectedAccountIds = null;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SelectPledgeAccountsPage"/> class.
         /// </summary>
         public SelectPledgeAccountsPage()
@@ -66,8 +71,38 @@ namespace Rock.Apps.StatementGenerator
             {
                 lstPledgeAccounts.Items.Add( new CheckBox { Tag = account.Id, Content = account.PublicName, IsChecked = ReportOptions.Current.PledgesAccountIds.Contains( account.Id ) } );
             }
+
+            // default to the currently configured CashAccountsId (if configured), or default to all
+            _selectedAccountIds = ReportOptions.Current.PledgesAccountIds ?? _financialAccountList.Select( a => a.Id ).ToList();
+
+            ApplyFilter();
+
+            cbShowInactive.IsChecked = rockConfig.ShowInactiveAccounts;
         }
-        
+
+        /// <summary>
+        /// Applies the filter.
+        /// </summary>
+        private void ApplyFilter()
+        {
+            if ( _financialAccountList == null )
+            {
+                return;
+            }
+
+            IEnumerable<Rock.Client.FinancialAccount> displayedAccounts = _financialAccountList.OrderBy( a => a.Order ).ThenBy( a => a.PublicName );
+            if ( cbShowInactive.IsChecked == false )
+            {
+                displayedAccounts = displayedAccounts.Where( a => a.IsActive == true );
+            }
+
+            lstPledgeAccounts.Items.Clear();
+            foreach ( var account in displayedAccounts )
+            {
+                lstPledgeAccounts.Items.Add( new CheckBox { Tag = account.Id, Content = account.PublicName, IsChecked = _selectedAccountIds.Contains( account.Id ) } );
+            }
+        }
+
         /// <summary>
         /// Handles the Click event of the btnNext control.
         /// </summary>
@@ -127,6 +162,21 @@ namespace Rock.Apps.StatementGenerator
         {
             SaveChanges( false );
             this.NavigationService.GoBack();
+        }
+
+        /// <summary>
+        /// Handles the Checked event of the cbShowInactive control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void cbShowInactive_Checked( object sender, RoutedEventArgs e )
+        {
+            // if the page isn't loaded yet, skip
+            if ( this.IsLoaded )
+            {
+                _selectedAccountIds = lstPledgeAccounts.Items.OfType<CheckBox>().Where( a => a.IsChecked == true ).Select( a => ( int ) a.Tag ).ToList();
+                ApplyFilter();
+            }
         }
     }
 }
