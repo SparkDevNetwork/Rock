@@ -33,6 +33,7 @@ namespace Rock.Field.Types
 
         private const string NUMBER_OF_ROWS = "numberofrows";
         private const string ALLOW_HTML = "allowhtml";
+        private const string NUMBER_OF_CHARACTERS = "numberofcharacters";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -43,6 +44,7 @@ namespace Rock.Field.Types
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( NUMBER_OF_ROWS );
             configKeys.Add( ALLOW_HTML );
+            configKeys.Add( NUMBER_OF_CHARACTERS );
             return configKeys;
         }
 
@@ -72,6 +74,15 @@ namespace Rock.Field.Types
             cb.Text = "Yes";
             cb.Help = "Controls whether server should prevent HTML from being entered in this field or not.";
 
+            // Add number box for selecting the maximum number of characters
+            var nbCharacter = new NumberBox();
+            controls.Add( nbCharacter );
+            nbCharacter.AutoPostBack = true;
+            nbCharacter.TextChanged += OnQualifierUpdated;
+            nbCharacter.NumberType = ValidationDataType.Integer;
+            nbCharacter.Label = "Characters";
+            nbCharacter.Help = "The maximum number of characters.";
+
             return controls;
         }
 
@@ -85,17 +96,23 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( NUMBER_OF_ROWS, new ConfigurationValue( "Rows", "The number of rows to display (default is 3).", "" ) );
             configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server should prevent HTML from being entered in this field or not.", "" ) );
+            configurationValues.Add( NUMBER_OF_CHARACTERS, new ConfigurationValue( "Characters", "The maximum number of characters.", "" ) );
 
             if ( controls != null )
             {
                 if ( controls.Count > 0 && controls[0] != null && controls[0] is NumberBox )
                 {
-                    configurationValues[NUMBER_OF_ROWS].Value = ( (NumberBox)controls[0] ).Text;
+                    configurationValues[NUMBER_OF_ROWS].Value = ( ( NumberBox ) controls[0] ).Text;
                 }
 
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is RockCheckBox )
                 {
-                    configurationValues[ALLOW_HTML].Value = ( (RockCheckBox)controls[1] ).Checked.ToString();
+                    configurationValues[ALLOW_HTML].Value = ( ( RockCheckBox ) controls[1] ).Checked.ToString();
+                }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is NumberBox )
+                {
+                    configurationValues[NUMBER_OF_CHARACTERS].Value = ( ( NumberBox ) controls[2] ).Text;
                 }
             }
 
@@ -113,12 +130,17 @@ namespace Rock.Field.Types
             {
                 if ( controls.Count > 0 && controls[0] != null && controls[0] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
                 {
-                    ( (NumberBox)controls[0] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
+                    ( ( NumberBox ) controls[0] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
                 }
 
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is RockCheckBox && configurationValues.ContainsKey( ALLOW_HTML ) )
                 {
-                    ( (RockCheckBox)controls[1] ).Checked = configurationValues[ALLOW_HTML].Value.AsBoolean();
+                    ( ( RockCheckBox ) controls[1] ).Checked = configurationValues[ALLOW_HTML].Value.AsBoolean();
+                }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_CHARACTERS ) )
+                {
+                    ( ( NumberBox ) controls[2] ).Text = configurationValues[NUMBER_OF_CHARACTERS].Value;
                 }
             }
         }
@@ -140,6 +162,7 @@ namespace Rock.Field.Types
             RockTextBox tb = new RockTextBox { ID = id, TextMode = TextBoxMode.MultiLine };
             int? rows = 3;
             bool allowHtml = false;
+            int? maximumLength = null;
 
             if ( configurationValues != null )
             {
@@ -151,9 +174,17 @@ namespace Rock.Field.Types
                 {
                     allowHtml = configurationValues[ALLOW_HTML].Value.AsBoolean();
                 }
+                if ( configurationValues.ContainsKey( NUMBER_OF_CHARACTERS ) )
+                {
+                    maximumLength = configurationValues[NUMBER_OF_CHARACTERS].Value.AsIntegerOrNull();
+                }
             }
 
             tb.Rows = rows.HasValue ? rows.Value : 3;
+            if ( maximumLength.HasValue )
+            {
+                tb.MaxLength = maximumLength.Value;
+            }
             tb.ValidateRequestMode = allowHtml ? ValidateRequestMode.Disabled : ValidateRequestMode.Enabled;
 
             return tb;
@@ -169,10 +200,8 @@ namespace Rock.Field.Types
         /// <value>
         /// The type of the filter comparison.
         /// </value>
-        public override Model.ComparisonType FilterComparisonType
-        {
-            get
-            {
+        public override Model.ComparisonType FilterComparisonType {
+            get {
                 return ComparisonHelper.StringFilterComparisonTypes;
             }
         }
