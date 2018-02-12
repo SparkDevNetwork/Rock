@@ -257,10 +257,8 @@ namespace RockWeb.Blocks.Crm
 
                 }
             }
-            catch ( Exception ex )
-            {
+            catch {}
 
-            }
             LoadContent();
         }
 

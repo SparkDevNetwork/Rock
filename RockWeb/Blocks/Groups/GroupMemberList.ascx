@@ -67,7 +67,6 @@
                                     <Rock:DateField DataField="FirstAttended" HeaderText="First Attended" SortExpression="FirstAttended" />
                                     <Rock:DateField DataField="LastAttended" HeaderText="Last Attended" SortExpression="LastAttended" />
                                     <Rock:RockBoundField DataField="Note" HeaderText="Note" SortExpression="Note" ItemStyle-CssClass="small" />
-                                    <Rock:BoolField DataField="IsAddedBySync" HeaderText="Added By Sync"></Rock:BoolField>
                                 </Columns>
                             </Rock:Grid>
                         </div>
