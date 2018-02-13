@@ -10,7 +10,6 @@ Rock McKinley 7.3
 + Fixed Giving Type Context Picker not setting the current person context correctly in some instances.  This fixes an issue of the contribution statement list lava sometimes not displaying any available statements.
 + Fixed issue where a person could be removed from a synced group (or security role).
 + Fixed issue where Communication Admins and Communication Approvers were not able to see pending communications.
-+ Fixed issue where Font Awesome font weights were not calculating correctly, causing checkboxes to appear solid.
 + Fixed issue where 'Not in Existing Dataview' returned incorrect results.
 + Fixed issue where Scheduled Transactions couldn't be added using the Schedule Transaction List block.
 + Fixed issue with Phone Number field on Reports showing the phone number for mobile regardless of the phone type selected.
