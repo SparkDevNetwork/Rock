@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         #region Properties
         Regex regexPrintWidth = new Regex( @"\^PW(\d+)" );
         Regex regexPrintHeight = new Regex( @"\^LL(\d+)" );
+        private const string REMOVE_ZPL_CODE = "^JUS";
         #endregion
 
         #region Control Methods
@@ -72,7 +73,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         if ( binaryFile != null )
                         {
                             lTitle.Text = binaryFile.FileName;
-                            ceLabel.Text = binaryFile.ContentsToString().Replace("^JUS", string.Empty);
+                            ceLabel.Text = binaryFile.ContentsToString().Replace( REMOVE_ZPL_CODE, string.Empty);
                             SetLabelSize( ceLabel.Text );
                         }
                     }
@@ -136,7 +137,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     var file = new BinaryFileService( rockContext ).Get( fileId.Value );
                     if ( file != null )
                     {
-                        ceLabel.Text = file.ContentsToString().Replace( "^JUS", string.Empty );
+                        ceLabel.Text = file.ContentsToString().Replace( REMOVE_ZPL_CODE, string.Empty );
                         SetLabelSize( ceLabel.Text );
                         ceLabel.Label = string.Format( file.FileName );
                         btnSave.Text = "Save " + file.FileName;
@@ -160,7 +161,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         using ( var stream = new MemoryStream() )
                         {
                             var writer = new StreamWriter( stream );
-                            writer.Write( ceLabel.Text );
+                            writer.Write( ceLabel.Text.Replace( REMOVE_ZPL_CODE, string.Empty ) );
                             writer.Flush();
                             stream.Position = 0;
                             binaryFile.ContentStream = stream;
