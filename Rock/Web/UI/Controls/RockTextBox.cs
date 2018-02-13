@@ -180,7 +180,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ( !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid ) && !( this.MaxLength!=0 && this.MaxLength < this.Text.Length );
+                return ( !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid ) && !( this.MaxLength != 0 && this.MaxLength < this.Text.Length );
             }
         }
 
@@ -379,7 +379,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                if ( this.MaxLength != 0 && this.TextMode == TextBoxMode.MultiLine )
+                if ( this.MaxLength != 0 )
                 {
                     writer.AddAttribute( "class", "pull-right badge" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID + "_em" );
@@ -469,7 +469,7 @@ namespace Rock.Web.UI.Controls
                 RenderDataValidator( writer );
             }
 
-            if ( this.MaxLength != 0 && this.TextMode == TextBoxMode.MultiLine )
+            if ( this.MaxLength != 0 )
             {
                 string scriptFormat = string.Format( @"
         $('#{0}').limit({{maxChars: {1}, counter:'#{2}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}});

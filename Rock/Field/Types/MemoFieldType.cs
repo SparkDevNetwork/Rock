@@ -33,7 +33,7 @@ namespace Rock.Field.Types
 
         private const string NUMBER_OF_ROWS = "numberofrows";
         private const string ALLOW_HTML = "allowhtml";
-        private const string NUMBER_OF_CHARACTERS = "numberofcharacters";
+        private const string MAX_CHARACTERS = "maxcharacters";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -44,7 +44,7 @@ namespace Rock.Field.Types
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( NUMBER_OF_ROWS );
             configKeys.Add( ALLOW_HTML );
-            configKeys.Add( NUMBER_OF_CHARACTERS );
+            configKeys.Add( MAX_CHARACTERS );
             return configKeys;
         }
 
@@ -80,8 +80,8 @@ namespace Rock.Field.Types
             nbCharacter.AutoPostBack = true;
             nbCharacter.TextChanged += OnQualifierUpdated;
             nbCharacter.NumberType = ValidationDataType.Integer;
-            nbCharacter.Label = "Characters";
-            nbCharacter.Help = "The maximum number of characters.";
+            nbCharacter.Label = "Max Characters";
+            nbCharacter.Help = "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.";
 
             return controls;
         }
@@ -96,7 +96,7 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( NUMBER_OF_ROWS, new ConfigurationValue( "Rows", "The number of rows to display (default is 3).", "" ) );
             configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server should prevent HTML from being entered in this field or not.", "" ) );
-            configurationValues.Add( NUMBER_OF_CHARACTERS, new ConfigurationValue( "Characters", "The maximum number of characters.", "" ) );
+            configurationValues.Add( MAX_CHARACTERS, new ConfigurationValue( "Max Characters", "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.", "" ) );
 
             if ( controls != null )
             {
@@ -112,7 +112,7 @@ namespace Rock.Field.Types
 
                 if ( controls.Count > 2 && controls[2] != null && controls[2] is NumberBox )
                 {
-                    configurationValues[NUMBER_OF_CHARACTERS].Value = ( ( NumberBox ) controls[2] ).Text;
+                    configurationValues[MAX_CHARACTERS].Value = ( ( NumberBox ) controls[2] ).Text;
                 }
             }
 
@@ -138,9 +138,9 @@ namespace Rock.Field.Types
                     ( ( RockCheckBox ) controls[1] ).Checked = configurationValues[ALLOW_HTML].Value.AsBoolean();
                 }
 
-                if ( controls.Count > 2 && controls[2] != null && controls[2] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_CHARACTERS ) )
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is NumberBox && configurationValues.ContainsKey( MAX_CHARACTERS ) )
                 {
-                    ( ( NumberBox ) controls[2] ).Text = configurationValues[NUMBER_OF_CHARACTERS].Value;
+                    ( ( NumberBox ) controls[2] ).Text = configurationValues[MAX_CHARACTERS].Value;
                 }
             }
         }
@@ -174,9 +174,9 @@ namespace Rock.Field.Types
                 {
                     allowHtml = configurationValues[ALLOW_HTML].Value.AsBoolean();
                 }
-                if ( configurationValues.ContainsKey( NUMBER_OF_CHARACTERS ) )
+                if ( configurationValues.ContainsKey( MAX_CHARACTERS ) )
                 {
-                    maximumLength = configurationValues[NUMBER_OF_CHARACTERS].Value.AsIntegerOrNull();
+                    maximumLength = configurationValues[MAX_CHARACTERS].Value.AsIntegerOrNull();
                 }
             }
 
