@@ -353,6 +353,7 @@
     <Compile Include="Attribute\AddressFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
+    <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\LabelFieldAttribute.cs" />
     <Compile Include="Attribute\LavaFieldAttribute.cs" />
@@ -568,6 +569,7 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\CheckListFieldType.cs" />
     <Compile Include="Field\Types\MonthDayFieldType.cs" />
     <Compile Include="Field\Types\LabelFieldType.cs" />
     <Compile Include="Field\Types\TimeZoneFieldType.cs" />
@@ -1205,6 +1207,7 @@
     <Compile Include="PersonProfile\Badge\TopPersonSignal.cs" />
     <Compile Include="PersonProfile\Badge\PersonalDevice.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
+    <Compile Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3.cs" />
     <Compile Include="Plugin\HotFixes\041_MigrationRollupsForV7_3.cs" />
     <Compile Include="Plugin\HotFixes\040_BusinessTransactionDetailLinks.cs" />
     <Compile Include="Plugin\HotFixes\039_MigrationRollupsForV7_2.cs" />
@@ -1514,6 +1517,7 @@
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
+    <Compile Include="Web\UI\Controls\ListItems.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FieldTypePicker.cs" />
@@ -2072,16 +2076,21 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="LICENSE.txt" />
-    <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2 - Copy %282%29_UpdateCheckInMergefieldDebugInfo.sql">
-      <DependentUpon>041_MigrationRollupsForV7_3.cs</DependentUpon>
-    </Content>
     <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2 - Copy_UpdateCheckInMergefieldDebugInfo.sql">
       <DependentUpon>040_BusinessTransactionDetailLinks.cs</DependentUpon>
     </Content>
     <Content Include="Plugin\HotFixes\039_MigrationRollupsForV7_2_UpdateCheckInMergefieldDebugInfo.sql">
       <DependentUpon>039_MigrationRollupsForV7_2.cs</DependentUpon>
     </Content>
-    <Content Include="Plugin\HotFixes\041_MigrationRollupsForV7_3_UpdateWizardCommunicationDetailApprovers.sql" />
+    <Content Include="Plugin\HotFixes\041_MigrationRollupsForV7_3_UpdateWizardCommunicationDetailApprovers.sql">
+      <DependentUpon>041_MigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>043_MoreMigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3_ufnUtility_CsvToTable.sql">
+      <DependentUpon>043_MoreMigrationRollupsForV7_3.cs</DependentUpon>
+    </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
     <Content Include="Scripts\jquery-1.12.4.min.js" />
