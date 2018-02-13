@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    result = null;
+                    result = null; 
                 }
 
                 return result;
