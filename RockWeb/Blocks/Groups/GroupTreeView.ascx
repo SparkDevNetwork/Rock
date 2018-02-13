@@ -46,7 +46,7 @@
                     <asp:Panel ID="pnlSearch" runat="server" DefaultButton="btnSearch" CssClass="input-group">
                         <asp:TextBox ID="tbSearch" runat="server" CssClass="form-control input-sm" />
                         <span class="input-group-btn">
-                            <asp:Button ID="btnSearch" runat="server" Text="Go!" CssClass="btn btn-default btn-sm" OnClick="btnSearch_OnClick" />
+                            <asp:LinkButton ID="btnSearch" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnSearch_OnClick"><i class="fa fa-search"></i></asp:LinkButton>
                         </span>
                     </asp:Panel>
                 </div>
