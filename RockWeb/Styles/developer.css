@@ -141,3 +141,9 @@ label.strikethrough {
 .list-items-rows .controls-row {
     margin-bottom: 6px;
 }
+
+/* SK Zoom pointer in  Transaction Matching Images*/
+.transaction-image.photo .fluidbox-ghost {
+    cursor: -webkit-zoom-in;
+    cursor: -moz-zoom-in;
+}
