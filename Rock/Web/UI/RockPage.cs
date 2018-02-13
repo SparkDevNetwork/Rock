@@ -1633,7 +1633,7 @@ Sys.Application.add_load(function () {
     } else {
         $('.js-view-state-stats').html('ViewState Size: ' + ($('#__CVIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
     }
-    $('.js-html-size-stats').html('Html Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
+    $('.js-html-size-stats').html('HTML Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
 });
 ";
                     ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-view-state-size", script, true );
