@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -42,8 +42,9 @@ namespace RockWeb.Blocks.CheckIn.Config
     public partial class EditLabel : RockBlock
     {
         #region Properties
-        Regex regexPrintWidth = new Regex( @"\^PW(\d+)" );
-        Regex regexPrintHeight = new Regex( @"\^LL(\d+)" );
+        private Regex regexPrintWidth = new Regex( @"\^PW(\d+)" );
+        private Regex regexPrintHeight = new Regex( @"\^LL(\d+)" );
+        private const string REMOVE_ZPL_CODE = "^JUS";
         #endregion
 
         #region Control Methods
@@ -72,14 +73,13 @@ namespace RockWeb.Blocks.CheckIn.Config
                         if ( binaryFile != null )
                         {
                             lTitle.Text = binaryFile.FileName;
-                            ceLabel.Text = binaryFile.ContentsToString();
+                            ceLabel.Text = binaryFile.ContentsToString().Replace( REMOVE_ZPL_CODE, string.Empty);
                             SetLabelSize( ceLabel.Text );
                         }
                     }
                     else
                     {
                         pnlOpenFile.Visible = true;
-
 
                         ddlLabel.Items.Clear();
                         Guid labelTypeGuid = Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid();
@@ -90,6 +90,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         {
                             ddlLabel.Items.Add( new ListItem( labelFile.FileName, labelFile.Id.ToString() ) );
                         }
+
                         ddlLabel.SelectedIndex = 0;
                     }
 
@@ -101,7 +102,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                             .Queryable().AsNoTracking()
                             .Where( d =>
                                 d.DeviceTypeValueId == printerDeviceType.Id &&
-                                d.IPAddress != "" ) )
+                                d.IPAddress != string.Empty ) )
                         {
                             ddlDevice.Items.Add( new ListItem( device.Name, device.Id.ToString() ) );
                         }
@@ -114,7 +115,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                 }
 
                 SetLabelImage();
-
             }
         }
 
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     var file = new BinaryFileService( rockContext ).Get( fileId.Value );
                     if ( file != null )
                     {
-                        ceLabel.Text = file.ContentsToString();
+                        ceLabel.Text = file.ContentsToString().Replace( REMOVE_ZPL_CODE, string.Empty );
                         SetLabelSize( ceLabel.Text );
                         ceLabel.Label = string.Format( file.FileName );
                         btnSave.Text = "Save " + file.FileName;
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         using ( var stream = new MemoryStream() )
                         {
                             var writer = new StreamWriter( stream );
-                            writer.Write( ceLabel.Text );
+                            writer.Write( ceLabel.Text.Replace( REMOVE_ZPL_CODE, string.Empty ) );
                             writer.Flush();
                             stream.Position = 0;
                             binaryFile.ContentStream = stream;
@@ -278,7 +278,9 @@ namespace RockWeb.Blocks.CheckIn.Config
                     nbLabelHeight.Text = heightRounded.ToString();
                 }
             }
-            catch { };
+            catch
+            {
+            }
         }
 
         private void SetLabelImage()
@@ -288,12 +290,9 @@ namespace RockWeb.Blocks.CheckIn.Config
             string height = nbLabelHeight.Text;
             string labelIndex = nbShowLabel.Text;
 
-            imgLabelary.ImageUrl = string.Format(
-                "http://api.labelary.com/v1/printers/{0}dpmm/labels/{1}x{2}/{3}/{4}",
-                dpmm, width, height, labelIndex, ceLabel.Text.UrlEncode() );
+            imgLabelary.ImageUrl = string.Format( "http://api.labelary.com/v1/printers/{0}dpmm/labels/{1}x{2}/{3}/{4}", dpmm, width, height, labelIndex, ceLabel.Text.UrlEncode() );
         }
 
         #endregion
-
         }
     }
