@@ -94,6 +94,8 @@ namespace Rock.Apps.StatementGenerator
             // initialize the pdfStreams list for all the recipients so that it can be populated safely in the pdf generation threads
             List<Stream> pdfStreams = recipientList.Select( a => ( Stream ) null ).ToList();
 
+            bool cancel = false;
+
             UpdateProgress( "Getting Statements..." );
             foreach ( var recipent in recipientList )
             {
@@ -104,10 +106,15 @@ namespace Rock.Apps.StatementGenerator
                     sbUrl.Append( $"&PersonId={recipent.PersonId.Value}" );
                 }
 
+                if ( recipent.LocationGuid.HasValue )
+                {
+                    sbUrl.Append( $"&LocationGuid={recipent.LocationGuid.Value}" );
+                }
+
                 var recipentResult = _rockRestClient.PostDataWithResult<Rock.StatementGenerator.StatementGeneratorOptions, Rock.StatementGenerator.StatementGeneratorRecipientResult>( sbUrl.ToString(), this.Options );
 
                 int documentNumber = this.RecordIndex;
-                if ( ( this.Options.ExcludeOptedOutIndividuals && recipentResult.OptedOut ) || ( recipentResult.Html == null ) )
+                if ( ( this.Options.ExcludeOptedOutIndividuals && recipentResult.OptedOut ) || ( string.IsNullOrWhiteSpace( recipentResult.Html ) ) )
                 {
                     // don't generate a statement if opted out or no statement html
                     pdfStreams[documentNumber] = null;
@@ -164,6 +171,10 @@ namespace Rock.Apps.StatementGenerator
 
                 this.RecordIndex++;
                 UpdateProgress( "Processing..." );
+                if ( cancel )
+                {
+                    break;
+                }
             }
 
             Task.WaitAll( tasks.ToArray() );
