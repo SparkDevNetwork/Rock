@@ -75,9 +75,9 @@ namespace Rock.Apps.StatementGenerator
             // default to the currently configured CashAccountsId (if configured), or default to all
             _selectedAccountIds = ReportOptions.Current.PledgesAccountIds ?? _financialAccountList.Select( a => a.Id ).ToList();
 
-            ApplyFilter();
-
             cbShowInactive.IsChecked = rockConfig.ShowInactiveAccounts;
+
+            ApplyFilter();
         }
 
         /// <summary>
