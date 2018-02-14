@@ -52,12 +52,6 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Group>( Context ).Queryable().Any( a => a.SyncDataViewId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Group.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );
@@ -67,6 +61,12 @@ namespace Rock.Model
             if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.WarningDataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.SyncDataViewId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
             }  
  

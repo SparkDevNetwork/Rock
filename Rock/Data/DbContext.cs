@@ -127,15 +127,7 @@ namespace Rock.Data
             SaveErrorMessages = new List<string>();
 
             // Try to get the current person alias and id
-            PersonAlias personAlias = null;
-            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
-                {
-                    personAlias = currentPerson.PrimaryAlias;
-                }
-            }
+            PersonAlias personAlias = GetCurrentPersonAlias();
 
             bool enableAuditing = Rock.Web.Cache.GlobalAttributesCache.Value( "EnableAuditing" ).AsBoolean();
 
@@ -172,6 +164,24 @@ namespace Rock.Data
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the current person alias.
+        /// </summary>
+        /// <returns></returns>
+        private PersonAlias GetCurrentPersonAlias()
+        {
+            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
+                {
+                    return currentPerson.PrimaryAlias;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -403,6 +413,12 @@ namespace Rock.Data
                 {
                     model.CreatedDateTime = model.CreatedDateTime ?? currentDateTime;
                     model.ModifiedDateTime = model.ModifiedDateTime ?? currentDateTime;
+                    var currentPersonAliasId = this.GetCurrentPersonAlias()?.Id;
+                    if ( currentPersonAliasId.HasValue )
+                    {
+                        model.CreatedByPersonAliasId = model.CreatedByPersonAliasId ?? currentPersonAliasId;
+                        model.ModifiedByPersonAliasId = model.ModifiedByPersonAliasId ?? currentPersonAliasId;
+                    }
                 }
             }
 
@@ -414,7 +430,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Does a direct bulk UPDATE. 
-        /// Example: rockContext.BulkUpdate( personQuery, p => new Person { LastName = "Decker", ModifiedDateTime = RockDateTime.Now, ModifiedByPersonAlias = CurrentPersonAlias } );
+        /// Example: rockContext.BulkUpdate( personQuery, p => new Person { LastName = "Decker" } );
         /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -423,6 +439,10 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int BulkUpdate<T>( IQueryable<T> queryable, Expression<Func<T, T>> updateFactory ) where T : class
         {
+            var currentDateTime = RockDateTime.Now;
+            PersonAlias currentPersonAlias = this.GetCurrentPersonAlias();
+            var rockExpressionVisitor = new RockBulkUpdateExpressionVisitor( currentDateTime, currentPersonAlias );
+            rockExpressionVisitor.Visit( updateFactory );
             int recordsUpdated = queryable.Update( updateFactory );
             return recordsUpdated;
         }

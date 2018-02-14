@@ -59,7 +59,9 @@
                         resize: false,
                         listenX: true,
                         listenY: false,
-                    }
+                    },
+                    click: false,
+                    preventDefaultException: { tagName: /.*/ }
                 });
 
                 // resize scrollbar when the window resizes

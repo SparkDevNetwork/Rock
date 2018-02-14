@@ -498,8 +498,8 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUseSimpleEditor_Click( object sender, EventArgs e )
         {
-            int communicationId = hfCommunicationId.Value.AsInteger();
-            NavigateToLinkedPage( "SimpleCommunicationPage", "CommunicationId", communicationId );
+            var simpleCommunicationPageRef = new Rock.Web.PageReference( this.GetAttributeValue( "SimpleCommunicationPage"), this.CurrentPageReference.Parameters, this.CurrentPageReference.QueryString );
+            NavigateToPage( simpleCommunicationPageRef );
         }
 
         #endregion
@@ -1527,6 +1527,8 @@ namespace RockWeb.Blocks.Communication
 
                         personToDeleteService.Delete( personToDelete );
                     }
+
+                    deleteRockContext.SaveChanges( disablePrePostProcessing: true );
                 }
             }
         }

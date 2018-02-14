@@ -70,7 +70,7 @@ namespace Rock.StatementGenerator
         /// <value>
         ///   <c>true</c> if [pledges include child accounts]; otherwise, <c>false</c>.
         /// </value>
-        public bool PledgesIncludeChildAccounts { get; set; }
+        public bool PledgesIncludeChildAccounts { get; set; } = true;
 
         /// <summary>
         /// Gets a value indicating whether [pledges include non cash gifts].
@@ -78,7 +78,7 @@ namespace Rock.StatementGenerator
         /// <value>
         ///   <c>true</c> if [pledges include non cash gifts]; otherwise, <c>false</c>.
         /// </value>
-        public bool PledgesIncludeNonCashGifts { get; set; }
+        public bool PledgesIncludeNonCashGifts { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the pledges account ids.
@@ -135,7 +135,7 @@ namespace Rock.StatementGenerator
         /// <value>
         ///   <c>true</c> if [include businesses]; otherwise, <c>false</c>.
         /// </value>
-        public bool IncludeBusinesses { get; set; }
+        public bool IncludeBusinesses { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether [hide refunded transactions].
@@ -146,12 +146,20 @@ namespace Rock.StatementGenerator
         public bool HideRefundedTransactions { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether [hide corrected transactions].
+        /// Hide transactions that are corrected on the same date. Transactions that have a matching negative dollar amount on the same date and same account will not be shown.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [hide corrected transactions]; otherwise, <c>false</c>.
         /// </value>
         public bool HideCorrectedTransactions { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the transaction type ids.
+        /// </summary>
+        /// <value>
+        /// The transaction type ids.
+        /// </value>
+        public List<int> TransactionTypeIds { get; set; }
 
         /// <summary>
         /// Gets the layout defined value unique identifier.
@@ -167,7 +175,16 @@ namespace Rock.StatementGenerator
         /// <value>
         ///   <c>true</c> if [order by postal code]; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete("Use OrderBy Instead")]
         public bool OrderByPostalCode { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the order by.
+        /// </summary>
+        /// <value>
+        /// The order by.
+        /// </value>
+        public OrderBy OrderBy { get; set; } = OrderBy.PostalCode;
 
         /// <summary>
         /// Gets or sets the name of the base file.
@@ -192,6 +209,14 @@ namespace Rock.StatementGenerator
         /// The size of the chapter.
         /// </value>
         public int? StatementsPerChapter { get; set; }
-        
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum OrderBy
+    {
+        PostalCode = 0,
+        LastName = 1
     }
 }

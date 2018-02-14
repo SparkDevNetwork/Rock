@@ -116,20 +116,11 @@
 
         </asp:Panel>
 
-        <asp:Panel ID="pnlGroupMemberDelete" runat="server" Visible="false">
-
-            <asp:Literal ID="lGroupMemberDeletePreHtml" runat="server" />
-
-            <asp:Literal ID="lConfirmDeleteMsg" runat="server" />
-
-            <div class="actions">
-                <asp:Button ID="btnConfirmDelete" runat="server" AccessKey="d" ToolTip="Alt+d" CssClass="btn btn-danger" Text="Delete" OnClick="btnConfirmDelete_Click" />
-                <asp:LinkButton id="btnCancelDelete" runat="server" AccessKey="c" ToolTip="Alt+c" CssClass="btn btn-link" OnClick="btnCancelConfirmDelete_Click" CausesValidation="false">Cancel</asp:LinkButton>
-            </div>
-
-            <asp:Literal ID="lGroupMemberDeletePostHtml" runat="server" />
-
-        </asp:Panel>
+        <Rock:ModalDialog ID="mdConfirmDelete" runat="server" Title="Please Confirm" SaveButtonText="Yes" OnSaveClick="mdConfirmDelete_Click">
+            <Content>
+                <asp:Literal ID="lConfirmDeleteMsg" runat="server" />
+            </Content>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>

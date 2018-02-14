@@ -1633,7 +1633,7 @@ Sys.Application.add_load(function () {
     } else {
         $('.js-view-state-stats').html('ViewState Size: ' + ($('#__CVIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
     }
-    $('.js-html-size-stats').html('Html Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
+    $('.js-html-size-stats').html('HTML Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
 });
 ";
                     ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-view-state-size", script, true );
@@ -2018,6 +2018,39 @@ Sys.Application.add_load(function () {
             }
 
             contextCookie.Values[entityType.FullName] = HttpUtility.UrlDecode( entity.ContextKey );
+            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+
+            Response.Cookies.Add( contextCookie );
+
+            if ( refreshPage )
+            {
+                Response.Redirect( Request.RawUrl, false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+        }
+
+        /// <summary>
+        /// Clears the context cookie.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="pageSpecific">if set to <c>true</c> [page specific].</param>
+        /// <param name="refreshPage">if set to <c>true</c> [refresh page].</param>
+        public void ClearContextCookie( Type entityType, bool pageSpecific = false, bool refreshPage = true )
+        {
+            string cookieName = GetContextCookieName( pageSpecific );
+
+            var contextCookie = Request.Cookies[cookieName];
+            if ( contextCookie == null )
+            {
+                contextCookie = new HttpCookie( cookieName );
+            }
+
+            if ( entityType.IsDynamicProxyType() )
+            {
+                entityType = entityType.BaseType;
+            }
+
+            contextCookie.Values[entityType.FullName] = null;
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
 
             Response.Cookies.Add( contextCookie );

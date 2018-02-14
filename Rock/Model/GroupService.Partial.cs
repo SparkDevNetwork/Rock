@@ -643,7 +643,7 @@ namespace Rock.Model
                 foreach ( var groupMember in groupMembers )
                 {
                     var person = groupMember.Person;
-                    if ( person != null )
+                    if ( person != null  )
                     {
                         person.FirstName = person.FirstName.FixCase();
                         person.NickName = person.NickName.FixCase();
@@ -653,33 +653,36 @@ namespace Rock.Model
                         group.Members.Add( groupMember );
                         groupMember.Group = group;
 
-                        var demographicChanges = new List<string>();
-                        demographicChanges.Add( "Created" );
+                        if ( person.Id <= 0 )
+                        {
+                            var demographicChanges = new List<string>();
+                            demographicChanges.Add( "Created" );
 
-                        History.EvaluateChange( demographicChanges, "Record Type", string.Empty, person.RecordTypeValueId.HasValue ? DefinedValueCache.GetName( person.RecordTypeValueId.Value ) : string.Empty );
-                        History.EvaluateChange( demographicChanges, "Record Status", string.Empty, person.RecordStatusValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusValueId.Value ) : string.Empty );
-                        History.EvaluateChange( demographicChanges, "Record Status Reason", string.Empty, person.RecordStatusReasonValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusReasonValueId.Value ) : string.Empty );
-                        History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, person.ConnectionStatusValueId.HasValue ? DefinedValueCache.GetName( person.ConnectionStatusValueId ) : string.Empty );
-                        History.EvaluateChange( demographicChanges, "Deceased", false.ToString(), ( person.IsDeceased ).ToString() );
-                        History.EvaluateChange( demographicChanges, "Title", string.Empty, person.TitleValueId.HasValue ? DefinedValueCache.GetName( person.TitleValueId ) : string.Empty );
-                        History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
-                        History.EvaluateChange( demographicChanges, "Nick Name", string.Empty, person.NickName );
-                        History.EvaluateChange( demographicChanges, "Middle Name", string.Empty, person.MiddleName );
-                        History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
-                        History.EvaluateChange( demographicChanges, "Suffix", string.Empty, person.SuffixValueId.HasValue ? DefinedValueCache.GetName( person.SuffixValueId ) : string.Empty );
-                        History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
-                        History.EvaluateChange( demographicChanges, "Gender", null, person.Gender );
-                        History.EvaluateChange( demographicChanges, "Marital Status", string.Empty, person.MaritalStatusValueId.HasValue ? DefinedValueCache.GetName( person.MaritalStatusValueId ) : string.Empty );
-                        History.EvaluateChange( demographicChanges, "Anniversary Date", null, person.AnniversaryDate );
-                        History.EvaluateChange( demographicChanges, "Graduation Year", null, person.GraduationYear );
-                        History.EvaluateChange( demographicChanges, "Email", string.Empty, person.Email );
-                        History.EvaluateChange( demographicChanges, "Email Active", false.ToString(), person.IsEmailActive.ToString() );
-                        History.EvaluateChange( demographicChanges, "Email Note", string.Empty, person.EmailNote );
-                        History.EvaluateChange( demographicChanges, "Email Preference", null, person.EmailPreference );
-                        History.EvaluateChange( demographicChanges, "Inactive Reason Note", string.Empty, person.InactiveReasonNote );
-                        History.EvaluateChange( demographicChanges, "System Note", string.Empty, person.SystemNote );
+                            History.EvaluateChange( demographicChanges, "Record Type", string.Empty, person.RecordTypeValueId.HasValue ? DefinedValueCache.GetName( person.RecordTypeValueId.Value ) : string.Empty );
+                            History.EvaluateChange( demographicChanges, "Record Status", string.Empty, person.RecordStatusValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusValueId.Value ) : string.Empty );
+                            History.EvaluateChange( demographicChanges, "Record Status Reason", string.Empty, person.RecordStatusReasonValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusReasonValueId.Value ) : string.Empty );
+                            History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, person.ConnectionStatusValueId.HasValue ? DefinedValueCache.GetName( person.ConnectionStatusValueId ) : string.Empty );
+                            History.EvaluateChange( demographicChanges, "Deceased", false.ToString(), ( person.IsDeceased ).ToString() );
+                            History.EvaluateChange( demographicChanges, "Title", string.Empty, person.TitleValueId.HasValue ? DefinedValueCache.GetName( person.TitleValueId ) : string.Empty );
+                            History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
+                            History.EvaluateChange( demographicChanges, "Nick Name", string.Empty, person.NickName );
+                            History.EvaluateChange( demographicChanges, "Middle Name", string.Empty, person.MiddleName );
+                            History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
+                            History.EvaluateChange( demographicChanges, "Suffix", string.Empty, person.SuffixValueId.HasValue ? DefinedValueCache.GetName( person.SuffixValueId ) : string.Empty );
+                            History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
+                            History.EvaluateChange( demographicChanges, "Gender", null, person.Gender );
+                            History.EvaluateChange( demographicChanges, "Marital Status", string.Empty, person.MaritalStatusValueId.HasValue ? DefinedValueCache.GetName( person.MaritalStatusValueId ) : string.Empty );
+                            History.EvaluateChange( demographicChanges, "Anniversary Date", null, person.AnniversaryDate );
+                            History.EvaluateChange( demographicChanges, "Graduation Year", null, person.GraduationYear );
+                            History.EvaluateChange( demographicChanges, "Email", string.Empty, person.Email );
+                            History.EvaluateChange( demographicChanges, "Email Active", false.ToString(), person.IsEmailActive.ToString() );
+                            History.EvaluateChange( demographicChanges, "Email Note", string.Empty, person.EmailNote );
+                            History.EvaluateChange( demographicChanges, "Email Preference", null, person.EmailPreference );
+                            History.EvaluateChange( demographicChanges, "Inactive Reason Note", string.Empty, person.InactiveReasonNote );
+                            History.EvaluateChange( demographicChanges, "System Note", string.Empty, person.SystemNote );
 
-                        personDemographicChanges.Add( person.Guid, demographicChanges );
+                            personDemographicChanges.Add( person.Guid, demographicChanges );
+                        }
 
                         if ( isFamilyGroupType )
                         {
@@ -740,7 +743,7 @@ namespace Rock.Model
                     if ( person != null )
                     {
                         bool updateRequired = false;
-                        var changes = personDemographicChanges[person.Guid];
+                        var changes = personDemographicChanges.GetValueOrNull( person.Guid ) ?? new List<string>();
                         if ( groupMember.GroupRoleId == adultRoleId )
                         {
                             person.GivingGroupId = group.Id;

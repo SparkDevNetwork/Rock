@@ -52,18 +52,10 @@ namespace RockWeb.Blocks.Groups
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 10 )]
     [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 11 )]
     [BooleanField( "Allow Group Member Delete", "Should deleting of group members be allowed?", true, "", 12 )]
-    [CodeEditorField( "ConfirmGroupMemberDeleteMessage", "The lava template to use to format the delete confirmation.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, @"
-<div class='alert alert-warning'>
-<strong>Confirm Delete</strong><br/>
-Are you sure you want to delete (remove) {{GroupMember.Person.FullName}} from {{GroupMember.Group.Name}}?
-</div>
-", "", 13, "ConfirmGroupMemberDeleteMessage" )]
     [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 13 )]
     [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 14 )]
     [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 15 )]
     [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 16 )]
-    [CodeEditorField( "Delete Group Member Pre-HTML", "HTML to display before the delete group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 17 )]
-    [CodeEditorField( "Delete Group Member Post-HTML", "HTML to display after the delete group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 18 )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -505,8 +497,10 @@ Are you sure you want to delete (remove) {{GroupMember.Person.FullName}} from {{
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnConfirmDelete_Click( object sender, EventArgs e )
+        protected void mdConfirmDelete_Click( object sender, EventArgs e )
         {
+            mdConfirmDelete.Hide();
+
             if ( GetAttributeValue( "AllowGroupMemberDelete" ).AsBoolean() )
             {
                 RockContext rockContext = new RockContext();
@@ -521,20 +515,6 @@ Are you sure you want to delete (remove) {{GroupMember.Person.FullName}} from {{
                 rockContext.SaveChanges();
             }
 
-            pnlGroupMemberDelete.Visible = false;
-            pnlGroupView.Visible = true;
-            DisplayViewGroup();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancelConfirmDelete control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCancelConfirmDelete_Click( object sender, EventArgs e )
-        {
-            pnlGroupMemberDelete.Visible = false;
-            pnlGroupView.Visible = true;
             DisplayViewGroup();
         }
 
@@ -636,9 +616,6 @@ Are you sure you want to delete (remove) {{GroupMember.Person.FullName}} from {{
             lGroupMemberEditPreHtml.Text = GetAttributeValue( "EditGroupMemberPre-HTML" );
             lGroupMemberEditPostHtml.Text = GetAttributeValue( "EditGroupMemberPost-HTML" );
 
-            lGroupMemberDeletePreHtml.Text = GetAttributeValue( "DeleteGroupMemberPre-HTML" );
-            lGroupMemberDeletePostHtml.Text = GetAttributeValue( "DeleteGroupMemberPost-HTML" );
-
             bool hideActiveGroupCheckbox = this.GetAttributeValue( "HideActiveGroupCheckbox" ).AsBooleanOrNull() ?? false;
             if ( hideActiveGroupCheckbox )
             {
@@ -699,6 +676,7 @@ Are you sure you want to delete (remove) {{GroupMember.Person.FullName}} from {{
                 // add collection of allowed security actions
                 Dictionary<string, object> securityActions = new Dictionary<string, object>();
                 securityActions.Add( "View", group != null && group.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+                securityActions.Add( "ManageMembers", group != null && group.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson ) );
                 securityActions.Add( "Edit", group != null && group.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
                 securityActions.Add( "Administrate", group != null && group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
                 mergeFields.Add( "AllowedActions", securityActions );
@@ -989,7 +967,6 @@ Are you sure you want to delete (remove) {{GroupMember.Person.FullName}} from {{
             pnlGroupEdit.Visible = false;
             pnlGroupView.Visible = false;
             pnlEditGroupMember.Visible = true;
-            pnlGroupMemberDelete.Visible = false;
 
             RockContext rockContext = new RockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
@@ -1061,18 +1038,10 @@ Are you sure you want to delete (remove) {{GroupMember.Person.FullName}} from {{
                 // persist the group member id for use in partial postbacks
                 this.CurrentGroupMemberId = groupMember.Id;
 
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.Add( "GroupMember", groupMember );
-                lConfirmDeleteMsg.Text = GetAttributeValue( "ConfirmGroupMemberDeleteMessage" ).ResolveMergeFields( mergeFields );
+                lConfirmDeleteMsg.Text = string.Format( "Are you sure you want to delete (remove) {0} from {1}?", groupMember.Person.FullName, groupMember.Group.Name );
 
-                pnlGroupEdit.Visible = false;
-                pnlGroupView.Visible = false;
-                pnlEditGroupMember.Visible = false;
-                pnlGroupMemberDelete.Visible = true;
-            }
-            else
-            {
-                DisplayViewGroup();
+                mdConfirmDelete.Show();
+                //mdConfirmDelete.Header.Visible = false;
             }
         }
 

@@ -166,7 +166,8 @@ namespace Rock.Workflow.Action
                                                     smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                                 }
 
-                                                var recipient = new RecipientData( smsNumber, mergeFields );
+                                                var recipientMergeFields = new Dictionary<string, object>( mergeFields );
+                                                var recipient = new RecipientData( smsNumber, recipientMergeFields );
                                                 recipients.Add( recipient );
                                                 recipient.MergeFields.Add( "Person", person );
                                             }

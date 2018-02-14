@@ -104,10 +104,16 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+
             string script = string.Format( @"
     $('.transaction-image-thumbnail').click( function() {{
-        var $primaryImg = $('.transaction-image');
-        var primarySrc = $primaryImg.attr('src');
+        var $primaryHyperlink = $('.transaction-image a');
+        var $primaryImg = $('.transaction-image a img');
+        var primarySrc = $primaryHyperlink.attr('href');
+        $primaryHyperlink.attr('href', $(this).attr('src'));
         $primaryImg.attr('src', $(this).attr('src'));
         $(this).attr('src', primarySrc);
     }});
@@ -124,7 +130,7 @@ namespace RockWeb.Blocks.Finance
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            ScriptManager.RegisterStartupScript( imgPrimary, imgPrimary.GetType(), "imgPrimarySwap", script, true );
+            ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "imgPrimarySwap", script, true );
         }
 
         /// <summary>
@@ -604,8 +610,9 @@ namespace RockWeb.Blocks.Finance
                         var primaryImage = transactionToMatch.Images
                             .OrderBy( i => i.Order )
                             .FirstOrDefault();
-                        imgPrimary.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId );
-                        imgPrimary.Visible = true;
+
+                        lImage.Text = string.Format( "<a href='{0}'><img src='{0}'/></a>", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId )) );
+                        lImage.Visible = true;
                         nbNoTransactionImageWarning.Visible = false;
 
                         rptrImages.DataSource = transactionToMatch.Images
@@ -616,7 +623,7 @@ namespace RockWeb.Blocks.Finance
                     }
                     else
                     {
-                        imgPrimary.Visible = false;
+                        lImage.Visible = false;
                         rptrImages.DataSource = null;
                         rptrImages.DataBind();
                         nbNoTransactionImageWarning.Visible = true;

@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Settings Panel", defaultValue: true, key: "ShowFilterOption", order: 2 )]
     [CustomDropdownListField( "Initial Active Setting", "Select whether to initially show all or just active accounts in the treeview", "0^All,1^Active", false, "1", "", 3 )]
     [LinkedPage( "Detail Page", order: 4 )]
+    [LinkedPage( "Order Top-Level Page", key:"OrderTopLevelPage", order: 5 )]
     public partial class AccountTreeView : RockBlock
     {
         #region Fields
@@ -278,6 +279,18 @@ namespace RockWeb.Blocks.Finance
             qryParams.Add( "ExpandedIds", hfInitialAccountParentIds.Value );
 
             NavigateToLinkedPage( "DetailPage", qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbOrderTopLevelAccounts control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbOrderTopLevelAccounts_Click( object sender, EventArgs e )
+        {
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.Add( "TopLevel", "True" );
+            NavigateToLinkedPage( "OrderTopLevelPage", queryParams );
         }
 
         #endregion

@@ -18,7 +18,16 @@
 // 1. Bootstrap Overrides
 // -------------------------
 
-
+/* If th has a required class, render the required field indicator after the column heading */
+.table thead th.required:after {
+  margin-left: 4px;
+  font-family: @fa-font-face;
+  font-weight: 900;
+  font-size: 6px;
+  color: #eca9a7;
+  vertical-align: super;
+  content: '\f111';
+}
 
 .table > tbody > tr > td {
   color: @grid-row-even-color;
@@ -375,8 +384,8 @@ td.grid-col-actions {
 }
 
 .table .grid-icon img {
-  width: 72px;
-  height: 72px;
+  width: 100%;
+  max-width: 120px;
 }
 
 

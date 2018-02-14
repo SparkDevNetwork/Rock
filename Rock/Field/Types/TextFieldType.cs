@@ -34,6 +34,7 @@ namespace Rock.Field.Types
         #region Configuration
 
         private const string IS_PASSWORD_KEY = "ispassword";
+        private const string MAX_CHARACTERS = "maxcharacters";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -43,6 +44,7 @@ namespace Rock.Field.Types
         {
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( IS_PASSWORD_KEY );
+            configKeys.Add( MAX_CHARACTERS );
             return configKeys;
         }
 
@@ -62,6 +64,16 @@ namespace Rock.Field.Types
             cb.Label = "Password Field";
             cb.Text = "Yes";
             cb.Help = "When set, edit field will be masked.";
+
+            // Add number box for selecting the maximum number of characters
+            var nbCharacter = new NumberBox();
+            controls.Add( nbCharacter );
+            nbCharacter.AutoPostBack = true;
+            nbCharacter.TextChanged += OnQualifierUpdated;
+            nbCharacter.NumberType = ValidationDataType.Integer;
+            nbCharacter.Label = "Max Characters";
+            nbCharacter.Help = "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.";
+
             return controls;
         }
 
@@ -74,10 +86,19 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( IS_PASSWORD_KEY, new ConfigurationValue( "Password Field", "When set, edit field will be masked.", "" ) );
+            configurationValues.Add( MAX_CHARACTERS, new ConfigurationValue( "Max Characters", "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.", "" ) );
 
-            if ( controls != null && controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
-            { 
-                configurationValues[IS_PASSWORD_KEY].Value = ( (CheckBox)controls[0] ).Checked.ToString();
+            if ( controls != null )
+            {
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
+                {
+                    configurationValues[IS_PASSWORD_KEY].Value = ( ( CheckBox ) controls[0] ).Checked.ToString();
+                }
+
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox )
+                {
+                    configurationValues[MAX_CHARACTERS].Value = ( ( NumberBox ) controls[1] ).Text;
+                }
             }
 
             return configurationValues;
@@ -110,6 +131,11 @@ namespace Rock.Field.Types
                 if ( controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
                 {
                     ( (CheckBox)controls[0] ).Checked = configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
+                }
+
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox && configurationValues.ContainsKey( MAX_CHARACTERS ) )
+                {
+                    ( ( NumberBox ) controls[1] ).Text = configurationValues[MAX_CHARACTERS].Value;
                 }
             }
         }
@@ -203,14 +229,25 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             RockTextBox tb = base.EditControl( configurationValues, id ) as RockTextBox;
-
-            if ( configurationValues != null &&
-                configurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
-                configurationValues[IS_PASSWORD_KEY].Value.AsBoolean() )
+            
+            if ( configurationValues != null )
             {
-                tb.TextMode = TextBoxMode.Password;
-            }
 
+                if ( configurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
+                    configurationValues[IS_PASSWORD_KEY].Value.AsBoolean() )
+                {
+                    tb.TextMode = TextBoxMode.Password;
+                }
+
+                if ( configurationValues.ContainsKey( MAX_CHARACTERS ) )
+                {
+                    int? maximumLength = configurationValues[MAX_CHARACTERS].Value.AsIntegerOrNull();
+                    if ( maximumLength.HasValue )
+                    {
+                        tb.MaxLength = maximumLength.Value;
+                    }
+                }
+            }
             return tb;
         }
 

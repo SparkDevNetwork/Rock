@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class DataViewPersisted : IMigrationMetadata
+    public sealed partial class AllowForInactiveFees : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(DataViewPersisted));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AllowForInactiveFees));
         
         string IMigrationMetadata.Id
         {
-            get { return "201801032335306_DataViewPersisted"; }
+            get { return "201802021609074_AllowForInactiveFees"; }
         }
         
         string IMigrationMetadata.Source
