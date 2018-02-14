@@ -52,7 +52,7 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            var expireDays = dataMap.GetIntFromString( "ExpireDate" );
+            var expireDays = dataMap.GetString( "ExpireDate" ).AsIntegerOrNull() ?? 1;
 
             int remindersSent = 0;
 

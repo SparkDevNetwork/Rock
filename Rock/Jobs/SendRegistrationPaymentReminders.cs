@@ -79,7 +79,7 @@ namespace Rock.Jobs
                 RegistrationService registrationService = new RegistrationService( rockContext );
 
                 var currentDate = RockDateTime.Today;
-                var cutoffDays = dataMap.GetIntFromString( "CutoffDate" );
+                var cutoffDays = dataMap.GetString( "CutoffDate" ).AsIntegerOrNull() ?? 30;
 
                 var registrations = registrationService.Queryable( "RegistrationInstance" )
                                                 .Where( r =>
