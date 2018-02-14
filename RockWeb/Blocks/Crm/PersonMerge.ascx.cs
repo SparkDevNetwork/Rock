@@ -372,43 +372,38 @@ validity of the request before completing this merge." :
                     {
                         primaryPersonId = primaryPerson.Id;
 
+                        // Write a history record about the merge
                         var changes = new List<string>();
-
                         foreach ( var p in MergeData.People.Where( p => p.Id != primaryPerson.Id ) )
                         {
                             changes.Add( string.Format( "Merged <span class='field-value'>{0} [ID: {1}]</span> with this record.", p.FullName, p.Id ) );
                         }
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), primaryPerson.Id, changes );
 
                         // Photo Id
-                        int? newPhotoId = MergeData.GetSelectedValue( MergeData.GetProperty( "Photo" ) ).Value.AsIntegerOrNull();
-                        if ( !primaryPerson.PhotoId.Equals( newPhotoId ) )
-                        {
-                            changes.Add( "Modified the photo." );
-                            primaryPerson.PhotoId = newPhotoId;
-                        }
-
-                        primaryPerson.TitleValueId = GetNewIntValue( "Title", changes );
-                        primaryPerson.FirstName = GetNewStringValue( "FirstName", changes );
-                        primaryPerson.NickName = GetNewStringValue( "NickName", changes );
-                        primaryPerson.MiddleName = GetNewStringValue( "MiddleName", changes );
-                        primaryPerson.LastName = GetNewStringValue( "LastName", changes );
-                        primaryPerson.SuffixValueId = GetNewIntValue( "Suffix", changes );
-                        primaryPerson.RecordTypeValueId = GetNewIntValue( "RecordType", changes );
-                        primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus", changes );
-                        primaryPerson.RecordStatusReasonValueId = GetNewIntValue( "RecordStatusReason", changes );
-                        primaryPerson.ConnectionStatusValueId = GetNewIntValue( "ConnectionStatus", changes );
-                        primaryPerson.IsDeceased = GetNewBoolValue( "Deceased", changes ) ?? false;
-                        primaryPerson.Gender = (Gender)GetNewEnumValue( "Gender", typeof( Gender ), changes );
-                        primaryPerson.MaritalStatusValueId = GetNewIntValue( "MaritalStatus", changes );
-                        primaryPerson.SetBirthDate( GetNewDateTimeValue( "BirthDate", changes ) );
-                        primaryPerson.AnniversaryDate = GetNewDateTimeValue( "AnniversaryDate", changes );
-                        primaryPerson.GraduationYear = GetNewIntValue( "GraduationYear", changes );
-                        primaryPerson.Email = GetNewStringValue( "Email", changes );
-                        primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive", changes ) ?? true;
-                        primaryPerson.EmailNote = GetNewStringValue( "EmailNote", changes );
-                        primaryPerson.EmailPreference = (EmailPreference)GetNewEnumValue( "EmailPreference", typeof( EmailPreference ), changes );
-                        primaryPerson.SystemNote = GetNewStringValue( "InactiveReasonNote", changes );
-                        primaryPerson.SystemNote = GetNewStringValue( "SystemNote", changes );
+                        primaryPerson.PhotoId = MergeData.GetSelectedValue( MergeData.GetProperty( "Photo" ) ).Value.AsIntegerOrNull();
+                        primaryPerson.TitleValueId = GetNewIntValue( "Title" );
+                        primaryPerson.FirstName = GetNewStringValue( "FirstName" );
+                        primaryPerson.NickName = GetNewStringValue( "NickName" );
+                        primaryPerson.MiddleName = GetNewStringValue( "MiddleName" );
+                        primaryPerson.LastName = GetNewStringValue( "LastName" );
+                        primaryPerson.SuffixValueId = GetNewIntValue( "Suffix" );
+                        primaryPerson.RecordTypeValueId = GetNewIntValue( "RecordType" );
+                        primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus" );
+                        primaryPerson.RecordStatusReasonValueId = GetNewIntValue( "RecordStatusReason" );
+                        primaryPerson.ConnectionStatusValueId = GetNewIntValue( "ConnectionStatus" );
+                        primaryPerson.IsDeceased = GetNewBoolValue( "Deceased" ) ?? false;
+                        primaryPerson.Gender = (Gender)GetNewEnumValue( "Gender", typeof( Gender ) );
+                        primaryPerson.MaritalStatusValueId = GetNewIntValue( "MaritalStatus" );
+                        primaryPerson.SetBirthDate( GetNewDateTimeValue( "BirthDate" ) );
+                        primaryPerson.AnniversaryDate = GetNewDateTimeValue( "AnniversaryDate" );
+                        primaryPerson.GraduationYear = GetNewIntValue( "GraduationYear" );
+                        primaryPerson.Email = GetNewStringValue( "Email" );
+                        primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive" ) ?? true;
+                        primaryPerson.EmailNote = GetNewStringValue( "EmailNote" );
+                        primaryPerson.EmailPreference = (EmailPreference)GetNewEnumValue( "EmailPreference", typeof( EmailPreference ) );
+                        primaryPerson.SystemNote = GetNewStringValue( "InactiveReasonNote" );
+                        primaryPerson.SystemNote = GetNewStringValue( "SystemNote" );
 
                         primaryPerson.CreatedDateTime = MergeData.People
                                                         .Min( a => a.CreatedDateTime );
@@ -421,7 +416,7 @@ validity of the request before completing this merge." :
                             string oldValue = phoneNumber != null ? phoneNumber.Number : string.Empty;
 
                             string key = "phone_" + phoneType.Id.ToString();
-                            string newValue = GetNewStringValue( key, changes );
+                            string newValue = GetNewStringValue( key );
                             bool phoneNumberDeleted = false;
 
                             if ( !oldValue.Equals( newValue, StringComparison.OrdinalIgnoreCase ) )
@@ -475,7 +470,7 @@ validity of the request before completing this merge." :
                         {
                             string attributeKey = property.Key.Substring( 5 );
                             string oldValue = primaryPerson.GetAttributeValue( attributeKey ) ?? string.Empty;
-                            string newValue = GetNewStringValue( property.Key, changes ) ?? string.Empty;
+                            string newValue = GetNewStringValue( property.Key ) ?? string.Empty;
 
                             if ( !oldValue.Equals( newValue ) )
                             {
@@ -493,7 +488,7 @@ validity of the request before completing this merge." :
                             {
                                 string attributeKey = property.Key.Substring( 10 );
                                 string oldValue = primaryFamily.GetAttributeValue( attributeKey ) ?? string.Empty;
-                                string newValue = GetNewStringValue( property.Key, changes ) ?? string.Empty;
+                                string newValue = GetNewStringValue( property.Key ) ?? string.Empty;
 
                                 if ( !oldValue.Equals( newValue ) )
                                 {
@@ -502,9 +497,6 @@ validity of the request before completing this merge." :
                                 }
                             }
                         }
-
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                            primaryPerson.Id, changes );
 
                         // Delete the unselected photos
                         string photoKeeper = primaryPerson.PhotoId.HasValue ? primaryPerson.PhotoId.Value.ToString() : string.Empty;
@@ -587,11 +579,6 @@ validity of the request before completing this merge." :
                                     string errorMessage;
                                     if ( groupService.CanDelete( family, out errorMessage ) )
                                     {
-                                        var oldFamilyChanges = new List<string>();
-                                        History.EvaluateChange( oldFamilyChanges, "Family", family.Name, string.Empty );
-                                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                            primaryPersonId.Value, oldFamilyChanges, family.Name, typeof( Group ), family.Id );
-
                                         groupService.Delete( family );
                                         rockContext.SaveChanges();
                                     }
@@ -814,15 +801,15 @@ validity of the request before completing this merge." :
             }
         }
 
-        private string GetNewStringValue( string key, List<string> changes )
+        private string GetNewStringValue( string key )
         {
-            var ppValue = GetNewValue( key, changes );
+            var ppValue = GetNewValue( key );
             return ppValue != null ? ppValue.Value : string.Empty;
         }
 
-        private int? GetNewIntValue( string key, List<string> changes )
+        private int? GetNewIntValue( string key )
         {
-            var ppValue = GetNewValue( key, changes );
+            var ppValue = GetNewValue( key );
             if ( ppValue != null )
             {
                 int newValue = int.MinValue;
@@ -835,9 +822,9 @@ validity of the request before completing this merge." :
             return null;
         }
 
-        private bool? GetNewBoolValue( string key, List<string> changes )
+        private bool? GetNewBoolValue( string key )
         {
-            var ppValue = GetNewValue( key, changes );
+            var ppValue = GetNewValue( key );
             if ( ppValue != null )
             {
                 bool newValue = false;
@@ -850,9 +837,9 @@ validity of the request before completing this merge." :
             return null;
         }
 
-        private DateTime? GetNewDateTimeValue( string key, List<string> changes )
+        private DateTime? GetNewDateTimeValue( string key )
         {
-            var ppValue = GetNewValue( key, changes );
+            var ppValue = GetNewValue( key );
             if ( ppValue != null )
             {
                 DateTime newValue = DateTime.MinValue;
@@ -865,9 +852,9 @@ validity of the request before completing this merge." :
             return null;
         }
 
-        private Enum GetNewEnumValue( string key, Type enumType, List<string> changes )
+        private Enum GetNewEnumValue( string key, Type enumType )
         {
-            var ppValue = GetNewValue( key, changes );
+            var ppValue = GetNewValue( key );
             if ( ppValue != null )
             {
                 return (Enum)Enum.Parse( enumType, ppValue.Value );
@@ -876,21 +863,11 @@ validity of the request before completing this merge." :
             return null;
         }
 
-        private PersonPropertyValue GetNewValue( string key, List<string> changes )
+        private PersonPropertyValue GetNewValue( string key )
         {
             var property = MergeData.GetProperty( key );
             var primaryPersonValue = property.Values.Where( v => v.PersonId == MergeData.PrimaryPersonId ).FirstOrDefault();
             var selectedPersonValue = property.Values.Where( v => v.Selected ).FirstOrDefault();
-
-            string oldValue = primaryPersonValue != null ? primaryPersonValue.Value : string.Empty;
-            string newValue = selectedPersonValue != null ? selectedPersonValue.Value : string.Empty;
-
-            if ( oldValue != newValue )
-            {
-                string oldFormattedValue = primaryPersonValue != null ? primaryPersonValue.FormattedValue : string.Empty;
-                string newFormattedValue = selectedPersonValue != null ? selectedPersonValue.FormattedValue : string.Empty;
-                History.EvaluateChange( changes, property.Label, oldFormattedValue, newFormattedValue );
-            }
 
             return selectedPersonValue;
         }
