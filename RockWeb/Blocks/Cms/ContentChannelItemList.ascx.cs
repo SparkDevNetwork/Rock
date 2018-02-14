@@ -275,7 +275,12 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gItems_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "contentItemId", 0, "contentChannelId", _channelId );
+            Dictionary<string, string> pageParams = new Dictionary<string, string>();
+            pageParams.Add( "contentItemId", "0" );
+            pageParams.Add( "contentChannelId", _channelId.ToString() );
+            pageParams.Add( "orderNumber", ( nextOrderNumber.Value) );
+
+            NavigateToLinkedPage( "DetailPage", pageParams );
         }
 
         /// <summary>
@@ -565,6 +570,17 @@ namespace RockWeb.Blocks.Cms
 
             if ( _manuallyOrdered && !isFiltered )
             {
+                int maxOrderNumber = items.Max( i => i.Order );
+
+                if ( maxOrderNumber == 0 )
+                {
+                    nextOrderNumber.Value = "0";
+                }
+                else
+                {
+                    nextOrderNumber.Value = ( maxOrderNumber + 1 ).ToString();
+                }
+
                 return items.OrderBy( i => i.Order ).ToList();
             }
             else
