@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -180,18 +182,22 @@ namespace Rock.Model
             private set { }
         }
 
+        /// <summary>
+        /// Gets or sets the history changes.
+        /// </summary>
+        /// <value>
+        /// The history changes.
+        /// </value>
+        [NotMapped]
+        private Dictionary<int, List<string>> PersonHistoryChanges { get; set; }
+
         #endregion
 
         #region Methods
 
-        /// <summary>
-        /// Updates the formatted number prior to update.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
         {
-            if ( state == System.Data.Entity.EntityState.Added || state == System.Data.Entity.EntityState.Modified )
+            if ( entry.State == System.Data.Entity.EntityState.Added || entry.State == System.Data.Entity.EntityState.Modified )
             {
                 if ( string.IsNullOrEmpty( CountryCode ) )
                 {
@@ -202,7 +208,71 @@ namespace Rock.Model
                 Number = PhoneNumber.CleanNumber( NumberFormatted );
             }
 
-            base.PreSaveChanges( dbContext, state );
+            var rockContext = (RockContext)dbContext;
+            int personId = PersonId;
+            PersonHistoryChanges = new Dictionary<int, List<string>> { { personId, new List<string>() } };
+
+            switch ( entry.State )
+            {
+                case System.Data.Entity.EntityState.Added:
+                    {
+
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( NumberTypeValueId ) ), string.Empty, NumberFormatted );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsUnlisted );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsMessagingEnabled );
+                        break;
+                    }
+
+                case System.Data.Entity.EntityState.Modified:
+                    {
+                        string numberTypeName = DefinedValueCache.GetName( NumberTypeValueId );
+                        int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
+                        if ( ( oldPhoneNumberTypeId ?? 0 ) == ( NumberTypeValueId ?? 0 ) )
+                        {
+                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), NumberFormatted );
+                        }
+                        else
+                        {
+                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
+                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), string.Empty, NumberFormatted );
+                        }
+
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", numberTypeName ), entry.OriginalValues["IsUnlisted"].ToStringSafe().AsBooleanOrNull(), IsUnlisted );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", numberTypeName ), entry.OriginalValues["IsMessagingEnabled"].ToStringSafe().AsBooleanOrNull(), IsMessagingEnabled );
+
+                        break;
+                    }
+
+                case System.Data.Entity.EntityState.Deleted:
+                    {
+                        personId = entry.OriginalValues["PersonId"].ToStringSafe().AsInteger();
+                        PersonHistoryChanges.AddOrIgnore( personId, new List<string>() );
+                        int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
+
+                        return;
+                    }
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            if ( PersonHistoryChanges != null )
+            {
+                foreach ( var keyVal in PersonHistoryChanges )
+                {
+                    int personId = keyVal.Key > 0 ? keyVal.Key : PersonId;
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), personId, keyVal.Value, true, this.ModifiedByPersonAliasId );
+                }
+            }
+
+            base.PostSaveChanges( dbContext );
         }
 
         /// <summary>
