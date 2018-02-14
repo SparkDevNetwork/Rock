@@ -119,6 +119,8 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 tglHideInactiveGroups.Checked = hideInactiveGroups ?? true;
+
+                tglLimitPublicGroups.Checked = this.GetUserPreference( "LimitPublicGroups" ).AsBooleanOrNull() ?? false;
             }
             else
             {
@@ -342,6 +344,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             hfIncludeInactiveGroups.Value = ( !tglHideInactiveGroups.Checked ).ToTrueFalse();
+            hfLimitPublicGroups.Value = tglLimitPublicGroups.Checked.ToTrueFalse();
             hfCountsType.Value = ddlCountsType.SelectedValue;
             hfCampusFilter.Value = ddlCampuses.SelectedValue;
             hfIncludeNoCampus.Value = tglIncludeNoCampus.Checked.ToTrueFalse();
@@ -468,6 +471,19 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the tglLimitPublicGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglLimitPublicGroups_CheckedChanged( object sender, EventArgs e )
+        {
+            this.SetUserPreference( "LimitPublicGroups", tglLimitPublicGroups.Checked.ToTrueFalse() );
+
+            // reload the whole page
+            NavigateToPage( this.RockPage.Guid, new Dictionary<string, string>() );
+        }
+
+        /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlCountType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -514,7 +530,7 @@ namespace RockWeb.Blocks.Groups
         protected void btnSearch_OnClick( object sender, EventArgs e )
         {
             // redirect to search
-            NavigateToPage( Rock.SystemGuid.Page.GROUP_SEARCH_RESULTS.AsGuid(), new Dictionary<string, string>() { { "SearchType", "name" },{ "SearchTerm", tbSearch.Text.Trim() } } );
+            NavigateToPage( Rock.SystemGuid.Page.GROUP_SEARCH_RESULTS.AsGuid(), new Dictionary<string, string>() { { "SearchType", "name" }, { "SearchTerm", tbSearch.Text.Trim() } } );
         }
 
         /// <summary>
@@ -530,7 +546,7 @@ namespace RockWeb.Blocks.Groups
             // if specific group types are specified, show the groups regardless of ShowInNavigation
             bool limitToShowInNavigation = !includedGroupTypeIds.Any();
 
-            var qry = groupService.GetChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds, !tglHideInactiveGroups.Checked, limitToShowInNavigation, hfCampusFilter.ValueAsInt(), tglIncludeNoCampus.Checked );
+            var qry = groupService.GetChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), includedGroupTypeIds, excludedGroupTypeIds, !tglHideInactiveGroups.Checked, limitToShowInNavigation, hfCampusFilter.ValueAsInt(), tglIncludeNoCampus.Checked, tglHideInactiveGroups.Checked );
 
             foreach ( var group in qry.OrderBy( g => g.Name ) )
             {
