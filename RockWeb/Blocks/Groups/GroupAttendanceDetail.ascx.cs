@@ -392,6 +392,7 @@ namespace RockWeb.Blocks.Groups
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "Group", this._group );
+            mergeFields.Add("AttendanceDate", this._occurrence.Date);
 
             var mergeTemplate = new MergeTemplateService( rockContext ).Get( this.GetAttributeValue( "AttendanceRosterTemplate" ).AsGuid() );
 
