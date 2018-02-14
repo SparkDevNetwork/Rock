@@ -92,6 +92,14 @@ namespace Rock.Lava
             return WithFallback( input, successText, fallbackText, "prepend" );
         }
 
+        /// <summary>
+        /// Withes the fallback.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="successText">The success text.</param>
+        /// <param name="fallbackText">The fallback text.</param>
+        /// <param name="appendOrder">The append order.</param>
+        /// <returns></returns>
         public static string WithFallback( object input, string successText, string fallbackText, string appendOrder )
         {
             if ( input == null )
@@ -4038,7 +4046,7 @@ namespace Rock.Lava
             }
             else
             {
-                return filterNotes.OrderBy(n => n.CreatedDateTime).Take( count.Value ).ToList();
+                return filterNotes.Take( count.Value ).ToList();
             }
         }
 
