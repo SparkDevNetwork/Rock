@@ -243,6 +243,13 @@ namespace RockWeb.Blocks.Cms
                 contentItem.Title = tbTitle.Text;
                 contentItem.Content = htmlContent.Text;
                 contentItem.Priority = nbPriority.Text.AsInteger();
+
+                int orderNumber = 0;
+                if ( int.TryParse( PageParameter( "orderNumber" ), out orderNumber ) )
+                {
+                    contentItem.Order = orderNumber;
+                }
+
                 if ( contentItem.ContentChannelType.IncludeTime )
                 {
                     contentItem.StartDateTime = dtpStart.SelectedDateTime ?? RockDateTime.Now;
