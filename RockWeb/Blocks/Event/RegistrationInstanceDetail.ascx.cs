@@ -3665,17 +3665,20 @@ namespace RockWeb.Blocks.Event
                                     birthdateField.DataField = dataFieldExpression;
                                     birthdateField.HeaderText = "Birthdate";
                                     birthdateField.SortExpression = dataFieldExpression;
+                                    birthdateField.IncludeAge = true;
                                     gRegistrants.Columns.Add( birthdateField );
 
                                     var birthdateField2 = new DateField();
                                     birthdateField2.DataField = dataFieldExpression;
                                     birthdateField2.HeaderText = "Birthdate";
+                                    birthdateField2.IncludeAge = true;
                                     birthdateField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( birthdateField2 );
 
                                     var birthdateField3 = new DateField();
                                     birthdateField3.DataField = dataFieldExpression;
                                     birthdateField3.HeaderText = "Birthdate";
+                                    birthdateField3.IncludeAge = true;
                                     birthdateField3.SortExpression = dataFieldExpression;
                                     gWaitList.Columns.Add( birthdateField3 );
 
