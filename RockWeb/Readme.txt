@@ -2,7 +2,7 @@ Rock McKinley 7.3
 
 + Added 'Order Top-Level Accounts' option to Accounts configuration.
 + Fixed an issue where a person could be removed from a synced group (or security role).
-+ Fixed an issue where Communication Admins and Communication Approvers were not able to see pending communications.
++ Fixed an issue in the Communication Entry blocks where Approvers wouldn't be able to edit a communication that was pending approval.
 + Fixed an issue where Font Awesome font weights were not calculating correctly, causing checkboxes to appear solid.
 + Fixed an issue where the Workflow Entry block would get stuck in a loop if it was passed a command value in the query string.
 + Fixed an issue with pages added using the new Pages editor not defaulting the Show Child Pages property to 'true'. This fixes an issue where the Page Menu block appeared not to be working.
