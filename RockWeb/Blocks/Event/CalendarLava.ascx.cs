@@ -305,6 +305,13 @@ namespace RockWeb.Blocks.Event
                 ViewMode = btnViewMode.Text;
                 ResetCalendarSelection();
                 BindData();
+
+                if ( cblCampus.Items.Count == 1 )
+                {
+                    CampusPanelClosed = false;
+                    CampusPanelOpen = false;
+                    rcwCampus.Visible = false;
+                }
             }
         }
 
