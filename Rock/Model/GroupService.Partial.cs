@@ -270,10 +270,11 @@ namespace Rock.Model
         /// <param name="groupTypeExcludedIds">The group type excluded ids.</param>
         /// <param name="includeInactiveGroups">if set to <c>true</c> [include inactive groups].</param>
         /// <param name="limitToShowInNavigation">if set to <c>true</c> [limit to show in navigation].</param>
+        /// <param name="limitToPublic">if set to <c>true</c> [limit to public groups].</param>
         /// <returns></returns>
-        public IQueryable<Group> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds, bool includeInactiveGroups, bool limitToShowInNavigation )
+        public IQueryable<Group> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds, bool includeInactiveGroups, bool limitToShowInNavigation, bool limitToPublic = false )
         {
-            return this.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIncludedIds, groupTypeExcludedIds, includeInactiveGroups, limitToShowInNavigation, 0, false );
+            return this.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIncludedIds, groupTypeExcludedIds, includeInactiveGroups, limitToShowInNavigation, 0, false, limitToPublic );
         }
 
         /// <summary>
@@ -288,8 +289,9 @@ namespace Rock.Model
         /// <param name="limitToShowInNavigation">if set to <c>true</c> [limit to show in navigation].</param>
         /// <param name="campusId">if set it will filter groups based on campus</param>
         /// <param name="includeNoCampus">if campus set and set to <c>true</c> [include groups with no campus].</param>
+        /// <param name="limitToPublic">if set to <c>true</c> [limit to public groups].</param>
         /// <returns></returns>
-        public IQueryable<Group> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds, bool includeInactiveGroups, bool limitToShowInNavigation, int campusId, bool includeNoCampus)
+        public IQueryable<Group> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds, bool includeInactiveGroups, bool limitToShowInNavigation, int campusId, bool includeNoCampus, bool limitToPublic = false)
         {
             var qry = Queryable();
 
@@ -312,6 +314,11 @@ namespace Rock.Model
             if ( !includeInactiveGroups )
             {
                 qry = qry.Where( a => a.IsActive );
+            }
+
+            if ( limitToPublic )
+            {
+                qry = qry.Where( a => a.IsPublic );
             }
 
             if ( limitToSecurityRoleGroups )
