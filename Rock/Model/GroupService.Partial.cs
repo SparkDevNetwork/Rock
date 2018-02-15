@@ -604,9 +604,6 @@ namespace Rock.Model
         public static Group SaveNewGroup( RockContext rockContext, int groupTypeId, Guid? parentGroupGuid, string groupName, List<GroupMember> groupMembers, int? campusId, bool savePersonAttributes )
         {
             var groupType = GroupTypeCache.Read( groupTypeId );
-            var familyChanges = new List<string>();
-            var familyMemberChanges = new Dictionary<Guid, List<string>>();
-            var personDemographicChanges = new Dictionary<Guid, List<string>>();
 
             if ( groupType != null )
             {
@@ -629,14 +626,8 @@ namespace Rock.Model
 
                 group.Name = groupName;
 
-                History.EvaluateChange( familyChanges, "Family", string.Empty, group.Name );
-
                 if ( isFamilyGroupType )
                 {
-                    if ( campusId.HasValue )
-                    {
-                        History.EvaluateChange( familyChanges, "Campus", string.Empty, CampusCache.Read( campusId.Value ).Name );
-                    }
                     group.CampusId = campusId;
                 }
 
@@ -650,7 +641,7 @@ namespace Rock.Model
                 foreach ( var groupMember in groupMembers )
                 {
                     var person = groupMember.Person;
-                    if ( person != null  )
+                    if ( person != null )
                     {
                         person.FirstName = person.FirstName.FixCase();
                         person.NickName = person.NickName.FixCase();
@@ -659,50 +650,6 @@ namespace Rock.Model
 
                         group.Members.Add( groupMember );
                         groupMember.Group = group;
-
-                        if ( person.Id <= 0 )
-                        {
-                            var demographicChanges = new List<string>();
-                            demographicChanges.Add( "Created" );
-
-                            History.EvaluateChange( demographicChanges, "Record Type", string.Empty, person.RecordTypeValueId.HasValue ? DefinedValueCache.GetName( person.RecordTypeValueId.Value ) : string.Empty );
-                            History.EvaluateChange( demographicChanges, "Record Status", string.Empty, person.RecordStatusValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusValueId.Value ) : string.Empty );
-                            History.EvaluateChange( demographicChanges, "Record Status Reason", string.Empty, person.RecordStatusReasonValueId.HasValue ? DefinedValueCache.GetName( person.RecordStatusReasonValueId.Value ) : string.Empty );
-                            History.EvaluateChange( demographicChanges, "Connection Status", string.Empty, person.ConnectionStatusValueId.HasValue ? DefinedValueCache.GetName( person.ConnectionStatusValueId ) : string.Empty );
-                            History.EvaluateChange( demographicChanges, "Deceased", false.ToString(), ( person.IsDeceased ).ToString() );
-                            History.EvaluateChange( demographicChanges, "Title", string.Empty, person.TitleValueId.HasValue ? DefinedValueCache.GetName( person.TitleValueId ) : string.Empty );
-                            History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
-                            History.EvaluateChange( demographicChanges, "Nick Name", string.Empty, person.NickName );
-                            History.EvaluateChange( demographicChanges, "Middle Name", string.Empty, person.MiddleName );
-                            History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
-                            History.EvaluateChange( demographicChanges, "Suffix", string.Empty, person.SuffixValueId.HasValue ? DefinedValueCache.GetName( person.SuffixValueId ) : string.Empty );
-                            History.EvaluateChange( demographicChanges, "Birth Date", null, person.BirthDate );
-                            History.EvaluateChange( demographicChanges, "Gender", null, person.Gender );
-                            History.EvaluateChange( demographicChanges, "Marital Status", string.Empty, person.MaritalStatusValueId.HasValue ? DefinedValueCache.GetName( person.MaritalStatusValueId ) : string.Empty );
-                            History.EvaluateChange( demographicChanges, "Anniversary Date", null, person.AnniversaryDate );
-                            History.EvaluateChange( demographicChanges, "Graduation Year", null, person.GraduationYear );
-                            History.EvaluateChange( demographicChanges, "Email", string.Empty, person.Email );
-                            History.EvaluateChange( demographicChanges, "Email Active", false.ToString(), person.IsEmailActive.ToString() );
-                            History.EvaluateChange( demographicChanges, "Email Note", string.Empty, person.EmailNote );
-                            History.EvaluateChange( demographicChanges, "Email Preference", null, person.EmailPreference );
-                            History.EvaluateChange( demographicChanges, "Inactive Reason Note", string.Empty, person.InactiveReasonNote );
-                            History.EvaluateChange( demographicChanges, "System Note", string.Empty, person.SystemNote );
-
-                            personDemographicChanges.Add( person.Guid, demographicChanges );
-                        }
-
-                        if ( isFamilyGroupType )
-                        {
-                            var memberChanges = new List<string>();
-
-                            string roleName = groupType.Roles
-                                .Where( r => r.Id == groupMember.GroupRoleId )
-                                .Select( r => r.Name )
-                                .FirstOrDefault();
-
-                            History.EvaluateChange( memberChanges, "Role", string.Empty, roleName );
-                            familyMemberChanges.Add( person.Guid, memberChanges );
-                        }
                     }
 
                     if ( !groupMember.IsValidGroupMember(rockContext) )
@@ -738,9 +685,6 @@ namespace Rock.Model
 
                             if ( !oldValue.Equals( newValue ) )
                             {
-                                History.EvaluateChange( personDemographicChanges[person.Guid], attributeCache.Name,
-                                    attributeCache.FieldType.Field.FormatValue( null, oldValue, attributeCache.QualifierValues, false ),
-                                    attributeCache.FieldType.Field.FormatValue( null, newValue, attributeCache.QualifierValues, false ) );
                                 Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue );
                             }
                         }
@@ -750,12 +694,10 @@ namespace Rock.Model
                     if ( person != null )
                     {
                         bool updateRequired = false;
-                        var changes = personDemographicChanges.GetValueOrNull( person.Guid ) ?? new List<string>();
                         if ( groupMember.GroupRoleId == adultRoleId )
                         {
                             person.GivingGroupId = group.Id;
                             updateRequired = true;
-                            History.EvaluateChange( changes, "Giving Group", string.Empty, group.Name );
                         }
 
                         if ( updateRequired )
@@ -764,18 +706,6 @@ namespace Rock.Model
                         }
 
                         int? modifiedByPersonAliasId = person.ModifiedAuditValuesAlreadyUpdated ? person.ModifiedByPersonAliasId : ( int? ) null;
-
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                            person.Id, changes, true, modifiedByPersonAliasId );
-
-                        if ( isFamilyGroupType )
-                        {
-                            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                person.Id, familyMemberChanges[person.Guid], group.Name, typeof( Group ), group.Id, true, modifiedByPersonAliasId );
-
-                            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                person.Id, familyChanges, group.Name, typeof( Group ), group.Id, true, modifiedByPersonAliasId );
-                        }
                     }
                 }
 
@@ -1009,8 +939,6 @@ namespace Rock.Model
                                 gl.LocationId == location.Id )
                             .Any() )
                         {
-                            var familyChanges = new List<string>();
-
                             if ( moveExistingToPrevious )
                             {
                                 var prevLocationType = groupType.LocationTypeValues.FirstOrDefault( l => l.Guid.Equals( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() ) );
@@ -1021,7 +949,6 @@ namespace Rock.Model
                                             gl.GroupId == group.Id &&
                                             gl.GroupLocationTypeValueId == locationType.Id ) )
                                     {
-                                        History.EvaluateChange( familyChanges, prevLoc.Location.ToString(), prevLoc.GroupLocationTypeValue.Value, prevLocationType.Value );
                                         prevLoc.GroupLocationTypeValueId = prevLocationType.Id;
                                         prevLoc.IsMailingLocation = false;
                                         prevLoc.IsMappedLocation = false;
@@ -1046,25 +973,7 @@ namespace Rock.Model
                             }
                             groupLocation.GroupLocationTypeValueId = locationType.Id;
 
-                            History.EvaluateChange( familyChanges, addressChangeField, string.Empty, groupLocation.Location.ToString() );
-                            History.EvaluateChange( familyChanges, addressChangeField + " Is Mailing", string.Empty, groupLocation.IsMailingLocation.ToString() );
-                            History.EvaluateChange( familyChanges, addressChangeField + " Is Map Location", string.Empty, groupLocation.IsMappedLocation.ToString() );
-                            if ( modifiedBy != "" )
-                            {
-                                familyChanges.Add( $"<em>(Updated by {modifiedBy})</em>" );
-                            }
-
-
                             rockContext.SaveChanges();
-
-                            if ( groupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ) )
-                            {
-                                foreach ( var fm in group.Members )
-                                {
-                                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                        fm.PersonId, familyChanges, group.Name, typeof( Group ), group.Id );
-                                }
-                            }
                         }
                     }
                 }

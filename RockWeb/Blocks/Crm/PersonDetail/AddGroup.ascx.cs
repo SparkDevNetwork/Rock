@@ -25,7 +25,6 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
-using Humanizer;
 
 using Rock;
 using Rock.Attribute;
@@ -962,7 +961,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 groupMember.Person.TitleValueId = row.TitleValueId;
-                groupMember.Person.FirstName = row.FirstName.Humanize( LetterCasing.Title );
+                groupMember.Person.FirstName = row.FirstName.FixCase();
                 if ( this.GetAttributeValue( "ShowNickName" ).AsBoolean() && !string.IsNullOrEmpty( row.NickName ) )
                 {
                     groupMember.Person.NickName = row.NickName;
@@ -971,8 +970,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     groupMember.Person.NickName = groupMember.Person.FirstName;
                 }
-                groupMember.Person.MiddleName = row.MiddleName.Humanize( LetterCasing.Title );
-                groupMember.Person.LastName = row.LastName.Humanize( LetterCasing.Title );
+                groupMember.Person.MiddleName = row.MiddleName.FixCase();
+                groupMember.Person.LastName = row.LastName.FixCase();
                 groupMember.Person.SuffixValueId = row.SuffixValueId;
                 groupMember.Person.Gender = row.Gender;
 
