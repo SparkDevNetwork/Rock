@@ -113,31 +113,6 @@ namespace Rock.Workflow.Action
 
                                             Rock.Attribute.Helper.SaveAttributeValue( person, attribute, updateValue, rockContext );
 
-                                            if ( ( originalValue ?? string.Empty ).Trim() != ( updateValue ?? string.Empty ).Trim() )
-                                            {
-                                                var changes = new List<string>();
-
-                                                string formattedOriginalValue = string.Empty;
-                                                if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                                                {
-                                                    formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                                }
-
-                                                string formattedNewValue = string.Empty;
-                                                if ( !string.IsNullOrWhiteSpace( updateValue ) )
-                                                {
-                                                    formattedNewValue = attribute.FieldType.Field.FormatValue( null, updateValue, attribute.QualifierValues, false );
-                                                }
-
-                                                History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue, attribute.FieldType.Field.IsSensitive() );
-                                                if ( changes.Any() )
-                                                {
-                                                    HistoryService.SaveChanges( rockContext, typeof( Person ), 
-                                                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                                        person.Id, changes );
-                                                }
-                                            }
-
                                             action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, updateValue ) );
                                             return true;
 

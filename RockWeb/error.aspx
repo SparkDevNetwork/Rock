@@ -48,7 +48,7 @@
                                 <h3>We can't let you view this page...</h3>
 
                                 <p class="error-icon danger">
-                                    <i class="fa fa-lock"></i>
+                                    <i class="fa fa-lock"></i> 
                                 </p>
 
                                 <p>Unfortunately, you are not authorized to view the page you requested. Please contact

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Core
         #region Control Methods
 
         private List<Guid> _categoryGuids = null;
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -103,7 +104,7 @@ namespace RockWeb.Blocks.Core
         protected void tFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             int? categoryId = cpCategory.SelectedValueAsInt();
-            tFilter.SaveUserPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : "" );
+            tFilter.SaveUserPreference( "Category", categoryId.HasValue ? categoryId.Value.ToString() : string.Empty );
 
             gDefinedType_Bind();
         }
@@ -261,17 +262,31 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.OrderBy( a => a.Category.Name ).ThenBy( a => a.Name );
             }
 
-            gDefinedType.DataSource = queryable
+            var dataSource = queryable
                 .Select( a =>
-                new
-                {
-                    a.Id,
-                    Category = a.Category.Name,
-                    a.Name,
-                    a.Description,
-                    a.IsSystem,
-                    FieldTypeName = a.FieldType.Name
-                } )
+                    new
+                    {
+                        a.Id,
+                        Category = a.Category.Name,
+                        a.Name,
+                        a.Description,
+                        a.IsSystem,
+                        FieldTypeName = a.FieldType.Name
+                    } )
+                .ToList();
+
+            // SanitizeHtml can't be compilied into a SQL query so we have to ToList() the data and then sanitize the field in the List<T>
+            gDefinedType.DataSource = dataSource
+                .Select( a =>
+                    new
+                    {
+                        a.Id,
+                        a.Category,
+                        a.Name,
+                        Description = a.Description.SanitizeHtml(true),
+                        a.IsSystem,
+                        a.FieldTypeName
+                    } )
                 .ToList();
             gDefinedType.DataBind();
         }
