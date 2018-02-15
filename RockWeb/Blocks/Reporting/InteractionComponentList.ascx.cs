@@ -170,11 +170,25 @@ namespace RockWeb.Blocks.Reporting
                         .Skip( skipCount )
                         .Take( pageSize + 1 );
 
+                    var interactionComponents = interactionComponentQry.ToList().Take( pageSize );
+                    var componentIdList = interactionComponents.Select( c => c.Id );
+
+                    var componentInteractionCount = new InteractionService( rockContext ).Queryable().AsNoTracking()
+                        .Where( i => componentIdList.Contains( i.InteractionComponentId ) )
+                        .GroupBy( i => i.InteractionComponentId )
+                        .Select( g => new InteractionCount
+                                    {
+                                        ComponentId = g.Key,
+                                        Count = g.Count() 
+                                    } )
+                        .ToList();
+
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.Add( "ComponentDetailPage", LinkedPageRoute( "ComponentDetailPage" ) );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", interactionChannel );
-                    mergeFields.Add( "InteractionComponents", interactionComponentQry.ToList().Take( pageSize ) );
+                    mergeFields.Add( "InteractionComponents", interactionComponents );
+                    mergeFields.Add( "InteractionCounts", componentInteractionCount );
 
                     // set next button
                     if ( interactionComponentQry.Count() > pageSize )
@@ -203,6 +217,16 @@ namespace RockWeb.Blocks.Reporting
                         GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
                 }
             }
+        }
+
+        /// <summary>
+        /// POCO class for return interation counts
+        /// </summary>
+        class InteractionCount : DotLiquid.Drop
+        {
+            public int ComponentId { get; set; }
+
+            public int Count { get; set; }
         }
 
         #endregion
