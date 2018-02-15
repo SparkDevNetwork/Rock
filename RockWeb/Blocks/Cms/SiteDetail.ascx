@@ -101,7 +101,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:CodeEditor ID="cePageHeaderContent" runat="server" Label="Page Header Content" Help="The content provided here will be added to each page's head section." EditorMode="Html" EditorTheme="Rock" Height="300" />
+                                <Rock:CodeEditor ID="cePageHeaderContent" runat="server" Label="Page Header Content" Help="The content provided here will be added to each page's head section." EditorMode="Lava" EditorTheme="Rock" Height="300" />
                             </div>
                         </div>
                     </Rock:PanelWidget>

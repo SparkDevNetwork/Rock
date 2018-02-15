@@ -424,8 +424,8 @@
                     </div>
                 </div>
                 <Rock:AttributeEditor ID="edtRegistrationAttribute" runat="server" ShowActions="false" ValidationGroup="Field" Visible="false" />
-                <Rock:CodeEditor ID="ceAttributePreText" runat="server" Label="Pre-Text" EditorMode="Html" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field" />
-                <Rock:CodeEditor ID="ceAttributePostText" runat="server" Label="Post-Text" EditorMode="Html" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field" />
+                <Rock:CodeEditor ID="ceAttributePreText" runat="server" Label="Pre-Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field" />
+                <Rock:CodeEditor ID="ceAttributePostText" runat="server" Label="Post-Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field" />
            </Content>
         </Rock:ModalDialog>
 

@@ -122,7 +122,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <Rock:CodeEditor ID="ceHeaderContent" runat="server" Label="Header Content" EditorMode="Html" EditorTheme="Rock" EditorHeight="400"
+                                        <Rock:CodeEditor ID="ceHeaderContent" runat="server" Label="Header Content" EditorMode="Lava" EditorTheme="Rock" EditorHeight="400"
                                             Help="Additional HTML content to include in the &amp;lt;head&amp;gt; section of the rendered page." />
                                     </div>
                                 </div>
