@@ -1146,8 +1146,8 @@ WHERE gta.GroupTypeId IS NULL" );
 
                     Location location = new Location();
 
-                    location.Street1 = address.Street1;
-                    location.Street2 = address.Street2;
+                    location.Street1 = address.Street1.Truncate( 50 );
+                    location.Street2 = address.Street2.Truncate( 50 );
                     location.City = address.City;
                     location.County = address.County;
                     location.State = address.State;
