@@ -964,7 +964,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.FirstName = row.FirstName.FixCase();
                 if ( this.GetAttributeValue( "ShowNickName" ).AsBoolean() && !string.IsNullOrEmpty( row.NickName ) )
                 {
-                    groupMember.Person.NickName = row.NickName;
+                    groupMember.Person.NickName = row.NickName.FixCase();
                 }
                 else
                 {
