@@ -27,7 +27,7 @@
                                 <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" RepeatDirection="Horizontal" />
                                 <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gConnectionOpportunities" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gConnectionOpportunities_Edit" ExportSource="ColumnOutput">
+                            <Rock:Grid ID="gConnectionOpportunities" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gConnectionOpportunities_Edit" >
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                                     <Rock:HtmlField DataField="Summary" HeaderText="Summary" TruncateLength="300" DisplayMode="PlainText" />
