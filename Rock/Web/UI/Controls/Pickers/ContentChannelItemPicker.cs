@@ -293,11 +293,13 @@ namespace Rock.Web.UI.Controls
             _ddlContentChannel = new RockDropDownList();
             _ddlContentChannel.ID = this.ID + "_ddlContentChannel";
             _ddlContentChannel.AutoPostBack = true;
+            _ddlContentChannel.Label = "Content Channel";
             _ddlContentChannel.SelectedIndexChanged += _ddlContentChannel_SelectedIndexChanged;
             Controls.Add( _ddlContentChannel );
 
             _ddlContentChannelItem = new RockDropDownList();
             _ddlContentChannelItem.EnhanceForLongLists = true;
+            _ddlContentChannelItem.Label = "Content Channel Item";
             _ddlContentChannelItem.ID = this.ID + "_ddlContentChannelItem";
             Controls.Add( _ddlContentChannelItem );
 
@@ -336,7 +338,6 @@ namespace Rock.Web.UI.Controls
             if ( !ContentChannelId.HasValue )
             {
                 _ddlContentChannel.RenderControl( writer );
-                _ddlContentChannelItem.Label = ( _ddlContentChannel.SelectedItem != null ? _ddlContentChannel.SelectedItem.Text : this.Label ) + " Item";
             }
             else
             {
