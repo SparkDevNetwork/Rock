@@ -149,6 +149,28 @@ namespace Rock
         }
 
         /// <summary>
+        /// Scrubs the HTML but retains "<br/>",changes "</p>" to "<br/><br/>", and "\r\n" to "<br/>".
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string ScrubHtmlForGridDisplay( this string str )
+        {
+            if ( string.IsNullOrWhiteSpace(str) )
+            {
+                return string.Empty;
+            }
+
+            // Note: \u00A7 is the section symbol, \u00A6 is the broken bar symbol
+            // First convert HTML breaks to a character that can pass through the Sanitizer.
+            str = str.Replace( "<br/>", "\u00A7" ).Replace( "<br />", "\u00A7" );
+            str = str.Replace( "</p>", "\u00A6" );
+
+            // Now sanitize and convert the symbols to breaks
+            str = str.SanitizeHtml().Replace( "\u00A7", "<br/>" ).Replace( "\u00A6", "<br/><br/>" ).Replace( "\r\n", "<br/>" );
+            return str;
+        }
+
+        /// <summary>
         /// Returns true if the given string is a valid email address.
         /// </summary>
         /// <param name="email">The string to validate</param>

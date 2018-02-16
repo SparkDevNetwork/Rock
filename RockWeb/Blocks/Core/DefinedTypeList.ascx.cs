@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.OrderBy( a => a.Category.Name ).ThenBy( a => a.Name );
             }
 
-            var dataSource = queryable
+            gDefinedType.DataSource = queryable
                 .Select( a =>
                     new
                     {
@@ -276,18 +276,18 @@ namespace RockWeb.Blocks.Core
                 .ToList();
 
             // SanitizeHtml can't be compilied into a SQL query so we have to ToList() the data and then sanitize the field in the List<T>
-            gDefinedType.DataSource = dataSource
-                .Select( a =>
-                    new
-                    {
-                        a.Id,
-                        a.Category,
-                        a.Name,
-                        Description = a.Description.SanitizeHtml(true),
-                        a.IsSystem,
-                        a.FieldTypeName
-                    } )
-                .ToList();
+            //gDefinedType.DataSource = dataSource
+            //    .Select( a =>
+            //        new
+            //        {
+            //            a.Id,
+            //            a.Category,
+            //            a.Name,
+            //            Description = a.Description.ScrubHtmlForGridDisplay(),
+            //            a.IsSystem,
+            //            a.FieldTypeName
+            //        } )
+            //    .ToList();
             gDefinedType.DataBind();
         }
 
