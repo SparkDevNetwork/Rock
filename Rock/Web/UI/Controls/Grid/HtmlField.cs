@@ -95,7 +95,8 @@ namespace Rock.Web.UI.Controls
                 return dataRow[this.DataField];
             }
 
-            return row.DataItem.GetPropertyValue( this.DataField );
+            var htmlString = row.DataItem.GetPropertyValue( this.DataField );
+            return FormatDataValue( htmlString );
         }
     }
 

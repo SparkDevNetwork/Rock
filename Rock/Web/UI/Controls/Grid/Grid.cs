@@ -1656,10 +1656,6 @@ namespace Rock.Web.UI.Controls
                         {
                             exportValue = ( col.Value as RockBoundField ).GetExportValue( gridViewRow );
                         }
-                        else if ( col.Value is HtmlField )
-                        {
-                            exportValue = ( col.Value as HtmlField ).GetExportValue( gridViewRow );
-                        }
                         else if ( col.Value is RockTemplateField )
                         {
                             var fieldCell = gridViewRowCellLookup[col.Value];
