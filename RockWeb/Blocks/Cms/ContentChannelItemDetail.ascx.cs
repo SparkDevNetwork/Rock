@@ -274,10 +274,10 @@ namespace RockWeb.Blocks.Cms
                 contentItem.Content = htmlContent.Text;
                 contentItem.Priority = nbPriority.Text.AsInteger();
 
-                int orderNumber = 0;
-                if ( int.TryParse( PageParameter( "orderNumber" ), out orderNumber ) )
+                // If this is a new item and the channel is manually sorted then we need to set the order to the next number
+                if ( contentItem.Id == 0 && new ContentChannelService( rockContext ).IsManuallySorted( contentItem.ContentChannelId ) )
                 {
-                    contentItem.Order = orderNumber;
+                    contentItem.Order = new ContentChannelItemService( rockContext ).GetNextItemOrderValueForContentChannel( contentItem.ContentChannelId );
                 }
 
                 if ( contentItem.ContentChannelType.IncludeTime )
