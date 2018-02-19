@@ -275,7 +275,6 @@ namespace RockWeb.Blocks.Cms
             Dictionary<string, string> pageParams = new Dictionary<string, string>();
             pageParams.Add( "contentItemId", "0" );
             pageParams.Add( "contentChannelId", _channelId.ToString() );
-            pageParams.Add( "orderNumber", nextOrderNumber.Value );
 
             NavigateToLinkedPage( "DetailPage", pageParams );
         }
@@ -568,17 +567,6 @@ namespace RockWeb.Blocks.Cms
 
             if ( _manuallyOrdered && !isFiltered )
             {
-                int maxOrderNumber = items.Max( i => i.Order );
-
-                if ( maxOrderNumber == 0 )
-                {
-                    nextOrderNumber.Value = "0";
-                }
-                else
-                {
-                    nextOrderNumber.Value = ( maxOrderNumber + 1 ).ToString();
-                }
-
                 return items.OrderBy( i => i.Order ).ToList();
             }
             else
