@@ -1138,6 +1138,7 @@ function(item) {
                         var person = new PersonInfo();
                         person.NickName = row["NickName"].ToString();
                         person.LastName = row["LastName"].ToString();
+                        person.Gender = row["Gender"].ToString().ConvertToEnum<Gender>();
                         person.Email = row["Email"].ToString();
                         person.GivingId = row["GivingId"].ToString();
                         person.Birthdate = row["BirthDate"] as DateTime?;
@@ -1301,6 +1302,7 @@ function(item) {
                             var person = new PersonInfo();
                             person.NickName = row["NickName"].ToString();
                             person.LastName = row["LastName"].ToString();
+                            person.Gender = row["Gender"].ToString().ConvertToEnum<Gender>();
                             person.Email = row["Email"].ToString();
                             person.GivingId = row["GivingId"].ToString();
                             person.Birthdate = row["BirthDate"] as DateTime?;
@@ -2276,6 +2278,8 @@ function(item) {
             public string LastName { get; set; }
 
             public string Email { get; set; }
+
+            public Gender Gender { get; set; }
 
             public int? Age { get; set; }
 
