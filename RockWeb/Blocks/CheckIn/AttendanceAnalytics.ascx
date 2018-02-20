@@ -263,6 +263,7 @@
                                         <asp:HyperLinkField DataNavigateUrlFields="PersonId" DataTextField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName"/>
                                         <Rock:RockBoundField DataField="Person" HeaderText="Person" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:RockBoundField DataField="Person.Gender" HeaderText="Gender" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.GivingId" HeaderText="GivingId" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Birthdate" HeaderText="Birthdate" Visible="false" ExcelExportBehavior="AlwaysInclude" />
