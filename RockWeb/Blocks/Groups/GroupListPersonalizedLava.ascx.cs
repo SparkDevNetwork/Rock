@@ -32,6 +32,11 @@ using Rock.Web.UI.Controls;
 using Rock.Lava;
 using System.Runtime.Caching;
 
+//----
+//CCV CORE
+// 2-20-18 - JHM - Added "CanEdit" and "CanView" group role permissions to lava. 
+// This allows us to remember checks by group role name from our Dashboards, since group role names change all the time.
+//----
 namespace RockWeb.Blocks.Groups
 {
     [DisplayName( "Group List Personalized Lava" )]
@@ -145,6 +150,8 @@ namespace RockWeb.Blocks.Groups
                         Group = groupMember.Group,
                         Role = groupMember.GroupRole.Name,
                         IsLeader = groupMember.GroupRole.IsLeader,
+                        CanView = groupMember.GroupRole.CanView,
+                        CanEdit = groupMember.GroupRole.CanEdit,
                         GroupType = groupMember.Group.GroupType.Name
                     } );
                 }
@@ -187,13 +194,15 @@ namespace RockWeb.Blocks.Groups
             return childGroups;
         }
 
-        [DotLiquid.LiquidType( "Group", "Role", "IsLeader", "GroupType" )]
+        [DotLiquid.LiquidType( "Group", "Role", "IsLeader", "GroupType", "CanView", "CanEdit" )]
         public class GroupInvolvementSummary
         {
             public Group Group { get; set; }
             public string Role { get; set; }
             public bool IsLeader { get; set; }
             public string GroupType { get; set; }
+            public bool CanView { get; set; }
+            public bool CanEdit { get; set; }
         }
 
         #endregion
