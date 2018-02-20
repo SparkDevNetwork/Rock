@@ -79,16 +79,16 @@ namespace church.ccv.Badges.Bio
                 Actions_Adult.Mentored.Result mentorResult;
                 Actions_Adult.Mentored.IsMentored( personId, out mentorResult );
 
-                isCoached = mentorResult.IsMentored( );
-                groupIds = mentorResult.GetCombinedMentorGroups( );
+                isCoached = mentorResult.IsMentored;
+                groupIds = mentorResult.GroupIds;
             }
             else
             {
                 Actions_Student.Mentored.Result mentorResult;
                 Actions_Student.Mentored.IsMentored( personId, out mentorResult );
 
-                isCoached = mentorResult.IsMentored( );
-                groupIds = mentorResult.GetCombinedMentorGroups( );
+                isCoached = mentorResult.IsMentored;
+                groupIds = mentorResult.GroupIds;
             }
 
             // setup the coach lists, which will return as blank if this person isn't being coached

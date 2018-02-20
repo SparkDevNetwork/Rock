@@ -125,8 +125,8 @@ namespace church.ccv.Badges.NextSteps
                         Actions_Adult.PeerLearning.Result peerLearningResult;
                         Actions_Adult.PeerLearning.IsPeerLearning( person.Id, out peerLearningResult );
 
-                        isPeerLearning = peerLearningResult.IsPeerLearning( );
-                        peerLearningGroups = peerLearningResult.GetPeerLearningGroups( );
+                        isPeerLearning = peerLearningResult.IsPeerLearning;
+                        peerLearningGroups = peerLearningResult.GroupIds;
 
                                                 
                         // Serving
@@ -141,8 +141,8 @@ namespace church.ccv.Badges.NextSteps
                         Actions_Adult.Teaching.Result teachingResult;
                         Actions_Adult.Teaching.IsTeaching( person.Id, out teachingResult );
 
-                        isTeaching = teachingResult.IsTeaching( );
-                        teachingGroups = teachingResult.GetCombinedTeachingGroups( );
+                        isTeaching = teachingResult.IsTeaching;
+                        teachingGroups = teachingResult.GroupIds;
 
 
                         // Shared Story
@@ -159,8 +159,8 @@ namespace church.ccv.Badges.NextSteps
                         Actions_Student.PeerLearning.Result peerLearningResult;
                         Actions_Student.PeerLearning.IsPeerLearning( person.Id, out peerLearningResult );
 
-                        isPeerLearning = peerLearningResult.IsPeerLearning( );
-                        peerLearningGroups = peerLearningResult.GetPeerLearningGroups( );
+                        isPeerLearning = peerLearningResult.IsPeerLearning;
+                        peerLearningGroups = peerLearningResult.GroupIds;
 
                                                 
                         // Serving
@@ -175,8 +175,8 @@ namespace church.ccv.Badges.NextSteps
                         Actions_Student.Teaching.Result teachingResult;
                         Actions_Student.Teaching.IsTeaching( person.Id, out teachingResult );
 
-                        isTeaching = teachingResult.IsTeaching( );
-                        teachingGroups = teachingResult.GetCombinedTeachingGroups( );
+                        isTeaching = teachingResult.IsTeaching;
+                        teachingGroups = teachingResult.GroupIds;
 
                         // Shared Story
                         sharedStory = Actions_Student.ShareStory.SharedStory( person.Id, out sharedStoryIds );

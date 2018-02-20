@@ -515,11 +515,11 @@ namespace church.ccv.MobileApp
 
                     Actions_Adult.Mentored.Result mentoredResult;
                     Actions_Adult.Mentored.IsMentored( person.Id, out mentoredResult );
-                    personData.IsMentored = mentoredResult.IsMentored( );
+                    personData.IsMentored = mentoredResult.IsMentored;
 
                     Actions_Adult.PeerLearning.Result peerLearningResult;
                     Actions_Adult.PeerLearning.IsPeerLearning( person.Id, out peerLearningResult );
-                    personData.IsPeerLearning = peerLearningResult.IsPeerLearning( );
+                    personData.IsPeerLearning = peerLearningResult.IsPeerLearning;
 
                     Actions_Adult.Serving.Result servingResult;
                     Actions_Adult.Serving.IsServing( person.Id, out servingResult );
@@ -527,7 +527,7 @@ namespace church.ccv.MobileApp
 
                     Actions_Adult.Teaching.Result teachingResult;
                     Actions_Adult.Teaching.IsTeaching( person.Id, out teachingResult );
-                    personData.IsTeaching = teachingResult.IsTeaching( );
+                    personData.IsTeaching = teachingResult.IsTeaching;
 
                     DateTime? startingPointDate;
                     personData.TakenStartingPoint = Actions_Adult.StartingPoint.TakenStartingPoint( person.Id, out startingPointDate );
@@ -548,11 +548,11 @@ namespace church.ccv.MobileApp
 
                     Actions_Student.Mentored.Result mentoredResult;
                     Actions_Student.Mentored.IsMentored( person.Id, out mentoredResult );
-                    personData.IsMentored = mentoredResult.IsMentored( );
+                    personData.IsMentored = mentoredResult.IsMentored;
 
                     Actions_Student.PeerLearning.Result peerLearningResult;
                     Actions_Student.PeerLearning.IsPeerLearning( person.Id, out peerLearningResult );
-                    personData.IsPeerLearning = peerLearningResult.IsPeerLearning( );
+                    personData.IsPeerLearning = peerLearningResult.IsPeerLearning;
 
                     Actions_Student.Serving.Result servingResult;
                     Actions_Student.Serving.IsServing( person.Id, out servingResult );
@@ -560,7 +560,7 @@ namespace church.ccv.MobileApp
 
                     Actions_Student.Teaching.Result teachingResult;
                     Actions_Student.Teaching.IsTeaching( person.Id, out teachingResult );
-                    personData.IsTeaching = teachingResult.IsTeaching( );
+                    personData.IsTeaching = teachingResult.IsTeaching;
 
                     DateTime? startingPointDate;
                     personData.TakenStartingPoint = Actions_Student.StartingPoint.TakenStartingPoint( person.Id, out startingPointDate );

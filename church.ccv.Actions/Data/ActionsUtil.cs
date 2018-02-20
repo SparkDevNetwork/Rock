@@ -203,43 +203,15 @@ namespace church.ccv.Actions
             class ResultTable
             {
                 public int PersonId { get; set; }
-            	
-                public bool Neighborhood_IsPeerLearning { get; set; }
-	            public string Neighborhood_GroupIds { get; set; }
 
-                public bool YoungAdult_IsPeerLearning { get; set; }
-                public string YoungAdult_GroupIds { get; set; }
+                public bool IsPeerLearning { get; set; }
+                public string GroupIds { get; set; }
             }
 
             public class Result
             {
-                public bool Neighborhood_IsPeerLearning { get; set; }
-	            public List<int> Neighborhood_GroupIds { get; set; }
-
-                public bool YoungAdult_IsPeerLearning { get; set; }
-                public List<int> YoungAdult_GroupIds { get; set; }
-
-                public bool IsPeerLearning( )
-                {
-                    return  // if any of the above learning flags are true, then yes, they're peer learning
-                            (Neighborhood_IsPeerLearning == true ||
-                             YoungAdult_IsPeerLearning == true )
-                         
-                             ? true : false;
-                }
-
-                public List<int> GetPeerLearningGroups( )
-                {
-                    // this combines all group ids, because it's likely the caller maybe just need
-                    // to know the group ids, and doesn't care about which group is which type.
-
-                    List<int> groupIds = new List<int>( );
-
-                    groupIds.AddRange( Neighborhood_GroupIds );
-                    groupIds.AddRange( YoungAdult_GroupIds );
-
-                    return groupIds;
-                }
+                public bool IsPeerLearning { get; set; }
+	            public List<int> GroupIds { get; set; }
             }
 
             public static void IsPeerLearning( int personId, out Result returnResult )
@@ -255,11 +227,8 @@ namespace church.ccv.Actions
                 // convert the resultTable into a result for the caller
                 returnResult = new Result( )
                 {
-                    Neighborhood_IsPeerLearning = sqlResultTable.Neighborhood_IsPeerLearning,
-                    Neighborhood_GroupIds = sqlResultTable.Neighborhood_GroupIds != null ? sqlResultTable.Neighborhood_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-
-                    YoungAdult_IsPeerLearning = sqlResultTable.YoungAdult_IsPeerLearning,
-                    YoungAdult_GroupIds = sqlResultTable.YoungAdult_GroupIds != null ? sqlResultTable.YoungAdult_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
+                    IsPeerLearning = sqlResultTable.IsPeerLearning,
+                    GroupIds = sqlResultTable.GroupIds != null ? sqlResultTable.GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
                 };
             }
         }
@@ -273,50 +242,14 @@ namespace church.ccv.Actions
             {
                 public int PersonId { get; set; }
 
-                public bool Neighborhood_IsMentored { get; set; }
-                public string Neighborhood_GroupIds { get; set; }
-    
-                public bool YoungAdult_IsMentored { get; set; }
-                public string YoungAdult_GroupIds { get; set; }
-
-                public bool NextSteps_IsMentored { get; set; }
-                public string NextSteps_GroupIds { get; set; }
+                public bool IsMentored { get; set; }
+                public string GroupIds { get; set; }
             }
 
             public class Result
             {
-                public bool Neighborhood_IsMentored { get; set; }
-                public List<int> Neighborhood_GroupIds { get; set; }
-    
-                public bool YoungAdult_IsMentored { get; set; }
-                public List<int> YoungAdult_GroupIds { get; set; }
-
-                public bool NextSteps_IsMentored { get; set; }
-                public List<int> NextSteps_GroupIds { get; set; }
-
-                public bool IsMentored( )
-                {
-                    return  // if any of the above mentored flags are true, then yes, they're being mentored.
-                            (Neighborhood_IsMentored == true ||
-                             YoungAdult_IsMentored == true ||
-                             NextSteps_IsMentored == true) 
-                         
-                             ? true : false;
-                }
-
-                public List<int> GetCombinedMentorGroups( )
-                {
-                    // this combines all group ids, because it's likely the caller maybe just need
-                    // to know the group ids, and doesn't care about which group is which type.
-
-                    List<int> groupIds = new List<int>( );
-
-                    groupIds.AddRange( Neighborhood_GroupIds );
-                    groupIds.AddRange( YoungAdult_GroupIds );
-                    groupIds.AddRange( NextSteps_GroupIds );
-
-                    return groupIds;
-                }
+                public bool IsMentored { get; set; }
+                public List<int> GroupIds { get; set; }
             }
 
             public static void IsMentored( int personId, out Result returnResult )
@@ -332,14 +265,8 @@ namespace church.ccv.Actions
                 // convert the resultTable into a result for the caller
                 returnResult = new Result( )
                 {
-                    Neighborhood_IsMentored = sqlResultTable.Neighborhood_IsMentored,
-                    Neighborhood_GroupIds = sqlResultTable.Neighborhood_GroupIds != null ? sqlResultTable.Neighborhood_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-    
-                    YoungAdult_IsMentored = sqlResultTable.YoungAdult_IsMentored,
-                    YoungAdult_GroupIds = sqlResultTable.YoungAdult_GroupIds != null ? sqlResultTable.YoungAdult_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-
-                    NextSteps_IsMentored = sqlResultTable.NextSteps_IsMentored,
-                    NextSteps_GroupIds = sqlResultTable.NextSteps_GroupIds != null ? sqlResultTable.NextSteps_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
+                    IsMentored = sqlResultTable.IsMentored,
+                    GroupIds = sqlResultTable.GroupIds != null ? sqlResultTable.GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
                 };
             }
         }
@@ -379,7 +306,7 @@ namespace church.ccv.Actions
                 returnResult = new Result( )
                 {
                     IsServing = sqlResultTable.IsServing,
-                    GroupIds = sqlResultTable.GroupIds != null ? sqlResultTable.GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
+                    GroupIds = sqlResultTable.GroupIds != null ? sqlResultTable.GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
                 };
             }
         }
@@ -393,126 +320,14 @@ namespace church.ccv.Actions
             {
                 public int PersonId { get; set; }
             
-                public bool Neighborhood_SubSection_IsTeaching  { get; set; }
-                public string Neighborhood_SubSection_GroupIds  { get; set; }
-
-                public bool Neighborhood_IsTeaching  { get; set; }
-                public string Neighborhood_GroupIds { get; set; }
-    
-                public bool YoungAdult_Section_IsTeaching { get; set; }
-                public string YoungAdult_Section_GroupIds { get; set; }
-
-                public bool YoungAdult_IsTeaching { get; set; }
-                public string YoungAdult_GroupIds { get; set; }
-    
-                public bool NextSteps_SubSection_IsTeaching { get; set; }
-                public string NextSteps_SubSection_GroupIds { get; set; }
-
-                public bool NextSteps_IsTeaching { get; set; }
-                public string NextSteps_GroupIds { get; set; }
-	
-                public bool NextGen_Section_IsTeaching { get; set; }
-                public string NextGen_Section_GroupIds { get; set; }
-
-                public bool NextGen_IsTeaching { get; set; }
-                public string NextGen_GroupIds { get; set; }
-
-                public bool LifeSteps_SubSection_IsTeaching { get; set; }
-                public string LifeSteps_SubSection_GroupIds { get; set; }
-
-                public bool LifeSteps_IsTeaching { get; set; }
-                public string LifeSteps_GroupIds { get; set; }
-
-                public bool ShortTerm_SubSection_IsTeaching  { get; set; }
-                public string ShortTerm_SubSection_GroupIds  { get; set; }
-
-                public bool ShortTerm_IsTeaching  { get; set; }
-                public string ShortTerm_GroupIds { get; set; }
+                public bool IsTeaching  { get; set; }
+                public string GroupIds  { get; set; }
             }
 
             public class Result
             {
-                public bool Neighborhood_SubSection_IsTeaching  { get; set; }
-                public List<int> Neighborhood_SubSection_GroupIds  { get; set; }
-
-                public bool Neighborhood_IsTeaching  { get; set; }
-                public List<int> Neighborhood_GroupIds { get; set; }
-    
-                public bool YoungAdult_Section_IsTeaching { get; set; }
-                public List<int> YoungAdult_Section_GroupIds { get; set; }
-
-                public bool YoungAdult_IsTeaching { get; set; }
-                public List<int> YoungAdult_GroupIds { get; set; }
-    
-                public bool NextSteps_SubSection_IsTeaching { get; set; }
-                public List<int> NextSteps_SubSection_GroupIds { get; set; }
-
-                public bool NextSteps_IsTeaching { get; set; }
-                public List<int> NextSteps_GroupIds { get; set; }
-	
-                public bool NextGen_Section_IsTeaching { get; set; }
-                public List<int> NextGen_Section_GroupIds { get; set; }
-
-                public bool NextGen_IsTeaching { get; set; }
-                public List<int> NextGen_GroupIds { get; set; }
-
-                public bool LifeSteps_SubSection_IsTeaching { get; set; }
-                public List<int> LifeSteps_SubSection_GroupIds { get; set; }
-
-                public bool LifeSteps_IsTeaching { get; set; }
-                public List<int> LifeSteps_GroupIds { get; set; }
-
-                public bool ShortTerm_SubSection_IsTeaching  { get; set; }
-                public List<int> ShortTerm_SubSection_GroupIds  { get; set; }
-
-                public bool ShortTerm_IsTeaching  { get; set; }
-                public List<int> ShortTerm_GroupIds { get; set; }
-
-                public bool IsTeaching( )
-                {
-                    return // if any of the above teaching flags are true, then yes, they're teaching.
-                           (Neighborhood_SubSection_IsTeaching == true ||
-                            Neighborhood_IsTeaching == true ||
-                            YoungAdult_Section_IsTeaching == true ||
-                            YoungAdult_IsTeaching == true ||
-                            NextSteps_SubSection_IsTeaching == true ||
-                            NextSteps_IsTeaching == true ||
-                            NextGen_Section_IsTeaching == true ||
-                            NextGen_IsTeaching == true ||
-                            LifeSteps_SubSection_IsTeaching == true ||
-                            LifeSteps_IsTeaching == true ||
-                            ShortTerm_SubSection_IsTeaching == true ||
-                            ShortTerm_IsTeaching == true) 
-                    
-                            ? true : false;
-                }
-
-                public List<int> GetCombinedTeachingGroups( )
-                {
-                    // this combines all group ids, because it's likely the caller maybe just need
-                    // to know the group ids, and doesn't care about which group is which type.
-                    List<int> groupIds = new List<int>( );
-
-                    groupIds.AddRange( Neighborhood_SubSection_GroupIds );
-                    groupIds.AddRange( Neighborhood_GroupIds );
-
-                    groupIds.AddRange( YoungAdult_Section_GroupIds );
-                    groupIds.AddRange( YoungAdult_GroupIds );
-
-                    groupIds.AddRange( NextSteps_SubSection_GroupIds );
-                    groupIds.AddRange( NextSteps_GroupIds );
-
-                    groupIds.AddRange( NextGen_Section_GroupIds );
-                    groupIds.AddRange( NextGen_GroupIds );
-
-                    groupIds.AddRange( LifeSteps_SubSection_GroupIds );
-                    groupIds.AddRange( LifeSteps_GroupIds );
-
-                    groupIds.AddRange( ShortTerm_SubSection_GroupIds );
-                    groupIds.AddRange( ShortTerm_GroupIds );
-
-                    return groupIds;
-                }
+                public bool IsTeaching  { get; set; }
+                public List<int> GroupIds  { get; set; }
             }
 
             public static void IsTeaching( int personId, out Result returnResult )
@@ -528,41 +343,8 @@ namespace church.ccv.Actions
                 // convert the resultTable into a result for the caller
                 returnResult = new Result( )
                 {
-                    Neighborhood_SubSection_IsTeaching = sqlResultTable.Neighborhood_SubSection_IsTeaching,
-                    Neighborhood_SubSection_GroupIds   = sqlResultTable.Neighborhood_SubSection_GroupIds != null ? sqlResultTable.Neighborhood_SubSection_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-
-                    Neighborhood_IsTeaching            = sqlResultTable.Neighborhood_IsTeaching,
-                    Neighborhood_GroupIds              = sqlResultTable.Neighborhood_GroupIds != null ? sqlResultTable.Neighborhood_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-    
-                    YoungAdult_Section_IsTeaching      = sqlResultTable.YoungAdult_Section_IsTeaching,
-                    YoungAdult_Section_GroupIds        = sqlResultTable.YoungAdult_Section_GroupIds != null ? sqlResultTable.YoungAdult_Section_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-
-                    YoungAdult_IsTeaching              = sqlResultTable.YoungAdult_IsTeaching,
-                    YoungAdult_GroupIds                = sqlResultTable.YoungAdult_GroupIds != null ? sqlResultTable.YoungAdult_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-    
-                    NextSteps_SubSection_IsTeaching    = sqlResultTable.NextSteps_SubSection_IsTeaching,
-                    NextSteps_SubSection_GroupIds      = sqlResultTable.NextSteps_SubSection_GroupIds != null ? sqlResultTable.NextSteps_SubSection_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-
-                    NextSteps_IsTeaching               = sqlResultTable.NextSteps_IsTeaching,
-                    NextSteps_GroupIds                 = sqlResultTable.NextSteps_GroupIds != null ? sqlResultTable.NextSteps_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-	
-                    NextGen_Section_IsTeaching         = sqlResultTable.NextGen_Section_IsTeaching,
-                    NextGen_Section_GroupIds           = sqlResultTable.NextGen_Section_GroupIds != null ? sqlResultTable.NextGen_Section_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-
-                    NextGen_IsTeaching                 = sqlResultTable.NextGen_IsTeaching,
-                    NextGen_GroupIds                   = sqlResultTable.NextGen_GroupIds != null ? sqlResultTable.NextGen_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-
-                    LifeSteps_SubSection_IsTeaching    = sqlResultTable.LifeSteps_SubSection_IsTeaching,
-                    LifeSteps_SubSection_GroupIds      = sqlResultTable.LifeSteps_SubSection_GroupIds != null ? sqlResultTable.LifeSteps_SubSection_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-
-                    LifeSteps_IsTeaching               = sqlResultTable.LifeSteps_IsTeaching,
-                    LifeSteps_GroupIds                 = sqlResultTable.LifeSteps_GroupIds != null ? sqlResultTable.LifeSteps_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-
-                    ShortTerm_SubSection_IsTeaching    = sqlResultTable.ShortTerm_SubSection_IsTeaching,
-                    ShortTerm_SubSection_GroupIds      = sqlResultTable.ShortTerm_SubSection_GroupIds != null ? sqlResultTable.ShortTerm_SubSection_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
-
-                    ShortTerm_IsTeaching               = sqlResultTable.ShortTerm_IsTeaching,
-                    ShortTerm_GroupIds                 = sqlResultTable.ShortTerm_GroupIds != null ? sqlResultTable.ShortTerm_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
+                    IsTeaching = sqlResultTable.IsTeaching,
+                    GroupIds   = sqlResultTable.GroupIds != null ? sqlResultTable.GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
                 };
             }
         }
@@ -760,34 +542,14 @@ namespace church.ccv.Actions
             {
                 public int PersonId { get; set; }
             	
-                public bool NextGen_IsPeerLearning { get; set; }
-	            public string NextGen_GroupIds { get; set; }
+                public bool IsPeerLearning { get; set; }
+	            public string GroupIds { get; set; }
             }
 
             public class Result
             {
-                public bool NextGen_IsPeerLearning { get; set; }
-	            public List<int> NextGen_GroupIds { get; set; }
-
-                public bool IsPeerLearning( )
-                {
-                    return  // if any of the above learning flags are true, then yes, they're peer learning
-                            (NextGen_IsPeerLearning == true)
-                         
-                             ? true : false;
-                }
-
-                public List<int> GetPeerLearningGroups( )
-                {
-                    // this combines all group ids, because it's likely the caller maybe just need
-                    // to know the group ids, and doesn't care about which group is which type.
-
-                    List<int> groupIds = new List<int>( );
-
-                    groupIds.AddRange( NextGen_GroupIds );
-
-                    return groupIds;
-                }
+                public bool IsPeerLearning { get; set; }
+	            public List<int> GroupIds { get; set; }
             }
 
             public static void IsPeerLearning( int personId, out Result returnResult )
@@ -803,8 +565,8 @@ namespace church.ccv.Actions
                 // convert the resultTable into a result for the caller
                 returnResult = new Result( )
                 {
-                    NextGen_IsPeerLearning = sqlResultTable.NextGen_IsPeerLearning,
-                    NextGen_GroupIds = sqlResultTable.NextGen_GroupIds != null ? sqlResultTable.NextGen_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
+                    IsPeerLearning = sqlResultTable.IsPeerLearning,
+                    GroupIds = sqlResultTable.GroupIds != null ? sqlResultTable.GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
                 };
             }
         }
@@ -818,34 +580,14 @@ namespace church.ccv.Actions
             {
                 public int PersonId { get; set; }
 
-                public bool NextGen_IsMentored { get; set; }
-                public string NextGen_GroupIds { get; set; }
+                public bool IsMentored { get; set; }
+                public string GroupIds { get; set; }
             }
 
             public class Result
             {
-                public bool NextGen_IsMentored { get; set; }
-                public List<int> NextGen_GroupIds { get; set; }
-
-                public bool IsMentored( )
-                {
-                    return  // if any of the above mentored flags are true, then yes, they're being mentored.
-                            (NextGen_IsMentored == true) 
-                         
-                             ? true : false;
-                }
-
-                public List<int> GetCombinedMentorGroups( )
-                {
-                    // this combines all group ids, because it's likely the caller maybe just need
-                    // to know the group ids, and doesn't care about which group is which type.
-
-                    List<int> groupIds = new List<int>( );
-
-                    groupIds.AddRange( NextGen_GroupIds );
-
-                    return groupIds;
-                }
+                public bool IsMentored { get; set; }
+                public List<int> GroupIds { get; set; }
             }
 
             public static void IsMentored( int personId, out Result returnResult )
@@ -861,8 +603,8 @@ namespace church.ccv.Actions
                 // convert the resultTable into a result for the caller
                 returnResult = new Result( )
                 {
-                    NextGen_IsMentored = sqlResultTable.NextGen_IsMentored,
-                    NextGen_GroupIds = sqlResultTable.NextGen_GroupIds != null ? sqlResultTable.NextGen_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
+                    IsMentored = sqlResultTable.IsMentored,
+                    GroupIds = sqlResultTable.GroupIds != null ? sqlResultTable.GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
                 };
             }
         }
@@ -916,33 +658,14 @@ namespace church.ccv.Actions
             {
                 public int PersonId { get; set; }
             
-                public bool Undefined_IsTeaching  { get; set; }
-                public string Undefined_GroupIds  { get; set; }
+                public bool IsTeaching  { get; set; }
+                public string GroupIds  { get; set; }
             }
 
             public class Result
             {
-                public bool Undefined_IsTeaching  { get; set; }
-                public List<int> Undefined_GroupIds  { get; set; }
-
-                public bool IsTeaching( )
-                {
-                    return // if any of the above teaching flags are true, then yes, they're teaching.
-                           (Undefined_IsTeaching == true) 
-                    
-                            ? true : false;
-                }
-
-                public List<int> GetCombinedTeachingGroups( )
-                {
-                    // this combines all group ids, because it's likely the caller maybe just need
-                    // to know the group ids, and doesn't care about which group is which type.
-                    List<int> groupIds = new List<int>( );
-
-                    groupIds.AddRange( Undefined_GroupIds );
-
-                    return groupIds;
-                }
+                public bool IsTeaching  { get; set; }
+                public List<int> GroupIds  { get; set; }
             }
 
             public static void IsTeaching( int personId, out Result returnResult )
@@ -958,8 +681,8 @@ namespace church.ccv.Actions
                 // convert the resultTable into a result for the caller
                 returnResult = new Result( )
                 {
-                    Undefined_IsTeaching = sqlResultTable.Undefined_IsTeaching,
-                    Undefined_GroupIds   = sqlResultTable.Undefined_GroupIds != null ? sqlResultTable.Undefined_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
+                    IsTeaching = sqlResultTable.IsTeaching,
+                    GroupIds   = sqlResultTable.GroupIds != null ? sqlResultTable.GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
                 };
             }
         }
