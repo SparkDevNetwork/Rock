@@ -140,14 +140,30 @@ namespace Rock.Workflow.Action
             if ( !errorMessages.Any() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
-                var groupMember = new GroupMember();
-                groupMember.PersonId = person.Id;
-                groupMember.GroupId = group.Id;
-                groupMember.GroupRoleId = groupRoleId.Value;
-                groupMember.GroupMemberStatus = this.GetAttributeValue( action, "GroupMemberStatus" ).ConvertToEnum<GroupMemberStatus>( GroupMemberStatus.Active );
+                var groupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId( group.Id, person.Id, groupRoleId.Value );
+                if ( groupMember == null )
+                {
+                    groupMember = new GroupMember();
+                    groupMember.PersonId = person.Id;
+                    groupMember.GroupId = group.Id;
+                    groupMember.GroupRoleId = groupRoleId.Value;
+                    groupMember.GroupMemberStatus = this.GetAttributeValue( action, "GroupMemberStatus" ).ConvertToEnum<GroupMemberStatus>( GroupMemberStatus.Active );
+                    groupMemberService.Add( groupMember );
+                }
+                else
+                {
+                    action.AddLogEntry( string.Format(
+                        "{0} already belongs to the {1}, and cannot be added again with the same role",
+                        person,
+                        group.Name ), true );
+                    if ( groupMember.GroupMemberStatus != GroupMemberStatus.Active )
+                    {
+                        groupMember.GroupMemberStatus = this.GetAttributeValue( action, "GroupMemberStatus" ).ConvertToEnum<GroupMemberStatus>( GroupMemberStatus.Active );
+                    }
+                }
+
                 if ( groupMember.IsValidGroupMember( rockContext ) )
                 {
-                    groupMemberService.Add( groupMember );
                     rockContext.SaveChanges();
 
                     if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
