@@ -16,102 +16,635 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Mail;
+using System.Linq;
 using System.Threading.Tasks;
 using RestSharp;
 using RestSharp.Authenticators;
+using Rock.Model;
+using Rock.Web.Cache;
+using System.Text.RegularExpressions;
+using Rock.Data;
+using Rock.Transactions;
+using System.IO;
+using System.ComponentModel;
+using Rock.Attribute;
+using System.ComponentModel.Composition;
+using System.Data.Entity;
 
-namespace Rock.Mailgun.Communication.Transport
+namespace Rock.Communication.Transport
 {
-    public class MailGunHtml
+    [Description( "Sends a communication through Mailgun's HTTP API" )]
+    [Export( typeof( TransportComponent ) )]
+    [ExportMetadata( "ComponentName", "Mailgun HTTP" )]
+
+    [TextField( "Base URL", "The API URL provided by Mailgun, keep the default in most cases", true, @"https://api.mailgun.net/v3", "", 0, "BaseURL" )]
+    [TextField( "Resource", "The URL part provided by Mailgun, keep the default in most cases", true, @"{domian}/messages", "", 1, "Resource" )]
+    [TextField("Domain", "The email domain e.g. sparkdevnetwork.org", true, "", "", 2, "Domain" )]
+    [TextField( "API Key", "The API Key provided by Mailgun, starts with \"key-\"", true, "", "", 3, "APIKey" )]
+    [BooleanField( "Track Opens", "", true, "", 4, "TrackOpens" )]
+    public class MailGunHtml : TransportComponent
     {
-        public IRestResponse response { get; set; }
-        private Uri BASE_URL = new Uri("https://api.mailgun.net/v3");
-        private const string API_KEY = "apikeyguidhere";
+        /// <summary>
+        /// Gets the response returned from the Mailgun API REST call.
+        /// </summary>
+        /// <value>
+        /// The response.
+        /// </value>
+        public IRestResponse Response { get; set; }
 
-        public void Send(MailGunEmail mailGunEmail)
+        /// <summary>
+        /// Gets a value indicating whether transport has ability to track recipients opening the communication.
+        /// Mailgun automatically trackes opens, clicks, and unsubscribes. Use this to override domain setting.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if transport can track opens; otherwise, <c>false</c>.
+        /// </value>
+        public override bool CanTrackOpens
         {
-            RestRequest restRequest = new RestRequest();
-            restRequest.Resource = "{messages}";
-            restRequest.Method = Method.POST;
+            get { return GetAttributeValue( "TrackOpens" ).AsBoolean( true ); }
+        }
 
-            foreach( var parameter in mailGunEmail.ToTupleList())
+        /// <summary>
+        /// Gets the HTTP Status description returned from Mailgun's API
+        /// </summary>
+        /// <value>
+        /// The status note.
+        /// </value>
+        public string StatusNote
+        {
+            get
             {
-                if( !string.IsNullOrWhiteSpace(parameter.Item2) )
+                return Response.StatusDescription;
+            }
+        }
+
+        /// <summary>
+        /// Sends the specified rock message.
+        /// </summary>
+        /// <param name="rockMessage">The rock message.</param>
+        /// <param name="mediumEntityTypeId">The medium entity type identifier. Not used.</param>
+        /// <param name="mediumAttributes">The medium attributes. Not used.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public override bool Send( RockMessage rockMessage, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes, out List<string> errorMessages )
+        {
+            errorMessages = new List<string>();
+
+            var emailMessage = rockMessage as RockEmailMessage;
+            if ( emailMessage == null )
+            {
+                return !errorMessages.Any();
+            }
+
+            var globalAttributes = GlobalAttributesCache.Read();
+
+            string fromAddress = emailMessage.FromEmail.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationEmail" ) : emailMessage.FromEmail;
+            string fromName = emailMessage.FromName.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationName" ) : emailMessage.FromName;
+
+            if ( fromAddress.IsNullOrWhiteSpace() )
+            {
+                errorMessages.Add( "A From address was not provided." );
+                return false;
+            }
+
+            // Common Merge Field
+            var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, rockMessage.CurrentPerson );
+            foreach ( var mergeField in rockMessage.AdditionalMergeFields )
+            {
+                mergeFields.AddOrReplace( mergeField.Key, mergeField.Value );
+            }
+
+            // Resolve any possible merge fields in the from address
+            fromAddress = fromAddress.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
+            fromName = fromName.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
+
+            RestRequest restRequest = null;
+            foreach ( var recipientData in rockMessage.GetRecipientData() )
+            {
+                try
                 {
-                    restRequest.AddParameter( parameter.Item1, parameter.Item2 );
+                    restRequest = new RestRequest( GetAttributeValue("Resource"), Method.POST );
+                    restRequest.AddParameter( "domian", GetAttributeValue("Domain"), ParameterType.UrlSegment );
+
+                    // Reply To
+                    if ( emailMessage.ReplyToEmail.IsNotNullOrWhitespace() )
+                    {
+                        // Resolve any possible merge fields in the replyTo address
+                        restRequest.AddParameter( "h:Reply-To", emailMessage.ReplyToEmail.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) );
+                    }
+
+                    foreach ( var mergeField in mergeFields )
+                    {
+                        recipientData.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                    }
+
+                    // From
+                    restRequest.AddParameter( "from", new MailAddress( fromAddress, fromName).ToString() );
+
+                    // To
+                    restRequest.AddParameter(
+                        "to",
+                        new MailAddress(
+                        recipientData.To.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ),
+                        recipientData.Name.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) ) );
+
+                    // Safe Sender checks
+                    CheckSafeSender( restRequest, fromAddress, globalAttributes.GetValue( "OrganizationEmail" ) );
+
+                    // CC
+                    foreach ( string cc in emailMessage.CCEmails.Where( e => e != string.Empty ) )
+                    {
+                        string ccRecipient = cc.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
+                        restRequest.AddParameter("cc", ccRecipient);
+                    }
+
+                    // BCC
+                    foreach ( string bcc in emailMessage.BCCEmails.Where( e => e != string.Empty ) )
+                    {
+                        string bccRecipient = bcc.ResolveMergeFields( recipientData.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
+                        restRequest.AddParameter( "bcc", bccRecipient );
+                    }
+
+                    // Subject
+                    string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
+                    restRequest.AddParameter( "subject", subject );
+
+                    // Body (html)
+                    string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, recipientData.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
+                    body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                    restRequest.AddParameter( "html", body );
+
+                    // Communication record for tracking opens & clicks
+                    var metaData = new Dictionary<string, string>( emailMessage.MessageMetaData );
+                    Guid? recipientGuid = null;
+
+                    if ( emailMessage.CreateCommunicationRecord )
+                    {
+                        recipientGuid = Guid.NewGuid();
+                        metaData.Add( "communication_recipient_guid", recipientGuid.Value.ToString() );
+                    }
+
+                    // Additional headers
+                    foreach ( var header in metaData )
+                    {
+                        restRequest.AddParameter( "h:" + header.Key, header.Value );
+                    }
+
+                    restRequest.AddParameter( "o:tracking", CanTrackOpens.ToYesNo() );
+                    restRequest.AddParameter( "o:tracking-opens", CanTrackOpens.ToYesNo() );
+                    restRequest.AddParameter( "o:tracking-clicks", CanTrackOpens.ToYesNo() );
+
+                    // Attachments
+                    if ( emailMessage.Attachments.Any() )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var binaryFileService = new BinaryFileService( rockContext );
+                            foreach ( var binaryFileId in emailMessage.Attachments.Where( a => a != null ).Select( a => a.Id ) )
+                            {
+                                var attachment = binaryFileService.Get( binaryFileId );
+                                if (attachment != null )
+                                {
+                                    MemoryStream ms = new MemoryStream();
+                                    attachment.ContentStream.CopyTo( ms );
+                                    restRequest.AddFile( "attachment", ms.ToArray(), attachment.FileName );
+                                }
+                            }
+                        }
+                    }
+
+                    // Send it
+                    RestClient restClient = new RestClient
+                    {
+                        BaseUrl = new Uri(GetAttributeValue( "BaseURL" ) ),
+                        Authenticator = new HttpBasicAuthenticator( "api", GetAttributeValue( "APIKey" ) )
+                    };
+
+                    // Call the API and get the response
+                    Response = restClient.Execute( restRequest );
+
+                    // Create the communication record
+                    if ( emailMessage.CreateCommunicationRecord )
+                    {
+                        var transaction = new SaveCommunicationTransaction( recipientData.To, emailMessage.FromName, emailMessage.FromName, subject, body );
+                        transaction.RecipientGuid = recipientGuid;
+                        RockQueue.TransactionQueue.Enqueue( transaction );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    errorMessages.Add( ex.Message );
+                    ExceptionLogService.LogException( ex );
                 }
             }
 
-            RestClient restClient = new RestClient
-            {
-                BaseUrl = BASE_URL,
-                Authenticator = new HttpBasicAuthenticator( "api", API_KEY )
-            };
-
-            restClient.Execute( restRequest );
+            return !errorMessages.Any();
         }
-    }
 
-    // TODO: put this in a different file
-    public class MailGunEmail
-    {
-
-        public string From { get; set; }
-        public string To { get; set; }
-        public string Cc { get; set; }
-        public string Bcc { get; set; }
-        public string Subject { get; set; }
-        public string Text { get; set; }
-        public string Html { get; set; }
-        public string Attachemnt { get; set; }
-        public string InLineImage { get; set; }
-        public List<string> Tags { get; set; }
-        public bool Dkim { get; set; }
-        public DateTime DeliveryTime { get; set; }
-        public bool TestMode { get; set; }
-        public bool Tracking { get; set; }
-        public TrackingClicksOptions TrackingClicks { get; set; }
-        public bool TrackingOpens { get; set; }
-        public bool RequireTls { get; set; }
-        public bool SkipVerification { get; set; }
-        //public List<string> CustomHeaders { get; set; }
-        //public List<string> CustomJsonData { get; set; }
-
-        public List<Tuple<string, string>> ToTupleList()
+        public override void Send( Model.Communication communication, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes )
         {
-            var list = new List<Tuple<string, string>>();
-            list.Add( Tuple.Create( "from", From ) );
-            list.Add( Tuple.Create( "to", To ) );
-            list.Add( Tuple.Create( "cc", Cc ) );
-            list.Add( Tuple.Create( "bcc", Bcc ) );
-            list.Add( Tuple.Create( "subject", Subject ) );
-            list.Add( Tuple.Create( "text", Text ) );
-            list.Add( Tuple.Create( "html", Html ) );
-            list.Add( Tuple.Create( "attachment", Attachemnt ) );
-            list.Add( Tuple.Create( "inline", InLineImage ) );
-            list.Add( Tuple.Create( "o:dkim", Dkim.ToYesNo() ) );
-            list.Add( Tuple.Create( "o:deliverytime", DeliveryTime.ToUniversalTime().ToString() ) );
-            list.Add( Tuple.Create( "o:testmode", TestMode.ToYesNo() ) );
-            list.Add( Tuple.Create( "o:tracking", Tracking.ToYesNo() ) );
-            list.Add( Tuple.Create( "o:tracking-clicks", TrackingClicks.ToString() ) );
-            list.Add( Tuple.Create( "o:tracking-opens", TrackingOpens.ToYesNo() ) );
-            list.Add( Tuple.Create( "o:require-tls", RequireTls.ToYesNo() ) );
-            list.Add( Tuple.Create( "o:skip-verification", SkipVerification.ToYesNo() ) );
-
-            foreach ( string tag in Tags )
+            using ( var communicationRockContext = new RockContext() )
             {
-                list.Add( Tuple.Create( "o:tag", tag ) );
+                // Requery the Communication
+                communication = new CommunicationService( communicationRockContext )
+                    .Queryable().Include( a => a.CreatedByPersonAlias.Person ).Include( a => a.CommunicationTemplate )
+                    .FirstOrDefault( c => c.Id == communication.Id );
+
+                // If there are no pending recipents than just exit the method
+                if ( communication != null &&
+                    communication.Status == Model.CommunicationStatus.Approved &&
+                    ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
+                {
+                    var qryRecipients = new CommunicationRecipientService( communicationRockContext ).Queryable();
+                    if ( !qryRecipients
+                        .Where( r =>
+                            r.CommunicationId == communication.Id &&
+                            r.Status == Model.CommunicationRecipientStatus.Pending &&
+                            r.MediumEntityTypeId.HasValue &&
+                            r.MediumEntityTypeId.Value == mediumEntityTypeId )
+                        .Any())
+                    {
+                        return;
+                    }
+                }
+
+                var currentPerson = communication.CreatedByPersonAlias?.Person;
+                var globalAttributes = GlobalAttributesCache.Read();
+                string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
+                var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
+
+                string fromAddress = string.IsNullOrWhiteSpace( communication.FromEmail ) ? globalAttributes.GetValue( "OrganizationEmail" ) : communication.FromEmail;
+                string fromName = string.IsNullOrWhiteSpace( communication.FromName ) ? globalAttributes.GetValue( "OrganizationName" ) : communication.FromName;
+
+                // Resolve any possible merge fields in the from address
+                fromAddress = fromAddress.ResolveMergeFields( mergeFields, currentPerson, communication.EnabledLavaCommands );
+                fromName = fromName.ResolveMergeFields( mergeFields, currentPerson, communication.EnabledLavaCommands );
+                Parameter replyTo = new Parameter();
+                
+                // Reply To
+                if ( communication.ReplyToEmail.IsNotNullOrWhitespace() )
+                {
+                    // Resolve any possible merge fields in the replyTo address
+                    replyTo.Name = "h:Reply-To";
+                    replyTo.Value = communication.ReplyToEmail.ResolveMergeFields( mergeFields, currentPerson );
+                }
+
+                var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
+                var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), communicationRockContext ).Id;
+                RestRequest restRequest = null;
+
+                // Loop through receipents and send the email
+                bool recipientFound = true;
+                while ( recipientFound )
+                {
+                    var recipientRockContext = new RockContext();
+                    var recipient = Model.Communication.GetNextPending( communication.Id, mediumEntityTypeId, recipientRockContext );
+
+                    // This means we are done, break the loop
+                    if (recipient == null )
+                    {
+                        recipientFound = false;
+                        break;
+                    }
+
+                    // Not valid save the obj with the set status messages then go to the next one
+                    if ( !ValidRecipient( recipient, communication.IsBulkCommunication ) )
+                    {
+                        recipientRockContext.SaveChanges();
+                        continue;
+                    }
+
+                    try
+                    {
+                        restRequest = new RestRequest( GetAttributeValue( "Resource" ), Method.POST );
+                        restRequest.AddParameter( "domian", GetAttributeValue( "Domain" ), ParameterType.UrlSegment );
+
+                        if ( communication.ReplyToEmail.IsNotNullOrWhitespace() )
+                        {
+                            restRequest.AddParameter( replyTo );
+                        }
+
+
+
+
+
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex );
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Exception: " + ex.Messages().AsDelimited( " => " );
+                    }
+
+                    recipientRockContext.SaveChanges();
+                }
+
+
+
+
+            }
+        }
+
+        /// <summary>
+        /// Validates the recipient.
+        /// </summary>
+        /// <param name="recipient">The recipient.</param>
+        /// <param name="isBulkCommunication">if set to <c>true</c> [is bulk communication].</param>
+        /// <returns></returns>
+        public override bool ValidRecipient( CommunicationRecipient recipient, bool isBulkCommunication )
+        {
+            bool valid = base.ValidRecipient( recipient, isBulkCommunication );
+            if ( valid )
+            {
+                var person = recipient?.PersonAlias?.Person;
+                if ( person != null )
+                {
+                    if ( string.IsNullOrWhiteSpace( person.Email ) )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "No Email Address";
+                        valid = false;
+                    }
+                    else if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Communication Preference of 'Do Not Send Communication'";
+                        valid = false;
+                    }
+                    else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && isBulkCommunication )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Communication Preference of 'No Bulk Communication'";
+                        valid = false;
+                    }
+                }
             }
 
-            return list;
+            return valid;
         }
-    }
 
-    public enum TrackingClicksOptions
-    {
-        yes,
-        no,
-        htmlonly
+        private void CheckSafeSender( RestRequest restRequest, string fromEmail, string organizationEmail )
+        {
+            List<string> toEmailAddresses = restRequest.Parameters.Where( p => p.Name == "to" ).Select( p => p.Value.ToString() ).ToList();
+
+            // Get the safe sender domains
+            var safeDomainValues = DefinedTypeCache.Read( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues;
+            var safeDomains = safeDomainValues.Select( v => v.Value ).ToList();
+
+            // Check to make sure the From email domain is a safe sender, if so then we are done.
+            var fromParts = fromEmail.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
+            if ( fromParts.Length == 2 && safeDomains.Contains( fromParts[1], StringComparer.OrdinalIgnoreCase ) )
+            {
+                return;
+            }
+
+            // The sender domain is not considered safe so check all the recipeients to see if they have a domain that does not requrie a safe sender
+            bool unsafeToDomain = false;
+
+            foreach ( var toEmailAddress in toEmailAddresses )
+            {
+                bool safe = false;
+                var toParts = toEmailAddress.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( toParts.Length == 2 && safeDomains.Contains( toParts[1], StringComparer.OrdinalIgnoreCase ) )
+                {
+                    var domain = safeDomainValues.FirstOrDefault( dv => dv.Value.Equals( toParts[1], StringComparison.OrdinalIgnoreCase ) );
+                    safe = domain != null && domain.GetAttributeValue( "SafeToSendTo" ).AsBoolean();
+                }
+
+                if ( !safe )
+                {
+                    unsafeToDomain = true;
+                    break;
+                }
+            }
+            if ( unsafeToDomain )
+            {
+                if ( !string.IsNullOrWhiteSpace( organizationEmail ) && !organizationEmail.Equals( fromEmail, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    // update the from param to the organizationemail
+                    Parameter fromParam = restRequest.Parameters.Where( p => p.Name == "from" ).FirstOrDefault();
+                    if ( fromParam != null )
+                    {
+                        restRequest.Parameters.Remove( fromParam );
+                    }
+                    restRequest.AddParameter( "from", organizationEmail );
+
+
+                    Parameter replyParam = restRequest.Parameters.Where( p => p.Name == "h:Reply-To" && p.Value.ToString() == organizationEmail ).FirstOrDefault();
+
+                    // Check the list of reply to address and add the org one if needed
+                    if ( replyParam == null )
+                    {
+                        restRequest.AddParameter( "h:Reply-To", organizationEmail );
+                    }
+
+                }
+            }
+        }
+
+        #region Obsolete
+        /// <summary>
+        /// Sends the specified communication.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "Use Send( Communication communication, Dictionary<string, string> mediumAttributes ) instead" )]
+        public override void Send( Rock.Model.Communication communication )
+        {
+            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            Send( communication, mediumEntityId, null );
+        }
+
+        /// <summary>
+        /// Sends the specified template.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        public override void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
+        {
+            Send( template, recipients, appRoot, themeRoot, false );
+        }
+
+        /// <summary>
+        /// Sends the specified template.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        public void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
+        {
+            var message = new RockEmailMessage();
+            message.FromEmail = template.From;
+            message.FromName = template.FromName;
+            message.SetRecipients( recipients );
+            template.To.SplitDelimitedValues().ToList().ForEach( to => message.AddRecipient( to ) );
+            message.CCEmails = template.Cc.SplitDelimitedValues().ToList();
+            message.BCCEmails = template.Bcc.SplitDelimitedValues().ToList();
+            message.Subject = template.Subject;
+            message.Message = template.Body;
+            message.ThemeRoot = themeRoot;
+            message.AppRoot = appRoot;
+            message.CreateCommunicationRecord = createCommunicationHistory;
+
+            var errorMessages = new List<string>();
+            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            Send( message, mediumEntityId, null, out errorMessages );
+        }
+
+        /// <summary>
+        /// Sends the specified medium data to the specified list of recipients.
+        /// </summary>
+        /// <param name="mediumData">The medium data.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        public override void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot )
+        {
+            Send( mediumData, recipients, appRoot, themeRoot, true );
+        }
+
+        /// <summary>
+        /// Sends the specified medium data to the specified list of recipients.
+        /// </summary>
+        /// <param name="mediumData">The medium data.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
+        {
+            Send( mediumData, recipients, appRoot, themeRoot, createCommunicationHistory, null );
+        }
+
+        /// <summary>
+        /// Sends the specified medium data to the specified list of recipients.
+        /// </summary>
+        /// <param name="mediumData">The medium data.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        /// <param name="metaData">The meta data.</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory, Dictionary<string, string> metaData )
+        {
+            var message = new RockEmailMessage();
+            message.FromEmail = mediumData.GetValueOrNull( "From" ) ?? string.Empty;
+            message.ReplyToEmail = mediumData.GetValueOrNull( "ReplyTo" ) ?? string.Empty;
+            message.SetRecipients( recipients );
+            message.Subject = mediumData.GetValueOrNull( "Subject" ) ?? string.Empty;
+            message.Message = mediumData.GetValueOrNull( "Body" ) ?? string.Empty;
+            message.ThemeRoot = themeRoot;
+            message.AppRoot = appRoot;
+            message.CreateCommunicationRecord = createCommunicationHistory;
+            message.MessageMetaData = metaData;
+
+            var errorMessages = new List<string>();
+            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            Send( message, mediumEntityId, null, out errorMessages );
+        }
+
+        /// <summary>
+        /// Sends the specified recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="from">From.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
+        {
+            Send( recipients, from, string.Empty, subject, body, appRoot, themeRoot, null );
+        }
+
+        /// <summary>
+        /// Sends the specified recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="from">From.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">Attachments.</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
+        {
+            Send( recipients, from, string.Empty, subject, body, appRoot, themeRoot, attachments );
+        }
+
+        /// <summary>
+        /// Sends the specified recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="from">From.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">Attachments.</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
+        {
+            Send( recipients, from, fromName, subject, body, appRoot, themeRoot, attachments, true );
+        }
+
+        /// <summary>
+        /// Sends the specified recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="from">From.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="attachments">Attachments.</param>
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
+        public void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot, string themeRoot, List<Attachment> attachments, bool createCommunicationHistory )
+        {
+            var message = new RockEmailMessage();
+            message.FromEmail = from;
+            message.FromName = fromName;
+            message.SetRecipients( recipients );
+            message.Subject = subject;
+            message.Message = body;
+            message.ThemeRoot = themeRoot;
+            message.AppRoot = appRoot;
+            message.CreateCommunicationRecord = createCommunicationHistory;
+
+            foreach ( var attachment in attachments )
+            {
+                var binaryFile = new BinaryFile();
+                binaryFile.ContentStream = attachment.ContentStream;
+                binaryFile.FileName = attachment.Name;
+                message.Attachments.Add( binaryFile );
+            }
+
+            var errorMessages = new List<string>();
+            int mediumEntityId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )?.Id ?? 0;
+            Send( message, mediumEntityId, null, out errorMessages );
+        }
+
+
+        #endregion
+
+
     }
 
 }
