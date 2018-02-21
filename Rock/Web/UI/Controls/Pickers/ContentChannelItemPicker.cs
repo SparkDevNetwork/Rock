@@ -44,7 +44,8 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "The text for the label." )
         ]
-        public string Label {
+        public string Label
+        {
             get { return ViewState["Label"] as string ?? string.Empty; }
             set { ViewState["Label"] = value; }
         }
@@ -60,7 +61,8 @@ namespace Rock.Web.UI.Controls
         Category( "Appearance" ),
         Description( "The CSS class to add to the form-group div." )
         ]
-        public string FormGroupCssClass {
+        public string FormGroupCssClass
+        {
             get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
             set { ViewState["FormGroupCssClass"] = value; }
         }
@@ -77,12 +79,15 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "The help block." )
         ]
-        public string Help {
-            get {
+        public string Help
+        {
+            get
+            {
                 return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
 
-            set {
+            set
+            {
                 if ( HelpBlock != null )
                 {
                     HelpBlock.Text = value;
@@ -102,12 +107,15 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "The warning block." )
         ]
-        public string Warning {
-            get {
+        public string Warning
+        {
+            get
+            {
                 return WarningBlock != null ? WarningBlock.Text : string.Empty;
             }
 
-            set {
+            set
+            {
                 if ( WarningBlock != null )
                 {
                     WarningBlock.Text = value;
@@ -127,12 +135,15 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "false" ),
         Description( "Is the value required?" )
         ]
-        public bool Required {
-            get {
+        public bool Required
+        {
+            get
+            {
                 EnsureChildControls();
                 return _ddlContentChannelItem.Required;
             }
-            set {
+            set
+            {
                 EnsureChildControls();
                 _ddlContentChannelItem.Required = value;
             }
@@ -144,12 +155,15 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The required error message.
         /// </value>
-        public string RequiredErrorMessage {
-            get {
+        public string RequiredErrorMessage
+        {
+            get
+            {
                 return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
             }
 
-            set {
+            set
+            {
                 if ( RequiredFieldValidator != null )
                 {
                     RequiredFieldValidator.ErrorMessage = value;
@@ -163,7 +177,8 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The validation group.
         /// </value>
-        public string ValidationGroup {
+        public string ValidationGroup
+        {
             get { return ViewState["ValidationGroup"] as string; }
             set { ViewState["ValidationGroup"] = value; }
         }
@@ -174,8 +189,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
         /// </value>
-        public virtual bool IsValid {
-            get {
+        public virtual bool IsValid
+        {
+            get
+            {
                 return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
             }
         }
@@ -221,12 +238,15 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The content channel id.
         /// </value>
-        public int? ContentChannelId {
-            get {
+        public int? ContentChannelId
+        {
+            get
+            {
                 return ViewState["ContentChannelId"] as int?;
             }
 
-            set {
+            set
+            {
                 ViewState["ContentChannelId"] = value;
                 if ( value.HasValue )
                 {
@@ -241,13 +261,16 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The content channel item identifier.
         /// </value>
-        public int? ContentChannelItemId {
-            get {
+        public int? ContentChannelItemId
+        {
+            get
+            {
                 EnsureChildControls();
                 return _ddlContentChannelItem.SelectedValue.AsIntegerOrNull();
             }
 
-            set {
+            set
+            {
                 EnsureChildControls();
                 int contentChannelItemId = value ?? 0;
                 if ( _ddlContentChannelItem.SelectedValue != contentChannelItemId.ToString() )
@@ -338,10 +361,6 @@ namespace Rock.Web.UI.Controls
             if ( !ContentChannelId.HasValue )
             {
                 _ddlContentChannel.RenderControl( writer );
-            }
-            else
-            {
-                _ddlContentChannelItem.Label = string.Empty;
             }
 
             _ddlContentChannelItem.RenderControl( writer );
