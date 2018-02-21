@@ -399,7 +399,7 @@ FastClick.prototype.touchHasMoved = function(event) {
 	'use strict';
 	var touch = event.changedTouches[0];
 
-	if (Math.abs(touch.pageX - this.touchStartX) > 10 || Math.abs(touch.pageY - this.touchStartY) > 10) {
+	if (Math.abs(touch.pageX - this.touchStartX) > 35 || Math.abs(touch.pageY - this.touchStartY) > 35) {
 		return true;
 	}
 
