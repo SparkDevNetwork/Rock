@@ -46,13 +46,22 @@ namespace RockWeb.Blocks.Crm
     [LinkedPage( "Person Detail Page", "The page to navigate to after the merge is completed.", true, "", "", 1 )]
     public partial class PersonMerge : Rock.Web.UI.RockBlock
     {
+        #region Constants
+
+        private const string FAMILY_VALUES = "FamilyValues";
+        private const string FAMILY_NAME = "FamilyName";
+        private const string CAMPUS = "Campus";
+
+        #endregion
 
         #region Fields
 
-        private List<string> headingKeys = new List<string> {
+        private List<string> headingKeys = new List<string>
+        {
             "PhoneNumbers",
             "PersonAttributes",
-            "FamilyAttributes"
+            "FamilyAttributes",
+            FAMILY_VALUES
         };
 
         #endregion
@@ -109,9 +118,9 @@ namespace RockWeb.Blocks.Crm
 
             nbSecurityNotice.Text = string.Format( @"Because there are two different emails associated with this merge, and at least one of the 
 records has a login, be sure to proceed with caution. It is possible that the new record was created in an attempt to gain access to the account 
-through the merge process. {0}", GetAttributeValue( "ResetLoginConfirmation" ).AsBoolean() ? 
+through the merge process. {0}", GetAttributeValue( "ResetLoginConfirmation" ).AsBoolean() ?
         @"While this person will be prompted to reconfirm their login(s) using the email address you select, you may wish to manually confirm the 
-validity of the request before completing this merge." : 
+validity of the request before completing this merge." :
         @"Because of this, make sure to confirm the validity of the request before completing this merge." );
 
         }
@@ -342,9 +351,9 @@ validity of the request before completing this merge." :
                 return;
             }
 
-            bool reconfirmRequired = ( 
+            bool reconfirmRequired = (
                 GetAttributeValue( "ResetLoginConfirmation").AsBoolean() &&
-                MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 && 
+                MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 &&
                 MergeData.People.Where( p => p.HasLogins ).Any() );
 
             GetValuesSelection();
@@ -483,6 +492,9 @@ validity of the request before completing this merge." :
                         var primaryFamily = primaryPerson.GetFamily( rockContext );
                         if ( primaryFamily != null )
                         {
+                            primaryFamily.Name = GetNewStringValue( FAMILY_NAME );
+                            primaryFamily.CampusId = GetNewIntValue( CAMPUS );
+
                             primaryFamily.LoadAttributes( rockContext );
                             foreach ( var property in MergeData.Properties.Where( p => p.Key.StartsWith( "groupattr_" ) ) )
                             {
@@ -528,7 +540,7 @@ validity of the request before completing this merge." :
                         {
                             var personIds = MergeData.People.Select( a => a.Id ).ToList();
                             foreach ( var login in userLoginService.Queryable()
-                                .Where( l => 
+                                .Where( l =>
                                     l.PersonId.HasValue &&
                                     personIds.Contains( l.PersonId.Value ) ) )
                             {
@@ -759,7 +771,7 @@ validity of the request before completing this merge." :
             if ( MergeData != null && MergeData.People != null && MergeData.People.Any() )
             {
                 // If the people have different email addresses and any logins, display security alert box
-                bool showAlert = 
+                bool showAlert =
                     ( MergeData.People.Select( p => p.Email ).Where( e => e != null && e != "" ).Distinct( StringComparer.CurrentCultureIgnoreCase ).Count() > 1 &&
                     MergeData.People.Where( p => p.HasLogins ).Any() );
 
@@ -885,6 +897,13 @@ validity of the request before completing this merge." :
     [Serializable]
     class MergeData
     {
+        #region Constants
+
+        private const string FAMILY_VALUES = "FamilyValues";
+        private const string FAMILY_NAME = "FamilyName";
+        private const string CAMPUS = "Campus";
+
+        #endregion
 
         #region Properties
 
@@ -985,8 +1004,15 @@ validity of the request before completing this merge." :
 
             foreach ( var person in people )
             {
-                AddProperty( "FamilyAttributes", "Family Attributes", 0, string.Empty );
+                AddProperty( FAMILY_VALUES, FAMILY_VALUES.SplitCase(), 0, string.Empty );
                 var family = person.GetFamily();
+                if ( family != null )
+                {
+                    AddProperty( FAMILY_NAME, FAMILY_NAME.SplitCase(), person.Id, family.Name );
+                    AddProperty( CAMPUS, CAMPUS, person.Id, family.CampusId.HasValue ? family.CampusId.ToString() : string.Empty, family.CampusId.HasValue ? family.Campus.Name : string.Empty );
+                }
+
+                AddProperty( "FamilyAttributes", "Family Attributes", 0, string.Empty );
                 if ( family != null )
                 {
                     family.LoadAttributes();
