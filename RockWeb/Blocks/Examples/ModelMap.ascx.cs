@@ -74,9 +74,7 @@ namespace RockWeb.Blocks.Examples
             base.OnInit( e );
 
             rptCategory.ItemCommand += rptCategory_ItemCommand;
-            //rptCategory.ItemCreated += rptCategory_ItemCreated;
             rptModel.ItemCommand += rptModel_ItemCommand;
-            //rptModel.ItemCreated += rptModel_ItemCreated;
         }
 
         /// <summary>
@@ -165,7 +163,7 @@ namespace RockWeb.Blocks.Examples
                     }
 
                     var entityCategory = entityCategories
-                        .Where( c => c.Name == category  )
+                        .Where( c => c.Name == category )
                         .FirstOrDefault();
                     if ( entityCategory == null )
                     {
@@ -404,7 +402,7 @@ namespace RockWeb.Blocks.Examples
 
             return null;
         }
-        
+
         /// <summary>
         /// Gets the comments from the data in the assembly's XML file for the 
         /// given member object.
@@ -473,7 +471,7 @@ namespace RockWeb.Blocks.Examples
             if ( obj is Guid )
             {
                 Guid? selectedCategoryGuid = hfSelectedCategoryGuid.Value.AsGuidOrNull();
-                Guid categoryGuid = (Guid)obj;
+                Guid categoryGuid = ( Guid ) obj;
                 return selectedCategoryGuid.HasValue && selectedCategoryGuid.Value == categoryGuid ? "active" : string.Empty;
             }
             return string.Empty;
@@ -484,14 +482,14 @@ namespace RockWeb.Blocks.Examples
             if ( obj is int )
             {
                 int? selectedEntityId = hfSelectedEntityId.Value.AsIntegerOrNull();
-                int entityId = (int)obj;
+                int entityId = ( int ) obj;
                 return selectedEntityId.HasValue && selectedEntityId.Value == entityId ? "active" : string.Empty;
             }
             return string.Empty;
         }
-    }
 
-    #endregion
+        #endregion
+    }
 
     #region Helper Classes
 
@@ -550,7 +548,7 @@ namespace RockWeb.Blocks.Examples
         public string Returns { get; set; }
     }
 
-    # endregion
+    #endregion
 
     #region Extension Methods
 
