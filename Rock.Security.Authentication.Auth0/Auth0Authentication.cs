@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using RestSharp;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -53,8 +51,7 @@ namespace Rock.Security.Authentication.Auth0
         /// <returns></returns>
         public override bool IsReturningFromAuthentication( System.Web.HttpRequest request )
         {
-            return ( !string.IsNullOrWhiteSpace( request.QueryString["code"] ) &&
-                !string.IsNullOrWhiteSpace( request.QueryString["state"] ) );
+            return !string.IsNullOrWhiteSpace( request.QueryString["code"] ) && !string.IsNullOrWhiteSpace( request.QueryString["state"] );
         }
 
         /// <summary>
@@ -68,9 +65,9 @@ namespace Rock.Security.Authentication.Auth0
             string returnUrl = request.QueryString["returnurl"] ?? System.Web.Security.FormsAuthentication.DefaultUrl;
             string redirectUri = GetRedirectUrl( request );
             string authDomain = this.GetAttributeValue( "ClientDomain" );
-            string clientId = this.GetAttributeValue( "ClientID" );
-            string scope = HttpUtility.UrlEncode( "openid profile" );
+            string scope = HttpUtility.UrlEncode( "openid profile email phone_number birthdate" );
             string audience = $"https://{authDomain}/userinfo";
+            string clientId = this.GetAttributeValue( "ClientID" );
 
             string authorizeUrl = $"https://{authDomain}/authorize?response_type=code&scope={scope}&audience={audience}&client_id={clientId}&redirect_uri={redirectUri}&state={returnUrl}";
 
@@ -96,7 +93,6 @@ namespace Rock.Security.Authentication.Auth0
             string redirectUri = GetRedirectUrl( request );
 
             // see: https://auth0.com/docs/api/authentication#support
-
             var restClient = new RestClient( $"https://{authDomain}" );
             var tokenRequest = new RestRequest( "oauth/token", Method.POST );
             var tokenRequestBody = new
@@ -132,7 +128,9 @@ namespace Rock.Security.Authentication.Auth0
             return false;
         }
 
-        // see https://auth0.com/docs/user-profile/normalized/oidc
+        /// <summary>
+        /// see https://auth0.com/docs/user-profile/normalized/oidc 
+        /// </summary>
         public class Auth0UserInfo
         {
             /// <summary>
@@ -167,21 +165,21 @@ namespace Rock.Security.Authentication.Auth0
             /// </value>
             public string family_name { get; set; }
 
-            public string middle_name { get; set; }
-
-            public string preferred_username { get; set; }
-
-            public string profile { get; set; }
-
+            /// <summary>
+            /// Gets or sets the email.
+            /// </summary>
+            /// <value>
+            /// The email.
+            /// </value>
             public string email { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether [email verified].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [email verified]; otherwise, <c>false</c>.
+            /// </value>
             public bool email_verified { get; set; }
-
-            public string phone_number { get; set; }
-            public bool phone_number_verified { get; set; }
-
-            // preferred postal address of the user
-            public dynamic address { get; set; }
 
             /// <summary>
             /// casual name of the user that may/may not be the same as the given_name
@@ -284,7 +282,6 @@ namespace Rock.Security.Authentication.Auth0
 
             using ( var rockContext = new RockContext() )
             {
-
                 // Query for an existing user 
                 var userLoginService = new UserLoginService( rockContext );
                 user = userLoginService.GetByUserName( userName );
@@ -352,7 +349,6 @@ namespace Rock.Security.Authentication.Auth0
                             int typeId = EntityTypeCache.Read( typeof( Auth0Authentication ) ).Id;
                             user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, userName, "auth0", true );
                         }
-
                     } );
                 }
 
@@ -362,7 +358,6 @@ namespace Rock.Security.Authentication.Auth0
 
                     if ( user.PersonId.HasValue )
                     {
-
                         var personService = new PersonService( rockContext );
                         var person = personService.Get( user.PersonId.Value );
                         if ( person != null )
