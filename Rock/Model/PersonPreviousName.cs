@@ -106,6 +106,11 @@ namespace Rock.Model
 
         #region Methods
 
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
         public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
         {
             var rockContext = (RockContext)dbContext;
@@ -148,6 +153,11 @@ namespace Rock.Model
 
             base.PreSaveChanges( dbContext, entry );
         }
+
+        /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
             if ( HistoryChanges != null && HistoryChanges.Any() && HistoryPersonId.HasValue )

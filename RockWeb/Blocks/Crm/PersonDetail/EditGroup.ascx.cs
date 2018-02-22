@@ -1188,22 +1188,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                                {
 	                                    if ( !groupMemberInfo.IsInOtherGroups )
 	                                    {
-	                                        var newFamilyChanges = new List<string>();
-	
 	                                        // Family member was removed and should be created in their own new family
 	                                        var newGroup = new Group();
 	                                        newGroup.Name = groupMemberInfo.LastName + " " + _groupType.Name;
-	                                        History.EvaluateChange( newFamilyChanges, "Family", string.Empty, newGroup.Name );
-	
 	                                        newGroup.GroupTypeId = _groupType.Id;
-	
-	                                        if ( _group.CampusId.HasValue )
-	                                        {
-	                                            History.EvaluateChange( newFamilyChanges, "Campus", string.Empty, CampusCache.Read( _group.CampusId.Value ).Name );
-	                                        }
-	
 	                                        newGroup.CampusId = _group.CampusId;
-	
 	                                        groupService.Add( newGroup );
 	                                        rockContext.SaveChanges();
 	
