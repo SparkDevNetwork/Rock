@@ -34,8 +34,6 @@ namespace Rock.Model
         {
             var rockContext = new RockContext();
             var restControllerService = new RestControllerService( rockContext );
-
-            var existingControllers = restControllerService.Queryable( "Actions" ).ToList();
             var discoveredControllers = new List<RestController>();
 
             var config = GlobalConfiguration.Configuration;

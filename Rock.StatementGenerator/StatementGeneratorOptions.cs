@@ -216,7 +216,14 @@ namespace Rock.StatementGenerator
     /// </summary>
     public enum OrderBy
     {
+        /// <summary>
+        /// The postal code
+        /// </summary>
         PostalCode = 0,
+        
+        /// <summary>
+        /// The last name
+        /// </summary>
         LastName = 1
     }
 }
