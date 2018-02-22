@@ -1580,7 +1580,7 @@ namespace Rock.Web.UI.Controls
         protected void SetSubTitleOnModal( Model.Attribute attribute )
         {
             ModalDialog modalDialog = this.FirstParentControlOfType<ModalDialog>();
-            if ( modalDialog != null && string.IsNullOrEmpty(modalDialog.SubTitle) )
+            if ( modalDialog != null && ( string.IsNullOrEmpty(modalDialog.SubTitle) || modalDialog.SubTitle.StartsWith( "Id: ") ) )
             {
                 modalDialog.SubTitle = string.Format( "Id: {0}", attribute.Id );
             }
