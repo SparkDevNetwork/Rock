@@ -36,6 +36,7 @@ namespace EnsureCopyrightHeader
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.NMI\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.PayFlowPro\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Rest\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Security.Authentication.Auth0\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.SignNow\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.StatementGenerator\\" );
