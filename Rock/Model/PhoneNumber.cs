@@ -195,6 +195,11 @@ namespace Rock.Model
 
         #region Methods
 
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
         public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
         {
             if ( entry.State == System.Data.Entity.EntityState.Added || entry.State == System.Data.Entity.EntityState.Modified )

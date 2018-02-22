@@ -184,6 +184,11 @@ namespace Rock.Model
 
         #region Public Methods
 
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
         public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
         {
             var rockContext = (RockContext)dbContext;

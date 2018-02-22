@@ -461,7 +461,7 @@ namespace Rock.Model
             }
 
             var inverseGroupMember = groupMemberService.GetInverseRelationship( relationshipMember, true );
-            if ( inverseGroupMember != null )
+            if ( inverseGroupMember != null && inverseGroupMember.Id <= 0 )
             {
                 rockContext.SaveChanges();
             }

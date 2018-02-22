@@ -1599,6 +1599,38 @@ namespace Rock.Model
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets the related people.
+        /// </summary>
+        /// <param name="personIds">The person ids.</param>
+        /// <param name="roleIds">The role ids.</param>
+        /// <returns></returns>
+        public IEnumerable<GroupMember> GetRelatedPeople( List<int> personIds, List<int> roleIds )
+        {
+            var rockContext = (RockContext)this.Context;
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            Guid groupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid();
+            Guid ownerRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
+
+            var knownRelationshipGroups = groupMemberService
+                .Queryable().AsNoTracking()
+                .Where( m => 
+                    m.Group.GroupType.Guid == groupTypeGuid && 
+                    m.GroupRole.Guid == ownerRoleGuid &&
+                    personIds.Contains( m.PersonId ) )
+                .Select( m => m.GroupId );
+
+            var related = groupMemberService
+                .Queryable().AsNoTracking()
+                .Where( g => 
+                    knownRelationshipGroups.Contains( g.GroupId ) &&
+                    roleIds.Contains( g.GroupRoleId ) &&
+                    !personIds.Contains( g.PersonId ) )
+                .ToList();
+
+            return related;
+        }
 
         #endregion
 
