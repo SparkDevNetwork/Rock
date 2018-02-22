@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
-using Rock.Communication.Transport;
 using Rock.Communication;
-using System.Linq;
+using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Tests.Rock.Communication
+namespace Rock.Tests.Communications
 {
     public class MailgunTests
     {
@@ -38,14 +37,6 @@ namespace Rock.Tests.Rock.Communication
 
             Assert.True( !errorMessages.Any() );
             Assert.Equal( System.Net.HttpStatusCode.OK, mailGunHtml.Response.StatusCode );
-        }
-
-        [Fact]
-        public void HttpSendCommunication()
-        {
-
-
-
         }
     }
 }
