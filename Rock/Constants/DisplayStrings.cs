@@ -64,6 +64,7 @@ namespace Rock.Constants
         /// Returns a message in the format: Invalid Length for {0}."
         /// </summary>
         /// <param name="itemFieldName">Name of the item field.</param>
+        /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
         public static string TextLengthInvalid( string itemFieldName, int maxLength )
         {
