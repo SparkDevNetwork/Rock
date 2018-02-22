@@ -1603,43 +1603,50 @@ function(item) {
 
             if ( isExporting )
             {
+                // Get al the affected person ids
                 var personIds = personInfoList.Select( a => a.Id ).ToList();
 
-                var personLocations = new Dictionary<int, Location>();
-                var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-
+                // Load the phone numbers for these people
+                var phoneNumbers = new List<PhoneNumber>();
                 var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
                 var cellPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                if ( homePhoneType != null && cellPhoneType != null )
+                {
+                    phoneNumbers = new PhoneNumberService( _rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( n => 
+                            personIds.Contains( n.PersonId ) &&
+                            n.NumberTypeValueId.HasValue && (
+                                n.NumberTypeValueId.Value == homePhoneType.Id ||
+                                n.NumberTypeValueId.Value == cellPhoneType.Id
+                            ) )
+                        .ToList();
+                }
+
+                // Load the home addresses
+                var personLocations = new Dictionary<int, Location>();
+                var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 var homeAddressDv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
-
-                // Load the phone numbers
-                var phoneNumbers = new PhoneNumberService( _rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( n => personIds.Contains( n.PersonId ) &&
-                        n.NumberTypeValueId.HasValue && 
-                            ( n.NumberTypeValueId.Value == homePhoneType.Id || 
-                            n.NumberTypeValueId.Value == cellPhoneType.Id ) )
-                    .ToList();
-
-                if ( homeAddressDv != null )
+                if ( familyGroupType != null && homeAddressDv != null )
                 {
 
                     foreach ( var item in new GroupMemberService( _rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( m =>
+                        .Where( m =>                            
                             personIds.Contains( m.PersonId ) &&
                             m.Group.GroupTypeId == familyGroupType.Id )
                         .Select( m => new
                         {
                             m.PersonId,
                             Location = m.Group.GroupLocations
-                                .Where( l =>
-                                    l.GroupLocationTypeValueId == homeAddressDv.Id &&
-                                    l.IsMappedLocation )
+                                .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id )
                                 .Select( l => l.Location )
                                 .FirstOrDefault()
                         } )
-                    .Where( l => l.Location != null ) )
+                        .Where( l => 
+                            l.Location != null &&
+                            l.Location.Street1 != "" &&
+                            l.Location.City != "" ) )
                     {
                         personLocations.AddOrIgnore( item.PersonId, item.Location );
                     }
@@ -1647,18 +1654,24 @@ function(item) {
 
                 foreach ( var person in personInfoList )
                 {
-                    person.HomePhone = phoneNumbers
-                                        .Where( p => p.PersonId == person.Id && p.NumberTypeValueId.Value == homePhoneType.Id )
-                                        .Select( p => p.NumberFormatted )
-                                        .FirstOrDefault();
+                    if ( phoneNumbers.Any() )
+                    {
+                        person.HomePhone = phoneNumbers
+                            .Where( p => p.PersonId == person.Id && p.NumberTypeValueId.Value == homePhoneType.Id )
+                            .Select( p => p.NumberFormatted )
+                            .FirstOrDefault();
 
-                    person.CellPhone = phoneNumbers
-                                        .Where( p => p.PersonId == person.Id && p.NumberTypeValueId.Value == cellPhoneType.Id )
-                                        .Select( p => p.NumberFormatted )
-                                        .FirstOrDefault();
+                        person.CellPhone = phoneNumbers
+                            .Where( p => p.PersonId == person.Id && p.NumberTypeValueId.Value == cellPhoneType.Id )
+                            .Select( p => p.NumberFormatted )
+                            .FirstOrDefault();
+                    }
 
-                    person.HomeAddress = personLocations.ContainsKey( person.Id ) && personLocations[person.Id] != null ?
-                            personLocations[person.Id].FormattedAddress : string.Empty;
+                    if ( personLocations.Any() )
+                    {
+                        person.HomeAddress = personLocations.ContainsKey( person.Id ) && personLocations[person.Id] != null ?
+                                personLocations[person.Id].FormattedAddress : string.Empty;
+                    }
                 }
 
             }
