@@ -1176,7 +1176,7 @@ namespace Rock.Web.UI.Controls
                 if ( entityType != null )
                 {
                     _cbIsAnalytic.Visible = entityType.IsAnalyticAttributesSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue );
-                    _cbIsAnalyticHistory.Visible = entityType.IsAnalyticsHistoricalSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue ) ;
+                    _cbIsAnalyticHistory.Visible = entityType.IsAnalyticsHistoricalSupported( this.AttributeEntityTypeQualifierColumn, this.AttributeEntityTypeQualifierValue );
                 }
             }
 
@@ -1295,7 +1295,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.RenderEndTag();
-            
+
             writer.RenderEndTag();
 
             // row 3 col 2
@@ -1349,7 +1349,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
         protected void cvKey_ServerValidate( object source, ServerValidateEventArgs args )
         {
-            args.IsValid = 
+            args.IsValid =
                 !ReservedKeyNames.Contains( _tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase ) &&
                 !ObjectPropertyNames.Contains( _tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase );
         }
@@ -1390,7 +1390,7 @@ namespace Rock.Web.UI.Controls
                 CancelClick( sender, e );
             }
         }
-        
+
         #endregion
 
         #region Public Methods
@@ -1434,8 +1434,9 @@ namespace Rock.Web.UI.Controls
                 this.Qualifiers = qualifiers;
                 this.DefaultValue = attribute.DefaultValue;
 
-
                 this.ReloadQualifiers = false;
+
+                SetSubTitleOnModal( attribute );
             }
 
             if ( objectType != null )
@@ -1570,6 +1571,20 @@ namespace Rock.Web.UI.Controls
                 field.GetEditValue( _phDefaultValue.Controls[0], Qualifiers ) : string.Empty;
 
             Qualifiers = field.ConfigurationValues( qualifierControls );
+        }
+        
+        /// <summary>
+        /// Set the Subtitle of modal dialog
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        protected void SetSubTitleOnModal( Model.Attribute attribute )
+        {
+            Control parent = this.Parent;
+            ModalDialog modalDialog = this.FirstParentControlOfType<ModalDialog>();
+            if ( modalDialog != null && string.IsNullOrEmpty(modalDialog.SubTitle) )
+            {
+                modalDialog.SubTitle = string.Format( "Id: {0}", attribute.Id );
+            }
         }
 
         /// <summary>
