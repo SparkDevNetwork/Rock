@@ -37,12 +37,12 @@ namespace Rock.Security.Authentication.Auth0
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Auth0" )]
 
-    [TextField( "Client ID", "The Auth0 Client ID", order: 0 )]
-    [TextField( "Client Secret", "The Auth0 Client Secret", order: 1 )]
-    [TextField( "Client Domain", "The Auth0 Domain", order: 2 )]
+    [TextField( "Client Domain", "The Auth0 Domain", order: 0 )]
+    [TextField( "Client ID", "The Auth0 Client ID", order: 1 )]
+    [TextField( "Client Secret", "The Auth0 Client Secret", order: 2 )]
 
-    [TextField( "Login Button Text", "The text shown on the login button.", defaultValue: "Auth0 Login", order: 3 )]
-    [TextField( "Login Button CSS Class", "The CSS class applied to the login button.", order: 4 )]
+    [TextField( "Login Button Text", "The text shown on the login button.", defaultValue: "Auth0 Login", required:false, order: 3 )]
+    [TextField( "Login Button CSS Class", "The CSS class applied to the login button.", required:false, order: 4 )]
     public class Auth0Authentication : AuthenticationComponent
     {
         /// <summary>

@@ -30,7 +30,7 @@ namespace Rock.Security.Authentication.Auth0.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpPost]
         [System.Web.Http.Route( "api/Auth/Auth0" )]
-        public void Auth0Login( [FromBody]Rock.Security.Authentication.Auth0.Auth0Authentication.Auth0UserInfo auth0UserInfo )
+        public void Auth0Login( [FromBody]Rock.Security.Authentication.Auth0.Auth0UserInfo auth0UserInfo )
         {
             string userName = Rock.Security.Authentication.Auth0.Auth0Authentication.GetAuth0UserName( auth0UserInfo );
             if ( !string.IsNullOrWhiteSpace( userName ) )
