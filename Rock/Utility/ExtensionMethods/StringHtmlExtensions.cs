@@ -149,7 +149,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Scrubs the HTML but retains "<br/>",changes "</p>" to "<br/><br/>", and "\r\n" to "<br/>".
+        /// Scrubs the HTML but retains "&lt;br/&gt;",changes "&lt;/p/&gt;" to "&lt;br//&gt;&lt;br/&gt;", and "\r\n" to "&lt;br/&gt;".
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
