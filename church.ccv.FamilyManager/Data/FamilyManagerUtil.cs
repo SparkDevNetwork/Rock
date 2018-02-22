@@ -247,6 +247,42 @@ namespace church.ccv.FamilyManager
             return personReturnObj;
         }
 
+        public static bool IsDuplicateAddRequest( UpdatePersonBody updatePersonBody, out int personId, out int familyId )
+        {
+            // JHM 2-21-18: On busy weekends network congestion causes UpdateOrAddPerson's response to Family Manager to be lost. 
+            // Family Manager never gets the Person Id, and instead displays an Error Message.
+            // The user can then dismiss the message and hit Save again, causing UpdateOrAddPerson to be called with a Person Id of 0 again, but that person already exists.
+
+            // To fix this, if we get a Person.Id of 0, we'll make sure nobody with a matching name, created in the last 5 minutes, already exists.
+            // If they do, we'll assume this is THAT person, and simply update them.
+            personId = 0;
+            familyId = 0;
+
+            RockContext rockContext = new RockContext( );
+            PersonService personService = new PersonService( rockContext );
+                
+            // if we got a 0 person ID
+            if ( updatePersonBody.Person.Id == 0 )
+            {
+                // see if there's a person in the Database with a matching name
+                Person foundPerson = personService.Queryable( ).Where( p => p.FirstName == updatePersonBody.Person.NickName.Trim() && p.LastName == updatePersonBody.Person.LastName.Trim() ).SingleOrDefault( );
+
+                // if there is
+                if ( foundPerson != null )
+                {
+                    // and they were created in the last 5 minutes
+                    if ( foundPerson.CreatedDateTime >= DateTime.Now.AddMinutes( -5 ) )
+                    {
+                        // assume that this is that person. Hand back the person Id and Family Id
+                        personId = foundPerson.Id;
+                        familyId = foundPerson.GetFamily( ).Id;
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
 
         public static int UpdateOrAddPerson( UpdatePersonBody updatePersonBody, out HttpStatusCode statusCode )
         {

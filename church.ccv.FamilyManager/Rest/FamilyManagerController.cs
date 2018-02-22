@@ -173,17 +173,28 @@ namespace chuch.ccv.FamilyManager.Rest
             {
                 System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
 
-                int personId = Core.UpdateOrAddPerson( updatePersonBody, out statusCode );
-                if( statusCode != HttpStatusCode.NoContent ) break;
+                // first see if this is a duplicate request due to Family Manager never having received the network response the first time
+                int personId = 0;
+                int familyId = 0;
+
+                bool duplicateRequest = Core.IsDuplicateAddRequest( updatePersonBody, out personId, out familyId );
+                if( duplicateRequest == false )
+                {
+                    // not a duplicate request, so process this and get the necessary values
+                    personId = Core.UpdateOrAddPerson( updatePersonBody, out statusCode );
+                    if ( statusCode != HttpStatusCode.NoContent ) break;
+
+                    familyId = updatePersonBody.FamilyId;
+                }
                 
                 // if noContent was returned, we know it worked. Now get the family so we can provide an updated
                 // family (with this updated person) to Family Manager
                 Core.FamilyReturnObject familyReturnObj = null;
 
                 // if they were sent to us already IN a family, get that one.
-                if ( updatePersonBody.FamilyId > 0 )
+                if ( familyId > 0 )
                 {
-                    familyReturnObj = Core.GetFamily( updatePersonBody.FamilyId, out statusCode );
+                    familyReturnObj = Core.GetFamily( familyId, out statusCode );
                     if( statusCode != HttpStatusCode.OK ) break;
                 }
                 else
