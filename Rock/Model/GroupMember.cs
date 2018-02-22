@@ -819,11 +819,41 @@ namespace Rock.Model
 
     #endregion
 
+    /// <summary>
+    /// Helper class for tracking changes
+    /// </summary>
     public class HistoryItem
     {
+        /// <summary>
+        /// Gets or sets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
         public int PersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the changes.
+        /// </summary>
+        /// <value>
+        /// The changes.
+        /// </value>
         public List<string> Changes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the caption.
+        /// </summary>
+        /// <value>
+        /// The caption.
+        /// </value>
         public string Caption { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group identifier.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
         public int? GroupId { get; set; }
     }
 }

@@ -115,5 +115,33 @@ namespace Rock.Security
         /// <param name="password">The password.</param>
         public abstract void SetPassword( UserLogin user, string password );
 
+        /// <summary>
+        /// Gets the login button text.
+        /// </summary>
+        /// <value>
+        /// The login button text.
+        /// </value>
+        public virtual string LoginButtonText
+        {
+            get
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the login button CSS class.
+        /// </summary>
+        /// <value>
+        /// The login button CSS class.
+        /// </value>
+        public virtual string LoginButtonCssClass
+        {
+            get
+            {
+                return this.GetType().Name.ToLower();
+            }
+        }
+
     }
 }

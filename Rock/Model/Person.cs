@@ -1969,6 +1969,14 @@ namespace Rock.Model
                 TopSignalIconCssClass = topSignal?.SignalType.SignalIconCssClass;
                 TopSignalColor = topSignal?.SignalType.SignalColor;
             }
+
+        /// Gets the phone number.
+        /// </summary>
+        /// <param name="phoneType">Type of the phone.</param>
+        /// <returns></returns>
+        public PhoneNumber GetPhoneNumber( Guid phoneType )
+        {
+            return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValue.Guid == phoneType );
         }
 
         #endregion
