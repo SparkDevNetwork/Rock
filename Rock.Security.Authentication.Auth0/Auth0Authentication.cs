@@ -21,9 +21,12 @@ namespace Rock.Security.Authentication.Auth0
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Auth0" )]
 
-    [TextField( "Client ID", "The Auth0 Client ID" )]
-    [TextField( "Client Secret", "The Auth0 Client Secret" )]
-    [TextField( "Client Domain", "The Auth0 Domain" )]
+    [TextField( "Client ID", "The Auth0 Client ID", order: 0 )]
+    [TextField( "Client Secret", "The Auth0 Client Secret", order: 1 )]
+    [TextField( "Client Domain", "The Auth0 Domain", order: 2 )]
+
+    [TextField( "Login Button Text", "The text shown on the login button.", defaultValue: "Auth0 Login", order: 3 )]
+    [TextField( "Login Button CSS Class", "The CSS class applied to the login button.", order: 4 )]
     public class Auth0Authentication : AuthenticationComponent
     {
         /// <summary>
@@ -126,146 +129,6 @@ namespace Rock.Security.Authentication.Auth0
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// see https://auth0.com/docs/user-profile/normalized/oidc 
-        /// </summary>
-        public class Auth0UserInfo
-        {
-            /// <summary>
-            /// unique identifier for the user
-            /// </summary>
-            /// <value>
-            /// The sub.
-            /// </value>
-            public string sub { get; set; }
-
-            /// <summary>
-            /// name of the user
-            /// </summary>
-            /// <value>
-            /// The name.
-            /// </value>
-            public string name { get; set; }
-
-            /// <summary>
-            /// the first/given name of the user
-            /// </summary>
-            /// <value>
-            /// The name of the given.
-            /// </value>
-            public string given_name { get; set; }
-
-            /// <summary>
-            /// the surname/last name of the use
-            /// </summary>
-            /// <value>
-            /// The name of the family.
-            /// </value>
-            public string family_name { get; set; }
-
-            /// <summary>
-            /// Gets or sets the email.
-            /// </summary>
-            /// <value>
-            /// The email.
-            /// </value>
-            public string email { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether [email verified].
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if [email verified]; otherwise, <c>false</c>.
-            /// </value>
-            public bool email_verified { get; set; }
-
-            /// <summary>
-            /// casual name of the user that may/may not be the same as the given_name
-            /// </summary>
-            /// <value>
-            /// The nickname.
-            /// </value>
-            public string nickname { get; set; }
-
-            /// <summary>
-            /// URL of the user's profile picture
-            /// </summary>
-            /// <value>
-            /// The picture.
-            /// </value>
-            public string picture { get; set; }
-
-            /// <summary>
-            /// gender of the user
-            /// </summary>
-            /// <value>
-            /// The gender.
-            /// </value>
-            public string gender { get; set; }
-
-            /// <summary>
-            /// location where the user is located
-            /// </summary>
-            /// <value>
-            /// The locale.
-            /// </value>
-            public string locale { get; set; }
-
-            /// <summary>
-            /// time when the user's profile was last updated
-            /// </summary>
-            /// <value>
-            /// The updated at.
-            /// </value>
-            public DateTime updated_at { get; set; }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        private class Auth0TokenResponse
-        {
-            /// <summary>
-            /// Gets or sets the access token.
-            /// </summary>
-            /// <value>
-            /// The access token.
-            /// </value>
-            public string access_token { get; set; }
-
-            /// <summary>
-            /// Gets or sets the refresh token.
-            /// </summary>
-            /// <value>
-            /// The refresh token.
-            /// </value>
-            public string refresh_token { get; set; }
-
-            /// <summary>
-            /// Gets or sets the identifier token.
-            /// </summary>
-            /// <value>
-            /// The identifier token.
-            /// </value>
-            public string id_token { get; set; }
-
-            /// <summary>
-            /// Gets or sets the expires in.
-            /// </summary>
-            /// <value>
-            /// The expires in.
-            /// </value>
-            public int expires_in { get; set; }
-
-            /// <summary>
-            /// Gets or sets the type of the token.
-            /// </summary>
-            /// <value>
-            /// The type of the token.
-            /// </value>
-            public string token_type { get; set; }
         }
 
         /// <summary>
@@ -401,6 +264,22 @@ namespace Rock.Security.Authentication.Auth0
                 return username;
             }
         }
+
+        /// <summary>
+        /// Gets the login button CSS class.
+        /// </summary>
+        /// <value>
+        /// The login button CSS class.
+        /// </value>
+        public override string LoginButtonCssClass => this.GetAttributeValue( "LoginButtonCSSClass" );
+
+        /// <summary>
+        /// Gets the login button text.
+        /// </summary>
+        /// <value>
+        /// The login button text.
+        /// </value>
+        public override string LoginButtonText => this.GetAttributeValue( "LoginButtonText" );
 
         /// <summary>
         /// Gets the redirect URL.
