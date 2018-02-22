@@ -16,24 +16,30 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Mail;
-using System.Linq;
-using System.Threading.Tasks;
-using RestSharp;
-using RestSharp.Authenticators;
-using Rock.Model;
-using Rock.Web.Cache;
-using System.Text.RegularExpressions;
-using Rock.Data;
-using Rock.Transactions;
-using System.IO;
 using System.ComponentModel;
-using Rock.Attribute;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Mail;
+using System.Net.Mime;
+using System.Text.RegularExpressions;
+using RestSharp;
+using RestSharp.Authenticators;
+
+using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
+using Rock.Transactions;
+using Rock.Web.Cache;
 
 namespace Rock.Communication.Transport
 {
+    /// <summary>
+    /// Sends email communication using Mailgun's HTTP API
+    /// </summary>
+    /// <seealso cref="Rock.Communication.TransportComponent" />
     [Description( "Sends a communication through Mailgun's HTTP API" )]
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "Mailgun HTTP" )]
@@ -186,14 +192,7 @@ namespace Rock.Communication.Transport
                     }
 
                     // Additional headers
-                    foreach ( var header in metaData )
-                    {
-                        restRequest.AddParameter( "h:" + header.Key, header.Value );
-                    }
-
-                    restRequest.AddParameter( "o:tracking", CanTrackOpens.ToYesNo() );
-                    restRequest.AddParameter( "o:tracking-opens", CanTrackOpens.ToYesNo() );
-                    restRequest.AddParameter( "o:tracking-clicks", CanTrackOpens.ToYesNo() );
+                    AddAdditionalHeaders( restRequest, metaData );
 
                     // Attachments
                     if ( emailMessage.Attachments.Any() )
@@ -242,6 +241,12 @@ namespace Rock.Communication.Transport
             return !errorMessages.Any();
         }
 
+        /// <summary>
+        /// Sends the specified communication.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="mediumEntityTypeId">The medium entity type identifier.</param>
+        /// <param name="mediumAttributes">The medium attributes.</param>
         public override void Send( Model.Communication communication, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes )
         {
             using ( var communicationRockContext = new RockContext() )
@@ -310,7 +315,7 @@ namespace Rock.Communication.Transport
                         break;
                     }
 
-                    // Not valid save the obj with the set status messages then go to the next one
+                    // Not valid save the obj with the status messages then go to the next one
                     if ( !ValidRecipient( recipient, communication.IsBulkCommunication ) )
                     {
                         recipientRockContext.SaveChanges();
@@ -319,18 +324,150 @@ namespace Rock.Communication.Transport
 
                     try
                     {
+                        // Create merge field dictionary
+                        var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
+
+                        // Create the request obj
                         restRequest = new RestRequest( GetAttributeValue( "Resource" ), Method.POST );
                         restRequest.AddParameter( "domian", GetAttributeValue( "Domain" ), ParameterType.UrlSegment );
 
+                        // ReplyTo
                         if ( communication.ReplyToEmail.IsNotNullOrWhitespace() )
                         {
                             restRequest.AddParameter( replyTo );
                         }
 
+                        // From
+                        restRequest.AddParameter( "from", new MailAddress( fromAddress, fromName ).ToString() );
 
+                        // To
+                        restRequest.AddParameter( "to",  new MailAddress( recipient.PersonAlias.Person.Email, recipient.PersonAlias.Person.FullName ).ToString() );
+                        
+                        // Safe sender checks
+                        CheckSafeSender( restRequest, fromAddress, globalAttributes.GetValue( "OrganizationEmail" ) );
 
+                        // CC
+                        if ( communication.CCEmails.IsNotNullOrWhitespace() )
+                        {
+                            string ccRecipients = communication.CCEmails.ResolveMergeFields( mergeObjects, currentPerson );
+                            foreach ( var ccRecipient in ccRecipients )
+                            {
+                                restRequest.AddParameter( "cc", ccRecipient );
+                            }
+                        }
 
+                        // BCC
+                        if ( communication.BCCEmails.IsNotNullOrWhitespace() )
+                        {
+                            string bccRecipients = communication.CCEmails.ResolveMergeFields( mergeObjects, currentPerson );
+                            foreach ( var bccRecipient in bccRecipients )
+                            {
+                                restRequest.AddParameter( "bcc", bccRecipient );
+                            }
+                        }
 
+                        // Subject
+                        string subject = ResolveText( communication.Subject, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+                        restRequest.AddParameter( "subject", subject );
+
+                        // Body Plain Text
+                        if ( mediumAttributes.ContainsKey( "DefaultPlainText" ) )
+                        {
+                            string plainText = ResolveText( mediumAttributes["DefaultPlainText"], currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+                            if ( !string.IsNullOrWhiteSpace( plainText ) )
+                            {
+                                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainText, new ContentType( MediaTypeNames.Text.Plain ) );
+                                restRequest.AddParameter( "text", plainTextView );
+                            }
+                        }
+
+                        // Body HTML
+                        string htmlBody = communication.Message;
+                        
+                        // Get the unsubscribe content and add a merge field for it
+                        if ( communication.IsBulkCommunication && mediumAttributes.ContainsKey( "UnsubscribeHTML" ) )
+                        {
+                            string unsubscribeHtml = ResolveText( mediumAttributes["UnsubscribeHTML"], currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+                            mergeObjects.AddOrReplace( "UnsubscribeOption", unsubscribeHtml );
+                            htmlBody = ResolveText( htmlBody, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+
+                            // Resolve special syntax needed if option was included in global attribute
+                            if ( Regex.IsMatch( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]" ) )
+                            {
+                                htmlBody = Regex.Replace( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]", unsubscribeHtml );
+                            }
+
+                            // Add the unsubscribe option at end if it wasn't included in content
+                            if ( !htmlBody.Contains( unsubscribeHtml ) )
+                            {
+                                htmlBody += unsubscribeHtml;
+                            }
+                        }
+                        else
+                        {
+                            htmlBody = ResolveText( htmlBody, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+                            htmlBody = Regex.Replace( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( htmlBody ) )
+                        {
+                            if ( cssInliningEnabled )
+                            {
+                                // move styles inline to help it be compatible with more email clients
+                                htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes();
+                            }
+
+                            // add the main Html content to the email
+                            restRequest.AddParameter( "html", htmlBody );
+                        }
+
+                        // Headers
+                        AddAdditionalHeaders( restRequest, new Dictionary<string, string>() { { "communication_recipient_guid", recipient.Guid.ToString() } } );
+
+                        // Attachments
+                        foreach ( var attachment in communication.GetAttachments( CommunicationType.Email).Select( a => a.BinaryFile ) )
+                        {
+                            MemoryStream ms = new MemoryStream();
+                            attachment.ContentStream.CopyTo( ms );
+                            restRequest.AddFile( "attachment", ms.ToArray(), attachment.FileName );
+                        }
+
+                        // Send the email
+                        // Send it
+                        RestClient restClient = new RestClient
+                        {
+                            BaseUrl = new Uri( GetAttributeValue( "BaseURL" ) ),
+                            Authenticator = new HttpBasicAuthenticator( "api", GetAttributeValue( "APIKey" ) )
+                        };
+
+                        // Call the API and get the response
+                        Response = restClient.Execute( restRequest );
+
+                        // Update recipient status and status note
+                        recipient.Status = Response.StatusCode == HttpStatusCode.OK ? CommunicationRecipientStatus.Delivered : CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = Response.StatusDescription;
+                        recipient.TransportEntityTypeName = this.GetType().FullName;
+
+                        // Log it
+                        try
+                        {
+                            var historyService = new HistoryService( recipientRockContext );
+                            historyService.Add( new History
+                            {
+                                CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                EntityTypeId = personEntityTypeId,
+                                CategoryId = communicationCategoryId,
+                                EntityId = recipient.PersonAlias.PersonId,
+                                Summary = string.Format( "Sent communication from <span class='field-value'>{0}</span>.", fromName ),
+                                Caption = subject,
+                                RelatedEntityTypeId = communicationEntityTypeId,
+                                RelatedEntityId = communication.Id
+                            } );
+                        }
+                        catch ( Exception ex )
+                        {
+                            ExceptionLogService.LogException( ex, null );
+                        }
                     }
                     catch ( Exception ex )
                     {
@@ -341,10 +478,6 @@ namespace Rock.Communication.Transport
 
                     recipientRockContext.SaveChanges();
                 }
-
-
-
-
             }
         }
 
@@ -420,6 +553,7 @@ namespace Rock.Communication.Transport
                     break;
                 }
             }
+
             if ( unsafeToDomain )
             {
                 if ( !string.IsNullOrWhiteSpace( organizationEmail ) && !organizationEmail.Equals( fromEmail, StringComparison.OrdinalIgnoreCase ) )
@@ -430,8 +564,8 @@ namespace Rock.Communication.Transport
                     {
                         restRequest.Parameters.Remove( fromParam );
                     }
-                    restRequest.AddParameter( "from", organizationEmail );
 
+                    restRequest.AddParameter( "from", organizationEmail );
 
                     Parameter replyParam = restRequest.Parameters.Where( p => p.Name == "h:Reply-To" && p.Value.ToString() == organizationEmail ).FirstOrDefault();
 
@@ -440,8 +574,27 @@ namespace Rock.Communication.Transport
                     {
                         restRequest.AddParameter( "h:Reply-To", organizationEmail );
                     }
-
                 }
+            }
+        }
+
+        private void AddAdditionalHeaders( RestRequest restRequest, Dictionary<string, string> headers )
+        {
+            // Add tracking settings
+            restRequest.AddParameter( "o:tracking", CanTrackOpens.ToYesNo() );
+            restRequest.AddParameter( "o:tracking-opens", CanTrackOpens.ToYesNo() );
+            restRequest.AddParameter( "o:tracking-clicks", CanTrackOpens.ToYesNo() );
+
+            // Add additional JSON info
+            if ( headers != null )
+            {
+                var variables = new List<string>();
+                foreach ( var param in headers )
+                {
+                    variables.Add( string.Format( "\"{0}\":\"{1}\"", param.Key, param.Value ) );
+                }
+
+                restRequest.AddParameter( "v:X-Mailgun-Variables", string.Format( @"{{{0}}}", variables.AsDelimited( "," ) ) );
             }
         }
 
@@ -641,10 +794,6 @@ namespace Rock.Communication.Transport
             Send( message, mediumEntityId, null, out errorMessages );
         }
 
-
         #endregion
-
-
     }
-
 }
