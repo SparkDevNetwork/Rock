@@ -74,7 +74,7 @@ namespace Rock.Security
         /// <summary>
         /// Authorization to manage the group members
         /// </summary>
-        public const string MANAGE_MEMBERS = "Manage Members";
+        public const string MANAGE_MEMBERS = "ManageMembers";
 
         #endregion
 
@@ -853,7 +853,20 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool? AuthorizedForEntity( ISecured entity, string action, Rock.Model.Person person )
         {
-            return ItemAuthorized( entity, action, person, true, false );
+            return AuthorizedForEntity( entity, action, person, false );
+        }
+
+        /// <summary>
+        /// Checks to see if a person is authorized for entity or it's parent authority
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="checkParentAuthority">if set to <c>true</c> [check parent authority].</param>
+        /// <returns></returns>
+        public static bool? AuthorizedForEntity( ISecured entity, string action, Rock.Model.Person person, bool checkParentAuthority )
+        {
+            return ItemAuthorized( entity, action, person, true, checkParentAuthority );
         }
 
         #endregion

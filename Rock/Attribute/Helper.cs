@@ -1066,7 +1066,7 @@ namespace Rock.Attribute
             exclude = exclude ?? new List<string>();
             string result = string.Empty;
 
-            if ( item.Attributes != null )
+            if ( item?.Attributes != null )
             {
                 AddDisplayControls(item, GetAttributeCategories(item, false, supressOrdering), parentControl, exclude, showHeading);
             }
@@ -1082,6 +1082,11 @@ namespace Rock.Attribute
         /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
         public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
         {
+            if ( item == null )
+            {
+                return;
+            }
+
             foreach ( var attributeCategory in attributeCategories )
             {
                 if ( showHeading )
@@ -1134,7 +1139,7 @@ namespace Rock.Attribute
         /// <param name="item">The item.</param>
         public static void GetEditValues( Control parentControl, IHasAttributes item )
         {
-            if ( item.Attributes != null )
+            if ( item?.Attributes != null )
             {
                 foreach ( var attribute in item.Attributes )
                 {

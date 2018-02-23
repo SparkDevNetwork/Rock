@@ -462,9 +462,8 @@ namespace Rock.Model
     #region Classes
 
     /// <summary>
-    /// A Dictionary of DataViewFilterOverride where the Key is the DataViewFilter.Guid
+    /// DataViewFilterOverrides with a Dictionary of Filter Overrides where the Key is the DataViewFilter.Guid
     /// </summary>
-    /// <seealso cref="System.Collections.Generic.Dictionary{System.Guid, Rock.Model.DataViewFilterOverride}" />
     public class DataViewFilterOverrides : Dictionary<Guid, DataViewFilterOverride>
     {
         /// <summary>
@@ -479,6 +478,15 @@ namespace Rock.Model
         public DataViewFilterOverrides( List<DataViewFilterOverride> list ) :
             base( list.ToDictionary( k => k.DataFilterGuid, v => v ) )
         { }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [use persisted values if available] (default true)
+        /// Set this to false to prevent the Query from using the PersistedValues instead of the normal filter
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [use persisted values if available]; otherwise, <c>false</c>.
+        /// </value>
+        public bool UsePersistedValuesIfAvailable { get; set; } = true;
 
         /// <summary>
         /// Gets the override.

@@ -12,7 +12,10 @@
 
         <div class="panel panel-block panel-analytics">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Attendance Analysis</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-check-square-o"></i>
+                    Attendance Analytics
+                </h1>
 
                 <div class="panel-labels">
                     <asp:Button ID="btnCheckinDetails" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnCheckinDetails_Click" Text="Check-in Detail" />
@@ -260,6 +263,7 @@
                                         <asp:HyperLinkField DataNavigateUrlFields="PersonId" DataTextField="Person" HeaderText="Name" SortExpression="Person.LastName, Person.NickName"/>
                                         <Rock:RockBoundField DataField="Person" HeaderText="Person" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Email" HeaderText="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:RockBoundField DataField="Person.Gender" HeaderText="Gender" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Age" HeaderText="Age" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.GivingId" HeaderText="GivingId" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                         <Rock:RockBoundField DataField="Person.Birthdate" HeaderText="Birthdate" Visible="false" ExcelExportBehavior="AlwaysInclude" />

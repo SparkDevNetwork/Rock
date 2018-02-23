@@ -266,7 +266,6 @@ namespace RockWeb.Blocks.Crm
             if ( !Page.IsPostBack )
             {
                 cpCampus.Campuses = CampusCache.All();
-
                 Individuals = new List<Individual>();
                 SelectedFields = new List<string>();
 
@@ -501,6 +500,12 @@ namespace RockWeb.Blocks.Crm
                         newEmailActive = ddlIsEmailActive.SelectedValue == "Active";
                     }
                     EvaluateChange( changes, "Email Is Active", newEmailActive );
+                }
+
+                if ( SelectedFields.Contains( ddlCommunicationPreference.ClientID ) )
+                {
+                    var newCommunicationPreference = ddlCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
+                    EvaluateChange( changes, "Communication Preference", newCommunicationPreference );
                 }
 
                 if ( SelectedFields.Contains( ddlEmailPreference.ClientID ) )
@@ -818,6 +823,9 @@ namespace RockWeb.Blocks.Crm
                 newEmailActive = ddlIsEmailActive.SelectedValue == "Active";
             }
 
+            var newCommunicationPreference = ddlCommunicationPreference.SelectedValueAsEnumOrNull<CommunicationType>();
+            EmailPreference? newEmailPreference = ddlEmailPreference.SelectedValue.ConvertToEnumOrNull<EmailPreference>();
+
             EmailPreference? newEmailPreference = ddlEmailPreference.SelectedValue.ConvertToEnumOrNull<EmailPreference>();
 
             string newEmailNote = tbEmailNote.Text;
@@ -895,6 +903,18 @@ namespace RockWeb.Blocks.Crm
                 {
                     History.EvaluateChange( changes, "Email Is Active", person.IsEmailActive, newEmailActive );
                     person.IsEmailActive = newEmailActive;
+                }
+
+                if ( SelectedFields.Contains( ddlCommunicationPreference.ClientID ) )
+                {
+                    History.EvaluateChange( changes, "Communication Preference", person.CommunicationPreference, newCommunicationPreference );
+                    person.CommunicationPreference = newCommunicationPreference.Value;
+                }
+
+                if ( SelectedFields.Contains( ddlEmailPreference.ClientID ) )
+                {
+                    History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
+                    person.EmailPreference = newEmailPreference.Value;
                 }
 
                 if ( SelectedFields.Contains( ddlEmailPreference.ClientID ) )
@@ -1495,6 +1515,7 @@ namespace RockWeb.Blocks.Crm
             ypGraduation.Enabled = ddlGradePicker.Enabled;
 
             SetControlSelection( cpCampus, "Campus" );
+            SetControlSelection( ddlCommunicationPreference, "Communication Preference" );
             SetControlSelection( ddlSuffix, "Suffix" );
             SetControlSelection( ddlRecordStatus, "Record Status" );
             SetControlSelection( ddlIsEmailActive, "Email Status" );

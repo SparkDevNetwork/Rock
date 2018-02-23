@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Reporting
         #region Properties
 
         private const string _ViewStateKeyShowResults = "ShowResults";
-        private string _SettingKeyShowResults = "data-view-show-results-{blockId}";
+        private string _settingKeyShowResults = "data-view-show-results-{blockId}";
 
         /// <summary>
         /// Gets or sets the visibility of the Results Grid for the Data View.
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     ViewState[_ViewStateKeyShowResults] = value;
 
-                    SetUserPreference( _SettingKeyShowResults, value.ToString() );
+                    SetUserPreference( _settingKeyShowResults, value.ToString() );
                 }
 
                 pnlResultsGrid.Visible = this.ShowResults;
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
 
             // Create unique user setting keys for this block.
-            _SettingKeyShowResults = _SettingKeyShowResults.Replace( "{blockId}", this.BlockId.ToString() );
+            _settingKeyShowResults = _settingKeyShowResults.Replace( "{blockId}", this.BlockId.ToString() );
 
             // Switch does not automatically initialize again after a partial-postback.  This script 
             // looks for any switch elements that have not been initialized and re-intializes them.
@@ -162,7 +162,7 @@ $(document).ready(function() {
 
             if ( !Page.IsPostBack )
             {
-                this.ShowResults = GetUserPreference( _SettingKeyShowResults ).AsBoolean(true);
+                this.ShowResults = GetUserPreference( _settingKeyShowResults ).AsBoolean(true);
 
                 string itemId = PageParameter( "DataViewId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
@@ -230,8 +230,10 @@ $(document).ready(function() {
 
             var newItem = dataViewService.GetNewFromTemplate( id );
 
-            if (newItem == null)
+            if ( newItem == null )
+            {
                 return;
+            }
 
             newItem.Name += " (Copy)";
 
@@ -288,10 +290,10 @@ $(document).ready(function() {
             dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             dataView.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
+            dataView.PersistedScheduleIntervalMinutes = nbPersistedScheduleIntervalMinutes.Text.AsIntegerOrNull();
 
             var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
             
-
             if ( !Page.IsValid )
             {
                 return;
@@ -311,7 +313,6 @@ $(document).ready(function() {
 
             rockContext.WrapTransaction( () =>
             {
-                
                 if ( origDataViewFilterId.HasValue )
                 {
                     // delete old report filter so that we can add the new filter (but with original guids), then drop the old filter
@@ -327,6 +328,13 @@ $(document).ready(function() {
                 dataView.DataViewFilter = newDataViewFilter;
                 rockContext.SaveChanges();
             } );
+
+            if ( dataView.PersistedScheduleIntervalMinutes.HasValue )
+            {
+                dataView.PersistResult( GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
+                rockContext.SaveChanges();
+            }
 
             if ( adding )
             {
@@ -414,7 +422,7 @@ $(document).ready(function() {
                     }
                     catch
                     {
-                        //
+                        // intentionally ignore if delete fails
                     }
 
                     dataViewService.Delete( dataView );
@@ -515,6 +523,7 @@ $(document).ready(function() {
             {
                 dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
                 dataView.Name = string.Empty;
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -607,6 +616,7 @@ $(document).ready(function() {
             tbDescription.Text = dataView.Description;
             etpEntityType.SelectedEntityTypeId = dataView.EntityTypeId;
             cpCategory.SetValue( dataView.CategoryId );
+            nbPersistedScheduleIntervalMinutes.Text = dataView.PersistedScheduleIntervalMinutes.ToString();
 
             var rockContext = new RockContext();
             BindDataTransformations( rockContext );
@@ -664,6 +674,15 @@ $(document).ready(function() {
 
             lFilters.Text = descriptionListFilters.Html;
 
+            DescriptionList descriptionListPersisted = new DescriptionList();
+            hlblPersisted.Visible = dataView.PersistedScheduleIntervalMinutes.HasValue && dataView.PersistedLastRefreshDateTime.HasValue;
+            if ( hlblPersisted.Visible )
+            {
+                hlblPersisted.Text = string.Format( "Persisted {0}", dataView.PersistedLastRefreshDateTime.ToElapsedString() );
+            }
+
+            lPersisted.Text = descriptionListPersisted.Html;
+
             DescriptionList descriptionListDataviews = new DescriptionList();
             var dataViewFilterEntityId = EntityTypeCache.Read( typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ) ).Id;
 
@@ -716,25 +735,31 @@ $(document).ready(function() {
             descriptionListReports.Add( "Reports", sbReports );
             lReports.Text = descriptionListReports.Html;
 
-            // Groups using DataView in Group Sync
+            // Group-Roles using DataView in Group Sync
             DescriptionList descriptionListGroupSync = new DescriptionList();
             StringBuilder sbGroups = new StringBuilder();
 
-            GroupService groupService = new GroupService( rockContext );
-            var groups = groupService.Queryable().AsNoTracking().Where( g => g.SyncDataViewId == dataView.Id ).OrderBy( g => g.Name );
+            GroupSyncService groupSyncService = new GroupSyncService( rockContext );
+            var groupSyncs = groupSyncService
+                .Queryable()
+                .Where( a => a.SyncDataViewId == dataView.Id )
+                .ToList();
+
             var groupDetailPage = GetAttributeValue( "GroupDetailPage" );
 
-            if ( groups.Count() > 0 )
+            if ( groupSyncs.Count() > 0 )
             {
-                foreach ( var group in groups )
+                foreach ( var groupSync in groupSyncs )
                 {
+                    string groupAndRole = string.Format( "{0} - {1}", groupSync.Group.Name, groupSync.GroupTypeRole.Name );
+
                     if ( !string.IsNullOrWhiteSpace( groupDetailPage ) )
                     {
-                        sbGroups.Append( "<a href=\"" + LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string>() { { "GroupId", group.Id.ToString() } } ) + "\">" + group.Name + "</a><br/>" );
+                        sbGroups.Append( "<a href=\"" + LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string>() { { "GroupId", groupSync.Group.Id.ToString() } } ) + "\">" + groupAndRole + "</a><br/>" );
                     }
                     else
                     {
-                        sbGroups.Append( group.Name + "<br/>" );
+                        sbGroups.Append( string.Format( "{0}<br/>", groupAndRole ) );
                     }
                 }
 

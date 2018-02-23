@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using Quartz;
 using Rock.Attribute;
@@ -36,6 +37,7 @@ namespace Rock.Jobs
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
     [IntegerField( "How Many Records", "The number of communication records to process on each run of this job.", false, 100000, "", 0, "HowMany" )]
+    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
     public class MigrateCommunicationMediumData : IJob
     {
         /// <summary>
@@ -43,28 +45,28 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="context">The context.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-
         public void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             int howMany = dataMap.GetString( "HowMany" ).AsIntegerOrNull() ?? 300000;
+            var commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
 
             CommunicationSchemaUpdates();
 
-            bool anyRemaining = UpdateCommunicationRecords( true, howMany );
+            bool anyRemaining = UpdateCommunicationRecords( true, howMany, commandTimeout );
 
             if ( !anyRemaining )
             {
                 // Verify that there are not any communication records with medium data.
                 using ( var rockContext = new RockContext() )
                 {
+                    rockContext.Database.CommandTimeout = commandTimeout;
+
+                    // if there is any v6 MediumDataJson data, it would be have a datalength of 2 or more (blank would be null, '', or '{}')
                     if ( !new CommunicationService( rockContext )
                         .Queryable()
-                        .Where( c =>
-                            c.MediumDataJson != null &&
-                            c.MediumDataJson != "" &&
-                            c.MediumDataJson != "{}" )
+                        .Where( c => SqlFunctions.DataLength( c.MediumDataJson ) > 2 )
                         .Any() )
                     {
 
@@ -137,28 +139,42 @@ END
         #region Static Methods 
 
         /// <summary>
-        /// Migrates communication data from the MediumDataJson field to the individual fields. 
+        /// Updates the communication records.
         /// </summary>
         /// <param name="updateTemplates">if set to <c>true</c> [update templates].</param>
         /// <param name="howManyToConvert">The how many to convert.</param>
         /// <returns></returns>
+        [Obsolete( "Use the other UpdateCommunicationRecords" )]
         public static bool UpdateCommunicationRecords( bool updateTemplates, int howManyToConvert )
         {
-            bool anyRemaining = true;
+            return UpdateCommunicationRecords( updateTemplates, howManyToConvert, null );
+        }
 
-            
+        /// <summary>
+        /// Migrates communication data from the MediumDataJson field to the individual fields.
+        /// </summary>
+        /// <param name="updateTemplates">if set to <c>true</c> [update templates].</param>
+        /// <param name="howManyToConvert">The how many to convert.</param>
+        /// <param name="commandTimeout">The command timeout (seconds).</param>
+        /// <returns></returns>
+        public static bool UpdateCommunicationRecords( bool updateTemplates, int howManyToConvert, int? commandTimeout )
+        {
+            bool anyRemaining = true;
 
             if ( updateTemplates )
             {
                 using ( var rockContext = new RockContext() )
                 {
+                    if ( commandTimeout.HasValue )
+                    {
+                        rockContext.Database.CommandTimeout = commandTimeout;
+                    }
+
                     var binaryFileService = new BinaryFileService( rockContext );
 
-                    foreach ( var comm in new CommunicationTemplateService( rockContext )
-                        .Queryable().Where( c =>
-                            c.MediumDataJson != null &&
-                            c.MediumDataJson != "" &&
-                            c.MediumDataJson != "{}" ) )
+                    // if there is any pre-v7 MediumDataJson data, it would be have a datalength of 2 or more (blank would be null, '', or '{}')
+                    foreach ( var comm in new CommunicationTemplateService( rockContext ).Queryable()
+                        .Where( c => SqlFunctions.DataLength( c.MediumDataJson ) > 2 ) )
                     {
                         var attachmentBinaryFileIds = new List<int>();
                         SetPropertiesFromMediumDataJson( comm, comm.MediumDataJson, attachmentBinaryFileIds );
@@ -187,11 +203,10 @@ END
                 using ( var rockContext = new RockContext() )
                 {
                     int take = howManyLeft < 100 ? howManyLeft : 100;
-                    var communications = new CommunicationService( rockContext )
-                        .Queryable().Where( c =>
-                            c.MediumDataJson != null &&
-                            c.MediumDataJson != "" &&
-                            c.MediumDataJson != "{}" )
+
+                    // if there is any pre-v7 MediumDataJson data, it would be have a datalength of 2 or more (blank would be null, '', or '{}')
+                    var communications = new CommunicationService( rockContext ).Queryable()
+                        .Where( c => SqlFunctions.DataLength( c.MediumDataJson ) > 2 )
                         .OrderByDescending( c => c.Id )
                         .Take( take )
                         .ToList();
@@ -220,6 +235,7 @@ END
 
                         comm.MediumDataJson = string.Empty;
                     }
+
                     rockContext.SaveChanges();
                 }
             }
@@ -237,7 +253,7 @@ END
                     if ( !commDetails.SMSFromDefinedValueId.HasValue )
                     {
                         var dv = DefinedValueCache.Read( mediumData["FromValue"].AsInteger() );
-                        commDetails.SMSFromDefinedValueId = dv != null ? dv.Id : (int?)null;
+                        commDetails.SMSFromDefinedValueId = dv != null ? dv.Id : ( int? ) null;
                     }
                     commDetails.SMSMessage = ConvertMediumData( mediumData, "Message", commDetails.SMSMessage );
                 }

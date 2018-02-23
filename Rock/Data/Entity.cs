@@ -161,7 +161,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets the validation results for the entity
+        /// Gets the validation results for the entity. This is initialized by calling IsValid
         /// </summary>
         [NotMapped]
         public virtual List<ValidationResult> ValidationResults

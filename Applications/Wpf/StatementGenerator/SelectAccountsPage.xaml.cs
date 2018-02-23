@@ -61,11 +61,8 @@ namespace Rock.Apps.StatementGenerator
             var currencyDefinedType = _rockRestClient.GetDataByGuid<Rock.Client.DefinedType>( "api/DefinedTypes", Rock.Client.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
             _currencyTypes = _rockRestClient.GetData<List<Rock.Client.DefinedValue>>( $"api/DefinedValues?$filter=DefinedTypeId eq {currencyDefinedType.Id}" );
             lstCashCurrencyTypes.Items.Clear();
-            var defaultCashCurrencyGuids = new Guid[] {
-                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH.AsGuid(),
-                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid(),
-                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid(),
-                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid()
+            var defaultUnselectedCashCurrencyGuids = new Guid[] {
+                Rock.Client.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid()
             };
 
             var defaultNonCashCurrencyGuids = new Guid[] {
@@ -83,7 +80,7 @@ namespace Rock.Apps.StatementGenerator
                 }
                 else
                 {
-                    cashCurrencyCheckbox.IsChecked = defaultCashCurrencyGuids.Contains( currencyType.Guid );
+                    cashCurrencyCheckbox.IsChecked = !defaultUnselectedCashCurrencyGuids.Contains( currencyType.Guid );
                 }
 
                 lstCashCurrencyTypes.Items.Add( cashCurrencyCheckbox );

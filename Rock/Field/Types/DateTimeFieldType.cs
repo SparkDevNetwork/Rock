@@ -220,6 +220,7 @@ namespace Rock.Field.Types
                 }
                 else
                 {
+                    // NullReferenceException will *NOT* be thrown if value is null because the AsDateTime() extension method is null safe.
                     dtp.SelectedDateTime = value.AsDateTime();
                 }
             }

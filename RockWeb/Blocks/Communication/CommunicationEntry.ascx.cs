@@ -262,19 +262,28 @@ namespace RockWeb.Blocks.Communication
                     CommunicationId = communication.Id;
                 }
 
-                // If viewing a new, transient, draft, or denied communication, use this block
-                // otherwise, set this block visible=false and if there is a communication detail block on this page, it'll be shown instead
-                if ( communication == null ||
-                    communication.Status == CommunicationStatus.Transient ||
-                    communication.Status == CommunicationStatus.Draft ||
-                    communication.Status == CommunicationStatus.Denied ||
-                    ( communication.Status == CommunicationStatus.PendingApproval && _editingApproved ) )
+                if ( communication == null )
                 {
-                    // Make sure they are authorized to view
-                    if ( communication == null || 
-                        communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson ) ||
-                        ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue  && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value ) )
+                    // if this is a new communication, create a communication object temporarily so we can do the auth and edit logic
+                    communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
+                    communication.CreatedByPersonAlias = this.CurrentPersonAlias;
+                    communication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
+                    communication.SenderPersonAlias = this.CurrentPersonAlias;
+                    communication.SenderPersonAliasId = CurrentPersonAliasId;
+                }
+
+                // If viewing a new, transient, draft, or are the approver of a pending-approval communication, use this block
+                // otherwise, set this block visible=false and if there is a communication detail block on this page, it'll be shown instead
+                CommunicationStatus[] editableStatuses = new CommunicationStatus[] { CommunicationStatus.Transient, CommunicationStatus.Draft, CommunicationStatus.Denied };
+                if ( editableStatuses.Contains( communication.Status ) || ( communication.Status == CommunicationStatus.PendingApproval && _editingApproved ) )
+                {
+                    // Make sure they are authorized to edit, or the owner, or the approver/editor
+                    bool isAuthorizedEditor = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+                    bool isCreator = ( communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value );
+                    bool isApprovalEditor = communication.Status == CommunicationStatus.PendingApproval && _editingApproved;
+                    if ( isAuthorizedEditor || isCreator || isApprovalEditor )
                     {
+                        // communication is either new or ok to edit
                         ShowDetail( communication );
                     }
                     else
@@ -285,10 +294,9 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    // Otherwise, use the communication detail block
+                    // Not an editable communication, so hide this block. If there is a CommunicationDetail block on this page, it'll be shown instead
                     this.Visible = false;
                 }
-
             }
         }
 
@@ -519,7 +527,10 @@ namespace RockWeb.Blocks.Communication
                         // Using a new context (so that changes in the UpdateCommunication() are not persisted )
                         var testCommunication = communication.Clone( false );
                         testCommunication.Id = 0;
-                        testCommunication.Guid = Guid.Empty;
+                        testCommunication.Guid = Guid.NewGuid();
+                        testCommunication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
+                        testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext ).Queryable().Where( a => a.Id == this.CurrentPersonAliasId.Value ).Include( a => a.Person ).FirstOrDefault();
+
                         testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
                         testCommunication.ForeignGuid = null;
                         testCommunication.ForeignId = null;
@@ -529,6 +540,18 @@ namespace RockWeb.Blocks.Communication
                         testCommunication.Status = CommunicationStatus.Approved;
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
+
+                        foreach ( var attachment in communication.Attachments )
+                        {
+                            var cloneAttachment = attachment.Clone( false );
+                            cloneAttachment.Id = 0;
+                            cloneAttachment.Guid = Guid.NewGuid();
+                            cloneAttachment.ForeignGuid = null;
+                            cloneAttachment.ForeignId = null;
+                            cloneAttachment.ForeignKey = null;
+
+                            testCommunication.Attachments.Add( cloneAttachment );
+                        }
 
                         var testRecipient = new CommunicationRecipient();
                         if ( communication.GetRecipientCount( rockContext ) > 0 )
@@ -1285,7 +1308,7 @@ namespace RockWeb.Blocks.Communication
             // add any new attachments that were added
             foreach ( var attachmentBinaryFileId in CommunicationData.EmailAttachmentBinaryFileIds.Where( a => !communication.Attachments.Any( x => x.BinaryFileId == a ) ) )
             {
-                communication.Attachments.Add( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId } );
+                communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId }, CommunicationType.Email );
             }
 
             DateTime? futureSendDate = dtpFutureSend.SelectedDateTime;
