@@ -68,6 +68,7 @@ namespace RockWeb.Blocks.Event
 
     [TextField("Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order: 17)]
     [TextField("Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 18)]
+    [TextField( "Date Parameter Name", "The page parameter name that contains the selected date.", false, "date", order: 19 )]
 
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
@@ -437,6 +438,8 @@ namespace RockWeb.Blocks.Event
 
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "TimeFrame", ViewMode );
+            mergeFields.Add( "StartDate", FilterStartDate );
+            mergeFields.Add( "EndDate", FilterEndDate );
             mergeFields.Add( "DetailsPage", LinkedPageRoute( "DetailsPage" ) );
             mergeFields.Add( "EventItems", eventSummaries );
             mergeFields.Add( "EventItemOccurrences", eventOccurrenceSummaries );
@@ -487,6 +490,17 @@ namespace RockWeb.Blocks.Event
             calEventCalendar.FirstDayOfWeek = _firstDayOfWeek.ConvertToInt().ToString().ConvertToEnum<FirstDayOfWeek>();
             calEventCalendar.SelectedDates.Clear();
             calEventCalendar.SelectedDates.SelectRange( FilterStartDate.Value, FilterEndDate.Value );
+
+            // Setup different dates if QueryString is set on load
+            var selectedDate = PageParameter( GetAttributeValue( "DateParameterName" ) ).AsDateTime();
+            if ( selectedDate.HasValue )
+            {
+                if ( selectedDate != null )
+                {
+                    SelectedDate = selectedDate;
+                    ResetCalendarSelection();
+                }
+            }
 
             // Setup Campus Filter
             var campusGuidList = GetAttributeValue( "Campuses" ).Split( ',' ).AsGuidList();
