@@ -66,20 +66,20 @@ namespace Rock.Model
         public int? AccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the pledge amount that is promised to be given at the specified <see cref="PledgeFrequencyValue"/>.
+        /// Gets or sets the pledge amount that is promised to be given.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Decimal"/> representing the amount to be pledged at the specified frequency.
+        /// A <see cref="System.Decimal"/> representing the total amount to be pledged.
         /// </value>
         /// <remarks>
-        /// An example is that a person pledges $100.00 to be given monthly for the next year. This value will be $100.00 and the grand total of the pledge would be $1,200.00
+        /// An example is that a person pledges $100.00 to be given monthly for the next year. This value will be $1,200.00 to indicate the total amount that is expected.
         /// </remarks>
         [DataMember]
         [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public decimal TotalAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefinedValueId of the pledge frequency <see cref="Rock.Model.DefinedValue" /> representing how often the pledgor is promising to give the pledge amount.
+        /// Gets or sets the DefinedValueId of the pledge frequency <see cref="Rock.Model.DefinedValue" /> representing how often the pledgor is promising to give a portion of the pledge amount.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32" /> representing the pledge frequency <see cref="Rock.Model.DefinedValue"/>.
