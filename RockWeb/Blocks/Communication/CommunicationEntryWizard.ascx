@@ -250,7 +250,6 @@
                                                     <asp:ListItem Text="Slight" Value="125%" />
                                                     <asp:ListItem Text="1 &frac12; spacing" Value="150%" />
                                                     <asp:ListItem Text="Double space" Value="200%" />
-                                                    <asp:ListItem />
                                                 </Rock:RockDropDownList>
                                             </div>
                                         </div>
