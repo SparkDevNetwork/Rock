@@ -138,6 +138,9 @@ namespace RockWeb
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
+                // Indicate to always log to file during initialization.
+                ExceptionLogService.AlwaysLogToFile = true;
+
                 // Clear all cache
                 RockMemoryCache.Clear();
 
@@ -315,6 +318,8 @@ namespace RockWeb
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Started_Successfully: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
+
+                ExceptionLogService.AlwaysLogToFile = false;
             }
             catch (Exception ex)
             {
