@@ -119,6 +119,7 @@ namespace RockWeb.Blocks.Communication
 
                 var communicationTemplateService = new CommunicationTemplateService( rockContext );
                 var communicationTemplateAttachmentService = new CommunicationTemplateAttachmentService( rockContext );
+                var binaryFileService = new BinaryFileService( rockContext );
 
                 CommunicationTemplate communicationTemplate = null;
                 int? communicationTemplateId = hfCommunicationTemplateId.Value.AsIntegerOrNull();
@@ -138,8 +139,41 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.Name = tbName.Text;
                 communicationTemplate.IsActive = cbIsActive.Checked;
                 communicationTemplate.Description = tbDescription.Text;
+
+                if ( communicationTemplate.ImageFileId != imgTemplatePreview.BinaryFileId )
+                {
+                    var oldImageTemplatePreview = binaryFileService.Get( communicationTemplate.ImageFileId ?? 0 );
+                    if ( oldImageTemplatePreview != null )
+                    {
+                        // the old image template preview won't be needed anymore, so make it IsTemporary and have it get cleaned up later
+                        oldImageTemplatePreview.IsTemporary = true;
+                    }
+                }
+
                 communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
+
+                // Ensure that the ImagePreview is not set as IsTemporary=True
+                if ( communicationTemplate.ImageFileId.HasValue )
+                {
+                    var imageTemplatePreview = binaryFileService.Get( communicationTemplate.ImageFileId.Value );
+                    if ( imageTemplatePreview != null && imageTemplatePreview.IsTemporary )
+                    {
+                        imageTemplatePreview.IsTemporary = false;
+                    }
+                }
+
+                // Note: If the Logo has changed, we can't get rid of it since existing communications might use it
                 communicationTemplate.LogoBinaryFileId = imgTemplateLogo.BinaryFileId;
+
+                // Ensure that the ImagePreview is not set as IsTemporary=True
+                if ( communicationTemplate.LogoBinaryFileId.HasValue )
+                {
+                    var newImageTemplateLogo = binaryFileService.Get( communicationTemplate.LogoBinaryFileId.Value );
+                    if ( newImageTemplateLogo != null && newImageTemplateLogo.IsTemporary )
+                    {
+                        newImageTemplateLogo.IsTemporary = false;
+                    }
+                }
 
                 communicationTemplate.FromName = tbFromName.Text;
                 communicationTemplate.FromEmail = tbFromAddress.Text;
@@ -353,29 +387,49 @@ namespace RockWeb.Blocks.Communication
             ddlSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId );
             tbSMSTextMessage.Text = communicationTemplate.SMSMessage;
 
-            if ( communicationTemplate.IsSystem )
+            // render UI based on Authorized and IsSystem
+            bool readOnly = false;
+            bool restrictedEdit = false;
+
+            if ( !communicationTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
-                nbEditModeMessage.Text = EditModeMessage.System( Rock.Model.CommunicationTemplate.FriendlyTypeName );
+                restrictedEdit = true;
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( CommunicationTemplate.FriendlyTypeName );
+                nbEditModeMessage.Visible = true;
             }
 
-            tbName.ReadOnly = communicationTemplate.IsSystem;
-            cbIsActive.Enabled = !communicationTemplate.IsSystem;
-            //tbDescription.ReadOnly = communicationTemplate.IsSystem;
-            //imgTemplatePreview.Enabled = !communicationTemplate.IsSystem;
-            tbFromName.ReadOnly = communicationTemplate.IsSystem;
-            tbName.ReadOnly = communicationTemplate.IsSystem;
-            tbFromAddress.ReadOnly = communicationTemplate.IsSystem;
-            tbReplyToAddress.ReadOnly = communicationTemplate.IsSystem;
-            tbCCList.ReadOnly = communicationTemplate.IsSystem;
-            tbBCCList.ReadOnly = communicationTemplate.IsSystem;
-            tbEmailSubject.ReadOnly = communicationTemplate.IsSystem;
-            fupAttachments.Visible = !communicationTemplate.IsSystem;
+            if ( communicationTemplate.IsSystem )
+            {
+                restrictedEdit = true;
+                nbEditModeMessage.Text = EditModeMessage.System( Rock.Model.CommunicationTemplate.FriendlyTypeName );
+                nbEditModeMessage.Visible = true;
+            }
 
-            //ceEmailTemplate.ReadOnly = communicationTemplate.IsSystem;
 
-            mfpSMSMessage.Visible = !communicationTemplate.IsSystem;
-            ddlSMSFrom.Enabled = !communicationTemplate.IsSystem;
-            tbSMSTextMessage.ReadOnly = communicationTemplate.IsSystem;
+            tbName.ReadOnly = restrictedEdit;
+            cbIsActive.Enabled = !restrictedEdit;
+            
+            tbFromName.ReadOnly = restrictedEdit;
+            tbName.ReadOnly = restrictedEdit;
+            tbFromAddress.ReadOnly = restrictedEdit;
+            tbReplyToAddress.ReadOnly = restrictedEdit;
+            tbCCList.ReadOnly = restrictedEdit;
+            tbBCCList.ReadOnly = restrictedEdit;
+            tbEmailSubject.ReadOnly = restrictedEdit;
+            fupAttachments.Visible = !restrictedEdit;
+
+            // Allow these to be Editable if they are IsSystem, but not if they don't have EDIT Auth
+            tbDescription.ReadOnly = readOnly;
+            imgTemplatePreview.Enabled = !readOnly;
+            ceEmailTemplate.ReadOnly = readOnly;
+
+            mfpSMSMessage.Visible = !restrictedEdit;
+            ddlSMSFrom.Enabled = !restrictedEdit;
+            tbSMSTextMessage.ReadOnly = restrictedEdit;
+            ceEmailTemplate.ReadOnly = restrictedEdit;
+
+            btnSave.Enabled = !readOnly;
 
             tglPreviewAdvanced.Checked = true;
             tglPreviewAdvanced_CheckedChanged( null, null );
@@ -623,14 +677,16 @@ namespace RockWeb.Blocks.Communication
                 if ( lavaFieldsNode.ParentNode == null )
                 {
                     var bodyNode = templateDoc.DocumentNode.SelectSingleNode( "//body" );
+                    if ( bodyNode != null )
+                    {
+                        // prepend a linefeed so that it is after the lava node (to make it pretty printed)
+                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
 
-                    // prepend a linefeed so that it is after the lava node (to make it pretty printed)
-                    bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
+                        bodyNode.PrependChild( lavaFieldsNode );
 
-                    bodyNode.PrependChild( lavaFieldsNode );
-
-                    // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
-                    bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
+                        // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
+                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
+                    }
                 }
             }
             else if ( lavaFieldsNode.ParentNode != null )

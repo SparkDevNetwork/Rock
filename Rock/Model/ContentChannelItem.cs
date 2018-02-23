@@ -99,7 +99,7 @@ namespace Rock.Model
         public ContentChannelItemStatus Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.Person"/> who either approved or declined the ContentItem. If no approval action has been performed on this Ad, this value will be null.
+        /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.Person"/> who either approved or declined the ContentItem. If no approval action has been performed on this item, this value will be null.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the PersonAliasId of hte <see cref="Rock.Model.Person"/> who either approved or declined the ContentItem. This value will be null if no approval action has been
@@ -437,7 +437,7 @@ namespace Rock.Model
     #region Enumerations
 
     /// <summary>
-    /// Represents the status of a Marketing Campaign Card
+    /// Represents the approval status of a content channel item
     /// </summary>
     public enum ContentChannelItemStatus
     {

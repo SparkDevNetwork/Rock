@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using DotLiquid;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         pageNumber = PageParameter( "Page" ).AsInteger();
                     }
-                    
+
                     ShowList();
                 }
             }
@@ -170,11 +170,25 @@ namespace RockWeb.Blocks.Reporting
                         .Skip( skipCount )
                         .Take( pageSize + 1 );
 
+                    var interactionComponents = interactionComponentQry.ToList().Take( pageSize );
+                    var componentIdList = interactionComponents.Select( c => c.Id );
+
+                    var componentInteractionCount = new InteractionService( rockContext ).Queryable().AsNoTracking()
+                        .Where( i => componentIdList.Contains( i.InteractionComponentId ) )
+                        .GroupBy( i => i.InteractionComponentId )
+                        .Select( g => new InteractionCount
+                                    {
+                                        ComponentId = g.Key,
+                                        Count = g.Count() 
+                                    } )
+                        .ToList();
+
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                     mergeFields.Add( "ComponentDetailPage", LinkedPageRoute( "ComponentDetailPage" ) );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", interactionChannel );
-                    mergeFields.Add( "InteractionComponents", interactionComponentQry.ToList().Take( pageSize ) );
+                    mergeFields.Add( "InteractionComponents", interactionComponents );
+                    mergeFields.Add( "InteractionCounts", componentInteractionCount );
 
                     // set next button
                     if ( interactionComponentQry.Count() > pageSize )
@@ -204,8 +218,43 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
         }
-
         #endregion
 
+
+        /// <summary>
+        /// POCO class for return interation counts
+        /// </summary>
+        class InteractionCount : DotLiquid.Drop, Rock.Lava.ILiquidizable
+        {
+            /// <summary>
+            /// Gets or sets the component identifier.
+            /// </summary>
+            /// <value>
+            /// The component identifier.
+            /// </value>
+            public int ComponentId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the count.
+            /// </summary>
+            /// <value>
+            /// The count.
+            /// </value>
+            public int Count { get; set; }
+
+            /// <summary>
+            /// Gets the available keys (for debuging info).
+            /// </summary>
+            /// <value>
+            /// The available keys.
+            /// </value>
+            public List<string> AvailableKeys
+            {
+                get
+                {
+                    return new List<string> { "ComponentId", "Count" };
+                }
+            }
+        }
     }
 }

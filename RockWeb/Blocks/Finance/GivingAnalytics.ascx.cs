@@ -218,9 +218,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gGiversGifts_GridRebind( object sender, EventArgs e )
+        protected void gGiversGifts_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindGiversGrid();
+            BindGiversGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -1051,7 +1051,7 @@ function(item) {
         /// <summary>
         /// Binds the attendees grid.
         /// </summary>
-        private void BindGiversGrid()
+        private void BindGiversGrid( bool isExporting = false )
         {
             // Get all the selected criteria values
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
@@ -1418,6 +1418,33 @@ function(item) {
                         ExcelExportBehavior = ExcelExportBehavior.AlwaysInclude
                     } );
 
+                gGiversGifts.Columns.Add(
+                    new RockBoundField
+                    {
+                        DataField = "HomeAddress",
+                        HeaderText = "Home Address",
+                        Visible = false,
+                        ExcelExportBehavior = ExcelExportBehavior.AlwaysInclude
+                    } );
+
+                gGiversGifts.Columns.Add(
+                    new RockBoundField
+                    {
+                        DataField = "CellPhone",
+                        HeaderText = "Cell Phone",
+                        Visible = false,
+                        ExcelExportBehavior = ExcelExportBehavior.AlwaysInclude
+                    } );
+
+                gGiversGifts.Columns.Add(
+                    new RockBoundField
+                    {
+                        DataField = "HomePhone",
+                        HeaderText = "Home Phone",
+                        Visible = false,
+                        ExcelExportBehavior = ExcelExportBehavior.AlwaysInclude
+                    } );
+
                 ti.end = DateTime.Now;
 
             } ) );
@@ -1545,9 +1572,9 @@ function(item) {
                                 d.Transaction.TransactionDateTime.HasValue &&
                                 d.Transaction.TransactionDateTime.Value >= missedStart.Value &&
                                 d.Transaction.TransactionDateTime.Value < missedEnd.Value &&
-                                ( 
-                                    ( accountIds.Any() && accountIds.Contains( d.AccountId ) ) || 
-                                    ( !accountIds.Any() && d.Account.IsTaxDeductible ) 
+                                (
+                                    ( accountIds.Any() && accountIds.Contains( d.AccountId ) ) ||
+                                    ( !accountIds.Any() && d.Account.IsTaxDeductible )
                                 ) &&
                                 d.Amount != 0.0M )
                             .Select( d => d.Transaction.AuthorizedPersonAlias.Person.GivingId )
@@ -1572,6 +1599,81 @@ function(item) {
             else
             {
                 pnlTotal.Visible = false;
+            }
+
+            if ( isExporting )
+            {
+                // Get al the affected person ids
+                var personIds = personInfoList.Select( a => a.Id ).ToList();
+
+                // Load the phone numbers for these people
+                var phoneNumbers = new List<PhoneNumber>();
+                var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                var cellPhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                if ( homePhoneType != null && cellPhoneType != null )
+                {
+                    phoneNumbers = new PhoneNumberService( _rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( n => 
+                            personIds.Contains( n.PersonId ) &&
+                            n.NumberTypeValueId.HasValue && (
+                                n.NumberTypeValueId.Value == homePhoneType.Id ||
+                                n.NumberTypeValueId.Value == cellPhoneType.Id
+                            ) )
+                        .ToList();
+                }
+
+                // Load the home addresses
+                var personLocations = new Dictionary<int, Location>();
+                var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var homeAddressDv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+                if ( familyGroupType != null && homeAddressDv != null )
+                {
+
+                    foreach ( var item in new GroupMemberService( _rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( m =>                            
+                            personIds.Contains( m.PersonId ) &&
+                            m.Group.GroupTypeId == familyGroupType.Id )
+                        .Select( m => new
+                        {
+                            m.PersonId,
+                            Location = m.Group.GroupLocations
+                                .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id )
+                                .Select( l => l.Location )
+                                .FirstOrDefault()
+                        } )
+                        .Where( l => 
+                            l.Location != null &&
+                            l.Location.Street1 != "" &&
+                            l.Location.City != "" ) )
+                    {
+                        personLocations.AddOrIgnore( item.PersonId, item.Location );
+                    }
+                }
+
+                foreach ( var person in personInfoList )
+                {
+                    if ( phoneNumbers.Any() )
+                    {
+                        person.HomePhone = phoneNumbers
+                            .Where( p => p.PersonId == person.Id && p.NumberTypeValueId.Value == homePhoneType.Id )
+                            .Select( p => p.NumberFormatted )
+                            .FirstOrDefault();
+
+                        person.CellPhone = phoneNumbers
+                            .Where( p => p.PersonId == person.Id && p.NumberTypeValueId.Value == cellPhoneType.Id )
+                            .Select( p => p.NumberFormatted )
+                            .FirstOrDefault();
+                    }
+
+                    if ( personLocations.Any() )
+                    {
+                        person.HomeAddress = personLocations.ContainsKey( person.Id ) && personLocations[person.Id] != null ?
+                                personLocations[person.Id].FormattedAddress : string.Empty;
+                    }
+                }
+
             }
 
             var qry = personInfoList.AsQueryable();
@@ -1727,9 +1829,9 @@ function(item) {
         public string name { get; set; }
         public DateTime start { get; set; }
         public DateTime end { get; set; }
-        public TimeSpan duration
+        public TimeSpan duration 
         {
-            get
+            get 
             {
                 return end.Subtract( start );
             }
@@ -1760,6 +1862,9 @@ function(item) {
         public bool IsChild { get; set; }
         public decimal SortAmount { get; set; }
         public Dictionary<int, decimal> AccountAmounts { get; set; }
+        public string HomePhone { get; set; }
+        public string CellPhone { get; set; }
+        public string HomeAddress { get; set; }
 
         public string PersonName
         {

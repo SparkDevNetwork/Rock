@@ -39,14 +39,7 @@ namespace RockWeb.Blocks.Reporting
 
     [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
     [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"
-     <div class='panel panel-block'>
-        <div class='panel-heading'>
-	        <h1 class='panel-title'>
-                <i class='fa fa-user'></i>
-                Interactions
-            </h1>
-        </div>
-        <div class='panel-body'>
+    
 
 	        {% for interaction in Interactions %}
 		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
@@ -92,21 +85,15 @@ namespace RockWeb.Blocks.Reporting
     		        </a>
 		        {% endif %}
 	        {% endfor %}	
-	        <div class ='nav-paging'>
-            {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != ''  %}
-                <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i>Prev<a/>
-            {% endif %}
-            {% if NextPageNavigateUrl != null and NextPageNavigateUrl != ''  %}
-                <a Id ='hlNext' class = 'btn btn-primary btn-next' href='{{ NextPageNavigateUrl }}'> Next <i class='fa fa-chevron-right'></i><a/>
-            {% endif %}
-            </div>
-        </div>
-    </div>" )]
+	      " )]
     [IntegerField( "Page Size", "The number of interactions to show per page.", true, 20, "", 3 )]
     public partial class InteractionList : Rock.Web.UI.RockBlock
     {
         #region Fields
 
+        private DateTime startDate = DateTime.MinValue;
+        private DateTime endDate = DateTime.MaxValue;
+        private int? selectedPersonAlias = null;
         private int pageNumber = 0;
 
         #endregion
@@ -136,6 +123,34 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "StartDate" ) ) )
+                {
+                    startDate = PageParameter( "StartDate" ).AsDateTime() ?? DateTime.MinValue;
+                    if ( startDate != DateTime.MinValue )
+                    {
+                        drpDateFilter.LowerValue = startDate;
+                    }
+                }
+
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "EndDate" ) ) )
+                {
+                    endDate = PageParameter( "EndDate" ).AsDateTime() ?? DateTime.MaxValue;
+                    if ( endDate != DateTime.MaxValue )
+                    {
+                        drpDateFilter.UpperValue = endDate;
+                    }
+                }
+
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonAlias" ) ) )
+                {
+                    selectedPersonAlias = PageParameter( "PersonAlias" ).AsIntegerOrNull();
+                    if ( selectedPersonAlias.HasValue )
+                    {
+                        var person = new PersonAliasService( new RockContext() ).GetPerson( selectedPersonAlias.Value );
+                        ppPerson.SetValue( person );
+                    }
+                }
+
                 if ( !string.IsNullOrEmpty( PageParameter( "Page" ) ) )
                 {
                     pageNumber = PageParameter( "Page" ).AsInteger();
@@ -161,6 +176,33 @@ namespace RockWeb.Blocks.Reporting
             ShowList( PageParameter( "componentId" ).AsInteger() );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnFilter_Click( object sender, EventArgs e )
+        {
+            if ( drpDateFilter.LowerValue.HasValue )
+            {
+                startDate = drpDateFilter.LowerValue.Value;
+            }
+
+            if ( drpDateFilter.UpperValue.HasValue )
+            {
+                endDate = drpDateFilter.UpperValue.Value;
+            }
+
+            if ( ppPerson.PersonId.HasValue )
+            {
+                selectedPersonAlias = ppPerson.PersonAliasId;
+            }
+
+            pageNumber = 0;
+
+            ShowList( PageParameter( "componentId" ).AsInteger() );
+        }
+
         #endregion
 
         #region Methods
@@ -182,17 +224,38 @@ namespace RockWeb.Blocks.Reporting
                     var interactions = new InteractionService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( a =>
-                            a.InteractionComponentId == componentId )
-                        .OrderByDescending( a => a.InteractionDateTime )
-                        .Skip( skipCount )
-                        .Take( pageSize + 1 );
+                            a.InteractionComponentId == componentId );
+
+                    if ( startDate != DateTime.MinValue )
+                    {
+                        interactions = interactions.Where( s => s.InteractionDateTime > drpDateFilter.LowerValue );
+                    }
+
+                    if ( endDate != DateTime.MaxValue )
+                    {
+                        interactions = interactions.Where( s => s.InteractionDateTime < drpDateFilter.UpperValue );
+                    }
+
+                    if ( selectedPersonAlias.HasValue )
+                    {
+                        interactions = interactions.Where( s => s.PersonAliasId == selectedPersonAlias );
+                    }
+
+                    interactions = interactions
+                             .OrderByDescending( a => a.InteractionDateTime )
+                             .Skip( skipCount )
+                             .Take( pageSize + 1 );
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                    mergeFields.AddOrIgnore( "Person", CurrentPerson );
+                    mergeFields.AddOrIgnore( "CurrentPerson", CurrentPerson );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", component.Channel );
                     mergeFields.Add( "InteractionComponent", component );
                     mergeFields.Add( "Interactions", interactions.ToList().Take( pageSize ) );
+
+                    lContent.Text = component.Channel.InteractionListTemplate.IsNotNullOrWhitespace() ?
+                        component.Channel.InteractionListTemplate.ResolveMergeFields( mergeFields ) :
+                        GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
 
                     // set next button
                     if ( interactions.Count() > pageSize )
@@ -201,25 +264,58 @@ namespace RockWeb.Blocks.Reporting
                         queryStringNext.Add( "ComponentId", componentId.ToString() );
                         queryStringNext.Add( "Page", ( pageNumber + 1 ).ToString() );
 
+                        if ( selectedPersonAlias.HasValue )
+                        {
+                            queryStringNext.Add( "PersonAlias", selectedPersonAlias.Value.ToString() );
+                        }
+
+                        if ( startDate != DateTime.MinValue )
+                        {
+                            queryStringNext.Add( "StartDate", startDate.ToShortDateString() );
+                        }
+
+                        if ( endDate != DateTime.MaxValue )
+                        {
+                            queryStringNext.Add( "EndDate", endDate.ToShortDateString() );
+                        }
+
                         var pageReferenceNext = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringNext );
-                        mergeFields.Add( "NextPageNavigateUrl", pageReferenceNext.BuildUrl() );
+                        hlNext.NavigateUrl = pageReferenceNext.BuildUrl();
+                    }
+                    else
+                    {
+                        hlNext.Visible = hlNext.Enabled = false;
                     }
 
                     // set prev button
-                    if ( pageNumber != 0 )
+                    if ( pageNumber == 0 )
+                    {
+                        hlPrev.Visible = hlPrev.Enabled = false;
+                    }
+                    else
                     {
                         Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
                         queryStringPrev.Add( "ComponentId", componentId.ToString() );
                         queryStringPrev.Add( "Page", ( pageNumber - 1 ).ToString() );
 
+                        if ( selectedPersonAlias.HasValue )
+                        {
+                            queryStringPrev.Add( "PersonAlias", selectedPersonAlias.Value.ToString() );
+                        }
+
+                        if ( startDate != DateTime.MinValue )
+                        {
+                            queryStringPrev.Add( "StartDate", startDate.ToShortDateString() );
+                        }
+
+                        if ( endDate != DateTime.MaxValue )
+                        {
+                            queryStringPrev.Add( "EndDate", endDate.ToShortDateString() );
+                        }
+
                         var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
-                        mergeFields.Add( "PreviousPageNavigateUrl", pageReferencePrev.BuildUrl() );
+                        hlPrev.NavigateUrl = pageReferencePrev.BuildUrl();
                     }
-
-                    lContent.Text = component.Channel.InteractionListTemplate.IsNotNullOrWhitespace() ?
-                        component.Channel.InteractionListTemplate.ResolveMergeFields( mergeFields ) :
-                        GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
-
                 }
             }
         }

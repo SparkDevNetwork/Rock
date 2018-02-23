@@ -199,6 +199,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         protected override void RenderDataValidator( HtmlTextWriter writer )
         {
+            base.RenderDataValidator( writer );
+
             dataValidator.ValidationGroup = this.ValidationGroup;
             dataValidator.RenderControl( writer );
         }

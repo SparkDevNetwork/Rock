@@ -320,7 +320,7 @@
   span {
     position: absolute;
     top: 17px;
-    left: 11px;
+    left: 14px;
     font-size: 16px;
   }
 }
@@ -470,7 +470,7 @@
     .metric-value {
       position: absolute;
       top: 14px;
-      left: 11px;
+      left: 14px;
       width: 30px;
       font-size: 20px;
       font-weight: @font-weight-bold;
@@ -509,7 +509,7 @@
     .weeks-attended {
       position: absolute;
       top: 7px;
-      left: 3px;
+      left: 4px;
       display: block;
       width: 18px;
       font-size: 20px;
@@ -535,7 +535,7 @@
 
     &.today {
       .duration {
-        top: 6px;
+        top: 9px;
         font-size: 11px;
       }
     }
@@ -562,13 +562,31 @@
 
     span.duration {
       position: absolute;
-      top: 5px;
+      top: 8px;
       right: 50%;
-      width: 36px;
+      width: 35px;
       margin-right: -17px;
       font-size: 16px;
       font-weight: @font-weight-bold;
       text-align: center;
+    }
+  }
+}
+
+.badge-signal {
+  .badge-content {
+    position: relative;
+
+    span.signal {
+      position: absolute;
+      top: 10px;
+      left: 0px;
+      width: 100%;
+      padding-left: 17%;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      color: @persondetails-badge-bg;
     }
   }
 }
@@ -601,6 +619,27 @@
   }
 }
 
+.badge-personaldevice {
+  .badge-content {
+    position: relative;
+    color: #4f89bd;
+
+    i {
+      font-size: 47px;
+    }
+
+    span.deviceCount {
+      position: absolute;
+      top: 17px;
+      right: 50%;
+      width: 36px;
+      margin-right: -18px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+    }
+  }
+}
 
 // 4. Family Bar
 // -------------------------
