@@ -318,6 +318,11 @@ namespace Rock.Model
         /// The grade
         /// </summary>
         Grade = 11,
+
+        /// <summary>
+        /// The connection status
+        /// </summary>
+        ConnectionStatus = 12,
     }
 
     #endregion

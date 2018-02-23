@@ -2182,6 +2182,14 @@ namespace RockWeb.Blocks.Event
                                         SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges );
                                         break;
                                     }
+
+                                case RegistrationPersonFieldType.ConnectionStatus:
+                                    {
+                                        var newConnectionStatusId = fieldValue.ToString().AsIntegerOrNull() ?? dvcConnectionStatus.Id;
+                                        History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
+                                        person.ConnectionStatusValueId = newConnectionStatusId;
+                                        break;
+                                    }
                             }
                         }
                     }
@@ -4112,6 +4120,25 @@ namespace RockWeb.Blocks.Event
 
                         break;
                     }
+
+                case RegistrationPersonFieldType.ConnectionStatus:
+                    {
+                        var ddlConnectionStatus = new RockDropDownList();
+                        ddlConnectionStatus.ID = "ddlConnectionStatus";
+                        ddlConnectionStatus.Label = "Connection Status";
+                        ddlConnectionStatus.Required = field.IsRequired;
+                        ddlConnectionStatus.ValidationGroup = BlockValidationGroup;
+                        ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
+
+                        phRegistrantControls.Controls.Add( ddlConnectionStatus );
+
+                        if ( setValue && fieldValue != null )
+                        {
+                            var value = fieldValue.ToString().AsInteger();
+                            ddlConnectionStatus.SetValue( value );
+                        }
+                        break;
+                    }
             }
         }
 
@@ -4432,6 +4459,12 @@ namespace RockWeb.Blocks.Event
                             return phoneNumber;
                         }
                         break;
+                    }
+
+                case RegistrationPersonFieldType.ConnectionStatus:
+                    {
+                        var ddlConnectionStatus = phRegistrantControls.FindControl( "ddlConnectionStatus" ) as RockDropDownList;
+                        return ddlConnectionStatus != null ? ddlConnectionStatus.SelectedValueAsInt() : null;
                     }
             }
 
