@@ -447,6 +447,11 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDeleteFolder_Click( object sender, EventArgs e )
         {
+            if ( string.IsNullOrWhiteSpace( hfSelectedFolder.Value ) )
+            {
+                return;
+            }
+
             try
             {
                 string selectedPhysicalFolder = GetSelectedPhysicalFolder();
@@ -475,6 +480,11 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRenameFolder_Click( object sender, EventArgs e )
         {
+            if ( string.IsNullOrWhiteSpace( hfSelectedFolder.Value ) )
+            {
+                return;
+            }
+
             tbOrigFolderName.Text = hfSelectedFolder.Value;
             tbRenameFolderName.PrependText = Path.GetDirectoryName( hfSelectedFolder.Value ) + "\\";
             tbRenameFolderName.Text = string.Empty;
@@ -496,6 +506,11 @@ namespace RockWeb.Blocks.Utility
         {
             string physicalRootFolder = this.Request.MapPath( GetRootFolderPath() );
             var folders = GetRecursiveFolders( physicalRootFolder, physicalRootFolder );
+
+            if ( string.IsNullOrWhiteSpace( hfSelectedFolder.Value ) )
+            {
+                return;
+            }
 
             if ( folders != null )
             {
