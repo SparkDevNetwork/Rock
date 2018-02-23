@@ -786,6 +786,10 @@ namespace Rock.Web.UI
                         Site.RedirectToChangePasswordPage( true, true );
                     }
                 }
+
+                // Check if there is a ROCK_PERSONALDEVICE_ADDRESS cookie, link person to device
+
+
             }
 
             // If a PageInstance exists
