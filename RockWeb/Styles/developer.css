@@ -116,21 +116,6 @@ span.data-view-filter-label {
     cursor: pointer;
 }
 
-
-/* DT If th has a required class, render the required field indicator after the column heading */
-.table thead th.required:after {
-    margin-left: 4px;
-    font-family: FontAwesome;
-    font-size: 6px;
-    color: #eca9a7;
-    vertical-align: super;
-    content: '\f111';
-}
-
-/* Website calendar */
-
-
-
 /* DT 2015-07-06 Fee grid on registration */
 table th[align='right'] {
     text-align: right;
@@ -147,4 +132,18 @@ table th[align='right'] {
 }
 
 
+/* SK Added for checklist*/
+label.strikethrough {
+    text-decoration: line-through;
+}
 
+/* SK Add margin in ListItems*/
+.list-items-rows .controls-row {
+    margin-bottom: 6px;
+}
+
+/* SK Zoom pointer in  Transaction Matching Images*/
+.transaction-image.photo .fluidbox-ghost {
+    cursor: -webkit-zoom-in;
+    cursor: -moz-zoom-in;
+}

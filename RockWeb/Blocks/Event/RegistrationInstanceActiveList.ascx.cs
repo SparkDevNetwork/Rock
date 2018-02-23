@@ -108,8 +108,8 @@ namespace RockWeb.Blocks.Event
                 RegistrationInstanceService instanceService = new RegistrationInstanceService( rockContext );
                 var qry = instanceService.Queryable()
                     .Where( i =>
-                        i.StartDateTime <= RockDateTime.Now &&
-                        i.EndDateTime > RockDateTime.Now &&
+                        (i.StartDateTime <= RockDateTime.Now || !i.StartDateTime.HasValue) &&
+                        (i.EndDateTime > RockDateTime.Now || !i.EndDateTime.HasValue) &&
                         i.IsActive )
                     .OrderBy( i => i.StartDateTime );
 

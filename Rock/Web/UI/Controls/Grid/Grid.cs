@@ -1742,6 +1742,13 @@ namespace Rock.Web.UI.Controls
                 // get all properties of the objects in the grid
                 IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
 
+                // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
+                if ( typeof( DotLiquid.Drop ).IsAssignableFrom( oType ) )
+                {
+                    var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
+                    allprops = allprops.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
+                }
+
                 // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
                 // The fields are exported in the same order as they appear in the Grid.
                 var props = new List<PropertyInfo>();
@@ -1904,6 +1911,11 @@ namespace Rock.Web.UI.Controls
                                 if ( dataField is LavaBoundField )
                                 {
                                     propValue = ( dataField as LavaBoundField ).GetFormattedDataValue( propValue );
+                                }
+
+                                if ( dataField is HtmlField )
+                                {
+                                    propValue = ( dataField as HtmlField ).FormatDataValue( propValue );
                                 }
 
                                 if ( propValue != null )
@@ -3762,6 +3774,7 @@ namespace Rock.Web.UI.Controls
                 PageLink[i] = new LinkButton();
                 PageLinkListItem[i].Controls.Add( PageLink[i] );
                 PageLink[i].ID = string.Format( "pageLink{0}", i );
+                PageLink[i].CausesValidation = false;
                 PageLink[i].Command += lbPage_Command;
             }
 

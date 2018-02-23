@@ -205,6 +205,15 @@ namespace Rock.Model
         public string AdditionalConfirmationDetails { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration instructions.
+        /// </summary>
+        /// <value>
+        /// The registration instructions.
+        /// </value>
+        [DataMember]
+        public string RegistrationInstructions { get; set; }
+
+        /// <summary>
         /// Optional workflow type to launch at end of registration
         /// </summary>
         /// <value>

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -496,6 +497,7 @@ namespace RockWeb.Blocks.Groups
             groupType.ShowInNavigation = cbShowInNavigation.Checked;
             groupType.ShowConnectionStatus = cbShowConnectionStatus.Checked;
             groupType.ShowMaritalStatus = cbShowMaritalStatus.Checked;
+            groupType.GroupViewLavaTemplate = ceGroupLavaTemplate.Text;
             groupType.IconCssClass = tbIconCssClass.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
             groupType.GroupsRequireCampus = cbGroupsRequireCampus.Checked;
@@ -514,7 +516,10 @@ namespace RockWeb.Blocks.Groups
             groupType.IgnorePersonInactivated = cbDontInactivateMembers.Checked;
             groupType.IsIndexEnabled = cbEnableIndexing.Checked;
             groupType.EnableLocationSchedules = cbEnableLocationSchedules.Checked;
-
+            groupType.AllowSpecificGroupMemberAttributes = cbAllowSpecificGroupMemberAttributes.Checked;
+            groupType.AllowGroupSync = cbAllowGroupSync.Checked;
+            groupType.EnableSpecificGroupRequirements = cbEnableSpecificGroupReq.Checked;
+            groupType.AllowSpecificGroupMemberWorkflows = cbAllowSpecificGrpMemWorkFlows.Checked;
             groupType.ChildGroupTypes = new List<GroupType>();
             groupType.ChildGroupTypes.Clear();
             foreach ( var item in ChildGroupTypesList )
@@ -662,11 +667,9 @@ namespace RockWeb.Blocks.Groups
         /// <param name="groupTypeId">The group type identifier.</param>
         public void ShowDetail( int groupTypeId )
         {
-            pnlDetails.Visible = false;
-
             // determine if indexing is enabled
             var groupEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
-            cbEnableIndexing.Visible = (IndexContainer.IndexingEnabled && groupEntityType.IsIndexingEnabled);
+            cbEnableIndexing.Visible = IndexContainer.IndexingEnabled && groupEntityType.IsIndexingEnabled;
 
             GroupType groupType = null;
 
@@ -689,6 +692,7 @@ namespace RockWeb.Blocks.Groups
 
                 groupType.AllowedScheduleTypes = ScheduleType.None;
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -697,7 +701,6 @@ namespace RockWeb.Blocks.Groups
 
             DefaultRoleGuid = groupType.DefaultGroupRole != null ? groupType.DefaultGroupRole.Guid : Guid.Empty;
 
-            pnlDetails.Visible = true;
             hfGroupTypeId.Value = groupType.Id.ToString();
 
             bool readOnly = false;
@@ -783,6 +786,15 @@ namespace RockWeb.Blocks.Groups
             cbShowInNavigation.Checked = groupType.ShowInNavigation;
             cbShowConnectionStatus.Checked = groupType.ShowConnectionStatus;
             cbShowMaritalStatus.Checked = groupType.ShowMaritalStatus;
+            if ( !string.IsNullOrEmpty( groupType.GroupViewLavaTemplate ) )
+            {
+                ceGroupLavaTemplate.Text = groupType.GroupViewLavaTemplate;
+            }
+            else
+            {
+                ceGroupLavaTemplate.Text = SystemSettings.GetValue( "core_templates_GroupViewTemplate" );
+            }
+
             tbIconCssClass.Text = groupType.IconCssClass;
 
             // Locations
@@ -830,6 +842,11 @@ namespace RockWeb.Blocks.Groups
 
             cbDontInactivateMembers.Checked = groupType.IgnorePersonInactivated;
             cbEnableIndexing.Checked = groupType.IsIndexEnabled;
+
+            cbAllowSpecificGroupMemberAttributes.Checked = groupType.AllowSpecificGroupMemberAttributes;
+            cbAllowGroupSync.Checked = groupType.AllowGroupSync;
+            cbEnableSpecificGroupReq.Checked = groupType.EnableSpecificGroupRequirements;
+            cbAllowSpecificGrpMemWorkFlows.Checked = groupType.AllowSpecificGroupMemberWorkflows;
 
             GroupTypeRolesState = new List<GroupTypeRole>();
             foreach ( var role in groupType.Roles )
@@ -1014,6 +1031,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         edtGroupAttributes.IsIndexingEnabledVisible = false;
                     }
+
                     dlgGroupAttribute.Show();
                     break;
                 case "GROUPMEMBERATTRIBUTES":
@@ -1294,7 +1312,7 @@ namespace RockWeb.Blocks.Groups
             var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
             foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
-                foreach( var field in regFieldService.Queryable().Where( f => f.AttributeId.HasValue && f.AttributeId.Value == attr.Id ).ToList() )
+                foreach ( var field in regFieldService.Queryable().Where( f => f.AttributeId.HasValue && f.AttributeId.Value == attr.Id ).ToList() )
                 {
                     regFieldService.Delete( field );
                 }
@@ -1400,8 +1418,17 @@ namespace RockWeb.Blocks.Groups
         protected void gGroupTypeRoles_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            GroupTypeRolesState.RemoveEntity( rowGuid );
 
+            string errorMessage = string.Empty;
+            var groupTypeRoleService = new GroupTypeRoleService( new RockContext() );
+            var groupTypeRole = groupTypeRoleService.Get( rowGuid );
+            if ( !groupTypeRoleService.CanDelete( groupTypeRole, out errorMessage ) )
+            {
+                mdGroupTypeRolesDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                return;
+            }
+
+            GroupTypeRolesState.RemoveEntity( rowGuid );
             BindGroupTypeRolesGrid();
         }
 

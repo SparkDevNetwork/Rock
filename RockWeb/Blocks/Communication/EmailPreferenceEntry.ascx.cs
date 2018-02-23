@@ -366,7 +366,7 @@ We have saved your unsubscribed you from the following lists:
         /// <param name="mergeObjects">The merge objects.</param>
         private void LoadDropdowns( Dictionary<string, object> mergeObjects )
         {
-            rbUnsubscribe.Visible = ( _communication != null && _communication.ListGroupId.HasValue );
+            rbUnsubscribe.Visible = true;
             rbUnsubscribe.Text = GetAttributeValue( "UnsubscribefromListsText" ).ResolveMergeFields( mergeObjects );
             if ( rbUnsubscribe.Visible )
             {

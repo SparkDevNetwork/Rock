@@ -99,6 +99,7 @@
     <Compile Include="CodeGenerated\ContentChannelType.cs" />
     <Compile Include="CodeGenerated\DataView.cs" />
     <Compile Include="CodeGenerated\DataViewFilter.cs" />
+    <Compile Include="CodeGenerated\DataViewPersistedValue.cs" />
     <Compile Include="CodeGenerated\DefinedType.cs" />
     <Compile Include="CodeGenerated\DefinedValue.cs" />
     <Compile Include="CodeGenerated\Device.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="CodeGenerated\GroupRequirement.cs" />
     <Compile Include="CodeGenerated\GroupRequirementType.cs" />
     <Compile Include="CodeGenerated\GroupScheduleExclusion.cs" />
+    <Compile Include="CodeGenerated\GroupSync.cs" />
     <Compile Include="CodeGenerated\GroupType.cs" />
     <Compile Include="CodeGenerated\GroupTypeLocationType.cs" />
     <Compile Include="CodeGenerated\GroupTypeRole.cs" />
@@ -185,6 +187,7 @@
     <Compile Include="CodeGenerated\PersonBadge.cs" />
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
+    <Compile Include="CodeGenerated\PersonSignal.cs" />
     <Compile Include="CodeGenerated\PersonToken.cs" />
     <Compile Include="CodeGenerated\PersonViewed.cs" />
     <Compile Include="CodeGenerated\PhoneNumber.cs" />
@@ -207,6 +210,7 @@
     <Compile Include="CodeGenerated\ScheduleCategoryExclusion.cs" />
     <Compile Include="CodeGenerated\ServiceJob.cs" />
     <Compile Include="CodeGenerated\ServiceLog.cs" />
+    <Compile Include="CodeGenerated\SignalType.cs" />
     <Compile Include="CodeGenerated\SignatureDocument.cs" />
     <Compile Include="CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="CodeGenerated\Site.cs" />
