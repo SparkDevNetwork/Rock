@@ -721,7 +721,7 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="contentItemId">The marketing campaign ad type identifier.</param>
+        /// <param name="contentItemId">The content item identifier.</param>
         public void ShowDetail( int contentItemId )
         {
             ShowDetail( contentItemId, null );
