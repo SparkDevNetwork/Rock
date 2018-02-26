@@ -44,7 +44,7 @@
 ")##Street2#
 #City##IIF(len(trim(City)),",")# #State# #PostalCode#</text>
 			</recordArea>
-			<subReport id="OrganizationInfoReport" x="0" y="0" width="250">
+			<subReport id="OrganizationInfoReport" x="0" width="250" y="4">
 				<query id="OrgInfoQuery">
 					<eventDriven connectionString=""></eventDriven>
 				</query>
