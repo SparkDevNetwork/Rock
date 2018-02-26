@@ -93,6 +93,10 @@
     <Compile Include="Migrations\201802092340176_Rollup_0209.Designer.cs">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201802260423490_Rollup_0225.cs" />
+    <Compile Include="Migrations\201802260423490_Rollup_0225.Designer.cs">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2692,6 +2696,9 @@
     <EmbeddedResource Include="Migrations\201802092340176_Rollup_0209.resx">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802260423490_Rollup_0225.resx">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4639,6 +4646,12 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\201802260423490_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201802260423490_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
