@@ -1004,6 +1004,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             confirmExit.Enabled = true;
 
+            gLocations.EditIndex = -1;
+
             BindLocations();
         }
 

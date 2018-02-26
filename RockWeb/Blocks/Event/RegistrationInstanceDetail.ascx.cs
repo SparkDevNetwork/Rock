@@ -2461,6 +2461,8 @@ namespace RockWeb.Blocks.Event
         {
             SetEditMode( false );
 
+            pdAuditDetails.SetEntity( RegistrationInstance, ResolveRockUrl( "~" ) );
+
             hfRegistrationInstanceId.SetValue( RegistrationInstance.Id );
 
             lReadOnlyTitle.Text = RegistrationInstance.Name.FormatAsHtmlTitle();

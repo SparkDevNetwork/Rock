@@ -156,6 +156,8 @@ IF object_id(N'[dbo].[FK_dbo.CommunicationTemplate_dbo.EntityType_ChannelEntityT
             WHEN 'Rock.Communication.Medium.Email' THEN 1
             WHEN 'Rock.Communication.Medium.Sms' THEN 2
             WHEN 'Rock.Communication.Medium.PushNotification' THEN 3
+            WHEN 'com.bricksandmortarstudio.Communication.Medium.AlphanumericSMS' THEN 2
+            ELSE 4
         END
     FROM [Communication] C
     INNER JOIN [EntityType] E ON E.[Id] = C.[MediumEntityTypeId]
