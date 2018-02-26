@@ -4310,9 +4310,9 @@ namespace Rock.Migrations.Migrations {
         ///	&lt;/returns&gt;
         ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this a [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _201802260423490_spCheckin_AttendanceAnalyticsQuery_Attendees {
+        public static string _201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_Attendees {
             get {
-                return ResourceManager.GetString("_201802260423490_spCheckin_AttendanceAnalyticsQuery_Attendees", resourceCulture);
+                return ResourceManager.GetString("_201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_Attendees", resourceCulture);
             }
         }
         
@@ -4333,9 +4333,9 @@ namespace Rock.Migrations.Migrations {
         ///	&lt;/returns&gt;
         ///	&lt;param name=&apos;GroupTypeIds&apos; data [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _201802260423490_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+        public static string _201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
             get {
-                return ResourceManager.GetString("_201802260423490_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
+                return ResourceManager.GetString("_201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
             }
         }
     }

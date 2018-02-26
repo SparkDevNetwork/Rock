@@ -48,8 +48,8 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateBlockTypeAttribute( "8760D668-8ADF-48C8-9D90-09461FB75B88", "69254F91-C97F-4C2D-9ACB-1683B088097B", "Campuses", "Campuses", "", @"Select campuses to display calendar events for. No selection will show all.", 4, @"", "2CFAF7B4-6789-46BE-BDC0-99877F22CFB7" );
             RockMigrationHelper.UpdateFieldType( "Month Day", "", "Rock", "Rock.Field.Types.MonthDayFieldType", "8BED8DD8-8167-4052-B807-A1E72C133611" );
 
-            Sql( MigrationSQL._201802260423490_spCheckin_AttendanceAnalyticsQuery_Attendees );
-            Sql( MigrationSQL._201802260423490_spCheckin_AttendanceAnalyticsQuery_NonAttendees );
+            Sql( MigrationSQL._201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_Attendees );
+            Sql( MigrationSQL._201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_NonAttendees );
         }
 
         /// <summary>
