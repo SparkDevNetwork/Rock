@@ -14,18 +14,6 @@
         <h1 class="margin-t-sm">{{ Group.Name }}</h1>
       </div>
       <div class="toolbox-header-item">
-        {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
-          {% if customEmailButtons %}
-            {{ customEmailButtons }}
-          {% else %}
-            <a onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
-              <i class="fa fa-envelope-o"></i> Email Roster
-            </a>
-          {% endif %}
-        {% endif %}
-        {% if AllowedActions.Edit == true %}
-          <a class="btn btn-default btn-xs" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}"><i class="fa fa-pencil"></i> Edit</a>
-        {% endif %}
       </div>
     </div>
 

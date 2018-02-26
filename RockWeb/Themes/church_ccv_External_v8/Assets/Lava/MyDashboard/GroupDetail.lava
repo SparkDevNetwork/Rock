@@ -1,0 +1,104 @@
+{% comment %}
+{% include '~~/Assets/Lava/MyDashboard/AdList.lava' %}
+{% endcomment %}
+
+{% comment %} Default values of lava settings {% endcomment %}
+{% unless maxItems %}
+  {% assign maxItems = 10 %}
+{% endunless %}
+{% unless useCampusContext or useCampusContext == false %}
+  {% assign useCampusContext = true %}
+{% endunless %}
+
+{% comment %} Init values {% endcomment %}
+{% assign hasVisibleItems = false %}
+{% assign itemCount = 0 %}
+
+{% comment %} Check if there are any visible items at all {% endcomment %}
+{% for item in Items %}
+  {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
+  {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
+  {% if itemCount < maxItems %}
+    {% if useCampusContext %}
+      {% if itemCampusesRaw == empty %}
+        {% assign hasVisibleItems = true %}
+      {% else %}
+        {% for itemCampus in itemCampuses %}
+          {% if itemCampus == Context.Campus.Name %}
+            {% assign hasVisibleItems = true %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% else %}å
+      {% assign hasVisibleItems = true %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{% comment %} Render {% endcomment %}
+<div style="box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; border-radius: 5px; height: 450px; max-height: 450px; background-color: #FFFFFF; z-index: 1; overflow: hidden; margin-bottom: 40px;">
+    <div style="padding: 0px 15px; border-bottom: 1px solid #ddd">
+        <h4>Group Details</h4>
+    </div>
+    {% if hasVisibleItems %}
+    <div style="overflow-y: scroll; height: 375px;">
+        <div style="display: flex; flex-direction: column; place-content: center space-between; align-items: stretch;">
+            {% for item in Items %}
+
+            {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
+            {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
+            {% assign showItem = false %}
+            {% assign externalUrl = item | Attribute: 'ExternalLink' %}
+            {% capture internalUrl %}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{% endcapture %}
+            {% assign itemLink = externalUrl | Default: internalUrl %}
+
+            {% assign itemLinkText = item | Attribute:'CallToAction' %}
+            {% if itemLinkText == '' %}
+                {% assign itemLinkText = 'Learn More' %}
+            {% endif %}
+
+
+            {% if itemCount < maxItems %}
+            {% if useCampusContext %}
+            {% if itemCampusesRaw == empty %}
+            {% assign showItem = true %}
+            {% else %}
+            {% for itemCampus in itemCampuses %}
+            {% if itemCampus == Context.Campus.Name %}
+            {% assign showItem = true %}
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% else %}
+            {% assign showItem = true %}
+            {% endif %}
+            {% endif %}
+
+            {% if showItem %}
+            {% assign itemCount = itemCount | Plus: 1 %}
+            <div style="flex: 0 0 auto;">
+                <span style="height: 64px; color: rgba(0, 0, 0, 0.87); display: flex; align-items: center; font-family: Roboto, sans-serif; font-size: 14px; padding-left: 14px; padding-right: 14px; font-weight: 500;">
+                    <i class="fa fa-info-circle" style="color: #D0DD29; position: relative; font-size: 24px; display: inline-block; user-select: none; transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; padding-right: 8px;"></i>
+                    <h4 style="margin: 0px 0px .05rem;">{{ item.Title }}</h4>
+                </span>
+                <div style="border-left: 1px solid rgb(189, 189, 189); margin-top: -14px; margin-left: 25px; padding-left: 21px; padding-right: 16px;">
+                    <div style="position: relative; overflow: hidden; height: auto;">
+                        <div style="position: relative; height: auto; width: 100%; top: 0px; left: 0px; overflow: hidden; transition: height 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms">
+                            <div>
+                                <div style="overflow: hidden;">
+                                    <p style="font-family: Heebo; font-size: 1.1rem; line-height: 200%; font-weight: 400; margin: 10px 0; color: #707270;">{{ item | Attribute:'SummaryText'}}</p>
+                                    <a href="{{ itemLink }}" style="color: rgb(122, 19, 21); text-transform: uppercase; font-family: Akrobat; font-weight: bold;">{{ itemLinkText }}&nbsp</a><i class="fa fa-angle-right fa-lg" style="vertical-align: -10%;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% capture breakNow %}{{ forloop.index | Modulo:4 }}{% endcapture %}
+                {% if breakNow == 0 %}
+                {% endif %}
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+</div>
