@@ -19,6 +19,11 @@ using System.Data.Entity.ModelConfiguration.Conventions;
 
 namespace Rock.Data
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <seealso cref="System.Data.Entity.ModelConfiguration.Conventions.IStoreModelConvention{T}" />
     public interface IRockStoreModelConvention<T> : IStoreModelConvention<T>
         where T : MetadataItem
     {
