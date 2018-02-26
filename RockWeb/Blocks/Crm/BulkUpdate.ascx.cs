@@ -826,8 +826,6 @@ namespace RockWeb.Blocks.Crm
             var newCommunicationPreference = ddlCommunicationPreference.SelectedValueAsEnumOrNull<CommunicationType>();
             EmailPreference? newEmailPreference = ddlEmailPreference.SelectedValue.ConvertToEnumOrNull<EmailPreference>();
 
-            EmailPreference? newEmailPreference = ddlEmailPreference.SelectedValue.ConvertToEnumOrNull<EmailPreference>();
-
             string newEmailNote = tbEmailNote.Text;
 
 
