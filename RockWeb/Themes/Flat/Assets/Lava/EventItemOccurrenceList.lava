@@ -3,7 +3,7 @@
     <h3 class="panel-title">Register for {{ EventItem.Name }}</h3>
   </div>
   <div class="list-group">
-    {% for occurrence in EventItemOccurrences %}
+    {% for occurrence in EventItem.EventItemOccurrences %}
       <a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">
         {{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'dddd, MMM d / h:mmtt' }} <span class="text-muted">{{ occurrence.Campus.Name }}</span>
       </a>
