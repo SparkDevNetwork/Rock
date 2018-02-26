@@ -11,7 +11,8 @@
 .workflowNotifications {
     display: inline-block;
     text-align: left;
-    height: 50px;
+    height: 35px;
+    margin-left: 10px;
 }
 
 .workflowNotifications i {
@@ -21,10 +22,10 @@
 }
 
 .workflowNotifications .badge {
-    height: 50px;
-    line-height: 54px;
-    border-radius: 0;
-    padding: 0 15px;
+    height: 35px;
+    line-height: 40px;
+    border-radius: 5px;
+    padding: 0 10px;
     font-size: 16px;
-    min-width: 50px;
+    min-width: 40px;
 }

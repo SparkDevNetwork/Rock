@@ -5,7 +5,6 @@
 	background-color: @panel-bg;
 	color: @text-color;
 	margin-top: 8px;
-	margin-right: 8px;
 }
 
 // Search Icon
@@ -35,4 +34,47 @@
 .tt-dropdown-menu {
 	font-size: @font-size-base - 2;
 	font-weight: 500;
+}
+
+@media (max-width: @screen-sm-min) {
+	.smartsearch {
+		position: relative;
+		width: 100%;
+		border-radius: 0;
+		margin-top: 0;
+
+		input.searchinput {
+			padding-top: 11px;
+			padding-bottom: 9px;
+			padding-left: 35px;
+			font-size: 16px;
+			font-weight: 500;
+		}
+
+		& > i {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+		}
+
+		.smartsearch-type {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			z-index: 10;
+
+			.dropdown-toggle {
+				padding-right: 8px;
+			}
+		}
+
+		.twitter-typeahead {
+			margin-right: 0;
+		}
+
+		.tt-dropdown-menu {
+			width: 100%;
+			margin-left: 0;
+		}
+	}
 }

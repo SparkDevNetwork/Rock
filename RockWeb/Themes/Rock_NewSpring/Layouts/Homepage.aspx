@@ -12,6 +12,10 @@
         </div>
     </section>
 
+    <div class="soft-sides xs-soft-half-sides">
+        <hr class="flush">
+    </div>
+
 </asp:Content>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
@@ -33,7 +37,7 @@
         </div>
     </main>
     
-    <section class="background-theme-2 soft-half lg-soft-top lg-soft-sides lg-soft-half-bottom">
+    <section class="background-theme-4 soft-half lg-soft-top lg-soft-sides lg-soft-half-bottom">
         <Rock:Zone Name="Section A" runat="server" />
     </section>
 
