@@ -4647,10 +4647,13 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Migrations\201802260423490_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
+    <None Include="Migrations\201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
+    </None>
+    <Content Include="Migrations\201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
       <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\201802260423490_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+    <Content Include="Migrations\201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
@@ -4930,9 +4933,10 @@
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201712191949335_CampusTimeZone_PersonicxMeanAge.sql">
       <DependentUpon>201712191949335_CampusTimeZone.cs</DependentUpon>
     </Content>
-    <None Include="Resources\201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder.sql" />
-    <None Include="Resources\201802092340176_Rollup_0209_ufnUtility_CsvToTable.sql" />
     <Content Include="SqlServerTypes\readme.htm" />
+    <None Include="Migrations\201802092340176_Rollup_0209_ufnUtility_CsvToTable.sql">
+      <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP1.sql" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP2.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608172242214_Podcasting.sql" />
