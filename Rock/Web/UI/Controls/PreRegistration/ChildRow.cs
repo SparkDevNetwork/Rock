@@ -653,7 +653,7 @@ namespace Rock.Web.UI.Controls
                 attribute.AddControl( _phAttributes.Controls, "", "", false, true );
             }
 
-            _lbDelete.CssClass = "btn btn-sm btn-danger pull-right";
+            _lbDelete.CssClass = "btn btn-xs btn-danger pull-right";
             _lbDelete.Click += lbDelete_Click;
             _lbDelete.CausesValidation = false;
             _lbDelete.Text = "<i class='fa fa-times'></i>";
