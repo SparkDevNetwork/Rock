@@ -267,6 +267,41 @@ namespace RockWeb.Blocks.Communication
             UpdatePreview();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbUpdateLavaFields control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbUpdateLavaFields_Click( object sender, EventArgs e )
+        {
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( ceEmailTemplate.Text );
+
+            // take care of the lava fields stuff
+            var lavaFieldsNode = templateDoc.GetElementbyId( "lava-fields" );
+            var lavaFieldsTemplateDictionary = new Dictionary<string, string>();
+
+            if ( lavaFieldsNode != null )
+            {
+                var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhitespace() ).ToList();
+
+                // dictionary of keys and values from the lava fields in the 'lava-fields' div
+                foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines )
+                {
+                    var match = Regex.Match( templateDocLavaFieldLine, @"{% assign (.*)\=(.*) %}" );
+                    if ( match.Groups.Count == 3 )
+                    {
+                        var key = match.Groups[1].Value.Trim().RemoveSpaces();
+                        var value = match.Groups[2].Value.Trim().Trim( '\'' );
+
+                        lavaFieldsTemplateDictionary.Add( key, value );
+                    }
+                }
+            }
+
+            kvlMergeFields.Value = lavaFieldsTemplateDictionary.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
+        }
+
         #endregion
 
         #region Private Methods
@@ -660,7 +695,7 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            if ( lavaFieldsDefaultDictionary.Any() )
+            if ( lavaFieldsTemplateDictionary.Any() )
             {
                 StringBuilder lavaAssignsHtml = new StringBuilder();
                 lavaAssignsHtml.AppendLine();
