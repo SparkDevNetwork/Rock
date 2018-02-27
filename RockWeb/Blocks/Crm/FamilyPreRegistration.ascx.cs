@@ -606,7 +606,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// </summary>
         private void SetControls()
         {
-            pwVisit.Visible = true;
+            pnlVisit.Visible = true;
 
             // Campus 
             if ( GetAttributeValue( "ShowCampus" ).AsBoolean() )
@@ -625,7 +625,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             dpPlannedDate.Required = isRequired;
 
             // Visit Info
-            pwVisit.Visible = pnlCampus.Visible || pnlPlannedDate.Visible;
+            pnlVisit.Visible = pnlCampus.Visible || pnlPlannedDate.Visible;
 
             // Adult Suffix
             SetControl( "AdultSuffix", pnlSuffix1, pnlSuffix2 );
