@@ -41,15 +41,14 @@ namespace RockWeb.Blocks.Crm
 
     [BooleanField( "Show Campus", "Should the campus field be displayed?", true, "", 0 )]
     [CampusField( "Default Campus", "An optional campus to use by default when adding a new family.", false, "", "", 1 )]
-    [CustomDropdownListField( "Planned Visit Date", "How should the Planned Visit Date field be displayed (this value is only used if starting a workflow)?", "Hide,Optional,Required", false, "Optional", "", 2 )]
+    [CustomDropdownListField( "Planned Visit Date", "How should the Planned Visit Date field be displayed (this value is only used when starting a workflow)?", "Hide,Optional,Required", false, "Optional", "", 2 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The Family attributes that should be displayed", false, true, "", "", 3 )]
     [BooleanField( "Allow Updates", "If the person visiting this block is logged in, should the block be used to update their family? If not, a new family will always be created unless 'Auto Match' is enabled and the information entered matches an existing person.", false, "", 4 )]
     [BooleanField( "Auto Match", "Should this block attempt to match people to to current records in the database.", true, "", 5)]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Status", "The connection status that should be used when adding new people.", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 6 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status that should be used when adding new people.", false, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE, "", 7 )]
     [WorkflowTypeField( "Workflow Types", @"
-The workflow type(s) to launch when a family is added. The primary family will be passed to each workflow as the entity. Additionally if the workflow type has a date or datetime attribute
-with a key of 'PlannedVisitDate' that attribute will be set to the selected planned visit date when the workflow is launched.
+The workflow type(s) to launch when a family is added. The primary family will be passed to each workflow as the entity. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: ParentIds, ChildIds, PlannedVisitDate.
 ", true, false, "", "", 8 )]
     [CodeEditorField( "Redirect URL", @"
 The URL to redirect user to when they have completed the registration. The merge fields that are available includes 'Family', which is an object for the primary family 
@@ -70,7 +69,7 @@ that is created/updated, and 'RelatedChildren', which is a list of the children 
     [CustomDropdownListField( "Mobile Phone", "How should Mobile Phone be displayed for children?", "Hide,Optional,Required", false, "Hide", "Child Fields", 4, "ChildMobilePhone" )]
     [AttributeCategoryField( "Attribute Categories", "The children Attribute Categories to display attributes from.", true, "Rock.Model.Person", false, "", "Child Fields", 5, "ChildAttributeCategories" )]
 
-    [CustomEnhancedListField( "Known Relationship Types", "The known relationship types that should be displayed as the possible ways that a child is related to the adult(s).", @"
+    [CustomEnhancedListField( "Known Relationship Types", "The known relationship types that should be displayed as the possible ways that a child can be related to the adult(s).", @"
 SELECT 
 	R.[Id] AS [Value],
 	R.[Name] AS [Text]
@@ -549,24 +548,30 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 {
                     var family = groupService.Get( primaryFamily.Id );
 
+                    var childIds = new List<int>( newChildIds );
+                    childIds.AddRange( newRelationships.Select( r => r.Key ).ToList() );
+
+                    // Create parameters
+                    var parameters = new Dictionary<string, string>();
+                    parameters.Add( "ParentIds", adultIds.AsDelimited( "," ) );
+                    parameters.Add( "ChildIds", childIds.AsDelimited( "," ) );
+
+                    if ( pnlPlannedDate.Visible )
+                    {
+                        DateTime? visitDate = dpPlannedDate.SelectedDate;
+                        if ( visitDate.HasValue )
+                        {
+                            parameters.Add( "PlannedVisitDate", visitDate.Value.ToString( "o" ) );
+                        }
+                    }
+
                     // Look for any workflows
                     if ( workflows.Any() )
                     {
-                        // Create parameters for the visit date
-                        var workflowParameters = new Dictionary<string, string>();
-                        if ( pnlPlannedDate.Visible )
-                        {
-                            DateTime? visitDate = dpPlannedDate.SelectedDate;
-                            if ( visitDate.HasValue )
-                            {
-                                workflowParameters.Add( "PlannedVisitDate", visitDate.Value.ToString( "o" ) );
-                            }
-                        }
-
                         // Launch all the workflows
                         foreach ( var wfGuid in workflows )
                         {
-                            family.LaunchWorkflow( wfGuid, family.Name, workflowParameters );
+                            family.LaunchWorkflow( wfGuid, family.Name, parameters );
                         }
                     }
 
@@ -578,6 +583,11 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                         mergeFields.Add( "Family", family );
                         mergeFields.Add( "RelatedChildren", relatedChildren );
+                        foreach( var keyval in parameters )
+                        {
+                            mergeFields.Add( keyval.Key, keyval.Value );
+                        }
+
                         var url = ResolveUrl( redirectUrl.ResolveMergeFields( mergeFields ) );
 
                         Response.Redirect( url, false );
