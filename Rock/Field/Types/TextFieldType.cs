@@ -35,6 +35,7 @@ namespace Rock.Field.Types
 
         private const string IS_PASSWORD_KEY = "ispassword";
         private const string MAX_CHARACTERS = "maxcharacters";
+        private const string SHOW_COUNt_DOWN = "showcountdown";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -45,6 +46,7 @@ namespace Rock.Field.Types
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( IS_PASSWORD_KEY );
             configKeys.Add( MAX_CHARACTERS );
+            configKeys.Add( SHOW_COUNt_DOWN );
             return configKeys;
         }
 
@@ -74,6 +76,15 @@ namespace Rock.Field.Types
             nbCharacter.Label = "Max Characters";
             nbCharacter.Help = "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.";
 
+            // Add checkbox indicating whether to show the count down.
+            var cbCountDown = new RockCheckBox();
+            controls.Add( cbCountDown );
+            cbCountDown.AutoPostBack = true;
+            cbCountDown.CheckedChanged += OnQualifierUpdated;
+            cbCountDown.Label = "Show Count Down";
+            cbCountDown.Text = "Yes";
+            cbCountDown.Help = "When set, displays the count down.";
+
             return controls;
         }
 
@@ -87,6 +98,7 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( IS_PASSWORD_KEY, new ConfigurationValue( "Password Field", "When set, edit field will be masked.", "" ) );
             configurationValues.Add( MAX_CHARACTERS, new ConfigurationValue( "Max Characters", "The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text.", "" ) );
+            configurationValues.Add( SHOW_COUNt_DOWN, new ConfigurationValue( "Show Count Down", "When set, displays the count down.", "" ) );
 
             if ( controls != null )
             {
@@ -98,6 +110,11 @@ namespace Rock.Field.Types
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox )
                 {
                     configurationValues[MAX_CHARACTERS].Value = ( ( NumberBox ) controls[1] ).Text;
+                }
+
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox )
+                {
+                    configurationValues[SHOW_COUNt_DOWN].Value = ( ( CheckBox ) controls[2] ).Checked.ToString();
                 }
             }
 
@@ -111,7 +128,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public bool IsPassword( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if (configurationValues != null && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
+            if ( configurationValues != null && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
             {
                 return configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
             }
@@ -130,12 +147,17 @@ namespace Rock.Field.Types
             {
                 if ( controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
                 {
-                    ( (CheckBox)controls[0] ).Checked = configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
+                    ( ( CheckBox ) controls[0] ).Checked = configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
                 }
 
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is NumberBox && configurationValues.ContainsKey( MAX_CHARACTERS ) )
                 {
                     ( ( NumberBox ) controls[1] ).Text = configurationValues[MAX_CHARACTERS].Value;
+                }
+
+                if ( controls[2] != null && controls[2] is CheckBox && configurationValues.ContainsKey( SHOW_COUNt_DOWN ) )
+                {
+                    ( ( CheckBox ) controls[2] ).Checked = configurationValues[SHOW_COUNt_DOWN].Value.AsBoolean();
                 }
             }
         }
@@ -229,7 +251,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             RockTextBox tb = base.EditControl( configurationValues, id ) as RockTextBox;
-            
+
             if ( configurationValues != null )
             {
 
@@ -246,6 +268,11 @@ namespace Rock.Field.Types
                     {
                         tb.MaxLength = maximumLength.Value;
                     }
+                }
+
+                if ( configurationValues.ContainsKey( SHOW_COUNt_DOWN ) )
+                {
+                    tb.ShowCountDown = configurationValues[SHOW_COUNt_DOWN].Value.AsBoolean();
                 }
             }
             return tb;
@@ -343,15 +370,13 @@ namespace Rock.Field.Types
         /// <value>
         /// The type of the filter comparison.
         /// </value>
-        public override Model.ComparisonType FilterComparisonType
-        {
-            get
-            {
+        public override Model.ComparisonType FilterComparisonType {
+            get {
                 return ComparisonHelper.StringFilterComparisonTypes;
             }
         }
 
         #endregion
-
+        
     }
 }
