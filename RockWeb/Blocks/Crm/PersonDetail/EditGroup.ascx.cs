@@ -1397,14 +1397,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     var personService = new PersonService( rockContext );
                     var person = personService.Get( groupMember.PersonId );
-
-                    var demographicChanges = new List<string>();
-                    History.EvaluateChange( demographicChanges, "Giving Group", person.GivingGroup.Name, string.Empty );
-                    person.GivingGroupId = null;
-
-                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, demographicChanges );
-
-                    rockContext.SaveChanges();
+                    if ( person != null )
+                    {
+                        person.GivingGroupId = null;
+                        rockContext.SaveChanges();
+                    }
                 }
 
                 groupMemberService.Delete( groupMember );

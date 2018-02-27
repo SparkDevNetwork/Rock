@@ -195,8 +195,6 @@ We have saved your unsubscribed you from the following lists:
 
             if ( _person != null )
             {
-                var changes = new List<string>();
-
                 var rockContext = new RockContext();
                 var service = new PersonService( rockContext );
                 var person = service.Get( _person.Id );
@@ -212,7 +210,6 @@ We have saved your unsubscribed you from the following lists:
                         emailPreference = EmailPreference.DoNotEmail;
                     }
 
-                    History.EvaluateChange( changes, "Email Preference", person.EmailPreference, emailPreference );
                     person.EmailPreference = emailPreference;
 
                     if ( rbNotInvolved.Checked )
@@ -220,32 +217,27 @@ We have saved your unsubscribed you from the following lists:
                         var newRecordStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
                         if ( newRecordStatus != null )
                         {
-                            History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), newRecordStatus.Value );
                             person.RecordStatusValueId = newRecordStatus.Id;
                         }
 
                         var newInactiveReason = DefinedValueCache.Read( ddlInactiveReason.SelectedValue.AsInteger() );
                         if ( newInactiveReason != null )
                         {
-                            History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), newInactiveReason.Value );
                             person.RecordStatusReasonValueId = newInactiveReason.Id;
                         }
 
                         var newReviewReason = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED );
                         if ( newReviewReason != null )
                         {
-                            History.EvaluateChange( changes, "Review Reason", DefinedValueCache.GetName( person.ReviewReasonValueId ), newReviewReason.Value );
                             person.ReviewReasonValueId = newReviewReason.Id;
                         }
 
                         // If the inactive reason note is the same as the current review reason note, update it also.
                         if ( ( person.InactiveReasonNote ?? string.Empty ) == ( person.ReviewReasonNote ?? string.Empty ) )
                         {
-                            History.EvaluateChange( changes, "Inactive Reason Note", person.InactiveReasonNote, tbInactiveNote.Text );
                             person.InactiveReasonNote = tbInactiveNote.Text;
                         }
 
-                        History.EvaluateChange( changes, "Review Reason Note", person.ReviewReasonNote, tbInactiveNote.Text );
                         person.ReviewReasonNote = tbInactiveNote.Text;
                     }
                     else
@@ -253,21 +245,11 @@ We have saved your unsubscribed you from the following lists:
                         var newRecordStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
                         if ( newRecordStatus != null )
                         {
-                            History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), newRecordStatus.Value );
                             person.RecordStatusValueId = newRecordStatus.Id;
                         }
 
-                        History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), string.Empty );
                         person.RecordStatusReasonValueId = null;
                     }
-
-                    HistoryService.AddChanges(
-                        rockContext,
-                        typeof( Person ),
-                        Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                        person.Id,
-                        changes,
-                        CurrentPersonAliasId );
 
                     rockContext.SaveChanges();
 
