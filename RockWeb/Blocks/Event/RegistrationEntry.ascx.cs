@@ -1987,7 +1987,6 @@ namespace RockWeb.Blocks.Event
                 {
                     var registrantChanges = new List<string>();
                     var personChanges = new List<string>();
-                    var familyChanges = new List<string>();
 
                     RegistrationRegistrant registrant = null;
                     Person person = null;
