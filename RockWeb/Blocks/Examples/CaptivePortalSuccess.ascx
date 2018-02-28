@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CaptivePortalError.ascx.cs" Inherits="RockWeb.Blocks.Core.CaptivePortalError" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CaptivePortalSuccess.ascx.cs" Inherits="RockWeb.Blocks.Examples.CaptivePortalSuccess" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
