@@ -30,7 +30,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.Examples
 {
     public partial class CaptivePortalError : RockBlock
     { 
