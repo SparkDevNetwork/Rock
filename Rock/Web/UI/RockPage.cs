@@ -788,8 +788,12 @@ namespace Rock.Web.UI
                 }
 
                 // Check if there is a ROCK_PERSONALDEVICE_ADDRESS cookie, link person to device
-
-
+                if ( Request.Cookies["rock_wifi"] != null )
+                {
+                    HttpCookie httpCookie = Request.Cookies["rock_wifi"];
+                    LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] );
+                    Response.Cookies["rock_wifi"].Expires = DateTime.Now.AddDays( -1 );
+                }
             }
 
             // If a PageInstance exists
@@ -2125,6 +2129,70 @@ Sys.Application.add_load(function () {
             trigger.ControlID = "rock-config-trigger";
             trigger.EventName = "Click";
             updatePanel.Triggers.Add( trigger );
+        }
+
+        /// <summary>
+        /// Links the person alias to device.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="MacAddress">The mac address.</param>
+        public void LinkPersonAliasToDevice(int personAliasId, string MacAddress)
+        {
+            RockContext rockContext = new RockContext();
+            PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
+            PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( MacAddress );
+
+            // It's possible that the device was deleted from the DB but a cookie still exists
+            if ( personalDevice == null)
+            {
+                return;
+            }
+
+            if (personalDevice.PersonAliasId == personAliasId)
+            {
+                return;
+            }
+
+            // If there isn't a PersonAlias then we are changing an existing device to a new alias
+            bool deviceSwitchingAPersonAlias = personalDevice.PersonAliasId != null;
+
+            personalDevice.PersonAliasId = personAliasId;
+            rockContext.SaveChanges();
+
+            // If we switched to a new user then we don't want to over-write the old interactions with a new alias
+            if ( deviceSwitchingAPersonAlias )
+            {
+                return;
+            }
+
+            // Get a list of InteractionComponent.Id to filter for the Interactions
+            int? wifiPresenceId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WIFI_PRESENCE.AsGuid() ).Id;
+            var wifiChannelIds = new InteractionChannelService( rockContext ).Queryable().Where( c => c.ChannelTypeMediumValueId == wifiPresenceId ).Select( c => c.Id).ToList();
+            var componentIds = new InteractionComponentService( rockContext ).Queryable().Where( c => wifiChannelIds.Contains( c.ChannelId ) ).Select( c => c.Id ).ToList();
+
+            if ( componentIds.Count > 0 )
+            {
+                // Get a querable for the WiFi interactions with the device id but a null person alias id
+                InteractionService interactionService = new InteractionService( rockContext );
+
+                var interactionsCount = interactionService
+                    .Queryable()
+                    .Where( i => componentIds.Contains( i.InteractionComponentId ) )
+                    .Where( i => i.PersonalDeviceId == personalDevice.Id )
+                    .Where( i => i.PersonAliasId == null ).Count();
+                
+                if ( interactionsCount > 0 )
+                // Use BulkUpdate to set the PersonAliasId
+                {
+                    var interactions = interactionService
+                    .Queryable()
+                    .Where( i => componentIds.Contains( i.InteractionComponentId ) )
+                    .Where( i => i.PersonalDeviceId == personalDevice.Id )
+                    .Where( i => i.PersonAliasId == null );
+
+                    rockContext.BulkUpdate( interactions, i => new Interaction { PersonAliasId = personAliasId } );
+                }
+            }
         }
 
         #endregion
