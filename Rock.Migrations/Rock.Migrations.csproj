@@ -93,6 +93,10 @@
     <Compile Include="Migrations\201802092340176_Rollup_0209.Designer.cs">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201802281632580_FrontPorchIntegration.cs" />
+    <Compile Include="Migrations\201802281632580_FrontPorchIntegration.Designer.cs">
+      <DependentUpon>201802281632580_FrontPorchIntegration.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2691,6 +2695,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201802092340176_Rollup_0209.resx">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802281632580_FrontPorchIntegration.resx">
+      <DependentUpon>201802281632580_FrontPorchIntegration.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
