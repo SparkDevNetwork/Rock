@@ -620,8 +620,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             }
 
             // Planned Visit Date
-            bool isRequired = false;
-            SetControl( "PlannedVisitDate", pnlPlannedDate, null );
+            bool isRequired = SetControl( "PlannedVisitDate", pnlPlannedDate, null );
             dpPlannedDate.Required = isRequired;
 
             // Visit Info
@@ -714,10 +713,18 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             }
 
             // Set First Adult's Values
-            lAdultHeading1.Text = adult1 != null ? adult1.FullName : "First Adult";
             hfAdultGuid1.Value = adult1 != null ? adult1.Id.ToString() : string.Empty;
+
+            lFirstName1.Visible = adult1 != null;
+            tbFirstName1.Visible = adult1 == null;
+            lFirstName1.Text = adult1 != null ? adult1.NickName : String.Empty;
             tbFirstName1.Text = adult1 != null ? adult1.NickName : String.Empty;
+
+            lLastName1.Visible = adult1 != null;
+            tbLastName1.Visible = adult1 == null;
+            lLastName1.Text = adult1 != null ? adult1.LastName : String.Empty;
             tbLastName1.Text = adult1 != null ? adult1.LastName : String.Empty;
+
             dvpSuffix1.SetValue( adult1 != null ? adult1.SuffixValueId : (int?)null );
             ddlGender1.SetValue( adult1 != null ? adult1.Gender.ConvertToInt() : 0 );
             dpBirthDate1.SelectedDate = ( adult1 != null ? adult1.BirthDate : (DateTime?)null );
@@ -725,10 +732,18 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             SetPhoneNumber( adult1, pnMobilePhone1 );
 
             // Set Second Adult's Values
-            lAdultHeading2.Text = adult2 != null ? adult2.FullName : "Second Adult";
             hfAdultGuid2.Value = adult2 != null ? adult2.Guid.ToString() : string.Empty;
+
+            lFirstName2.Visible = adult2 != null;
+            tbFirstName2.Visible = adult2 == null;
+            lFirstName2.Text = adult2 != null ? adult2.NickName : String.Empty;
             tbFirstName2.Text = adult2 != null ? adult2.NickName : String.Empty;
+
+            lLastName2.Visible = adult2 != null;
+            tbLastName2.Visible = adult2 == null;
+            lLastName2.Text = adult2 != null ? adult2.LastName : String.Empty;
             tbLastName2.Text = adult2 != null ? adult2.LastName : String.Empty;
+
             dvpSuffix2.SetValue( adult2 != null ? adult2.SuffixValueId : (int?)null );
             ddlGender2.SetValue( adult2 != null ? adult2.Gender.ConvertToInt() : 0 );
             dpBirthDate2.SelectedDate = ( adult2 != null ? adult2.BirthDate : (DateTime?)null );
@@ -1049,8 +1064,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 adult = personService.Get( adultGuid.Value );
             }
 
-            // Check to see if a name was entered for this adult
-            if ( tbFirstName.Text.IsNotNullOrWhitespace() && tbLastName.Text.IsNotNullOrWhitespace() )
+            // Check to see if this is an existing person, or a name was entered for this adult
+            if ( adult != null || ( tbFirstName.Text.IsNotNullOrWhitespace() && tbLastName.Text.IsNotNullOrWhitespace() ) )
             {
                 // Flag indicating if empty values should be saved to person record (Should not do this if a matched record was found)
                 bool saveEmptyValues = true;
@@ -1076,15 +1091,14 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     adult = new Person();
                     personService.Add( adult );
 
+                    adult.NickName = tbFirstName.Text;
+                    adult.LastName = tbLastName.Text;
                     adult.RecordTypeValueId = recordTypePersonId;
                     adult.RecordStatusReasonValueId = recordStatusValue != null ? recordStatusValue.Id : (int?)null;
                     adult.ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : (int?)null;
                 }
 
                 // Set the properties from UI
-                adult.NickName = tbFirstName.Text;
-                adult.LastName = tbLastName.Text;
-
                 if ( showSuffix )
                 {
                     int? suffix = dvpSuffix.SelectedValueAsInt();
@@ -1136,15 +1150,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                 adultIds.Add( adult.Id );
             }
-            else
-            {
-                // If name is blank, check to see if we had a person before editing, if so, remove that person from the family
-                if ( primaryFamily != null && adult != null )
-                {
-                    RemovePersonFromFamily( familyGroupType.Id, primaryFamily.Id, adult.Id );
-                }
-                adult = null;
-            }
+
         }
 
         /// <summary>
