@@ -31,10 +31,10 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.Security
 {
     [DisplayName( "WiFi Welcome" )]
-    [Category( "Core" )]
+    [Category( "Security" )]
     [Description( "Controls access to WiFi." )]
     [TextField( "MAC Address Param", "The query string parameter used for the MAC Address", true, "client_mac", "", 0, "MacAddressParam" )]
     [TextField( "Release Link", "URL to direct users to", true, "", "", 1, "ReleaseLink" )]
@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Core
     <h1>Terms & Conditions</h1>
     <p>
         This free WiFi service(""Service"") is provided by {{ 'Global' | Attribute:' OrganizationName' }}
-        (""Organization"") to its guests.Please read the Service Terms and Conditions below. To use the Service, users must accept these Service Terms and Conditions.
+        (""Organization"") to its guests. Please read the Service Terms and Conditions below. To use the Service, users must accept these Service Terms and Conditions.
     </p>
 
     <p>
@@ -110,156 +110,161 @@ namespace RockWeb.Blocks.Core
 </html>";
         #endregion
 
-        protected string macAddress;
-
+        //protected string macAddress;
+        
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            macAddress = Request.Params[GetAttributeValue( "MacAddressParam" )];
-            bool newDevice = false;
+            nbAlert.Visible = false;
 
             if ( !IsPostBack )
             {
-                newDevice = CreateDeviceIfNew();
+                // Save the supplied MAC address to the page removing any no
+                string macAddress = Request.Params[GetAttributeValue( "MacAddressParam" )].RemoveAllNonAlphaNumericCharacters();
+                hfMacAddress.Value = macAddress;
 
-                if(newDevice)
+                RockContext rockContext = new RockContext();
+
+                // create or get device
+                PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
+                PersonalDevice personalDevice = null;
+
+                bool isAnExistingDevice = DoesPersonalDeviceExist( macAddress );
+                if( isAnExistingDevice )
                 {
-                    CreateDeviceCookie();
+                    personalDevice = personalDeviceService.GetByMACAddress( macAddress );
+                }
+                else
+                {
+                    personalDevice = CreateDevice( macAddress );
+                    CreateDeviceCookie( macAddress );
+                }
+
+                // Get the person
+                Person person = null;
+                PersonService personService = new PersonService( rockContext );
+
+                // See if they are logged in first
+                int? rockUserId = null;
+                if ( Session["RockUserId"] != null )
+                {
+                    rockUserId = Session["RockUserId"].ToString().AsIntegerOrNull();
+                    person = personService.GetByUserLoginId( rockUserId.Value );
+                    Prefill( person );
+                    RockPage.LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, macAddress );
+                    hfPersonAliasId.Value = CurrentPersonAliasId.ToString();
+                }
+                else if(isAnExistingDevice)
+                {
+                    // if the user is not logged in but we have the device lets try to get a person
+                    person = personService.Get( personalDevice.PersonAlias.PersonId );
+                    if(person != null)
+                    {
+                        Prefill( person );
+                        RockPage.LinkPersonAliasToDevice( ( int ) personalDevice.PersonAliasId, macAddress );
+                        hfPersonAliasId.Value = personalDevice.PersonAliasId.ToString();
+                    }
                 }
                 
-                // 2 direct connect path
+                // Direct connect if no controls are visible
                 if ( !ShowControls() )
                 {
                     string redirectUrl = string.Format( "{0}?{1}={2}", GetAttributeValue( "ReleaseLink" ), GetAttributeValue( "MacAddressParam" ), macAddress );
-                    
+
                     // Nothing to show then just redirect back to FP with the mac
                     if ( IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
                     {
-                        nbAlert.Text = string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to here: <a href='{0}'>{0}</a>.", redirectUrl );
+                        nbAlert.Text = string.Format( "If you did not have Administrative permissions on this block you would have been redirected to: <a href='{0}'>{0}</a>.", redirectUrl );
                     }
                     else
                     {
                         Response.Redirect( redirectUrl );
+                        return;
                     }
-                }
-
-                bool isNewDevice = CreateDeviceIfNew();
-                int? rockUserId = null;
-
-                if ( Session["RockUserId"] != null )
-                {
-                    // 3 user logged in path
-                    rockUserId = Session["RockUserId"].ToString().AsIntegerOrNull();
-                    Prefill( rockUserId );
-                    // Link person to device
-                }
-                else
-                {
-                    //4 user not logged in path
-                    // Create a new person
-                    // link new person to device
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Doeses a personal device exist for the provided MAC address
+        /// </summary>
+        /// <param name="macAddress">The mac address.</param>
+        /// <returns></returns>
+        private bool DoesPersonalDeviceExist( string macAddress )
+        {
+            PersonalDeviceService personalDeviceService = new PersonalDeviceService( new RockContext() );
+            return personalDeviceService.Queryable().Where( d => d.MACAddress == macAddress ).Any();
+        }
+
         /// <summary>
         /// Creates the device if new.
         /// </summary>
         /// <returns>Returns true if the device was created, false it already existed</returns>
-        private bool CreateDeviceIfNew()
+        private PersonalDevice CreateDevice(string macAddress )
         {
-            // If this cookie exists then we can assume that the creation process has already taken place and we can save the hit to the DB.
-            if ( Request.Cookies["rock_wifi"] != null )
-            {
-                return false;
-            }
-
-            // Check to see if the device exists
             RockContext rockContext = new RockContext();
             PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
-            PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( macAddress );
+            PersonalDevice personalDevice = new PersonalDevice();
+            personalDevice.MACAddress = macAddress;
 
-            if (personalDevice == null)
+            // Parse the UA string and try to get the info we want
+            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( Request.UserAgent );
+
+            // Get the device type Mobile or Computer
+            DefinedTypeCache definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() );
+            DefinedValueCache definedValueCache = null;
+
+            string clientType = Request.Browser.IsMobileDevice == true ? "Mobile" : "Computer";
+
+            if ( definedTypeCache != null )
             {
-                personalDevice = new PersonalDevice();
-                personalDevice.MACAddress = macAddress;
+                definedValueCache = definedTypeCache.DefinedValues.FirstOrDefault( v => v.Value == clientType );
 
-                // Parse the UA string and try to get the info we want
-                UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( Request.UserAgent );
-
-                // Get the device type Mobile or Computer
-                DefinedTypeCache definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() );
-                DefinedValueCache definedValueCache = null;
-
-                string clientType = Request.Browser.IsMobileDevice == true ? "Mobile" : "Computer";
-
-                if ( definedTypeCache != null )
+                if ( definedValueCache == null )
                 {
-                    definedValueCache = definedTypeCache.DefinedValues.FirstOrDefault( v => v.Value == clientType );
-
-                    if ( definedValueCache == null )
-                    {
-                        definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_COMPUTER.AsGuid() );
-                    }
+                    definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_COMPUTER.AsGuid() );
                 }
-
-                personalDevice.PersonalDeviceTypeValueId = definedValueCache != null ? definedValueCache.Id : ( int? ) null;
-
-                // get the OS
-                string platform = client.OS.Family;
-
-                definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
-
-                if (definedTypeCache != null )
-                {
-                    definedValueCache = definedTypeCache.DefinedValues.FirstOrDefault( v => v.Value == platform );
-
-                    if (definedValueCache == null )
-                    {
-                        definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
-                    }
-                }
-
-                personalDevice.PlatformValueId = definedValueCache != null ? definedValueCache.Id : ( int? ) null;
-
-                // Get the OS version
-                personalDevice.DeviceVersion = string.Format(
-                    "{0}.{1}.{2}.{3}",
-                    client.OS.Major ?? "0",
-                    client.OS.Minor ?? "0",
-                    client.OS.Patch ?? "0",
-                    client.OS.PatchMinor ?? "0" );
-
-                // Add and save it
-                personalDeviceService.Add( personalDevice );
-                rockContext.SaveChanges();
-                return true;
             }
 
-            return false;
-        }
+            personalDevice.PersonalDeviceTypeValueId = definedValueCache != null ? definedValueCache.Id : ( int? ) null;
 
-        private void LinkDeviceToPerson(int? rockUserId)
-        {
-            RockContext rockContext = new RockContext();
+            // get the OS
+            string platform = client.OS.Family;
 
-            Person person = new PersonService( rockContext ).GetByUserLoginId( rockUserId.Value );
+            definedTypeCache = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
 
-            if ( person == null )
+            if (definedTypeCache != null )
             {
-                return;
+                definedValueCache = definedTypeCache.DefinedValues.FirstOrDefault( v => v.Value == platform );
+
+                if (definedValueCache == null )
+                {
+                    definedValueCache = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_PLATFORM_OTHER.AsGuid() );
+                }
             }
 
-            
+            personalDevice.PlatformValueId = definedValueCache != null ? definedValueCache.Id : ( int? ) null;
+
+            // Get the OS version
+            personalDevice.DeviceVersion = string.Format(
+                "{0}.{1}.{2}.{3}",
+                client.OS.Major ?? "0",
+                client.OS.Minor ?? "0",
+                client.OS.Patch ?? "0",
+                client.OS.PatchMinor ?? "0" );
+
+            // Add and save it
+            personalDeviceService.Add( personalDevice );
+            rockContext.SaveChanges();
+            return personalDevice;
         }
 
         /// <summary>
         /// Creates the device cookie if it does not exist.
         /// </summary>
-        private void CreateDeviceCookie()
+        private void CreateDeviceCookie(string macAddress )
         {
-            if ( Request.Cookies["rock_wifi"] != null )
+            if ( Request.Cookies["rock_wifi"] == null )
             {
                 HttpCookie httpcookie = new HttpCookie( "rock_wifi" );
                 httpcookie.Expires = DateTime.MaxValue;
@@ -269,13 +274,12 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Prefills the visible fields with info from the specified rock user
+        /// Prefills the visible fields with info from the specified rock person
+        /// if there is a logged in user than the name fields will be disabled.
         /// </summary>
         /// <param name="rockUserId">The rock user identifier.</param>
-        protected void Prefill(int? rockUserId)
+        protected void Prefill( Person person )
         {
-            Person person = new PersonService( new RockContext() ).GetByUserLoginId( rockUserId.Value );
-
             if (person == null)
             {
                 return;
@@ -284,16 +288,19 @@ namespace RockWeb.Blocks.Core
             if ( tbFirstName.Visible == true )
             {
                 tbFirstName.Text = person.FirstName;
+                tbFirstName.Enabled = Session["RockUserId"] == null;
             }
 
             if (tbLastName.Visible)
             {
                 tbLastName.Text = person.LastName;
+                tbLastName.Enabled = Session["RockUserId"] == null;
             }
 
             if ( tbMobilePhone.Visible )
             {
-                tbMobilePhone.Text = person.PhoneNumbers.Where( p => p.NumberTypeValueId == 13 ).Select( p => p.Number ).FirstOrDefault();
+                int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+                tbMobilePhone.Text = person.PhoneNumbers.Where( p => p.NumberTypeValueId == mobilePhoneTypeId ).Select( p => p.Number ).FirstOrDefault();
             }
 
             if (tbEmail.Visible == true )
@@ -317,9 +324,53 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnConnect_Click( object sender, EventArgs e )
         {
-            // Send them back to Front Porch
-            Response.Redirect( string.Format( "{0}?{1}={2}", GetAttributeValue( "ReleaseLink" ), GetAttributeValue( "MacAddressParam" ), macAddress ) );
+            if ( cbAcceptTAC.Visible && cbAcceptTAC.Checked == false )
+            {
+                nbAlert.Text = string.Format( "You must check \"{0}\" to continue.", GetAttributeValue( "AcceptanceLabel" ) );
+                nbAlert.Visible = true;
+                return;
+            }
 
+            // We know there is a device with the stored MAC
+            // If we have an alias ID then we have all data needed and can redirect the user to frontporch
+            if ( hfPersonAliasId.Value != string.Empty)
+            {
+                UpdatePersonInfo();
+                Response.Redirect( string.Format( "{0}?{1}={2}", GetAttributeValue( "ReleaseLink" ), GetAttributeValue( "MacAddressParam" ), hfMacAddress.Value ) );
+                return;
+            }
+
+            PersonService personService = new PersonService( new RockContext() );
+            int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+            
+            // Use the entered info to try and find an existing user
+            Person person = personService
+                .Queryable()
+                .Where( p => p.FirstName == tbFirstName.Text )
+                .Where( p => p.LastName == tbLastName.Text )
+                .Where( p => p.Email == tbEmail.Text )
+                .Where( p => p.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault().Number == tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters() )
+                .FirstOrDefault();
+            
+            // If no known person record then create one
+            if(person == null)
+            {
+                person = new Person {
+                    FirstName = tbFirstName.Text,
+                    LastName = tbLastName.Text,
+                    Email = tbEmail.Text,
+                    PhoneNumbers = new List<PhoneNumber>() { new PhoneNumber { IsSystem = false, Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters(), NumberTypeValueId = mobilePhoneTypeId } }
+                };
+
+                PersonService.SaveNewPerson( person, new RockContext() );
+            }
+
+            // Link new device to person alias
+            RockPage.LinkPersonAliasToDevice( person.Aliases.FirstOrDefault().Id, hfMacAddress.Value );
+
+            // Send them back to Front Porch
+            Response.Redirect( string.Format( "{0}?{1}={2}", GetAttributeValue( "ReleaseLink" ), GetAttributeValue( "MacAddressParam" ), hfMacAddress.Value ) );
+            return;
         }
 
         /// <summary>
@@ -341,8 +392,7 @@ namespace RockWeb.Blocks.Core
             tbEmail.Required = GetAttributeValue( "ShowEmail" ).AsBoolean();
             
             cbAcceptTAC.Visible = GetAttributeValue( "ShowAccept" ).AsBoolean();
-            cbAcceptTAC.Required = GetAttributeValue( "ShowAccept" ).AsBoolean();
-            cbAcceptTAC.Label = GetAttributeValue( "AcceptanceLabel" );
+            cbAcceptTAC.Text = GetAttributeValue( "AcceptanceLabel" );
 
             btnConnect.Text = GetAttributeValue( "ButtonText" );
 
@@ -357,6 +407,30 @@ namespace RockWeb.Blocks.Core
                 return true;
             }
                 return false;
+        }
+
+        /// <summary>
+        /// Updates the person email and mobile phone number with the entered values if they are different
+        /// </summary>
+        private void UpdatePersonInfo()
+        {
+            RockContext rockContext = new RockContext();
+            Person person = new PersonService( rockContext ).Get( CurrentPerson.Id );
+            int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+            person.Email = tbEmail.Text;
+
+            if( !person.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).Any() )
+            {
+                person.PhoneNumbers.Add( new PhoneNumber { IsSystem = false, Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters(), NumberTypeValueId = mobilePhoneTypeId } );
+            }
+            else
+            {
+                PhoneNumber phoneNumber = person.PhoneNumbers.Where( p => p.NumberTypeValueId == mobilePhoneTypeId ).FirstOrDefault();
+                phoneNumber.Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters();
+            }
+
+            rockContext.SaveChanges();
         }
     }
 
