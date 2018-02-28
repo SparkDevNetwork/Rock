@@ -294,8 +294,8 @@ namespace Rock.Web.UI.Controls
         public Captcha() : base()
         {
             CustomValidator = new CustomValidator();
-            SiteKey = GlobalAttributesCache.Value( "GoogleReCaptchaSiteKey" );
-            SecretKey = GlobalAttributesCache.Value( "GoogleReCaptchaSecretKey" );
+            SiteKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSiteKey" );
+            SecretKey = GlobalAttributesCache.Value( "core_GoogleReCaptchaSecretKey" );
         }
 
         #endregion
