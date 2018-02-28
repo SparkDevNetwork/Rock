@@ -363,15 +363,13 @@ namespace church.ccv.Utility.Groups
                 var group = qry.FirstOrDefault();
                 mergeFields.Add( "Group", group );
 
-                // order group members by name
-                var groupMembers = groupMemberService.Queryable( ).Where( gm => gm.GroupId == group.Id ).OrderBy( m => m.Person.LastName ).ThenBy( m => m.Person.FirstName ).ToList( );
-                
+                // get IDs required for finding children of the group members
+                Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
+                int adultRoleId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
+                int familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
-                // first, for performance, get all the IDs for group members. Use those to select all their person objects (with children when applicable)
-                PersonService personService = new PersonService( rockContext );
-                List<int> memberPersonIds = groupMembers.Select( m => m.PersonId ).ToList( );
-                List<ParentWithChildren> parentList = personService.GetParentWithChildren( true ).Where( p => memberPersonIds.Contains( p.Parent.Id ) ).ToList( );
-                
+                // order group members by name
+                var groupMembers = groupMemberService.Queryable( ).Where( gm => gm.GroupId == group.Id ).OrderBy( m => m.Person.LastName ).ThenBy( m => m.Person.FirstName );
 
                 // now build a list of all members with their spouse / children
                 List<GroupMemberWithFamily> groupMembersWithFamily = new List<GroupMemberWithFamily>( );
@@ -385,15 +383,23 @@ namespace church.ccv.Utility.Groups
                     {
                         memberWithFamily.SpouseName = spouse.FullName;
                     }
-                    
-                    // add all kids. do this by getting all the "ParentWithChildren" objects where this person is a parent.
-                    // There can be multiple because it's very possible a divorced person is a parent in two families.
-                    List<ParentWithChildren> groupsAsParent = parentList.Where( p => p.Parent.Id == member.PersonId ).ToList( );
-                    foreach( ParentWithChildren parent in groupsAsParent )
+
+                    // kids?
+                    // get all families where we're the adult 
+                    var families = groupMemberService.Queryable().Where( gm => gm.PersonId == member.PersonId &&  // any group member that's us
+                                                                               gm.GroupRoleId == adultRoleId &&  // where the groupmember's role is adult
+                                                                               gm.Group.GroupTypeId == familyGroupTypeId ) //and the type is family
+                                                                    .Select( g => g.Group ); 
+
+                    // take a list of families, but only the kids within the family
+                    var kidsInFamilies = families.Select( f => new { Kids = f.Members.Where( m => m.GroupRoleId != adultRoleId ) } ).ToList( );
+
+                    // now for each family, add each kid within the family
+                    foreach( var family in kidsInFamilies )
                     {
-                        foreach( Person child in parent.Children )
+                        foreach( var kid in family.Kids )
                         {
-                            memberWithFamily.ChildrenInfo.Add( child.FullName + ", Age: " + child.Age );
+                            memberWithFamily.ChildrenInfo.Add( kid.Person.FullName + ", Age: " + kid.Person.Age );
                         }
                     }
 
@@ -404,6 +410,7 @@ namespace church.ccv.Utility.Groups
                 List<GroupMemberWithFamily> activeGroupMembers = groupMembersWithFamily.Where( gm => gm.Member.GroupMemberStatus == GroupMemberStatus.Active ).ToList( );
                 List<GroupMemberWithFamily> inactiveGroupMembers = groupMembersWithFamily.Where( gm => gm.Member.GroupMemberStatus == GroupMemberStatus.Inactive ).ToList( );
                 List<GroupMemberWithFamily> pendingGroupMembers = groupMembersWithFamily.Where( gm => gm.Member.GroupMemberStatus == GroupMemberStatus.Pending ).ToList( );
+
                 
                 mergeFields.Add( "ActiveGroupMembers", activeGroupMembers );
                 mergeFields.Add( "InactiveGroupMembers", inactiveGroupMembers );
