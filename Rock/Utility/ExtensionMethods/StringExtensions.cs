@@ -49,6 +49,11 @@ namespace Rock
             return sb.ToString();
         }
 
+        public static string RemoveAllNonAlphaNumericCharacters( this string str )
+        {
+            return string.Concat( str.Where( c => char.IsLetterOrDigit( c ) ) );
+        }
+
         /// <summary>
         /// Determines whether the string is not null or whitespace.
         /// </summary>
