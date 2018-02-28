@@ -39,13 +39,14 @@
                         <asp:HiddenField ID="hfAdultGuid1" runat="server" />
                         <asp:HiddenField ID="hfAdultGuid2" runat="server" />
 
-                        <h4>
-                            <asp:Literal ID="lAdultHeading1" runat="server" /></h4>
+                        <h4>Firt Adult</h4>
                         <div class="row">
                             <div class="col-md-3">
+                                <Rock:RockLiteral ID="lFirstName1" runat="server" Label="First Name" Visible="false" />
                                 <Rock:DataTextBox ID="tbFirstName1" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="NickName" Label="First Name" />
                             </div>
                             <div class="col-md-3">
+                                <Rock:RockLiteral ID="lLastName1" runat="server" Label="Last Name" Visible="false" />
                                 <Rock:DataTextBox ID="tbLastName1" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="LastName" />
                             </div>
                             <asp:Panel CssClass="col-md-2" runat="server" ID="pnlSuffix1">
@@ -70,13 +71,14 @@
 
                         <hr />
 
-                        <h4>
-                            <asp:Literal ID="lAdultHeading2" runat="server" /></h4>
+                        <h4>Second Adult</h4>
                         <div class="row">
                             <div class="col-md-3">
+                                <Rock:RockLiteral ID="lFirstName2" runat="server" Label="First Name" Visible="false" />
                                 <Rock:DataTextBox ID="tbFirstName2" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="NickName" Label="First Name" />
                             </div>
                             <div class="col-md-3">
+                                <Rock:RockLiteral ID="lLastName2" runat="server" Label="Last Name" Visible="false" />
                                 <Rock:DataTextBox ID="tbLastName2" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="LastName" />
                             </div>
                             <asp:Panel CssClass="col-md-2" runat="server" ID="pnlSuffix2">
