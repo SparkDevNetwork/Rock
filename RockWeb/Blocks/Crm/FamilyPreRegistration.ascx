@@ -39,7 +39,7 @@
                         <asp:HiddenField ID="hfAdultGuid1" runat="server" />
                         <asp:HiddenField ID="hfAdultGuid2" runat="server" />
 
-                        <h4>Firt Adult</h4>
+                        <h4>First Adult</h4>
                         <div class="row">
                             <div class="col-md-3">
                                 <Rock:RockLiteral ID="lFirstName1" runat="server" Label="First Name" Visible="false" />
@@ -60,6 +60,9 @@
                             </asp:Panel>
                         </div>
                         <div class="row">
+                            <asp:Panel class="col-md-3" runat="server" ID="pnlMaritalStatus1">
+                                <Rock:DefinedValuePicker ID="dvpMaritalStatus1" runat="server" Label="Marital Status" />
+                            </asp:Panel>
                             <asp:Panel class="col-md-3" runat="server" ID="pnlEmail1">
                                 <Rock:EmailBox ID="tbEmail1" runat="server" Label="Email" />
                             </asp:Panel>
@@ -72,46 +75,49 @@
                         <hr />
 
                         <h4>Second Adult</h4>
-                        <div class="row">
-                            <div class="col-md-3">
-                                <Rock:RockLiteral ID="lFirstName2" runat="server" Label="First Name" Visible="false" />
-                                <Rock:DataTextBox ID="tbFirstName2" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="NickName" Label="First Name" />
+                        <div class="adult-2-fields">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <Rock:RockLiteral ID="lFirstName2" runat="server" Label="First Name" Visible="false" />
+                                    <Rock:DataTextBox ID="tbFirstName2" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="NickName" Label="First Name" />
+                                </div>
+                                <div class="col-md-3">
+                                    <Rock:RockLiteral ID="lLastName2" runat="server" Label="Last Name" Visible="false" />
+                                    <Rock:DataTextBox ID="tbLastName2" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="LastName" />
+                                </div>
+                                <asp:Panel CssClass="col-md-2" runat="server" ID="pnlSuffix2">
+                                    <Rock:DefinedValuePicker ID="dvpSuffix2" runat="server" Label="Suffix" />
+                                </asp:Panel>
+                                <asp:Panel CssClass="col-md-2" runat="server" ID="pnlGender2">
+                                    <Rock:RockDropDownList ID="ddlGender2" runat="server" Label="Gender" />
+                                </asp:Panel>
+                                <asp:Panel CssClass="col-md-2" runat="server" ID="pnlBirthDate2">
+                                    <Rock:DatePicker ID="dpBirthDate2" runat="server" Label="Birthdate" AllowFutureDateSelection="False" ForceParse="false" />
+                                </asp:Panel>
                             </div>
-                            <div class="col-md-3">
-                                <Rock:RockLiteral ID="lLastName2" runat="server" Label="Last Name" Visible="false" />
-                                <Rock:DataTextBox ID="tbLastName2" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="LastName" />
+                            <div class="row">
+                                <asp:Panel class="col-md-3" runat="server" ID="pnlMaritalStatus2">
+                                    <Rock:DefinedValuePicker ID="dvpMaritalStatus2" runat="server" Label="Marital Status" />
+                                </asp:Panel>
+                                <asp:Panel class="col-md-3" runat="server" ID="pnlEmail2">
+                                    <Rock:EmailBox ID="tbEmail2" runat="server" Label="Email" />
+                                </asp:Panel>
+                                <asp:Panel class="col-md-3" runat="server" ID="pnlMobilePhone2">
+                                    <Rock:PhoneNumberBox ID="pnMobilePhone2" runat="server" Label="Mobile Phone" />
+                                </asp:Panel>
+                                <Rock:DynamicPlaceholder ID="phAttributes2" runat="server" />
                             </div>
-                            <asp:Panel CssClass="col-md-2" runat="server" ID="pnlSuffix2">
-                                <Rock:DefinedValuePicker ID="dvpSuffix2" runat="server" Label="Suffix" />
-                            </asp:Panel>
-                            <asp:Panel CssClass="col-md-2" runat="server" ID="pnlGender2">
-                                <Rock:RockDropDownList ID="ddlGender2" runat="server" Label="Gender" />
-                            </asp:Panel>
-                            <asp:Panel CssClass="col-md-2" runat="server" ID="pnlBirthDate2">
-                                <Rock:DatePicker ID="dpBirthDate2" runat="server" Label="Birthdate" AllowFutureDateSelection="False" ForceParse="false" />
-                            </asp:Panel>
-                        </div>
-                        <div class="row">
-                            <asp:Panel class="col-md-3" runat="server" ID="pnlEmail2">
-                                <Rock:EmailBox ID="tbEmail2" runat="server" Label="Email" />
-                            </asp:Panel>
-                            <asp:Panel class="col-md-3" runat="server" ID="pnlMobilePhone2">
-                                <Rock:PhoneNumberBox ID="pnMobilePhone2" runat="server" Label="Mobile Phone" />
-                            </asp:Panel>
-                            <Rock:DynamicPlaceholder ID="phAttributes2" runat="server" />
                         </div>
 
                         <hr />
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-sm-6">
                                 <Rock:AddressControl ID="acAddress" Label="Address" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
                             </div>
-                            <asp:Panel ID="pnlFamilyAttributes" runat="server" CssClass="col-md-6">
-                                <div class="row">
-                                    <Rock:DynamicPlaceholder ID="phFamilyAttributes" runat="server" />
-                                </div>
-                            </asp:Panel>
+                            <div class="col-sm-6">
+                                <Rock:DynamicPlaceholder ID="phFamilyAttributes" runat="server" />
+                            </div>
                         </div>
 
                     </div>
@@ -133,5 +139,19 @@
 
             </div>
         </div>
+
+        <script>
+
+            function enableRequiredFields(enable) {
+
+                $('.adult-2-fields').find("[id$='_rfv']").each(function () {
+                    var domObj = $(this).get(0);
+                    if (domObj != null) {
+                        domObj.enabled = (enable != false);
+                    }
+                });
+            }
+
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
