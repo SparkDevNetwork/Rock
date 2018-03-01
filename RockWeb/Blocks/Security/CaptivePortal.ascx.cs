@@ -119,8 +119,17 @@ namespace RockWeb.Blocks.Security
 
             if ( !IsPostBack )
             {
-                // Save the supplied MAC address to the page removing any no
-                string macAddress = Request.Params[GetAttributeValue( "MacAddressParam" )].RemoveAllNonAlphaNumericCharacters();
+                string macAddress = Request.Params[GetAttributeValue( "MacAddressParam" )];
+                if ( string.IsNullOrWhiteSpace( macAddress ) || !macAddress.IsValidMacAddress() )
+                {
+                    nbAlert.Text = "Invalid or insufficient data supplied";
+                    nbAlert.Visible = true;
+                    DisableControls();
+                    return;
+                }
+
+                // Save the supplied MAC address to the page removing any non-Alphanumeric characters
+                macAddress = macAddress.RemoveAllNonAlphaNumericCharacters();
                 hfMacAddress.Value = macAddress;
 
                 RockContext rockContext = new RockContext();
@@ -307,6 +316,39 @@ namespace RockWeb.Blocks.Security
             {
                 tbEmail.Text = person.Email;
             }
+        }
+
+        /// <summary>
+        /// Disables the user fillable controls.
+        /// </summary>
+        protected void DisableControls()
+        {
+            if ( tbFirstName.Visible )
+            {
+                tbFirstName.Text = string.Empty;
+                tbFirstName.Enabled = false;
+            }
+
+            if ( tbLastName.Visible )
+            {
+                tbLastName.Text = string.Empty;
+                tbLastName.Enabled = false;
+            }
+
+            if ( tbMobilePhone.Visible )
+            {
+                tbMobilePhone.Text = string.Empty;
+                tbMobilePhone.Enabled = false;
+            }
+
+            if ( tbEmail.Visible )
+            {
+                tbEmail.Text = string.Empty;
+                tbEmail.Enabled = false;
+            }
+
+            btnConnect.Enabled = false;
+            btnConnect.Text = "Unable to connect to WiFi due to errors";
         }
 
         private void ExpireCookie()
