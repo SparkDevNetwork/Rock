@@ -650,7 +650,7 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var attribute in AttributeList )
             {
-                attribute.AddControl( _phAttributes.Controls, "", "", false, true );
+                attribute.AddControl( _phAttributes.Controls, "", this.ValidationGroup, false, true, attribute.IsRequired );
             }
 
             _lbDelete.CssClass = "btn btn-xs btn-danger pull-right";
