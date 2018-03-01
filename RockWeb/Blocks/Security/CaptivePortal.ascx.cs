@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Security
 <body>
     <h1>Terms & Conditions</h1>
     <p>
-        This free WiFi service(""Service"") is provided by {{ 'Global' | Attribute:' OrganizationName' }}
+        This free WiFi service(""Service"") is provided by {{ 'Global' | Attribute:'OrganizationName' }}
         (""Organization"") to its guests. Please read the Service Terms and Conditions below. To use the Service, users must accept these Service Terms and Conditions.
     </p>
 
