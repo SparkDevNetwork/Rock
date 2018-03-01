@@ -13,18 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -46,12 +43,11 @@ namespace RockWeb.Blocks.Security
     [TextField( "Acceptance Checkbox Label", "Text used to signify user agreement with the Terms and Conditions", true, "I Accept", "", 7, "AcceptanceLabel" )]
     [TextField( "Button Text", "Text to display on the button", true, "Connect To WiFi", "", 8, "ButtonText" )]
     [BooleanField( "Show Legal Note", "Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.", true, "", 9, "ShowLegalNote", IsRequired = true )]
-    [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using WiFi", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, defaultLegalNote, "", 10, "LegalNote" )]
+    [CodeEditorField ( "Legal Note", "A legal note outlining the Terms and Conditions for using WiFi", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, false, DEFAULT_LEGAL_NOTE, "", 10, "LegalNote" )]
     public partial class CaptivePortal : RockBlock
     {
-
         #region DefaultLegalNote
-        protected const string defaultLegalNote = @"
+        protected const string DEFAULT_LEGAL_NOTE = @"
 <!DOCTYPE html>
 <html>
 <head>
@@ -110,8 +106,6 @@ namespace RockWeb.Blocks.Security
 </html>";
         #endregion
 
-        //protected string macAddress;
-        
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -139,7 +133,7 @@ namespace RockWeb.Blocks.Security
                 PersonalDevice personalDevice = null;
 
                 bool isAnExistingDevice = DoesPersonalDeviceExist( macAddress );
-                if( isAnExistingDevice )
+                if ( isAnExistingDevice )
                 {
                     personalDevice = personalDeviceService.GetByMACAddress( macAddress );
                 }
@@ -163,11 +157,11 @@ namespace RockWeb.Blocks.Security
                     RockPage.LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, macAddress );
                     hfPersonAliasId.Value = CurrentPersonAliasId.ToString();
                 }
-                else if(isAnExistingDevice)
+                else if ( isAnExistingDevice )
                 {
                     // if the user is not logged in but we have the device lets try to get a person
                     person = personService.Get( personalDevice.PersonAlias.PersonId );
-                    if(person != null)
+                    if ( person != null )
                     {
                         Prefill( person );
                         RockPage.LinkPersonAliasToDevice( ( int ) personalDevice.PersonAliasId, macAddress );
@@ -202,7 +196,7 @@ namespace RockWeb.Blocks.Security
         private bool DoesPersonalDeviceExist( string macAddress )
         {
             PersonalDeviceService personalDeviceService = new PersonalDeviceService( new RockContext() );
-            return personalDeviceService.Queryable().Where( d => d.MACAddress == macAddress ).Any();
+            return personalDeviceService.GetByMACAddress( macAddress ) == null ? false : true;
         }
 
         /// <summary>
@@ -308,8 +302,8 @@ namespace RockWeb.Blocks.Security
 
             if ( tbMobilePhone.Visible )
             {
-                int mobilePhoneTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-                tbMobilePhone.Text = person.PhoneNumbers.Where( p => p.NumberTypeValueId == mobilePhoneTypeId ).Select( p => p.Number ).FirstOrDefault();
+                PhoneNumberService phoneNumberService = new PhoneNumberService( new RockContext() );
+                tbMobilePhone.Text = phoneNumberService.GetNumberByPersonIdAndType( person.Id, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Number;
             }
 
             if (tbEmail.Visible == true )
@@ -351,14 +345,6 @@ namespace RockWeb.Blocks.Security
             btnConnect.Text = "Unable to connect to WiFi due to errors";
         }
 
-        private void ExpireCookie()
-        {
-            if ( Request.Cookies["rock_wifi"] != null )
-            {
-                Response.Cookies["rock_wifi"].Expires = DateTime.Now.AddDays( -1 );
-            }
-        }
-
         /// <summary>
         /// Handles the Click event of the btnConnect control.
         /// </summary>
@@ -395,7 +381,7 @@ namespace RockWeb.Blocks.Security
                 .FirstOrDefault();
             
             // If no known person record then create one
-            if(person == null)
+            if ( person == null )
             {
                 person = new Person {
                     FirstName = tbFirstName.Text,
@@ -448,7 +434,8 @@ namespace RockWeb.Blocks.Security
             {
                 return true;
             }
-                return false;
+
+            return false;
         }
 
         /// <summary>
@@ -462,7 +449,7 @@ namespace RockWeb.Blocks.Security
 
             person.Email = tbEmail.Text;
 
-            if( !person.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).Any() )
+            if ( !person.PhoneNumbers.Where( n => n.NumberTypeValueId == mobilePhoneTypeId ).Any() )
             {
                 person.PhoneNumbers.Add( new PhoneNumber { IsSystem = false, Number = tbMobilePhone.Text.RemoveAllNonAlphaNumericCharacters(), NumberTypeValueId = mobilePhoneTypeId } );
             }
@@ -475,6 +462,4 @@ namespace RockWeb.Blocks.Security
             rockContext.SaveChanges();
         }
     }
-
-
 }
