@@ -97,6 +97,10 @@
     <Compile Include="Migrations\201802260423490_Rollup_0225.Designer.cs">
       <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201803022215255_PagesForHttpModules.cs" />
+    <Compile Include="Migrations\201803022215255_PagesForHttpModules.Designer.cs">
+      <DependentUpon>201803022215255_PagesForHttpModules.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2698,6 +2702,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201802260423490_Rollup_0225.resx">
       <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803022215255_PagesForHttpModules.resx">
+      <DependentUpon>201803022215255_PagesForHttpModules.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
