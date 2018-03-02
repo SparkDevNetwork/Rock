@@ -29,12 +29,12 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.Interaction", "InteractionEndDateTime", c => c.DateTime(nullable: false));
+            AddColumn( "dbo.Interaction", "InteractionEndDateTime", c => c.DateTime( nullable: false ) );
 
             Sql( @"INSERT INTO [DefinedValue]([IsSystem], [DefinedTypeId], [Order], [Value], [Description], [Guid])
                 VALUES(
 	                1
-	                , (SELECT ID FROM [DefinedType] WHERE [Guid] = 'C1848F4C-D6F8-4514-8DB6-CD3C19621025')
+	                , (SELECT [ID] FROM [DefinedType] WHERE [Guid] = 'C1848F4C-D6F8-4514-8DB6-CD3C19621025')
 	                , 1, 'Computer'
 	                , 'Personal Device Type Computer'
 	                , '828ADECE-EFE7-49DF-BA8C-B3F132509A95')" );
@@ -50,42 +50,42 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateBlockType( "Examples > Captive Portal Error", "", "~/Blocks/Examples/CaptivePortalError.ascx", "", "86651942-1F75-4DD2-AA98-F0B0C80315C6" );
             RockMigrationHelper.UpdateBlockType( "Examples > Captive Portal Success", "", "~/Blocks/Examples/CaptivePortalSuccess.ascx", "", "A5C1BFC0-D4CD-4A2A-908D-329105CBE36A" );
             RockMigrationHelper.UpdateBlockType( "WiFi Welcome", "Controls access to WiFi.", "~/Blocks/Security/CaptivePortal.ascx", "Security", "CCFCD227-C8F9-4952-8AC5-E427D519EE47" );
-            
+
             // Add Block to Page: Captive Portal, Site: External Website
             RockMigrationHelper.AddBlock( true, "C9767AC5-11A8-4B48-B487-911BA9CADF8C", "", "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "WiFi Welcome", "Feature", @"", @"", 0, "0630F12E-8645-462C-B599-4306BFC35B19" );
-            
+
             // Add Block to Page: CaptivePortalSuccess, Site: External Website
             RockMigrationHelper.AddBlock( true, "80613598-D1F6-4819-BCB0-7204E59D98AC", "", "19B61D65-37E3-459F-A44F-DEF0089118A3", "Wifi Success", "Feature", @"", @"", 0, "63A5398C-7974-4FED-8709-1CCA567C5D09" );
-            
+
             // Add Block to Page: CaptivePortalError, Site: External Website
             RockMigrationHelper.AddBlock( true, "A50EBCA2-11B3-4DD2-A2DD-E7939EDDF23F", "", "19B61D65-37E3-459F-A44F-DEF0089118A3", "WiFi Connection Error", "Feature", @"", @"", 0, "562519A7-967B-45CA-AABA-2C71D28F2303" );
-            
+
             // Add/Update HtmlContent for Block: Wifi Success
             RockMigrationHelper.UpdateHtmlContentBlock( "63A5398C-7974-4FED-8709-1CCA567C5D09", @"<h1>Welcome to {{ 'Global' | Attribute:'OrganizationName'}}'s WiFi Network</h1>
 You are now connected to the WiFi netwokr and can continue on to your destination.", "01FE2D3C-A1F3-4887-AAA6-1A9EE1B1527A" );
-            
+
             // Add/Update HtmlContent for Block: WiFi Connection Error
             RockMigrationHelper.UpdateHtmlContentBlock( "562519A7-967B-45CA-AABA-2C71D28F2303", @"<h1>An Error Has Occurred</h1>
 An error has occurred connecting you to theWiFi netwok. Please try again in a few minutes.", "41D67A32-7D7B-4ACD-91AB-89B7BC425634" );
-            
+
             // Attrib for BlockType: WiFi Welcome:Show Last Name
             RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Last Name", "ShowLastName", "", @"Show or hide the Last Name field. If it is visible then it will be required.", 3, @"True", "45DF60FC-D764-49D5-B79F-3C7AC892C4A6" );
-            
+
             // Attrib for BlockType: WiFi Welcome:Show Email
             RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Email", "ShowEmail", "", @"Show or hide the Email field. If it is visible then it will be required.", 5, @"True", "F7257786-5186-435F-8B69-F41A9500169D" );
-            
+
             // Attrib for BlockType: WiFi Welcome:Show Acceptance Checkbox
             RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Acceptance Checkbox", "ShowAccept", "", @"Show or hide the ""I Accept"" checkbox. If it is visible then it will be required. This should be visible if the ""Terms And Conditions"" are also visible.", 6, @"True", "792D8022-9565-4067-9EFD-1A97B8659725" );
-            
+
             // Attrib for BlockType: WiFi Welcome:Acceptance Checkbox Label
             RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Acceptance Checkbox Label", "AcceptanceLabel", "", @"Text used to signify user agreement with the Terms and Conditions", 7, @"I Accept", "E38A008E-94B5-4B81-A6A0-FBCDA44CDF20" );
-            
+
             // Attrib for BlockType: WiFi Welcome:Button Text
             RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Button Text", "ButtonText", "", @"Text to display on the button", 8, @"Connect To WiFi", "13DA26CB-8155-4B2F-B476-6622FEE46D23" );
-            
+
             // Attrib for BlockType: WiFi Welcome:Show Legal Note
             RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Legal Note", "ShowLegalNote", "", @"Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.", 9, @"True", "9D8B8CC4-C19E-4EF3-98B4-4426A21B7915" );
-            
+
             // Attrib for BlockType: WiFi Welcome:Legal Note
             RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Legal Note", "LegalNote", "", @"A legal note outlining the Terms and Conditions for using WiFi", 10, @"
 <!DOCTYPE html>

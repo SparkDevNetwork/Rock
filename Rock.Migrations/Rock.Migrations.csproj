@@ -93,6 +93,18 @@
     <Compile Include="Migrations\201802092340176_Rollup_0209.Designer.cs">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201802260423490_Rollup_0225.cs" />
+    <Compile Include="Migrations\201802260423490_Rollup_0225.Designer.cs">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803022215255_PagesForHttpModules.cs" />
+    <Compile Include="Migrations\201803022215255_PagesForHttpModules.Designer.cs">
+      <DependentUpon>201803022215255_PagesForHttpModules.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803022309306_FrontPorchIntegration.cs" />
+    <Compile Include="Migrations\201803022309306_FrontPorchIntegration.Designer.cs">
+      <DependentUpon>201803022309306_FrontPorchIntegration.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2692,6 +2704,15 @@
     <EmbeddedResource Include="Migrations\201802092340176_Rollup_0209.resx">
       <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802260423490_Rollup_0225.resx">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803022215255_PagesForHttpModules.resx">
+      <DependentUpon>201803022215255_PagesForHttpModules.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803022309306_FrontPorchIntegration.resx">
+      <DependentUpon>201803022309306_FrontPorchIntegration.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
     </EmbeddedResource>
@@ -4640,6 +4661,15 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Migrations\201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
+    </None>
+    <Content Include="Migrations\201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201802260423490_Rollup_0225_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>201802260423490_Rollup_0225.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201707182207536_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201707182207536_PageShortLinks.cs</DependentUpon>
     </Content>
@@ -4917,9 +4947,10 @@
     <Content Include="Migrations\Version 7.0\Version 1.7.0\201712191949335_CampusTimeZone_PersonicxMeanAge.sql">
       <DependentUpon>201712191949335_CampusTimeZone.cs</DependentUpon>
     </Content>
-    <None Include="Resources\201802092340176_Rollup_0209_spCrm_PersonDuplicateFinder.sql" />
-    <None Include="Resources\201802092340176_Rollup_0209_ufnUtility_CsvToTable.sql" />
     <Content Include="SqlServerTypes\readme.htm" />
+    <None Include="Migrations\201802092340176_Rollup_0209_ufnUtility_CsvToTable.sql">
+      <DependentUpon>201802092340176_Rollup_0209.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP1.sql" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP2.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608172242214_Podcasting.sql" />
