@@ -56,7 +56,8 @@ namespace RockWeb.Blocks.Communication
     [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved.", false, 300, "", order: 6 )]
     [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 7 )]
     [IntegerField( "Max SMS Image Width", "The maximum width (in pixels) of an image attached to a mobile communication. If its width is over the max, Rock will automatically resize image to the max width.", false, 600, order: 8 )]
-    [LinkedPage( "Simple Communication Page", "The page to use if the 'Use Simple Editor' panel heading icon is clicked. Leave this blank to not show the 'Use Simple Editor' heading icon", false, order: 9 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "Allowed SMS Numbers", "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ", false, true, order:9 )]
+    [LinkedPage( "Simple Communication Page", "The page to use if the 'Use Simple Editor' panel heading icon is clicked. Leave this blank to not show the 'Use Simple Editor' heading icon", false, order: 10 )]
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
         #region Properties
@@ -373,6 +374,12 @@ namespace RockWeb.Blocks.Communication
             UpdateEmailAttachedFiles( false );
 
             // Mobile Text Editor
+            var valueItem = ddlSMSFrom.Items.FindByValue( communication.SMSFromDefinedValueId.ToString() );
+            if ( valueItem == null && communication.SMSFromDefinedValueId != null )
+            {
+                var lookupDefinedValue = DefinedValueCache.Read( communication.SMSFromDefinedValueId.GetValueOrDefault() );
+                ddlSMSFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+            }
             ddlSMSFrom.SetValue( communication.SMSFromDefinedValueId );
             tbSMSTextMessage.Text = communication.SMSMessage;
 
@@ -437,7 +444,25 @@ namespace RockWeb.Blocks.Communication
             // only show the medium type selection if there is a choice
             rcwMediumType.Visible = allowedCommunicationTypes.Count > 1;
 
-            ddlSMSFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), true, true );
+            var selectedNumberGuids = GetAttributeValue( "AllowedSMSNumbers" ).SplitDelimitedValues( true ).AsGuidList();
+            var smsFromDefinedType = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
+            if ( selectedNumberGuids.Any() )
+            {
+                ddlSMSFrom.SelectedIndex = -1;
+                ddlSMSFrom.DataSource = smsFromDefinedType.DefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).Select( v => new
+                {
+                    v.Description,
+                    v.Id
+                } );
+                ddlSMSFrom.DataTextField = "Description";
+                ddlSMSFrom.DataValueField = "Id";
+                ddlSMSFrom.DataBind();
+                ddlSMSFrom.Items.Insert( 0, new ListItem() );
+            }
+            else
+            {
+                ddlSMSFrom.BindToDefinedType( smsFromDefinedType, true, true );
+            }
         }
 
         /// <summary>
@@ -1200,6 +1225,12 @@ namespace RockWeb.Blocks.Communication
             // SMS Fields
             if ( communicationTemplate.SMSFromDefinedValueId.HasValue )
             {
+                var valueItem = ddlSMSFrom.Items.FindByValue( communicationTemplate.SMSFromDefinedValueId.ToString() );
+                if ( valueItem == null )
+                {
+                    var lookupDefinedValue = DefinedValueCache.Read( communicationTemplate.SMSFromDefinedValueId.GetValueOrDefault() );
+                    ddlSMSFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+                }
                 ddlSMSFrom.SetValue( communicationTemplate.SMSFromDefinedValueId.Value );
             }
 
