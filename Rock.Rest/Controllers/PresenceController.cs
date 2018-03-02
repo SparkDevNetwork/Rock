@@ -100,6 +100,7 @@ namespace Rock.Rest.Controllers
                                         interactionComponentIds.Add( presence.Space, component.Id );
                                     }
 
+                                    interaction = new Interaction();
                                     interaction.InteractionDateTime = interactionStart;
                                     interaction.InteractionEndDateTime = interactionEnd;
                                     interaction.Operation = "Present";
