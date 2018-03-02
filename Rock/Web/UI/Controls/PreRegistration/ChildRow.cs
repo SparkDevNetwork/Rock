@@ -33,6 +33,8 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class PreRegistrationChildRow : CompositeControl
     {
+        private RockLiteral _lNickName;
+        private RockLiteral _lLastName;
         private RockTextBox _tbNickName;
         private RockTextBox _tbLastName;
         private DefinedValuePicker _ddlSuffix;
@@ -55,18 +57,6 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["Caption"] as string ?? "Child"; }
             set { ViewState["Caption"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the name of the existing.
-        /// </summary>
-        /// <value>
-        /// The name of the existing.
-        /// </value>
-        public string ExistingName
-        {
-            get { return ViewState["ExistingName"] as string ?? string.Empty; }
-            set { ViewState["ExistingName"] = value; }
         }
 
         /// <summary>
@@ -310,6 +300,17 @@ namespace Rock.Web.UI.Controls
         }
         private List<AttributeCache> _attributeList = null;
 
+        /// <summary>
+        /// Gets or sets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        public int PersonId
+        {
+            get { return ViewState["PersonId"] as int? ?? 0; }
+            set { ViewState["PersonId"] = value; }
+        }
 
         /// <summary>
         /// Gets or sets the person GUID.
@@ -340,6 +341,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
+                _lNickName.Text = value;
                 _tbNickName.Text = value;
             }
         }
@@ -361,6 +363,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
+                _lLastName.Text = value;
                 _tbLastName.Text = value;
             }
         }
@@ -549,6 +552,8 @@ namespace Rock.Web.UI.Controls
         public PreRegistrationChildRow()
             : base()
         {
+            _lNickName = new RockLiteral();
+            _lLastName = new RockLiteral();
             _tbNickName = new RockTextBox();
             _tbLastName = new RockTextBox();
             _ddlSuffix = new DefinedValuePicker();
@@ -570,6 +575,8 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
 
+            _lNickName.ID = "_lNickName";
+            _lLastName.ID = "_lLastName";
             _tbNickName.ID = "_tbNickName";
             _tbLastName.ID = "_tbLastName";
             _ddlSuffix.ID = "_ddlSuffix";
@@ -581,6 +588,8 @@ namespace Rock.Web.UI.Controls
             _phAttributes.ID = "_phAttributes";
             _lbDelete.ID = "_lbDelete";
 
+            Controls.Add( _lNickName );
+            Controls.Add( _lLastName );
             Controls.Add( _tbNickName );
             Controls.Add( _tbLastName );
             Controls.Add( _ddlSuffix );
@@ -591,6 +600,10 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _ddlRelationshipType );
             Controls.Add( _phAttributes );
             Controls.Add( _lbDelete );
+
+            _lNickName.Label = "First Name";
+
+            _lLastName.Label = "Last Name";
 
             _tbNickName.CssClass = "form-control";
             _tbNickName.Required = true;
@@ -680,21 +693,28 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "row clearfix" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-3" );
+                bool existingPerson = ( this.PersonId > 0 );
+                _lNickName.Visible = existingPerson;
+                _lLastName.Visible = existingPerson;
+                _tbNickName.Visible = !existingPerson;
+                _tbLastName.Visible = !existingPerson;
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _lNickName.RenderControl( writer );
                 _tbNickName.RenderControl( writer );
                 writer.RenderEndTag();
 
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-3" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _lLastName.RenderControl( writer );
                 _tbLastName.RenderControl( writer );
                 writer.RenderEndTag();
 
 
                 if ( this.ShowSuffix )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-2" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _ddlSuffix.RenderControl( writer );
                     writer.RenderEndTag();
@@ -702,7 +722,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( this.ShowGender )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-2" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _ddlGender.RenderControl( writer );
                     writer.RenderEndTag();
@@ -710,7 +730,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( this.ShowBirthDate )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-2" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _dpBirthdate.RenderControl( writer );
                     writer.RenderEndTag();
@@ -718,20 +738,15 @@ namespace Rock.Web.UI.Controls
 
                 if ( this.ShowGrade )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-2" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _ddlGradePicker.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-3" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _ddlRelationshipType.RenderControl( writer );
-                writer.RenderEndTag();
-
                 if ( this.ShowMobilePhone )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-3" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _pnbMobile.RenderControl( writer );
                     writer.RenderEndTag();
@@ -739,12 +754,24 @@ namespace Rock.Web.UI.Controls
 
                 foreach ( Control attributeCtrl in _phAttributes.Controls )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-3" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     attributeCtrl.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
+                writer.RenderEndTag();
+
+                // Relationship
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderEndTag();
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _ddlRelationshipType.RenderControl( writer );
+                writer.RenderEndTag();
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Hr );
@@ -897,14 +924,6 @@ namespace Rock.Web.UI.Controls
         public int? GradeOffset { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the existing.
-        /// </summary>
-        /// <value>
-        /// The name of the existing.
-        /// </value>
-        public string ExistingName { get; set; }
-
-        /// <summary>
         /// Gets or sets the type of the relationship.
         /// </summary>
         /// <value>
@@ -935,11 +954,6 @@ namespace Rock.Web.UI.Controls
             BirthDate = person.BirthDate;
             GradeOffset = person.GradeOffset;
             Age = person.Age;
-
-            if ( Id > 0 )
-            {
-                ExistingName = person.FullName;
-            }
         }
 
         /// <summary>
