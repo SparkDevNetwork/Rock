@@ -303,7 +303,8 @@ namespace RockWeb.Blocks.Security
             if ( tbMobilePhone.Visible )
             {
                 PhoneNumberService phoneNumberService = new PhoneNumberService( new RockContext() );
-                tbMobilePhone.Text = phoneNumberService.GetNumberByPersonIdAndType( person.Id, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Number;
+                PhoneNumber phoneNumber = phoneNumberService.GetNumberByPersonIdAndType( person.Id, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                tbMobilePhone.Text = phoneNumber == null? string.Empty : phoneNumber.Number;
             }
 
             if (tbEmail.Visible == true )
