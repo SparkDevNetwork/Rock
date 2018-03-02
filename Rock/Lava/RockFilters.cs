@@ -3355,9 +3355,21 @@ namespace Rock.Lava
 
             if ( page != null )
             {
+                // attempt to correct breadcrumbs
+                if ( page.BreadCrumbs != null && page.BreadCrumbs.Count != 0 )
+                {
+                    var lastBookMark = page.BreadCrumbs.Last();
+
+                    if ( lastBookMark != null && lastBookMark.Name == page.PageTitle )
+                    {
+                        lastBookMark.Name = input;
+                    }
+                }
+
                 page.BrowserTitle = input;
                 page.PageTitle = input;
-                page.Header.Title = input;
+                page.Title = input;
+                page.Header.Title = input;                
             }
 
             return null;
