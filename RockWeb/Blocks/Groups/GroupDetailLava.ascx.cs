@@ -44,18 +44,19 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Roster Page", "The page to link to to view the roster.", true, "", "", 2 )]
     [LinkedPage( "Attendance Page", "The page to link to to manage the group's attendance.", true, "", "", 3 )]
     [LinkedPage( "Communication Page", "The communication page to use for sending emails to the group members.", true, "", "", 4 )]
-    [BooleanField( "Hide the 'Active' Group checkbox", "Set this to true to hide the checkbox for 'Active' for the group.", false, key: "HideActiveGroupCheckbox", order: 5 )]
-    [BooleanField( "Hide the 'Public' Group checkbox", "Set this to true to hide the checkbox for 'Public' for the group.", true, key: "HidePublicGroupCheckbox", order: 6 )]
-    [BooleanField( "Hide Inactive Group Member Status", "Set this to true to hide the radiobox for the 'Inactive' group member status.", false, order: 7 )]
-    [BooleanField( "Hide Group Member Role", "Set this to true to hide the drop down list for the 'Role' when editing a group member. If set to 'true' then the default group role will be used when adding a new member.", false, order: 8 )]
-    [BooleanField( "Hide Group Description Edit", "Set this to true to hide the edit box for group 'Description'.", false, key: "HideGroupDescriptionEdit", order: 9 )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 10 )]
-    [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 11 )]
-    [BooleanField( "Allow Group Member Delete", "Should deleting of group members be allowed?", true, "", 12 )]
-    [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 13 )]
-    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 14 )]
-    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 15 )]
-    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 16 )]
+    [LinkedPage( "Alternate Communication Page", "The communication page to use for sending an alternate communication to the group members.", false, "", "", 5 )]
+    [BooleanField( "Hide the 'Active' Group checkbox", "Set this to true to hide the checkbox for 'Active' for the group.", false, key: "HideActiveGroupCheckbox", order: 6 )]
+    [BooleanField( "Hide the 'Public' Group checkbox", "Set this to true to hide the checkbox for 'Public' for the group.", true, key: "HidePublicGroupCheckbox", order: 7 )]
+    [BooleanField( "Hide Inactive Group Member Status", "Set this to true to hide the radiobox for the 'Inactive' group member status.", false, order: 8 )]
+    [BooleanField( "Hide Group Member Role", "Set this to true to hide the drop down list for the 'Role' when editing a group member. If set to 'true' then the default group role will be used when adding a new member.", false, order: 9 )]
+    [BooleanField( "Hide Group Description Edit", "Set this to true to hide the edit box for group 'Description'.", false, key: "HideGroupDescriptionEdit", order: 10 )]
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 11 )]
+    [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 12 )]
+    [BooleanField( "Allow Group Member Delete", "Should deleting of group members be allowed?", true, "", 13 )]
+    [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 14 )]
+    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 15 )]
+    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 16 )]
+    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 17 )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -593,6 +594,10 @@ namespace RockWeb.Blocks.Groups
                         case "SendCommunication":
                             SendCommunication();
                             break;
+
+                        case "SendAlternateCommunication":
+                            SendAlternateCommunication();
+                            break;
                     }
                 }
             }
@@ -1099,6 +1104,47 @@ namespace RockWeb.Blocks.Groups
                 queryParameters.Add( "CommunicationId", communication.Id.ToString() );
 
                 NavigateToLinkedPage( "CommunicationPage", queryParameters );
+            }
+        }
+
+        /// <summary>
+        /// Sends the communication.
+        /// </summary>
+        private void SendAlternateCommunication()
+        {
+            // create communication
+            if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( "CommunicationPage" ) ) )
+            {
+                var rockContext = new RockContext();
+                var service = new Rock.Model.CommunicationService( rockContext );
+                var communication = new Rock.Model.Communication();
+                communication.IsBulkCommunication = false;
+                communication.Status = Rock.Model.CommunicationStatus.Transient;
+
+                communication.SenderPersonAliasId = this.CurrentPersonAliasId;
+
+                service.Add( communication );
+
+                var personAliasIds = new GroupMemberService( rockContext ).Queryable()
+                                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                                    .ToList()
+                                    .Select( m => m.Person.PrimaryAliasId )
+                                    .ToList();
+
+                // Get the primary aliases
+                foreach ( int personAlias in personAliasIds )
+                {
+                    var recipient = new Rock.Model.CommunicationRecipient();
+                    recipient.PersonAliasId = personAlias;
+                    communication.Recipients.Add( recipient );
+                }
+
+                rockContext.SaveChanges();
+
+                Dictionary<string, string> queryParameters = new Dictionary<string, string>();
+                queryParameters.Add( "CommunicationId", communication.Id.ToString() );
+
+                NavigateToLinkedPage( "AlternateCommunicationPage", queryParameters );
             }
         }
 

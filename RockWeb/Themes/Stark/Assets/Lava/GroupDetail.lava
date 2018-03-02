@@ -313,6 +313,13 @@
 					</a>
 				{% endif %}
 			{% endif %}
+            {% if LinkedPages.AlternateCommunicationPage != '' %}
+                {% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+                <a href="#" onclick="{{ '' | Postback:'SendAlternateCommunication' }}" class="btn btn-default btn-xs">
+                    <i class="fa fa-mobile-phone"></i> Text Roster
+                </a>
+                {% endif %}
+            {% endif %}
 		</div>
 		</p>
 	{% endif %}
