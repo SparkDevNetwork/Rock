@@ -676,6 +676,7 @@ namespace RockWeb.Blocks.Groups
                 linkedPages.Add( "RosterPage", LinkedPageRoute( "RosterPage" ) );
                 linkedPages.Add( "AttendancePage", LinkedPageRoute( "AttendancePage" ) );
                 linkedPages.Add( "CommunicationPage", LinkedPageRoute( "CommunicationPage" ) );
+                linkedPages.Add( "AlternateCommunicationPage", LinkedPageRoute( "AlternateCommunicationPage" ) );
                 mergeFields.Add( "LinkedPages", linkedPages );
 
                 // add collection of allowed security actions
