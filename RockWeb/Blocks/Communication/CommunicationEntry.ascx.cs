@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Communication
     [CustomDropdownListField( "Mode", "The mode to use ( 'Simple' mode will prevent users from searching/adding new people to communication).", "Full,Simple", true, "Full", "", 6 )]
     [BooleanField( "Allow CC/Bcc", "Allow CC and Bcc addresses to be entered for email communications?", false, "", 7, "AllowCcBcc" )]
     [BooleanField( "Show Attachment Uploader", "Should the attachment uploader be shown for email communications.", true, "", 8 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "Allowed SMS Numbers", "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ", false, true, "", "", 9 )]
 
     [TextField( "Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 0, Category = "HTML Editor Settings" )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 1, Category = "HTML Editor Settings" )]
@@ -1024,6 +1025,10 @@ namespace RockWeb.Blocks.Communication
                 if ( mediumControl is Rock.Web.UI.Controls.Communication.Email )
                 {
                     ( (Rock.Web.UI.Controls.Communication.Email)mediumControl ).AllowCcBcc = GetAttributeValue( "AllowCcBcc" ).AsBoolean();
+                }
+                else if ( mediumControl is Rock.Web.UI.Controls.Communication.Sms )
+                {
+                    ( ( Rock.Web.UI.Controls.Communication.Sms )mediumControl ).SelectedNumbers = GetAttributeValue( "AllowedSMSNumbers" ).SplitDelimitedValues( true ).AsGuidList();
                 }
                 mediumControl.ID = "commControl";
                 mediumControl.IsTemplate = false;
