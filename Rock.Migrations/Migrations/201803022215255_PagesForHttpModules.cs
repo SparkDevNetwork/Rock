@@ -29,6 +29,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            RockMigrationHelper.UpdateEntityType( "Rock.Web.HttpModules.ResponseHeaders", "Response Headers", "Rock.Web.HttpModules.ResponseHeaders, Rock, Version=1.8.0.11, Culture=neutral, PublicKeyToken=null", false, false, "EDE69F48-5E05-4260-B360-DA37DFD1AB83" );
+            
             // Page: HTTP Modules              
             RockMigrationHelper.AddPage( true, "B4A24AB7-9369-4055-883F-4F4892C39AE3","D65F783D-87A9-4CC9-8110-E83466A0EADB","HTTP Modules","","39F928A5-1374-4380-B807-EADF145F18A1","fa fa-code"); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType( "HTML Content", "Adds an editable HTML fragment to the page.", "~/Blocks/Cms/HtmlContentDetail.ascx", "CMS", "19B61D65-37E3-459F-A44F-DEF0089118A3" );
