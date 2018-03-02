@@ -58,9 +58,10 @@ that is created/updated, and 'RelatedChildren', which is a list of the children 
     [CustomDropdownListField( "Suffix", "How should Suffix be displayed for adults?", "Hide,Optional", false, "Hide", "Adult Fields", 0, "AdultSuffix" )]
     [CustomDropdownListField( "Gender", "How should Gender be displayed for adults?", "Hide,Optional,Required", false, "Optional", "Adult Fields", 1, "AdultGender" )]
     [CustomDropdownListField( "Birth Date", "How should Gender be displayed for adults?", "Hide,Optional,Required", false, "Optional", "Adult Fields", 2, "AdultBirthdate" )]
-    [CustomDropdownListField( "Email", "How should Email be displayed for adults?", "Hide,Optional,Required", false, "Required", "Adult Fields", 3, "AdultEmail" )]
-    [CustomDropdownListField( "Mobile Phone", "How should Mobile Phone be displayed for adults?", "Hide,Optional,Required", false, "Required", "Adult Fields", 4, "AdultMobilePhone" )]
-    [AttributeCategoryField( "Attribute Categories", "The adult Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "Adult Fields", 5, "AdultAttributeCategories" )]
+    [CustomDropdownListField( "Marital Status", "How should Marital Status be displayed for adults?", "Hide,Optional,Required", false, "Required", "Adult Fields", 3, "AdultMaritalStatus" )]
+    [CustomDropdownListField( "Email", "How should Email be displayed for adults?", "Hide,Optional,Required", false, "Required", "Adult Fields", 4, "AdultEmail" )]
+    [CustomDropdownListField( "Mobile Phone", "How should Mobile Phone be displayed for adults?", "Hide,Optional,Required", false, "Required", "Adult Fields", 5, "AdultMobilePhone" )]
+    [AttributeCategoryField( "Attribute Categories", "The adult Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "Adult Fields", 6, "AdultAttributeCategories" )]
 
     [CustomDropdownListField( "Suffix", "How should Suffix be displayed for children?", "Hide,Optional", false, "Hide", "Child Fields", 0, "ChildSuffix" )]
     [CustomDropdownListField( "Gender", "How should Gender be displayed for children?", "Hide,Optional,Required", false, "Optional", "Child Fields", 1, "ChildGender" )]
@@ -203,6 +204,35 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             return base.SaveViewState();
         }
 
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            string script = string.Format( @"
+    testRequiredFields();
+
+    $('#{0}').on('blur', function () {{
+        testRequiredFields();
+    }})
+
+    $('#{1}').on('blur', function () {{
+        testRequiredFields();
+    }})
+
+    function testRequiredFields() {{
+        var hasValue = $('#{0}').val() != '' || $('#{1}').val() != '';
+        enableRequiredFields( hasValue );
+
+    }}
+",
+                tbFirstName2.ClientID,
+                tbLastName2.ClientID
+            );
+
+            ScriptManager.RegisterStartupScript( tbFirstName2, tbFirstName2.GetType(), "adult2-validation", script, true );
+
+        }
+
         #endregion
 
         #region Events
@@ -263,7 +293,6 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 var recordTypePersonId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                 var recordStatusValue = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() ) ?? DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
                 var connectionStatusValue = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() ) ?? DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
-                var marriedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
 
                 var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
                 var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid() );
@@ -296,18 +325,28 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                 // Save the adults
                 var adultIds = new List<int>();
-                SaveAdult( ref primaryFamily, adultIds, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, dpBirthDate1, tbEmail1, pnMobilePhone1, phAttributes1 );
-                SaveAdult( ref primaryFamily, adultIds, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, dpBirthDate2, tbEmail2, pnMobilePhone2, phAttributes2 );
+                SaveAdult( ref primaryFamily, adultIds, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, dpBirthDate1, dvpMaritalStatus1, tbEmail1, pnMobilePhone1, phAttributes1 );
+                SaveAdult( ref primaryFamily, adultIds, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, dpBirthDate2, dvpMaritalStatus2, tbEmail2, pnMobilePhone2, phAttributes2 );
 
-                // If two adults were entered, assume they are married
-                if ( adultIds.Count == 2 && marriedValue != null )
+                // If two adults were entered, let's check to see if we should assume they're married
+                if ( adultIds.Count == 2 )
                 {
-                    foreach( var person in personService.Queryable()
-                        .Where( p => adultIds.Contains( p.Id ) ) )
+                    var marriedStatusValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
+                    if ( marriedStatusValue != null )
                     {
-                        person.MaritalStatusValueId = marriedValue.Id;
+                        var adults = personService.Queryable().Where( p => adultIds.Contains( p.Id ) ).ToList();
+
+                        // as long as neither of the adults has a marital status
+                        if ( !adults.Any( a => a.MaritalStatusValueId.HasValue ) )
+                        {
+                            // Set them all to married
+                            foreach ( var adult in adults )
+                            {
+                                adult.MaritalStatusValueId = marriedStatusValue.Id;
+                            }
+                            _rockContext.SaveChanges();
+                        }
                     }
-                    _rockContext.SaveChanges();
                 }
 
                 // If we do have an existing family, set it's campus if the campus selection was visible
@@ -620,31 +659,48 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             }
 
             // Planned Visit Date
-            bool isRequired = SetControl( "PlannedVisitDate", pnlPlannedDate, null );
-            dpPlannedDate.Required = isRequired;
+            dpPlannedDate.Required = SetControl( "PlannedVisitDate", pnlPlannedDate, null );
 
             // Visit Info
             pnlVisit.Visible = pnlCampus.Visible || pnlPlannedDate.Visible;
 
             // Adult Suffix
-            SetControl( "AdultSuffix", pnlSuffix1, pnlSuffix2 );
+            bool isRequired = SetControl( "AdultSuffix", pnlSuffix1, pnlSuffix2 );
+            dvpSuffix1.Required = isRequired;
+            dvpSuffix2.Required = isRequired;
             var suffixDt = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
             dvpSuffix1.BindToDefinedType( suffixDt, true );
             dvpSuffix2.BindToDefinedType( suffixDt, true );
 
             // Adult Gender
-            SetControl( "AdultGender", pnlGender1, pnlGender2 );
+            isRequired = SetControl( "AdultGender", pnlGender1, pnlGender2 );
+            ddlGender1.Required = isRequired;
+            ddlGender2.Required = isRequired;
             ddlGender1.BindToEnum<Gender>( true, new Gender[] { Gender.Unknown } );
             ddlGender2.BindToEnum<Gender>( true, new Gender[] { Gender.Unknown } );
 
             // Adult Birthdate
             isRequired = SetControl( "AdultBirthDate", pnlBirthDate1, pnlBirthDate2 );
+            dpBirthDate1.Required = isRequired;
+            dpBirthDate2.Required = isRequired;
+
+            // Adult Marital Status
+            isRequired = SetControl( "AdultMaritalStatus", pnlMaritalStatus1, pnlMaritalStatus2 );
+            dvpMaritalStatus1.Required = isRequired;
+            dvpMaritalStatus2.Required = isRequired;
+            var MaritalStatusDt = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+            dvpMaritalStatus1.BindToDefinedType( MaritalStatusDt, true );
+            dvpMaritalStatus2.BindToDefinedType( MaritalStatusDt, true );
 
             // Adult Email
-            isRequired = SetControl( "AdultEmail", pnlEmail1, pnlEmail2 ); 
+            isRequired = SetControl( "AdultEmail", pnlEmail1, pnlEmail2 );
+            tbEmail1.Required = isRequired;
+            tbEmail2.Required = isRequired;
 
             // Adult Mobile Phone
-            isRequired = SetControl( "AdultMobilePhone", pnlMobilePhone1, pnlMobilePhone2 ); 
+            isRequired = SetControl( "AdultMobilePhone", pnlMobilePhone1, pnlMobilePhone2 );
+            pnMobilePhone1.Required = isRequired;
+            pnMobilePhone2.Required = isRequired;
 
             // Check for Current Family
             SetCurrentFamilyValues();
@@ -661,6 +717,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             Group family = null;
             Person adult1 = null;
             Person adult2 = null;
+            int? maritalStatusId = null;
 
             // If there is a logged in person, attempt to find their family and spouse.
             if ( GetAttributeValue("AllowUpdates").AsBoolean() && CurrentPerson != null )
@@ -728,6 +785,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             dvpSuffix1.SetValue( adult1 != null ? adult1.SuffixValueId : (int?)null );
             ddlGender1.SetValue( adult1 != null ? adult1.Gender.ConvertToInt() : 0 );
             dpBirthDate1.SelectedDate = ( adult1 != null ? adult1.BirthDate : (DateTime?)null );
+            dvpMaritalStatus1.SetValue( adult1 != null ? adult1.MaritalStatusValueId : (int?)null );
             tbEmail1.Text = ( adult1 != null ? adult1.Email : string.Empty );
             SetPhoneNumber( adult1, pnMobilePhone1 );
 
@@ -747,6 +805,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             dvpSuffix2.SetValue( adult2 != null ? adult2.SuffixValueId : (int?)null );
             ddlGender2.SetValue( adult2 != null ? adult2.Gender.ConvertToInt() : 0 );
             dpBirthDate2.SelectedDate = ( adult2 != null ? adult2.BirthDate : (DateTime?)null );
+            dvpMaritalStatus2.SetValue( adult2 != null ? adult2.MaritalStatusValueId : (int?)null );
             tbEmail2.Text = ( adult2 != null ? adult2.Email : string.Empty );
             SetPhoneNumber( adult2, pnMobilePhone2 );
 
@@ -883,15 +942,15 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 string value1 = adult1 != null ? adult1.GetAttributeValue( attribute.Key ) : string.Empty;
                 var div1 = new HtmlGenericControl( "Div" );
                 phAttributes1.Controls.Add( div1 );
-                div1.AddCssClass( "col-md-3" );
-                var ctrl1 = attribute.AddControl( div1.Controls, value1, "", setValues, false );
+                div1.AddCssClass( "col-sm-3" );
+                var ctrl1 = attribute.AddControl( div1.Controls, value1, this.BlockValidationGroup, setValues, false, attribute.IsRequired );
                 ctrl1.ID = string.Format( "attribute_field_{0}_1", attribute.Id );
 
                 string value2 = adult2 != null ? adult2.GetAttributeValue( attribute.Key ) : string.Empty;
                 var div2 = new HtmlGenericControl( "Div" );
                 phAttributes2.Controls.Add( div2 );
-                div2.AddCssClass( "col-md-3" );
-                var ctrl2 = attribute.AddControl( div2.Controls, value2, "", setValues, false );
+                div2.AddCssClass( "col-sm-3" );
+                var ctrl2 = attribute.AddControl( div2.Controls, value2, this.BlockValidationGroup, setValues, false, attribute.IsRequired );
                 ctrl2.ID = string.Format( "attribute_field_{0}_2", attribute.Id );
             }
         }
@@ -906,8 +965,6 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
             var attributeList = GetAttributeList( "FamilyAttributes" );
 
-            pnlFamilyAttributes.Visible = attributeList.Any();
-
             if ( family != null )
             {
                 family.LoadAttributes();
@@ -916,10 +973,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             foreach ( var attribute in attributeList )
             {
                 string value = family != null ? family.GetAttributeValue( attribute.Key ) : string.Empty;
-                var div = new HtmlGenericControl( "Div" );
-                phFamilyAttributes.Controls.Add( div );
-                div.AddCssClass( "col-md-6" );
-                attribute.AddControl( div.Controls, value, "", setValues, true );
+                attribute.AddControl( phFamilyAttributes.Controls, value, this.BlockValidationGroup, setValues, true, attribute.IsRequired );
             }
         }
 
@@ -991,11 +1045,14 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 if ( child != null )
                 {
                     var childRow = new PreRegistrationChildRow();
+                    childRow.ValidationGroup = this.BlockValidationGroup;
+
                     prChildren.Controls.Add( childRow );
 
                     childRow.DeleteClick += ChildRow_DeleteClick;
                     string childGuidString = child.Guid.ToString().Replace( "-", "_" );
                     childRow.ID = string.Format( "row_{0}", childGuidString );
+                    childRow.PersonId = child.Id;
                     childRow.PersonGuid = child.Guid;
 
                     childRow.ShowSuffix = showSuffix;
@@ -1014,7 +1071,6 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                     if ( setSelection )
                     {
-                        childRow.ExistingName = child.ExistingName;
                         childRow.NickName = child.NickName;
                         childRow.LastName = child.LastName;
                         childRow.SuffixValueId = child.SuffixValueId;
@@ -1037,6 +1093,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             DefinedValuePicker dvpSuffix,
             RockDropDownList ddlGender,
             DatePicker dpBirthDate,
+            DefinedValuePicker dvpMaritalStatus,
             EmailBox tbEmail,
             PhoneNumberBox pnMobilePhone,
             DynamicPlaceholder phAttributes )
@@ -1050,6 +1107,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             var showSuffix = GetAttributeValue( "AdultSuffix" ) != "Hide";
             var showGender = GetAttributeValue( "AdultGender" ) != "Hide";
             var showBirthDate = GetAttributeValue( "AdultBirthdate" ) != "Hide";
+            var showMaritalStatus = GetAttributeValue( "AdultMaritalStatus" ) != "Hide";
             var showEmail = GetAttributeValue( "AdultEmail" ) != "Hide";
             var showMobilePhone = GetAttributeValue( "AdultMobilePhone" ) != "Hide";
             bool autoMatch = GetAttributeValue( "AutoMatch" ).AsBoolean();
@@ -1126,6 +1184,15 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     }
                 }
 
+                if ( showMaritalStatus )
+                {
+                    int? maritalStatus = dvpMaritalStatus.SelectedValueAsInt();
+                    if ( maritalStatus.HasValue || saveEmptyValues )
+                    {
+                        adult.MaritalStatusValueId = maritalStatus;
+                    }
+                }
+
                 if ( showEmail )
                 {
                     if ( tbEmail.Text.IsNotNullOrWhitespace() || saveEmptyValues )
@@ -1189,6 +1256,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             foreach( var childRow in prChildren.ChildRows )
             {
                 var person = new Person();
+                person.Id = childRow.PersonId;
                 person.Guid = childRow.PersonGuid ?? Guid.NewGuid();
                 person.NickName = childRow.NickName;
                 person.LastName = childRow.LastName;
@@ -1199,7 +1267,6 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 person.LoadAttributes();
 
                 var child = new PreRegistrationChild( person );
-                child.ExistingName = childRow.ExistingName;
                 child.RelationshipType = childRow.RelationshipType;
 
                 var attributeKeys = GetCategoryAttributeList( "ChildAttributeCategories" ).Select( a => a.Key ).ToList();
@@ -1502,6 +1569,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         }
 
         #endregion
+
     }
 
 }
