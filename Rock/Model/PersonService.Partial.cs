@@ -1419,6 +1419,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the person from the user login identifier.
+        /// </summary>
+        /// <param name="userLoginId">The user login identifier.</param>
+        /// <returns></returns>
+        public Person GetByUserLoginId(int userLoginId)
+        {
+            UserLogin userLogin = new UserLoginService( new RockContext() ).Get( userLoginId );
+            return Get( userLogin.PersonId.Value );
+        }
+
+        /// <summary>
         /// Looks up a person using a Pre-V7 PersonToken. 
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>

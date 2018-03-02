@@ -431,6 +431,7 @@ namespace Rock.SystemGuid
         /// Personal device types for notifications
         /// </summary>
         public const string PERSONAL_DEVICE_TYPE_MOBILE = "5A8F264F-3BE6-4F15-912A-3CE93A98E8F6";
+        public const string PERSONAL_DEVICE_TYPE_COMPUTER = "828ADECE-EFE7-49DF-BA8C-B3F132509A95";
 
         #endregion
 
@@ -440,6 +441,8 @@ namespace Rock.SystemGuid
         /// A default personal device platform
         /// </summary>
         public const string PERSONAL_DEVICE_PLATFORM_OTHER = "13091A2D-C483-46FA-B489-E5D230B353C8";
+        public const string PERSONAL_DEVICE_PLATFORM_IOS = "F00515E7-4EF3-480D-A45D-372CE3D80E69";
+        public const string PERSONAL_DEVICE_PLATFORM_ANDROID = "63464BB8-83E2-4914-B922-5075311758F9";
 
         #endregion
 
