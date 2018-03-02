@@ -19,7 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using CronExpressionDescriptor;
 using Rock.Data;
 
 namespace Rock.Model
@@ -206,11 +206,27 @@ namespace Rock.Model
         /// <value>
         /// The last status message as HTML.
         /// </value>
+        [LavaInclude]
         public string LastStatusMessageAsHtml
         {
             get
             {
                 return LastStatusMessage.ConvertCrLfToHtmlBr();
+            }
+        }
+
+        /// <summary>
+        /// Gets the cron description.
+        /// </summary>
+        /// <value>
+        /// The cron description.
+        /// </value>
+        [LavaInclude]
+        public string CronDescription
+        {
+            get
+            {
+                return ExpressionDescriptor.GetDescription( this.CronExpression, new Options { ThrowExceptionOnParseError = false } );
             }
         }
 
