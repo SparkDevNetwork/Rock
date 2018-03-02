@@ -1683,6 +1683,8 @@ namespace Rock.Web.UI.Controls
                 DataTable data = this.DataSourceAsDataTable;
                 columnCounter = 0;
 
+                var encryptedColumns = new List<int>();
+
                 // Set up the columns
                 foreach ( DataColumn column in data.Columns )
                 {
@@ -1694,6 +1696,12 @@ namespace Rock.Web.UI.Controls
 
                     // Set the initial column format
                     worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( column.DataType );
+
+                    // Check to see if this is an encrypted column
+                    if ( gridField is EncryptedField )
+                    {
+                        encryptedColumns.Add( columnCounter - 1 );
+                    }
                 }
 
                 // print data
@@ -1703,7 +1711,9 @@ namespace Rock.Web.UI.Controls
 
                     for ( int i = 0; i < data.Columns.Count; i++ )
                     {
-                        var value = rowView.Row[i].ReverseCurrencyFormatting();
+                        var value = encryptedColumns.Contains( i ) ? Security.Encryption.DecryptString( rowView.Row[i].ToString() ) : rowView.Row[i];
+                        value = value.ReverseCurrencyFormatting();
+
                         int columnIndex = i + 1;
                         ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnIndex], value );
 

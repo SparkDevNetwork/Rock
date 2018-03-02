@@ -555,6 +555,7 @@
     <Compile Include="Data\Udf\GetSpousePersonIdFromPersonIdStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\GetGeofencedGroupNamesStoreFunctionInjectionConvention.cs" />
+    <Compile Include="Data\IRockStoreModelConvention.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
@@ -1210,6 +1211,7 @@
     <Compile Include="PersonProfile\Badge\TopPersonSignal.cs" />
     <Compile Include="PersonProfile\Badge\PersonalDevice.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
+    <Compile Include="Plugin\HotFixes\045_FamilyRegistration.cs" />
     <Compile Include="Plugin\HotFixes\044_EnsureCommunicationMigration.cs" />
     <Compile Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3.cs" />
     <Compile Include="Plugin\HotFixes\041_MigrationRollupsForV7_3.cs" />
@@ -1512,6 +1514,10 @@
     <Compile Include="Web\Cache\InteractionComponentCache.cs" />
     <Compile Include="Web\Cache\LavaShortcodeCache.cs" />
     <Compile Include="Web\Cache\SignalTypeCache.cs" />
+    <Compile Include="Web\HttpModules\ResponseHeaders.cs" />
+    <Compile Include="Web\HttpModules\HttpModuleComponent.cs" />
+    <Compile Include="Web\HttpModules\HttpModuleContainer.cs" />
+    <Compile Include="Web\UI\Controls\Captcha.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\Cache\WorkflowActionFormAttributeCache.cs" />
     <Compile Include="Web\Cache\WorkflowActivityTypeCache.cs" />

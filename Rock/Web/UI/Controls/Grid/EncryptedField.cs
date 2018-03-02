@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -36,10 +37,20 @@ namespace Rock.Web.UI.Controls
         {
             if (dataValue is string)
             {
-                return base.FormatDataValue( Rock.Security.Encryption.DecryptString( (string)dataValue ), encode );
+                return base.FormatDataValue( Security.Encryption.DecryptString( (string)dataValue ), encode );
             }
 
             return base.FormatDataValue( dataValue, encode );
+        }
+
+        /// <summary>
+        /// Gets the value that should be exported to Excel
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <returns></returns>
+        public override object GetExportValue( GridViewRow row )
+        {
+            return Security.Encryption.DecryptString( base.GetExportValue( row ).ToString() );
         }
 
     }

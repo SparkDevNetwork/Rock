@@ -504,6 +504,7 @@ namespace Rock.Client.Enums
         HomePhone = 0x9,
         WorkPhone = 0xa,
         Grade = 0xb,
+        ConnectionStatus = 0xc,
     }
 
     /// <summary>

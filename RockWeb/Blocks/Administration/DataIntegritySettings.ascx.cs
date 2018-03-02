@@ -230,11 +230,6 @@ namespace RockWeb.Blocks.Administration
             cb48MonAsPrevious.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.NCOA_SET_48_MONTH_AS_PREVIOUS ).AsBoolean();
             cbInvalidAddressAsPrevious.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.NCOA_SET_INVALID_AS_PREVIOUS ).AsBoolean();
 
-            //Get Bootstrap Button Configuration
-            tbCompleteText.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.BOOTSTRAP_BUTTON_COMPLETE_TEXT );
-            tbDataLoadingText.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.BOOTSTRAP_BUTTON_DATA_LOADING_TEXT );
-            nbCompletedTimeout.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.BOOTSTRAP_BUTTON_COMPLETED_TIMEOUT );
-
             _reactivateSettings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_REACTIVATE_PEOPLE ).FromJsonOrNull<ReactivatePeople>() ?? new ReactivatePeople();
             _inactivateSettings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_INACTIVATE_PEOPLE ).FromJsonOrNull<InactivatePeople>() ?? new InactivatePeople();
             _campusSettings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_UPDATE_FAMILY_CAMPUS ).FromJsonOrNull<UpdateFamilyCampus>() ?? new UpdateFamilyCampus();
@@ -352,11 +347,6 @@ namespace RockWeb.Blocks.Administration
         {
             //Save General
             Rock.Web.SystemSettings.SetValue( SystemSetting.GENDER_AUTO_FILL_CONFIDENCE, nbGenderAutoFill.Text );
-
-            // Bootstrap Button Configuration
-            Rock.Web.SystemSettings.SetValue( SystemSetting.BOOTSTRAP_BUTTON_DATA_LOADING_TEXT, tbDataLoadingText.Text );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.BOOTSTRAP_BUTTON_COMPLETE_TEXT, tbCompleteText.Text );
-            Rock.Web.SystemSettings.SetValue( SystemSetting.BOOTSTRAP_BUTTON_COMPLETED_TIMEOUT, nbCompletedTimeout.Text );
 
             // Ncoa Configuration
             Rock.Web.SystemSettings.SetValue( SystemSetting.NCOA_MINIMUM_MOVE_DISTANCE_TO_INACTIVATE, nbMinMoveDistance.Text );

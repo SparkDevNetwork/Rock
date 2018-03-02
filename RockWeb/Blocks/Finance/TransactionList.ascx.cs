@@ -1596,13 +1596,20 @@ namespace RockWeb.Blocks.Finance
                     if ( campusOfBatch != null )
                     {
                         var qryBatchesForCampus = new FinancialBatchService( rockContext ).Queryable().Where( a => a.CampusId.HasValue && a.CampusId == campusOfBatch.Id ).Select( a => a.Id );
-                        qry = qry.Where( t => qryBatchesForCampus.Contains( t.Id ) );
+                        qry = qry.Where( t => qryBatchesForCampus.Contains( t.BatchId ?? 0 ) );
                     }
                     var campusOfAccount = CampusCache.Read( gfTransactions.GetUserPreference( "CampusAccount" ).AsInteger() );
                     if ( campusOfAccount != null )
                     {
                         var qryAccountsForCampus = new FinancialAccountService( rockContext ).Queryable().Where( a => a.CampusId.HasValue && a.CampusId == campusOfAccount.Id ).Select( a => a.Id );
-                        qry = qry.Where( t => qryAccountsForCampus.Contains( t.Id ) );
+                        if ( hfTransactionViewMode.Value == "Transactions" )
+                        {
+                            qry = qry.Where( t => t.TransactionDetails.Any( d => qryAccountsForCampus.Contains( d.AccountId ) ) );
+                        }
+                        else
+                        {
+                            qry = qry.Where( a => qryAccountsForCampus.Contains( a.TransactionDetail.AccountId ) );
+                        }
                     }
                 }
 
