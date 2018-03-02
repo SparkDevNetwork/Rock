@@ -89,7 +89,7 @@ namespace Rock.Web.UI.Controls.Communication
         {
             EnsureChildControls();
             var valueItem = ddlFrom.Items.FindByValue( communication.SMSFromDefinedValueId.ToString() );
-            if ( valueItem == null )
+            if ( valueItem == null && communication.SMSFromDefinedValueId != null )
             {
                 var lookupDefinedValue = DefinedValueCache.Read( communication.SMSFromDefinedValueId.GetValueOrDefault() );
                 ddlFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
