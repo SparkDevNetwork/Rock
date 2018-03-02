@@ -48,11 +48,14 @@ namespace RockWeb.Blocks.Crm
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Status", "The connection status that should be used when adding new people.", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 6 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status that should be used when adding new people.", false, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE, "", 7 )]
     [WorkflowTypeField( "Workflow Types", @"
-The workflow type(s) to launch when a family is added. The primary family will be passed to each workflow as the entity. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: ParentIds, ChildIds, PlannedVisitDate.
+The workflow type(s) to launch when a family is added. The primary family will be passed to each workflow as the entity. Additionally if the workflow type has any of the 
+following attribute keys defined, those attribute values will also be set: ParentIds, ChildIds, PlannedVisitDate.
 ", true, false, "", "", 8 )]
     [CodeEditorField( "Redirect URL", @"
 The URL to redirect user to when they have completed the registration. The merge fields that are available includes 'Family', which is an object for the primary family 
-that is created/updated, and 'RelatedChildren', which is a list of the children who have a relationship with the family, but are not in the family.
+that is created/updated; 'RelatedChildren', which is a list of the children who have a relationship with the family, but are not in the family; 'ParentIds' which is a
+comma-delimited list of the person ids for each adult; 'ChildIds' which is a comma-delimited list of the person ids for each child; and 'PlannedVisitDate' which is 
+the value entered for the Planned Visit Date field if it was displayed.
 ", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "", 9 )]
 
     [CustomDropdownListField( "Suffix", "How should Suffix be displayed for adults?", "Hide,Optional", false, "Hide", "Adult Fields", 0, "AdultSuffix" )]
