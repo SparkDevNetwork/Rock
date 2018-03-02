@@ -942,14 +942,14 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 string value1 = adult1 != null ? adult1.GetAttributeValue( attribute.Key ) : string.Empty;
                 var div1 = new HtmlGenericControl( "Div" );
                 phAttributes1.Controls.Add( div1 );
-                div1.AddCssClass( "col-md-3" );
+                div1.AddCssClass( "col-sm-3" );
                 var ctrl1 = attribute.AddControl( div1.Controls, value1, this.BlockValidationGroup, setValues, false, attribute.IsRequired );
                 ctrl1.ID = string.Format( "attribute_field_{0}_1", attribute.Id );
 
                 string value2 = adult2 != null ? adult2.GetAttributeValue( attribute.Key ) : string.Empty;
                 var div2 = new HtmlGenericControl( "Div" );
                 phAttributes2.Controls.Add( div2 );
-                div2.AddCssClass( "col-md-3" );
+                div2.AddCssClass( "col-sm-3" );
                 var ctrl2 = attribute.AddControl( div2.Controls, value2, this.BlockValidationGroup, setValues, false, attribute.IsRequired );
                 ctrl2.ID = string.Format( "attribute_field_{0}_2", attribute.Id );
             }
@@ -1052,6 +1052,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     childRow.DeleteClick += ChildRow_DeleteClick;
                     string childGuidString = child.Guid.ToString().Replace( "-", "_" );
                     childRow.ID = string.Format( "row_{0}", childGuidString );
+                    childRow.PersonId = child.Id;
                     childRow.PersonGuid = child.Guid;
 
                     childRow.ShowSuffix = showSuffix;
@@ -1070,7 +1071,6 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
 
                     if ( setSelection )
                     {
-                        childRow.ExistingName = child.ExistingName;
                         childRow.NickName = child.NickName;
                         childRow.LastName = child.LastName;
                         childRow.SuffixValueId = child.SuffixValueId;
@@ -1256,6 +1256,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             foreach( var childRow in prChildren.ChildRows )
             {
                 var person = new Person();
+                person.Id = childRow.PersonId;
                 person.Guid = childRow.PersonGuid ?? Guid.NewGuid();
                 person.NickName = childRow.NickName;
                 person.LastName = childRow.LastName;
@@ -1266,7 +1267,6 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 person.LoadAttributes();
 
                 var child = new PreRegistrationChild( person );
-                child.ExistingName = childRow.ExistingName;
                 child.RelationshipType = childRow.RelationshipType;
 
                 var attributeKeys = GetCategoryAttributeList( "ChildAttributeCategories" ).Select( a => a.Key ).ToList();
