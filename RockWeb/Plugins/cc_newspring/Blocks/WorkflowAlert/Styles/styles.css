@@ -9,10 +9,10 @@
 }
 
 .workflowNotifications {
-    position: relative;
     display: inline-block;
     text-align: left;
-    padding: 0 20px 0 0;
+    height: 35px;
+    margin-left: 10px;
 }
 
 .workflowNotifications i {
@@ -22,13 +22,10 @@
 }
 
 .workflowNotifications .badge {
-    position: absolute;
-    right: -10px;
-    top: -10px;
-}
-
-.workflowNotifications .badge.badge-danger {
-    border-color: #6bac43;
-    border-style: solid;
-    border-width: 3px
+    height: 35px;
+    line-height: 40px;
+    border-radius: 5px;
+    padding: 0 10px;
+    font-size: 16px;
+    min-width: 40px;
 }

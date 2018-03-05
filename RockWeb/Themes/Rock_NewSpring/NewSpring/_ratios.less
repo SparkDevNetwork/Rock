@@ -1,0 +1,29 @@
+.ratio {
+    position: relative;
+    width: 100%;
+}
+
+.ratio:after {
+    content: '';
+    display: block;
+}
+
+.ratio-item {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.ratio-portrait:after {
+    padding-bottom: 200%;
+}
+
+.ratio-square:after {
+    padding-bottom: 100%;
+}
+
+.ratio-landscape:after {
+    padding-bottom: 50%;
+}
