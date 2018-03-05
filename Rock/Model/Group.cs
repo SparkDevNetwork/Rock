@@ -536,7 +536,12 @@ namespace Rock.Model
                                     return true;
                                 }
 
-                                if ( ( action == Authorization.MANAGE_MEMBERS || action == Authorization.EDIT ) && role.CanEdit )
+                                if ( action == Authorization.MANAGE_MEMBERS && ( role.CanEdit || role.CanManageMembers ) )
+                                {
+                                    return true;
+                                }
+
+                                if ( action == Authorization.EDIT && role.CanEdit )
                                 {
                                     return true;
                                 }

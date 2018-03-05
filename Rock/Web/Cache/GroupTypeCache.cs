@@ -810,6 +810,14 @@ namespace Rock.Web.Cache
         public bool CanEdit { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance can manage members.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can manage members; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanManageMembers { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeRoleCache"/> class.
         /// </summary>
         /// <param name="role">The role.</param>
@@ -824,6 +832,7 @@ namespace Rock.Web.Cache
             IsLeader = role.IsLeader;
             CanView = role.CanView;
             CanEdit = role.CanEdit;
+            CanManageMembers = role.CanManageMembers;
         }
 
         /// <summary>
