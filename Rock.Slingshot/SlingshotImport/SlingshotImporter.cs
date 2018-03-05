@@ -103,10 +103,10 @@ namespace Rock.Slingshot
                          System.Diagnostics.Debug.WriteLine( $"Unable to extract {a.FullName} from imageZipFile: {ex.Message}" );
                      }
                  } );
-
-                var imageFilesInFolder = Directory.EnumerateFiles( extractedImagesFolder );
-                this.SlingshotImageFileNames.AddRange( imageFilesInFolder );
             }
+
+            var imageFilesInFolder = Directory.EnumerateFiles( extractedImagesFolder );
+            this.SlingshotImageFileNames.AddRange( imageFilesInFolder );
 
             BulkImporter = new BulkImporter();
             BulkImporter.ImportUpdateOption = importUpdateType;
