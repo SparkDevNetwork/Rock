@@ -31,6 +31,12 @@ namespace Rock.Migrations
         {
             AddColumn( "dbo.TaggedItem", "EntityTypeId", c => c.Int( nullable: false ) );
 
+            // Remove any orphaned TaggedItems (NOTE: This should't happen since there is a FK, but adding this here because it did happen) 
+            Sql( @"
+DELETE FROM [TaggedItem]
+  WHERE [TagId] NOT IN (SELECT [Id] FROM [Tag])
+" );
+
             Sql( @"
     UPDATE I SET [EntityTypeId] = T.[EntityTypeId]
     FROM [TaggedItem] I

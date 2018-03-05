@@ -791,8 +791,7 @@ BEGIN
 	INNER JOIN InteractionSession iss ON iss.[ForeignGuid] = cra.[Guid]
 	INNER JOIN CommunicationRecipient cr ON cra.CommunicationRecipientId = cr.Id
 	INNER JOIN Communication c ON cr.CommunicationId = c.Id
-	INNER JOIN InteractionComponent icmp ON icmp.ChannelId = {interactionChannelId}
-		AND icmp.EntityId = c.Id
+	CROSS APPLY (select top 1 icmp.Id from InteractionComponent icmp WHERE icmp.ChannelId = {interactionChannelId} AND icmp.EntityId = c.Id) icmp
      where cra.[Guid] not in (select ForeignGuid from Interaction where ForeignGuid is not null)
 END
 ";

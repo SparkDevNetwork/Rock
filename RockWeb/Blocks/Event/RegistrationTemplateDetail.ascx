@@ -34,6 +34,7 @@
                     <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                 </div>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body container-fluid">
 
                 <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
@@ -200,9 +201,10 @@
                                 <Rock:ReorderField />
                                 <Rock:RockBoundField DataField="Name" HeaderText="Fee" />
                                 <Rock:EnumField DataField="FeeType" HeaderText="Options" />
-                                <Rock:RockBoundField DataField="Cost" HeaderText="Cost" />
-                                <Rock:BoolField DataField="AllowMultiple" HeaderText="Enable Quantity" />
-                                <Rock:BoolField DataField="DiscountApplies" HeaderText="Discount Applies" />
+                                <Rock:RockBoundField DataField="Cost" HeaderText="Cost" ItemStyle-Wrap="true"/>
+                                <Rock:BoolField DataField="AllowMultiple" HeaderText="Enable<br />Quantity" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" />
+                                <Rock:BoolField DataField="DiscountApplies" HeaderText="Discount<br />Applies" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" />
+                                <Rock:BoolField DataField="IsActive" HeaderText="Is<br />Active" HtmlEncode="false" HeaderStyle-HorizontalAlign="Center" />
                                 <Rock:EditField OnClick="gFees_Edit" />
                                 <Rock:DeleteField OnClick="gFees_Delete" />
                             </Columns>
@@ -356,9 +358,9 @@
                             <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                             <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
                             <Rock:RockControlWrapper ID="rcwFees" runat="server" Label="Fees">
-                                <asp:Repeater ID="rFees" runat="server">
+                                <asp:Repeater ID="rFees" runat="server" >
                                     <ItemTemplate>
-                                        <div class="row">
+                                        <div <%# FormatInactiveRow(DataBinder.Eval(Container.DataItem, "IsActive").ToString() ) %> >
                                             <div class="col-xs-4"><%# Eval("Name") %></div>
                                             <div class="col-xs-8"><%# FormatFeeCost( Eval("CostValue").ToString() ) %></div>
                                         </div>
@@ -459,14 +461,21 @@
             <Content>
                 <asp:HiddenField ID="hfFeeGuid" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummaryFee" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Fee" />
-                <Rock:RockTextBox ID="tbFeeName" runat="server" Label="Name" ValidationGroup="Fee" Required="true" />
-                <Rock:RockRadioButtonList ID="rblFeeType" runat="server" Label="Options" ValidationGroup="Fee" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblFeeType_SelectedIndexChanged" />
-                <Rock:CurrencyBox ID="cCost" runat="server" Label="Cost" ValidationGroup="Fee" />
-                <Rock:KeyValueList ID="kvlMultipleFees" runat="server" Label="Costs" ValidationGroup="Fee" KeyPrompt="Option" ValuePrompt="Cost" />
-                <Rock:RockCheckBox ID="cbAllowMultiple" runat="server" Label="Enable Quantity" ValidationGroup="Fee" Text="Yes"
-                    Help="Should registrants be able to select more than one of this item?" />
-                <Rock:RockCheckBox ID="cbDiscountApplies" runat="server" Label="Discount Applies" ValidationGroup="Fee" Text="Yes"
-                    Help="Should discounts be applied to this fee?" />
+                <div class="col-md-12">
+                    <Rock:RockTextBox ID="tbFeeName" runat="server" Label="Name" ValidationGroup="Fee" Required="true" />
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockRadioButtonList ID="rblFeeType" runat="server" Label="Options" ValidationGroup="Fee" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblFeeType_SelectedIndexChanged" />
+                        <Rock:CurrencyBox ID="cCost" runat="server" Label="Cost" ValidationGroup="Fee" />
+                        <Rock:KeyValueList ID="kvlMultipleFees" runat="server" Label="Costs" ValidationGroup="Fee" KeyPrompt="Option" ValuePrompt="Cost" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbAllowMultiple" runat="server" Label="Enable Quantity" ValidationGroup="Fee" Text="Yes" Help="Should registrants be able to select more than one of this item?" CssClass="form-check"/>
+                        <Rock:RockCheckBox ID="cbDiscountApplies" runat="server" Label="Discount Applies" ValidationGroup="Fee" Text="Yes" Help="Should discounts be applied to this fee?" />
+                        <Rock:RockCheckBox ID="cbFeeIsActive" runat="server" Label="Is Active" ValidationGroup="Fee" Text="Yes" Help="Unchecking this will remove the fee option for new registrations but will not effect the existing registrants." />
+                    </div>
+                </div>
             </Content>
         </Rock:ModalDialog>
 

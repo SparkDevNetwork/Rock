@@ -119,6 +119,7 @@ namespace RockWeb.Blocks.Communication
 
                 var communicationTemplateService = new CommunicationTemplateService( rockContext );
                 var communicationTemplateAttachmentService = new CommunicationTemplateAttachmentService( rockContext );
+                var binaryFileService = new BinaryFileService( rockContext );
 
                 CommunicationTemplate communicationTemplate = null;
                 int? communicationTemplateId = hfCommunicationTemplateId.Value.AsIntegerOrNull();
@@ -138,8 +139,41 @@ namespace RockWeb.Blocks.Communication
                 communicationTemplate.Name = tbName.Text;
                 communicationTemplate.IsActive = cbIsActive.Checked;
                 communicationTemplate.Description = tbDescription.Text;
+
+                if ( communicationTemplate.ImageFileId != imgTemplatePreview.BinaryFileId )
+                {
+                    var oldImageTemplatePreview = binaryFileService.Get( communicationTemplate.ImageFileId ?? 0 );
+                    if ( oldImageTemplatePreview != null )
+                    {
+                        // the old image template preview won't be needed anymore, so make it IsTemporary and have it get cleaned up later
+                        oldImageTemplatePreview.IsTemporary = true;
+                    }
+                }
+
                 communicationTemplate.ImageFileId = imgTemplatePreview.BinaryFileId;
+
+                // Ensure that the ImagePreview is not set as IsTemporary=True
+                if ( communicationTemplate.ImageFileId.HasValue )
+                {
+                    var imageTemplatePreview = binaryFileService.Get( communicationTemplate.ImageFileId.Value );
+                    if ( imageTemplatePreview != null && imageTemplatePreview.IsTemporary )
+                    {
+                        imageTemplatePreview.IsTemporary = false;
+                    }
+                }
+
+                // Note: If the Logo has changed, we can't get rid of it since existing communications might use it
                 communicationTemplate.LogoBinaryFileId = imgTemplateLogo.BinaryFileId;
+
+                // Ensure that the ImagePreview is not set as IsTemporary=True
+                if ( communicationTemplate.LogoBinaryFileId.HasValue )
+                {
+                    var newImageTemplateLogo = binaryFileService.Get( communicationTemplate.LogoBinaryFileId.Value );
+                    if ( newImageTemplateLogo != null && newImageTemplateLogo.IsTemporary )
+                    {
+                        newImageTemplateLogo.IsTemporary = false;
+                    }
+                }
 
                 communicationTemplate.FromName = tbFromName.Text;
                 communicationTemplate.FromEmail = tbFromAddress.Text;
@@ -643,14 +677,16 @@ namespace RockWeb.Blocks.Communication
                 if ( lavaFieldsNode.ParentNode == null )
                 {
                     var bodyNode = templateDoc.DocumentNode.SelectSingleNode( "//body" );
+                    if ( bodyNode != null )
+                    {
+                        // prepend a linefeed so that it is after the lava node (to make it pretty printed)
+                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
 
-                    // prepend a linefeed so that it is after the lava node (to make it pretty printed)
-                    bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
+                        bodyNode.PrependChild( lavaFieldsNode );
 
-                    bodyNode.PrependChild( lavaFieldsNode );
-
-                    // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
-                    bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
+                        // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
+                        bodyNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
+                    }
                 }
             }
             else if ( lavaFieldsNode.ParentNode != null )
