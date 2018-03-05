@@ -137,9 +137,9 @@
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlExistingLinkageTemplate" runat="server" Label="Registration Template" ValidationGroup="ExistingLinkage" 
                             AutoPostBack="true" OnSelectedIndexChanged="ddlExistingLinkageTemplate_SelectedIndexChanged" CausesValidation="false" 
-                            Required="true" />
+                            Required="true" EnhanceForLongLists="true" />
                         <Rock:RockDropDownList ID="ddlExistingLinkageInstance" runat="server" Label="Registration Instance" ValidationGroup="ExistingLinkage"
-                            Required="true" />
+                            Required="true" EnhanceForLongLists="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:GroupPicker ID="gpExistingLinkageGroup" runat="server" Label="Group" ValidationGroup="ExistingLinkage" />

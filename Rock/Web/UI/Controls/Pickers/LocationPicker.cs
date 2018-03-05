@@ -209,7 +209,17 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the best picker mode for location.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        public void SetBestPickerModeForLocation( Location location )
+        {
+            this.CurrentPickerMode = this.GetBestPickerModeForLocation( location );
+        }
+
+        /// <summary>
         /// Gets the best picker mode for location.
+        /// NOTE: Use SetBestPickerModeForLocation to *set* the CurrentPickerMode based on Location 
         /// </summary>
         /// <param name="location">The location.</param>
         /// <returns></returns>

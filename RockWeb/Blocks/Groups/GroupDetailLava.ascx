@@ -116,5 +116,11 @@
 
         </asp:Panel>
 
+        <Rock:ModalDialog ID="mdConfirmDelete" runat="server" Title="Please Confirm" SaveButtonText="Yes" OnSaveClick="mdConfirmDelete_Click">
+            <Content>
+                <asp:Literal ID="lConfirmDeleteMsg" runat="server" />
+            </Content>
+        </Rock:ModalDialog>
+
     </ContentTemplate>
 </asp:UpdatePanel>

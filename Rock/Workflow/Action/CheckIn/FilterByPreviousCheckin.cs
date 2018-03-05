@@ -53,97 +53,119 @@ namespace Rock.Workflow.Action.CheckIn
             if ( checkInState != null && checkInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family )
             {
                 bool configPrevents = checkInState.CheckInType.PreventDuplicateCheckin;
-
                 var family = checkInState.CheckIn.CurrentFamily;
+                return FilterByPreviousCheckin.ProcessForFamily( rockContext, family, configPrevents );
+            }
 
-                if ( family != null )
-                {
-                    var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+            return false;
+        }
 
-                    var personIds = family.People.Select( p => p.Person.Id ).ToList();
-                    var today = RockDateTime.Today;
-                    var tomorrow = RockDateTime.Today.AddDays( 1 );
+        /// <summary>
+        /// Processes this action for a check-in family.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="family">The family.</param>
+        /// <param name="preventDuplicateCheckin">if set to <c>true</c> [prevent duplicate checkin].</param>
+        /// <returns></returns>
+        public static bool ProcessForFamily( RockContext rockContext, CheckInFamily family, bool preventDuplicateCheckin )
+        {
+            if ( family != null )
+            {
+                var personIds = family.People.Select( p => p.Person.Id ).ToList();
+                var today = RockDateTime.Today;
+                var tomorrow = RockDateTime.Today.AddDays( 1 );
 
-                    var existingAttendance = new AttendanceService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( a =>
-                            a.StartDateTime.CompareTo( today ) >= 0 &&
-                            a.StartDateTime.CompareTo( tomorrow ) < 0 &&
-                            a.DidAttend.HasValue &&
-                            a.DidAttend.Value &&
-                            a.PersonAlias != null &&
-                            personIds.Contains( a.PersonAlias.PersonId ) &&
-                            a.ScheduleId.HasValue )
-                        .Select( a => new
-                        {
-                            PersonId = a.PersonAlias.PersonId,
-                            ScheduleId = a.ScheduleId.Value
-                        } )
-                        .ToList();
-
-                    if ( existingAttendance.Any() )
+                var existingAttendance = new AttendanceService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( a =>
+                        a.StartDateTime.CompareTo( today ) >= 0 &&                  
+                        a.StartDateTime.CompareTo( tomorrow ) < 0 &&
+                        a.DidAttend.HasValue &&
+                        a.DidAttend.Value &&
+                        !a.EndDateTime.HasValue &&                                  
+                        a.PersonAlias != null &&
+                        personIds.Contains( a.PersonAlias.PersonId ) &&
+                        a.ScheduleId.HasValue )
+                    .Select( a => new
                     {
-                        foreach ( var person in family.People.ToList() )
-                        {
-                            var attendedScheduleIds = existingAttendance.Where( a => a.PersonId == person.Person.Id ).Select( a => a.ScheduleId ).ToList();
-                            if ( attendedScheduleIds.Any() )
-                            {
-                                foreach ( var groupType in person.GroupTypes.ToList() )
-                                {
-                                    if ( configPrevents || groupType.GroupType.GetAttributeValue( "PreventDuplicateCheckin" ).AsBoolean() )
-                                    {
-                                        attendedScheduleIds.ForEach( s => groupType.AvailableForSchedule.Remove( s ) );
+                        PersonId = a.PersonAlias.PersonId,
+                        ScheduleId = a.ScheduleId.Value
+                    } )
+                    .ToList();
 
-                                        if ( !groupType.AvailableForSchedule.Any() )
+                if ( existingAttendance.Any() )
+                {
+                    foreach ( var person in family.People.ToList() )
+                    {
+                        var attendedScheduleIds = existingAttendance.Where( a => a.PersonId == person.Person.Id ).Select( a => a.ScheduleId ).ToList();
+                        if ( attendedScheduleIds.Any() )
+                        {
+                            foreach ( var groupType in person.GroupTypes.ToList() )
+                            {
+                                if ( preventDuplicateCheckin || groupType.GroupType.GetAttributeValue( "PreventDuplicateCheckin" ).AsBoolean() )
+                                {
+                                    attendedScheduleIds.ForEach( s => groupType.AvailableForSchedule.Remove( s ) );
+
+                                    if ( !groupType.AvailableForSchedule.Any() )
+                                    {
+                                        person.GroupTypes.Remove( groupType );
+                                    }
+                                    else
+                                    {
+                                        foreach ( var group in groupType.Groups.ToList() )
                                         {
-                                            person.GroupTypes.Remove( groupType );
-                                        }
-                                        else
-                                        {
-                                            foreach ( var group in groupType.Groups.ToList() )
+                                            attendedScheduleIds.ForEach( s => group.AvailableForSchedule.Remove( s ) );
+                                            if ( !group.AvailableForSchedule.Any() )
                                             {
-                                                attendedScheduleIds.ForEach( s => group.AvailableForSchedule.Remove( s ) );
-                                                if ( !group.AvailableForSchedule.Any() )
+                                                groupType.Groups.Remove( group );
+                                            }
+                                            else
+                                            {
+                                                foreach ( var location in group.Locations.ToList() )
+                                                {
+                                                    attendedScheduleIds.ForEach( s => location.AvailableForSchedule.Remove( s ) );
+                                                    if ( !location.AvailableForSchedule.Any() )
+                                                    {
+                                                        group.Locations.Remove( location );
+                                                    }
+                                                    else
+                                                    {
+                                                        foreach ( var schedule in location.Schedules )
+                                                        {
+                                                            if ( schedule.PreSelected && !location.AvailableForSchedule.Contains( schedule.Schedule.Id ) )
+                                                            {
+                                                                schedule.PreSelected = false;
+                                                                location.PreSelected = false;
+                                                                group.PreSelected = false;
+                                                                groupType.PreSelected = false;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if ( group.Locations.Count == 0 )
                                                 {
                                                     groupType.Groups.Remove( group );
                                                 }
-                                                else
-                                                {
-                                                    foreach ( var location in group.Locations.ToList() )
-                                                    {
-                                                        attendedScheduleIds.ForEach( s => location.AvailableForSchedule.Remove( s ) );
-                                                        if ( !location.AvailableForSchedule.Any() )
-                                                        {
-                                                            group.Locations.Remove( location );
-                                                        }
-                                                    }
-                                                    if ( group.Locations.Count == 0 )
-                                                    {
-                                                        groupType.Groups.Remove( group );
-                                                    }
-                                                }
                                             }
-                                            if ( groupType.Groups.Count == 0 )
-                                            {
-                                                person.GroupTypes.Remove( groupType );
-                                            }
+                                        }
+                                        if ( groupType.Groups.Count == 0 )
+                                        {
+                                            person.GroupTypes.Remove( groupType );
                                         }
                                     }
                                 }
+                            }
 
-                                if ( person.GroupTypes.Count == 0 )
-                                {
-                                    family.People.Remove( person );
-                                }
+                            if ( person.GroupTypes.Count == 0 )
+                            {
+                                family.People.Remove( person );
                             }
                         }
                     }
                 }
-
-                return true;
             }
 
-            return false;
+            return true;
         }
     }
 }

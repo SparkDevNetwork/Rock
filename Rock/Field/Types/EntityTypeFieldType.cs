@@ -159,7 +159,7 @@ namespace Rock.Field.Types
             if ( configurationValues != null )
             {
                 bool includeGlobal = false;
-                if ( configurationValues.ContainsKey( "includeglobal" ) && 
+                if ( configurationValues.ContainsKey( "includeglobal" ) &&
                     bool.TryParse(configurationValues["includeglobal"].Value, out includeGlobal) &&
                     !includeGlobal)
                 {
@@ -182,10 +182,17 @@ namespace Rock.Field.Types
             EntityTypePicker entityTypePicker = control as EntityTypePicker;
             if ( entityTypePicker != null && entityTypePicker.SelectedEntityTypeId.HasValue )
             {
-                var entityType = EntityTypeCache.Read(entityTypePicker.SelectedEntityTypeId.Value);
-                if (entityType != null)
+                if ( entityTypePicker.SelectedEntityTypeId == 0 && entityTypePicker.IncludeGlobalOption )
                 {
-                    return entityType.Guid.ToString();
+                    return Guid.Empty.ToString();
+                }
+                else
+                {
+                    var entityType = EntityTypeCache.Read( entityTypePicker.SelectedEntityTypeId.Value );
+                    if ( entityType != null )
+                    {
+                        return entityType.Guid.ToString();
+                    }
                 }
             }
 

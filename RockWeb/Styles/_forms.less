@@ -157,11 +157,12 @@ a.aspNetDisabled {
 .form-group.required {
   .control-label:after {
     margin-left: 4px;
-    font-family: FontAwesome;
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
     font-size: 6px;
     color: @required-field-color;
     vertical-align: super;
-    content: '\f111';
+    content: @fa-var-circle;
   }
 }
 

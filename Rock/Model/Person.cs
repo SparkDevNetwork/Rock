@@ -453,6 +453,57 @@ namespace Rock.Model
         [DataMember]
         public int? MetaPersonicxLifestageGroupId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the top signal color. This property is used to indicate the icon color
+        /// on a person if they have a related signal.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the CSS color.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string TopSignalColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the top signal CSS class. This property is used to indicate which icon to display
+        /// on a person if they have a related signal.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the name of the signal CSS class.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string TopSignalIconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the highest priority PersonSignal associated with this person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing a PersonSignal Id of the <see cref="Rock.Model.PersonSignal"/>.
+        /// </value>
+        [DataMember]
+        public int? TopSignalId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the age classification of the Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.AgeClassification"/> enum value representing the Person's age classification.  Valid values are <c>AgeClassification.Unknown</c> if the Person's age is unknown,
+        /// <c>AgeClassification.Adult</c> if the Person's age falls under Adult Range, <c>AgeClassification.Child</c> if the Person is under the age of 18
+        /// </value>
+        [DataMember]
+        [Previewable]
+        public AgeClassification AgeClassification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group id for the primary family
+        /// </summary>
+        /// <value>
+        /// The primary family id.
+        /// </value>
+        [DataMember]
+        public int? PrimaryFamilyId { get; set; }
+
         #endregion
 
         #region Constructors
@@ -466,7 +517,7 @@ namespace Rock.Model
             _users = new Collection<UserLogin>();
             _phoneNumbers = new Collection<PhoneNumber>();
             _members = new Collection<GroupMember>();
-            _aliases = new Collection<PersonAlias>();
+            _aliases = new Collection<PersonAlias>();          
             CommunicationPreference = CommunicationType.Email;
         }
 
@@ -941,6 +992,15 @@ namespace Rock.Model
         public virtual MetaPersonicxLifestageCluster MetaPersonicxLifestageCluster { get; set; }
 
         /// <summary>
+        /// Gets or sets the signals applied to this person.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.PersonSignal">PersonSignal</see> entities representing the signals that are associated with this person.
+        /// </value>
+        [LavaIgnore]
+        public virtual ICollection<PersonSignal> Signals { get; set; }
+
+        /// <summary>
         /// Gets or sets the metaPersonicxLifestage group.
         /// </summary>
         /// <value>
@@ -948,6 +1008,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual MetaPersonicxLifestageGroup MetaPersonicxLifestageGroup { get; set; }
+
+        /// <summary>
+        /// Gets or sets the primary family.
+        /// </summary>
+        /// <value>
+        /// The primary family.
+        /// </value>
+        [LavaInclude]
+        public virtual Group PrimaryFamily { get; set; }
 
         /// <summary>
         /// Gets the Person's birth date. Note: Use SetBirthDate to set the Birthdate
@@ -1488,10 +1557,34 @@ namespace Rock.Model
         /// <summary>
         /// Gets an anchor tag to send person a communication
         /// </summary>
+        /// <param name="rockUrlRoot">The rock URL root.</param>
+        /// <param name="cssClass">The CSS class.</param>
+        /// <param name="preText">The pre text.</param>
+        /// <param name="postText">The post text.</param>
+        /// <param name="styles">The styles.</param>
+        /// <returns></returns>
         /// <value>
         /// The email tag.
         /// </value>
         public string GetEmailTag( string rockUrlRoot, string cssClass = "", string preText = "", string postText = "", string styles = "" )
+        {
+            return GetEmailTag( rockUrlRoot, null, cssClass, preText, postText, styles );
+        }
+
+        /// <summary>
+        /// Gets an anchor tag to send person a communication
+        /// </summary>
+        /// <param name="rockUrlRoot">The rock URL root.</param>
+        /// <param name="communicationPageReference">The communication page reference.</param>
+        /// <param name="cssClass">The CSS class.</param>
+        /// <param name="preText">The pre text.</param>
+        /// <param name="postText">The post text.</param>
+        /// <param name="styles">The styles.</param>
+        /// <returns></returns>
+        /// <value>
+        /// The email tag.
+        /// </value>
+        public string GetEmailTag( string rockUrlRoot, Rock.Web.PageReference communicationPageReference, string cssClass = "", string preText = "", string postText = "", string styles = "" )
         {
             if ( !string.IsNullOrWhiteSpace( Email ) )
             {
@@ -1508,7 +1601,16 @@ namespace Rock.Model
                     // create link
                     if ( string.IsNullOrWhiteSpace(emailLinkPreference) || emailLinkPreference == "1" )
                     {
-                        emailLink = string.Format( "{0}Communication?person={1}", rockUrlRoot, Id );
+                        if ( communicationPageReference != null)
+                        {
+                            communicationPageReference.QueryString = new System.Collections.Specialized.NameValueCollection( communicationPageReference.QueryString ?? new System.Collections.Specialized.NameValueCollection() );
+                            communicationPageReference.QueryString["person"] = this.Id.ToString();
+                            emailLink = new Rock.Web.PageReference( communicationPageReference.PageId, communicationPageReference.RouteId, communicationPageReference.Parameters, communicationPageReference.QueryString ).BuildUrl();
+                        }
+                        else
+                        {
+                            emailLink = string.Format( "{0}Communication?person={1}", rockUrlRoot, Id );
+                        }
                     } else
                     {
                         emailLink = string.Format( "mailto:{0}", Email );
@@ -1655,6 +1757,8 @@ namespace Rock.Model
                 }
             }
 
+            CalculateSignals();
+
             if ( this.IsValid )
             {
                 var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
@@ -1662,6 +1766,18 @@ namespace Rock.Model
             }
 
             base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            base.PostSaveChanges( dbContext );
+
+            PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
+            PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
         }
 
         /// <summary>
@@ -1701,7 +1817,7 @@ namespace Rock.Model
         /// <returns></returns>
         public Campus GetCampus()
         {
-            var firstFamily = this.GetFamilies().FirstOrDefault();
+            var firstFamily = this.GetFamily();
             return firstFamily != null ? firstFamily.Campus : null;
         }
 
@@ -1716,6 +1832,30 @@ namespace Rock.Model
                 .Select( f => f.CampusId.Value )
                 .Distinct()
                 .ToList();
+        }
+
+        /// <summary>
+        /// Calcualates the top-most signal and updates the person properties.
+        /// </summary>
+        public void CalculateSignals()
+        {
+            if ( Signals != null )
+            {
+                var rockContext = new RockContext();
+                var topSignal = Signals
+                    .Select( s => new
+                    {
+                        Id = s.Id,
+                        SignalType = Rock.Web.Cache.SignalTypeCache.Read( s.SignalTypeId )
+                    } )
+                    .OrderBy( s => s.SignalType.Order )
+                    .ThenBy( s => s.SignalType.Id )
+                    .FirstOrDefault();
+
+                TopSignalId = topSignal?.Id;
+                TopSignalIconCssClass = topSignal?.SignalType.SignalIconCssClass;
+                TopSignalColor = topSignal?.SignalType.SignalColor;
+            }
         }
 
         #endregion
@@ -2527,6 +2667,21 @@ namespace Rock.Model
             return string.Format( "<img src='{0}'{1}{2}{3}/>", photoUrl.ToString(), styleString, altString, classString );
         }
 
+        /// <summary>
+        /// Gets the HTML markup to use for displaying the top-most signal icon for this person.
+        /// </summary>
+        /// <returns>A string that represents the Icon to display or an empty string if no signal is active.</returns>
+        public string GetSignalMarkup()
+        {
+            if ( !string.IsNullOrWhiteSpace( TopSignalColor ) )
+            {
+                return string.Format( "<i class='{1}' style='color: {0};'></i>",
+                    TopSignalColor,
+                    !string.IsNullOrWhiteSpace( TopSignalIconCssClass ) ? TopSignalIconCssClass : "fa fa-flag" );
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Adds the related person to the selected person's known relationships with a role of 'Can check in' which
@@ -2902,6 +3057,7 @@ namespace Rock.Model
             this.HasOptional( p => p.GivingGroup ).WithMany().HasForeignKey( p => p.GivingGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.MetaPersonicxLifestageCluster ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageClusterId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.MetaPersonicxLifestageGroup ).WithMany().HasForeignKey( p => p.MetaPersonicxLifestageGroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -2928,6 +3084,27 @@ namespace Rock.Model
         /// Female
         /// </summary>
         Female = 2
+    }
+
+    /// <summary>
+    /// The age classification of a person
+    /// </summary>
+    public enum AgeClassification
+    {
+        /// <summary>
+        /// Unknown
+        /// </summary>
+        Unknown = 0,
+
+        /// <summary>
+        /// Adult
+        /// </summary>
+        Adult = 1,
+
+        /// <summary>
+        /// Child
+        /// </summary>
+        Child = 2
     }
 
     /// <summary>
@@ -2977,7 +3154,15 @@ namespace Rock.Model
         /// <returns></returns>
         public static Group GetFamily( this Person person, RockContext rockContext = null )
         {
-            return person.GetFamilies( rockContext ).FirstOrDefault();
+            // If PrimaryFamily has been calculated, use that. Otherwise, get it from GetFamilies()
+            if ( person.PrimaryFamily != null )
+            {
+                return person.PrimaryFamily;
+            }
+            else
+            {
+                return person.GetFamilies( rockContext ).FirstOrDefault();
+            }
         }
 
         /// <summary>

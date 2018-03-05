@@ -360,6 +360,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_NO_ACTIVITY = "64014FE6-943D-4ACF-8014-FED9F9169AE8";
 
+        /// <summary>
+        /// Inactive record status reason of Moved
+        /// </summary>
+        public const string PERSON_RECORD_STATUS_REASON_MOVED = "3684CF84-F30F-4CE0-9EB9-D6AFFEA9B99B";
+
         #endregion
 
         #region Person Record Type
@@ -518,6 +523,11 @@ namespace Rock.SystemGuid
         /// Interaction Channel Type: Content Channel
         /// </summary>
         public const string INTERACTIONCHANNELTYPE_WIFI_PRESENCE = "338CB800-C556-46CD-849D-8AE58FC7CB0E";
+
+        /// <summary>
+        /// The PBX CDR medium value
+        /// </summary>
+        public const string PBX_CDR_MEDIUM_VALUE = "B3904B57-62A2-57AC-43EA-94D4DEBA3D51";
 
         #endregion
 

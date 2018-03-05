@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            LoadDropDowns();
+            LoadContextOptions();
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            LoadDropDowns();
+            LoadContextOptions();
         }
 
         #endregion
@@ -72,9 +72,9 @@ namespace RockWeb.Blocks.Finance
         #region Methods
 
         /// <summary>
-        /// Loads the person and person's businesses.
+        /// Loads the context options.
         /// </summary>
-        private void LoadDropDowns()
+        private void LoadContextOptions()
         {
             if ( CurrentPersonId.HasValue )
             {
@@ -87,27 +87,39 @@ namespace RockWeb.Blocks.Finance
 
                 personAndBusinesses.Insert( 0, this.CurrentPerson );
 
-                var currentPersonOrGroup = RockPage.GetCurrentContext( EntityTypeCache.Read<Rock.Model.Person>() );
-                if ( currentPersonOrGroup != null )
+                var currentPersonOrBusiness = RockPage.GetCurrentContext( EntityTypeCache.Read<Rock.Model.Person>() );
+
+                if ( currentPersonOrBusiness != null )
                 {
                     // make sure currentPersonOrGroup is either the currentperson or one of their businesses
-                    if ( !personAndBusinesses.Any( a => a.Id == currentPersonOrGroup.Id ) )
+                    if ( !personAndBusinesses.Any( a => a.Id == currentPersonOrBusiness.Id ) )
                     {
-                        currentPersonOrGroup = null;
+                        currentPersonOrBusiness = null;
                     }
                 }
 
-                currentPersonOrGroup = currentPersonOrGroup ?? this.CurrentPerson;
-
-                var pickerList = personAndBusinesses.Select( a => new
+                if ( currentPersonOrBusiness == null )
                 {
-                    Id = a.Id,
-                    Name = a.FullName,
-                    ButtonClass = ( a.Id == currentPersonOrGroup.Id ) ? "btn btn-xs btn-primary" : "btn btn-xs btn-default"
-                } ).ToList();
+                    // person or business not set (or was set to somebody else), so set it the current person
+                    SetGivingTypeContext( this.CurrentPersonId.Value, true );
+                }
+                else
+                {
+                    var pickerList = personAndBusinesses.Select( a => new
+                    {
+                        Id = a.Id,
+                        Name = a.FullName,
+                        ButtonClass = ( a.Id == currentPersonOrBusiness.Id ) ? "btn btn-xs btn-primary" : "btn btn-xs btn-default"
+                    } ).ToList();
 
-                rptGivingTypes.DataSource = pickerList;
-                rptGivingTypes.DataBind();
+                    rptGivingTypes.DataSource = pickerList;
+                    rptGivingTypes.DataBind();
+                }
+            }
+            else
+            {
+                // nobody logged in, so make sure the Person Context is cleared out
+                RockPage.ClearContextCookie( typeof( Rock.Model.Person ), true, true );
             }
         }
 
