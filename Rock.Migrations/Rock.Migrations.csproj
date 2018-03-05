@@ -105,6 +105,10 @@
     <Compile Include="Migrations\201803022309306_FrontPorchIntegration.Designer.cs">
       <DependentUpon>201803022309306_FrontPorchIntegration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201803051554031_AddCanManageToGroupTypeRole.cs" />
+    <Compile Include="Migrations\201803051554031_AddCanManageToGroupTypeRole.Designer.cs">
+      <DependentUpon>201803051554031_AddCanManageToGroupTypeRole.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2712,6 +2716,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201803022309306_FrontPorchIntegration.resx">
       <DependentUpon>201803022309306_FrontPorchIntegration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803051554031_AddCanManageToGroupTypeRole.resx">
+      <DependentUpon>201803051554031_AddCanManageToGroupTypeRole.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
