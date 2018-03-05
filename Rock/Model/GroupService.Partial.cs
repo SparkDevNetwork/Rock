@@ -1035,5 +1035,15 @@ namespace Rock.Model
                 .Select( m => m.Person )
                 .FirstOrDefault();
         }
+
+        /// <summary>
+        /// Gets the active members.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public static IEnumerable<GroupMember> ActiveMembers( this Group group )
+        {
+            return group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active );
+        }
     }
 }
