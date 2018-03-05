@@ -1,0 +1,54 @@
+
+
+<h2>Group Details</h2>
+<div class="row">
+   <div class="col-md-4">
+     <h5>Leaders:</h5>
+       {% for member in Group.Members %}
+         {% if member.GroupRole.IsLeader %}
+           <P>
+             {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
+           </P>
+         {% endif %}
+       {% endfor %}
+    
+    {% assign groupAddr = Group.GroupLocations | First %}
+    <h5>Address</h5>
+    <P>{{ groupAddr.Location.Street1 }}</P>
+    
+    <h5>City</h5>
+    <P>{{ groupAddr.Location.City }}</P>
+    
+    <h5>Zip</h5>
+    <P>{{ groupAddr.Location.PostalCode }}</P>
+   </div>
+   <div class="col-md-8">
+      {% if Group.Schedule.FriendlyScheduleText %}
+         <h4 class="no-caps margin-t-none">Meets every {{Group.Schedule.FriendlyScheduleText}}</h4>
+      {% endif %}
+     
+      {% for attribute in Group.AttributeValues %}
+         {% unless attribute.AttributeName == "Meeting Day" or attribute.AttributeName == "Meeting Time" or attribute.ValueFormatted == empty %}
+           {% unless attribute.AttributeName == "Family Picture" %}
+             <h5>{{ attribute.AttributeName }}:</h5> <P>{{ attribute.ValueFormatted }} </P>
+             <br/>
+             <br/>
+           {% endunless %}
+         {% endunless %}
+       {% endfor %}
+       
+       {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
+          {% if customEmailButtons %}
+            {{ customEmailButtons }}
+          {% else %}
+            <a onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+              <i class="fa fa-envelope-o"></i> Email Roster
+            </a>
+          {% endif %}
+        {% endif %}
+        {% if AllowedActions.Edit == true %}
+          <a class="btn btn-default btn-xs" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}"><i class="fa fa-pencil"></i> Edit</a>
+        {% endif %}
+        
+   </div>
+</div>

@@ -1,0 +1,38 @@
+
+{% comment %}Force conversion from string to int {% endcomment %}
+{% assign groupId = PageParameter.GroupId | Plus: 0 %}
+
+{% for currGroup in Groups %}
+   {% if currGroup.Group.Id == groupId %}
+      {% assign group = currGroup.Group %}
+   {% endif %}
+{% endfor %}
+
+ <div>
+     <div class="title">
+         <h4>Group Members</h4>
+     </div>
+     <div class="content">
+         <div style="display: flex; flex-direction: column; place-content: center space-between; align-items: stretch;">
+            <div style="flex: 0 0 auto; flex-direction: row;">
+                {% for member in group.Members %}
+                  <div style="padding: 5px 20px; display: flex; justify-content: space-between; align-items: center;">
+                      <div>
+                          <img src="{{ member.Person.PhotoUrl }}" width="60" height="60" style="border-radius: 50%;">
+                      </div>
+                      <div style="display: flex; flex-direction: column; width: 80%; margin-left: 10px;">
+                          <div>
+                              <h5>{{ member.Person.FullName }}</h5>
+                          </div>
+                      </div>
+                      <div>
+                          <a href="mailto:{{ member.Person.Email }}">
+                              <span class="material-icons" style="color: rgba(0, 0, 0, 0.87); position: relative; font-size: 32px; display: inline-block; user-select: none; transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;">email</span>
+                          </a>
+                      </div>
+                  </div>
+                {% endfor %}
+            </div>
+         </div>
+     </div>
+ </div>

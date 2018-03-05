@@ -1,0 +1,24 @@
+
+The Toolbox is comprised of 5 Blocks.
+
+Each block represents a portion of what the user sees:
+Header - Contains the top navigation and stats about the group
+Dashboard - Contains the current series video and quick links
+Training Center - More Videos
+Resources - Even more Videos
+Baptisms - A workflow for reporting baptisms
+Group Details - Details about the actual group.
+
+To allow a user to navigate between these and not have to reload the page, we wrap each block in a 
+pre & post HTML div element that has "display: none;". As the user clicks the header links,
+jquery toggles the appropriate block visible.
+
+We are use this design because each block in Rock has different functionality.
+The video pages are Content Channel blocks.
+The Baptism page is a Workflow Entry block.
+
+We use the pre & post HTML because certain blocks (Workflow Entry) don't have a place to render HTML.
+So for consistency, we put the wrapping divs in pre & post for all blocks.
+
+Because we use "display: none" in the block's pre-HTML, this causes its Block Editor icon to not show up.
+If you need to edit a block's settings, click the link to it in the header first (making it visible) and then use the Block Editor.

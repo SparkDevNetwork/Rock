@@ -37,11 +37,12 @@ namespace RockWeb.Plugins.church_ccv.Podcast
     /// </summary>
     [DisplayName( "Series List Lava" )]
     [Category( "CCV > Podcast" )]
-    [Description( "Presents the available Podcasts in the Weekend Series Category" )]
+    [Description( "Presents the available Podcasts in a desired Series Category" )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the page.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true)]
-    [LinkedPage( "Series Detail Page" )]
-    [LinkedPage( "Message Detail Page" )]
+    [LinkedPage( "Series Detail Page", "Optional page to link to if a series is clicked.", false )]
+    [LinkedPage( "Message Detail Page", "Optional page to link to if a message is clicked.", false  )]
     [IntegerField( "Items Per Page", "The number of series per page to display.", false, 12 )]
+    [IntegerField( "Podcast Category", "The category ID to use for listing podcasts (Weekend Series, Group Videos, etc.)", false, PodcastUtil.WeekendVideos_CategoryId )]
     public partial class SeriesListLava : Rock.Web.UI.RockBlock
     {        
         /// <summary>
@@ -56,8 +57,9 @@ namespace RockWeb.Plugins.church_ccv.Podcast
             int numPerPage = PageParameter( "NumPerPage" ).AsInteger( );
 
             int numItems = int.Parse( GetAttributeValue( "ItemsPerPage" ) );
+            int podcastCategory = int.Parse( GetAttributeValue( "PodcastCategory" ) );
 
-            ShowDetail( pageNum, numPerPage != 0 ? numPerPage : numItems );
+            ShowDetail( pageNum, numPerPage != 0 ? numPerPage : numItems, podcastCategory );
         }
         
         /// <summary>
@@ -72,28 +74,37 @@ namespace RockWeb.Plugins.church_ccv.Podcast
         
         /// Displays the view group  using a lava template
         /// 
-        protected void ShowDetail( int pageNum, int numPerPage )
+        protected void ShowDetail( int pageNum, int numPerPage, int podcastCategory )
         {
             // to improve performance, get the minimum number of series required to fulfill this request, which would be (pageNum + 1) * numPerPage
             int numSeries = (pageNum + 1) * numPerPage;
 
-            PodcastUtil.PodcastCategory podcastSeriesList = PodcastUtil.PodcastsAsModel( PodcastUtil.WeekendVideos_CategoryId, false, numSeries );
+            // wrap this in a try / catch so that we handle the category not existing, or it failing to load due to the user not
+            // having view permissions. In any failure case, we'll simply render no lava objects.
+            try
+            {
+                PodcastUtil.PodcastCategory podcastSeriesList = PodcastUtil.PodcastsAsModel( podcastCategory, false, numSeries, CurrentPersonAliasId.HasValue ? CurrentPersonAliasId.Value : 0 );
 
-            PodcastUtil.PodcastCategory pagedPodcastList = new PodcastUtil.PodcastCategory( podcastSeriesList.Name, podcastSeriesList.Id );
-            pagedPodcastList.Children = podcastSeriesList.Children.Skip( pageNum * numPerPage ).Take( numPerPage ).ToList( );
-            
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "WeekendSeries", pagedPodcastList );
-            mergeFields.Add( "CurrentSeries", podcastSeriesList.Children[0] );
+                PodcastUtil.PodcastCategory pagedPodcastList = new PodcastUtil.PodcastCategory( podcastSeriesList.Name, podcastSeriesList.Id );
+                pagedPodcastList.Children = podcastSeriesList.Children.Skip( pageNum * numPerPage ).Take( numPerPage ).ToList( );
 
-            Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            linkedPages.Add("SeriesDetailPage", LinkedPageUrl("SeriesDetailPage", null));
-            linkedPages.Add("MessageDetailPage", LinkedPageUrl("MessageDetailPage", null));
-            mergeFields.Add("LinkedPages", linkedPages);
-    
-            string template = GetAttributeValue( "LavaTemplate" );
-            
-            lContent.Text = template.ResolveMergeFields( mergeFields );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "SeriesList", pagedPodcastList );
+                mergeFields.Add( "FirstSeries", podcastSeriesList.Children [ 0 ] );
+
+                Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+                linkedPages.Add( "SeriesDetailPage", LinkedPageUrl( "SeriesDetailPage", null ) );
+                linkedPages.Add( "MessageDetailPage", LinkedPageUrl( "MessageDetailPage", null ) );
+                mergeFields.Add( "LinkedPages", linkedPages );
+
+                string template = GetAttributeValue( "LavaTemplate" );
+
+                lContent.Text = template.ResolveMergeFields( mergeFields );
+            }
+            catch
+            {
+                // don't do anything special--the lava objects will simply be empty.
+            }
         }
         #endregion
     }

@@ -8,7 +8,7 @@
 <div id="previous-series" class="watch container-fluid">
   <div class="row">
 
-    {% for Series in WeekendSeries.Children %}		
+    {% for Series in SeriesList.Children %}		
 		<div class="watch col-sm-6 col-md-4">
 		  <div class="thumbnail js-series">
 			<a href="{{ LinkedPages.SeriesDetailPage }}?SeriesId={{ Series.Id }}"><img class="img-full" src="/GetImage.ashx?guid={{ Series.Attributes.Image_31_20 }}" alt="{{ Series.Name }}"></a>

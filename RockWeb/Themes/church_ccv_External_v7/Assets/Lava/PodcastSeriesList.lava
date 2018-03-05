@@ -6,7 +6,7 @@
 {{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
 
 {% if isFirstPage %}
-{% assign firstSeries = WeekendSeries.Children.first %}
+{% assign firstSeries = SeriesList.Children.first %}
 <a href="{{ LinkedPages.SeriesDetailPage }}?SeriesId={{ firstSeries.Id }}">
   <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('/GetImage.ashx?guid={{ firstSeries.Attributes.HeaderImage }}');">
     <div class="container">
@@ -20,7 +20,7 @@
 
   <div class="row">
 
-    {% for Series in WeekendSeries.Children %}
+    {% for Series in SeriesList.Children %}
     <div class="col-sm-6 col-md-4">
       <div class="thumbnail padding-b-none js-series">
         <a href="{{ LinkedPages.SeriesDetailPage }}?SeriesId={{ Series.Id }}"><img class="img-full" src="/GetImage.ashx?guid={{ Series.Attributes.Image_31_20 }}" alt="{{ Series.Name }}"></a>

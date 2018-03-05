@@ -1,0 +1,62 @@
+﻿{% comment %}
+{% include '~~/Assets/Lava/MyDashboard/AdList.lava' %}
+{% endcomment %}
+
+
+{% comment %} Render Panel {% endcomment %}
+<div class="dashboard-panel">
+    <div class="panel-title">
+        <h4>News</h4>
+        <div>
+            <button class="dropdown-toggle" type="button" data-toggle="dropdown" style="border: 0px;">
+                <span class="material-icons pull-right panel-title-button-icon">more_vert</span>
+            </button>
+            <ul class="dropdown-menu panel-dropdown-menu">
+                <li><a href="/eventsv2">Upcoming Events</a></li>
+            </ul>
+        </div>  
+    </div>
+    <div class="panel-content">
+        
+        {% for item in Items %}
+
+            {% assign itemCampusesRaw = item | Attribute: 'Campuses' %}
+            {% assign itemCampuses = itemCampusesRaw | Split: ',' %}
+            {% assign showItem = false %}
+            {% assign externalUrl = item | Attribute: 'ExternalLink' %}
+            {% capture internalUrl %}{{ LinkedPages.DetailPage }}?Item={{ item.Id }}{% endcapture %}
+            {% assign itemLink = externalUrl | Default: internalUrl %}
+
+            {% assign itemLinkText = item | Attribute:'CallToAction' %}
+            {% if itemLinkText == '' %}
+                {% assign itemLinkText = 'Learn More' %}
+            {% endif %}
+
+            {% comment %} Filter by selected campus {% endcomment %}
+            {% if itemCampusesRaw == empty %}
+                {% assign showItem = true %}
+            {% else %}
+                {% for itemCampus in itemCampuses %}
+                    {% if itemCampus == Context.Campus.Name %}
+                        {% assign showItem = true %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            {% if showItem %}
+                <div>
+                    <div class="item-title">
+                        <span>
+                            <i class="fa fa-info-circle item-title-icon"></i>
+                            <h4 class="item-title-text">{{ item.Title }}</h4>
+                        </span>
+                    </div>
+                    <div class="item-content">
+                        <p>{{ item | Attribute:'SummaryText'}}</p>
+                        <a href="{{ itemLink }}" style="color: rgb(122, 19, 21); text-transform: uppercase; font-family: Akrobat; font-weight: bold;">{{ itemLinkText }}&nbsp</a><i class="fa fa-angle-right fa-lg" style="vertical-align: -10%;"></i>     
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

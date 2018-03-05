@@ -1,0 +1,343 @@
+.dashboard-row {
+    margin-top: 40px;
+}
+
+.dashboard-panel, .dashboard-card {
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    border: unset;
+    border-width: unset;
+    height: 450px; 
+    max-height: 450px; 
+    background-color: #FFFFFF; 
+    z-index: 1; 
+    overflow: hidden; 
+}
+
+/* Panel Title Section */
+.panel-title {
+    padding: 0px 15px; 
+    border-bottom: 1px solid #ddd; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+}
+
+.panel-title-button-icon {
+    color: rgba(0, 0, 0, 0.87); 
+    position: relative; 
+    font-size: 24px; 
+    display: inline-block; 
+    user-select: none; 
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+}
+
+.panel-dropdown-menu {
+    top: unset;
+    left: unset;
+}
+
+/* Panel Content Section */
+.panel-content {
+    overflow-y: auto; 
+    height: 400px;
+    display: flex; 
+    flex-direction: column;
+}
+
+.content-header {
+    text-align: center; 
+    background-color: rgb(230, 230, 230);
+    border-bottom: 1px solid #ddd; 
+}
+
+.content-group-header {
+    text-align: center; 
+    background-color: rgb(240, 240, 240);
+    border-bottom: 1px solid #ddd; 
+}
+
+.content-group-header h5 {
+    font-size: 18px; 
+    margin: 0px 0px .05rem; 
+    padding: 10px 15px;
+}
+
+.person-row {
+    padding: 5px 20px; 
+    display: flex; 
+    align-items: center;
+}
+
+.person-info {
+    display: flex; 
+    flex-direction: column; 
+    width: 80%; 
+    margin-left: 10px;
+}
+
+.person-contact {
+    display: flex;
+    min-width: 76px;
+    justify-content: flex-end;
+}
+
+.person-row-email-button, .person-row-phone-button {
+    color: rgba(0, 0, 0, 0.87); 
+    position: relative; 
+    font-size: 28px; 
+    display: inline-block; 
+    user-select: none; 
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+    margin-right: 10px;
+}
+
+.item-title span {
+    height: 64px; 
+    color: rgba(0, 0, 0, 0.87); 
+    display: flex; 
+    align-items: center; 
+    font-family: Roboto, sans-serif; 
+    font-size: 14px; 
+    padding-left: 14px; 
+    padding-right: 14px; 
+    font-weight: 500;
+}
+
+.item-title-icon {
+    color: #D0DD29; 
+    position: relative; 
+    font-size: 24px; 
+    display: inline-block; 
+    user-select: none; 
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
+    padding-right: 8px;
+}
+
+.item-title-text {
+    margin: 0px 0px .05rem;
+}
+
+.item-content {
+    border-left: 1px solid rgb(189, 189, 189); 
+    margin-top: -14px; 
+    margin-left: 25px; 
+    padding-left: 21px; 
+    padding-right: 16px;
+}
+
+.item-content p {
+    font-family: Heebo; 
+    font-size: 1.1rem; 
+    line-height: 200%; 
+    font-weight: 400; 
+    margin: 10px 0; 
+    color: #707270;
+}
+
+.item-content a {
+    color: rgb(122, 19, 21);
+    text-transform: uppercase; 
+    font-family: Akrobat; 
+    font-weight: bold;
+}
+
+/* Group Panel */
+.group-header {
+    background-color: rgb(230, 230, 230);
+    padding: 15px;
+}
+
+.group-name-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.group-header a {
+    display: inline-block; 
+    font-family: Akrobat;
+    font-size: 16px; 
+    color: rgb(122, 19, 21); 
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
+    overflow: hidden; 
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.group-header h5 {
+    font-size: 16px; 
+    margin: 0px 0px .05rem; 
+}
+
+.group-header a span {
+    position: relative; 
+    vertical-align: middle; 
+    text-transform: uppercase; 
+    font-weight: bold; 
+}
+
+.group-header a svg {
+    display: inline-block; 
+    color: rgba(0, 0, 0, 0.87); 
+    fill: rgb(122, 19, 21); 
+    height: 24px; 
+    width: 24px; 
+    user-select: none; 
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
+    vertical-align: middle; 
+    margin-left: 0px; 
+    margin-right: 12px;
+}
+
+
+
+.coach-video-row {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coach-video {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coach-video a img {
+    border-radius: 5px;
+}
+
+.coach-video h5 {
+    margin-left: 20px;
+}
+
+.coach-guide {
+    border-left: 2px solid black;
+    padding-left: 15px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+}
+
+
+
+/* Call To Action Info Panel */
+.panel-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.info-header {
+    display: flex; 
+    flex-direction: column; 
+    padding: 10px 16px; 
+    font-family: Akrobat; 
+    font-weight: bold; 
+    text-transform: uppercase;
+}
+
+.info-header h4 {
+    font-size: 24px; 
+}
+
+.info-header h5 {
+    font-size: 14px; 
+    color: rgb(1, 0, 1);
+    margin: 0;
+}
+
+.info-content {
+    padding: 16px; 
+    font-size: 14px; 
+    color: rgba(0, 0, 0, 0.87); 
+    font-family: Heebo;
+    height: 115px;
+}
+
+.info-link {
+    align-self: flex-end;
+}
+
+.info-link a {
+    display: inline-block; 
+    font-family: Akrobat;
+    font-size: 16px; 
+    margin: 0px 8px 0px 0px; 
+    height: 55px; 
+    line-height: 55px; 
+    min-width: 88px; 
+    color: rgb(122, 19, 21); 
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
+    overflow: hidden; 
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.info-link a span {
+    position: relative; 
+    padding-left: 16px; 
+    vertical-align: middle; 
+    letter-spacing: 0px; 
+    text-transform: uppercase; 
+    font-weight: bold; 
+}
+
+.info-link a svg {
+    display: inline-block; 
+    color: rgba(0, 0, 0, 0.87); 
+    fill: rgb(122, 19, 21); 
+    height: 24px; 
+    width: 24px; 
+    user-select: none; 
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
+    vertical-align: middle; 
+    margin-left: 0px; 
+    margin-right: 12px;
+}
+
+/* Events */
+/* Nav buttons */
+.nav-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0px 15px;
+}
+
+/* Wrappers used to fix clipping when hiding row overflow */
+.event-items-wrapper {
+    /* overflow: hidden; */
+    padding: 5px 0;
+}
+
+.event-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 5px 15px;
+    height: 400px;
+}
+
+.event-card-wrapper {
+    height: 440px;
+}
+
+.event-image img {
+    height: 200px;
+    width: 360px;
+}
+
+.event-header-row {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 15px;
+    margin-top: 25px;
+}
+
+.event-items-row {
+    display: flex;
+    margin-bottom: 25px;
+}
+

@@ -6845,10 +6845,6 @@ iframe.file-browser {
     overflow: hidden;
 }
 
-iframe {
-    border: 1px solid #ccc;
-}
-
 .clickable {
     cursor: pointer;
 }
