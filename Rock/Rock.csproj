@@ -1530,7 +1530,7 @@
     <Compile Include="Web\UI\Controls\Grid\HtmlField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
     <Compile Include="Web\UI\Controls\ListItems.cs" />
-    <Compile Include="Web\UI\Controls\NumberParentBox.cs" />
+    <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ContentChannelItemPicker.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\Children.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\ChildRow.cs" />
