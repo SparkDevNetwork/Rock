@@ -6,11 +6,9 @@
 			{% else %}
 				<li>
 			{% endif %}
-				<i class="{{ childPage.IconCssClass }}"></i>
-
+                <i class="{{ childPage.IconCssClass }} fa-fw"></i> {{ childPage.Title }}
 				{% if childPage.DisplayChildPages == 'true' and childPage.Pages != empty %}
                     <ul class="nav nav-childpages">
-                        <li class="title">{{ childPage.Title }}</li>
 						{% for grandchildPage in childPage.Pages %}
                             <li class="header">{{ grandchildPage.Title }}</li>
                             {% if grandchildPage.DisplayChildPages == 'true' %}
