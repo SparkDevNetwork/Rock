@@ -87,12 +87,20 @@ An error has occurred connecting you to theWiFi netwok. Please try again in a fe
             RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Legal Note", "ShowLegalNote", "", @"Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.", 9, @"True", "9D8B8CC4-C19E-4EF3-98B4-4426A21B7915" );
 
             // Attrib for BlockType: WiFi Welcome:Legal Note
-            RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Legal Note", "LegalNote", "", @"A legal note outlining the Terms and Conditions for using WiFi", 10, @"
-<!DOCTYPE html>
+            RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Legal Note", "LegalNote", "", @"A legal note outlining the Terms and Conditions for using WiFi", 10, @"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""utf-8"" />
     <title></title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Helvetica, Arial, sans-serif, ""Apple Color Emoji"", ""Segoe UI Emoji"", ""Segoe UI Symbol"";
+            padding: 0 12px;
+        }
+        li {
+            padding-bottom: 8px;
+        }
+    </style>
 </head>
 <body>
     <h1>Terms & Conditions</h1>
@@ -101,47 +109,36 @@ An error has occurred connecting you to theWiFi netwok. Please try again in a fe
         (""Organization"") to its guests. Please read the Service Terms and Conditions below. To use the Service, users must accept these Service Terms and Conditions.
     </p>
 
-    <p>
-        1. The Service allows the users to access the Internet via the Wi-Fi network provided by the Organization by using the user's Wi-Fi-enabled device. In order to use the Service, the
-        users must use a Wi-Fi-enabled device and related software.It is the user's responsibility to ensure that the user's device works with the service
-   </p>
-
-    <p>
-        2. The Organization may from time to time modify or enhance or suspend the Service
-    </p>
-
-    <p>
-        3. The users acknowledges and consents that:
-    </p>
-
-    <p>
-        &nbsp;&nbsp;(a) The Service has to be operated properly in accordance with the recommended practice, and with the appropriate hardware and software installed;
-    </p>
-
-    <p>
-        &nbsp;&nbsp;(b) The provisioning of the Service may reveal location-specific data, usage and retention of which are subject to the local standard privacy policy and jurisdiction;
-    </p>
-
-    <p>
-        &nbsp;&nbsp;(c) Every user is entitled to 20 continuous minutes free WiFi service every day at the Company's designated locations(s). If the connection is disconnected within the 20 minutes due to any reason, the users cannot use the Service again on the same day;
-    </p>
-
-    <p>
-        &nbsp;&nbsp;(d) The Organization excludes all liability or responsibility for any cost, claim, damage, or loss to the user or to any third party whether direct or indirect of any kind including revenue, loss or profits or any consequential loss in contract,
-        tort, under any statute or otherwise( including negligence ) arising out of or in any way related to the Service( including, but not limited to, any loss to the user arising from a suspension of the Service or Wi-Wi disconnection or degrade of Service quality); and
-     </p>
-
-    <p>
-        &nbsp;&nbsp;(e) The Organization will not be liable to the user or any other person for any loss or damage resulting from a delay or failure to perform these Terms and Conditions in whole or in part where such delay or failure is due to causes beyond the Organization's reasonable control, or which is not occasioned by its fault or negligence, including
-        acts or omissions of third parties( including telecommunications network operators, Information Service content providers, and equipment suppliers), shortage of components, war, the threat of imminent war, riots or other acts of civil disobedience,
-        insurrection, acts of God, restraints imposed by governments or any other supranational legal authority, industrial or trade disputes, fires, explosions, storms, floods, lightening, earthquakes and other natural calamities.
-    </p>
-
-    <p>
-        4. The user's use of the Service is subject to the coverage and connectivity conditions of the Service network and the Organization makes no guarantee regarding the service performance and availability of the service network. The Organization hereby expressly reserves the right to cease the
-        provisioning of the Service in the event the same is being substantially affected by reasons beyond the control of the Organization.
-    </p>
-
+    <ol>
+        <li>The Service allows the users to access the Internet via the Wi-Fi network provided by the Organization by using the user's Wi-Fi-enabled device. In order to use the Service, the users must use a Wi-Fi-enabled device and related software.It is the user's responsibility to ensure that the user's device works with the service.</li>
+        <li>The Organization may from time to time modify or enhance or suspend the Service.</li>
+        <li>The users acknowledges and consents that:
+            <ol type=""a"">
+                <li>
+                    The Service has to be operated properly in accordance with the recommended practice, and with the appropriate hardware and software installed;
+                </li>
+                <li>
+                    The provisioning of the Service may reveal location-specific data, usage and retention of which are subject to the local standard privacy policy and jurisdiction;
+                </li>
+                <li>
+                    Every user is entitled to 20 continuous minutes free WiFi service every day at the Company's designated locations(s). If the connection is disconnected within the 20 minutes due to any reason, the users cannot use the Service again on the same day;
+                </li>
+                <li>
+                    The Organization excludes all liability or responsibility for any cost, claim, damage, or loss to the user or to any third party whether direct or indirect of any kind including revenue, loss or profits or any consequential loss in contract,
+                        tort, under any statute or otherwise( including negligence ) arising out of or in any way related to the Service( including, but not limited to, any loss to the user arising from a suspension of the Service or Wi-Wi disconnection or degrade of Service quality); and
+                </li>
+                <li>
+                    The Organization will not be liable to the user or any other person for any loss or damage resulting from a delay or failure to perform these Terms and Conditions in whole or in part where such delay or failure is due to causes beyond the Organization's reasonable control, or which is not occasioned by its fault or negligence, including
+                    acts or omissions of third parties( including telecommunications network operators, Information Service content providers, and equipment suppliers), shortage of components, war, the threat of imminent war, riots or other acts of civil disobedience,
+                    insurrection, acts of God, restraints imposed by governments or any other supranational legal authority, industrial or trade disputes, fires, explosions, storms, floods, lightening, earthquakes and other natural calamities.
+                </li>
+            </ol>
+        </li>
+        <li>
+            The user's use of the Service is subject to the coverage and connectivity conditions of the Service network and the Organization makes no guarantee regarding the service performance and availability of the service network. The Organization hereby expressly reserves the right to cease the
+            provisioning of the Service in the event the same is being substantially affected by reasons beyond the control of the Organization.
+        </li>
+    </ol>
 </body>
 </html>", "581389F2-90D1-4E0D-B8DD-2195D73F9A59" );
             // Attrib for BlockType: WiFi Welcome:Show Mobile Phone
