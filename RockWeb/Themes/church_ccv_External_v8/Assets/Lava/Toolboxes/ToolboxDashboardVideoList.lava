@@ -12,15 +12,52 @@
 {% assign firstSeries = SeriesList.Children.first %}
 {% assign firstMessage = firstSeries.Messages | First %}
 <div class="thumbnail padding-b-none js-series">
-   <script src="https://fast.wistia.com/embed/medias/{{firstMessage.Attributes.WistiaId}}.jsonp" async></script>
-   <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
-   <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-      <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-         <span class="wistia_embed wistia_async_{{firstMessage.Attributes.WistiaId}} popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+   <h3>STUDY MATERIALS</h3>
+   <div class="row">
+      <div class="col-md-4">
+         <h5>Materials For Week Of</h5>
+      </div>
+      <div class="col-md-4">
+         <h5>Series</h5>
+      </div>
+      <div class="col-md-4">
+         <h5>Week</h5>
       </div>
    </div>
-   <div class="caption">
-     <h3 class="panel-title">{{ firstMessage.Name }}</h3>
+   <div class="row">
+      <div class="col-md-4">
+         <h5>
+         {% assign today = 'Now' | DateAdd: -6 %}
+         {{ today | SundayDate }}
+         </h5>
+      </div>
+      <div class="col-md-4">
+         <h5>{{ firstSeries.Name }}</h5>
+      </div>
+      <div class="col-md-4">
+         <h5>{{ firstSeries.Messages | Size }}</h5>
+      </div>
+   </div>
+   <div class="row">
+      <div class="col-md-12">
+         <script src="https://fast.wistia.com/embed/medias/{{firstMessage.Attributes.WistiaId}}.jsonp" async></script>
+         <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+         <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+            <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+               <span class="wistia_embed wistia_async_{{firstMessage.Attributes.WistiaId}} popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
+            </div>
+         </div>
+      </div>
+   </div>
+   <div class="row">
+      <div class="col-md-6">
+         {{ firstMessage.Name }}
+      </div>
+   </div>
+   <div class="row">
+      <div class="col-md-12">
+         <a href="{{firstMessage.Attributes.DiscussionGuideUrl}}"><i style="font-size: 1.4em;" class="fa fa-file-text"></i> Discussion Guide</a>
+      </div>
    </div>
 </div>
 
@@ -29,42 +66,46 @@
 {% assign numToRender = 3 %}
 {% assign isFirstItem = true %}
 
-
   <div class="row">
-    {% for Series in SeriesList.Children %}
-      {% for Message in Series.Messages %}
-         
-         {% comment %} Skip the first item since we render it as a billboard above. {% endcomment %}
-         {% if isFirstItem %}
-            {% assign isFirstItem = false %}
-            {% continue %}
-         {% endif %}
-         
-         {{ Message.3rdPartyFullVideoUrl }}
-         <div class="col-sm-6 col-md-4">
-            <div class="thumbnail padding-b-none js-series">               
-               
-                  <script src="https://fast.wistia.com/embed/medias/{{Message.Attributes.WistiaId}}.jsonp" async></script>
-                  <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
-                  <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
-                     <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-                        <span class="wistia_embed wistia_async_{{Message.Attributes.WistiaId}} popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
-                     </div>
+ {% for Series in SeriesList.Children %}
+   {% for Message in Series.Messages %}
+      
+      {% comment %} Skip the first item since we render it as a billboard above. {% endcomment %}
+      {% if isFirstItem %}
+         {% assign isFirstItem = false %}
+         {% continue %}
+      {% endif %}
+      
+      {{ Message.3rdPartyFullVideoUrl }}
+      <div class="col-sm-6 col-md-4">
+         <div class="thumbnail padding-b-none js-series">               
+            
+               <script src="https://fast.wistia.com/embed/medias/{{Message.Attributes.WistiaId}}.jsonp" async></script>
+               <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+               <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+                  <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                     <span class="wistia_embed wistia_async_{{Message.Attributes.WistiaId}} popover=true popoverAnimateThumbnail=true videoFoam=true" style="display:inline-block;height:100%;width:100%">&nbsp;</span>
                   </div>
-               
-               <div class="caption">
-                  <h3 class="panel-title">{{ Message.Name }}</h3>
                </div>
+         </div>
+         <div class="row">
+            <div class="col-md-12">
+               {{ Message.Name | Truncate:20,'...'}}
             </div>
          </div>
-            {% assign numToRender = numToRender | Minus: 1 %}
-            {% if numToRender == 0 %}
-               {% break %}
-            {% endif %}
-         {% endfor %}
+         <div class="row">
+            <div class="col-md-12">
+               <a href="{{Message.Attributes.DiscussionGuideUrl}}"><i style="font-size: 1.4em;" class="fa fa-file-text"></i> Discussion Guide</a>
+            </div>
+         </div>
+      </div>
+      {% assign numToRender = numToRender | Minus: 1 %}
          {% if numToRender == 0 %}
             {% break %}
          {% endif %}
       {% endfor %}
-      </div>
-   </div>
+      {% if numToRender == 0 %}
+         {% break %}
+      {% endif %}
+   {% endfor %}
+</div>
