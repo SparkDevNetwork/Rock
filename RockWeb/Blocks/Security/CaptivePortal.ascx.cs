@@ -33,8 +33,8 @@ namespace RockWeb.Blocks.Security
     [DisplayName( "WiFi Welcome" )]
     [Category( "Security" )]
     [Description( "Controls access to WiFi." )]
-    [TextField( "MAC Address Param", "The query string parameter used for the MAC Address", true, "client_mac", "", 0, "MacAddressParam" )]
-    [TextField( "Release Link", "URL to direct users to", true, "", "", 1, "ReleaseLink" )]
+    [TextField( "MAC Address Paramameter", "The query string parameter used for the MAC Address", true, "client_mac", "", 0, "MacAddressParam" )]
+    [TextField( "Release Link", "The URL to redirect users to after registration.", true, "", "", 1, "ReleaseLink" )]
     [BooleanField("Show First Name", "Show or hide the First Name field. If it is visible then it will be required.", true, "", 2, "ShowFirstName", IsRequired = true )]
     [BooleanField( "Show Last Name", "Show or hide the Last Name field. If it is visible then it will be required.", true, "", 3, "ShowLastName", IsRequired = true )]
     [BooleanField( "Show Mobile Phone", "Show or hide the Mobile Phone Number field. If it is visible then it will be required.", true, "", 4, "ShowMobilePhone", IsRequired = true )]
@@ -145,12 +145,9 @@ namespace RockWeb.Blocks.Security
                 PersonService personService = new PersonService( rockContext );
 
                 // See if they are logged in first
-                int? rockUserId = null;
-                if ( Session["RockUserId"] != null )
+                if ( CurrentPerson != null )
                 {
-                    rockUserId = Session["RockUserId"].ToString().AsIntegerOrNull();
-                    person = personService.GetByUserLoginId( rockUserId.Value );
-                    Prefill( person );
+                    Prefill( CurrentPerson );
                     RockPage.LinkPersonAliasToDevice( ( int ) CurrentPersonAliasId, macAddress );
                     hfPersonAliasId.Value = CurrentPersonAliasId.ToString();
                 }
@@ -288,13 +285,13 @@ namespace RockWeb.Blocks.Security
             if ( tbFirstName.Visible == true )
             {
                 tbFirstName.Text = person.FirstName;
-                tbFirstName.Enabled = Session["RockUserId"] == null;
+                tbFirstName.Enabled = CurrentPerson == null;
             }
 
             if (tbLastName.Visible)
             {
                 tbLastName.Text = person.LastName;
-                tbLastName.Enabled = Session["RockUserId"] == null;
+                tbLastName.Enabled = CurrentPerson == null;
             }
 
             if ( tbMobilePhone.Visible )
