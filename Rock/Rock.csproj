@@ -1184,6 +1184,7 @@
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
+    <Compile Include="Plugin\HotFixes\046_EnableSmartyStreetsIfNoActiveLocationSrv.cs" />
     <Compile Include="Plugin\HotFixes\045_FamilyRegistration.cs" />
     <Compile Include="Plugin\HotFixes\044_EnsureCommunicationMigration.cs" />
     <Compile Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3.cs" />
