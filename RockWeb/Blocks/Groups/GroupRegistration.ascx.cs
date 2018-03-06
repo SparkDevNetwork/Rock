@@ -493,9 +493,7 @@ namespace RockWeb.Blocks.Groups
                     // If the group has a GroupCapacity, check how far we are from hitting that.
                     if ( _group.GroupCapacity.HasValue )
                     {
-                        openGroupSpots = _group.GroupCapacity.Value - _group.Members
-                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
-                            .Count();
+                        openGroupSpots = _group.GroupCapacity.Value - _group.ActiveMembers().Count();
                     }
 
                     // When someone registers for a group on the front-end website, they automatically get added with the group's default
