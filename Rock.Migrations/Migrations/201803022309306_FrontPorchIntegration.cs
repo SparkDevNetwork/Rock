@@ -146,7 +146,7 @@ An error has occurred connecting you to theWiFi netwok. Please try again in a fe
             // Attrib for BlockType: WiFi Welcome:MAC Address Param
             RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "9C204CD0-1233-41C5-818A-C5DA439445AA", "MAC Address Param", "MacAddressParam", "", @"The query string parameter used for the MAC Address", 0, @"client_mac", "8483A458-0D5A-4C9F-B2A0-713046A06192" );
             // Attrib for BlockType: WiFi Welcome:Release Link
-            RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Release Link", "ReleaseLink", "", @"URL to direct users to", 1, @"", "31F3E224-38A2-4D7C-A5C9-B34FCAFC98CD" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Release Link", "ReleaseLink", "", @"The URL to redirect users to after registration.", 1, @"", "31F3E224-38A2-4D7C-A5C9-B34FCAFC98CD" );
             // Attrib for BlockType: WiFi Welcome:Show First Name
             RockMigrationHelper.UpdateBlockTypeAttribute( "CCFCD227-C8F9-4952-8AC5-E427D519EE47", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show First Name", "ShowFirstName", "", @"Show or hide the First Name field. If it is visible then it will be required.", 2, @"True", "2CF20676-15A1-4827-9A2B-3144498336E8" );
             // Attrib for BlockType: Calendar Lava:Campuses
