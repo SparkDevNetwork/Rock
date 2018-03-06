@@ -206,14 +206,19 @@ namespace Rock.Web.UI.Controls
         /// Gets the type of the checkin group.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
-        public void GetGroupTypeValues( GroupType groupType )
+        public void GetGroupTypeValues( GroupType groupType, RockContext rockContext )
         {
             EnsureChildControls();
 
             groupType.Name = _tbGroupTypeName.Text;
-            groupType.InheritedGroupTypeId = _ddlGroupTypeInheritFrom.SelectedValueAsId();
             groupType.AttendanceRule = _ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
             groupType.AttendancePrintTo = _ddlPrintTo.SelectedValueAsEnum<PrintTo>();
+
+            groupType.InheritedGroupTypeId = _ddlGroupTypeInheritFrom.SelectedValueAsId();
+            if ( groupType.InheritedGroupTypeId != null && groupType.InheritedGroupTypeId != 0 )
+            {
+                groupType.InheritedGroupType = new GroupTypeService( rockContext ).Get( groupType.InheritedGroupTypeId ?? 0 );
+            }
 
             // Reload Attributes
             groupType.Attributes = null;
@@ -236,8 +241,8 @@ namespace Rock.Web.UI.Controls
                 GroupTypeGuid = groupType.Guid;
                 _tbGroupTypeName.Text = groupType.Name;
                 _ddlGroupTypeInheritFrom.SetValue( groupType.InheritedGroupTypeId );
-                _ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
-                _ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
+                _ddlAttendanceRule.SetValue( ( int ) groupType.AttendanceRule );
+                _ddlPrintTo.SetValue( ( int ) groupType.AttendancePrintTo );
 
                 CreateGroupTypeAttributeControls( groupType, rockContext );
             }
@@ -387,7 +392,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <param name="rockContext">The rock context.</param>
-        public void CreateGroupTypeAttributeControls( GroupType groupType,  RockContext rockContext )
+        public void CreateGroupTypeAttributeControls( GroupType groupType, RockContext rockContext )
         {
             EnsureChildControls();
 
@@ -419,7 +424,7 @@ namespace Rock.Web.UI.Controls
                 var groupType = new GroupTypeService( rockContext ).Get( GroupTypeGuid );
                 if ( groupType != null )
                 {
-                    GetGroupTypeValues( groupType );
+                    GetGroupTypeValues( groupType, rockContext );
                     CreateGroupTypeAttributeControls( groupType, rockContext );
                 }
             }

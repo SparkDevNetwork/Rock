@@ -474,7 +474,7 @@ namespace Rock.Model
             set { _triggers = value; }
         }
         private ICollection<GroupMemberWorkflowTrigger> _triggers;
-        
+
         /// <summary>
         /// Gets or sets the group schedule exclusions.
         /// </summary>
@@ -579,8 +579,10 @@ namespace Rock.Model
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        public override Dictionary<string, string> SupportedActions {
-            get {
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
                 if ( _supportedActions == null )
                 {
                     _supportedActions = new Dictionary<string, string>();
@@ -630,10 +632,17 @@ namespace Rock.Model
                         }
                     }
 
-                    if ( string.IsNullOrEmpty( GroupViewLavaTemplate ) )
+                    if ( string.IsNullOrWhiteSpace( GroupViewLavaTemplate ) )
                     {
-                        this.ValidationResults.Add( new ValidationResult( "Lava template for group view is mandatory." ) );
-                        return false;
+                        if ( InheritedGroupType != null && !string.IsNullOrWhiteSpace( InheritedGroupType.GroupViewLavaTemplate ) )
+                        {
+                            GroupViewLavaTemplate = InheritedGroupType.GroupViewLavaTemplate;
+                        }
+                        else
+                        {
+                            this.ValidationResults.Add( new ValidationResult( "Lava template for group view is mandatory." ) );
+                            return false;
+                        }
                     }
                 }
 
@@ -648,7 +657,7 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
         {
-            if (state == System.Data.Entity.EntityState.Deleted)
+            if ( state == System.Data.Entity.EntityState.Deleted )
             {
                 ChildGroupTypes.Clear();
 
@@ -672,7 +681,7 @@ namespace Rock.Model
                 var changeEntry = dbContext.ChangeTracker.Entries<GroupType>().Where( a => a.Entity == this ).FirstOrDefault();
                 if ( changeEntry != null )
                 {
-                    var originalIndexState = (bool)changeEntry.OriginalValues["IsIndexEnabled"];
+                    var originalIndexState = ( bool ) changeEntry.OriginalValues["IsIndexEnabled"];
 
                     if ( originalIndexState == true && IsIndexEnabled == false )
                     {
@@ -833,7 +842,7 @@ namespace Rock.Model
             var groups = new GroupService( rockContext ).Queryable()
                                             .Where( g =>
                                                 g.GroupTypeId == groupTypeId
-                                                && g.IsActive);
+                                                && g.IsActive );
 
             foreach ( var group in groups )
             {

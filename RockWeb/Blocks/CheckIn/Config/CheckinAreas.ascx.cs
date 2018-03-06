@@ -520,7 +520,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     if ( groupType != null )
                     {
                         groupType.LoadAttributes( rockContext );
-                        checkinArea.GetGroupTypeValues( groupType );
+                        checkinArea.GetGroupTypeValues( groupType, rockContext   );
 
                         if ( groupType.IsValid )
                         {
