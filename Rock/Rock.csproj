@@ -548,6 +548,7 @@
     <Compile Include="Data\Udf\GetSpousePersonIdFromPersonIdStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\GetGeofencedGroupNamesStoreFunctionInjectionConvention.cs" />
+    <Compile Include="Data\IRockStoreModelConvention.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
@@ -1183,6 +1184,8 @@
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
     <Compile Include="Plugin\HotFixes\038_LabelFieldType.cs" />
+    <Compile Include="Plugin\HotFixes\046_EnableSmartyStreetsIfNoActiveLocationSrv.cs" />
+    <Compile Include="Plugin\HotFixes\045_FamilyRegistration.cs" />
     <Compile Include="Plugin\HotFixes\044_EnsureCommunicationMigration.cs" />
     <Compile Include="Plugin\HotFixes\043_MoreMigrationRollupsForV7_3.cs" />
     <Compile Include="Plugin\HotFixes\041_MigrationRollupsForV7_3.cs" />
@@ -1484,8 +1487,10 @@
     <Compile Include="Web\Cache\WorkflowTypeCache.cs" />
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
+    <Compile Include="Web\UI\Controls\Grid\EncryptedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\HtmlField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaField.cs" />
+    <Compile Include="Web\UI\Controls\NumberBoxBase.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\Children.cs" />
     <Compile Include="Web\UI\Controls\PreRegistration\ChildRow.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DataViewsPicker.cs" />

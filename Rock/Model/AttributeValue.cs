@@ -78,7 +78,18 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the value.
         /// </value>
         [DataMember]
-        public string Value { get; set; }
+        public string Value
+        {
+            get
+            {
+                return _value ?? string.Empty;
+            }
+            set
+            {
+                _value = value;
+            }
+        }
+        string _value = string.Empty;
 
         #endregion
 

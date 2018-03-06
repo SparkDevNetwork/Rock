@@ -763,6 +763,21 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Decrypts an encrypted string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string Decrypt( string input )
+        {
+            if ( input == null )
+            {
+                return input;
+            }
+
+            return Rock.Security.Encryption.DecryptString( input );
+        }
+
+        /// <summary>
         /// Parse the input string as a URL and then return a specific part of the URL.
         /// </summary>
         /// <param name="input">The string to be parsed as a URL.</param>
@@ -1938,16 +1953,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Parents( DotLiquid.Context context, object input )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person != null )
             {
@@ -1967,16 +1973,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Children( DotLiquid.Context context, object input )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person != null )
             {
@@ -1998,16 +1995,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Address( DotLiquid.Context context, object input, string addressType, string qualifier = "" )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person != null )
             {
@@ -2161,16 +2149,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Person Spouse( DotLiquid.Context context, object input )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person == null )
             {
@@ -2187,16 +2166,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Person HeadOfHousehold( DotLiquid.Context context, object input )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person == null )
             {
@@ -2218,16 +2188,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string FamilySalutation( DotLiquid.Context context, object input, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalfinalSeparator = "&", string separator = "," )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
             if ( person == null )
             {
@@ -2247,16 +2208,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string PhoneNumber( DotLiquid.Context context, object input, string phoneType = "Home", bool countryCode = false )
         {
-            Person person = null;
-
-            if ( input is int )
-            {
-                person = new PersonService( new RockContext() ).Get( (int)input );
-            }
-            else if ( input is Person )
-            {
-                person = (Person)input;
-            }
+            Person person = GetPerson( input );
 
 
             string phoneNumber = null;
@@ -2797,6 +2749,11 @@ namespace Rock.Lava
         {
             if ( input != null )
             {
+                if ( input is int )
+                {
+                    return new PersonService( new RockContext() ).Get( ( int ) input );
+                }
+
                 var person = input as Person;
                 if ( person != null )
                 {
@@ -3398,9 +3355,21 @@ namespace Rock.Lava
 
             if ( page != null )
             {
+                // attempt to correct breadcrumbs
+                if ( page.BreadCrumbs != null && page.BreadCrumbs.Count != 0 )
+                {
+                    var lastBookMark = page.BreadCrumbs.Last();
+
+                    if ( lastBookMark != null && lastBookMark.Name == page.PageTitle )
+                    {
+                        lastBookMark.Name = input;
+                    }
+                }
+
                 page.BrowserTitle = input;
                 page.PageTitle = input;
-                page.Header.Title = input;
+                page.Title = input;
+                page.Header.Title = input;                
             }
 
             return null;
