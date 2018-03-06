@@ -1121,7 +1121,7 @@ namespace RockWeb.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 foreach( var template in new RegistrationTemplateService( rockContext )
-                    .Queryable().AsNoTracking() )
+                    .Queryable().AsNoTracking().OrderBy( t => t.Name ) )
                 {
                     if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
@@ -1152,7 +1152,9 @@ namespace RockWeb.Blocks.Event
                 {
                     foreach ( var instance in new RegistrationInstanceService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( i => i.RegistrationTemplateId == templateId.Value ) )
+                        .Where( i => i.RegistrationTemplateId == templateId.Value )
+                        .OrderBy( i => i.Name )
+                        )
                     {
                         ListItem li = new ListItem( instance.Name, instance.Id.ToString() );
                         ddlExistingLinkageInstance.Items.Add( li );

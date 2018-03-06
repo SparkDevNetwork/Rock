@@ -1,0 +1,68 @@
+﻿@fa-path: '../../../Assets/Fonts/FontAwesome';
+
+.fa-font-face( @fa-weight-name) {
+  .fa-font-face( @fa-weight-name, 'free' );
+}
+
+
+// Font Awesome Solid
+.fa-font-face( @fa-weight-name, @fa-edition-name ) when (@fa-weight-name = 'solid') {
+
+  @font-face {
+    font-family: @fa-font-face;
+    font-style: normal;
+    font-weight: 900;
+    src: url('@{fa-path}/fa-solid-900.eot?v=@{fa-edition-name}');
+    src: url('@{fa-path}/fa-solid-900.eot?v=@{fa-edition-name}#iefix') format('embedded-opentype'), url('@{fa-path}/fa-solid-900.woff2?v=@{fa-edition-name}') format('woff2'), url('@{fa-path}/fa-solid-900.woff?v=@{fa-edition-name}') format('woff'), url('@{fa-path}/fa-solid-900.ttf?v=@{fa-edition-name}') format('truetype'), url('@{fa-path}/fa-solid-900.svg?v=@{fa-edition-name}#fontawesome') format('svg');
+  }
+
+  @font-face {
+    font-family: @fa-font-face;
+    font-style: normal;
+    font-weight: 400;
+    src: url('@{fa-path}/fa-regular-400.eot?v=@{fa-edition-name}');
+    src: url('@{fa-path}/fa-regular-400.eot?v=@{fa-edition-name}#iefix') format('embedded-opentype'), url('@{fa-path}/fa-regular-400.woff2?v=@{fa-edition-name}') format('woff2'), url('@{fa-path}/fa-regular-400.woff?v=@{fa-edition-name}') format('woff'), url('@{fa-path}/fa-regular-400.ttf?v=@{fa-edition-name}') format('truetype'), url('@{fa-path}/fa-regular-400.svg?v=@{fa-edition-name}#fontawesome') format('svg');
+  }
+
+  @fa-theme-weight-outline: 400;
+}
+
+// Font Awesome Regular
+.fa-font-face( @fa-weight-name, @fa-edition-name ) when (@fa-weight-name = 'regular') {
+
+  @font-face {
+    font-family: @fa-font-face;
+    font-style: normal;
+    font-weight: 400;
+    src: url('@{fa-path}/fa-regular-400.eot?v=@{fa-edition-name}');
+    src: url('@{fa-path}/fa-regular-400.eot?v=@{fa-edition-name}#iefix') format('embedded-opentype'), url('@{fa-path}/fa-regular-400.woff2?v=@{fa-edition-name}') format('woff2'), url('@{fa-path}/fa-regular-400.woff?v=@{fa-edition-name}') format('woff'), url('@{fa-path}/fa-regular-400.ttf?v=@{fa-edition-name}') format('truetype'), url('@{fa-path}/fa-regular-400.svg?v=@{fa-edition-name}#fontawesome') format('svg');
+  }
+
+  @fa-theme-weight-outline: 400;
+}
+
+// Font Awesome Regular
+.fa-font-face( @fa-weight-name, @fa-edition-name ) when (@fa-weight-name = 'light') {
+
+  @font-face {
+    font-family: @fa-font-face;
+    font-style: normal;
+    font-weight: 300;
+    src: url('@{fa-path}/fa-light-300.eot?v=@{fa-edition-name}');
+    src: url('@{fa-path}/fa-light-300.eot?v=@{fa-edition-name}#iefix') format('embedded-opentype'), url('@{fa-path}/fa-light-300.woff2?v=@{fa-edition-name}') format('woff2'), url('@{fa-path}/fa-light-300.woff?v=@{fa-edition-name}') format('woff'), url('@{fa-path}/fa-light-300.ttf?v=@{fa-edition-name}') format('truetype'), url('@{fa-path}/fa-light-300.svg?v=@{fa-edition-name}#fontawesome') format('svg');
+  }
+
+  @fa-theme-weight-outline: 300;
+}
+
+// Font Awesome Brands
+.fa-font-face( @fa-weight-name, @fa-edition-name ) when (@fa-weight-name = 'brands') {
+
+  @font-face {
+    font-family: '@{fa-font-face} Brands';
+    font-style: normal;
+    font-weight: 400;
+    src: url('@{fa-path}/fa-brands-400.eot?v=@{fa-edition-name}');
+    src: url('@{fa-path}/fa-brands-400.eot?v=@{fa-edition-name}#iefix') format('embedded-opentype'), url('@{fa-path}/fa-brands-400.woff2?v=@{fa-edition-name}') format('woff2'), url('@{fa-path}/fa-brands-400.woff?v=@{fa-edition-name}') format('woff'), url('@{fa-path}/fa-brands-400.ttf?v=@{fa-edition-name}') format('truetype'), url('@{fa-path}/fa-brands-400.svg?v=@{fa-edition-name}#fontawesome') format('svg');
+  }
+}

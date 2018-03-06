@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Security
                 lHello.Text = string.Format( "<span>Hello {0}</span>", currentPerson.NickName );
 
                 var currentUser = CurrentUser;
-                if ( currentUser == null || !currentUser.IsAuthenticated )
+                if ( currentUser == null )
                 {
                     phMyAccount.Visible = false;
                     phMySettings.Visible = false;

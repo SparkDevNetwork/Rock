@@ -68,7 +68,10 @@
         <asp:Panel ID="pnlBlockTypeAttributesEdit" CssClass="panel panel-block" runat="server" Visible="false">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-list-ul"></i>Attribute Editor</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-list-ul"></i>
+                    Attribute Editor
+                </h1>
             </div>
             <div class="panel-body">
                 <Rock:AttributeEditor ID="edtBlockTypeAttributes" runat="server" OnSaveClick="edtBlockTypeAttributes_SaveClick" OnCancelClick="edtBlockTypeAttributes_CancelClick" ValidationGroup="Attribute" />

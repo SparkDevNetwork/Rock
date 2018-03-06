@@ -73,8 +73,8 @@
       &:before {
         padding-right: .25em;
         content: @fa-var-upload;
-
-        .fa-icon();
+        font-family: @fa-font-face;
+        font-weight: @fa-theme-weight;
       }
     }
   }
@@ -121,18 +121,19 @@
         margin-top: -20px;
         margin-left: 42px;
         margin-left: -12px;
-        font-family: FontAwesome;
+        font-family: @fa-font-face;
+        font-weight: @fa-theme-weight;
         font-size: 28px;
+        font-weight: @fa-theme-weight;
         color: darken( @input-group-addon-bg, 15%);
-        content: '\f016';
-
+        content: @fa-var-files-o;
         -webkit-font-smoothing: antialiased;
       }
 
       &.file-exists:after {
         margin-top: -10px;
         color: darken( @input-group-addon-bg, 15%);
-        content: '\f15c';
+        content: @fa-var-file-alt;
       }
     }
   }
@@ -184,8 +185,8 @@
       &:before {
         padding-right: .25em;
         content: @fa-var-upload;
-
-        .fa-icon();
+        font-family: @fa-font-face;
+        font-weight: @fa-theme-weight;
       }
     }
   }

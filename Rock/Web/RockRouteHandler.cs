@@ -154,10 +154,12 @@ namespace Rock.Web
                                 var pageShortLink = new PageShortLinkService( rockContext ).GetByToken( shortlink, site.Id );
                                 if ( pageShortLink != null )
                                 {
+                                    string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
+
                                     var transaction = new ShortLinkTransaction();
                                     transaction.PageShortLinkId = pageShortLink.Id;
                                     transaction.Token = pageShortLink.Token;
-                                    transaction.Url = pageShortLink.Url;
+                                    transaction.Url = trimmedUrl;
                                     if ( requestContext.HttpContext.User != null )
                                     {
                                         transaction.UserName = requestContext.HttpContext.User.Identity.Name;
@@ -167,7 +169,7 @@ namespace Rock.Web
                                     transaction.UserAgent = httpRequest.UserAgent ?? "";
                                     RockQueue.TransactionQueue.Enqueue( transaction );
 
-                                    requestContext.HttpContext.Response.Redirect( pageShortLink.Url );
+                                    requestContext.HttpContext.Response.Redirect( trimmedUrl );
                                     return null;
                                 }
                             }

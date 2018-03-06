@@ -24,6 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
@@ -356,6 +357,52 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool GroupAttendanceRequiresSchedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets a lava template that can be used for generating  view details for Group.
+        /// </summary>
+        /// <value>
+        /// The Group View Lava Template.
+        /// </value>
+        [DataMember]
+        public string GroupViewLavaTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if specific groups are allowed to have their own member attributes.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this specific group are allowed to have their own member attributes, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowSpecificGroupMemberAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if group requirements section is enabled for group of this type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if group requirements section is enabled for group of this type, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableSpecificGroupRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if groups of this type are allowed to be sync'ed.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type are allowed to be sync'ed, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowGroupSync { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if groups of this type should be allowed to have Group Member Workflows.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if groups of this type should be allowed to have group member workflows, otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowSpecificGroupMemberWorkflows { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -529,6 +576,25 @@ namespace Rock.Model
         }
         private ICollection<GroupRequirement> _groupsRequirements;
 
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions {
+            get {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                }
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
+
         #endregion
 
         #region Public Methods
@@ -562,6 +628,12 @@ namespace Rock.Model
                             parentIds.Add( parent.Id );
                             parent = parent.InheritedGroupType;
                         }
+                    }
+
+                    if ( string.IsNullOrEmpty( GroupViewLavaTemplate ) )
+                    {
+                        this.ValidationResults.Add( new ValidationResult( "Lava template for group view is mandatory." ) );
+                        return false;
                     }
                 }
 
