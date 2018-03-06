@@ -14,25 +14,21 @@
             <div class="panel-body">
                 
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-sm-6">
                         <Rock:RockTextBox ID="tbFirstName" runat="server" Required="false" Label="First Name" ValidationGroup="CaptivePortal" />
                     </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12">
+               
+                    <div class="col-sm-6">
                         <Rock:RockTextBox ID="tbLastName" runat="server" Required="false" Label="Last Name" ValidationGroup="CaptivePortal" />
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-sm-6">
                         <Rock:RockTextBox ID="tbMobilePhone" runat="server" Required="false" Label="Mobile Number" ValidationGroup="CaptivePortal" />
                     </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12">
+                
+                    <div class="col-sm-6">
                         <Rock:RockTextBox ID="tbEmail" runat="server" Required="false" Label="Email Address" ValidationGroup="CaptivePortal" />
                     </div>
                 </div>
