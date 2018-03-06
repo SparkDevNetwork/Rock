@@ -2,7 +2,7 @@
     margin-top: 40px;
 }
 
-.dashboard-panel, .dashboard-card {
+.dashboard-card {
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
     border-radius: 5px;
     border: unset;
@@ -11,11 +11,12 @@
     max-height: 450px; 
     background-color: #FFFFFF; 
     z-index: 1; 
-    overflow: hidden; 
+    overflow: hidden;
+    margin: 20px 0; 
 }
 
-/* Panel Title Section */
-.panel-title {
+/* Card Title Section */
+.dashboard-card .title {
     padding: 0px 15px; 
     border-bottom: 1px solid #ddd; 
     display: flex; 
@@ -23,13 +24,10 @@
     align-items: center;
 }
 
-.panel-title-button-icon {
-    color: rgba(0, 0, 0, 0.87); 
-    position: relative; 
-    font-size: 24px; 
-    display: inline-block; 
-    user-select: none; 
-    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+.dashboard-card .title .dropdown-toggle {
+    border: 0;
+    background-color: unset;
+    padding-top: 5px;
 }
 
 .panel-dropdown-menu {
@@ -37,27 +35,27 @@
     left: unset;
 }
 
-/* Panel Content Section */
-.panel-content {
+/* Card Content Section */
+.dashboard-card .content {
     overflow-y: auto; 
     height: 400px;
     display: flex; 
     flex-direction: column;
 }
 
-.content-header {
+.dashboard-card .content .header {
     text-align: center; 
     background-color: rgb(230, 230, 230);
     border-bottom: 1px solid #ddd; 
 }
 
-.content-group-header {
+.dashboard-card .content .team-header {
     text-align: center; 
     background-color: rgb(240, 240, 240);
     border-bottom: 1px solid #ddd; 
 }
 
-.content-group-header h5 {
+.dashboard-card .content .team-header h5 {
     font-size: 18px; 
     margin: 0px 0px .05rem; 
     padding: 10px 15px;
@@ -142,7 +140,7 @@
     font-weight: bold;
 }
 
-/* Group Panel */
+/* Group Card */
 .group-header {
     background-color: rgb(230, 230, 230);
     padding: 15px;
@@ -190,8 +188,6 @@
     margin-right: 12px;
 }
 
-
-
 .coach-video-row {
     margin-top: 15px;
     display: flex;
@@ -224,13 +220,23 @@
 
 
 /* Call To Action Info Panel */
-.panel-info {
+.info-card {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    border: unset;
+    border-width: unset;
+    height: 450px; 
+    max-height: 450px; 
+    background-color: #FFFFFF; 
+    z-index: 1; 
+    overflow: hidden;
+    margin: 20px 0; 
 }
 
-.info-header {
+.info-card .header {
     display: flex; 
     flex-direction: column; 
     padding: 10px 16px; 
@@ -239,17 +245,17 @@
     text-transform: uppercase;
 }
 
-.info-header h4 {
+.info-card .header h4 {
     font-size: 24px; 
 }
 
-.info-header h5 {
+.info-card .header h5 {
     font-size: 14px; 
     color: rgb(1, 0, 1);
     margin: 0;
 }
 
-.info-content {
+.info-card .content {
     padding: 16px; 
     font-size: 14px; 
     color: rgba(0, 0, 0, 0.87); 
@@ -257,11 +263,11 @@
     height: 115px;
 }
 
-.info-link {
+.info-card .link {
     align-self: flex-end;
 }
 
-.info-link a {
+.info-card .link a {
     display: inline-block; 
     font-family: Akrobat;
     font-size: 16px; 
@@ -276,7 +282,7 @@
     text-decoration: none;
 }
 
-.info-link a span {
+.info-card .link a span {
     position: relative; 
     padding-left: 16px; 
     vertical-align: middle; 
@@ -285,7 +291,7 @@
     font-weight: bold; 
 }
 
-.info-link a svg {
+.info-card .link a svg {
     display: inline-block; 
     color: rgba(0, 0, 0, 0.87); 
     fill: rgb(122, 19, 21); 
@@ -298,46 +304,5 @@
     margin-right: 12px;
 }
 
-/* Events */
-/* Nav buttons */
-.nav-buttons {
-    display: flex;
-    justify-content: flex-end;
-    margin: 0px 15px;
-}
 
-/* Wrappers used to fix clipping when hiding row overflow */
-.event-items-wrapper {
-    /* overflow: hidden; */
-    padding: 5px 0;
-}
-
-.event-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin: 5px 15px;
-    height: 400px;
-}
-
-.event-card-wrapper {
-    height: 440px;
-}
-
-.event-image img {
-    height: 200px;
-    width: 360px;
-}
-
-.event-header-row {
-    display: flex;
-    justify-content: space-between;
-    margin-left: 15px;
-    margin-top: 25px;
-}
-
-.event-items-row {
-    display: flex;
-    margin-bottom: 25px;
-}
 

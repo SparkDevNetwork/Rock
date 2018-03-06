@@ -8849,6 +8849,12 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     text-align: center;
 }
 
+.mainfooterlinks {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+}
+
 @media screen and (min-width: 1024px) {
     .mainfooter {
         padding: 10px 40px;
@@ -8861,20 +8867,35 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
         text-align: start;
     }
 
+    .mainfooterlinks {
+        flex-direction: row;
+    }
+
     .mainfooterlogo {
         display: flex;
         flex-direction: column;
-        width: 500px;
         padding-top: 10px;
     }
 
     .mainfootersocial {
-        width: 340px;
+        width: 250px;
         padding: 0px 10px 20px 10px;
     }
 
     .mainfooter-privacypolicy {
         margin-top: 0px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .mainfootersocial {
+        width: 300px;
+    }
+}
+
+@media screen and (min-width: 1400px) {
+    .mainfootersocial {
+        width: 350px;
     }
 }
 

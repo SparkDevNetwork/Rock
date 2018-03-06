@@ -34,19 +34,19 @@ TODO: Add Other Group Type leader roles
 {% if numberOfGroups > 0 %}
 
     {% comment %} Render {% endcomment %}
-    <div class="dashboard-panel">
-        <div class="panel-title">
+    <div class="dashboard-card">
+        <div class="title">
             <h4>Group</h4>
             <div>
-                <button class="dropdown-toggle" type="button" data-toggle="dropdown" style="border: 0px;">
-                    <span class="material-icons pull-right panel-title-button-icon">more_vert</span>
+                <button class="dropdown-toggle" type="button" data-toggle="dropdown">
+                    <span class="material-icons pull-right">more_vert</span>
                 </button>
                 <ul class="dropdown-menu panel-dropdown-menu">
                     <li><a href="/dashboardv2">Contact Associate Pastor: TODO</a></li>
                 </ul>
             </div>   
         </div>
-        <div class="panel-content">
+        <div class="content">
             {% for group in Groups %}
 
                 {% comment %} Exclude Utility Groups {% endcomment %}
@@ -89,8 +89,8 @@ TODO: Add Other Group Type leader roles
                                 <div class="coach-video-row">
                                     <div class="coach-video">
                                         <div>
-                                            <a href="//fast.wistia.net/embed/playlists/ukdxoyinc8?autoAdvance=false&media_0_0%5BautoPlay%5D=true&media_0_0%5BcontrolsVisibleOnLoad%5D=false&popover=true&theme=tab&version=v1&videoFoam=false&videoOptions%5BautoPlay%5D=false&videoOptions%5BinlineOptionsOnly%5D=true&videoOptions%5BplayerColor%5D=7A1315&videoOptions%5Bversion%5D=v1&videoOptions%5BvideoHeight%5D=720&videoOptions%5BvideoWidth%5D=1280&videoOptions%5BvolumeControl%5D=true" class="wistia-popover[height=720,playerColor=7A1315,width=1280]"><img src="http://embed.wistia.com/deliveries/fb624ef1ebcfdff96f701855487f428b1ace98f3.jpg?image_play_button=true&image_play_button_color=7A1315e0&image_crop_resized=100x56" alt="" /></a>
-                                            <script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/popover-v1.js"></script>                 
+                                            <a href="//fast.wistia.net/embed/playlists/ukdxoyinc8?autoAdvance=false&media_0_0%5BautoPlay%5D=true&media_0_0%5BcontrolsVisibleOnLoad%5D=false&popover=true&version=v1&videoFoam=false&videoOptions%5BautoPlay%5D=false&videoOptions%5BinlineOptionsOnly%5D=true&videoOptions%5BplayerColor%5D=7A1315&videoOptions%5Bversion%5D=v1&videoOptions%5BvideoHeight%5D=720&videoOptions%5BvideoWidth%5D=1280&videoOptions%5BvolumeControl%5D=true" class="wistia-popover[height=720,playerColor=7A1315,width=1280]"><img src="http://embed.wistia.com/deliveries/49d1624d91f5d9e4cd8bd1fcaec0561e83efa730.jpg?image_play_button=true&image_play_button_color=7A1315e0&image_crop_resized=100x56" alt="" /></a>
+                                            <script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/popover-v1.js"></script>
                                         </div>
                                         <div>
                                             <h5>Upcoming</h5>
@@ -161,16 +161,16 @@ TODO: Add Other Group Type leader roles
 {% else %}
 
     {% comment %} Render Serve Call to Action {% endcomment %}
-    <div class="dashboard-panel panel-info">
+    <div class="info-card">
         <img src="/Themes/church_ccv_External_v8/Assets/Images/original-dash-alerts_connect.jpg">
-        <div class="info-header">
+        <div class="header">
             <h4>Connect</h4>
             <h5>Life was not meant to be lived alone</h5>
         </div>
-        <div class="info-content">
+        <div class="content">
             <p>At CCV, neighborhood groups are vital to our church. They provide a sense of connection and security as we all tackle life together.</p>
         </div>
-        <div class="info-link">
+        <div class="link">
             <a href="/servev2">
                 <div>
                     <span>Find a group near you</span>

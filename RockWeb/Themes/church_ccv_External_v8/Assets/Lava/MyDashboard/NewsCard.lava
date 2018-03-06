@@ -4,19 +4,19 @@
 
 
 {% comment %} Render Panel {% endcomment %}
-<div class="dashboard-panel">
-    <div class="panel-title">
+<div class="dashboard-card">
+    <div class="title">
         <h4>News</h4>
         <div>
-            <button class="dropdown-toggle" type="button" data-toggle="dropdown" style="border: 0px;">
-                <span class="material-icons pull-right panel-title-button-icon">more_vert</span>
+            <button class="dropdown-toggle" type="button" data-toggle="dropdown">
+                <span class="material-icons pull-right">more_vert</span>
             </button>
             <ul class="dropdown-menu panel-dropdown-menu">
                 <li><a href="/eventsv2">Upcoming Events</a></li>
             </ul>
         </div>  
     </div>
-    <div class="panel-content">
+    <div class="content">
         
         {% for item in Items %}
 

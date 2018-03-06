@@ -1,0 +1,221 @@
+p {
+   line-height: 2.50;
+}
+
+.ccvRed {
+   color: rgb(111,19,21)
+}
+
+hr {
+   border-top: 1px solid #707270;
+   margin-top: 30px;
+   margin-bottom: 20px;
+}
+
+.infoSection {
+   padding-top: 50px;
+   padding-bottom: 50px;
+}
+
+.graphicSection {
+   padding-top: 150px;
+   padding-bottom: 150px;
+}
+
+.graphicSection h1,
+.graphicSection h2,
+.graphicSection h4,
+.graphicSection h5,
+.graphicSection p {
+   color: white;
+}
+
+/*Render the "play video" overlay*/
+.videoThumbnail {
+   position:relative;
+   display: inline-block;
+   margin: 30px;
+}
+
+/*Render the red background overlay*/
+.videoThumbnail:before {
+   background-color: rgba(111,19,21,.6);
+   min-width: 50%;
+   min-height: 50%;
+   content: " ";
+   position: absolute;
+   top: 25%;
+   left: 25%;
+}
+
+/*Render the white play icon*/
+.videoThumbnail:after {
+   position:absolute;
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%,-50%);
+   -webkit-transform: translate(-50%,-50%);
+   content: "\f04b";
+   font-family: FontAwesome;
+   font-size: 1.2em;
+   color: white;
+}
+
+/*  Start Event Card Styling */
+.event-cards-header {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 15px;
+}
+/* Nav buttons */
+.event-cards-header .nav-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px;
+}
+
+.event-cards-header .nav-button {
+    color: #7A1315; 
+    position: relative; 
+    font-size: 2rem; 
+    display: inline-block; 
+    user-select: none; 
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
+    padding-left: 1rem; 
+    vertical-align: text-bottom; 
+    min-width: 30px;
+    background-color: unset;
+    border-width: unset;
+    border-style: unset;
+    border-color: unset;
+    border-image: unset;
+}
+
+/* Wrappers used to fix clipping when hiding row overflow */
+.event-cards-wrapper {
+    /* overflow: hidden; */
+    padding: 5px 0;
+}
+
+.event-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 5px 15px;
+    height: 400px;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px; 
+    border-radius: 5px;
+    border: unset;
+    border-width: unset;
+    background-color: #FFFFFF; 
+    z-index: 1; 
+    overflow: hidden;
+}
+
+.event-card-wrapper {
+    height: 440px;
+}
+
+.event-card .image img {
+    width: 100%;
+    height: 200px;
+}
+
+.event-header-row {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 15px;
+    margin-top: 25px;
+}
+
+.event-cards-row {
+    display: flex;
+    margin-bottom: 25px;
+}
+
+.event-campus-setter a {
+    color: #7A1315;
+    font-family: akrobat;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+@media screen and (min-width: 380px) {
+    .event-campus-setter a {
+        margin-top: 4px;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .event-campus-setter a {
+        margin-top: 7px;
+    }
+}
+
+.event-card .header {
+    display: flex; 
+    flex-direction: column; 
+    padding: 10px 16px; 
+    font-family: Akrobat; 
+    font-weight: bold; 
+    text-transform: uppercase;
+}
+
+.event-card .header h4 {
+    font-size: 24px; 
+}
+
+.event-card .content {
+    padding: 16px; 
+    font-size: 14px; 
+    color: rgba(0, 0, 0, 0.87); 
+    font-family: Heebo;
+    height: 115px;
+}
+
+.event-card .content p {
+    line-height: unset;
+}
+.event-card .link {
+    align-self: flex-end;
+}
+
+.event-card .link a {
+    display: inline-block; 
+    font-family: Akrobat;
+    font-size: 16px; 
+    margin: 0px 8px 0px 0px; 
+    height: 55px; 
+    line-height: 55px; 
+    min-width: 88px; 
+    color: rgb(122, 19, 21); 
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
+    overflow: hidden; 
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.event-card .link a span {
+    position: relative; 
+    padding-left: 16px; 
+    vertical-align: middle; 
+    letter-spacing: 0px; 
+    text-transform: uppercase; 
+    font-weight: bold; 
+}
+
+.event-card .link a svg {
+    display: inline-block; 
+    color: rgba(0, 0, 0, 0.87); 
+    fill: rgb(122, 19, 21); 
+    height: 24px; 
+    width: 24px; 
+    user-select: none; 
+    transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms; 
+    vertical-align: middle; 
+    margin-left: 0px; 
+    margin-right: 12px;
+}
+
+/* End Event Card Styling */

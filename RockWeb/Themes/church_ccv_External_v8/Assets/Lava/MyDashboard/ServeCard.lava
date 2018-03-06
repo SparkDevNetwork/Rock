@@ -11,20 +11,20 @@
 {% if numberOfGroups > 0 %}
 
     {% comment %} Render Serving Teams {% endcomment %}
-    <div class="dashboard-panel">
-        <div class="panel-title">
+    <div class="dashboard-card">
+        <div class="title">
             <h4>Serve</h4>
             <div>
-                <button class="dropdown-toggle" type="button" data-toggle="dropdown" style="border: 0px;">
-                    <span class="material-icons pull-right panel-title-button-icon">more_vert</span>
+                <button class="dropdown-toggle" type="button" data-toggle="dropdown">
+                    <span class="material-icons pull-right">more_vert</span>
                 </button>
                 <ul class="dropdown-menu panel-dropdown-menu">
                     <li><a href="/servev2">CCV Serving Opportunities</a></li>
                 </ul>
             </div>   
         </div>
-        <div class="panel-content">
-            <div class="content-header">
+        <div class="content">
+            <div class="header">
                 <h4>Team Leaders</h4>
             </div>
             {% for group in Groups %}
@@ -33,7 +33,7 @@
                 {% assign groupId = group.Group.Id | ToString %}
                 {% unless excludeGroups contains groupId %}
                     <div>
-                        <div class="content-group-header">
+                        <div class="team-header">
                             <h5>{{ group.Group.Name }}</h4>
                         </div>
                         {% for member in group.Group.Members %}
@@ -77,16 +77,16 @@
 {% else %}
 
     {% comment %} Render Serve Call to Action {% endcomment %}
-    <div class="dashboard-panel panel-info">
+    <div class="info-card">
         <img src="/Themes/church_ccv_External_v8/Assets/Images/original-dash-alerts_serve.jpg">
-        <div class="info-header">
+        <div class="header">
             <h4>Serve</h4>
             <h5>Serving is a great way to get involved</h5>
         </div>
-        <div class="info-content">
+        <div class="content">
             <p>We have opportunities for every age and interest.  Behind the scenes or upfront and personal, you can find the perfect fit for you and your family.</p>
         </div>
-        <div class="info-link">
+        <div class="link">
             <a href="/servev2">
                 <div>
                     <span>Find the right spot for you</span>
