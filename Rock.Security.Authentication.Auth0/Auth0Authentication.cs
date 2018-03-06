@@ -227,6 +227,7 @@ namespace Rock.Security.Authentication.Auth0
                         {
                             int typeId = EntityTypeCache.Read( typeof( Auth0Authentication ) ).Id;
                             user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, userName, "auth0", true );
+                            user.ForeignKey = auth0UserInfo.sub;
                         }
                     } );
                 }
