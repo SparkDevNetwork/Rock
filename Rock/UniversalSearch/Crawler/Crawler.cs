@@ -144,17 +144,12 @@ namespace Rock.UniversalSearch.Crawler
 
                     if ( url.StartsWith( _baseUrl ) && _robotHelper.IsPathAllowed( _userAgent, url.Replace( _baseUrl, "" ) ) )
                     {
-                        var startTime = RockDateTime.Now;
-                        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
                         string rawPage = GetWebText( url );
-                        double t1 = stopwatch.Elapsed.TotalMilliseconds;
 
                         if ( !string.IsNullOrWhiteSpace( rawPage ) )
                         {
                             var htmlDoc = new HtmlDocument();
                             htmlDoc.LoadHtml( rawPage );
-                            double t2 = stopwatch.Elapsed.TotalMilliseconds;
 
                             // ensure the page should be indexed by looking at the robot and rock conventions
                             HtmlNode metaRobot = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='robot']" );
@@ -186,27 +181,15 @@ namespace Rock.UniversalSearch.Crawler
                                 }
 
                                 IndexContainer.IndexDocument( sitePage );
-                                double t3 = stopwatch.Elapsed.TotalMilliseconds;
 
                                 // crawl all the links found on the page.
                                 var links = ParseLinks( htmlDoc );
-                                double t4 = stopwatch.Elapsed.TotalMilliseconds;
-
-                                System.Diagnostics.Debug.WriteLine( $"{startTime:hh:mm:ss} - {url}; Total Time:{t4:N0} (GetWebText:{t1:N0}, LoadHtml:{( t2 - t1 ):N0}, IndexPage:{( t3 - t2 ):N0}, ParseLinks:{( t4 - t3 ):N0})" );
 
                                 foreach ( string link in links )
                                 {
                                     _urlQueue.Enqueue( link );
                                 }
                             }
-                            else
-                            {
-                                System.Diagnostics.Debug.WriteLine( $"{startTime:hh:mm:ss} - {url}; Total Time:{t2:N0} (GetWebText:{t1:N0}, LoadHtml:{( t2 - t1 ):N0} - NoIndex Attribute)" );
-                            }
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine( $"{startTime:hh:mm:ss} - {url}; Total Time:{t1:N0} (GetWebText:{t1:N0} - No Content)" );
                         }
                     }
                 }
