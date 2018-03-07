@@ -41,8 +41,8 @@ namespace Rock.Security.Authentication.Auth0
     [TextField( "Client ID", "The Auth0 Client ID", order: 1 )]
     [TextField( "Client Secret", "The Auth0 Client Secret", order: 2 )]
 
-    [TextField( "Login Button Text", "The text shown on the login button.", defaultValue: "Auth0 Login", required:false, order: 3 )]
-    [TextField( "Login Button CSS Class", "The CSS class applied to the login button.", required:false, order: 4 )]
+    [TextField( "Login Button Text", "The text shown on the login button.", defaultValue: "Auth0 Login", required: false, order: 3 )]
+    [TextField( "Login Button CSS Class", "The CSS class applied to the login button.", required: false, order: 4 )]
     public class Auth0Authentication : AuthenticationComponent
     {
         /// <summary>
@@ -113,8 +113,8 @@ namespace Rock.Security.Authentication.Auth0
 
             // see: https://auth0.com/docs/api/authentication#support
             var restClient = new RestClient( $"https://{authDomain}" );
-            var tokenRequest = new RestRequest( "oauth/token", Method.POST );
-            var tokenRequestBody = new
+            var authTokenRequest = new RestRequest( "oauth/token", Method.POST );
+            var authTokenRequestBody = new
             {
                 grant_type = "authorization_code",
                 client_id = clientId,
@@ -123,20 +123,64 @@ namespace Rock.Security.Authentication.Auth0
                 redirect_uri = redirectUri
             };
 
-            tokenRequest.AddJsonBody( tokenRequestBody );
+            authTokenRequest.AddJsonBody( authTokenRequestBody );
 
-            var tokenRestResponse = restClient.Execute<Auth0TokenResponse>( tokenRequest );
+            var authTokenRestResponse = restClient.Execute( authTokenRequest );
 
-            if ( tokenRestResponse.StatusCode == HttpStatusCode.OK )
+            if ( authTokenRestResponse.StatusCode == HttpStatusCode.OK )
             {
-                Auth0TokenResponse tokenResponse = tokenRestResponse.Data;
-                if ( tokenResponse != null )
+                Auth0TokenResponse authTokenResponse = authTokenRestResponse.Content.FromJsonOrNull<Auth0TokenResponse>();
+                if ( authTokenResponse != null )
                 {
-                    var userInfoRequest = new RestRequest( $"userinfo?access_token={tokenResponse.access_token}", Method.GET );
-                    var userInfoRestResponse = restClient.Execute<Auth0UserInfo>( userInfoRequest );
+                    var userInfoRequest = new RestRequest( $"userinfo?access_token={authTokenResponse.access_token}", Method.GET );
+                    var userInfoRestResponse = restClient.Execute( userInfoRequest );
                     if ( userInfoRestResponse.StatusCode == HttpStatusCode.OK )
                     {
-                        Auth0UserInfo auth0UserInfo = userInfoRestResponse.Data;
+                        Auth0UserInfo auth0UserInfo = userInfoRestResponse.Content.FromJsonOrNull<Auth0UserInfo>();
+
+                        var managementTokenRequest = new RestRequest( "oauth/token", Method.POST );
+                        var managementTokenRequestBody = new
+                        {
+                            grant_type = "client_credentials",
+                            client_id = clientId,
+                            client_secret = clientSecret,
+                            audience = $"https://{authDomain}/api/v2/"
+                        };
+
+                        managementTokenRequest.AddJsonBody( managementTokenRequestBody );
+
+                        var managementTokenRestResponse = restClient.Execute( managementTokenRequest );
+                        if ( managementTokenRestResponse.StatusCode == HttpStatusCode.OK )
+                        {
+                            Auth0TokenResponse managementTokenResponse = managementTokenRestResponse.Content.FromJsonOrNull<Auth0TokenResponse>();
+                            var managementUserLookupRequest = new RestRequest( $"api/v2/users/{auth0UserInfo.sub}", Method.GET );
+                            managementUserLookupRequest.AddHeader( "authorization", $"Bearer {managementTokenResponse?.access_token}" );
+                            var managementUserLookupResponse = restClient.Execute( managementUserLookupRequest );
+
+                            if ( managementUserLookupResponse.StatusCode == HttpStatusCode.OK )
+                            {
+                                // if we were able to look up the user using the management api, fill in null given_name from user_metadata or app_metadata;
+                                var managementUserInfo = managementUserLookupResponse.Content.FromJsonOrNull<Auth0ManagementUserInfo>();
+
+                                if ( managementUserInfo != null )
+                                {
+                                    if ( auth0UserInfo.given_name == null )
+                                    {
+                                        auth0UserInfo.given_name = managementUserInfo.user_metadata?.given_name ?? managementUserInfo.app_metadata?.given_name;
+
+                                        // if we had to get given_name from user_metadata/app_metadata, then the nickname that we got back might not be correct, so just have it be given_name
+                                        auth0UserInfo.nickname = auth0UserInfo.given_name;
+                                    }
+
+                                    if ( auth0UserInfo.family_name == null )
+                                    {
+                                        auth0UserInfo.family_name = managementUserInfo.user_metadata?.family_name ?? managementUserInfo.app_metadata?.family_name;
+                                    }
+                                }
+                            }
+                        }
+
+
                         userName = GetAuth0UserName( auth0UserInfo );
 
                         return true;
@@ -169,9 +213,9 @@ namespace Rock.Security.Authentication.Auth0
                 if ( user == null )
                 {
                     // Get name/email from auth0 userinfo
-                    string lastName = auth0UserInfo.family_name;
-                    string firstName = auth0UserInfo.given_name;
-                    string nickName = auth0UserInfo.nickname;
+                    string lastName = auth0UserInfo.family_name?.Trim()?.FixCase();
+                    string firstName = auth0UserInfo.given_name?.Trim()?.FixCase();
+                    string nickName = auth0UserInfo.nickname?.Trim()?.FixCase();
                     string email = auth0UserInfo.email;
 
                     Person person = null;
@@ -227,6 +271,7 @@ namespace Rock.Security.Authentication.Auth0
                         {
                             int typeId = EntityTypeCache.Read( typeof( Auth0Authentication ) ).Id;
                             user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, typeId, userName, "auth0", true );
+                            user.ForeignKey = auth0UserInfo.sub;
                         }
                     } );
                 }
