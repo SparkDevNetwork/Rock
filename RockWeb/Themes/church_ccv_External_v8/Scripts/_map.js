@@ -56,7 +56,7 @@
     CCV.mapType = new google.maps.StyledMapType(CCV.mapStyles);
 
     // Marker Styles
-    CCV.markerFile = (window.devicePixelRatio > 1.5) ? '/Assets/Images/marker@2x.png' : '/Assets/Images/marker.png';
+    CCV.markerFile = (window.devicePixelRatio > 1.5) ? 'http://my.ccv.church/Assets/Images/marker@2x.png' : 'http://my.ccv.church/Assets/Images/marker.png';
     CCV.marker = new google.maps.MarkerImage(CCV.markerFile, null, null, null, new google.maps.Size(30,38));
 
 
