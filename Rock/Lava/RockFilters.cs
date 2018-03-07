@@ -3717,7 +3717,7 @@ namespace Rock.Lava
         }
 
 
-        public static string CreateShortLink( object input, int? siteId = null, string token = "", bool overrite = false, int randomLength = 7 )
+        public static string CreateShortLink( object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 7 )
         {
             // Notes: This filter attemtps to return a valid shortlink at all costs
             //        this means that if the configuration passed to it is invalid
@@ -3741,7 +3741,7 @@ namespace Rock.Lava
             if ( !siteId.HasValue )
             {
                 siteId = new SiteService( rockContext ).Queryable()
-                    .Where( s => s.EnabledForShortening == true )
+                    .OrderBy( s => s.EnabledForShortening )
                     .Take( 1 )
                     .Select( s => s.Id ).FirstOrDefault();
             }
@@ -3765,7 +3765,7 @@ namespace Rock.Lava
 
             // Check if the token exists by getting it
             var shortLink = shortLinkService.GetByToken( token, siteId.Value );
-            if ( shortLink != null && overrite == false )
+            if ( shortLink != null && overwrite == false )
             {
                 // We can't use the provided shortlink because it's ready used, so get a random token
                 // Garbage in Random out
