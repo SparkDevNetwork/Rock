@@ -128,6 +128,7 @@ namespace church.ccv.Utility
                                             .ThenBy( m => m.Person.Gender  )
                                             .FirstOrDefault()
                                             .Person;
+                    headOfHouse.LoadAttributes();
 
                     var headOfHouseAliasIds = headOfHouse.Aliases.Select( a => a.Id ).ToList();
 
@@ -188,6 +189,7 @@ namespace church.ccv.Utility
                                 visitorWorkflow.SetAttributeValue( "HomePhone", homePhone );
                                 visitorWorkflow.SetAttributeValue( "MobilePhone", mobilePhone );
                                 visitorWorkflow.SetAttributeValue( "Email", headOfHouse.Email );
+                                visitorWorkflow.SetAttributeValue( "BestWaytoFollowUp", headOfHouse.AttributeValues["bestwaytofollowup"].ToString() );
 
                                 var homeAddress = new GroupLocationService( rockContext ).Queryable().AsNoTracking()
                                                             .Where( l => l.GroupId == family.Id && l.GroupLocationTypeValue.Guid == homeAddressTypeGuid )
