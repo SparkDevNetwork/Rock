@@ -31,11 +31,7 @@
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                                     <Rock:HtmlField DataField="Summary" HeaderText="Summary" TruncateLength="300" DisplayMode="PlainText" />
-                                    <Rock:RockTemplateField HeaderText="Status" SortExpression="IsActive">
-                                        <ItemTemplate>
-                                            <Rock:RockLiteral ID="lStatus" runat="server" />
-                                        </ItemTemplate>
-                                    </Rock:RockTemplateField>
+                                    <Rock:RockLiteralField ID="lStatus" HeaderText="Status" SortExpression="IsActive" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
