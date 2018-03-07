@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.WorkFlow
 
     [WorkflowTypeField( "Workflow Type", "Type of workflow to start." )]
     [BooleanField( "Show Summary View", "If workflow has been completed, should the summary view be displayed?", false, "", 1)]
+    [BooleanField( "Display in Panel", "Should this workflow entry display in a panel block?", true, "", 2)]
     public partial class WorkflowEntry : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
         #region Fields
@@ -171,6 +172,13 @@ namespace RockWeb.Blocks.WorkFlow
             base.OnLoad( e );
 
             nbMessage.Visible = false;
+
+            if ( !GetAttributeValue( "DisplayinPanel" ).AsBoolean() )
+            {
+                divPanel.RemoveCssClass( "panel panel-block" );
+                divPanelBody.RemoveCssClass( "panel-body" );
+                divPanelHeading.Visible = false;
+            }
 
             if ( !Page.IsPostBack )
             {

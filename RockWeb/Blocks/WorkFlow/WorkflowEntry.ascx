@@ -6,9 +6,9 @@
         <div class="row">
             <div id="divForm" runat="server" class="col-md-6">
 
-                <div class="panel panel-block">
+                <div class="panel panel-block" id="divPanel" runat="server">
 
-                    <div class="panel-heading">
+                    <div class="panel-heading" id="divPanelHeading" runat="server">
                         <h1 class="panel-title">
                             <asp:Literal ID="lIconHtml" runat="server" ><i class="fa fa-gear"></i></asp:Literal>
                             <asp:Literal ID="lTitle" runat="server" >Workflow Entry</asp:Literal>
@@ -18,7 +18,7 @@
                             <Rock:HighlightLabel ID="hlblDateAdded" runat="server" LabelType="Default" />
                         </div>
                     </div>
-                    <div class="panel-body">
+                    <div class="panel-body" id="divPanelBody" runat="server">
 
                         <asp:Literal ID="lSummary" runat="server" Visible="false" />
 
