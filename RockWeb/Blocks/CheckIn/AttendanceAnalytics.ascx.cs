@@ -30,6 +30,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -101,7 +102,7 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
 
-                if ( _specificGroup == null || ( !UserCanEdit && _specificGroup.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ) )
+                if ( _specificGroup == null || ( !IsUserAuthorized(Rock.Security.Authorization.VIEW) && !_specificGroup.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ) )
                 {
                     nbInvalidGroup.Visible = true;
                     pnlContent.Visible = false;
