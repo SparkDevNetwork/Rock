@@ -45,6 +45,7 @@ namespace Rock.UniversalSearch.Crawler
         private Robots _robotHelper = null;
         private string _startUrl = string.Empty;
         private CookieContainer _cookieContainer = null;
+        private Queue<string> _urlQueue = new Queue<string>();
 
         string[] nonLinkStartsWith = new string[] { "#", "javascript:", "mailto:" };
         #endregion
@@ -83,15 +84,17 @@ namespace Rock.UniversalSearch.Crawler
         public int CrawlSite( Site site, string loginId, string password )
         {
             _site = site;
-            
-            // get the robot helper class up and running
-            _robotHelper = Robots.Load( _site.IndexStartingLocation );
 
             _startUrl = _site.IndexStartingLocation;
-
             var startingUri = new Uri( _startUrl );
 
             _baseUrl = startingUri.Scheme + "://" + startingUri.Authority;
+            var baseUri = new Uri( _baseUrl );
+
+            // get the robot helper class up and running
+            var robotsUri = new Uri( baseUri, "robots.txt" );
+            var robotsTxt = GetWebText( robotsUri );
+            _robotHelper = Robots.Load( robotsTxt );
 
             _cookieContainer = new CookieContainer();
 
@@ -103,7 +106,6 @@ namespace Rock.UniversalSearch.Crawler
                 loginParam.Password = password;
                 loginParam.Persisted = false;
 
-                var baseUri = new Uri( _baseUrl );
                 var authUri = new Uri( baseUri, "api/Auth/Login" );
                 var restClient = new RestClient( authUri );
                 restClient.CookieContainer = _cookieContainer;
@@ -115,7 +117,12 @@ namespace Rock.UniversalSearch.Crawler
                 var response = restClient.Execute( request );
             }
 
-            CrawlPage( _site.IndexStartingLocation );
+            _urlQueue.Enqueue( _site.IndexStartingLocation );
+            while ( _urlQueue.Any() )
+            {
+                string url = _urlQueue.Dequeue();
+                CrawlPage( url );
+            }
 
             return _previouslyCrawledPages.Count;
         }
@@ -126,58 +133,80 @@ namespace Rock.UniversalSearch.Crawler
         /// <param name="url">The url to crawl.</param>
         private void CrawlPage( string url )
         {
-            // clean up the url a bit
-            url = StandardizeUrl( url );
-
             try
             {
-                if ( !PageHasBeenCrawled( url ) && _robotHelper.IsPathAllowed( _userAgent, url ) && url.StartsWith(_baseUrl) )
+                // clean up the url a bit
+                url = StandardizeUrl( url );
+
+                if ( !PageHasBeenCrawled( url ) )
                 {
-                    string rawPage = GetWebText( url );
+                    _previouslyCrawledPages.Add( url );
 
-                    if ( !string.IsNullOrWhiteSpace( rawPage ) )
+                    if ( url.StartsWith( _baseUrl ) && _robotHelper.IsPathAllowed( _userAgent, url.Replace( _baseUrl, "" ) ) )
                     {
-                        var htmlDoc = new HtmlDocument();
-                        htmlDoc.LoadHtml( rawPage );
+                        var startTime = RockDateTime.Now;
+                        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-                        // ensure the page should be indexed by looking at the robot and rock conventions
-                        HtmlNode metaRobot = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='robot']" );
-                        if ( metaRobot == null || metaRobot.Attributes["content"] == null || !metaRobot.Attributes["content"].Value.Contains( "noindex" ) )
+                        string rawPage = GetWebText( url );
+                        double t1 = stopwatch.Elapsed.TotalMilliseconds;
+
+                        if ( !string.IsNullOrWhiteSpace( rawPage ) )
                         {
-                            _previouslyCrawledPages.Add( url );
+                            var htmlDoc = new HtmlDocument();
+                            htmlDoc.LoadHtml( rawPage );
+                            double t2 = stopwatch.Elapsed.TotalMilliseconds;
 
-                            // index the page
-                            SitePageIndex sitePage = new SitePageIndex();
-
-                            sitePage.Content = GetPageText( htmlDoc );
-                            sitePage.Url = url;
-                            sitePage.Id = url.MakeInt64HashCode();
-                            sitePage.SourceIndexModel = "Rock.Model.Site";
-                            sitePage.PageTitle = GetPageTitle( htmlDoc, url );
-                            sitePage.DocumentName = sitePage.PageTitle;
-                            sitePage.SiteName = _site.Name;
-                            sitePage.SiteId = _site.Id;
-                            sitePage.LastIndexedDateTime = RockDateTime.Now;
-
-                            HtmlNode metaDescription = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='description']" );
-                            if ( metaDescription != null && metaDescription.Attributes["content"] != null )
+                            // ensure the page should be indexed by looking at the robot and rock conventions
+                            HtmlNode metaRobot = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='robot']" );
+                            if ( metaRobot == null || metaRobot.Attributes["content"] == null || !metaRobot.Attributes["content"].Value.Contains( "noindex" ) )
                             {
-                                sitePage.PageSummary = metaDescription.Attributes["content"].Value;
-                            }
+                                // index the page
+                                SitePageIndex sitePage = new SitePageIndex();
 
-                            HtmlNode metaKeynotes = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='keywords']" );
-                            if ( metaKeynotes != null && metaKeynotes.Attributes["content"] != null )
+                                sitePage.Content = GetPageText( htmlDoc );
+                                sitePage.Url = url;
+                                sitePage.Id = url.MakeInt64HashCode();
+                                sitePage.SourceIndexModel = "Rock.Model.Site";
+                                sitePage.PageTitle = GetPageTitle( htmlDoc, url );
+                                sitePage.DocumentName = sitePage.PageTitle;
+                                sitePage.SiteName = _site.Name;
+                                sitePage.SiteId = _site.Id;
+                                sitePage.LastIndexedDateTime = RockDateTime.Now;
+
+                                HtmlNode metaDescription = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='description']" );
+                                if ( metaDescription != null && metaDescription.Attributes["content"] != null )
+                                {
+                                    sitePage.PageSummary = metaDescription.Attributes["content"].Value;
+                                }
+
+                                HtmlNode metaKeynotes = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='keywords']" );
+                                if ( metaKeynotes != null && metaKeynotes.Attributes["content"] != null )
+                                {
+                                    sitePage.PageKeywords = metaKeynotes.Attributes["content"].Value;
+                                }
+
+                                IndexContainer.IndexDocument( sitePage );
+                                double t3 = stopwatch.Elapsed.TotalMilliseconds;
+
+                                // crawl all the links found on the page.
+                                var links = ParseLinks( htmlDoc );
+                                double t4 = stopwatch.Elapsed.TotalMilliseconds;
+
+                                System.Diagnostics.Debug.WriteLine( $"{startTime:hh:mm:ss} - {url}; Total Time:{t4:N0} (GetWebText:{t1:N0}, LoadHtml:{( t2 - t1 ):N0}, IndexPage:{( t3 - t2 ):N0}, ParseLinks:{( t4 - t3 ):N0})" );
+
+                                foreach ( string link in links )
+                                {
+                                    _urlQueue.Enqueue( link );
+                                }
+                            }
+                            else
                             {
-                                sitePage.PageKeywords = metaKeynotes.Attributes["content"].Value;
+                                System.Diagnostics.Debug.WriteLine( $"{startTime:hh:mm:ss} - {url}; Total Time:{t2:N0} (GetWebText:{t1:N0}, LoadHtml:{( t2 - t1 ):N0} - NoIndex Attribute)" );
                             }
-
-                            IndexContainer.IndexDocument( sitePage );
-
-                            // crawl all the links found on the page.
-                            foreach ( string link in ParseLinks(htmlDoc) )
-                            {
-                                CrawlPage( link );
-                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine( $"{startTime:hh:mm:ss} - {url}; Total Time:{t1:N0} (GetWebText:{t1:N0} - No Content)" );
                         }
                     }
                 }
@@ -506,6 +535,12 @@ namespace Rock.UniversalSearch.Crawler
             }
 
             return true;
+        }
+
+        public class CrawlUrl
+        {
+            public int Level { get; set; }
+            public string Url { get; set; }
         }
     }
 }
