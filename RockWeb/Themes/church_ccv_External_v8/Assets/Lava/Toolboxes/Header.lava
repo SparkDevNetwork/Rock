@@ -66,7 +66,7 @@ function linkClicked(linkElement, sectionName) {
 </div>
 
 <div class="group-info-banner">
-   <div>Meets <span style="color: black;">{{ group.Schedule.FriendlyScheduleText }}</span></div>
+   <div>Meets <span style="color: black;">{{ group.Schedule.FriendlyScheduleText }} </span></div>
    <div>Members <span style="color: black;">{{ group.Members | Size }} </span></div>
    <div>Started <span style="color: black;">{{ group.CreatedDateTime | Date:'yyyy'}} </span></div>
 </div>

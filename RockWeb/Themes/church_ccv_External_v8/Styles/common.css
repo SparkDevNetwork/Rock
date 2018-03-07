@@ -218,4 +218,9 @@ hr {
     margin-right: 12px;
 }
 
+.divider {
+   border-color: #eeeeee;
+   margin: 0px;
+}
+
 /* End Event Card Styling */

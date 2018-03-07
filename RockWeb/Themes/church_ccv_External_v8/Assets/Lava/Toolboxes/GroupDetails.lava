@@ -1,28 +1,46 @@
 
-
-<h2>Group Details</h2>
+{% assign familyPicture = Group | Attribute: 'FamilyPicture', 'RawValue' %}
+{% if familyPicture != empty %}
+  <img src="/GetImage.ashx?guid={{ familyPicture }}&width=600" alt="Family Picture" />
+{% endif %}
+<h2 class="page-heading">Group Details</h2>
+<hr class="divider"/>
 <div class="row">
-   <div class="col-md-4">
-     <h5>Leaders:</h5>
-       {% for member in Group.Members %}
-         {% if member.GroupRole.IsLeader %}
-           <P>
-             {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
-           </P>
-         {% endif %}
-       {% endfor %}
+   <div class="col-md-5">
+      <div class="row">
+         <div class="col-md-12">
+            <div style="padding: 15px; background-color: #eeeeee">
+               <h5 style="margin-bottom: 15px;">Leaders</h5>
+               {% for member in Group.Members %}
+                  {% if member.GroupRole.IsLeader %}
+                  <P style="line-height: 1;">
+                     {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
+                  </P>
+                  {% endif %}
+               {% endfor %}
+            </div>
+         </div>
+      </div>
     
-    {% assign groupAddr = Group.GroupLocations | First %}
-    <h5>Address</h5>
-    <P>{{ groupAddr.Location.Street1 }}</P>
-    
-    <h5>City</h5>
-    <P>{{ groupAddr.Location.City }}</P>
-    
-    <h5>Zip</h5>
-    <P>{{ groupAddr.Location.PostalCode }}</P>
+      {% assign groupAddr = Group.GroupLocations | First %}
+      <h5>Address</h5>
+      <P>{{ groupAddr.Location.Street1 }}</P>
+      
+      <h5>City</h5>
+      <P>{{ groupAddr.Location.City }}</P>
+      
+      <h5>Zip</h5>
+      <P>{{ groupAddr.Location.PostalCode }}</P>
+
+      {% for groupLocation in Group.GroupLocations %}
+      {% if groupLocation.Location.GeoPoint != '' %}
+         {% assign groupgeo = groupLocation.Location.GeoPoint | Split: ',' %}
+         <div id="groupMap" style="height: 200px;">
+         </div>
+      {% endif %}
+      {% endfor %}
    </div>
-   <div class="col-md-8">
+   <div class="col-md-6">
       {% if Group.Schedule.FriendlyScheduleText %}
          <h4 class="no-caps margin-t-none">Meets every {{Group.Schedule.FriendlyScheduleText}}</h4>
       {% endif %}
@@ -52,3 +70,24 @@
         
    </div>
 </div>
+
+<script src="/Themes/church_ccv_External_v8/Scripts/_map.js"></script>
+<script>
+   var groupMap;
+   Sys.Application.add_load(function(){
+      $(window).on('googleMapsIsLoaded', function(){
+         var mapHolder = document.getElementById('groupMap')
+         if (mapHolder) {
+         var mapPoint = [{
+            title: "{{ Group.Name }}",
+            lat: {{ groupgeo[0] }},
+            lng: {{ groupgeo[1] }}
+         }]
+         groupMap = new CCV.baseMap(mapHolder, mapPoint)
+         groupMap.useScrollZoom = false
+         groupMap.draw()
+         }
+      })
+      Rock.controls.util.loadGoogleMapsApi('https://maps.googleapis.com/maps/api/js?sensor=false&key={{ 'Global' | Attribute:'GoogleAPIKey' }}')
+   })
+</script>
