@@ -15,7 +15,6 @@
 		{% endcase %}
 	{% endfor %}
 
-
 	{% for groupLocation in Group.GroupLocations %}
 		{% if groupLocation.Location.GeoPoint != '' %}
 
@@ -27,8 +26,6 @@
 
 		{% endif %}
 	{% endfor %}
-
-
 
 	<h1>{{ Group.Name }}</h1>
 
@@ -140,7 +137,7 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
-							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}">
 							<i class="fa fa-times"></i>
 							</a>
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
@@ -165,8 +162,6 @@
 			{% endfor %}
 				</div>
 		{% endif %}
-
-
 
 		{% if countActive > -1 %}
 			{% assign icountActive = 0 %}
@@ -207,7 +202,7 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
-							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}">
 							<i class="fa fa-times"></i>
 							</a>
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
@@ -232,8 +227,6 @@
 			{% endfor %}
 
 		{% endif %}
-
-
 
 		{% if countInactive > -1 %}
 			{% assign icountInactive = 0 %}
@@ -274,7 +267,7 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
-							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
+							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}">
 							<i class="fa fa-times"></i>
 							</a>
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
