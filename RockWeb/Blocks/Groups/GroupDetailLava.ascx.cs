@@ -555,9 +555,6 @@ namespace RockWeb.Blocks.Groups
                     string action = eventArgs[0];
                     string parameters = eventArgs[1];
 
-                    int argument = 0;
-                    int.TryParse( parameters, out argument );
-
                     switch ( action )
                     {
                         case "EditGroup":
