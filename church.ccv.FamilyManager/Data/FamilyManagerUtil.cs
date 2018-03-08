@@ -253,8 +253,14 @@ namespace church.ccv.FamilyManager
             // Family Manager never gets the Person Id, and instead displays an Error Message.
             // The user can then dismiss the message and hit Save again, causing UpdateOrAddPerson to be called with a Person Id of 0 again, but that person already exists.
 
-            // To fix this, if we get a Person.Id of 0, we'll make sure nobody with a matching name, created in the last 5 minutes, already exists.
-            // If they do, we'll assume this is THAT person, and simply update them.
+            // To fix this, if we get an updatePersonBody.Person.Id of 0, we'll make sure assume they already exist IF:
+            // 1. Matching first & Last Name
+            // 2. Created in the last two minutes
+            // 3. Exists only in ONE family
+            // 4.
+            //      a. Either updatePersonBody.FamilyId is 0 (meaning its a new person in a new family) AND updatePersonBody.CampusId matches the found person's family's campus
+            //      b. updatePersonBody.FamilyId matches the family ID of the found person's one and only family.
+            // If those all match, we'll assume this is THAT person, and simply update them.
             personId = 0;
             familyId = 0;
 
@@ -265,18 +271,31 @@ namespace church.ccv.FamilyManager
             if ( updatePersonBody.Person.Id == 0 )
             {
                 // see if there's a person in the Database with a matching name
-                Person foundPerson = personService.Queryable( ).Where( p => p.FirstName == updatePersonBody.Person.NickName.Trim() && p.LastName == updatePersonBody.Person.LastName.Trim() ).SingleOrDefault( );
+                List<Person> foundPeople = null;
+                
+                // find any people with this same name
+                var query = personService.Queryable( ).Where( p => p.FirstName == updatePersonBody.Person.NickName.Trim() && p.LastName == updatePersonBody.Person.LastName.Trim() );
+
+                // // take all people with a matching name created in the last two minutes
+                DateTime twoMinutesAgo = DateTime.Now.AddMinutes( -2 );
+                foundPeople = query.Where( p => p.CreatedDateTime >= twoMinutesAgo ).ToList( );
 
                 // if there is
-                if ( foundPerson != null )
+                foreach( Person foundPerson in foundPeople )
                 {
-                    // and they were created in the last 5 minutes
-                    if ( foundPerson.CreatedDateTime >= DateTime.Now.AddMinutes( -5 ) )
+                    // and they're in only ONE family (because a newly created person can only exist in one family)
+                    if( foundPerson.GetFamilies( ).Count( ) == 1 )
                     {
-                        // assume that this is that person. Hand back the person Id and Family Id
-                        personId = foundPerson.Id;
-                        familyId = foundPerson.GetFamily( ).Id;
-                        return true;
+                        // and they're either in a brand new family and the campus they attend matches the campus of the newly created family OR
+                        // their familyId simply matches that of the found person's.
+                        if ( (updatePersonBody.FamilyId == 0 && updatePersonBody.CampusId == foundPerson.GetFamily( ).CampusId) || 
+                              updatePersonBody.FamilyId == foundPerson.GetFamily( ).Id )
+                        {
+                            // assume that this is that person. Hand back the person Id and Family Id
+                            personId = foundPerson.Id;
+                            familyId = foundPerson.GetFamily( ).Id;
+                            return true;
+                        }
                     }
                 }
             }
