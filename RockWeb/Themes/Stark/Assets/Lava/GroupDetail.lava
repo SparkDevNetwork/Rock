@@ -350,22 +350,22 @@
 								    <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ parent.Id }}">
 							    {% endif %}
 							    <img src="{{ parent.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" alt="">
-							    <div class="pull-left">
-								    {{ parent.FullName }}
+                                <div class="pull-left">
+                                    {{ parent.FullName }}
 
-								    {% for phone in parent.PhoneNumbers %}
-								    <br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
-								    {% endfor %}
+                                    {% for phone in parent.PhoneNumbers %}
+                                    <br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
+                                    {% endfor %}
 
-								    {% assign memberAddress =  parent | Address:'Home' %}
-								    {% if memberAddress != '' %}
-								    <br />{{ parent | Address:'Home' }}
-								    {% endif %}
+                                    {% assign parentAddress =  parent | Address:'Home' %}
+                                    {% if parentAddress != '' %}
+                                    <br />{{ parent | Address:'Home' }}
+                                    {% endif %}
 
-								    <br />
-								    <a href="mailto:{{ parent.Email }}">{{ parent.Email }}</a>
-								    <br />
-							    </div>
+                                    <br />
+                                    <a href="mailto:{{ parent.Email }}">{{ parent.Email }}</a>
+                                    <br />
+                                </div>
 
 							    {% if LinkedPages.PersonDetailPage  %}
 								    </a>
