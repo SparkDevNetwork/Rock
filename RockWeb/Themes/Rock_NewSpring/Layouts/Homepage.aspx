@@ -12,9 +12,9 @@
         </div>
     </section>
 
-    <div class="soft-sides xs-soft-half-sides">
+<!--     <div class="soft-sides xs-soft-half-sides">
         <hr class="flush">
-    </div>
+    </div> -->
 
 </asp:Content>
 

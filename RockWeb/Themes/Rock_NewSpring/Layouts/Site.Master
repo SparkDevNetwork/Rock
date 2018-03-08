@@ -36,6 +36,17 @@
     <meta charset="utf-8">
     <title></title>
 
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
+
+    <!-- Sentry -->
+    <script src="https://cdn.ravenjs.com/3.5.1/raven.min.js"></script>
+    <script type="text/javascript">
+        Raven.config("<%# Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicSentryDSN" ) %>").install();
+    </script>
+
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" ) %>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery.jquery-dotimeout.js" ) %>"></script>
 
@@ -44,17 +55,17 @@
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
-	<!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
-	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
-	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
-
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
 <body runat="server" id="body" class="navbar-side-close">
+
+    <!-- Google Tag Manager -->
+    <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-P6XMG5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-P6XMG5');</script>
+    <!-- End Google Tag Manager -->
 
     <form id="form1" runat="server">
 
@@ -140,7 +151,7 @@
         </asp:UpdateProgress>
 
     </form>
-
+    
     <script>
         // enable sidebar sub menus
         $(document).on('click', '.navbar-side li', function () {
@@ -197,6 +208,24 @@
             };
 
         });
+    </script>
+
+    <!-- Chartbeat -->
+    <script>
+        var _sf_async_config = { uid: 36438, domain: '<asp:Literal ID="siteUrl" runat="server" />', useCanonical: true };
+        (function () {
+            function loadChartbeat() {
+                window._sf_endpt = (new Date()).getTime();
+                var e = document.createElement('script');
+                e.setAttribute('language', 'javascript');
+                e.setAttribute('type', 'text/javascript');
+                e.setAttribute('src', '//static.chartbeat.com/js/chartbeat.js');
+                document.body.appendChild(e);
+            };
+            var oldonload = window.onload;
+            window.onload = (typeof window.onload != 'function') ?
+                loadChartbeat : function () { oldonload(); loadChartbeat(); };
+        })();
     </script>
 
     <!-- TypeKit -->
