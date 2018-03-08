@@ -32,13 +32,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Group Detail Lava" )]
     [Category( "Groups" )]
     [Description( "Presents the details of a group using Lava" )]
-
     [LinkedPage( "Person Detail Page", "Page to link to for more information on a group member.", false, "", "", 0 )]
     [LinkedPage( "Group Member Add Page", "Page to use for adding a new group member. If no page is provided the built in group member edit panel will be used. This panel allows the individual to search the database.", false, "", "", 1 )]
     [LinkedPage( "Roster Page", "The page to link to to view the roster.", true, "", "", 2 )]
@@ -62,6 +58,7 @@ namespace RockWeb.Blocks.Groups
 
         // used for private variables
         private int _groupId = 0;
+
         private const string MEMBER_LOCATION_TAB_TITLE = "Member Location";
         private const string OTHER_LOCATION_TAB_TITLE = "Other Location";
 
@@ -589,7 +586,7 @@ namespace RockWeb.Blocks.Groups
                                 sm.AddHistoryPoint( "Action", "DeleteMember" );
                             }
                             break;
-                            
+
                         case "SendCommunication":
                             SendCommunication();
                             break;
