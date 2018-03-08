@@ -37,19 +37,7 @@ namespace Rock
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // Remove any HTML
-                string encodedStr = HttpUtility.HtmlEncode( str );
-
-                // split first word from rest of string
-                int endOfFirstWord = encodedStr.IndexOf( " " );
-
-                if ( endOfFirstWord != -1 )
-                {
-                    return "<span class='first-word'>" + encodedStr.Substring( 0, endOfFirstWord ) + " </span> " + encodedStr.Substring( endOfFirstWord, encodedStr.Length - endOfFirstWord );
-                }
-                else
-                {
-                    return "<span class='first-word'>" + encodedStr + " </span>";
-                }
+                return HttpUtility.HtmlEncode( str );
             }
 
             return string.Empty;
