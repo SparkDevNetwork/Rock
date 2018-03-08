@@ -42,7 +42,7 @@ TODO: Add Other Group Type leader roles
                     <span class="material-icons pull-right">more_vert</span>
                 </button>
                 <ul class="dropdown-menu panel-dropdown-menu">
-                    <li><a href="/dashboardv2">Contact Associate Pastor: TODO</a></li>
+                    <li><a href="/page/1751?person={{ DatamartSummary.AssociatePastor.Id }}">Contact Associate Pastor: {{ DatamartSummary.AssociatePastor.FullName }}</a></li>
                 </ul>
             </div>   
         </div>
@@ -73,14 +73,13 @@ TODO: Add Other Group Type leader roles
                                 {% if showAdminElements == true %}                                
                                     <a href="/toolboxv2?GroupId={{ group.Group.Id }}">
                                         <div>
-                                            <span>{{ group.Group.Name }}</span>
+                                            <span>{{ group.Group.Name | Truncate: 32 }}</span>
                                             <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
                                         </div>
                                     </a>
-                                    <a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}">
+                                    <a href="#" onclick="btnAddGroupMember({{ group.Group.Id }},{{ group.Group.GroupType.DefaultGroupRoleId }}); return false;">
                                         <i class="material-icons">person_add</i>
                                     </a>
-                                    <i class="material-icons">person_add</i>
                                 {% else %}
                                     {% comment %} Regular Header {% endcomment %}
                                     <h5>{{ group.Group.Name }}</h5>
