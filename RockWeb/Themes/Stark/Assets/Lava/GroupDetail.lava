@@ -306,6 +306,16 @@
 					</a>
 				{% endif %}
 			{% endif %}
+			{% if LinkedPages.CommunicationPage != '' %}
+				{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+					<a href="#" onclick="{{ 'Yes' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+						<i class="fa fa-envelope-o"></i> Email Parents
+					</a>
+				{% endif %}
+			{% endif %}
+		</div>
+		</p>
+	{% endif %}
 		</div>
 		</p>
 	{% endif %}
