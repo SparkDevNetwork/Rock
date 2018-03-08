@@ -39,12 +39,14 @@ namespace RockWeb.Blocks.Groups
     [Description( "Lists the group members for a specific occurrence datetime and allows selecting if they attended or not." )]
 
     [BooleanField( "Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 0 )]
-    [BooleanField( "Allow Adding Person", "Should block support adding new attendee ( Requires that person has rights to search for new person )?", false, "", 1 )]
-    [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering people and attendance counts by campus?", false, "", 2 )]
-    [WorkflowTypeField( "Workflow", "An optional workflow type to launch whenever attendance is saved. The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.", false, false, "", "", 3 )]
-    [MergeTemplateField( "Attendance Roster Template", "", false, "", "", 4 )]
-    [CodeEditorField( "Lava Template", "An optional lava template to appear next to each person in the list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, "", "", 5 )]
-    [BooleanField( "Restrict Future Occurrence Date", "Should user be prevented from selecting a future Occurrence date?", false, "", 6 )]
+    [BooleanField( "Allow Adding Person as Attendee", "Should block support adding new attendee?", false, "", 1 )]
+    [BooleanField( "Allow Adding Person as Member", "Should block support adding new member to group and attendance ( Requires that person has rights to search for new person )?", false, "", 2 )]
+    [LinkedPage( "Group Member Add Page", "Page to use for adding a new group member. If no page is provided the built in group member edit panel will be used. This panel allows the individual to search the database.", false, "", "", 3 )]
+    [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering people and attendance counts by campus?", false, "", 4 )]
+    [WorkflowTypeField( "Workflow", "An optional workflow type to launch whenever attendance is saved. The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.", false, false, "", "", 5 )]
+    [MergeTemplateField( "Attendance Roster Template", "", false, "", "", 6 )]
+    [CodeEditorField( "Lava Template", "An optional lava template to appear next to each person in the list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, "", "", 7 )]
+    [BooleanField( "Restrict Future Occurrence Date", "Should user be prevented from selecting a future Occurrence date?", false, "", 8 )]
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Private Variables
@@ -56,6 +58,48 @@ namespace RockWeb.Blocks.Groups
         private bool _allowCampusFilter = false;
         private ScheduleOccurrence _occurrence = null;
         private List<GroupAttendanceAttendee> _attendees;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is editing group member.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is editing group member; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsEditingGroupMember
+        {
+            get
+            {
+                return ViewState["IsEditingGroupMember"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["IsEditingGroupMember"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the current group member identifier.
+        /// </summary>
+        /// <value>
+        /// The current group member identifier.
+        /// </value>
+        public int CurrentGroupMemberId
+        {
+            get
+            {
+                return ViewState["CurrentGroupMemberId"] as int? ?? 0;
+            }
+
+            set
+            {
+                ViewState["CurrentGroupMemberId"] = value;
+            }
+        }
 
         #endregion
 
@@ -183,156 +227,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( _group != null && _occurrence != null )
             {
-                var rockContext = new RockContext();
-                var attendanceService = new AttendanceService( rockContext );
-                var personAliasService = new PersonAliasService( rockContext );
-                var locationService = new LocationService( rockContext );
-
-                bool dateAdjusted = false;
-
-                DateTime startDate = _occurrence.Date;
-
-                // If this is a manuall entered occurrence, check to see if date was changed
-                if ( !_occurrence.ScheduleId.HasValue )
-                {
-                    DateTime? originalDate = PageParameter( "Date" ).AsDateTime();
-                    if ( originalDate.HasValue && originalDate.Value.Date != startDate.Date )
-                    {
-                        startDate = originalDate.Value.Date;
-                        dateAdjusted = true;
-                    }
-                }
-                DateTime endDate = startDate.AddDays( 1 );
-
-                var existingAttendees = attendanceService
-                    .Queryable( "PersonAlias" )
-                    .Where( a =>
-                        a.GroupId == _group.Id &&
-                        a.LocationId == _occurrence.LocationId &&
-                        a.ScheduleId == _occurrence.ScheduleId &&
-                        a.StartDateTime >= startDate &&
-                        a.StartDateTime < endDate );
-
-                if ( dateAdjusted )
-                {
-                    foreach ( var attendee in existingAttendees )
-                    {
-                        attendee.StartDateTime = _occurrence.Date;
-                    }
-                }
-
-                // If did not meet was selected and this was a manually entered occurrence (not based on a schedule/location)
-                // then just delete all the attendance records instead of tracking a 'did not meet' value
-                if ( cbDidNotMeet.Checked && !_occurrence.ScheduleId.HasValue )
-                {
-                    foreach ( var attendance in existingAttendees )
-                    {
-                        attendanceService.Delete( attendance );
-                    }
-                }
-                else
-                {
-                    int? campusId = locationService.GetCampusIdForLocation( _occurrence.LocationId );
-                    if ( !campusId.HasValue )
-                    {
-                        campusId = _group.CampusId;
-                    }
-                    if ( !campusId.HasValue && _allowCampusFilter )
-                    {
-                        var campus = CampusCache.Read( bddlCampus.SelectedValueAsInt() ?? 0 );
-                        if ( campus != null )
-                        {
-                            campusId = campus.Id;
-                        }
-                    }
-
-                    if ( cbDidNotMeet.Checked )
-                    {
-                        // If the occurrence is based on a schedule, set the did not meet flags
-                        foreach ( var attendance in existingAttendees )
-                        {
-                            attendance.DidAttend = null;
-                            attendance.DidNotOccur = true;
-                        }
-                    }
-
-                    foreach ( var attendee in _attendees )
-                    {
-                        var attendance = existingAttendees
-                            .Where( a => a.PersonAlias.PersonId == attendee.PersonId )
-                            .FirstOrDefault();
-
-                        if ( attendance == null )
-                        {
-                            int? personAliasId = personAliasService.GetPrimaryAliasId( attendee.PersonId );
-                            if ( personAliasId.HasValue )
-                            {
-                                attendance = new Attendance();
-                                attendance.GroupId = _group.Id;
-                                attendance.ScheduleId = _group.ScheduleId;
-                                attendance.PersonAliasId = personAliasId;
-                                attendance.StartDateTime = _occurrence.Date.Date.Add( _occurrence.StartTime );
-                                attendance.LocationId = _occurrence.LocationId;
-                                attendance.CampusId = campusId;
-                                attendance.ScheduleId = _occurrence.ScheduleId;
-
-                                // check that the attendance record is valid
-                                cvAttendance.IsValid = attendance.IsValid;
-                                if ( !cvAttendance.IsValid )
-                                {
-                                    cvAttendance.ErrorMessage = attendance.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
-                                    return;
-                                }
-
-                                attendanceService.Add( attendance );
-                            }
-                        }
-
-                        if ( attendance != null )
-                        {
-                            if ( cbDidNotMeet.Checked )
-                            {
-                                attendance.DidAttend = null;
-                                attendance.DidNotOccur = true;
-                            }
-                            else
-                            {
-                                attendance.DidAttend = attendee.Attended;
-                                attendance.DidNotOccur = null;
-                            }
-                        }
-                    }
-                }
-
-                if ( _occurrence.LocationId.HasValue )
-                {
-                    Rock.CheckIn.KioskLocationAttendance.Flush( _occurrence.LocationId.Value );
-                }
-
-                rockContext.SaveChanges();
-
-                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
-                if ( workflowTypeGuid.HasValue )
-                {
-                    var workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
-                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
-                    {
-                        try
-                        {
-                            var workflow = Workflow.Activate( workflowType, _group.Name );
-
-                            workflow.SetAttributeValue( "StartDateTime", _occurrence.Date.ToString( "o" ) );
-                            workflow.SetAttributeValue( "Schedule", _group.Schedule.Guid.ToString() );
-
-                            List<string> workflowErrors;
-                            new WorkflowService( rockContext ).Process( workflow, _group, out workflowErrors );
-                        }
-                        catch ( Exception ex )
-                        {
-                            ExceptionLogService.LogException( ex, this.Context );
-                        }
-                    }
-                }
+                SaveAttendance();
 
                 var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
 
@@ -473,31 +368,9 @@ namespace RockWeb.Blocks.Groups
 
         protected void ppAddPerson_SelectPerson( object sender, EventArgs e )
         {
-
-            string template = GetAttributeValue( "LavaTemplate" );
-
             if ( ppAddPerson.PersonId.HasValue )
             {
-                if ( !_attendees.Any( a => a.PersonId == ppAddPerson.PersonId.Value ) )
-                {
-                    var Person = new PersonService( new RockContext() ).Get( ppAddPerson.PersonId.Value );
-                    if ( Person != null )
-                    {
-                        var attendee = new GroupAttendanceAttendee();
-                        attendee.PersonId = Person.Id;
-                        attendee.NickName = Person.NickName;
-                        attendee.LastName = Person.LastName;
-                        attendee.Attended = true;
-                        attendee.CampusIds = Person.GetCampusIds();
-
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                        mergeFields.Add( "Person", Person );
-                        mergeFields.Add( "Attended", true );
-                        attendee.MergedTemplate = template.ResolveMergeFields( mergeFields );
-                        _attendees.Add( attendee );
-                        BindAttendees();
-                    }
-                }
+                AddAttendee( ppAddPerson.PersonId.Value );
             }
         }
 
@@ -527,6 +400,157 @@ namespace RockWeb.Blocks.Groups
 
                 ShowDetails();
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddMember_Click( object sender, EventArgs e )
+        {
+            this.IsEditingGroupMember = true;
+            var personAddPage = GetAttributeValue( "GroupMemberAddPage" );
+
+            if ( personAddPage == null || personAddPage == string.Empty )
+            {
+                DisplayEditGroupMember( 0 );
+            }
+            else
+            {
+                // redirect to the add page provided
+                if ( _group != null && _occurrence != null )
+                {
+                    SaveAttendance();
+
+                    var queryParams = new Dictionary<string, string>();
+                    queryParams.Add( "GroupId", _group.Id.ToString() );
+                    queryParams.Add( "GroupName", _group.Name );
+                    queryParams.Add( "ReturnUrl", Request.QueryString["returnUrl"] ?? Server.UrlEncode( Request.RawUrl ) );
+                    NavigateToLinkedPage( "GroupMemberAddPage", queryParams );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveGroupMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveGroupMember_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+
+            GroupTypeRole role = new GroupTypeRoleService( rockContext ).Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
+
+            var groupMember = groupMemberService.Get( this.CurrentGroupMemberId );
+            if ( groupMember == null )
+            {
+                groupMember = new GroupMember { Id = 0 };
+                groupMember.GroupId = _group.Id;
+
+                // check to see if the person is already a member of the group/role
+                var existingGroupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId(
+                    _group.Id, ppGroupMemberPerson.SelectedValue ?? 0, ddlGroupRole.SelectedValueAsId() ?? 0 );
+
+                if ( existingGroupMember != null )
+                {
+                    // if so, don't add and show error message
+                    var person = new PersonService( rockContext ).Get( ( int ) ppGroupMemberPerson.PersonId );
+
+                    nbGroupMemberErrorMessage.Title = "Person Already In Group";
+                    nbGroupMemberErrorMessage.Text = string.Format(
+                        "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role.",
+                        person.FullName,
+                        ddlGroupRole.SelectedItem.Text,
+                        role.GroupType.GroupTerm,
+                        RockPage.PageId,
+                        existingGroupMember.Id );
+                    nbGroupMemberErrorMessage.Visible = true;
+                    return;
+                }
+            }
+
+            groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
+            groupMember.GroupRoleId = role.Id;
+
+            // set their status.  If HideInactiveGroupMemberStatus is True, and they are already Inactive, keep their status as Inactive;
+            bool hideGroupMemberInactiveStatus = this.GetAttributeValue( "HideInactiveGroupMemberStatus" ).AsBooleanOrNull() ?? false;
+            var selectedStatus = rblStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
+            if ( !selectedStatus.HasValue )
+            {
+                if ( hideGroupMemberInactiveStatus )
+                {
+                    selectedStatus = GroupMemberStatus.Inactive;
+                }
+                else
+                {
+                    selectedStatus = GroupMemberStatus.Active;
+                }
+            }
+
+            groupMember.GroupMemberStatus = selectedStatus.Value;
+
+            groupMember.LoadAttributes();
+
+            Rock.Attribute.Helper.GetEditValues( phGroupMemberAttributes, groupMember );
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvEditGroupMember.IsValid = groupMember.IsValidGroupMember( rockContext );
+
+            if ( !cvEditGroupMember.IsValid )
+            {
+                cvEditGroupMember.ErrorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return;
+            }
+
+            // using WrapTransaction because there are two Saves
+            rockContext.WrapTransaction( () =>
+            {
+                if ( groupMember.Id.Equals( 0 ) )
+                {
+                    groupMemberService.Add( groupMember );
+                }
+
+                rockContext.SaveChanges();
+                groupMember.SaveAttributeValues( rockContext );
+            } );
+
+            Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
+            if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+            {
+                Rock.Security.Role.Flush( group.Id );
+            }
+
+            AddAttendee( groupMember.PersonId );
+
+            nbGroupMemberErrorMessage.Visible = false;
+            pnlEditGroupMember.Visible = false;
+            pnlAttendance.Visible = true;
+            this.IsEditingGroupMember = false;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelGroupMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancelGroupMember_Click( object sender, EventArgs e )
+        {
+            nbGroupMemberErrorMessage.Visible = false;
+            pnlEditGroupMember.Visible = false;
+            pnlAttendance.Visible = true;
+            this.IsEditingGroupMember = false;
+
+            var sm = ScriptManager.GetCurrent( Page );
+            sm.AddHistoryPoint( "Action", "ViewGroup" );
         }
 
         #endregion
@@ -782,7 +806,8 @@ namespace RockWeb.Blocks.Groups
                         .ToList();
                 }
 
-                ppAddPerson.Visible = GetAttributeValue( "AllowAddingPerson" ).AsBoolean();
+                ppAddPerson.Visible = GetAttributeValue( "AllowAddingPersonasAttendee" ).AsBoolean();
+                lbAddMember.Visible = GetAttributeValue( "AllowAddingPersonasMember" ).AsBoolean();
 
                 // Get the group members
                 var groupMemberService = new GroupMemberService( _rockContext );
@@ -862,6 +887,193 @@ namespace RockWeb.Blocks.Groups
             ppAddPerson.PersonName = "Add New Attendee";
         }
 
+        /// <summary>
+        /// Method to save attendance for use in two separate areas.
+        /// </summary>
+        protected void SaveAttendance()
+        {
+            var rockContext = new RockContext();
+            var attendanceService = new AttendanceService( rockContext );
+            var personAliasService = new PersonAliasService( rockContext );
+            var locationService = new LocationService( rockContext );
+
+            bool dateAdjusted = false;
+
+            DateTime startDate = _occurrence.Date;
+
+            // If this is a manuall entered occurrence, check to see if date was changed
+            if ( !_occurrence.ScheduleId.HasValue )
+            {
+                DateTime? originalDate = PageParameter( "Date" ).AsDateTime();
+                if ( originalDate.HasValue && originalDate.Value.Date != startDate.Date )
+                {
+                    startDate = originalDate.Value.Date;
+                    dateAdjusted = true;
+                }
+            }
+            DateTime endDate = startDate.AddDays( 1 );
+
+            var existingAttendees = attendanceService
+                .Queryable( "PersonAlias" )
+                .Where( a =>
+                    a.GroupId == _group.Id &&
+                    a.LocationId == _occurrence.LocationId &&
+                    a.ScheduleId == _occurrence.ScheduleId &&
+                    a.StartDateTime >= startDate &&
+                    a.StartDateTime < endDate );
+
+            if ( dateAdjusted )
+            {
+                foreach ( var attendee in existingAttendees )
+                {
+                    attendee.StartDateTime = _occurrence.Date;
+                }
+            }
+
+            // If did not meet was selected and this was a manually entered occurrence (not based on a schedule/location)
+            // then just delete all the attendance records instead of tracking a 'did not meet' value
+            if ( cbDidNotMeet.Checked && !_occurrence.ScheduleId.HasValue )
+            {
+                foreach ( var attendance in existingAttendees )
+                {
+                    attendanceService.Delete( attendance );
+                }
+            }
+            else
+            {
+                int? campusId = locationService.GetCampusIdForLocation( _occurrence.LocationId );
+                if ( !campusId.HasValue )
+                {
+                    campusId = _group.CampusId;
+                }
+                if ( !campusId.HasValue && _allowCampusFilter )
+                {
+                    var campus = CampusCache.Read( bddlCampus.SelectedValueAsInt() ?? 0 );
+                    if ( campus != null )
+                    {
+                        campusId = campus.Id;
+                    }
+                }
+
+                if ( cbDidNotMeet.Checked )
+                {
+                    // If the occurrence is based on a schedule, set the did not meet flags
+                    foreach ( var attendance in existingAttendees )
+                    {
+                        attendance.DidAttend = null;
+                        attendance.DidNotOccur = true;
+                    }
+                }
+
+                foreach ( var attendee in _attendees )
+                {
+                    var attendance = existingAttendees
+                        .Where( a => a.PersonAlias.PersonId == attendee.PersonId )
+                        .FirstOrDefault();
+
+                    if ( attendance == null )
+                    {
+                        int? personAliasId = personAliasService.GetPrimaryAliasId( attendee.PersonId );
+                        if ( personAliasId.HasValue )
+                        {
+                            attendance = new Attendance();
+                            attendance.GroupId = _group.Id;
+                            attendance.ScheduleId = _group.ScheduleId;
+                            attendance.PersonAliasId = personAliasId;
+                            attendance.StartDateTime = _occurrence.Date.Date.Add( _occurrence.StartTime );
+                            attendance.LocationId = _occurrence.LocationId;
+                            attendance.CampusId = campusId;
+                            attendance.ScheduleId = _occurrence.ScheduleId;
+
+                            // check that the attendance record is valid
+                            cvAttendance.IsValid = attendance.IsValid;
+                            if ( !cvAttendance.IsValid )
+                            {
+                                cvAttendance.ErrorMessage = attendance.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                                return;
+                            }
+
+                            attendanceService.Add( attendance );
+                        }
+                    }
+
+                    if ( attendance != null )
+                    {
+                        if ( cbDidNotMeet.Checked )
+                        {
+                            attendance.DidAttend = null;
+                            attendance.DidNotOccur = true;
+                        }
+                        else
+                        {
+                            attendance.DidAttend = attendee.Attended;
+                            attendance.DidNotOccur = null;
+                        }
+                    }
+                }
+            }
+
+            if ( _occurrence.LocationId.HasValue )
+            {
+                Rock.CheckIn.KioskLocationAttendance.Flush( _occurrence.LocationId.Value );
+            }
+
+            rockContext.SaveChanges();
+
+            Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+            if ( workflowTypeGuid.HasValue )
+            {
+                var workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    try
+                    {
+                        var workflow = Workflow.Activate( workflowType, _group.Name );
+
+                        workflow.SetAttributeValue( "StartDateTime", _occurrence.Date.ToString( "o" ) );
+                        workflow.SetAttributeValue( "Schedule", _group.Schedule.Guid.ToString() );
+
+                        List<string> workflowErrors;
+                        new WorkflowService( rockContext ).Process( workflow, _group, out workflowErrors );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, this.Context );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Method to add an attendee to the active list based on PersonId.
+        /// </summary>
+        /// <param name="personId">PersonId of person to add</param>
+        protected void AddAttendee( int personId )
+        {
+            string template = GetAttributeValue( "LavaTemplate" );
+
+            if ( !_attendees.Any( a => a.PersonId == personId ) )
+            {
+                var Person = new PersonService( new RockContext() ).Get( personId );
+                if ( Person != null )
+                {
+                    var attendee = new GroupAttendanceAttendee();
+                    attendee.PersonId = Person.Id;
+                    attendee.NickName = Person.NickName;
+                    attendee.LastName = Person.LastName;
+                    attendee.Attended = true;
+                    attendee.CampusIds = Person.GetCampusIds();
+
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                    mergeFields.Add( "Person", Person );
+                    mergeFields.Add( "Attended", true );
+                    attendee.MergedTemplate = template.ResolveMergeFields( mergeFields );
+                    _attendees.Add( attendee );
+                    BindAttendees();
+                }
+            }
+        }
+
         protected void RegisterScript()
         {
             string script = string.Format( @"
@@ -896,6 +1108,89 @@ namespace RockWeb.Blocks.Groups
 ", cbDidNotMeet.ClientID );
 
             ScriptManager.RegisterStartupScript( cbDidNotMeet, cbDidNotMeet.GetType(), "group-attendance-detail", script, true );
+        }
+
+        /// <summary>
+        /// Displays the edit group member.
+        /// </summary>
+        /// <param name="groupMemberId">The group member identifier.</param>
+        private void DisplayEditGroupMember( int groupMemberId )
+        {
+            // persist the group member id for use in partial postbacks
+            this.CurrentGroupMemberId = groupMemberId;
+
+            pnlAttendance.Visible = false;
+            pnlEditGroupMember.Visible = true;
+
+            RockContext rockContext = new RockContext();
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+
+            var groupMember = groupMemberService.Get( groupMemberId );
+
+            if ( groupMember == null )
+            {
+                groupMember = new GroupMember { Id = 0 };
+                groupMember.GroupId = _group.Id;
+                groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
+                groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
+                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                ppGroupMemberPerson.Enabled = true;
+            }
+            else
+            {
+                ppGroupMemberPerson.Enabled = false;
+            }
+
+            // load dropdowns
+            LoadGroupMemberDropDowns( _group.Id );
+
+            // set values
+            ppGroupMemberPerson.SetValue( groupMember.Person );
+            ddlGroupRole.SetValue( groupMember.GroupRoleId );
+            rblStatus.SetValue( ( int ) groupMember.GroupMemberStatus );
+            bool hideGroupMemberInactiveStatus = this.GetAttributeValue( "HideInactiveGroupMemberStatus" ).AsBooleanOrNull() ?? false;
+            if ( hideGroupMemberInactiveStatus )
+            {
+                var inactiveItem = rblStatus.Items.FindByValue( ( ( int ) GroupMemberStatus.Inactive ).ToString() );
+                if ( inactiveItem != null )
+                {
+                    rblStatus.Items.Remove( inactiveItem );
+                }
+            }
+            bool hideGroupMemberRole = this.GetAttributeValue( "HideGroupMemberRole" ).AsBooleanOrNull() ?? false;
+            if ( hideGroupMemberRole )
+            {
+                pnlGroupMemberRole.Visible = false;
+                pnlGroupMemberAttributes.AddCssClass( "col-md-12" ).RemoveCssClass( "col-md-6" );
+            }
+            else
+            {
+                pnlGroupMemberRole.Visible = true;
+                pnlGroupMemberAttributes.AddCssClass( "col-md-6" ).RemoveCssClass( "col-md-12" );
+            }
+
+            // set attributes
+            groupMember.LoadAttributes();
+            phGroupMemberAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, true, string.Empty, true );
+
+            this.IsEditingGroupMember = true;
+        }
+
+        /// <summary>
+        /// Loads the group member drop downs.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        private void LoadGroupMemberDropDowns( int groupId )
+        {
+            Group group = new GroupService( new RockContext() ).Get( groupId );
+            if ( group != null )
+            {
+                ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
+                ddlGroupRole.DataBind();
+            }
+
+            rblStatus.BindToEnum<GroupMemberStatus>();
         }
 
         #endregion
