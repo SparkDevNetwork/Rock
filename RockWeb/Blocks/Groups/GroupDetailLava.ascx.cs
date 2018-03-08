@@ -1066,10 +1066,10 @@ namespace RockWeb.Blocks.Groups
             if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( "CommunicationPage" ) ) )
             {
                 var rockContext = new RockContext();
-                var service = new Rock.Model.CommunicationService( rockContext );
-                var communication = new Rock.Model.Communication();
+                var service = new CommunicationService( rockContext );
+                var communication = new Communication();
                 communication.IsBulkCommunication = false;
-                communication.Status = Rock.Model.CommunicationStatus.Transient;
+                communication.Status = CommunicationStatus.Transient;
 
                 communication.SenderPersonAliasId = this.CurrentPersonAliasId;
 
@@ -1084,7 +1084,7 @@ namespace RockWeb.Blocks.Groups
                 // Get the primary aliases
                 foreach ( int personAlias in personAliasIds )
                 {
-                    var recipient = new Rock.Model.CommunicationRecipient();
+                    var recipient = new CommunicationRecipient();
                     recipient.PersonAliasId = personAlias;
                     communication.Recipients.Add( recipient );
                 }
