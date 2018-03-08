@@ -230,8 +230,7 @@ namespace Rock.Communication.Medium
 
                 if ( availableCodes.Any() )
                 {
-                    availableCodes.OrderBy( c => Guid.NewGuid() ).ToList();
-                    return availableCodes;
+                    return availableCodes.OrderBy( c => Guid.NewGuid() ).ToList();
                 }
             }
 
