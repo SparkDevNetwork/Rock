@@ -85,6 +85,7 @@ namespace Rock.Model
         /// <value>
         /// The short link URL.
         /// </value>
+        [LavaInclude]
         public virtual string ShortLinkUrl
         {
             get
