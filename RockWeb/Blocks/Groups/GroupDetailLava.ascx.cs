@@ -587,7 +587,8 @@ namespace RockWeb.Blocks.Groups
                             break;
 
                         case "SendCommunication":
-                            SendCommunication();
+                            // include the transformParent parameter
+                            SendCommunication( parameters );
                             break;
                     }
                 }
@@ -681,6 +682,25 @@ namespace RockWeb.Blocks.Groups
                 currentPageProperties.Add( "Id", RockPage.PageId );
                 currentPageProperties.Add( "Path", Request.Path );
                 mergeFields.Add( "CurrentPage", currentPageProperties );
+
+                if ( GetAttributeValue( "EnableParentSupport" ).AsBoolean() )
+                {
+                    var parents = GetGroupMemberPeople( rockContext, transformParent: true );
+                    if ( parents.Any() )
+                    {
+                        // add collection for each child's parents
+                        var childParents = new Dictionary<string, object>();
+                        foreach ( var member in group.Members )
+                        {
+                            var memberParents = parents.Where( p => p.Members.Any( m => m.Group.Members.Any( gm => gm.PersonId == member.PersonId ) ) ).ToList();
+                            childParents.Add( member.PersonId.ToString(), memberParents );
+                        }
+
+                        mergeFields.Add( "Parents", childParents );
+                        linkedPages.Add( "ParentRosterPage", LinkedPageRoute( "ParentRosterPage" ) );
+                        mergeFields.AddOrReplace( "LinkedPages", linkedPages );
+                    }
+                }
 
                 string template = GetAttributeValue( "LavaTemplate" );
 
@@ -1060,7 +1080,8 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Sends the communication.
         /// </summary>
-        private void SendCommunication()
+        /// <param name="transformParent">The transform parent flag.</param>
+        private void SendCommunication( string transformParent )
         {
             // create communication
             if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( "CommunicationPage" ) ) )
@@ -1075,14 +1096,10 @@ namespace RockWeb.Blocks.Groups
 
                 service.Add( communication );
 
-                var personAliasIds = new GroupMemberService( rockContext ).Queryable()
-                                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
-                                    .ToList()
-                                    .Select( m => m.Person.PrimaryAliasId )
-                                    .ToList();
+                var groupMemberPeople = GetGroupMemberPeople( rockContext, transformParent.AsBoolean() );
 
                 // Get the primary aliases
-                foreach ( int personAlias in personAliasIds )
+                foreach ( int personAlias in groupMemberPeople.Select( m => m.PrimaryAliasId ).ToList() )
                 {
                     var recipient = new CommunicationRecipient();
                     recipient.PersonAliasId = personAlias;
@@ -1096,6 +1113,43 @@ namespace RockWeb.Blocks.Groups
 
                 NavigateToLinkedPage( "CommunicationPage", queryParameters );
             }
+        }
+
+        /// <summary>
+        /// Gets the group members (or the group member's parents).
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="transformParent">Flag to transform result to Parents</param>
+        /// <returns></returns>
+        private List<Person> GetGroupMemberPeople( RockContext rockContext, bool transformParent = false )
+        {
+            var groupMemberPeople = new List<Person>();
+            if ( !transformParent )
+            {
+                // Linq to Entities doesn't support virtual properties (PrimaryAliasId), so call ToList twice
+                groupMemberPeople = new GroupMemberService( rockContext ).Queryable()
+                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                    .ToList()
+                    .Select( m => m.Person )
+                    .ToList();
+            }
+            else
+            {
+                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                var adultRoleId = familyGroupType.Roles.FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+                var childRoleId = familyGroupType.Roles.FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+                var idQuery = new GroupMemberService( rockContext ).Queryable()
+                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                    .Select( m => m.PersonId );
+
+                groupMemberPeople = new PersonService( rockContext ).Queryable()
+                    .Where( p => p.Members.Where( a => a.GroupRoleId == adultRoleId )
+                    .Any( a => a.Group.Members
+                    .Any( c => c.GroupRoleId == childRoleId && idQuery.Contains( c.PersonId ) ) ) )
+                    .ToList();
+            }
+
+            return groupMemberPeople;
         }
 
         #endregion
