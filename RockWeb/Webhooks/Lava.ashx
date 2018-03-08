@@ -125,6 +125,11 @@ public class Lava : IHttpHandler
                     return api;
                 }
 
+                if ( !apiUrl.StartsWith( "/" ) && !apiUrl.StartsWith( "^" ) )
+                {
+                    apiUrl = "/" + apiUrl;
+                }
+
                 //
                 // Check for any {variable} style routing replacements.
                 //
