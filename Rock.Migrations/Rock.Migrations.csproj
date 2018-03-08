@@ -117,6 +117,10 @@
     <Compile Include="Migrations\201803062219072_EnableSmartyStreets.Designer.cs">
       <DependentUpon>201803062219072_EnableSmartyStreets.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201803081805523_Communication_AddSendDateTime.cs" />
+    <Compile Include="Migrations\201803081805523_Communication_AddSendDateTime.Designer.cs">
+      <DependentUpon>201803081805523_Communication_AddSendDateTime.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.cs" />
     <Compile Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.Designer.cs">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>
@@ -2733,6 +2737,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201803062219072_EnableSmartyStreets.resx">
       <DependentUpon>201803062219072_EnableSmartyStreets.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803081805523_Communication_AddSendDateTime.resx">
+      <DependentUpon>201803081805523_Communication_AddSendDateTime.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 7.0\Version 1.7.1\201801121251097_InteractionBlocks.resx">
       <DependentUpon>201801121251097_InteractionBlocks.cs</DependentUpon>

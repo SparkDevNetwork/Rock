@@ -130,6 +130,15 @@ namespace Rock.Model
         public bool IsBulkCommunication { get; set; }
 
         /// <summary>
+        /// Gets or sets the datetime that communication was sent.
+        /// </summary>
+        /// <value>
+        /// The send date time.
+        /// </value>
+        [DataMember]
+        public DateTime? SendDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the future send date for the communication. This allows a user to schedule when a communication is sent 
         /// and the communication will not be sent until that date and time.
         /// </summary>
@@ -734,6 +743,19 @@ namespace Rock.Model
                 foreach ( var medium in communication.GetMediums() )
                 {
                     medium.Send( communication );
+                }
+
+                using ( RockContext rockContext = new RockContext() )
+                {
+                    var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
+
+                    var maxSendDateTime = dbCommunication.Recipients
+                                        .Where( a => a.CommunicationId == communication.Id )
+                                        .Select( a => a.SendDateTime )
+                                        .Max();
+
+                    dbCommunication.SendDateTime = maxSendDateTime;
+                    rockContext.SaveChanges();
                 }
             }
         }
