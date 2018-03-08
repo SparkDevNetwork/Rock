@@ -353,13 +353,13 @@ namespace RockWeb.Blocks.Communication
 
             if ( drpDates.LowerValue.HasValue )
             {
-                communications = communications.Where( a => a.CreatedDateTime >= drpDates.LowerValue.Value );
+                communications = communications.Where( a => (a.SendDateTime ?? a.FutureSendDateTime) >= drpDates.LowerValue.Value );
             }
 
             if ( drpDates.UpperValue.HasValue )
             {
                 DateTime upperDate = drpDates.UpperValue.Value.Date.AddDays( 1 );
-                communications = communications.Where( a => a.CreatedDateTime < upperDate );
+                communications = communications.Where( a => (a.SendDateTime ?? a.FutureSendDateTime) < upperDate );
             }
 
             string content = tbContent.Text;
@@ -385,7 +385,7 @@ namespace RockWeb.Blocks.Communication
                     Id = c.Id,
                     CommunicationType = c.CommunicationType,
                     Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
-                    CreatedDateTime = c.CreatedDateTime,
+                    SendDateTime = c.SendDateTime ?? c.FutureSendDateTime,
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
                     ReviewedDateTime = c.ReviewedDateTime,
                     Reviewer = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person : null,
@@ -405,7 +405,7 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                queryable = queryable.OrderByDescending( c => c.CreatedDateTime );
+                queryable = queryable.OrderByDescending( c => c.SendDateTime );
             }
 
             gCommunication.EntityTypeId = EntityTypeCache.Read<Rock.Model.Communication>().Id;
@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.Communication
             public int Id { get; set; }
             public CommunicationType CommunicationType { get; set; }
             public string Subject { get; set; }
-            public DateTime? CreatedDateTime { get; set; }
+            public DateTime? SendDateTime { get; set; }
             public Person Sender { get; set; }
             public DateTime? ReviewedDateTime { get; set; }
             public Person Reviewer { get; set; }
@@ -452,6 +452,31 @@ namespace RockWeb.Blocks.Communication
             public int FailedRecipients { get; set; }
             public int DeliveredRecipients { get; set; }
             public int OpenedRecipients { get; set; }
+            public string TypeIconCssClass 
+            {
+                get
+                {
+                    var iconCssClass = string.Empty;
+                    switch ( this.CommunicationType )
+                    {
+                        case CommunicationType.RecipientPreference:
+                            iconCssClass = "fa fa-user";
+                            break;
+                        case CommunicationType.Email:
+                            iconCssClass = "fa fa-envelope";
+                            break;
+                        case CommunicationType.SMS:
+                            iconCssClass = "fa fa-comment";
+                            break;
+                        case CommunicationType.PushNotification:
+                            iconCssClass = "fa fa-bell";
+                            break;
+                        default:
+                            break;
+                    }
+                    return iconCssClass;
+                }
+            }
         }
 
     }
