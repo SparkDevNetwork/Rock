@@ -1,26 +1,72 @@
-{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+<style>
+   .dropdown-menu {
+      margin-top: -1px;
+   }
 
-  <div class="search">
-    <label class="sr-only" for="search-input"><span>Search</span></label>
-    <input class="form-control" type="search" id="search-input" onkeypress="CCV.receiveSearchKeypress(event)" name="s" value="">
-    <i class="fa fa-search search-icon"></i>
-  </div>
+   .dropdown:hover .dropdown-menu {
+      display: block;
+   }
 
-  <ul class="masthead-navitems">
+   .dropdown-menu li a:hover {
+      color: white;
+   }
+</style>
 
-  {% for childPage in Page.Pages %}
-
-    {% if childPage.Title == "Menu" %}
-      <li class="masthead-navitem menu-btn collapsed" data-toggle="collapse" data-target=".js-fullmenu">
-        <a><div class="menu-icon"><span class="lines"></span></div> Menu</a>
-      </li>
-    {% else %}
-      <li class="masthead-navitem{% if childPage.Current == 'true' %} active{% endif%}">
-        <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
-      </li>
-    {% endif %}
-
-  {% endfor %}
-
-  </ul>
-{% endif %}
+<div class="masthead-navitems">
+    <div class="dropdown">
+       <a class="masthead-navitem" style="border: 0px;" href="/storyv2">About Us</a>
+      
+      <ul class="dropdown-menu">
+        <li><a href="/leadershipv2">Leadership</a></li>
+        <li><a href="/kidsv2">Kids</a></li>
+        <li><a href="/studentsv2">Students</a></li>
+        <li><a href="/specialneedsv2">Special Needs</a></li>
+        <li><a href="/missionsv2">Missions</a></li>
+        <li><a href="/starsv2">STARS Youth Sports</a></li>
+        <li><a href="/leadershipinstituteV2">Leadership Institute</a></li>
+      </ul>
+    </div>
+    <a class="masthead-navitem" href="/experiencev2">THE EXPERIENCE</a>
+        
+    <div class="dropdown">
+      <a class="masthead-navitem" style="border: 0px;" href="/involvedv2">Get Involved</a>
+      <ul class="dropdown-menu">
+        <li><a href="/nextstepsv2">Next Steps</a></li>
+        <li><a href="/eventsv2">Events</a></li>
+      </ul>
+    </div>
+    
+    <div class="dropdown">
+      <a class="masthead-navitem" style="border: 0px;" href="/campusesv2">Our Campuses</a>
+      <ul class="dropdown-menu">
+        <li><a href="/anthemv2">Anthem</a></li>
+        <li><a href="/avondalev2">Avondale</a></li>
+        <li><a href="/chandlerv2">Chandler</a></li>
+        <li><a href="/eastvalleyv2">East Valley</a></li>
+        <li><a href="/midtownv2">Midtown Phoenix</a></li>
+        <li><a href="/northphxv2">North Phoenix</a></li>
+        <li><a href="/peoriav2">Peoria</a></li>
+        <li><a href="/scottsdalev2">Scottsdale</a></li>
+        <li><a href="/surprisev2">Surprise</a></li>
+      </ul>
+    </div>
+    
+    
+    <div class="dropdown">
+      <a class="masthead-navitem" style="border: 0px;" href="/watchv2">Watch</a>
+      <ul class="dropdown-menu">
+        <li><a href="/watchv2">Message</a></li>
+        <li><a href="/archivev2">Archive</a></li>
+        <li><a href="/ccvlivev2">CCV Live</a></li>
+        <li><a href="/storiesv2">Stories</a></li>
+      </ul>
+    </div>
+    
+    <div class="dropdown">
+      <a class="masthead-navitem" style="border: 0px;" href="/givev2">Give</a>
+      <ul class="dropdown-menu">
+        <li><a href="/givev2">Give Now</a></li>
+      </ul>
+    </div>
+    
+</div>
