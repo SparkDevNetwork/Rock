@@ -39,7 +39,8 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Allows user to set their email preference or unsubscribe from a communication list." )]
 
-    [MemoField( "Unsubscribe from Lists Text", "Text to display for the 'Unsubscribe me from the following lists:' option.", false, "Only unsubscribe me from the following lists", "", 1, null, 3, true )]
+    [MemoField( "Unsubscribe from Lists Text", "Text to display for the 'Unsubscribe me from the following lists:' option.", false, "Only unsubscribe me from the following lists", "", 0, null, 3, true )]
+    [MemoField( "Update Email Address Text", "Text to display for the 'Update Email Address' option.", false, "Update my email address.", "", 1, null, 3, true )]
     [MemoField( "Emails Allowed Text", "Text to display for the 'Emails Allowed' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, and wish to receive all emails.", "", 2, null, 3, true )]
     [MemoField( "No Mass Emails Text", "Text to display for the 'No Mass Emails' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not wish to receive mass emails (personal emails are fine).", "", 3, null, 3, true )]
     [MemoField( "No Emails Text", "Text to display for the 'No Emails' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not want to receive emails of ANY kind.", "", 4, null, 3, true )]
@@ -52,13 +53,21 @@ We have saved your unsubscribed you from the following lists:
 {% for unsubscribedGroup in UnsubscribedGroups %}
   <li>{{ unsubscribedGroup | Attribute:'PublicName' | Default:unsubscribedGroup.Name }}</li>
 {% endfor %}
-</ul>", 
+</ul>",
         order: 7 )]
     [TextField( "Reasons to Exclude", "A delimited list of the Inactive Reasons to exclude from Reason list", false, "No Activity,Deceased", "", 8 )]
     [GroupCategoryField( "Communication List Categories", "Select the categories of the communication lists to display for unsubscribe, or select none to show all that the user is authorized to view.", true, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, defaultValue: Rock.SystemGuid.Category.GROUPTYPE_COMMUNICATIONLIST_PUBLIC, required: false, order: 9 )]
+    [CustomCheckboxListField( "Available Options", "Select the options that should be available to a user when they are updating their email preference.", "Unsubscribe,Update Email Address,Emails Allowed,No Mass Emails,No Emails,Not Involved", true, "Unsubscribe,Update Email Address,Emails Allowed,No Mass Emails,No Emails,Not Involved", Order = 10 )]
     public partial class EmailPreferenceEntry : RockBlock
     {
         #region Fields
+
+        private const string UNSUBSCRIBE = "Unsubscribe";
+        private const string UPDATE_EMAIL_ADDRESS = "Update Email Address";
+        private const string EMAILS_ALLOWED = "Emails Allowed";
+        private const string NO_MASS_EMAILS = "No Mass Emails";
+        private const string NO_EMAILS = "No Emails";
+        private const string NOT_INVOLVED = "Not Involved";
 
         private Person _person = null;
         private Rock.Model.Communication _communication = null;
@@ -136,27 +145,45 @@ We have saved your unsubscribed you from the following lists:
                     }
                     else
                     {
+                        bool anyOptionChecked = false;
                         switch ( _person.EmailPreference )
                         {
                             case EmailPreference.EmailAllowed:
                                 {
-                                    rbEmailPreferenceEmailAllowed.Checked = true;
+                                    if ( rbEmailPreferenceEmailAllowed.Visible )
+                                    {
+                                        rbEmailPreferenceEmailAllowed.Checked = true;
+                                        anyOptionChecked = true;
+                                    }
                                     break;
                                 }
                             case EmailPreference.NoMassEmails:
                                 {
-                                    rbEmailPreferenceNoMassEmails.Checked = true;
+                                    if ( rbEmailPreferenceNoMassEmails.Visible )
+                                    {
+                                        rbEmailPreferenceNoMassEmails.Checked = true;
+                                        anyOptionChecked = true;
+                                    }
                                     break;
                                 }
                             case EmailPreference.DoNotEmail:
                                 {
                                     if ( _person.RecordStatusValueId != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id )
                                     {
-                                        rbEmailPreferenceDoNotEmail.Checked = true;
+                                        if ( rbEmailPreferenceDoNotEmail.Visible )
+                                        {
+                                            rbEmailPreferenceDoNotEmail.Checked = true;
+                                            anyOptionChecked = true;
+                                        }
                                     }
                                     else
                                     {
-                                        rbNotInvolved.Checked = true;
+                                        if ( rbNotInvolved.Visible )
+                                        {
+                                            rbNotInvolved.Checked = true;
+                                            anyOptionChecked = true;
+                                        }
+
                                         if ( _person.RecordStatusReasonValueId.HasValue )
                                         {
                                             ddlInactiveReason.SelectedValue = _person.RecordStatusReasonValueId.HasValue.ToString();
@@ -166,11 +193,19 @@ We have saved your unsubscribed you from the following lists:
                                     break;
                                 }
                         }
+
+                        if ( !anyOptionChecked && rbUpdateEmailAddress.Visible )
+                        {
+                            rbUpdateEmailAddress.Checked = true;
+                        }
                     }
                 }
             }
 
+
+
             divNotInvolved.Attributes["Style"] = rbNotInvolved.Checked ? "display:block" : "display:none";
+            divUpdateEmail.Attributes["Style"] = rbUpdateEmailAddress.Checked ? "display:block" : "display:none";
         }
 
         #endregion
@@ -190,6 +225,21 @@ We have saved your unsubscribed you from the following lists:
             if ( rbUnsubscribe.Checked && rbUnsubscribe.Visible )
             {
                 UnsubscribeFromLists();
+                return;
+            }
+
+            if ( rbUpdateEmailAddress.Checked )
+            {
+                // Though the chance for empty email address is very minimal as client side validation is in place.
+                if ( string.IsNullOrEmpty( tbEmail.Text ) )
+                {
+                    nbEmailPreferenceSuccessMessage.NotificationBoxType = NotificationBoxType.Danger;
+                    nbEmailPreferenceSuccessMessage.Text = "Email is required.";
+                }
+                else
+                {
+                    UpdateEmail();
+                }
                 return;
             }
 
@@ -260,13 +310,37 @@ We have saved your unsubscribed you from the following lists:
         }
 
         /// <summary>
+        /// Updates the person email
+        /// </summary>
+        private void UpdateEmail()
+        {
+            if ( _person != null )
+            {
+                var rockContext = new RockContext();
+                var service = new PersonService( rockContext );
+                var person = service.Get( _person.Id );
+                if ( person != null )
+                {
+                    person.Email = tbEmail.Text;
+
+                    rockContext.SaveChanges();
+
+                    tbEmail.Text = string.Empty;
+                    nbEmailPreferenceSuccessMessage.Text = "<h4>Thank You</h4>We have updated your email address.";
+                    nbEmailPreferenceSuccessMessage.Visible = true;
+
+                }
+            }
+        }
+
+        /// <summary>
         /// Unsubscribes the person from any lists that were selected
         /// </summary>
         private void UnsubscribeFromLists()
         {
             if ( _person != null )
             {
-                if (!cblUnsubscribeFromLists.SelectedValuesAsInt.Any())
+                if ( !cblUnsubscribeFromLists.SelectedValuesAsInt.Any() )
                 {
                     nbUnsubscribeSuccessMessage.NotificationBoxType = NotificationBoxType.Warning;
                     nbUnsubscribeSuccessMessage.Text = "Please select the lists that you want to unsubscribe from.";
@@ -276,7 +350,7 @@ We have saved your unsubscribed you from the following lists:
 
                 List<Group> unsubscribedGroups = new List<Group>();
                 var rockContext = new RockContext();
-                
+
                 foreach ( var communicationListId in cblUnsubscribeFromLists.SelectedValuesAsInt )
                 {
                     // normally there would be at most 1 group member record for the person, but just in case, mark them all inactive
@@ -348,7 +422,9 @@ We have saved your unsubscribed you from the following lists:
         /// <param name="mergeObjects">The merge objects.</param>
         private void LoadDropdowns( Dictionary<string, object> mergeObjects )
         {
-            rbUnsubscribe.Visible = true;
+            var availableOptions = GetAttributeValue( "AvailableOptions" ).SplitDelimitedValues(false);
+
+            rbUnsubscribe.Visible = availableOptions.Contains( UNSUBSCRIBE );
             rbUnsubscribe.Text = GetAttributeValue( "UnsubscribefromListsText" ).ResolveMergeFields( mergeObjects );
             if ( rbUnsubscribe.Visible )
             {
@@ -417,10 +493,20 @@ We have saved your unsubscribed you from the following lists:
                 rbUnsubscribe.Visible = viewableCommunicationLists.Any();
             }
 
+            rbEmailPreferenceEmailAllowed.Visible = availableOptions.Contains( EMAILS_ALLOWED );
             rbEmailPreferenceEmailAllowed.Text = GetAttributeValue( "EmailsAllowedText" ).ResolveMergeFields( mergeObjects );
+
+            rbEmailPreferenceNoMassEmails.Visible = availableOptions.Contains( NO_MASS_EMAILS );
             rbEmailPreferenceNoMassEmails.Text = GetAttributeValue( "NoMassEmailsText" ).ResolveMergeFields( mergeObjects );
+
+            rbEmailPreferenceDoNotEmail.Visible = availableOptions.Contains( NO_EMAILS );
             rbEmailPreferenceDoNotEmail.Text = GetAttributeValue( "NoEmailsText" ).ResolveMergeFields( mergeObjects );
+
+            rbNotInvolved.Visible = availableOptions.Contains( NOT_INVOLVED );
             rbNotInvolved.Text = GetAttributeValue( "NotInvolvedText" ).ResolveMergeFields( mergeObjects );
+
+            rbUpdateEmailAddress.Visible = availableOptions.Contains( UPDATE_EMAIL_ADDRESS );
+            rbUpdateEmailAddress.Text = GetAttributeValue( "UpdateEmailAddressText" ).ResolveMergeFields( mergeObjects );
 
             // NOTE: OnLoad will set the default selection based the communication.ListGroup and/or the person's current email preference
 
