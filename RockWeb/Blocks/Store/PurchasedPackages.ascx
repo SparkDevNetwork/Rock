@@ -6,7 +6,14 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-gift"></i> Purchased Packages</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-gift"></i> 
+                    Purchased Packages
+                </h1>
+
+                <div class="panel-labels">
+                    <asp:LinkButton ID="btnRevokeKey" runat="server" CssClass="btn btn-xs btn-default" Text="Revoke Store Key" OnClick="btnRevokeKey_Click" />
+                </div>
             </div>
             <div class="panel-body">
 

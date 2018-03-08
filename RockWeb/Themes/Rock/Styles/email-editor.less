@@ -5,11 +5,17 @@
     control will need to override to match.
 */
 
+@import "../../../Styles/FontAwesome/_rock-upgrade-map-variables.less";
+@import "../../../Styles/FontAwesome/_rock-upgrade-map-classes.less";
+@import "../../../Styles/FontAwesome/_rock-fa-mixins.less";
+@import "../../../Styles/FontAwesome/fontawesome.less";
 @import "../../../Styles/Bootstrap/variables.less";
 @import "../../../Styles/_rock-variables.less";
 @import (inline)  "../../../Styles/RockFont/style.css";
 @import "_variables.less";
 @import "_variable-overrides.less";
+
+.fa-font-face( @fa-theme-weight-name );
 
 .state-drag .dropzone {
 	border: 1px solid yellow;

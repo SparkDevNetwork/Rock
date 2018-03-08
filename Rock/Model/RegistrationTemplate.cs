@@ -35,7 +35,6 @@ namespace Rock.Model
     [DataContract]
     public partial class RegistrationTemplate : Model<RegistrationTemplate>, IHasActiveFlag, ICategorized
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -317,6 +316,15 @@ namespace Rock.Model
         public string RequestEntryName { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration instructions.
+        /// </summary>
+        /// <value>
+        /// The registration instructions.
+        /// </value>
+        [DataMember]
+        public string RegistrationInstructions { get; set; }
+
+        /// <summary>
         /// Gets or sets the success title.
         /// </summary>
         /// <value>
@@ -373,6 +381,7 @@ namespace Rock.Model
             get { return _isActive; }
             set { _isActive = value; }
         }
+
         private bool _isActive = true;
 
         /// <summary>
@@ -387,6 +396,7 @@ namespace Rock.Model
             get { return _addPersonNote; }
             set { _addPersonNote = value; }
         }
+
         private bool _addPersonNote = true;
 
         /// <summary>
@@ -396,7 +406,7 @@ namespace Rock.Model
         ///   <c>true</c> if [allow group placement]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowGroupPlacement { get;set; }
+        public bool AllowGroupPlacement { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the payment reminder from.
@@ -467,6 +477,7 @@ namespace Rock.Model
             get { return _allowExternalRegistrationUpdates; }
             set { _allowExternalRegistrationUpdates = value; }
         }
+
         private bool _allowExternalRegistrationUpdates = true;
 
         /// <summary>
@@ -566,6 +577,7 @@ namespace Rock.Model
             get { return _discounts ?? ( _discounts = new Collection<RegistrationTemplateDiscount>() ); }
             set { _discounts = value; }
         }
+
         private ICollection<RegistrationTemplateDiscount> _discounts;
 
         /// <summary>
@@ -580,6 +592,7 @@ namespace Rock.Model
             get { return _fees ?? ( _fees = new Collection<RegistrationTemplateFee>() ); }
             set { _fees = value; }
         }
+
         private ICollection<RegistrationTemplateFee> _fees;
 
         /// <summary>
@@ -594,6 +607,7 @@ namespace Rock.Model
             get { return _registrationInstances ?? ( _registrationInstances = new Collection<RegistrationInstance>() ); }
             set { _registrationInstances = value; }
         }
+
         private ICollection<RegistrationInstance> _registrationInstances;
 
         /// <summary>
@@ -608,7 +622,30 @@ namespace Rock.Model
             get { return _registrationTemplateForms ?? ( _registrationTemplateForms = new Collection<RegistrationTemplateForm>() ); }
             set { _registrationTemplateForms = value; }
         }
+
         private ICollection<RegistrationTemplateForm> _registrationTemplateForms;
+
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( "Register", "The roles and/or users that have access to add/edit/remove registrations and registrants." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                }
+
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
 
         #endregion
 
@@ -626,7 +663,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -706,7 +742,6 @@ namespace Rock.Model
         All = RegistrationContact | GroupFollowers | GroupLeaders
     }
 
-
     /// <summary>
     /// How signature document should be presented to registrant
     /// </summary>
@@ -721,7 +756,6 @@ namespace Rock.Model
         /// Embed document in registration
         /// </summary>
         Embed = 1,
-
     }
 
     #endregion

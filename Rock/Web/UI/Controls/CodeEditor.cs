@@ -473,12 +473,6 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             this.TextMode = TextBoxMode.MultiLine;
-
-            if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
-            {
-                // if the codeeditor is .Visible and this isn't an Async, add ace.js to the page (If the codeeditor is made visible during an Async Post, RenderBaseControl will take care of adding ace.js)
-                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
-            }
         }
 
         /// <summary>
@@ -494,6 +488,22 @@ namespace Rock.Web.UI.Controls
             _mfpMergeFields.ID = string.Format( "mfpMergeFields_{0}", this.ID );
             _mfpMergeFields.SelectItem += MergeFields_SelectItem;
             Controls.Add( _mfpMergeFields );
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework after event processing has finished but
+        /// just before rendering begins.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
+            {
+                // if the codeeditor is .Visible and this isn't an Async, add ace.js to the page (If the codeeditor is made visible during an Async Post, RenderBaseControl will take care of adding ace.js)
+                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
+            }
         }
 
         /// <summary>

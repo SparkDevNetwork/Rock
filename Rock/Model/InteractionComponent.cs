@@ -55,6 +55,15 @@ namespace Rock.Model
         public string ComponentData { get; set; }
 
         /// <summary>
+        /// Gets or sets the component summary.
+        /// </summary>
+        /// <value>
+        /// The component summary.
+        /// </value>
+        [DataMember]
+        public string ComponentSummary { get; set; }
+
+        /// <summary>
         /// Gets or sets the Id of the entity that this interaction component is related to.
         /// For example:
         ///  if this is a Page View:
