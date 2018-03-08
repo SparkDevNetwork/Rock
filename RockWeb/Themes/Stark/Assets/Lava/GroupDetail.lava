@@ -75,26 +75,36 @@
 	</div>
 	{% endif %}
 
-	{% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
-		<ul class="nav nav-tabs margin-v-lg">
-			{% if LinkedPages.RosterPage != '' %}
-				{% if LinkedPages.RosterPage == CurrentPage.Path %}
-					<li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
-				{% else %}
-					<li role="presentation"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
-				{% endif %}
-			{% endif %}
+	{% if LinkedPages.RosterPage != '' or LinkedPages.ParentRosterPage != '' or (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
 
-			{% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
-				{% if LinkedPages.AttendancePage == CurrentPage.Path %}
-					<li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
-				{% else %}
-					<li role="presentation"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
-				{% endif %}
-			{% endif %}
+		<ul class="nav nav-tabs margin-v-lg">
+		    {% if LinkedPages.RosterPage != '' %}
+			    {% if LinkedPages.RosterPage == CurrentPage.Path %}
+				    <li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+			    {% else %}
+				    <li role="presentation"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+			    {% endif %}
+		    {% endif %}
+
+		    {% if LinkedPages.ParentRosterPage != '' %}
+			    {% if LinkedPages.ParentRosterPage == CurrentPage.Path %}
+				    <li role="presentation" class="active"><a href="{{ LinkedPages.ParentRosterPage }}?GroupId={{ Group.Id }}">Parent Roster</a></li>
+			    {% else %}
+				    <li role="presentation"><a href="{{ LinkedPages.ParentRosterPage }}?GroupId={{ Group.Id }}">Parent Roster</a></li>
+			    {% endif %}
+		    {% endif %}
+
+		    {% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
+			    {% if LinkedPages.AttendancePage == CurrentPage.Path %}
+				    <li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+			    {% else %}
+				    <li role="presentation"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+			    {% endif %}
+		    {% endif %}
 		</ul>
 	{% endif %}
 
+	{% comment %} Group Roster Tab {% endcomment %}
 	{% if LinkedPages.RosterPage == CurrentPage.Path %}
 
 		{% if countPending > -1 %}
@@ -316,6 +326,70 @@
 		</div>
 		</p>
 	{% endif %}
+
+	{% comment %} Parent Roster Tab {% endcomment %}
+	{% if LinkedPages.ParentRosterPage == CurrentPage.Path %}
+
+		<div class="well">
+
+			{% for member in Group.Members %}
+
+				{% assign totalParents = Parents | Size %}
+				{% for kvpParents in Parents %}
+					{% assign memberId = kvpParents | Property:'Key' %}
+					{% assign memberParents = kvpParents | Property:'Value' %}
+					{% if memberId == member.PersonId and memberParents != empty %}
+
+						<h4><strong>{{ member.Person.FullName }}</strong></h4>
+						<div class="row">
+
+						    {% for parent in memberParents %}
+							    <div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
+
+							    {% if LinkedPages.PersonDetailPage %}
+								    <a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ parent.Id }}">
+							    {% endif %}
+							    <img src="{{ parent.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" alt="">
+							    <div class="pull-left">
+								    {{ parent.FullName }}
+
+								    {% for phone in parent.PhoneNumbers %}
+								    <br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
+								    {% endfor %}
+
+								    {% assign memberAddress =  parent | Address:'Home' %}
+								    {% if memberAddress != '' %}
+								    <br />{{ parent | Address:'Home' }}
+								    {% endif %}
+
+								    <br />
+								    <a href="mailto:{{ parent.Email }}">{{ parent.Email }}</a>
+								    <br />
+							    </div>
+
+							    {% if LinkedPages.PersonDetailPage  %}
+								    </a>
+							    {% endif %}
+							    </div>
+
+						    {% endfor %}
+						</div>
+
+					{% endif %}
+
+				{% endfor %}
+
+			{% endfor %}
+		</div>
+
+		<div class="pull-right margin-b-md">
+			{% if LinkedPages.CommunicationPage != '' %}
+				{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+					<a href="#" onclick="{{ 'Yes' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+						<i class="fa fa-envelope-o"></i> Email Parents
+					</a>
+				{% endif %}
+			{% endif %}
 		</div>
 		</p>
 	{% endif %}
