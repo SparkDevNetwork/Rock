@@ -742,7 +742,7 @@ namespace RockWeb.Blocks.Cms
                 lName.Text = CurrentPerson.FullName;
                 if ( CurrentPerson.BirthDate.HasValue )
                 {
-                    lAge.Text = string.Format( "{0}<small>({1} old)</small><br/>", CurrentPerson.FormatAge(), CurrentPerson.BirthYear != DateTime.MinValue.Year ? CurrentPerson.BirthDate.Value.ToShortDateString() : CurrentPerson.BirthDate.Value.ToMonthDayString() );
+                    lAge.Text = string.Format( "{0} old <small>({1})</small><br/>", CurrentPerson.FormatAge(), CurrentPerson.BirthYear != DateTime.MinValue.Year ? CurrentPerson.BirthDate.Value.ToShortDateString() : CurrentPerson.BirthDate.Value.ToMonthDayString() );
                 }
 
                 lGender.Text = CurrentPerson.Gender != Gender.Unknown ? CurrentPerson.Gender.ToString() : string.Empty;
