@@ -251,8 +251,8 @@ namespace Plugins.church_ccv.Groups
             lContent.Text = template.ResolveMergeFields( mergeFields );
 
             // Apply Pre / Post HTML to add group member panel
-            ApplyAddGroupMemberPreHTML( groups );
-            ApplyAddGroupMemberPostHTML( groups );
+            ApplyAddGroupMemberPreHTML( mergeFields );
+            ApplyAddGroupMemberPostHTML( mergeFields );
         }
 
         /// <summary>
@@ -275,11 +275,8 @@ namespace Plugins.church_ccv.Groups
         /// <summary>
         /// Apply add group member pre HTML lava template
         /// </summary>
-        private void ApplyAddGroupMemberPreHTML( List<GroupInvolvementSummary> groups )
+        private void ApplyAddGroupMemberPreHTML( Dictionary<string, object> mergeFields )
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "Groups", groups );
-
             string template = GetAttributeValue( "AddGroupMemberPanelPreHTML" );
 
             lAddGroupMemberPreHTML.Text = template.ResolveMergeFields( mergeFields );
@@ -288,11 +285,8 @@ namespace Plugins.church_ccv.Groups
         /// <summary>
         /// Apply add group member post HTML lava template
         /// </summary>
-        private void ApplyAddGroupMemberPostHTML( List<GroupInvolvementSummary> groups )
+        private void ApplyAddGroupMemberPostHTML( Dictionary<string, object> mergeFields )
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "Groups", groups );
-
             string template = GetAttributeValue( "AddGroupMemberPanelPostHTML" );
 
             lAddGroupMemberPostHTML.Text = template.ResolveMergeFields( mergeFields );
