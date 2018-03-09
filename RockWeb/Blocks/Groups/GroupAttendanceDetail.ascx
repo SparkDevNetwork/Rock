@@ -5,7 +5,7 @@
         <asp:PostBackTrigger ControlID="lbPrintAttendanceRoster" />
     </Triggers>
     <ContentTemplate>
-        
+
         <asp:Panel ID="pnlAttendance" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading clearfix">
@@ -60,11 +60,11 @@
                                         <Rock:RockCheckBox ID="cbMember" runat="server" Checked='<%# Eval("Attended") %>' Text='<%# string.Concat(Eval("MergedTemplate"), " ", Eval("FullName"))%>' />
                                     </ItemTemplate>
                                 </asp:ListView>
-                                <div class="pull-right margin-b-lg">
-                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add New Attendee" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                <div class="pull-right margin-b-lg margin-l-md">
+                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" OnSelectPerson="ppAddPerson_SelectPerson" />
                                 </div>
-                                <div class="pull-right margin-b-lg margin-r-md">
-                                    <asp:LinkButton ID="lbAddMember" runat="server" CssClass="btn btn-default" OnClick="lbAddMember_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Member</asp:LinkButton>
+                                <div class="pull-right margin-b-lg">
+                                    <asp:LinkButton ID="lbAddMember" runat="server" CssClass="btn btn-default" OnClick="lbAddMember_Click" CausesValidation="false" Visible="false"><i class="fa fa-plus"></i> Add Group Member</asp:LinkButton>
                                 </div>
                             </div>
 
@@ -98,41 +98,6 @@
                 </asp:Panel>
 
             </div>
-
-        </asp:Panel>
-
-        <asp:Panel ID="pnlEditGroupMember" runat="server" Visible="false">
-            
-            <asp:Literal ID="lGroupMemberEditPreHtml" runat="server" />
-            
-            <asp:ValidationSummary ID="vsEditGroupMember" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-            <asp:CustomValidator ID="cvEditGroupMember" runat="server" Display="None" />
-            <Rock:NotificationBox ID="nbGroupMemberErrorMessage" runat="server" NotificationBoxType="Danger" />
-
-            <div class="row">
-                <div class="col-md-6">
-                    <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" Required="true"/>
-                </div>
-                <div class="col-md-6">
-                    <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Member Status" RepeatDirection="Horizontal" />
-                </div>
-            </div>
-
-            <div class="row">
-                <asp:Panel ID="pnlGroupMemberRole" runat="server" CssClass="col-md-6">
-                    <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" Required="true" />
-                </asp:Panel>
-                <asp:Panel ID="pnlGroupMemberAttributes" runat="server" CssClass="col-md-6">
-                    <Rock:DynamicPlaceHolder ID="phGroupMemberAttributes" runat="server" />
-                </asp:Panel>
-            </div>
-
-            <div class="actions">
-                <asp:Button ID="btnSaveGroupMember" runat="server" AccessKey="s" ToolTip="Alt+s" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveGroupMember_Click" />
-                <asp:LinkButton id="btnCancelGroupMember" runat="server" AccessKey="c" ToolTip="Alt+c" CssClass="btn btn-link" OnClick="btnCancelGroupMember_Click" CausesValidation="false">Cancel</asp:LinkButton>
-            </div>
-
-            <asp:Literal ID="lGroupMemberEditPostHtml" runat="server" />
 
         </asp:Panel>
 
