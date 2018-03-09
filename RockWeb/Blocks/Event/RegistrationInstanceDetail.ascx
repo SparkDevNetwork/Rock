@@ -335,7 +335,7 @@
                                 <Rock:RockDropDownList ID="ddlFeeName" runat="server" Label="Fee Name" AutoPostBack="true" OnSelectedIndexChanged="ddlFeeName_SelectedIndexChanged" ></Rock:RockDropDownList>
                                 <Rock:RockCheckBoxList ID="cblFeeOptions" runat="server" Label="Fee Options"></Rock:RockCheckBoxList>
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gFees" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Fee" ExportSource="DataSource">
+                            <Rock:Grid ID="gFees" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Fee" ExportSource="DataSource" >
                                 <Columns>
                                         <Rock:RockBoundField HeaderText ="Registration ID" DataField="RegistrationId" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                         <Rock:DateField HeaderText ="Registration Date" DataField="RegistrationDate" />
