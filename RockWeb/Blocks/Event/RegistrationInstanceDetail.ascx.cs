@@ -625,6 +625,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gRegistrations_GridRebind( object sender, EventArgs e )
         {
+            gRegistrations.ExportTitleName = lReadOnlyTitle.Text + " - Registrations";
+            gRegistrations.ExportFilename = gRegistrations.ExportFilename ?? lReadOnlyTitle.Text + "Registrations";
             BindRegistrationsGrid();
         }
 
@@ -1125,6 +1127,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gRegistrants_GridRebind( object sender, GridRebindEventArgs e )
         {
+            gRegistrants.ExportTitleName = lReadOnlyTitle.Text + " - Registrants";
+            gRegistrants.ExportFilename = gRegistrants.ExportFilename ?? lReadOnlyTitle.Text + "Registrants";
             BindRegistrantsGrid( e.IsExporting );
         }
 
@@ -1362,6 +1366,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gPayments_GridRebind( object sender, EventArgs e )
         {
+            gPayments.ExportTitleName = lReadOnlyTitle.Text + " - Registration Payments";
+            gPayments.ExportFilename = gPayments.ExportFilename ?? lReadOnlyTitle.Text + "RegistrationPayments";
             BindPaymentsGrid();
         }
 
@@ -1534,6 +1540,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gLinkages_GridRebind( object sender, EventArgs e )
         {
+            gLinkages.ExportTitleName = lReadOnlyTitle.Text + " - Registration Linkages";
+            gLinkages.ExportTitleName = gLinkages.ExportTitleName ?? lReadOnlyTitle.Text + "RegistrationLinkages";
             BindLinkagesGrid();
         }
 
@@ -2045,6 +2053,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
         private void gWaitList_GridRebind( object sender, GridRebindEventArgs e )
         {
+            gWaitList.ExportTitleName = lReadOnlyTitle.Text + " - Registration Wait List";
+            gWaitList.ExportFilename = gWaitList.ExportFilename ?? lReadOnlyTitle.Text + " - Registration Wait List";
             BindWaitListGrid( e.IsExporting );
         }
 
@@ -2118,6 +2128,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gGroupPlacements_GridRebind( object sender, GridRebindEventArgs e )
         {
+            gGroupPlacements.ExportTitleName = lReadOnlyTitle.Text + " - Registration Group Placements";
+            gGroupPlacements.ExportFilename = gGroupPlacements.ExportFilename ?? lReadOnlyTitle.Text + "RegistrationGroupPlacements";
             BindGroupPlacementGrid( e.IsExporting );
         }
 
@@ -4252,6 +4264,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
         protected void gFees_GridRebind( object sender, GridRebindEventArgs e )
         {
+            gFees.ExportTitleName = lReadOnlyTitle.Text + " - Registration Fees";
+            gFees.ExportFilename = gFees.ExportFilename ?? lReadOnlyTitle.Text + "RegistrationFees";
             BindFeesGrid();
         }
 
