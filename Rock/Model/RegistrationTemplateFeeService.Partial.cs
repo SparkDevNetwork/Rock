@@ -9,7 +9,6 @@ namespace Rock.Model
     /// <seealso cref="Rock.Data.Service{Rock.Model.RegistrationTemplateFee}" />
     public partial class RegistrationTemplateFeeService
     {
-
         /// <summary>
         /// Gets the parsed fee option names without cost.
         /// </summary>
@@ -40,23 +39,22 @@ namespace Rock.Model
         /// <param name="registrationTemplateFeeId">The registration template fee identifier.</param>
         /// <returns></returns>
         public List<Tuple<string, decimal>> GetParsedFeeOptionsWithCostAsNumber( int registrationTemplateFeeId )
-		{
+        {
             RegistrationTemplateFee registrationTemplateFee = this.Get( registrationTemplateFeeId );
 
             var options = new List<Tuple<string, decimal>>();
             string[] nameValues = registrationTemplateFee.CostValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-			foreach (string nameValue in nameValues )
+            foreach (string nameValue in nameValues )
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-				if ( nameAndValue.Length == 1)
+                if ( nameAndValue.Length == 1)
                 {
-                    options.Add( Tuple.Create< string, decimal>( nameAndValue[0], 0.00m ) );
+                    options.Add( Tuple.Create<string, decimal>( nameAndValue[0], 0.00m ) );
                 }
-				else if( nameAndValue.Length == 2 )
+                else if ( nameAndValue.Length == 2 )
                 {
                     options.Add( Tuple.Create<string, decimal>( nameAndValue[0], nameAndValue[1].AsDecimal() ) );
                 }
-
             }
 
             return options;
@@ -128,7 +126,6 @@ namespace Rock.Model
     /// </summary>
     public class TemplateFeeReport
     {
-
         /// <summary>
         /// Gets or sets the registration identifier.
         /// </summary>
@@ -154,6 +151,7 @@ namespace Rock.Model
             {
                 return _registrationDate.Date;
             }
+
             set
             {
                 _registrationDate = value;
@@ -223,7 +221,5 @@ namespace Rock.Model
         /// The fee total.
         /// </value>
         public decimal FeeTotal { get; set; }
-
-
     }
 }
