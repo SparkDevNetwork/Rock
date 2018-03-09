@@ -234,6 +234,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the worksheet and title name on the excel file.
+        /// If this property is null then the grid will use it's 
+        /// caption or the page tile in that order.
+        /// </summary>
+        /// <value>
+        /// The name of the export title.
+        /// </value>
+        public string ExportTitleName
+        {
+            get
+            {
+                return ViewState["ExportTitleName"] as string;
+            }
+            set
+            {
+                ViewState["ExportTitleName"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [hide delete button for is system].
         /// </summary>
         /// <value>
@@ -1550,15 +1570,21 @@ namespace Rock.Web.UI.Controls
 
             ExcelPackage excel = new ExcelPackage();
 
-            // if the grid has a caption customize on it
-            if ( !string.IsNullOrEmpty( this.Caption ) )
+            if ( !string.IsNullOrEmpty( this.ExportTitleName ) )
             {
+                // If we have a Export Title Name then use it
+                workSheetName = this.ExportTitleName;
+                title = this.ExportTitleName;
+            }
+            else if ( !string.IsNullOrEmpty( this.Caption ) )
+            {
+                // Then try the caption
                 workSheetName = this.Caption;
                 title = this.Caption;
             }
-            // otherwise use the page title
             else
             {
+                // otherwise use the page title
                 var pageTitle = ( Page as RockPage )?.PageTitle;
 
                 if ( !string.IsNullOrEmpty( pageTitle ) )
@@ -1567,6 +1593,7 @@ namespace Rock.Web.UI.Controls
                     title = pageTitle;
                 }
             }
+
             excel.Workbook.Properties.Title = title;
 
             // add author info
