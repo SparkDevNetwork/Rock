@@ -208,6 +208,9 @@ namespace RockWeb.Blocks.Event
             gGroupPlacements.RowDataBound += gRegistrants_RowDataBound; //intentionally using same row data bound event as the gRegistrants grid
             gGroupPlacements.GridRebind += gGroupPlacements_GridRebind;
 
+            fFees.ApplyFilterClick += fFees_ApplyFilterClick;
+            gFees.GridRebind += gFees_GridRebind;
+                
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -1436,6 +1439,69 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        #region Fee Tab Events
+
+        protected void fFees_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "FeeDateRange":
+                    e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
+                    break;
+
+                case "FeeName":
+                    break;
+
+                case "FeeOptions":
+                    var values = new List<string>();
+                    foreach ( string value in e.Value.Split( ';' ) )
+                    {
+                        var item = cblFeeOptions.Items.FindByValue( value );
+                        if ( item != null )
+                        {
+                            values.Add( item.Text );
+                        }
+                    }
+                    e.Value = values.AsDelimited( ", " );
+                    break;
+
+                default:
+                    e.Value = string.Empty;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterCick event of the fFees control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void fFees_ClearFilterCick( object sender, EventArgs e )
+        {
+            fFees.DeleteUserPreferences();
+            BindFeesFilter();
+        }
+
+        protected void fFees_ApplyFilterClick( object sender, EventArgs e )
+        {
+            fFees.SaveUserPreference( "FeeDateRange", "Fee Date Range", sdrpFeeDateRange.DelimitedValues );
+            fFees.SaveUserPreference( "FeeName", "Fee Name", ddlFeeName.SelectedItem.Text );
+            fFees.SaveUserPreference( "FeeOptions", "Fee Options", cblFeeOptions.SelectedValues.AsDelimited( ";" ) );
+
+            BindFeesGrid();
+        }
+
+        protected void ddlFeeName_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if ( ddlFeeName.SelectedIndex > 0 )
+            {
+                Populate_cblFeeOptions();
+                cblFeeOptions.Visible = true;
+            }
+        }
+
+        #endregion
+
         #region Linkage Tab Events
 
         /// <summary>
@@ -2403,6 +2469,7 @@ namespace RockWeb.Blocks.Event
                 BindWaitListFilter( registrationInstance );
                 BindGroupPlacementsFilter( registrationInstance );
                 BindLinkagesFilter();
+                BindFeesFilter();
                 AddDynamicControls( true );
 
                 // do the ShowTab now since it may depend on DynamicControls and Filter Bindings
@@ -2550,6 +2617,9 @@ namespace RockWeb.Blocks.Event
             liPayments.RemoveCssClass( "active" );
             pnlPayments.Visible = false;
 
+            liFees.RemoveCssClass( "active" );
+            pnlFees.Visible = false;
+
             liLinkage.RemoveCssClass( "active" );
             pnlLinkages.Visible = false;
 
@@ -2574,6 +2644,14 @@ namespace RockWeb.Blocks.Event
                         liPayments.AddCssClass( "active" );
                         pnlPayments.Visible = true;
                         BindPaymentsGrid();
+                        break;
+                    }
+
+                case "lbFees":
+                    {
+                        liFees.AddCssClass( "active" );
+                        pnlFees.Visible = true;
+                        BindFeesGrid();
                         break;
                     }
 
@@ -4171,6 +4249,130 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        #region Fees Tab
+
+        /// <summary>
+        /// Binds the fees filter.
+        /// </summary>
+        private void BindFeesFilter()
+        {
+            sdrpFeeDateRange.DelimitedValues = fFees.GetUserPreference( "FeeDateRange");
+            Populate_ddlFeeName();
+            ddlFeeName.SelectedIndex = ddlFeeName.Items.IndexOf(ddlFeeName.Items.FindByText(fFees.GetUserPreference( "FeeName" ) ) );
+            Populate_cblFeeOptions();
+        }
+
+
+
+        /// <summary>
+        /// Binds the fees grid.
+        /// </summary>
+        private void BindFeesGrid()
+        {
+            int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            if (instanceId == null)
+            {
+                return;
+            }
+            
+            RegistrationTemplateFeeService registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
+            var data = registrationTemplateFeeService.GetRegistrationTemplateFeeReport( (int)instanceId );
+
+            // Add Date Range
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpFeeDateRange.DelimitedValues );
+            if ( dateRange.Start.HasValue )
+            {
+                data = data.Where( r => r.RegistrationDate >= dateRange.Start.Value );
+            }
+
+            if ( dateRange.End.HasValue )
+            {
+                data = data.Where( r => r.RegistrationDate < dateRange.End.Value );
+            }
+
+            // Fee Name
+            if (ddlFeeName.SelectedIndex > 0 )
+            {
+                data = data.Where( r => r.FeeName == ddlFeeName.SelectedItem.Text );
+            }
+
+            // Fee Options
+            if ( cblFeeOptions.SelectedValues.Count > 0 )
+            {
+                data = data.Where( r => cblFeeOptions.SelectedValues.Contains( r.Option ) );
+            }
+
+            gFees.DataSource = data.ToList();
+            gFees.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gFees control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        protected void gFees_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindFeesGrid();
+        }
+
+
+        /// <summary>
+        /// Populates ddlFeeName with the name of the DDL fee.
+        /// </summary>
+        private void Populate_ddlFeeName()
+        {
+            int? instanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            if ( instanceId == null )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var registrationInstanceService = new RegistrationInstanceService( rockContext );
+            var templateId = registrationInstanceService.Get( ( int ) instanceId ).RegistrationTemplateId;
+
+            var registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
+            var templateFees = registrationTemplateFeeService.Queryable().Where( f => f.RegistrationTemplateId == templateId ).ToList();
+
+            ddlFeeName.Items.Add( new ListItem() );
+            foreach ( var templateFee in templateFees )
+            {
+                ddlFeeName.Items.Add( new ListItem( templateFee.Name, templateFee.Id.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Populates cblFeeOptions with fee options.
+        /// </summary>
+        private void Populate_cblFeeOptions()
+        {
+            cblFeeOptions.Items.Clear();
+
+            string FeeId = ddlFeeName.SelectedValue;
+            if ( FeeId.IsNotNullOrWhitespace() )
+            {
+                var registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
+                var fees = registrationTemplateFeeService.GetParsedFeeOptionsWithoutCost( FeeId.AsInteger() );
+
+                foreach ( var fee in fees )
+                {
+                    cblFeeOptions.Items.Add( new ListItem( fee, fee ) );
+                }
+
+                string feeOptionValues = fFees.GetUserPreference( "FeeOptions" );
+                if ( !string.IsNullOrWhiteSpace( feeOptionValues ) )
+                {
+                    cblFeeOptions.SetValues( feeOptionValues.Split( ';' ).ToList() );
+                }
+                
+                cblFeeOptions.Visible = true;
+            }
+        }
+
+
+        #endregion
+
         #region Wait List Tab
 
         /// <summary>
@@ -5617,8 +5819,5 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion
-
-
-        
     }
 }

@@ -2129,6 +2129,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Compile Include="Model\RegistrationTemplateFeeService.Partial.cs" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
