@@ -1,17 +1,3 @@
-<style>
-   .dropdown-menu {
-      margin-top: -1px;
-   }
-
-   .dropdown:hover .dropdown-menu {
-      display: block;
-   }
-
-   .dropdown-menu li a:hover {
-      color: white;
-   }
-</style>
-
 <div class="masthead-navitems">
     <div class="dropdown">
        <a class="masthead-navitem" style="border: 0px;" href="/storyv2">About Us</a>
